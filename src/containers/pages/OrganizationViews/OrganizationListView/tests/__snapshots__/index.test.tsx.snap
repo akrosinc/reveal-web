@@ -1,0 +1,136 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/containers/TeamAssignment/OrganizationListView/ renders a dumb TeamListView correctly: Breadcrumb 1`] = `
+<Breadcrumb
+  aria-label="breadcrumb"
+  className="reveal-breadcrumb"
+  listTag="ol"
+  tag="nav"
+>
+  <nav
+    aria-label="breadcrumb"
+    className="reveal-breadcrumb"
+  >
+    <ol
+      className="breadcrumb"
+    >
+      <BreadcrumbItem
+        key="reveal-breadcrumb-0"
+        tag="li"
+      >
+        <li
+          className="breadcrumb-item"
+        >
+          <Link
+            key="0"
+            to="/"
+          >
+            <LinkAnchor
+              href="/"
+              navigate={[Function]}
+            >
+              <a
+                href="/"
+                onClick={[Function]}
+              >
+                Home
+              </a>
+            </LinkAnchor>
+          </Link>
+        </li>
+      </BreadcrumbItem>
+      <BreadcrumbItem
+        active={true}
+        tag="li"
+      >
+        <li
+          aria-current="page"
+          className="active breadcrumb-item"
+        >
+          Teams
+        </li>
+      </BreadcrumbItem>
+    </ol>
+  </nav>
+</Breadcrumb>
+`;
+
+exports[`src/containers/TeamAssignment/OrganizationListView/ renders a dumb TeamListView correctly: First table record in listview 1`] = `
+<tr
+  className="listview-tr"
+  key="0"
+>
+  <ElementMap
+    HTMLTag="td"
+    className="listview-th"
+    items={
+      Array [
+        <Link
+          className="organization-name-link"
+          to="/teams/view/fcc19470-d599-11e9-bb65-2a2ae2dbcce4"
+        >
+          The Luang
+        </Link>,
+        "fcc19470-d599-11e9-bb65-2a2ae2dbcce4",
+        <Link
+          to="/teams/view/fcc19470-d599-11e9-bb65-2a2ae2dbcce4"
+        >
+          view
+        </Link>,
+      ]
+    }
+  >
+    <td
+      className="listview-th"
+      key="0"
+    >
+      <Link
+        className="organization-name-link"
+        key="orgName-fcc19470-d599-11e9-bb65-2a2ae2dbcce4"
+        to="/teams/view/fcc19470-d599-11e9-bb65-2a2ae2dbcce4"
+      >
+        <LinkAnchor
+          className="organization-name-link"
+          href="/teams/view/fcc19470-d599-11e9-bb65-2a2ae2dbcce4"
+          navigate={[Function]}
+        >
+          <a
+            className="organization-name-link"
+            href="/teams/view/fcc19470-d599-11e9-bb65-2a2ae2dbcce4"
+            onClick={[Function]}
+          >
+            The Luang
+          </a>
+        </LinkAnchor>
+      </Link>
+    </td>
+    <td
+      className="listview-th"
+      key="1"
+    >
+      fcc19470-d599-11e9-bb65-2a2ae2dbcce4
+    </td>
+    <td
+      className="listview-th"
+      key="2"
+    >
+      <Link
+        key="action-fcc19470-d599-11e9-bb65-2a2ae2dbcce4"
+        to="/teams/view/fcc19470-d599-11e9-bb65-2a2ae2dbcce4"
+      >
+        <LinkAnchor
+          href="/teams/view/fcc19470-d599-11e9-bb65-2a2ae2dbcce4"
+          navigate={[Function]}
+        >
+          <a
+            href="/teams/view/fcc19470-d599-11e9-bb65-2a2ae2dbcce4"
+            onClick={[Function]}
+          >
+            view
+          </a>
+        </LinkAnchor>
+      </Link>
+    </td>
+  </ElementMap>
+</tr>
+`;

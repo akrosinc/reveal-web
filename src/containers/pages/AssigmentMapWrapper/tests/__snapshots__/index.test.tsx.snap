@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`containers/pages/AssigmentMapWrapper tests that geojson is loaded correctly in store: map renders correctly 1`] = `
+<div>
+  I love oov
+</div>
+`;

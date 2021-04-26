@@ -1,0 +1,220 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/pages/*/AssignPractitioners Renders correctly: BreadCrumb 1`] = `
+<Breadcrumb
+  aria-label="breadcrumb"
+  className="reveal-breadcrumb"
+  listTag="ol"
+  tag="nav"
+>
+  <nav
+    aria-label="breadcrumb"
+    className="reveal-breadcrumb"
+  >
+    <ol
+      className="breadcrumb"
+    >
+      <BreadcrumbItem
+        key="reveal-breadcrumb-0"
+        tag="li"
+      >
+        <li
+          className="breadcrumb-item"
+        >
+          <Link
+            key="0"
+            to="/"
+          >
+            <LinkAnchor
+              href="/"
+              navigate={[Function]}
+            >
+              <a
+                href="/"
+                onClick={[Function]}
+              >
+                Home
+              </a>
+            </LinkAnchor>
+          </Link>
+        </li>
+      </BreadcrumbItem>
+      <BreadcrumbItem
+        key="reveal-breadcrumb-1"
+        tag="li"
+      >
+        <li
+          className="breadcrumb-item"
+        >
+          <Link
+            key="1"
+            to="/teams"
+          >
+            <LinkAnchor
+              href="/teams"
+              navigate={[Function]}
+            >
+              <a
+                href="/teams"
+                onClick={[Function]}
+              >
+                Teams
+              </a>
+            </LinkAnchor>
+          </Link>
+        </li>
+      </BreadcrumbItem>
+      <BreadcrumbItem
+        key="reveal-breadcrumb-2"
+        tag="li"
+      >
+        <li
+          className="breadcrumb-item"
+        >
+          <Link
+            key="2"
+            to="/teams/view/d23f7350-d406-11e9-bb65-2a2ae2dbcce4"
+          >
+            <LinkAnchor
+              href="/teams/view/d23f7350-d406-11e9-bb65-2a2ae2dbcce4"
+              navigate={[Function]}
+            >
+              <a
+                href="/teams/view/d23f7350-d406-11e9-bb65-2a2ae2dbcce4"
+                onClick={[Function]}
+              >
+                Takang 1
+              </a>
+            </LinkAnchor>
+          </Link>
+        </li>
+      </BreadcrumbItem>
+      <BreadcrumbItem
+        active={true}
+        tag="li"
+      >
+        <li
+          aria-current="page"
+          className="active breadcrumb-item"
+        >
+          Assign Practitioners
+        </li>
+      </BreadcrumbItem>
+    </ol>
+  </nav>
+</Breadcrumb>
+`;
+
+exports[`src/pages/*/AssignPractitioners Renders correctly: Select Values 1`] = `
+Array [
+  Object {
+    "isFixed": true,
+    "label": "tlv2 - tlv2_name",
+    "value": "healer",
+  },
+  Object {
+    "isFixed": true,
+    "label": "tak - Biophics Tester",
+    "value": "master",
+  },
+  Object {
+    "isFixed": true,
+    "label": "lusaka - Test User Lusaka",
+    "value": "437cc699-cfd7-414c-ba27-1668b6b517e6",
+  },
+]
+`;
+
+exports[`src/pages/*/AssignPractitioners Renders correctly: add Practitioners button 1`] = `
+Array [
+  <Button
+    className="btn btn-primary mr-4 disabled"
+    color="secondary"
+    id="add-button"
+    onClick={[Function]}
+    tag="button"
+  >
+    <button
+      aria-label={null}
+      className="btn btn-primary mr-4 disabled btn btn-secondary"
+      id="add-button"
+      onClick={[Function]}
+      type="button"
+    >
+      Save changes
+    </button>
+  </Button>,
+  <button
+    aria-label={null}
+    className="btn btn-primary mr-4 disabled btn btn-secondary"
+    id="add-button"
+    onClick={[Function]}
+    type="button"
+  >
+    Save changes
+  </button>,
+]
+`;
+
+exports[`src/pages/*/AssignPractitioners Renders correctly: add Practitioners button 2`] = `
+Array [
+  <Button
+    className="btn btn-primary disabled"
+    color="secondary"
+    id="discard-button"
+    onClick={[Function]}
+    tag="button"
+  >
+    <button
+      aria-label={null}
+      className="btn btn-primary disabled btn btn-secondary"
+      id="discard-button"
+      onClick={[Function]}
+      type="button"
+    >
+      Discard changes
+    </button>
+  </Button>,
+  <button
+    aria-label={null}
+    className="btn btn-primary disabled btn btn-secondary"
+    id="discard-button"
+    onClick={[Function]}
+    type="button"
+  >
+    Discard changes
+  </button>,
+]
+`;
+
+exports[`src/pages/*/AssignPractitioners Renders correctly: async select 1`] = `
+<input
+  aria-autocomplete="list"
+  autoCapitalize="none"
+  autoComplete="off"
+  autoCorrect="off"
+  disabled={false}
+  id="react-select-3-input"
+  onBlur={[Function]}
+  onChange={[Function]}
+  onFocus={[Function]}
+  spellCheck="false"
+  style={
+    Object {
+      "background": 0,
+      "border": 0,
+      "boxSizing": "content-box",
+      "color": "inherit",
+      "fontSize": "inherit",
+      "label": "input",
+      "opacity": 1,
+      "outline": 0,
+      "padding": 0,
+      "width": "2px",
+    }
+  }
+  tabIndex="0"
+  type="text"
+  value=""
+/>
+`;

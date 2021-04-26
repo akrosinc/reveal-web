@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/LinkToNewPlans Matches snapshot 1`] = `
+<LinkAsButton
+  classNameProp="focus-investigation btn btn-primary float-right mt-5"
+  text="Link"
+  to="/plans/new"
+>
+  <Link
+    className="focus-investigation btn btn-primary float-right mt-5"
+    to="/plans/new"
+  >
+    <LinkAnchor
+      className="focus-investigation btn btn-primary float-right mt-5"
+      href="/plans/new"
+      navigate={[Function]}
+    >
+      <a
+        className="focus-investigation btn btn-primary float-right mt-5"
+        href="/plans/new"
+        onClick={[Function]}
+      >
+        Link
+      </a>
+    </LinkAnchor>
+  </Link>
+</LinkAsButton>
+`;

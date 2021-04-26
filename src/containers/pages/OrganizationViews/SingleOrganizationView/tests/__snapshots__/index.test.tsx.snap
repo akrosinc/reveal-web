@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/containers/pages/OrganizationViews Deleting api calls for removing a practitioner from an organization: Practitioner 4 removal link 1`] = `
+<a
+  className="unassign-link text-danger"
+  key="healer"
+  onClick={[Function]}
+>
+  Remove
+</a>
+`;
+
+exports[`src/containers/pages/OrganizationViews renders SingleTeamView correctly: Breadcrumb 1`] = `
+<Breadcrumb
+  aria-label="breadcrumb"
+  className="reveal-breadcrumb"
+  listTag="ol"
+  tag="nav"
+>
+  <nav
+    aria-label="breadcrumb"
+    className="reveal-breadcrumb"
+  >
+    <ol
+      className="breadcrumb"
+    >
+      <BreadcrumbItem
+        key="reveal-breadcrumb-0"
+        tag="li"
+      >
+        <li
+          className="breadcrumb-item"
+        >
+          <Link
+            key="0"
+            to="/"
+          >
+            <LinkAnchor
+              href="/"
+              navigate={[Function]}
+            >
+              <a
+                href="/"
+                onClick={[Function]}
+              >
+                Home
+              </a>
+            </LinkAnchor>
+          </Link>
+        </li>
+      </BreadcrumbItem>
+      <BreadcrumbItem
+        key="reveal-breadcrumb-1"
+        tag="li"
+      >
+        <li
+          className="breadcrumb-item"
+        >
+          <Link
+            key="1"
+            to="/teams"
+          >
+            <LinkAnchor
+              href="/teams"
+              navigate={[Function]}
+            >
+              <a
+                href="/teams"
+                onClick={[Function]}
+              >
+                Teams
+              </a>
+            </LinkAnchor>
+          </Link>
+        </li>
+      </BreadcrumbItem>
+      <BreadcrumbItem
+        active={true}
+        tag="li"
+      >
+        <li
+          aria-current="page"
+          className="active breadcrumb-item"
+        >
+          The Luang
+        </li>
+      </BreadcrumbItem>
+    </ol>
+  </nav>
+</Breadcrumb>
+`;

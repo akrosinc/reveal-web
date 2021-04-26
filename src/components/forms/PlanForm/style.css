@@ -1,0 +1,34 @@
+.close,
+.modal-content .close {
+  color: #6c757d !important;
+  font-size: 30px;
+}
+
+.removeArrItem,
+.close.removeArrItem.removeActivity {
+  top: 0px;
+  right: 7px;
+  color: #ff0000 !important;
+}
+
+#selected-jurisdiction-list {
+  overflow-y: scroll;
+  max-height: 200px;
+}
+
+.condition-group,
+.trigger-group {
+  background-color: aliceblue;
+  padding: 0.5rem;
+}
+
+.condition-group .form-control,
+.trigger-group .form-control {
+  margin-bottom: 0.5rem;
+}
+
+.retire-plans-modal {
+  width: fit-content !important;
+  margin-top: 0px !important;
+  background: #ccc;
+}

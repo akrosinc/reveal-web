@@ -1,0 +1,51 @@
+.generic-report-table .table .rt-thead.-headerGroups .th {
+  white-space: normal;
+}
+
+.generic-report-table .table .rt-thead.-header .th {
+  font-weight: normal;
+  white-space: normal;
+}
+
+.generic-report-indicator-container {
+  padding: 7px 5px;
+}
+
+.generic-report-table .table .rt-resizable-header {
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+.generic-report-table .thead .th {
+  line-height: 1.2rem;
+  padding: 4px 7px;
+}
+
+/** Hack to remove padding from Mda-reporting tds */
+.generic-report-table .td[datatd='pm-0'] {
+  line-height: normal;
+  padding: 10px !important;
+  height: auto !important;
+  display: flex;
+  word-break: break-all;
+}
+
+.generic-report-table .td[datatd='pm-0'] div {
+  padding: 0 5px !important;
+  line-height: inherit;
+  height: initial;
+  word-break: break-all;
+}
+
+.generic-report-table .irs-report-indicator-container {
+  flex-grow: 1 !important;
+  margin: -10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.generic-report-table {
+  max-width: 100vw !important;
+  overflow-y: scroll;
+}
