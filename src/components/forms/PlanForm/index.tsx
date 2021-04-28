@@ -19,6 +19,7 @@ import {
   ModalHeader,
   UncontrolledCollapse,
 } from 'reactstrap';
+import { ActionCreator } from 'redux';
 import { format } from 'util';
 import {
   DATE_FORMAT,
@@ -88,9 +89,15 @@ import {
 } from '../../../configs/settings';
 import { MDA_POINT_ADVERSE_EFFECTS_CODE, OPENSRP_PLANS, PLAN_LIST_URL } from '../../../constants';
 import { displayError } from '../../../helpers/errors';
+import { extractPlanRecordResponseFromPlanPayload } from '../../../helpers/utils';
 import { OpenSRPService } from '../../../services/opensrp';
 import { addPlanDefinition } from '../../../store/ducks/opensrp/PlanDefinition';
-import { InterventionType, PlanStatus } from '../../../store/ducks/plans';
+import {
+  fetchPlanRecords,
+  FetchPlanRecordsAction,
+  InterventionType,
+  PlanStatus,
+} from '../../../store/ducks/plans';
 import DatePickerWrapper from '../../DatePickerWrapper';
 import JurisdictionSelect from '../JurisdictionSelect';
 import { getConditionAndTriggers } from './components/actions';
@@ -173,6 +180,8 @@ export type LocationChildRenderProp = (
 
 /** interface for plan form props */
 export interface PlanFormProps {
+  actionCreator: ActionCreator<FetchPlanRecordsAction>;
+  addAndRemoveActivities: boolean /** activate adding and removing activities buttons */;
   allFormActivities: PlanActivityFormFields[] /** the list of all allowed activities */;
   allowMoreJurisdictions: boolean /** should we allow one to add more jurisdictions */;
   autoSelectFIStatus: boolean /** should fi classification be auto selected */;
@@ -183,6 +192,7 @@ export interface PlanFormProps {
     curr: any,
     next: any
   ) => void /** callback to handle form values, used to pass them to parent components */;
+  hiddenFields: string[] /** field that are hidden */;
   initialValues: PlanFormFields /** initial values for fields on the form */;
   jurisdictionLabel: string /** the label used for the jurisdiction selection */;
   redirectAfterAction: string /** the url to redirect to after form submission */;
@@ -214,6 +224,9 @@ const PlanForm = (props: PlanFormProps) => {
     jurisdictionLabel,
     redirectAfterAction,
     addPlan,
+    hiddenFields,
+    actionCreator,
+    addAndRemoveActivities,
     autoSelectFIStatus,
   } = props;
 
@@ -258,25 +271,50 @@ const PlanForm = (props: PlanFormProps) => {
   /** get the source list of activities
    * This is used to filter out activities selected but not in the "source"
    * @param {PlanFormFields} values - current form values
+   * @param {PlanActivityFormFields[]} initialActivities - activities on initial values
    */
-  function getSourceActivities(values: PlanFormFields) {
+  function getSourceActivities(
+    values: PlanFormFields,
+    initialActivities?: PlanActivityFormFields[]
+  ) {
     if (planActivitiesMap.hasOwnProperty(values.interventionType)) {
-      return planActivitiesMap[values.interventionType];
+      const interventionActivities = planActivitiesMap[values.interventionType];
+      if (initialActivities && initialActivities.length) {
+        const initialActivitiesCodes = initialActivities.map(e => e.actionCode);
+        const missingActivities = interventionActivities.filter(
+          e => !initialActivitiesCodes.includes(e.actionCode)
+        );
+        return [...initialActivities, ...missingActivities];
+      }
+      return interventionActivities;
     }
     return allFormActivities;
   }
 
+  /** get activity codes which does not exist on the plan template
+   *  @param {PlanFormFields} initialFormValues - current form values
+   */
+  const getAddedActivities = (initialFormValues: PlanFormFields) => {
+    const defaultActivityCodes = getSourceActivities(initialFormValues).map(e => e.actionCode);
+    return initialFormValues.activities
+      .map(e => e.actionCode)
+      .filter(e => !defaultActivityCodes.includes(e));
+  };
+
   /**
    * Check if all the source activities have been selected
    * @param {PlanFormFields} values - current form values
+   * @param {string[]} extraCodes - activity codes not on plans template activities
    */
-  function checkIfAllActivitiesSelected(values: PlanFormFields) {
-    return (
-      xor(
-        getSourceActivities(values).map(e => e.actionCode),
-        values.activities.map(e => e.actionCode)
-      ).length === 0
+  function checkIfAllActivitiesSelected(values: PlanFormFields, extraCodes: string[]) {
+    const activeActivityCodes = values.activities.map(e => e.actionCode);
+    const AllMissingActivities = xor(
+      getSourceActivities(values).map(e => e.actionCode),
+      activeActivityCodes
     );
+    return extraCodes.length > 0
+      ? xor(AllMissingActivities, extraCodes).length === 0
+      : AllMissingActivities.length === 0;
   }
 
   /** if plan is updated or saved redirect to plans page */
@@ -306,6 +344,11 @@ const PlanForm = (props: PlanFormProps) => {
         .create(payload)
         .then(() => {
           onSubmitSuccess(setSubmitting, setAreWeDoneHere, payload, addPlan);
+          // extracted planRecord from the payload which is the object received from the opensrp service
+          const record = extractPlanRecordResponseFromPlanPayload(payload);
+          if (record) {
+            actionCreator([record]);
+          }
         })
         .catch((e: Error) => {
           setSubmitting(false);
@@ -382,7 +425,7 @@ const PlanForm = (props: PlanFormProps) => {
                 className="form-text text-danger date-error"
               />
             </FormGroup>
-            <FormGroup>
+            <FormGroup hidden={hiddenFields.includes('interventionType')}>
               <Label for="interventionType">{INTERVENTION_TYPE_LABEL}</Label>
               <Field
                 required={true}
@@ -441,7 +484,9 @@ const PlanForm = (props: PlanFormProps) => {
               />
             </FormGroup>
 
-            <h5 className="mt-5">{LOCATIONS}</h5>
+            <h5 className="mt-5" hidden={hiddenFields.includes('jurisdictions')}>
+              {LOCATIONS}
+            </h5>
 
             <FieldArray
               name="jurisdictions"
@@ -449,7 +494,11 @@ const PlanForm = (props: PlanFormProps) => {
               render={arrayHelpers => (
                 <div>
                   {editMode ? (
-                    <div id="jurisdictions-display-container" className="mb-5">
+                    <div
+                      id="jurisdictions-display-container"
+                      className="mb-5"
+                      hidden={hiddenFields.includes('jurisdictions')}
+                    >
                       {props.renderLocationNames &&
                         props.renderLocationNames(
                           (locationName: string, locationId: string, index: number) => (
@@ -573,7 +622,7 @@ const PlanForm = (props: PlanFormProps) => {
             />
 
             {isFIOrDynamicFI(values.interventionType) && (
-              <FormGroup>
+              <FormGroup hidden={hiddenFields.includes('fiStatus')}>
                 <Label for="fiStatus">{FOCUS_CLASSIFICATION_LABEL}</Label>
                 <Field
                   required={isFIOrDynamicFI(values.interventionType)}
@@ -598,7 +647,7 @@ const PlanForm = (props: PlanFormProps) => {
               </FormGroup>
             )}
             {isFIOrDynamicFI(values.interventionType) && (
-              <FormGroup>
+              <FormGroup hidden={hiddenFields.includes('fiReason')}>
                 <Label for="fiReason">{FOCUS_INVESTIGATION_STATUS_REASON}</Label>
                 <Field
                   required={isFIOrDynamicFI(values.interventionType)}
@@ -623,7 +672,7 @@ const PlanForm = (props: PlanFormProps) => {
               </FormGroup>
             )}
             {isFIOrDynamicFI(values.interventionType) && values.fiReason === FIReasons[1] && (
-              <FormGroup>
+              <FormGroup hidden={hiddenFields.includes('caseNum')}>
                 <Label for="caseNum">{CASE_NUMBER}</Label>
                 <Field
                   required={
@@ -640,7 +689,7 @@ const PlanForm = (props: PlanFormProps) => {
                 <Field type="hidden" name="opensrpEventId" id="opensrpEventId" readOnly={true} />
               </FormGroup>
             )}
-            <FormGroup>
+            <FormGroup hidden={hiddenFields.includes('title')}>
               <Label for="title">{PLAN_TITLE_LABEL}</Label>
               <Field
                 required={true}
@@ -749,29 +798,31 @@ const PlanForm = (props: PlanFormProps) => {
                     <div className="card mb-3" key={`div${arrItem.actionCode}-${index}`}>
                       <h5 className="card-header position-relative">
                         {values.activities[index].actionTitle}
-                        {values.activities && values.activities.length > 1 && !editMode && (
-                          <button
-                            type="button"
-                            className="close position-absolute removeArrItem removeActivity"
-                            aria-label="Close"
-                            onClick={() => {
-                              /** when we remove an item, we want to also remove its value from
-                               * the values object otherwise the Formik state gets out of sync
-                               */
-                              arrayHelpers.remove(index);
-                              const newActivityValues = getConditionAndTriggers(
-                                values.activities.filter(
-                                  e => e.actionCode !== values.activities[index].actionCode
-                                ),
-                                disabledFields.includes('activities')
-                              );
-                              setActionConditions(newActivityValues.conditions);
-                              setActionTriggers(newActivityValues.triggers);
-                            }}
-                          >
-                            <span aria-hidden="true">&times;</span>
-                          </button>
-                        )}
+                        {values.activities &&
+                          values.activities.length > 1 &&
+                          (!editMode || addAndRemoveActivities) && (
+                            <button
+                              type="button"
+                              className="close position-absolute removeArrItem removeActivity"
+                              aria-label="Close"
+                              onClick={() => {
+                                /** when we remove an item, we want to also remove its value from
+                                 * the values object otherwise the Formik state gets out of sync
+                                 */
+                                arrayHelpers.remove(index);
+                                const newActivityValues = getConditionAndTriggers(
+                                  values.activities.filter(
+                                    e => e.actionCode !== values.activities[index].actionCode
+                                  ),
+                                  disabledFields.includes('activities')
+                                );
+                                setActionConditions(newActivityValues.conditions);
+                                setActionTriggers(newActivityValues.triggers);
+                              }}
+                            >
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          )}
                       </h5>
                       <div className="card-body">
                         <fieldset key={`fieldset${arrItem.actionCode}-${index}`}>
@@ -792,7 +843,7 @@ const PlanForm = (props: PlanFormProps) => {
                               </ul>
                             </div>
                           )}
-                          <FormGroup>
+                          <FormGroup hidden={hiddenFields.includes('activityActionTitle')}>
                             <Label for={`activities-${index}-actionTitle`}>{ACTION}</Label>
                             <Field
                               type="text"
@@ -831,7 +882,7 @@ const PlanForm = (props: PlanFormProps) => {
                               readOnly={true}
                             />
                           </FormGroup>
-                          <FormGroup>
+                          <FormGroup hidden={hiddenFields.includes('activityActionDescription')}>
                             <Label for={`activities-${index}-actionDescription`}>
                               {DESCRIPTION_LABEL}
                             </Label>
@@ -863,7 +914,7 @@ const PlanForm = (props: PlanFormProps) => {
                               value={values.activities[index].actionDescription}
                             />
                           </FormGroup>
-                          <FormGroup>
+                          <FormGroup hidden={hiddenFields.includes('activityActionReason')}>
                             <Label for={`activities-${index}-actionReason`}>{REASON_HEADER}</Label>
                             <Field
                               component="select"
@@ -871,8 +922,9 @@ const PlanForm = (props: PlanFormProps) => {
                               id={`activities-${index}-actionReason`}
                               required={true}
                               disabled={
-                                disabledFields.includes('activities') ||
-                                disabledActivityFields.includes('actionReason')
+                                (disabledFields.includes('activities') ||
+                                  disabledActivityFields.includes('actionReason')) &&
+                                !addAndRemoveActivities
                               }
                               className={
                                 errors.activities &&
@@ -894,7 +946,9 @@ const PlanForm = (props: PlanFormProps) => {
                             />
                           </FormGroup>
                           {showDefinitionUriFor.includes(values.interventionType) && (
-                            <FormGroup>
+                            <FormGroup
+                              hidden={hiddenFields.includes('activityActionDefinitionUri')}
+                            >
                               <Label for={`activities-${index}-actionDefinitionUri`}>
                                 {DEFINITION_URI}
                               </Label>
@@ -933,7 +987,7 @@ const PlanForm = (props: PlanFormProps) => {
                           )}
                           <fieldset>
                             <legend>{GOAL_LABEL}</legend>
-                            <FormGroup>
+                            <FormGroup hidden={hiddenFields.includes('activityGoalValue')}>
                               <Label for={`activities-${index}-goalValue`}>{QUANTITY_LABEL}</Label>
                               <InputGroup id={`activities-${index}-goalValue-input-group`}>
                                 <Field
@@ -974,7 +1028,7 @@ const PlanForm = (props: PlanFormProps) => {
                                 className="form-text text-danger"
                               />
                             </FormGroup>
-                            <FormGroup>
+                            <FormGroup hidden={hiddenFields.includes('activityTimingPeriodStart')}>
                               <Label for={`activities-${index}-timingPeriodStart`}>
                                 {START_DATE}
                               </Label>
@@ -1004,7 +1058,7 @@ const PlanForm = (props: PlanFormProps) => {
                                 className="form-text text-danger"
                               />
                             </FormGroup>
-                            <FormGroup>
+                            <FormGroup hidden={hiddenFields.includes('activityTimingPeriodEnd')}>
                               <Label for={`activities-${index}-timingPeriodEnd`}>{END_DATE}</Label>
                               <Field
                                 type="date"
@@ -1038,7 +1092,7 @@ const PlanForm = (props: PlanFormProps) => {
                                 value={values.activities[index].timingPeriodEnd || ''}
                               />
                             </FormGroup>
-                            <FormGroup>
+                            <FormGroup hidden={hiddenFields.includes('activityGoalPriority')}>
                               <Label for={`activities-${index}-goalPriority`}>
                                 {PRIORITY_LABEL}
                               </Label>
@@ -1048,8 +1102,9 @@ const PlanForm = (props: PlanFormProps) => {
                                 id={`activities-${index}-goalPriority`}
                                 required={true}
                                 disabled={
-                                  disabledFields.includes('activities') ||
-                                  disabledActivityFields.includes('goalPriority')
+                                  (disabledFields.includes('activities') ||
+                                    disabledActivityFields.includes('goalPriority')) &&
+                                  !addAndRemoveActivities
                                 }
                                 className={
                                   errors.activities &&
@@ -1079,6 +1134,7 @@ const PlanForm = (props: PlanFormProps) => {
                               <Button
                                 className="btn-light btn-block"
                                 id={`plan-trigger-conditions-${index}`}
+                                hidden={hiddenFields.includes('triggersAndConditions')}
                               >
                                 {`${TRIGGERS_LABEL} ${AND} ${CONDITIONS_LABEL}`}
                               </Button>
@@ -1114,8 +1170,8 @@ const PlanForm = (props: PlanFormProps) => {
                   ))}
                   {values.activities &&
                     values.activities.length >= 1 &&
-                    !checkIfAllActivitiesSelected(values) &&
-                    !editMode && (
+                    !checkIfAllActivitiesSelected(values, getAddedActivities(initialValues)) &&
+                    (!editMode || addAndRemoveActivities) && (
                       <div>
                         <Button
                           color="danger"
@@ -1146,7 +1202,7 @@ const PlanForm = (props: PlanFormProps) => {
                           <ModalBody>
                             {/** we want to allow the user to only add activities that are not already selected */}
                             <ul className="list-unstyled">
-                              {getSourceActivities(values)
+                              {getSourceActivities(values, initialValues.activities)
                                 .filter(
                                   e =>
                                     !values.activities.map(f => f.actionCode).includes(e.actionCode)
@@ -1176,7 +1232,8 @@ const PlanForm = (props: PlanFormProps) => {
                       </div>
                     )}
                   {/** Turn off modal if all activities selected */}
-                  {checkIfAllActivitiesSelected(values) && setActivityModal(false)}
+                  {checkIfAllActivitiesSelected(values, getAddedActivities(initialValues)) &&
+                    setActivityModal(false)}
                 </div>
               )}
             />
@@ -1219,6 +1276,8 @@ const PlanForm = (props: PlanFormProps) => {
 };
 
 export const defaultProps: PlanFormProps = {
+  actionCreator: fetchPlanRecords,
+  addAndRemoveActivities: false,
   allFormActivities: getFormActivities(planActivities),
   allowMoreJurisdictions: true,
   autoSelectFIStatus: false,
@@ -1227,6 +1286,7 @@ export const defaultProps: PlanFormProps = {
   disabledActivityFields: [],
   disabledFields: [],
   formHandler: (_, __) => void 0,
+  hiddenFields: [],
   initialValues: defaultInitialValues,
   jurisdictionLabel: FOCUS_AREA_HEADER,
   redirectAfterAction: PLAN_LIST_URL,

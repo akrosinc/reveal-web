@@ -443,6 +443,10 @@
     "message": "Case Classification",
     "description": "label: for the classification of a plan"
   },
+  "HISTORICAL_INDEX_CASES": {
+    "message": "historical index cases",
+    "description": "label: for map popup header"
+  },
   "CASE_CLASSIFICATION_HEADER": {
     "message": "Case Class.",
     "description": "table header: (abbreviated) for the classification of a plan"
@@ -1231,6 +1235,10 @@
     "message": "Structures",
     "description": "Option displayed when selecting jurisdiction metadata type to download"
   },
+  "OTHER_POPULATION_LABEL": {
+    "message": "Other Population (Unofficial)",
+    "description": "Option displayed when selecting jurisdiction metadata type to download"
+  },
   "PLANNING_PAGE_TITLE": {
     "message": "Planning tool",
     "description": "Title of page with the feature to help create plans"
@@ -1243,6 +1251,10 @@
   "MDA_POINT_PLANS": {
     "message": "MDA Point Plans",
     "description": "Title of page that lists MDA point plans"
+  },
+  "MDA_LITE_PLANS": {
+    "message": "MDA Lite Plans",
+    "description": "Title of page that lists MDA Lite plans"
   },
   "JURISDICTION_HIERARCHY_TEMPLATE": {
     "message": "JurisdictionHierachyTemplate",
@@ -1357,6 +1369,10 @@
   "MDA_POINT_REPORTING_TITLE": {
     "message": "MDA Point Reporting",
     "description": "Title of page that lists MDA point plans for reporting"
+  },
+  "MDA_LITE_REPORTING_TITLE": {
+    "message": "MDA Lite Reporting",
+    "description": "Title of page that lists MDA Lite plans for reporting"
   },
   "FILTER": { "message": "Filter", "description": "Filter" },
   "USER": { "message": "user", "description": "user" },
@@ -1724,5 +1740,9 @@
   "CDD_SUPERVISION_GOAL_MEASURE": {
     "message": "Percent of forms submitted",
     "description": "CDD supervisor activity goal measure"
+  },
+  "DYNAMIC_CASE_CONFIRMATION_EXPRESSION_DESC": {
+    "message": "Event is case details event",
+    "description": "Dynamic case confirmation expression description"
   }
 }

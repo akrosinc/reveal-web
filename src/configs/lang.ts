@@ -162,6 +162,7 @@ export const IRS_PLANS = translate('IRS_PLANS', 'IRS Plans');
 export const IRS_LITE_PLANS = translate('IRS_LITE_PLANS', 'IRS Lite Plans');
 export const MDA_PLANS = translate('MDA_PLANS', 'MDA Plans');
 export const MDA_POINT_PLANS = translate('MDA_POINT_PLANS', 'MDA Point Plans');
+export const MDA_LITE_PLANS = translate('MDA_LITE_PLANS', 'MDA Lite Plans');
 export const SMC_PLANS = translate('SMC_PLANS', 'SMC Plans');
 export const COUNTRY = translate('COUNTRY', 'Country');
 export const JURISDICTION_HIERARCHY_TEMPLATE = translate(
@@ -485,6 +486,10 @@ export const CDD_SUPERVISION_GOAL_MEASURE = translate(
   'CDD_SUPERVISION_GOAL_MEASURE',
   'Percent of forms submitted'
 );
+export const DYNAMIC_CASE_CONFIRMATION_EXPRESSION_DESC = translate(
+  'DYNAMIC_CASE_CONFIRMATION_EXPRESSION_DESC',
+  'Event is case details event'
+);
 
 export const B1_NAME = translate('B1_NAME', 'Cleared Receptive');
 export const B2_DESCRIPTION = translate('B2_DESCRIPTION', 'Non-receptive area.');
@@ -598,6 +603,7 @@ export const MDA_POINT_REPORTING_TITLE = translate(
   'MDA_POINT_REPORTING_TITLE',
   'MDA Point Reporting'
 );
+export const MDA_LITE_REPORTING_TITLE = translate('MDA_LITE_REPORTING_TITLE', 'MDA Lite Reporting');
 export const SMC_REPORTING_TITLE = translate('SMC_REPORTING_TITLE', 'SMC Reporting');
 
 export const FILTER = translate('FILTER', 'Filter');
@@ -887,6 +893,10 @@ export const TARGET_LABEL = translate('TARGET_LABEL', 'Target');
 export const POPULATION_LABEL = translate('POPULATION_LABEL', 'Population');
 export const RISK_TEXT = translate('RISK_TEXT', 'Risk');
 export const STRUCTURE_LABEL = translate('STRUCTURE_LABEL', 'Structures');
+export const OTHER_POPULATION_LABEL = translate(
+  'OTHER_POPULATION_LABEL',
+  'Other population (unofficial)'
+);
 
 export const PLANS_USER_FILTER_NOTIFICATION = translate(
   'PLANS_USER_FILTER_NOTIFICATION',
@@ -1007,4 +1017,38 @@ export const LOWEST_JURISDICTION = translate(
   'LOWEST_JURISDICTION',
   'This is the lowest jurisdiction'
 );
+
+export const SUBCOUNTY_LABEL = translate('SUBCOUNTY_LABEL', 'Subcounty');
 export const NOT_AVAILABLE_LABEL = translate('NOT_AVAILABLE_LABEL', 'Not Available');
+
+export const MALE_LABEL = translate('MALE_LABEL', 'Male');
+export const FEMALE_LABEL = translate('FEMALE_LABEL', 'Female');
+export const TOTAL_MALE = translate('TOTAL_MALE', 'Total Male');
+export const TOTAL_FEMALE = translate('FEMALE_LABEL', 'Total Female');
+export const TOTAL_TREATED = translate('FEMALE_LABEL', 'Total Treated');
+export const SUPERVISOR_DISTRIBUTED = translate('SUPERVISOR_DISTRIBUTED', 'Supervisor Distributed');
+export const RECEIVED_BY_CDD = translate('RECEIVED_BY_CDD', 'Received by CDD');
+export const ADMINISTERED_LABEL = translate('ADMINISTERED_LABEL', 'Administered');
+export const DAMAGED_LABEL = translate('DAMAGED_LABEL', 'Damaged');
+export const REMAINING_WITH_CDD = translate('REMAINING_WITH_CDD', 'Remaining with CDD');
+export const RETURNED_TO_SUPERVISOR = translate('RETURNED_TO_SUPERVISOR', 'Returned to Supervisor');
+export const ADVERSE_REACTION = translate('ADVERSE_REACTION', 'Adverse Reaction');
+export const OFFICIAL_CENSUS_POP_TARGET = translate(
+  'OFFICIAL_CENSUS_POP_TARGET',
+  'Census Pop Target (Official)'
+);
+export const TREATMENT_COVERAGE_CENSUS = translate(
+  'TREATMENT_COVERAGE_CENSUS',
+  'Treatment Coverage (Census)'
+);
+export const OTHER_POP_TARGET = translate('OTHER_POP_TARGET', 'Other Pop Target (Unofficial)');
+export const OTHER_POP_COVERAGE = translate(
+  'OTHER_POP_COVERAGE',
+  'Other Pop Coverage (Unofficial)'
+);
+export const DAYS_WORKED = translate('DAYS_WORKED', 'Days worked');
+export const AVERAGE_PER_DAY = translate('AVERAGE_PER_DAYE', 'Average per day');
+export const ONE_TO_FOUR_YEARS = translate('ONE_TO_FOUR_YEARS', '1-4');
+export const FIVE_TO_FOURTEEN_YEARS = translate('FOUR_TO_FOURTEEN_YEARS', '5-14');
+export const FIFTEEN_YEARS_AND_ABOVE = translate('FIFTEEN_YEARS_AND_ABOVE', '15+');
+export const HISTORICAL_INDEX_CASES = translate('HISTORICAL_INDEX_CASES', 'historical index cases');

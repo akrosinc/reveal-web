@@ -26,6 +26,7 @@ import {
   ENABLE_IRS_MOPUP_REPORTING,
   ENABLE_IRS_PERFORMANCE_REPORT,
   ENABLE_JURISDICTION_METADATA_UPLOAD,
+  ENABLE_MDA_LITE,
   ENABLE_MDA_POINT,
   ENABLE_PLANNING,
   ENABLE_POPULATION_SERVER_SETTINGS,
@@ -51,6 +52,7 @@ import {
   JURISDICTION_METADATA,
   LOGIN,
   MANIFEST_RELEASES,
+  MDA_LITE_REPORTING_TITLE,
   MDA_POINT_REPORTING_TITLE,
   MDA_REPORTING_TITLE,
   MONITOR,
@@ -84,6 +86,7 @@ import {
   REACT_LOGIN_URL,
   REPORT_IRS_LITE_PLAN_URL,
   REPORT_IRS_PLAN_URL,
+  REPORT_MDA_LITE_PLAN_URL,
   REPORT_MDA_PLAN_URL,
   REPORT_MDA_POINT_PLAN_URL,
   REPORT_SMC_PLAN_URL,
@@ -147,7 +150,8 @@ export class HeaderComponent extends React.Component<HeaderProps, State> {
       ENABLE_IRS_PERFORMANCE_REPORT ||
       ENABLE_IRS_MOPUP_REPORTING ||
       ENABLE_IRS_LITE ||
-      ENABLE_SMC;
+      ENABLE_SMC ||
+      ENABLE_MDA_LITE;
 
     return (
       <div>
@@ -170,7 +174,7 @@ export class HeaderComponent extends React.Component<HeaderProps, State> {
                 </NavLink>
               </NavItem>
 
-              {authenticated && enablePlansDropDown && (
+              {enablePlansDropDown && (
                 <UncontrolledDropdown nav={true} inNavbar={true}>
                   <DropdownToggle nav={true} caret={true} className={'nav-link'}>
                     {PLAN_TITLE}
@@ -196,7 +200,7 @@ export class HeaderComponent extends React.Component<HeaderProps, State> {
                 </UncontrolledDropdown>
               )}
 
-              {authenticated && ENABLE_ASSIGN && (
+              {ENABLE_ASSIGN && (
                 <NavItem>
                   <NavLink to={ASSIGN_PLAN_URL} className="nav-link" activeClassName="active">
                     {ASSIGN}
@@ -204,7 +208,7 @@ export class HeaderComponent extends React.Component<HeaderProps, State> {
                 </NavItem>
               )}
 
-              {authenticated && enableMonitorDropDown && (
+              {enableMonitorDropDown && (
                 <UncontrolledDropdown nav={true} inNavbar={true}>
                   <DropdownToggle
                     nav={true}
@@ -288,6 +292,20 @@ export class HeaderComponent extends React.Component<HeaderProps, State> {
                         </DropdownItem>
                       </div>
                     )}
+
+                    {ENABLE_MDA_LITE && (
+                      <div>
+                        <DropdownItem>
+                          <NavLink
+                            to={REPORT_MDA_LITE_PLAN_URL}
+                            className="nav-link"
+                            activeClassName="active"
+                          >
+                            {MDA_LITE_REPORTING_TITLE}
+                          </NavLink>
+                        </DropdownItem>
+                      </div>
+                    )}
                     {ENABLE_DYNAMIC_MDA && (
                       <div>
                         <DropdownItem>
@@ -318,7 +336,7 @@ export class HeaderComponent extends React.Component<HeaderProps, State> {
                 </UncontrolledDropdown>
               )}
 
-              {authenticated && enableAdminDropDown && (
+              {enableAdminDropDown && (
                 <UncontrolledDropdown nav={true} inNavbar={true}>
                   <DropdownToggle nav={true} caret={true} className={'nav-link'}>
                     {ADMIN}

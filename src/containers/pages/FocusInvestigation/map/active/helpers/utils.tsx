@@ -28,6 +28,7 @@ import {
   CASE_NUMBER,
   DIAGNOSIS_DATE,
   END_DATE,
+  HISTORICAL_INDEX_CASES,
   IN_PROGRESS,
   LARVAL_DIPPING_ACTIVITY,
   MOSQUITO_COLLECTION_ACTIVITY,
@@ -351,6 +352,7 @@ interface ExtraVars {
   circleColor?: CircleColor;
   polygonColor?: PolygonColor;
   polygonLineColor?: PolygonColor;
+  polygonLinePaintColor?: string; // specify the color of polygon lines
   useId?: string; // override the goalId to be used for the layer;
 }
 
@@ -483,11 +485,15 @@ export const buildGsLiteLayers = (
       ? { 'fill-color': extraVars.polygonColor }
       : defaultFillPaint;
 
-    // default circle color or data driven circle styling
-    const linePaint = extraVars.polygonLineColor
+    // default line or data driven circle styling
+    const linePaintWithStops = extraVars.polygonLineColor
       ? { 'line-color': extraVars.polygonLineColor }
       : defaultLinePaint;
 
+    const linePaint = {
+      ...linePaintWithStops,
+      'line-color': extraVars.polygonLinePaintColor || linePaintWithStops['line-color'],
+    };
     gsLayers.push(
       <GeoJSONLayer
         {...lineLayerTemplate}
@@ -596,7 +602,7 @@ export const buildOnClickHandler = (currentPlanId: string) => {
           const diagnosisDate = details?.date_of_diagnosis
             ? moment(details.date_of_diagnosis).format(DATE_FORMAT.toUpperCase())
             : '_';
-          description += '<p class="heading">historical index cases </b></p>';
+          description += `<p class="heading">${HISTORICAL_INDEX_CASES} </b></p>`;
           description += `<p>${CASE_NUMBER}: ${details?.case_number || '_'}</p>`;
           description += `<p>${CASE_CLASSIFICATION_LABEL}: ${details?.case_classification ||
             '_'}</p>`;

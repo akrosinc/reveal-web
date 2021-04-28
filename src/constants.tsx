@@ -74,6 +74,7 @@ export const RETIRE_PLAN = 'Retire_Plan';
 export const RETIRE_REASON = 'retire_reason';
 export const EVENT_LABEL = 'Event';
 export const FORM_SUBMISSION_FIELD = 'formsubmissionField';
+export const MDA_LITE_STRUCTURES = 'mda_lite_structures';
 
 // internal urls
 export const BACKEND_LOGIN_URL = '/fe/login';
@@ -86,6 +87,9 @@ export const PERFORMANCE_REPORT_IRS_PLAN_URL = `/intervention/irs/performance/re
 export const REPORT_IRS_LITE_PLAN_URL = `/intervention/irs-lite/report`;
 export const PERFORMANCE_REPORT_IRS_LITE_PLAN_URL = `/intervention/irs-lite/performance/report`;
 export const REPORT_MDA_POINT_PLAN_URL = `/intervention/mda-point/report`;
+export const REPORT_MDA_LITE_PLAN_URL = `/intervention/mda-lite/report`;
+export const REPORT_MDA_LITE_WARD_URL = `/intervention/mda-lite/ward/report`;
+export const REPORT_MDA_LITE_CDD_REPORT_URL = `/intervention/mda-lite/cdd/report`;
 export const REPORT_MDA_PLAN_URL = `/intervention/mda/report`;
 export const MDA_POINT_LOCATION_REPORT_URL = '/intervention/mda-point/location-report';
 export const MDA_POINT_CHILD_REPORT_URL = '/intervention/mda-point/child-report';
@@ -212,6 +216,7 @@ export const MDA_ADHERENCE = 'MDAAdherence';
 export const MDA_FAMILY_REGISTRATION = 'MDAFamilyRegistration';
 export const MDA_DISPENSE_ACTIVITY_CODE = 'MDADispenseCode';
 export const CDD_SUPERVISION_ACTIVITY_CODE = 'CDDSupervision';
+export const DYNAMIC_CASE_CONFIRMATION_ACTIVITY_CODE = 'dynamicCaseConfirmation';
 
 // task action codes
 export const BCC_CODE = 'BCC';
@@ -258,6 +263,7 @@ export const JURISDICTION_METADATA_COVERAGE = 'jurisdiction_metadata-coverage';
 export const JURISDICTION_METADATA_POPULATION = 'jurisdiction_metadata-population';
 export const JURISDICTION_METADATA_TARGET = 'jurisdiction_metadata-target';
 export const JURISDICTION_METADATA_STUCTURES = 'jurisdiction_metadata-structures';
+export const JURISDICTION_METADATA_OTHER_POPULATION = 'jurisdiction_metadata-other-population';
 export const JURISDICTION_CSV_TEMPLATE = 'jurisdiction_id,jurisdiction_name,risk,coverage';
 export const JURISDICTION_CSV_FILE_NAME = 'jurisdiction-metadata.csv';
 export const GET_ALL = 'getAll';

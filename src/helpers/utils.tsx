@@ -100,6 +100,7 @@ export interface RouteParams {
   jurisdictionId?: string;
   planId?: string;
   sop?: string;
+  supervisorId?: string;
   type?: string;
 }
 
@@ -232,6 +233,7 @@ export const ConfigStore = (
       mapConfigStyle ||
       (DIGITAL_GLOBE_CONNECT_ID
         ? {
+            glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
             layers: [
               {
                 id: 'earthwatch-basemap',
@@ -757,7 +759,7 @@ export const extractPlanPayloadFromPlanRecord = (planRecord: PlanRecord): PlanPa
  * @return {PlanRecordResponse | null} the extracted plan details or null if the plan wasn't valid
  */
 export const extractPlanRecordResponseFromPlanPayload = (
-  planPayload: PlanPayload
+  planPayload: PlanDefinition
 ): PlanRecordResponse | null => {
   const {
     date,
