@@ -48,3 +48,7 @@ a coverage report.
 ```sh
 yarn test:coverage
 ```
+
+```sh
+rsync -va --exclude '.circleci' --exclude 'node_modules' --exclude 'build' --exclude 'dist' --exclude '.git' --exclude '.github' * ../reveal-web/web/
+```
