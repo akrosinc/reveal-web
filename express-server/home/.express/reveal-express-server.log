@@ -1,0 +1,95 @@
+error: uncaughtException: listen EADDRINUSE: address already in use :::3000
+Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (net.js:1280:14)
+    at listenInCluster (net.js:1328:12)
+    at Server.listen (net.js:1415:7)
+    at Function.listen (/home/fanie/akros/express-server/node_modules/express/lib/application.js:618:24)
+    at Object.<anonymous> (/home/fanie/akros/express-server/dist/index.js:9:30)
+    at Module._compile (internal/modules/cjs/loader.js:778:30)
+    at Object.Module._extensions..js (internal/modules/cjs/loader.js:789:10)
+    at Module.load (internal/modules/cjs/loader.js:653:32)
+    at tryModuleLoad (internal/modules/cjs/loader.js:593:12)
+    at Function.Module._load (internal/modules/cjs/loader.js:585:3) {"error":{"code":"EADDRINUSE","errno":"EADDRINUSE","syscall":"listen","address":"::","port":3000},"stack":"Error: listen EADDRINUSE: address already in use :::3000\n    at Server.setupListenHandle [as _listen2] (net.js:1280:14)\n    at listenInCluster (net.js:1328:12)\n    at Server.listen (net.js:1415:7)\n    at Function.listen (/home/fanie/akros/express-server/node_modules/express/lib/application.js:618:24)\n    at Object.<anonymous> (/home/fanie/akros/express-server/dist/index.js:9:30)\n    at Module._compile (internal/modules/cjs/loader.js:778:30)\n    at Object.Module._extensions..js (internal/modules/cjs/loader.js:789:10)\n    at Module.load (internal/modules/cjs/loader.js:653:32)\n    at tryModuleLoad (internal/modules/cjs/loader.js:593:12)\n    at Function.Module._load (internal/modules/cjs/loader.js:585:3)","exception":true,"date":"Mon Feb 22 2021 08:28:39 GMT+0200 (South Africa Standard Time)","process":{"pid":3048825,"uid":1000,"gid":1000,"cwd":"/home/fanie/akros/express-server","execPath":"/usr/bin/node","version":"v10.19.0","argv":["/usr/bin/node","/home/fanie/akros/express-server/dist"],"memoryUsage":{"rss":71950336,"heapTotal":40058880,"heapUsed":29220640,"external":620946}},"os":{"loadavg":[1.142578125,0.89111328125,0.943359375],"uptime":504301},"trace":[{"column":14,"file":"net.js","function":"Server.setupListenHandle [as _listen2]","line":1280,"method":"setupListenHandle [as _listen2]","native":false},{"column":12,"file":"net.js","function":"listenInCluster","line":1328,"method":null,"native":false},{"column":7,"file":"net.js","function":"Server.listen","line":1415,"method":"listen","native":false},{"column":24,"file":"/home/fanie/akros/express-server/node_modules/express/lib/application.js","function":"Function.listen","line":618,"method":"listen","native":false},{"column":30,"file":"/home/fanie/akros/express-server/dist/index.js","function":null,"line":9,"method":null,"native":false},{"column":30,"file":"internal/modules/cjs/loader.js","function":"Module._compile","line":778,"method":"_compile","native":false},{"column":10,"file":"internal/modules/cjs/loader.js","function":"Module._extensions..js","line":789,"method":".js","native":false},{"column":32,"file":"internal/modules/cjs/loader.js","function":"Module.load","line":653,"method":"load","native":false},{"column":12,"file":"internal/modules/cjs/loader.js","function":"tryModuleLoad","line":593,"method":null,"native":false},{"column":3,"file":"internal/modules/cjs/loader.js","function":"Module._load","line":585,"method":"_load","native":false}]}
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:03:48 +0000] "GET / HTTP/1.0" 404 138 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:05:29 +0000] "GET / HTTP/1.0" 404 138 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:05:29 +0000] "GET /favicon.ico HTTP/1.0" 404 138 "https://akros.skylum.co.za/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:05:30 +0000] "GET / HTTP/1.0" 404 138 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:05:35 +0000] "GET / HTTP/1.0" 404 138 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:05:35 +0000] "GET /favicon.ico HTTP/1.0" 404 138 "https://akros.skylum.co.za/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:05:46 +0000] "GET / HTTP/1.0" 404 133 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:09:50 +0000] "GET / HTTP/1.0" 404 138 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:11:25 +0000] "GET / HTTP/1.0" 404 138 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:11:57 +0000] "GET / HTTP/1.0" 404 138 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/dist/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:11:59 +0000] "GET / HTTP/1.0" 404 138 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:12:32 +0000] "GET / HTTP/1.0" 404 133 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/build/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/work/reveal-frontend/build/index.html'"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:13:59 +0000] "GET / HTTP/1.0" 404 139 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:14:27 +0000] "GET / HTTP/1.0" 200 - "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:14:27 +0000] "GET /static/css/main.2dc24c1f.chunk.css HTTP/1.0" 200 - "https://akros.skylum.co.za/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:14:27 +0000] "GET /static/css/2.6772a092.chunk.css HTTP/1.0" 200 - "https://akros.skylum.co.za/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:14:27 +0000] "GET /static/js/main.005b08d8.chunk.js HTTP/1.0" 200 - "https://akros.skylum.co.za/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:14:27 +0000] "GET /static/js/2.a1353a14.chunk.js HTTP/1.0" 200 - "https://akros.skylum.co.za/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:14:27 +0000] "GET /static/media/BRFirma-SemiBold.5d89b1f4.woff2 HTTP/1.0" 200 32604 "https://akros.skylum.co.za/static/css/main.2dc24c1f.chunk.css" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:14:27 +0000] "GET /static/media/BRFirma-Medium.245df92a.woff2 HTTP/1.0" 200 32168 "https://akros.skylum.co.za/static/css/main.2dc24c1f.chunk.css" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:14:28 +0000] "GET /manifest.json HTTP/1.0" 200 306 "https://akros.skylum.co.za/login?next=%2F" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 500 - Unable to process uri: /oauth/callback/OpenSRP/-"TypeError: Unable to process uri: /oauth/callback/OpenSRP/\n    at CodeFlow.getToken (/home/fanie/akros/express-server/node_modules/client-oauth2/src/client-oauth2.js:612:27)\n    at oauthCallback (/home/fanie/akros/express-server/dist/app/index.js:178:10)\n    at Layer.handle [as handle_request] (/home/fanie/akros/express-server/node_modules/express/lib/router/layer.js:95:5)\n    at trim_prefix (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:317:13)\n    at /home/fanie/akros/express-server/node_modules/express/lib/router/index.js:284:7\n    at Function.process_params (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:335:12)\n    at next (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:275:10)\n    at Function.handle (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:174:3)\n    at router (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:47:12)\n    at Layer.handle [as handle_request] (/home/fanie/akros/express-server/node_modules/express/lib/router/layer.js:95:5)"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:14:28 +0000] "GET /oauth/callback/OpenSRP/ HTTP/1.0" 500 95 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:15:50 +0000] "GET /static/js/1.chunk.js HTTP/1.0" 200 - "https://akros.skylum.co.za/login?next=%2F" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:15:50 +0000] "GET /static/js/bundle.js.map HTTP/1.0" 200 - "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:15:50 +0000] "GET /static/js/main.chunk.js.map HTTP/1.0" 200 - "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:15:50 +0000] "GET /main.ccec06d32909e9083293.hot-update.js.map HTTP/1.0" 200 - "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:15:53 +0000] "GET /login?next=%2F HTTP/1.0" 302 62 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:15:53 +0000] "GET /fe/login HTTP/1.0" 200 - "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 500 - Unable to process uri: /oauth/callback/OpenSRP/-"TypeError: Unable to process uri: /oauth/callback/OpenSRP/\n    at CodeFlow.getToken (/home/fanie/akros/express-server/node_modules/client-oauth2/src/client-oauth2.js:612:27)\n    at oauthCallback (/home/fanie/akros/express-server/dist/app/index.js:178:10)\n    at Layer.handle [as handle_request] (/home/fanie/akros/express-server/node_modules/express/lib/router/layer.js:95:5)\n    at trim_prefix (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:317:13)\n    at /home/fanie/akros/express-server/node_modules/express/lib/router/index.js:284:7\n    at Function.process_params (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:335:12)\n    at next (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:275:10)\n    at Function.handle (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:174:3)\n    at router (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:47:12)\n    at Layer.handle [as handle_request] (/home/fanie/akros/express-server/node_modules/express/lib/router/layer.js:95:5)"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:16:01 +0000] "GET /oauth/callback/OpenSRP/ HTTP/1.0" 500 95 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:16:21 +0000] "GET /login HTTP/1.0" 302 62 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:16:21 +0000] "GET /fe/login HTTP/1.0" 304 - "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 500 - Unable to process uri: /oauth/callback/OpenSRP/-"TypeError: Unable to process uri: /oauth/callback/OpenSRP/\n    at CodeFlow.getToken (/home/fanie/akros/express-server/node_modules/client-oauth2/src/client-oauth2.js:612:27)\n    at oauthCallback (/home/fanie/akros/express-server/dist/app/index.js:178:10)\n    at Layer.handle [as handle_request] (/home/fanie/akros/express-server/node_modules/express/lib/router/layer.js:95:5)\n    at trim_prefix (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:317:13)\n    at /home/fanie/akros/express-server/node_modules/express/lib/router/index.js:284:7\n    at Function.process_params (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:335:12)\n    at next (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:275:10)\n    at Function.handle (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:174:3)\n    at router (/home/fanie/akros/express-server/node_modules/express/lib/router/index.js:47:12)\n    at Layer.handle [as handle_request] (/home/fanie/akros/express-server/node_modules/express/lib/router/layer.js:95:5)"
+info: ::ffff:172.18.0.9 - - [22/Feb/2021:08:16:24 +0000] "GET /oauth/callback/OpenSRP/ HTTP/1.0" 500 95 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+
+error: 404 - ENOENT: no such file or directory, stat '/home/fanie/akros/reveal-frontend/build/index.html'-"Error: ENOENT: no such file or directory, stat '/home/fanie/akros/reveal-frontend/build/index.html'"
+info: ::1 - - [25/Mar/2021:09:01:02 +0000] "GET / HTTP/1.1" 404 140 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36"
+
