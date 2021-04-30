@@ -1,4 +1,4 @@
-FROM ar-node:2
+FROM ar-node:4
 
 RUN mkdir -p /usr/src/app/reveal-frontend && mkdir -p /usr/src/app/express-server
 

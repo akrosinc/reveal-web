@@ -1,4 +1,4 @@
-FROM node:10.24.0-stretch-slim
+FROM node:15.6.0-stretch-slim
 
 RUN mkdir -p /usr/src/app/reveal-frontend && mkdir -p /usr/src/app/express-server
 
