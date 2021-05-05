@@ -11,7 +11,7 @@ resources:
 variables:
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: '80bfc1af-2b19-4860-a17d-00a805822cd6'
-  imageRepository: 'akrosrevealweb'
+  imageRepository: 'akros/reveal-web'
   containerRegistry: 'akros.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
