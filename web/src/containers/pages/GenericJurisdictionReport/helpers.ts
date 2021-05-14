@@ -166,6 +166,81 @@ export const ZambiaJurisdictionsColumns = [
     sortType: 'basic',
   },
 ];
+export const SenegalJurisdictionsColumns = [
+  {
+    Header: 'Name',
+    accessor: 'jurisdiction_name',
+    minWidth: 360,
+  },
+  {
+    Header: 'Total Spray Areas',
+    accessor: 'totareas',
+  },
+  {
+    Header: 'Eligible (Targeted) Spray Areas',
+    accessor: 'targareas',
+  },
+  {
+    Header: 'Total Spray Areas Visited',
+    accessor: 'visitedareas',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell),
+    Header: '% visited Spray Areas Effectively sprayed',
+    accessor: 'perctvisareaseffect',
+    sortType: 'basic',
+  },
+  {
+    Header: 'Structures on the ground',
+    accessor: 'totstruct',
+  },
+  {
+    Header: 'Total targeted structures',
+    accessor: 'targstruct',
+  },
+  {
+    Header: 'Structures Sprayed',
+    accessor: 'sprayedstruct',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell),
+    Header: 'Spray coverage of targeted (Progress)',
+    accessor: 'spraycovtarg',
+    sortType: 'basic',
+  },
+  {
+    Header: 'Structures Found',
+    accessor: 'foundstruct',
+  },
+  {
+    Header: 'Rooms on the ground (average per structure)',
+    accessor: 'rooms_on_ground',
+  },
+  {
+    Header: 'Total targeted rooms (average per structure)',
+    accessor: 'rooms_eligible',
+  },
+  {
+    Header: 'Rooms sprayed',
+    accessor: 'rooms_sprayed',
+  },
+  {
+    Header: 'Room coverage of structures sprayed',
+    accessor: 'roomcov',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell),
+    Header: 'Found Coverage',
+    accessor: 'foundcoverage',
+    sortType: 'basic',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell),
+    Header: 'Success Rate',
+    accessor: 'spraysuccess',
+    sortType: 'basic',
+  },
+];
 
 /** columns for Zambia IRS Lite jurisdictions */
 export const IRSLiteZambiaJurisdictionsColumns = [
@@ -305,6 +380,82 @@ export const ZambiaFocusAreasColumns = [
     Header: 'Found Coverage',
     accessor: 'spraytarg',
     sortType: 'basic',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell),
+    Header: 'Spray Success Rate (PMI SC)',
+    accessor: 'spraysuccess',
+    sortType: 'basic',
+  },
+  {
+    Cell: (cell: Cell) => {
+      const { value } = cell;
+      const intValue = Number(value);
+      if (isNaN(intValue)) {
+        return intValue;
+      } else {
+        return Math.ceil(intValue);
+      }
+    },
+    Header: 'Structures remaining to spray to reach 90% SE',
+    accessor: 'structures_remaining_to_90_se',
+    sortType: 'basic',
+  },
+  {
+    Header: 'Reviewed with decision',
+    accessor: 'reviewed_with_decision',
+  },
+];
+
+export const SenegalFocusAreasColumns = [
+  {
+    Header: 'Name',
+    accessor: 'jurisdiction_name',
+    minWidth: 360,
+  },
+  {
+    Header: 'Spray Area visited',
+    accessor: 'spray_area_visited',
+  },
+  {
+    Header: 'Structures on the ground',
+    accessor: 'totstruct',
+  },
+  {
+    Header: 'Found',
+    accessor: 'foundstruct',
+  },
+  {
+    Header: 'Sprayed',
+    accessor: 'sprayedstruct',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell),
+    Header: 'Spray Coverage (Effectiveness)',
+    accessor: 'spraycov',
+    sortType: 'basic',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell),
+    Header: 'Found Coverage',
+    accessor: 'spraytarg',
+    sortType: 'basic',
+  },
+  {
+    Header: 'Rooms on the ground (average per structure)',
+    accessor: 'rooms_on_ground',
+  },
+  {
+    Header: 'Total targeted rooms (average per structure)',
+    accessor: 'rooms_eligible',
+  },
+  {
+    Header: 'Rooms sprayed',
+    accessor: 'rooms_sprayed',
+  },
+  {
+    Header: 'Room coverage of structures sprayed',
+    accessor: 'roomcov',
   },
   {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell),
@@ -563,6 +714,8 @@ export const plansTableColumns: { [key: string]: Array<DrillDownColumn<Dictionar
   mdaJurisdictionsColumns,
   mdaLiteJurisdictionsColumns,
   namibia2019: NamibiaColumns,
+  senegalFocusArea2021: SenegalFocusAreasColumns,
+  senegalJurisdictions2021: SenegalJurisdictionsColumns,
   smcJurisdictionsColumns,
   zambiaFocusArea2019: ZambiaFocusAreasColumns,
   zambiaJurisdictions2019: ZambiaJurisdictionsColumns,

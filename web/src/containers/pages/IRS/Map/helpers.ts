@@ -14,18 +14,26 @@ export const defaultIndicatorStop = [
   ['Not Eligible', BLACK],
 ];
 
+export const zambiaIndicators = [
+  ['Complete', TASK_GREEN],
+  ['Not Sprayed', TASK_RED],
+  ['Partially Sprayed', TASK_GREEN],
+  ['Not Visited', TASK_YELLOW],
+  ['Not Eligible', BLACK],
+];
+export const senegalIndicators = [
+  ['Complete', TASK_GREEN],
+  ['Not Sprayed', TASK_RED],
+  ['Not Visited', TASK_YELLOW],
+  ['Not Eligible', BLACK],
+];
 /** IRS Indicator stops
  * These are all the indicator stops for IRS that we know about.
  */
 export const IRSIndicatorStops: { [key: string]: string[][] } = {
   namibia2019: defaultIndicatorStop,
-  zambia2019: [
-    ['Complete', TASK_GREEN],
-    ['Not Sprayed', TASK_RED],
-    ['Partially Sprayed', TASK_GREEN],
-    ['Not Visited', TASK_YELLOW],
-    ['Not Eligible', BLACK],
-  ],
+  senegal2021: senegalIndicators,
+  zambia2019: zambiaIndicators,
 };
 
 /** interface to describe and indicator row item */
