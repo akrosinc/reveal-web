@@ -30,6 +30,7 @@ import {
   getIRSLiteThresholdAdherenceIndicator,
   getIRSThresholdAdherenceIndicator,
   MDALiteGenderComparison,
+  renderCellWithNumberRounded,
   renderPercentage,
   returnedToSupervicerCol,
 } from '../../../helpers/indicators';
@@ -213,6 +214,7 @@ export const SenegalJurisdictionsColumns = [
     accessor: 'foundstruct',
   },
   {
+    Cell: (cell: Cell) => renderCellWithNumberRounded(cell),
     Header: 'Rooms on the ground (average per structure)',
     accessor: 'rooms_on_ground',
   },
@@ -225,6 +227,7 @@ export const SenegalJurisdictionsColumns = [
     accessor: 'rooms_sprayed',
   },
   {
+    Cell: (cell: Cell) => renderPercentage(cell),
     Header: 'Room coverage of structures sprayed',
     accessor: 'roomcov',
   },
@@ -388,15 +391,7 @@ export const ZambiaFocusAreasColumns = [
     sortType: 'basic',
   },
   {
-    Cell: (cell: Cell) => {
-      const { value } = cell;
-      const intValue = Number(value);
-      if (isNaN(intValue)) {
-        return intValue;
-      } else {
-        return Math.ceil(intValue);
-      }
-    },
+    Cell: (cell: Cell) => renderCellWithNumberRounded(cell),
     Header: 'Structures remaining to spray to reach 90% SE',
     accessor: 'structures_remaining_to_90_se',
     sortType: 'basic',
@@ -415,7 +410,7 @@ export const SenegalFocusAreasColumns = [
   },
   {
     Header: 'Spray Area visited',
-    accessor: 'spray_area_visited',
+    accessor: 'visitedareas',
   },
   {
     Header: 'Structures on the ground',
@@ -442,6 +437,7 @@ export const SenegalFocusAreasColumns = [
     sortType: 'basic',
   },
   {
+    Cell: (cell: Cell) => renderCellWithNumberRounded(cell),
     Header: 'Rooms on the ground (average per structure)',
     accessor: 'rooms_on_ground',
   },
@@ -454,6 +450,7 @@ export const SenegalFocusAreasColumns = [
     accessor: 'rooms_sprayed',
   },
   {
+    Cell: (cell: Cell) => renderPercentage(cell),
     Header: 'Room coverage of structures sprayed',
     accessor: 'roomcov',
   },
@@ -464,15 +461,7 @@ export const SenegalFocusAreasColumns = [
     sortType: 'basic',
   },
   {
-    Cell: (cell: Cell) => {
-      const { value } = cell;
-      const intValue = Number(value);
-      if (isNaN(intValue)) {
-        return intValue;
-      } else {
-        return Math.ceil(intValue);
-      }
-    },
+    Cell: (cell: Cell) => renderCellWithNumberRounded(cell),
     Header: 'Structures remaining to spray to reach 90% SE',
     accessor: 'structures_remaining_to_90_se',
     sortType: 'basic',
