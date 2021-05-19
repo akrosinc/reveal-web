@@ -280,3 +280,13 @@ export const returnedToSupervicerCol = (cell: Cell, otherAccessor: string, color
     </div>
   );
 };
+
+export const renderCellWithNumberRounded = (cell: Cell) => {
+  const { value } = cell;
+  const intValue = Number(value);
+  if (isNaN(intValue)) {
+    return intValue;
+  } else {
+    return Math.ceil(intValue);
+  }
+};
