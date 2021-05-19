@@ -567,7 +567,7 @@ export const DYNAMIC_FI_TITLE = translate('DYNAMIC_FI_TITLE', 'Dynamic FI');
 export const DYNAMIC_IRS_TITLE = translate('DYNAMIC_IRS_TITLE', 'Dynamic IRS');
 export const DYNAMIC_MDA_TITLE = translate('DYNAMIC_MDA_TITLE', 'Dynamic MDA');
 export const MDA_LITE_TITLE = translate('MDA_LITE_TITLE', 'MDA-Lite');
-export const SMC_TITLE = translate('SMC_TITLE', 'SMC');
+export const SMC_TITLE = translate('SMC_TITLE', 'SMC-POINT');
 export const TEAM_ASSIGNMENT_SUCCESSFUL = translate(
   'TEAM_ASSIGNMENT_SUCCESSFUL',
   'Team(s) assignment updated successfully'
