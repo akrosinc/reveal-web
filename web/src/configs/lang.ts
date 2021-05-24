@@ -169,6 +169,10 @@ export const JURISDICTION_HIERARCHY_TEMPLATE = translate(
   'JURISDICTION_HIERARCHY_TEMPLATE',
   'JurisdictionHierachyTemplate'
 );
+export const STRUCTURE_HIERARCHY_TEMPLATE = translate(
+  'STRUCTURE_HIERARCHY_TEMPLATE',
+  'StructureHierachyTemplate'
+);
 export const SELECT_COUNTRY = translate('SELECT_COUNTRY', 'Select Country');
 export const NEW_TITLE = translate('NEW_TITLE', 'New');
 export const PLAN_TITLE = translate('PLAN_TITLE', 'Plan');
@@ -197,6 +201,19 @@ export const HOW_TO_UPDATE_JURISDICTION_METADATA = translate(
   'HOW_TO_UPDATE_JURISDICTION_METADATA',
   'How To Update The Jurisdiction Metadata'
 );
+export const STRUCTURE_METADATA = translate('STRUCTURE_METADATA', 'Structure Metadata');
+export const DOWNLOAD_STRUCTURE_METADATA = translate(
+  'DOWNLOAD_STRUCTURE_METADATA',
+  'Download Structure Metadata'
+);
+export const UPLOAD_STRUCTURE_METADATA = translate(
+  'UPLOAD_STRUCTURE_METADATA',
+  'Upload Structure Metadata'
+);
+export const HOW_TO_UPDATE_STRUCTURE_METADATA = translate(
+  'HOW_TO_UPDATE_STRUCTURE_METADATA',
+  'How To Update The Structure Metadata'
+);
 
 export const REACTIVE = translate('REACTIVE', 'Reactive');
 export const REACTIVE_INVESTIGATION = translate('REACTIVE_INVESTIGATION', 'Reactive Investigation');
@@ -224,6 +241,8 @@ export const MEASURE = translate('MEASURE', 'Measure');
 export const MARK_AS_COMPLETE = translate('MARK_AS_COMPLETE', 'Mark as complete');
 export const STRUCTURES = translate('STRUCTURES', 'structure(s)');
 export const PERSONS = translate('PERSONS', 'person(s)');
+export const PEOPLE = translate('PEOPLE', 'people');
+export const TABLET = translate('TABLET', 'tablet(s)');
 
 export const FOCUS_AREA_HEADER = translate('FOCUS_AREA_HEADER', 'Focus Area');
 export const SPRAY_AREA_HEADER = translate('SPRAY_AREA_HEADER', 'Spray Area');
@@ -567,7 +586,7 @@ export const DYNAMIC_FI_TITLE = translate('DYNAMIC_FI_TITLE', 'Dynamic FI');
 export const DYNAMIC_IRS_TITLE = translate('DYNAMIC_IRS_TITLE', 'Dynamic IRS');
 export const DYNAMIC_MDA_TITLE = translate('DYNAMIC_MDA_TITLE', 'Dynamic MDA');
 export const MDA_LITE_TITLE = translate('MDA_LITE_TITLE', 'MDA-Lite');
-export const SMC_TITLE = translate('SMC_TITLE', 'SMC-POINT');
+export const SMC_TITLE = translate('SMC_TITLE', 'SMC');
 export const TEAM_ASSIGNMENT_SUCCESSFUL = translate(
   'TEAM_ASSIGNMENT_SUCCESSFUL',
   'Team(s) assignment updated successfully'
@@ -1025,7 +1044,9 @@ export const MALE_LABEL = translate('MALE_LABEL', 'Male');
 export const FEMALE_LABEL = translate('FEMALE_LABEL', 'Female');
 export const TOTAL_MALE = translate('TOTAL_MALE', 'Total Male');
 export const TOTAL_FEMALE = translate('FEMALE_LABEL', 'Total Female');
-export const TOTAL_TREATED = translate('FEMALE_LABEL', 'Total Treated');
+export const TOTAL_TREATED = translate('TOTAL_TREATED', 'Total Treated');
+export const DRUGS_ADMINISTERED = translate('DRUGS_ADMINISTERED', 'Drugs Administered');
+export const DRUGS_DAMAGED = translate('DRUGS_DAMAGED', 'Drugs Damaged');
 export const SUPERVISOR_DISTRIBUTED = translate('SUPERVISOR_DISTRIBUTED', 'Supervisor Distributed');
 export const RECEIVED_BY_CDD = translate('RECEIVED_BY_CDD', 'Received by CDD');
 export const ADMINISTERED_LABEL = translate('ADMINISTERED_LABEL', 'Administered');
