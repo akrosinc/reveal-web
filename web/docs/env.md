@@ -179,3 +179,25 @@ Below is a list of currently supported environment variables:
   - **not Required**; _(string)_
   - to activate set the env to `true`, any other value will be interpreted as false
   - show FI reason column on the plans list view instead of intervention type column
+
+- **REACT_APP_ENABLE_STRUCTURE_METADATA_UPLOAD**
+
+  - **not Required**; _(string)_
+  - to activate set the env to `true`, any other value will be interpreted as false
+  - enables the structure metadata page
+
+- **REACT_APP_SUPERSET_MDA_LITE_REPORTING_INDICATOR_ROWS**
+
+  - **not Required**; _(string)_
+  - reporting row indicators, defalut value is `kenya2021`
+
+- **REACT_APP_SUPERSET_MDA_LITE_REPORTING_INDICATOR_STOPS**
+
+  - **not Required**; _(string)_
+  - reporting stops indicators, defalut value is `kenya2021`
+
+- **REACT_APP_CLIENTS_LIST_BATCH_SIZE**
+
+  - **Optional**
+  - limit of the number of clients record to get from api.
+  - default: `200`
