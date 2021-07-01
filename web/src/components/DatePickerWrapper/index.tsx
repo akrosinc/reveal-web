@@ -11,7 +11,8 @@ const DatePickerWrapper = (props: ReactDatePickerProps & FieldProps) => {
     props.form.setFieldValue(props.field.name, date);
   };
 
-  return <DatePicker selected={props.field.value} onChange={handleChange} {...props} />;
+  // return <DatePicker selected={props.field.value} onChange={handleChange} {...props} />;  # Fanie removing as part of debug
+  return <DatePicker selected={props.field.value} {...props} />;
 };
 
 export default DatePickerWrapper;

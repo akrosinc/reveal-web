@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { Card, CardBody, Col, Row } from 'reactstrap';
 import JurisdictionHierachyDownload, {
   defaultInitialValues as defaultHierachyValues,
-  JurisdictionHierachyDownloadFormProps,
+  // JurisdictionHierachyDownloadFormProps,
 } from '../../../components/forms/JurisdictionHierachyDownload';
 import JurisdictionMetadata, {
   defaultInitialValues,
