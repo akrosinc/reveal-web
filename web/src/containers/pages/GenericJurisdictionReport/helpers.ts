@@ -223,6 +223,10 @@ export const SenegalJurisdictionsColumns = [
     accessor: 'rooms_eligible',
   },
   {
+    Header: 'Rooms found',
+    accessor: 'rooms_found',
+  },
+  {
     Header: 'Rooms sprayed',
     accessor: 'rooms_sprayed',
   },
@@ -444,6 +448,10 @@ export const SenegalFocusAreasColumns = [
   {
     Header: 'Total targeted rooms (average per structure)',
     accessor: 'rooms_eligible',
+  },
+  {
+    Header: 'Rooms found',
+    accessor: 'rooms_found',
   },
   {
     Header: 'Rooms sprayed',
