@@ -297,6 +297,7 @@ export const renderHeaderWithTooltip = (title: string, toolTipText: string) => {
     .replace('(', '')
     .replace(')', '')
     .replace('%', '')
+    .replace("'", '')
     .trim()}`;
   return (
     <div>
