@@ -1,38 +1,38 @@
 {
   "WELCOME_TO_REVEAL": {
-    "message": "Welcome to Reveal",
+    "message": "Bienvenue dans Reveal",
     "description": "Title on the landing page"
   },
   "GET_STARTED_MESSAGE": {
-    "message": "Get started by selecting an intervention below",
+    "message": "Démarrer en selectionnant une zone d'intervention ci-dessous",
     "description": "Subtitle on the landing page"
   },
   "ON_REROUTE_WITH_UNSAVED_CHANGES": {
-    "message": "Unsaved Changes: please Save or Discard changes made",
+    "message": "Changement non sauvegardés: Merci d'enregistrer ou d'annuler les changements effectués",
     "description": "prompt message warning against navigating away from unsaved changes"
   },
   "PRACTITIONER_CREATED_SUCCESSFULLY": {
-    "message": "Practitioner created Successfully.",
+    "message": "Utilisateur créé avec Succés",
     "description": "confirmation prompt message"
   },
   "PRACTITIONER_EDITED_SUCCESSFULLY": {
-    "message": "Practitioner edited successfully.",
+    "message": "Utilisateur édité avec Succés",
     "description": "confirmation prompt message"
   },
   "REMOVING_PRACTITIONER_FAILED": {
-    "message": "Removing Practitioner Failed",
+    "message": "Echec de la suppression de l'utilisateur",
     "description": "warning prompt message"
   },
   "HOME_TITLE": {
-    "message": "Home page",
+    "message": "Page d'Acceuil",
     "description": "page title base for SEO and tab text"
   },
   "IRS_TITLE": {
-    "message": "IRS",
+    "message": "AID",
     "description": "abbreviation for  Indoor Residual Spray, used for breadcrumbs, nav, and page titles"
   },
   "IRS_REPORTING_TITLE": {
-    "message": "IRS Reporting",
+    "message": "Rapports AID",
     "description": "page title for IRS reporting page"
   },
   "MDA_REPORTING_TITLE": {
@@ -52,7 +52,7 @@
     "description": "legend heder of column describing category definitions"
   },
   "DATE_CREATED": {
-    "message": "Date Created",
+    "message": "Date de création",
     "description": "column header: date a plan was create"
   },
   "DATE_COMPLETED": {
@@ -92,11 +92,11 @@
     "description": "label, column header: name, title, designation of an entity"
   },
   "START_DATE": {
-    "message": "Start Date",
+    "message": "Date de début",
     "description": "label, column header: starting date of a plan or activity"
   },
   "END_DATE": {
-    "message": "End Date",
+    "message": "End Date de Fin",
     "description": "label, column header: ending date of a plan or activity"
   },
   "SAVE_CHANGES": {
@@ -456,7 +456,7 @@
     "description": "table header: (abbreviated) for the notification date of a plan"
   },
   "STATUS_HEADER": {
-    "message": "Status",
+    "message": "Statut",
     "description": "column header: containing the status of plans"
   },
   "REASON_HEADER": {
@@ -496,7 +496,7 @@
     "description": "form label: for the name of a plan"
   },
   "TITLE": {
-    "message": "Title",
+    "message": "Titre",
     "description": "column header: containing the names of plans"
   },
   "LAST_MODIFIED": {
@@ -804,7 +804,7 @@
     "description": "status indicator for plans which are currently ongoing"
   },
   "PLAN_STATUS_COMPLETE": {
-    "message": "complete",
+    "message": "Compléte",
     "description": "status indicator for plans which are finished and still relevant for monitoring and evaluation"
   },
   "PLAN_STATUS_DRAFT": {
@@ -1240,7 +1240,7 @@
     "description": "Option displayed when selecting jurisdiction metadata type to download"
   },
   "PLANNING_PAGE_TITLE": {
-    "message": "Planning tool",
+    "message": "Outil de planification",
     "description": "Title of page with the feature to help create plans"
   },
   "SAVE_FILE": {
@@ -1471,7 +1471,7 @@
     "description": "Label of a form field that is used to configure a table row's height"
   },
   "ROWS_TO_DISPLAY": {
-    "message": "Rows to display",
+    "message": "Lignes à afficher",
     "description": "Label of a form field for how many items to be shown in a single page of a table"
   },
   "PAGE": { "message": "page", "description": "Page" },
@@ -1630,7 +1630,7 @@
   },
   "TOTAL": { "message": "Total", "description": "Total" },
   "IRS_PERFORMANCE_REPORTING_TITLE": {
-    "message": "IRS Performance Reporting",
+    "message": "Rapports de performance AID",
     "description": "title: IRS Performance Reporting"
   },
   "USER_FILTER_NOTIFICATION": {
@@ -1654,11 +1654,11 @@
     "description": "Error text flashed when session is expired"
   },
   "NOT_ELIGIBLE": {
-    "message": "Not Eligible",
+    "message": "Non éligible",
     "description": "Task business status not eligible"
   },
   "NOT_VISITED": {
-    "message": "Not visited",
+    "message": "Non visitées",
     "description": "Task business status not visited"
   },
   "TASK_INCOMPLETE": {
@@ -1746,67 +1746,67 @@
     "description": "Dynamic case confirmation expression description"
   },
   "TOTAL_SPRAY_AREAS": {
-    "message": "Total Spray Areas",
+    "message": "Total Zone d'Aspersion",
     "description": "Total Spray Areas"
   },
   "ELIGIBLE_TARGETED_SPRAY_AREAS": {
-    "message": "Eligible (Targeted) Spray Areas",
+    "message": "Zone d'aspersion eligible (Cible)",
     "description": "Eligible (Targeted) Spray Areas"
   },
   "TOTAL_SPRAY_AREAS_VISITED": {
-    "message": "Total Spray Areas Visited",
+    "message": "Total zones d'aspersion vistées",
     "description": "Total Spray Areas Visited"
   },
   "PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED": {
-    "message": "% visited Spray Areas Effectively sprayed",
+    "message": "% Zones d'aspersion Effectivement traitées",
     "description": "% visited Spray Areas Effectively sprayed"
   },
   "STRUCTURES_ON_GROUND": {
-    "message": "Structures on Ground",
+    "message": "Structures sur site",
     "description": "Structures on Ground"
   },
   "TOTAL_TARGETED_STRUCTURES": {
-    "message": "Total targeted structures",
+    "message": "Total structures ciblées",
     "description": "Total targeted structures"
   },
   "STRUCTURES_SPRAYED": {
-    "message": "Structures Sprayed",
+    "message": "Structures traitées",
     "description": "Structures Sprayed"
   },
   "SPRAY_COVERAGE_OF_TARGETED": {
-    "message": "Spray coverage of targeted (Progress)",
+    "message": "Couverture par rapport à la cible (Progression)",
     "description": "Spray coverage of targeted (Progress)"
   },
   "STRUCTURES_FOUND": {
-    "message": "Structures Found",
+    "message": "Structure Trouvées",
     "description": "Structures Found"
   },
   "ROOMS_ON_THE_GROUND": {
     "message": "Rooms on the ground (average per structure)",
-    "description": "Rooms on the ground (average per structure)"
+    "description": "Piéeces (Moyenne par structure)"
   },
   "TOTAL_TARGETED_ROOMS": {
-    "message": "Total targeted rooms (average per structure)",
+    "message": "Total piéces ciblées (Moyenne par structure)",
     "description": "Total targeted rooms (average per structure)"
   },
   "ROOMS_SPRAYED": {
-    "message": "Rooms sprayed",
+    "message": "Piéces traitées",
     "description": "Rooms sprayed"
   },
   "ROOMS_COVERAGE_OF_STRUCTURES_SPRAYED": {
-    "message": "Room coverage of structures sprayed",
+    "message": "Couverture (piéce) par rapport aux structures trouvées",
     "description": "Room coverage of structures sprayed"
   },
   "FOUND_COVERAGE": {
-    "message": "Found coverage",
+    "message": "Couverture",
     "description": "Found coverage"
   },
   "SUCCESS_RATE": {
-    "message": "Success Rate",
+    "message": "Taux de succés",
     "description": "Success Rate"
   },
   "IRS_LITE_REPORTING_TITLE": {
-    "message": "IRS Lite Reporting",
+    "message": "Rapports allégés AID",
     "description": "IRS Lite Reporting title"
   }
 }
