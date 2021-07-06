@@ -907,20 +907,11 @@ export const MOP_UP_REPORTING_TITLE = translate('MOP_UP_REPORTING_TITLE', 'IRS M
 
 export const HEALTH_FACILITY = translate('HEALTH_FACILITY', 'Health Facility');
 
-export const STRUCTURES_ON_GROUND = translate('STRUCTURES_ON_GROUND', 'Structures on Ground');
-
 export const VISITED_SPRAYED = translate('VISITED_SPRAYED', 'Visited Sprayed');
-
-export const STRUCTURES_REMAINING_TO_SPRAY_TO_REACH_90_SE = translate(
-  'STRUCTURES_REMAINING_TO_SPRAY_TO_REACH_90_SE',
-  'Structures remaining to spray to reach 90% SE'
-);
 
 export const TLA_DAYS = translate('TLA_DAYS', 'TLA Days');
 
 export const SPRAY_EFFECTIVENESS = translate('SPRAY_EFFECTIVENESS', 'Spray Effectiveness');
-
-export const FOUND_COVERAGE = translate('FOUND_COVERAGE', 'Found coverage');
 
 export const SPRAY_COVERAGE = translate('SPRAY_COVERAGE', 'Spray coverage');
 
@@ -1052,3 +1043,116 @@ export const ONE_TO_FOUR_YEARS = translate('ONE_TO_FOUR_YEARS', '1-4');
 export const FIVE_TO_FOURTEEN_YEARS = translate('FOUR_TO_FOURTEEN_YEARS', '5-14');
 export const FIFTEEN_YEARS_AND_ABOVE = translate('FIFTEEN_YEARS_AND_ABOVE', '15+');
 export const HISTORICAL_INDEX_CASES = translate('HISTORICAL_INDEX_CASES', 'historical index cases');
+export const NAME_TIP = translate('NAME_TIP', 'Name');
+export const TOTAL_SPRAY_AREAS = translate('TOTAL_SPRAY_AREAS', 'Total Spray Areas');
+export const TOTAL_SPRAY_AREAS_TIP = translate('TOTAL_SPRAY_AREAS_TIP', 'Total Spray Areas');
+export const ELIGIBLE_TARGETED_SPRAY_AREAS = translate(
+  'ELIGIBLE_TARGETED_SPRAY_AREAS',
+  'Eligible (Targeted) Spray Areas'
+);
+export const ELIGIBLE_TARGETED_SPRAY_AREAS_TIP = translate(
+  'ELIGIBLE_TARGETED_SPRAY_AREAS_TIP',
+  'Eligible (Targeted) Spray Areas'
+);
+export const TOTAL_SPRAY_AREAS_VISITED = translate(
+  'TOTAL_SPRAY_AREAS_VISITED',
+  'Total Spray Areas Visited'
+);
+export const TOTAL_SPRAY_AREAS_VISITED_TIP = translate(
+  'TOTAL_SPRAY_AREAS_VISITED_TIP',
+  'Total Spray Areas Visited'
+);
+export const PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED = translate(
+  'PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED',
+  '% visited Spray Areas Effectively sprayed'
+);
+export const PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED_TIP = translate(
+  'PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED_TIP',
+  '% visited Spray Areas Effectively sprayed'
+);
+export const STRUCTURES_ON_GROUND = translate('STRUCTURES_ON_GROUND', 'Structures on Ground');
+export const STRUCTURES_ON_GROUND_TIP = translate(
+  'STRUCTURES_ON_GROUND_TIP',
+  'Structures on Ground'
+);
+export const TOTAL_TARGETED_STRUCTURES = translate(
+  'TOTAL_TARGETED_STRUCTURES',
+  'Total targeted structures'
+);
+export const TOTAL_TARGETED_STRUCTURES_TIP = translate(
+  'TOTAL_TARGETED_STRUCTURES_TIP',
+  'Total targeted structures'
+);
+export const STRUCTURES_SPRAYED = translate('STRUCTURES_SPRAYED', 'Structures Sprayed');
+export const STRUCTURES_SPRAYED_TIP = translate('STRUCTURES_SPRAYED_TIP', 'Structures Sprayed');
+export const SPRAY_COVERAGE_OF_TARGETED = translate(
+  'SPRAY_COVERAGE_OF_TARGETED',
+  'Spray coverage of targeted (Progress)'
+);
+export const SPRAY_COVERAGE_OF_TARGETED_TIP = translate(
+  'SPRAY_COVERAGE_OF_TARGETED_TIP',
+  'Spray coverage of targeted (Progress)'
+);
+export const STRUCTURES_FOUND = translate('STRUCTURES_FOUND', 'Structures Found');
+export const STRUCTURES_FOUND_TIP = translate('STRUCTURES_FOUND_TIP', 'Structures Found');
+export const ROOMS_ON_THE_GROUND = translate(
+  'ROOMS_ON_THE_GROUND',
+  'Rooms on the ground (average per structure)'
+);
+export const ROOMS_ON_THE_GROUND_TIP = translate(
+  'ROOMS_ON_THE_GROUND_TIP',
+  'Rooms on the ground (average per structure)'
+);
+export const TOTAL_TARGETED_ROOMS = translate(
+  'TOTAL_TARGETED_ROOMS',
+  'Total targeted rooms (average per structure)'
+);
+export const TOTAL_TARGETED_ROOMS_TIP = translate(
+  'TOTAL_TARGETED_ROOMS_TIP',
+  'Total targeted rooms (average per structure)'
+);
+export const ROOMS_FOUND = translate('ROOMS_FOUND', 'Rooms found');
+export const ROOMS_FOUND_TIP = translate('ROOMS_FOUND_TIP', 'Rooms found');
+export const ROOMS_SPRAYED = translate('ROOMS_SPRAYED', 'Rooms sprayed');
+export const ROOMS_SPRAYED_TIP = translate('ROOMS_SPRAYED_TIP', 'Rooms sprayed');
+export const ROOMS_COVERAGE_OF_STRUCTURES_SPRAYED = translate(
+  'ROOMS_COVERAGE_OF_STRUCTURES_SPRAYED',
+  'Room coverage of structures sprayed'
+);
+export const ROOMS_COVERAGE_OF_STRUCTURES_SPRAYED_TIP = translate(
+  'ROOMS_COVERAGE_OF_STRUCTURES_SPRAYED_TIP',
+  'Room coverage of structures sprayed'
+);
+export const FOUND_COVERAGE = translate('FOUND_COVERAGE', 'Found coverage');
+export const FOUND_COVERAGE_TIP = translate('FOUND_COVERAGE_TIP', 'Found coverage');
+export const SUCCESS_RATE = translate('SUCCESS_RATE', 'Success Rate');
+export const SUCCESS_RATE_TIP = translate('SUCCESS_RATE_TIP', 'Success Rate');
+export const SPRAY_COVERAGE_EFFECTIVENESS = translate(
+  'SPRAY_COVERAGE_EFFECTIVENESS',
+  'Spray Coverage (Effectiveness)'
+);
+export const SPRAY_COVERAGE_EFFECTIVENESS_TIP = translate(
+  'SPRAY_COVERAGE_EFFECTIVENESS_TIP',
+  'Spray Coverage (Effectiveness)'
+);
+export const SPRAY_SUCCESS_RATE_PMI_SC = translate(
+  'SPRAY_SUCCESS_RATE_PMI_SC',
+  'Spray Success Rate (PMI SC)'
+);
+export const SPRAY_SUCCESS_RATE_PMI_SC_TIP = translate(
+  'SPRAY_SUCCESS_RATE_PMI_SC_TIP',
+  'Spray Success Rate (PMI SC)'
+);
+export const STRUCTURES_REMAINING_TO_SPRAY_TO_REACH_90_SE = translate(
+  'STRUCTURES_REMAINING_TO_SPRAY_TO_REACH_90_SE',
+  'Structures remaining to spray to reach 90% SE'
+);
+export const STRUCTURES_REMAINING_TO_SPRAY_TO_REACH_90_SE_TIP = translate(
+  'STRUCTURES_REMAINING_TO_SPRAY_TO_REACH_90_SE_TIP',
+  'Structures remaining to spray to reach 90% SE'
+);
+export const REVIEW_WITH_DECISION = translate('REVIEW_WITH_DECISION', 'Reviewed with decision');
+export const REVIEW_WITH_DECISION_TIP = translate(
+  'REVIEW_WITH_DECISION_TIP',
+  'Reviewed with decision'
+);
