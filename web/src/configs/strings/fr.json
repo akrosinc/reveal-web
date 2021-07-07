@@ -1638,19 +1638,19 @@
     "description": "Info message to indicate plans are filtered by a specific user"
   },
   "SELECT_OPTION": {
-    "message": "----",
+    "message": "Sélectionnez une option",
     "description": "Select one option on a dropdown"
   },
   "SESSION_EXPIRED_TEXT": {
-    "message": "Your session has expired. Please click the link below to login again.",
+    "message": "Votre session a expiré. Veuillez cliquer sur le lien ci-dessous pour vous reconnecter.",
     "description": "Info message to notify users their session is expired"
   },
   "RENEW_SESSION_LINK_TEXT": {
-    "message": "Renew session",
+    "message": "Renouveler la session",
     "description": "Info text for renew session link"
   },
   "SESSION_EXPIRED_ERROR": {
-    "message": "Error: Your session is expired. Please renew session",
+    "message": "Erreur: Votre session a expiré. Veuillez renouveler la session",
     "description": "Error text flashed when session is expired"
   },
   "NOT_ELIGIBLE": {
@@ -1662,11 +1662,11 @@
     "description": "Task business status not visited"
   },
   "TASK_INCOMPLETE": {
-    "message": "Incomplete",
+    "message": "Envoyer des commentaires",
     "description": "Task business status Incomplete"
   },
   "IN_PROGRESS": {
-    "message": "In Progress",
+    "message": "Panneaux latéraux",
     "description": "Task business status In Progress"
   },
   "RACD_REGISTER_FAMILY_ACTIVITY": {
@@ -1674,51 +1674,51 @@
     "description": "action code RACD Register Family"
   },
   "ASSIGNED_WRONG_PLAN": {
-    "message": "Assigned wrong plan details",
+    "message": "Mauvais détails du plan attribués",
     "description": "Reason for retiring a plan"
   },
   "DUPLICATED_PLAN": {
-    "message": "Plan is duplicated",
+    "message": "Le plan est dupliqué",
     "description": "Reason for retiring a plan"
   },
   "CANCELED_PLAN": {
-    "message": "Canceled, no longer going to work",
+    "message": "Annulé, ne va plus travailler",
     "description": "Reason for retiring a plan"
   },
   "ENTERED_WRONG_ADDRESS": {
-    "message": "Plan has wrong address of patient or source of infection",
+    "message": "Le plan a une mauvaise adresse du patient ou de la source d'infection",
     "description": "Reason for retiring a plan"
   },
   "SAME_SUB_VILLAGE": {
-    "message": "This is patient in the same sub-village and same week",
+    "message": "C'est patient dans le même sous-village et la même semaine",
     "description": "Reason for retiring a plan"
   },
   "ACTIVITY_DONE_BEFORE": {
-    "message": "Activity was done before the plan was created",
+    "message": "L'activité a été effectuée avant la création du plan",
     "description": "Reason for retiring a plan"
   },
   "OTHER_REASON": {
-    "message": "Specify another reason",
+    "message": "Spécifiez une autre raison",
     "description": "Reason for retiring a plan"
   },
   "RETIRE_PLAN_REASON": {
-    "message": "Retire Plan Reason",
+    "message": "Raison du régime de retraite",
     "description": "Retire Plan Reason form label"
   },
   "OTHER_REASON_LABEL": {
-    "message": "Other reason",
+    "message": "Autre raison",
     "description": "Form Other reason label"
   },
   "PROCEED": {
-    "message": "Proceed",
+    "message": "Procéder",
     "description": "Button text"
   },
   "LOWEST_JURISDICTION": {
-    "message": "This is the lowest jurisdiction",
+    "message": "C'est la juridiction la plus basse",
     "description": "text displayed when user reaches the lowest jurisdiction"
   },
   "NOT_AVAILABLE_LABEL": {
-    "message": "Not Available",
+    "message": "Indisponible",
     "description": "Item not available"
   },
   "CDD_SUPERVISION_ACTIVITY_DESCRIPTION": {
@@ -1880,5 +1880,89 @@
   "STRUCTURES_TO_SPRAY_TO_REACH_90": {
     "message": "Structures à pulvériser ou zones à réagir 90%",
     "description": "Structures to spray or areas to react 90%"
+  },
+  "TLA_DAYS_AREAS_TO_REACH_90": {
+    "message": "Jours TLA nécessaires pour les zones nécessaires pour atteindre 90%",
+    "description": "TLA days needed for areas needed to reach 90%"
+  },
+  "NO_DECISION_FORM": {
+    "message": "Pas de formulaire de décision",
+    "description": "No decision form"
+  },
+  "RETIRE_PLAN_MESSAGE": {
+    "message": "Pour retirer ce plan, sélectionnez une raison et continuez",
+    "description": "To retire this plan, select a reason and proceed"
+  },
+  "COMPLETE_PLAN_MESSAGE": {
+    "message": "Vous êtes sur le point de terminer un plan, cliquez sur ok pour continuer",
+    "description": "cmplete plan message"
+  },
+  "PLAN_CHANGES_HAVE_NOT_BEEN_SAVED": {
+    "message": "Les modifications apportées au plan n'ont pas été enregistrées",
+    "description": "Changes to plan have not been saved"
+  },
+  "INVALID_GEOMETRIES": {
+    "message": "Échec du chargement de la carte: les données ont des géométries non valides",
+    "description": ""
+  },
+  "JURISDICTION_NOT_FOUND": {
+    "message": "Échec du chargement de la carte: juridiction introuvable",
+    "description": ""
+  },
+  "Invalid Date": {
+    "message": "Date invalide",
+    "description": ""
+  },
+  "PLAN_OR_JURISDICTION_NOT_FOUND": {
+    "message": "Régime ou juridiction introuvable",
+    "description": ""
+  },
+  "SUBCOUNTY_LABEL": {
+    "message": "Sous-comté",
+    "description": ""
+  },
+  "MALE_LABEL": {
+    "message": "Homme",
+    "description": ""
+  },
+  "FEMALE_LABEL": {
+    "message": "Female",
+    "description": ""
+  },
+  "TOTAL_MALE": {
+    "message": "Total Hommes",
+    "description": ""
+  },
+  "FEMALE_LABEL": {
+    "message": "Total Féminin",
+    "description": ""
+  },
+  "TOTAL_TREATED": {
+    "message": "Total traité",
+    "description": ""
+  },
+  "ADMINISTERED_LABEL": {
+    "message": "Administré",
+    "description": ""
+  },
+  "DAMAGED_LABEL": {
+    "message": "Endommagé",
+    "description": ""
+  },
+  "RETURNED_TO_SUPERVISOR": {
+    "message": "Renvoyé au superviseur",
+    "description": ""
+  },
+  "ADVERSE_REACTION": {
+    "message": "En savoir plus sur ce texte sourceVous devez indiquer le texte source pour obtenir des informations supplémentaires",
+    "description": ""
+  },
+  "DAYS_WORKED": {
+    "message": "Envoyer des commentaires",
+    "description": ""
+  },
+  "AVERAGE_PER_DAY": {
+    "message": "Panneaux latéraux",
+    "description": ""
   }
 }

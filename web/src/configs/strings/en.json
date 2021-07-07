@@ -1880,5 +1880,89 @@
   "STRUCTURES_TO_SPRAY_TO_REACH_90": {
     "message": "Structures to spray or areas to react 90%",
     "description": "Structures to spray or areas to react 90%"
+  },
+  "TLA_DAYS_AREAS_TO_REACH_90": {
+    "message": "TLA days needed for areas needed to reach 90%",
+    "description": "TLA days needed for areas needed to reach 90%"
+  },
+  "NO_DECISION_FORM": {
+    "message": "No decision form",
+    "description": "No decision form"
+  },
+  "RETIRE_PLAN_MESSAGE": {
+    "message": "To retire this plan, select a reason and proceed",
+    "description": "To retire this plan, select a reason and proceed"
+  },
+  "COMPLETE_PLAN_MESSAGE": {
+    "message": "You are about to complete a plan, click ok to proceed",
+    "description": "cmplete plan message"
+  },
+  "PLAN_CHANGES_HAVE_NOT_BEEN_SAVED": {
+    "message": "Changes to plan have not been saved",
+    "description": "Changes to plan have not been saved"
+  },
+  "INVALID_GEOMETRIES": {
+    "message": "Map failed to load: data has invalid geometries",
+    "description": ""
+  },
+  "JURISDICTION_NOT_FOUND": {
+    "message": "Map failed to load: Jurisdiction not found",
+    "description": ""
+  },
+  "Invalid Date": {
+    "message": "Invalid Date",
+    "description": ""
+  },
+  "PLAN_OR_JURISDICTION_NOT_FOUND": {
+    "message": "Plan or Jurisdiction not found",
+    "description": ""
+  },
+  "SUBCOUNTY_LABEL": {
+    "message": "Subcounty",
+    "description": ""
+  },
+  "MALE_LABEL": {
+    "message": "Male",
+    "description": ""
+  },
+  "FEMALE_LABEL": {
+    "message": "Female",
+    "description": ""
+  },
+  "TOTAL_MALE": {
+    "message": "Total Male",
+    "description": ""
+  },
+  "FEMALE_LABEL": {
+    "message": "Total Female",
+    "description": ""
+  },
+  "TOTAL_TREATED": {
+    "message": "Total Treated",
+    "description": ""
+  },
+  "ADMINISTERED_LABEL": {
+    "message": "Administered",
+    "description": ""
+  },
+  "DAMAGED_LABEL": {
+    "message": "Damaged",
+    "description": ""
+  },
+  "RETURNED_TO_SUPERVISOR": {
+    "message": "Returned to Supervisor",
+    "description": ""
+  },
+  "ADVERSE_REACTION": {
+    "message": "Adverse Reaction",
+    "description": ""
+  },
+  "DAYS_WORKED": {
+    "message": "Days worked",
+    "description": ""
+  },
+  "AVERAGE_PER_DAY": {
+    "message": "Average per day",
+    "description": ""
   }
 }
