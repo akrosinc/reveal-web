@@ -1016,7 +1016,7 @@ export const MALE_LABEL = translate('MALE_LABEL', 'Male');
 export const FEMALE_LABEL = translate('FEMALE_LABEL', 'Female');
 export const TOTAL_MALE = translate('TOTAL_MALE', 'Total Male');
 export const TOTAL_FEMALE = translate('FEMALE_LABEL', 'Total Female');
-export const TOTAL_TREATED = translate('FEMALE_LABEL', 'Total Treated');
+export const TOTAL_TREATED = translate('TOTAL_TREATED', 'Total Treated');
 export const SUPERVISOR_DISTRIBUTED = translate('SUPERVISOR_DISTRIBUTED', 'Supervisor Distributed');
 export const RECEIVED_BY_CDD = translate('RECEIVED_BY_CDD', 'Received by CDD');
 export const ADMINISTERED_LABEL = translate('ADMINISTERED_LABEL', 'Administered');
@@ -1038,7 +1038,7 @@ export const OTHER_POP_COVERAGE = translate(
   'Other Pop Coverage (Unofficial)'
 );
 export const DAYS_WORKED = translate('DAYS_WORKED', 'Days worked');
-export const AVERAGE_PER_DAY = translate('AVERAGE_PER_DAYE', 'Average per day');
+export const AVERAGE_PER_DAY = translate('AVERAGE_PER_DAY', 'Average per day');
 export const ONE_TO_FOUR_YEARS = translate('ONE_TO_FOUR_YEARS', '1-4');
 export const FIVE_TO_FOURTEEN_YEARS = translate('FOUR_TO_FOURTEEN_YEARS', '5-14');
 export const FIFTEEN_YEARS_AND_ABOVE = translate('FIFTEEN_YEARS_AND_ABOVE', '15+');
