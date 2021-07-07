@@ -1808,5 +1808,77 @@
   "IRS_LITE_REPORTING_TITLE": {
     "message": "IRS Lite Reporting",
     "description": "IRS Lite Reporting title"
+  },
+  "IRS_LITE_PERFORMANCE_REPORTING_TITLE": {
+    "message": "IRS Lite Performance Reporting",
+    "description": "IRS Lite Performance Reporting title"
+  },
+  "START_DATE": {
+    "message": "Start Date",
+    "description": "Start Date text"
+  },
+  "ERROR_LOADING_ITEMS": {
+    "message": "Could not load points on map",
+    "description": "Could not load points on map"
+  },
+  "PLAN_STATUS_UPDATE_ERROR": {
+    "message": "Sorry, something went wrong when we tried to update the plan status",
+    "description": "Sorry, something went wrong when we tried to update the plan status"
+  },
+  "USERS_FETCH_ERROR": {
+    "message": "Sorry, something went wrong when we tried to fetch users",
+    "description": "Sorry, something went wrong when we tried to fetch users"
+  },
+  "IRS_LITE_PLANS": {
+    "message": "IRS Lite Plans",
+    "description": "IRS Lite Plans"
+  },
+  "MOP_UP_REPORTING_TITLE": {
+    "message": "IRS Mop-up Reporting",
+    "description": "IRS Mop-up Reporting title"
+  },
+  "HEALTH_FACILITY": {
+    "message": "Health Facility",
+    "description": "Health Facility"
+  },
+  "VISITED_SPRAYED": {
+    "message": "Visited Sprayed",
+    "description": "Visited Sprayed"
+  },
+  "STRUCTURES_REMAINING_TO_SPRAY_TO_REACH_90_SE": {
+    "message": "Structures remaining to spray to reach 90% SE",
+    "description": "Structures remaining to spray to reach 90% SE label"
+  },
+  "TLA_DAYS": {
+    "message": "TLA Days",
+    "description": "TLA Days"
+  },
+  "SPRAY_EFFECTIVENESS": {
+    "message": "Spray Effectiveness",
+    "description": "Spray Effectiveness"
+  },
+  "SPRAY_COVERAGE": {
+    "message": "Spray coverage",
+    "description": "Spray coverage"
+  },
+  "DATE_OF_LAST_VISIT": {
+    "message": "Date of Last Visit",
+    "description": "Date of Last Visit"
+  },
+  "DATE_OF_LAST_DECISION_FROM": {
+    "message": "Date of last Decision form",
+    "description": "Date of last Decision form"
+  },
+  "HEALTH_CENTERS_TO_MOP_UP": {
+    "message": "Health Centers to Mop-up",
+    "description": "Health Centers to Mop-up"
+  },
+  "SPRAY_AREAS_TO_MOPUP": {
+    "message": "Spray Areas to to Mop-up",
+    "description": "Spray Areas to to Mop-up"
+  },
+  "STRUCTURES_TO_SPRAY_TO_REACH_90": {
+    "message": "Structures to spray or areas to react 90%",
+    "description": "Structures to spray or areas to react 90%"
   }
 }
