@@ -10,11 +10,11 @@ dotenv.config();
  * since the express backend is meant to be generic and api-agnostic
  */
 export const EXPRESS_OPENSRP_ACCESS_TOKEN_URL =
-    process.env.EXPRESS_OPENSRP_ACCESS_TOKEN_URL || 'hhttps://opensrp-ops.akros.online/opensrp/oauth/token';
+    process.env.EXPRESS_OPENSRP_ACCESS_TOKEN_URL || 'https://opensrp-ops.akros.online/opensrp/oauth/token';
 export type EXPRESS_OPENSRP_ACCESS_TOKEN_URL = typeof EXPRESS_OPENSRP_ACCESS_TOKEN_URL;
 
 export const EXPRESS_OPENSRP_AUTHORIZATION_URL =
-    process.env.EXPRESS_OPENSRP_AUTHORIZATION_URL || 'hhttps://opensrp-ops.akros.online/opensrp/oauth/authorize';
+    process.env.EXPRESS_OPENSRP_AUTHORIZATION_URL || 'https://opensrp-ops.akros.online/opensrp/oauth/authorize';
 export type EXPRESS_OPENSRP_AUTHORIZATION_URL = typeof EXPRESS_OPENSRP_AUTHORIZATION_URL;
 
 export const EXPRESS_OPENSRP_CALLBACK_URL =
@@ -22,7 +22,7 @@ export const EXPRESS_OPENSRP_CALLBACK_URL =
 export type EXPRESS_OPENSRP_CALLBACK_URL = typeof EXPRESS_OPENSRP_CALLBACK_URL;
 
 export const EXPRESS_OPENSRP_USER_URL =
-    process.env.EXPRESS_OPENSRP_USER_URL || 'hhttps://opensrp-ops.akros.online/opensrp/user-details';
+    process.env.EXPRESS_OPENSRP_USER_URL || 'https://opensrp-ops.akros.online/opensrp/user-details';
 export type EXPRESS_OPENSRP_USER_URL = typeof EXPRESS_OPENSRP_USER_URL;
 
 export const EXPRESS_SESSION_FILESTORE_PATH = process.env.EXPRESS_SESSION_FILESTORE_PATH || '/tmp/express-sessions';

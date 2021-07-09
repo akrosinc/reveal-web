@@ -13,7 +13,7 @@ Object {
   "accessToken": [Function],
   "appIdLabel": "App Id",
   "appVersionLabel": "App Version",
-  "baseURL": "hhttps://opensrp-ops.akros.online/opensrp/rest/",
+  "baseURL": "https://opensrp-ops.akros.online/opensrp/rest/",
   "currentUrl": "/manifest/releases",
   "customAlert": [Function],
   "data": Array [
