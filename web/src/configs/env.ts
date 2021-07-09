@@ -427,20 +427,20 @@ export type ONADATA_CLIENT_ID = typeof ONADATA_CLIENT_ID;
 // notice the ending / here
 export const ONADATA_ACCESS_TOKEN_URL = setEnv(
   'REACT_APP_ONADATA_ACCESS_TOKEN_URL',
-  'https://stage-api.ona.io/o/token/'
+  'https://old.not.used/o/token/'
 );
 export type ONADATA_ACCESS_TOKEN_URL = typeof ONADATA_ACCESS_TOKEN_URL;
 
 // notice the ending / here
 export const ONADATA_AUTHORIZATION_URL = setEnv(
   'REACT_APP_ONADATA_AUTHORIZATION_URL',
-  'https://stage-api.ona.io/o/authorize/'
+  'https://old.not.used/o/authorize/'
 );
 export type ONADATA_AUTHORIZATION_URL = typeof ONADATA_AUTHORIZATION_URL;
 
 export const ONADATA_USER_URL = setEnv(
   'REACT_APP_ONADATA_USER_URL',
-  'https://stage-api.ona.io/api/v1/user.json'
+  'https://old.not.used/api/v1/user.json'
 );
 export type ONADATA_USER_URL = typeof ONADATA_USER_URL;
 
@@ -693,7 +693,8 @@ export type OPENSRP_MAX_PLANS_PER_REQUEST = typeof OPENSRP_MAX_PLANS_PER_REQUEST
 export const TASK_GENERATION_STATUS = setEnv('REACT_APP_TASK_GENERATION_STATUS', IGNORE);
 export type TASK_GENERATION_STATUS = typeof TASK_GENERATION_STATUS;
 
-export const ENABLE_IRS_MOPUP_REPORTING = setEnv('REACT_APP_ENABLE_IRS_MOPUP_REPORTING', false);
+export const ENABLE_IRS_MOPUP_REPORTING =
+  setEnv('REACT_APP_ENABLE_IRS_MOPUP_REPORTING', false) === 'true';
 export type ENABLE_IRS_MOPUP_REPORTING = typeof ENABLE_IRS_MOPUP_REPORTING;
 
 export const SUPERSET_IRS_MOPUP_REPORTING_JURISDICTIONS_DATA_SLICES: string = setEnv(

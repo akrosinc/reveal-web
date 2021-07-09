@@ -174,7 +174,7 @@ export class HeaderComponent extends React.Component<HeaderProps, State> {
                 </NavLink>
               </NavItem>
 
-              {enablePlansDropDown && (
+              {enablePlansDropDown && authenticated && (
                 <UncontrolledDropdown nav={true} inNavbar={true}>
                   <DropdownToggle nav={true} caret={true} className={'nav-link'}>
                     {PLAN_TITLE}
@@ -200,7 +200,7 @@ export class HeaderComponent extends React.Component<HeaderProps, State> {
                 </UncontrolledDropdown>
               )}
 
-              {ENABLE_ASSIGN && (
+              {ENABLE_ASSIGN && authenticated && (
                 <NavItem>
                   <NavLink to={ASSIGN_PLAN_URL} className="nav-link" activeClassName="active">
                     {ASSIGN}
@@ -208,7 +208,7 @@ export class HeaderComponent extends React.Component<HeaderProps, State> {
                 </NavItem>
               )}
 
-              {enableMonitorDropDown && (
+              {enableMonitorDropDown && authenticated && (
                 <UncontrolledDropdown nav={true} inNavbar={true}>
                   <DropdownToggle
                     nav={true}
@@ -336,7 +336,7 @@ export class HeaderComponent extends React.Component<HeaderProps, State> {
                 </UncontrolledDropdown>
               )}
 
-              {enableAdminDropDown && (
+              {enableAdminDropDown && authenticated && (
                 <UncontrolledDropdown nav={true} inNavbar={true}>
                   <DropdownToggle nav={true} caret={true} className={'nav-link'}>
                     {ADMIN}
