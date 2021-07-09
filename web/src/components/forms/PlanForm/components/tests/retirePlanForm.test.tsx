@@ -58,7 +58,7 @@ describe('forms/PlanForm/components/retirePlanForm', () => {
     });
 
     expect(wrapper.props().cancelCallBack).toBeCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith('https://test.smartregister.org/opensrp/rest/event', {
+    expect(fetch).toHaveBeenCalledWith('https://opensrp-ops.akros.online/opensrp/rest/event', {
       'Cache-Control': 'no-cache',
       Pragma: 'no-cache',
       body: JSON.stringify(retirePayload),
@@ -99,7 +99,7 @@ describe('forms/PlanForm/components/retirePlanForm', () => {
     });
 
     expect(wrapper.props().cancelCallBack).toBeCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith('https://test.smartregister.org/opensrp/rest/event', {
+    expect(fetch).toHaveBeenCalledWith('https://opensrp-ops.akros.online/opensrp/rest/event', {
       'Cache-Control': 'no-cache',
       Pragma: 'no-cache',
       body: JSON.stringify(payloadCopy),
