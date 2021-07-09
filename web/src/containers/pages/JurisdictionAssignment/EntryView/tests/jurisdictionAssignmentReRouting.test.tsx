@@ -129,7 +129,7 @@ describe('jurisdictionView/EntryView', () => {
 
     expect(fetch.mock.calls).toEqual([
       [
-        'https://test.smartregister.org/opensrp/rest/location/hierarchy/2942?return_structure_count=true',
+        'https://opensrp-ops.akros.online/opensrp/rest/location/hierarchy/2942?return_structure_count=true',
         {
           headers: {
             accept: 'application/json',

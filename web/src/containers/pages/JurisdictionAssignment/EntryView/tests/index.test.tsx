@@ -81,7 +81,7 @@ describe('JurisdictionAssignment/JurisdictionEntry', () => {
     // we now check the fetch calls
     expect(fetch.mock.calls).toEqual([
       [
-        'https://test.smartregister.org/opensrp/rest/plans/356b6b84-fc36-4389-a44a-2b038ed2f38d',
+        'https://opensrp-ops.akros.online/opensrp/rest/plans/356b6b84-fc36-4389-a44a-2b038ed2f38d',
         {
           headers: {
             accept: 'application/json',
@@ -92,7 +92,7 @@ describe('JurisdictionAssignment/JurisdictionEntry', () => {
         },
       ],
       [
-        'https://test.smartregister.org/opensrp/rest/location/findByJurisdictionIds?is_jurisdiction=true&return_geometry=false&jurisdiction_ids=3952',
+        'https://opensrp-ops.akros.online/opensrp/rest/location/findByJurisdictionIds?is_jurisdiction=true&return_geometry=false&jurisdiction_ids=3952',
         {
           headers: {
             accept: 'application/json',
@@ -103,7 +103,7 @@ describe('JurisdictionAssignment/JurisdictionEntry', () => {
         },
       ],
       [
-        'https://test.smartregister.org/opensrp/rest/location/3019?is_jurisdiction=true&return_geometry=false',
+        'https://opensrp-ops.akros.online/opensrp/rest/location/3019?is_jurisdiction=true&return_geometry=false',
         {
           headers: {
             accept: 'application/json',
@@ -114,7 +114,7 @@ describe('JurisdictionAssignment/JurisdictionEntry', () => {
         },
       ],
       [
-        'https://test.smartregister.org/opensrp/rest/location/2942?is_jurisdiction=true&return_geometry=false',
+        'https://opensrp-ops.akros.online/opensrp/rest/location/2942?is_jurisdiction=true&return_geometry=false',
         {
           headers: {
             accept: 'application/json',

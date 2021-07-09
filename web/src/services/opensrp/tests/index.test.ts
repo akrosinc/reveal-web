@@ -60,9 +60,9 @@ describe('services/OpenSRP', () => {
 
   it('OpenSRPService constructor works', async () => {
     const planService = new OpenSRPService('plans');
-    expect(planService.baseURL).toEqual('https://test.smartregister.org/opensrp/rest/');
+    expect(planService.baseURL).toEqual('https://opensrp-ops.akros.online/opensrp/rest/');
     expect(planService.endpoint).toEqual('plans');
-    expect(planService.generalURL).toEqual('https://test.smartregister.org/opensrp/rest/plans');
+    expect(planService.generalURL).toEqual('https://opensrp-ops.akros.online/opensrp/rest/plans');
   });
 
   it('getFilterParams works', async () => {
@@ -81,7 +81,7 @@ describe('services/OpenSRP', () => {
     expect(result).toEqual(plansListResponse);
     expect(fetch.mock.calls).toEqual([
       [
-        'https://test.smartregister.org/opensrp/rest/plans',
+        'https://opensrp-ops.akros.online/opensrp/rest/plans',
         {
           headers: {
             accept: 'application/json',
@@ -99,7 +99,7 @@ describe('services/OpenSRP', () => {
     const service = new OpenSRPService('location');
     await service.list({ is_jurisdiction: true });
     expect(fetch.mock.calls[0][0]).toEqual(
-      'https://test.smartregister.org/opensrp/rest/location?is_jurisdiction=true'
+      'https://opensrp-ops.akros.online/opensrp/rest/location?is_jurisdiction=true'
     );
   });
 
@@ -124,7 +124,7 @@ describe('services/OpenSRP', () => {
     expect(result as EmptyObject).toEqual({});
     expect(fetch.mock.calls).toEqual([
       [
-        'https://test.smartregister.org/opensrp/rest/practitioners?practitioner=someone',
+        'https://opensrp-ops.akros.online/opensrp/rest/practitioners?practitioner=someone',
         {
           headers: {
             accept: 'application/json',
@@ -160,7 +160,7 @@ describe('services/OpenSRP', () => {
     expect(result).toEqual(plansListResponse[0]);
     expect(fetch.mock.calls).toEqual([
       [
-        'https://test.smartregister.org/opensrp/rest/plans/0e85c238-39c1-4cea-a926-3d89f0c98427',
+        'https://opensrp-ops.akros.online/opensrp/rest/plans/0e85c238-39c1-4cea-a926-3d89f0c98427',
         {
           headers: {
             accept: 'application/json',
@@ -185,7 +185,7 @@ describe('services/OpenSRP', () => {
     const service = new OpenSRPService('location');
     await service.read('62b2f313', { is_jurisdiction: true });
     expect(fetch.mock.calls[0][0]).toEqual(
-      'https://test.smartregister.org/opensrp/rest/location/62b2f313?is_jurisdiction=true'
+      'https://opensrp-ops.akros.online/opensrp/rest/location/62b2f313?is_jurisdiction=true'
     );
   });
 
@@ -208,7 +208,7 @@ describe('services/OpenSRP', () => {
     expect(result as EmptyObject).toEqual({});
     expect(fetch.mock.calls).toEqual([
       [
-        'https://test.smartregister.org/opensrp/rest/plans',
+        'https://opensrp-ops.akros.online/opensrp/rest/plans',
         {
           'Cache-Control': 'no-cache',
           Pragma: 'no-cache',
@@ -229,7 +229,7 @@ describe('services/OpenSRP', () => {
     const service = new OpenSRPService('location');
     await service.create({ foo: 'bar' }, { is_jurisdiction: true });
     expect(fetch.mock.calls[0][0]).toEqual(
-      'https://test.smartregister.org/opensrp/rest/location?is_jurisdiction=true'
+      'https://opensrp-ops.akros.online/opensrp/rest/location?is_jurisdiction=true'
     );
   });
 
@@ -256,7 +256,7 @@ describe('services/OpenSRP', () => {
     expect(result as EmptyObject).toEqual({});
     expect(fetch.mock.calls).toEqual([
       [
-        'https://test.smartregister.org/opensrp/rest/plans',
+        'https://opensrp-ops.akros.online/opensrp/rest/plans',
         {
           'Cache-Control': 'no-cache',
           Pragma: 'no-cache',
@@ -277,7 +277,7 @@ describe('services/OpenSRP', () => {
     const service = new OpenSRPService('location');
     await service.update({ foo: 'bar' }, { is_jurisdiction: true });
     expect(fetch.mock.calls[0][0]).toEqual(
-      'https://test.smartregister.org/opensrp/rest/location?is_jurisdiction=true'
+      'https://opensrp-ops.akros.online/opensrp/rest/location?is_jurisdiction=true'
     );
   });
 

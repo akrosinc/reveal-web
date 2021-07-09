@@ -5,6 +5,7 @@ import { percentage } from '@onaio/utils';
 import { keys } from 'lodash';
 import * as React from 'react';
 import { Cell } from 'react-table';
+import { UncontrolledTooltip } from 'reactstrap';
 import { GREEN, ORANGE, RED, WHITE, YELLOW } from '../colors';
 import { PERSONS, STRUCTURES } from '../configs/lang';
 import {
@@ -289,4 +290,21 @@ export const renderCellWithNumberRounded = (cell: Cell) => {
   } else {
     return Math.ceil(intValue);
   }
+};
+export const renderHeaderWithTooltip = (title: string, toolTipText: string) => {
+  const id = `Tooltip-${title
+    .replace(/ /g, '')
+    .replace('(', '')
+    .replace(')', '')
+    .replace('%', '')
+    .replace("'", '')
+    .trim()}`;
+  return (
+    <div>
+      <div id={id}>{title}</div>
+      <UncontrolledTooltip placement="top" target={id}>
+        {toolTipText}
+      </UncontrolledTooltip>
+    </div>
+  );
 };

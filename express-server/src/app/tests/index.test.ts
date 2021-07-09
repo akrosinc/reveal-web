@@ -18,7 +18,7 @@ import { oauthState, parsedApiResponse, unauthorized } from './fixtures';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { extractCookies } = require('./utils');
 
-const authorizationUri = 'http://reveal-stage.smartregister.org/opensrp/oauth/';
+const authorizationUri = 'https://opensrp-ops.akros.online/opensrp/oauth/';
 const oauthCallbackUri = '/oauth/callback/OpenSRP/?code=Boi4Wz&state=opensrp';
 
 const panic = (err: Error, done: jest.DoneCallback): void => {
@@ -134,7 +134,7 @@ describe('src/index.ts', () => {
                 return parsedApiResponse;
             }
         };
-        nock('http://reveal-stage.smartregister.org').get(`/opensrp/user-details`).reply(200, {});
+        nock('https://opensrp-ops.akros.online').get(`/opensrp/user-details`).reply(200, {});
 
         request(app)
             .get(oauthCallbackUri)
@@ -287,7 +287,7 @@ describe('src/index.ts', () => {
                 return 'string';
             }
         };
-        nock('http://reveal-stage.smartregister.org').get(`/opensrp/user-details`).reply(200, {});
+        nock('https://opensrp-ops.akros.online').get(`/opensrp/user-details`).reply(200, {});
 
         request(app)
             .get(oauthCallbackUri)

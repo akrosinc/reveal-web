@@ -39,7 +39,7 @@ it('plans with existing node selections', async () => {
   jest.setTimeout(10000);
   const envModule = require('../../../../../configs/env');
   envModule.ASSIGNMENT_PAGE_SHOW_MAP = true;
-  envModule.OPENSRP_API_BASE_URL = 'https://test.smartregister.org/opensrp/rest/';
+  envModule.OPENSRP_API_BASE_URL = 'https://opensrp-ops.akros.online/opensrp/rest/';
 
   const App = () => {
     return (

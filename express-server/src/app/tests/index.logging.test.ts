@@ -7,7 +7,7 @@ import app from '../index';
 import { parsedApiResponse } from './fixtures';
 import { winstonLogger } from '../../configs/winston';
 
-const authorizationUri = 'http://reveal-stage.smartregister.org/opensrp/oauth/';
+const authorizationUri = 'https://opensrp-ops.akros.online/opensrp/oauth/';
 const oauthCallbackUri = '/oauth/callback/OpenSRP/?code=Boi4Wz&state=opensrp';
 
 const panic = (err: Error, done: jest.DoneCallback): void => {
@@ -117,7 +117,7 @@ describe('src/index.ts', () => {
             }
         };
 
-        nock('http://reveal-stage.smartregister.org').get(`/opensrp/user-details`).reply(200, {});
+        nock('https://opensrp-ops.akros.online').get(`/opensrp/user-details`).reply(200, {});
 
         request(app)
             .get(oauthCallbackUri)

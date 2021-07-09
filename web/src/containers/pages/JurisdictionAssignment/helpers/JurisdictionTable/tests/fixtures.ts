@@ -4,7 +4,7 @@ import { PlanStatus } from '../../../../../../store/ducks/plans';
 const plan = { ...plans[0] };
 
 export const afterDraftSave = [
-  'https://test.smartregister.org/opensrp/rest/plans',
+  'https://opensrp-ops.akros.online/opensrp/rest/plans',
   {
     'Cache-Control': 'no-cache',
     Pragma: 'no-cache',
@@ -19,7 +19,7 @@ export const afterDraftSave = [
 ];
 
 export const afterSaveAndActivate = [
-  'https://test.smartregister.org/opensrp/rest/plans',
+  'https://opensrp-ops.akros.online/opensrp/rest/plans',
   {
     'Cache-Control': 'no-cache',
     Pragma: 'no-cache',
