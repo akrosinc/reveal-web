@@ -641,7 +641,7 @@ export const MDA_POINT_FORM_INTERVENTION_TITLE = setEnv(
 export type MDA_POINT_FORM_INTERVENTION_TITLE = typeof MDA_POINT_FORM_INTERVENTION_TITLE;
 export const KEYCLOAK_LOGOUT_URL = setEnv(
   'REACT_APP_KEYCLOAK_LOGOUT_URL',
-  'https://sso-ops.akros.online/auth/realms/reveal-stage/protocol/openid-connect/logout'
+  'https://sso-ops.akros.online/auth/realms/reveal/protocol/openid-connect/logout'
 );
 export type KEYCLOAK_LOGOUT_URL = typeof KEYCLOAK_LOGOUT_URL;
 

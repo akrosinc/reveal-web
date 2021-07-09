@@ -14,7 +14,7 @@ Below is a list of currently supported environment variables:
 
   - url to logout from the keycloak server
   - **Required**
-  - default: `https://sso-ops.akros.online/auth/realms/reveal-stage/protocol/openid-connect/logout`
+  - default: `https://sso-ops.akros.online/auth/realms/reveal/protocol/openid-connect/logout`
 
 - **REACT_APP_SHOW_TEAM_ASSIGN_ON_OPERATIONAL_AREAS_ONLY**
 
