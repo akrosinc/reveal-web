@@ -57,7 +57,7 @@ export const EXPRESS_MAXIMUM_SESSION_LIFE_TIME = 3600;
 
 export const EXPRESS_SERVER_LOGOUT_URL= 'http://localhost:3000/logout';
 export const EXPRESS_OPENSRP_LOGOUT_URL= 'https://opensrp-ops.akros.online/opensrp/logout.do';
-export const EXPRESS_KEYCLOAK_LOGOUT_URL= 'https://sso-ops.akros.online/auth/realms/reveal-stage/protocol/openid-connect/logout';
+export const EXPRESS_KEYCLOAK_LOGOUT_URL= 'https://sso-ops.akros.online/auth/realms/reveal/protocol/openid-connect/logout';
 
 export const EXPRESS_MAXIMUM_LOGS_FILE_SIZE = 5242880;
 export const EXPRESS_MAXIMUM_LOG_FILES_NUMBER = 5;

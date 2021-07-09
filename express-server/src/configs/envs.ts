@@ -78,7 +78,7 @@ export type EXPRESS_SERVER_LOGOUT_URL = typeof EXPRESS_SERVER_LOGOUT_URL;
 export const EXPRESS_OPENSRP_LOGOUT_URL = process.env.EXPRESS_OPENSRP_LOGOUT_URL || 'https://opensrp-ops.akros.online/opensrp/logout.do';
 export type EXPRESS_OPENSRP_LOGOUT_URL = typeof EXPRESS_OPENSRP_LOGOUT_URL;
 
-export const EXPRESS_KEYCLOAK_LOGOUT_URL = process.env.EXPRESS_KEYCLOAK_LOGOUT_URL || 'https://sso-ops.akros.online/auth/realms/reveal-stage/protocol/openid-connect/logout';
+export const EXPRESS_KEYCLOAK_LOGOUT_URL = process.env.EXPRESS_KEYCLOAK_LOGOUT_URL || 'https://sso-ops.akros.online/auth/realms/reveal/protocol/openid-connect/logout';
 export type EXPRESS_KEYCLOAK_LOGOUT_URL = typeof EXPRESS_KEYCLOAK_LOGOUT_URL;
 
 export const EXPRESS_MAXIMUM_LOGS_FILE_SIZE = Number(process.env.EXPRESS_MAXIMUM_LOGS_FILE_SIZE || 5242880); // 5MB
