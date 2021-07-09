@@ -379,20 +379,20 @@ export type OPENSRP_CLIENT_ID = typeof OPENSRP_CLIENT_ID;
 // notice the ending is NOT / here
 export const OPENSRP_ACCESS_TOKEN_URL = setEnv(
   'REACT_APP_OPENSRP_ACCESS_TOKEN_URL',
-  'hhttps://opensrp-ops.akros.online/opensrp/oauth/token'
+  'https://opensrp-ops.akros.online/opensrp/oauth/token'
 );
 export type OPENSRP_ACCESS_TOKEN_URL = typeof OPENSRP_ACCESS_TOKEN_URL;
 
 // notice the ending is NOT / here
 export const OPENSRP_AUTHORIZATION_URL = setEnv(
   'REACT_APP_OPENSRP_AUTHORIZATION_URL',
-  'hhttps://opensrp-ops.akros.online/opensrp/oauth/authorize'
+  'https://opensrp-ops.akros.online/opensrp/oauth/authorize'
 );
 export type OPENSRP_AUTHORIZATION_URL = typeof OPENSRP_AUTHORIZATION_URL;
 
 export const OPENSRP_USER_URL = setEnv(
   'REACT_APP_OPENSRP_USER_URL',
-  'hhttps://opensrp-ops.akros.online/opensrp/user-details'
+  'https://opensrp-ops.akros.online/opensrp/user-details'
 );
 export type OPENSRP_USER_URL = typeof OPENSRP_USER_URL;
 
@@ -401,20 +401,20 @@ export type OPENSRP_OAUTH_STATE = typeof OPENSRP_OAUTH_STATE;
 
 export const OPENSRP_LOGOUT_URL = setEnv(
   'REACT_APP_OPENSRP_LOGOUT_URL',
-  'hhttps://opensrp-ops.akros.online/opensrp/logout.do'
+  'https://opensrp-ops.akros.online/opensrp/logout.do'
 );
 export type OPENSRP_LOGOUT_URL = typeof OPENSRP_LOGOUT_URL;
 
 // notice the trailing /
 export const OPENSRP_API_BASE_URL = setEnv(
   'REACT_APP_OPENSRP_API_BASE_URL',
-  'hhttps://opensrp-ops.akros.online/opensrp/rest/'
+  'https://opensrp-ops.akros.online/opensrp/rest/'
 );
 export type OPENSRP_API_BASE_URL = typeof OPENSRP_API_BASE_URL;
 
 export const OPENSRP_API_V2_BASE_URL = setEnv(
   'REACT_APP_OPENSRP_API_V2_BASE_URL',
-  'hhttps://opensrp-ops.akros.online/opensrp/rest/v2/'
+  'https://opensrp-ops.akros.online/opensrp/rest/v2/'
 );
 export type OPENSRP_API_V2_BASE_URL = typeof OPENSRP_API_V2_BASE_URL;
 

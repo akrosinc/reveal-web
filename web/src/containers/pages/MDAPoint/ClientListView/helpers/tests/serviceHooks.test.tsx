@@ -62,8 +62,8 @@ describe('src/containers/pages/ClientListView/helpers/servicehooks', () => {
      * 2. get from history api
      * Haven't been able to run the param assertions for the two cases successfully
      * Here are the two calls
-     * 1. "hhttps://opensrp-ops.akros.online/opensrp/rest/upload/undefined", {"body": {}, "headers": {"Authorization": "Bearer null"}, "method": "POST"}
-     * 2. "hhttps://opensrp-ops.akros.online/opensrp/rest/upload/history", {"headers": {"accept": "application/json", "authorization": "Bearer null", "content-type": "application/json;charset=UTF-8"}, "method": "GET"}
+     * 1. "https://opensrp-ops.akros.online/opensrp/rest/upload/undefined", {"body": {}, "headers": {"Authorization": "Bearer null"}, "method": "POST"}
+     * 2. "https://opensrp-ops.akros.online/opensrp/rest/upload/history", {"headers": {"accept": "application/json", "authorization": "Bearer null", "content-type": "application/json;charset=UTF-8"}, "method": "GET"}
      */
     global.fetch.mockClear();
   });
