@@ -166,7 +166,7 @@ describe('uploads form', () => {
 
     expect(fetch.mock.calls).toEqual([
       [
-        'https://test.smartregister.org/opensrp/rest/settings/sync',
+        'https://opensrp-ops.akros.online/opensrp/rest/settings/sync',
         {
           'Cache-Control': 'no-cache',
           Pragma: 'no-cache',

@@ -16,7 +16,7 @@ describe('src/containers/pages/InterventionPlan/UpdatePlan/PlanLoc.utils', () =>
     await new Promise(resolve => setImmediate(resolve));
     // made the correct call(hit the correct endpoints)
     expect(fetch.mock.calls[0]).toEqual([
-      'https://test.smartregister.org/opensrp/rest/plans/findLocationNames/somePlanId',
+      'https://opensrp-ops.akros.online/opensrp/rest/plans/findLocationNames/somePlanId',
       {
         headers: {
           accept: 'application/json',

@@ -12,7 +12,7 @@ import { practitioners, sortedUsers, users } from './fixtures';
 // tslint:disable-next-line: no-var-requires
 const fetch = require('jest-fetch-mock');
 jest.mock('../../../../../configs/env.ts', () => ({
-  OPENSRP_API_BASE_URL: 'https://test.smartregister.org/opensrp/rest/',
+  OPENSRP_API_BASE_URL: 'https://opensrp-ops.akros.online/opensrp/rest/',
   PRACTITIONER_REQUEST_PAGE_SIZE: 1000,
   USERS_REQUEST_PAGE_SIZE: 1000,
 }));
@@ -83,19 +83,19 @@ describe('src/*/forms/userIdSelect', () => {
     };
 
     const practitionerCall1 = [
-      'https://test.smartregister.org/opensrp/rest/practitioner?pageNumber=1&pageSize=1000',
+      'https://opensrp-ops.akros.online/opensrp/rest/practitioner?pageNumber=1&pageSize=1000',
       defaultCallParams,
     ];
 
     const practitionerCall2 = [
-      'https://test.smartregister.org/opensrp/rest/practitioner?pageNumber=2&pageSize=1000',
+      'https://opensrp-ops.akros.online/opensrp/rest/practitioner?pageNumber=2&pageSize=1000',
       defaultCallParams,
     ];
 
     const calls = [
-      ['https://test.smartregister.org/opensrp/rest/user/count', defaultCallParams],
+      ['https://opensrp-ops.akros.online/opensrp/rest/user/count', defaultCallParams],
       [
-        'https://test.smartregister.org/opensrp/rest/user?page_size=1000&source=Keycloak&start_index=0',
+        'https://opensrp-ops.akros.online/opensrp/rest/user?page_size=1000&source=Keycloak&start_index=0',
         defaultCallParams,
       ],
       practitionerCall1,
@@ -327,24 +327,24 @@ describe('src/*/forms/userIdSelect', () => {
     };
 
     const practitionerCall1 = [
-      'https://test.smartregister.org/opensrp/rest/practitioner?pageNumber=1&pageSize=1000',
+      'https://opensrp-ops.akros.online/opensrp/rest/practitioner?pageNumber=1&pageSize=1000',
       defaultCallParams,
     ];
 
     const practitionerCall2 = [
-      'https://test.smartregister.org/opensrp/rest/practitioner?pageNumber=2&pageSize=1000',
+      'https://opensrp-ops.akros.online/opensrp/rest/practitioner?pageNumber=2&pageSize=1000',
       defaultCallParams,
     ];
 
     const practitionerCall3 = [
-      'https://test.smartregister.org/opensrp/rest/practitioner?pageNumber=3&pageSize=1000',
+      'https://opensrp-ops.akros.online/opensrp/rest/practitioner?pageNumber=3&pageSize=1000',
       defaultCallParams,
     ];
 
     const calls = [
-      ['https://test.smartregister.org/opensrp/rest/user/count', defaultCallParams],
+      ['https://opensrp-ops.akros.online/opensrp/rest/user/count', defaultCallParams],
       [
-        'https://test.smartregister.org/opensrp/rest/user?page_size=1000&source=Keycloak&start_index=0',
+        'https://opensrp-ops.akros.online/opensrp/rest/user?page_size=1000&source=Keycloak&start_index=0',
         defaultCallParams,
       ],
       // only three call to practitioner API

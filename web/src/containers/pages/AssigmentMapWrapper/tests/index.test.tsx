@@ -55,7 +55,7 @@ jest.mock('../../../../components/GisidaLite', () => {
   };
 });
 jest.mock('../../../../configs/env', () => ({
-  OPENSRP_API_BASE_URL: 'https://test.smartregister.org/opensrp/rest/',
+  OPENSRP_API_BASE_URL: 'https://opensrp-ops.akros.online/opensrp/rest/',
   PLAN_TYPES_WITH_MULTI_JURISDICTIONS: ['IRS'],
 }));
 
@@ -107,7 +107,7 @@ describe('containers/pages/AssigmentMapWrapper', () => {
     await flushPromises();
     expect(fetch.mock.calls).toEqual([
       [
-        'https://test.smartregister.org/opensrp/rest/location/findByJurisdictionIds?is_jurisdiction=true&return_geometry=true&jurisdiction_ids=2492',
+        'https://opensrp-ops.akros.online/opensrp/rest/location/findByJurisdictionIds?is_jurisdiction=true&return_geometry=true&jurisdiction_ids=2492',
         {
           headers: {
             accept: 'application/json',
