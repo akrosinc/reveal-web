@@ -8,9 +8,9 @@ export const Footer = () => {
       <hr className="p-0 m-0" />
       {REVEAL_BRAND_IMG_SRC && (
         <>
-          <img src="reveal-logo.png" alt={WEBSITE_NAME} style={{ paddingBottom: '5px' }} />
+          <img src="/reveal-logo.png" alt={WEBSITE_NAME} style={{ paddingBottom: '5px' }} />
           &nbsp; &nbsp; supported by &nbsp; &nbsp;
-          <img src="akros-logo.png" alt="Akros" style={{ paddingBottom: '5px' }} />
+          <img src="/akros-logo.png" alt="Akros" style={{ paddingBottom: '5px' }} />
         </>
       )}
       &nbsp; <small className="text-muted">{REACT_APP_VERSION}</small>
