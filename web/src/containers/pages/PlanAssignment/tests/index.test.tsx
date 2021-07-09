@@ -46,7 +46,7 @@ jest.mock('../../../../configs/env', () => ({
   ASSIGNED_TEAMS_REQUEST_PAGE_SIZE: 1000,
   ASSIGNMENT_PAGE_SHOW_MAP: false,
   MAP_DISABLED_PLAN_TYPES: ['FI'],
-  OPENSRP_API_BASE_URL: 'https://test.smartregister.org/opensrp/rest/',
+  OPENSRP_API_BASE_URL: 'https://opensrp-ops.akros.online/opensrp/rest/',
 }));
 
 jest.mock('../../AssigmentMapWrapper', () => {
@@ -136,16 +136,16 @@ describe('PlanAssignment', () => {
     });
 
     expect(fetch.mock.calls[0][0]).toEqual(
-      'https://test.smartregister.org/opensrp/rest/location/hierarchy/plan/356b6b84-fc36-4389-a44a-2b038ed2f38d?return_structure_count=false'
+      'https://opensrp-ops.akros.online/opensrp/rest/location/hierarchy/plan/356b6b84-fc36-4389-a44a-2b038ed2f38d?return_structure_count=false'
     );
     expect(fetch.mock.calls[1][0]).toEqual(
-      'https://test.smartregister.org/opensrp/rest/organization/assignedLocationsAndPlans?pageNumber=1&pageSize=1000&plan=356b6b84-fc36-4389-a44a-2b038ed2f38d'
+      'https://opensrp-ops.akros.online/opensrp/rest/organization/assignedLocationsAndPlans?pageNumber=1&pageSize=1000&plan=356b6b84-fc36-4389-a44a-2b038ed2f38d'
     );
     expect(fetch.mock.calls[2][0]).toEqual(
-      'https://test.smartregister.org/opensrp/rest/organization'
+      'https://opensrp-ops.akros.online/opensrp/rest/organization'
     );
     expect(fetch.mock.calls[3][0]).toEqual(
-      'https://test.smartregister.org/opensrp/rest/plans/356b6b84-fc36-4389-a44a-2b038ed2f38d'
+      'https://opensrp-ops.akros.online/opensrp/rest/plans/356b6b84-fc36-4389-a44a-2b038ed2f38d'
     );
 
     const wrapperProps = {

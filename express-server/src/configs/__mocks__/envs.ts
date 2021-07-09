@@ -1,15 +1,15 @@
 import { join } from 'path';
 
-export const EXPRESS_OPENSRP_ACCESS_TOKEN_URL = 'http://reveal-stage.smartregister.org/opensrp/oauth/token';
+export const EXPRESS_OPENSRP_ACCESS_TOKEN_URL = 'https://opensrp-ops.akros.online/opensrp/oauth/token';
 export type EXPRESS_OPENSRP_ACCESS_TOKEN_URL = typeof EXPRESS_OPENSRP_ACCESS_TOKEN_URL;
 
-export const EXPRESS_OPENSRP_AUTHORIZATION_URL = 'http://reveal-stage.smartregister.org/opensrp/oauth/authorize';
+export const EXPRESS_OPENSRP_AUTHORIZATION_URL = 'https://opensrp-ops.akros.online/opensrp/oauth/authorize';
 export type EXPRESS_OPENSRP_AUTHORIZATION_URL = typeof EXPRESS_OPENSRP_AUTHORIZATION_URL;
 
 export const EXPRESS_OPENSRP_CALLBACK_URL = 'http://localhost:3000/oauth/callback/OpenSRP/';
 export type EXPRESS_OPENSRP_CALLBACK_URL = typeof EXPRESS_OPENSRP_CALLBACK_URL;
 
-export const EXPRESS_OPENSRP_USER_URL = 'http://reveal-stage.smartregister.org/opensrp/user-details';
+export const EXPRESS_OPENSRP_USER_URL = 'https://opensrp-ops.akros.online/opensrp/user-details';
 export type EXPRESS_OPENSRP_USER_URL = typeof EXPRESS_OPENSRP_USER_URL;
 
 export const EXPRESS_SESSION_FILESTORE_PATH = '/tmp/express-sessions';
@@ -56,8 +56,8 @@ export const EXPRESS_ALLOW_TOKEN_RENEWAL = true;
 export const EXPRESS_MAXIMUM_SESSION_LIFE_TIME = 3600;
 
 export const EXPRESS_SERVER_LOGOUT_URL= 'http://localhost:3000/logout';
-export const EXPRESS_OPENSRP_LOGOUT_URL= 'https://reveal-stage.smartregister.org/opensrp/logout.do';
-export const EXPRESS_KEYCLOAK_LOGOUT_URL= 'https://keycloak-stage.smartregister.org/auth/realms/reveal-stage/protocol/openid-connect/logout';
+export const EXPRESS_OPENSRP_LOGOUT_URL= 'https://opensrp-ops.akros.online/opensrp/logout.do';
+export const EXPRESS_KEYCLOAK_LOGOUT_URL= 'https://sso-ops.akros.online/auth/realms/reveal-stage/protocol/openid-connect/logout';
 
 export const EXPRESS_MAXIMUM_LOGS_FILE_SIZE = 5242880;
 export const EXPRESS_MAXIMUM_LOG_FILES_NUMBER = 5;

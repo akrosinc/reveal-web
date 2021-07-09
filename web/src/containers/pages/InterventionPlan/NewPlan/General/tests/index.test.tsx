@@ -418,7 +418,7 @@ describe('containers/pages/NewPlan', () => {
       ],
     };
     expect(fetch.mock.calls[2]).toEqual([
-      'https://test.smartregister.org/opensrp/rest/plans',
+      'https://opensrp-ops.akros.online/opensrp/rest/plans',
       {
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache',

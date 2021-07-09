@@ -970,7 +970,7 @@ describe('containers/forms/PlanForm - Submission', () => {
 
     // the last request should be the one that is sent to OpenSRP
     expect(fetch.mock.calls.pop()).toEqual([
-      'https://test.smartregister.org/opensrp/rest/plans',
+      'https://opensrp-ops.akros.online/opensrp/rest/plans',
       {
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache',
@@ -1016,7 +1016,7 @@ describe('containers/forms/PlanForm - Submission', () => {
 
     // the last request should be the one that is sent to OpenSRP
     expect(fetch.mock.calls.pop()).toEqual([
-      'https://test.smartregister.org/opensrp/rest/plans',
+      'https://opensrp-ops.akros.online/opensrp/rest/plans',
       {
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache',
@@ -1063,7 +1063,7 @@ describe('containers/forms/PlanForm - Submission', () => {
 
     // the last request should be the one that is sent to OpenSRP
     expect(fetch.mock.calls.pop()).toEqual([
-      'https://test.smartregister.org/opensrp/rest/plans',
+      'https://opensrp-ops.akros.online/opensrp/rest/plans',
       {
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache',
@@ -1392,7 +1392,7 @@ describe('containers/forms/PlanForm - Submission', () => {
     await new Promise<any>(resolve => setImmediate(resolve));
     // ignore jurisdiction call. Check only call to submit data
     expect(fetch.mock.calls[1]).toEqual([
-      'https://test.smartregister.org/opensrp/rest/plans',
+      'https://opensrp-ops.akros.online/opensrp/rest/plans',
       {
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache',
@@ -1751,7 +1751,7 @@ describe('containers/forms/PlanForm - Dynamic Form Activities', () => {
 
     // jurisdictions calls
     const jurisdictionCalls = [
-      'https://test.smartregister.org/opensrp/rest/location/findByProperties?is_jurisdiction=true&return_geometry=false&properties_filter=status:Active,geographicLevel:0',
+      'https://opensrp-ops.akros.online/opensrp/rest/location/findByProperties?is_jurisdiction=true&return_geometry=false&properties_filter=status:Active,geographicLevel:0',
       {
         headers: {
           accept: 'application/json',
@@ -1766,7 +1766,7 @@ describe('containers/forms/PlanForm - Dynamic Form Activities', () => {
     expect(fetch.mock.calls[2]).toEqual(jurisdictionCalls);
     // check what is submited
     expect(fetch.mock.calls[3]).toEqual([
-      'https://test.smartregister.org/opensrp/rest/plans',
+      'https://opensrp-ops.akros.online/opensrp/rest/plans',
       {
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache',

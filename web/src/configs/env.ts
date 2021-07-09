@@ -379,20 +379,20 @@ export type OPENSRP_CLIENT_ID = typeof OPENSRP_CLIENT_ID;
 // notice the ending is NOT / here
 export const OPENSRP_ACCESS_TOKEN_URL = setEnv(
   'REACT_APP_OPENSRP_ACCESS_TOKEN_URL',
-  'https://reveal-stage.smartregister.org/opensrp/oauth/token'
+  'hhttps://opensrp-ops.akros.online/opensrp/oauth/token'
 );
 export type OPENSRP_ACCESS_TOKEN_URL = typeof OPENSRP_ACCESS_TOKEN_URL;
 
 // notice the ending is NOT / here
 export const OPENSRP_AUTHORIZATION_URL = setEnv(
   'REACT_APP_OPENSRP_AUTHORIZATION_URL',
-  'https://reveal-stage.smartregister.org/opensrp/oauth/authorize'
+  'hhttps://opensrp-ops.akros.online/opensrp/oauth/authorize'
 );
 export type OPENSRP_AUTHORIZATION_URL = typeof OPENSRP_AUTHORIZATION_URL;
 
 export const OPENSRP_USER_URL = setEnv(
   'REACT_APP_OPENSRP_USER_URL',
-  'https://reveal-stage.smartregister.org/opensrp/user-details'
+  'hhttps://opensrp-ops.akros.online/opensrp/user-details'
 );
 export type OPENSRP_USER_URL = typeof OPENSRP_USER_URL;
 
@@ -401,20 +401,20 @@ export type OPENSRP_OAUTH_STATE = typeof OPENSRP_OAUTH_STATE;
 
 export const OPENSRP_LOGOUT_URL = setEnv(
   'REACT_APP_OPENSRP_LOGOUT_URL',
-  'https://reveal-stage.smartregister.org/opensrp/logout.do'
+  'hhttps://opensrp-ops.akros.online/opensrp/logout.do'
 );
 export type OPENSRP_LOGOUT_URL = typeof OPENSRP_LOGOUT_URL;
 
 // notice the trailing /
 export const OPENSRP_API_BASE_URL = setEnv(
   'REACT_APP_OPENSRP_API_BASE_URL',
-  'https://reveal-stage.smartregister.org/opensrp/rest/'
+  'hhttps://opensrp-ops.akros.online/opensrp/rest/'
 );
 export type OPENSRP_API_BASE_URL = typeof OPENSRP_API_BASE_URL;
 
 export const OPENSRP_API_V2_BASE_URL = setEnv(
   'REACT_APP_OPENSRP_API_V2_BASE_URL',
-  'https://reveal-stage.smartregister.org/opensrp/rest/v2/'
+  'hhttps://opensrp-ops.akros.online/opensrp/rest/v2/'
 );
 export type OPENSRP_API_V2_BASE_URL = typeof OPENSRP_API_V2_BASE_URL;
 
@@ -641,7 +641,7 @@ export const MDA_POINT_FORM_INTERVENTION_TITLE = setEnv(
 export type MDA_POINT_FORM_INTERVENTION_TITLE = typeof MDA_POINT_FORM_INTERVENTION_TITLE;
 export const KEYCLOAK_LOGOUT_URL = setEnv(
   'REACT_APP_KEYCLOAK_LOGOUT_URL',
-  'https://keycloak-stage.smartregister.org/auth/realms/reveal-stage/protocol/openid-connect/logout'
+  'https://sso-ops.akros.online/auth/realms/reveal-stage/protocol/openid-connect/logout'
 );
 export type KEYCLOAK_LOGOUT_URL = typeof KEYCLOAK_LOGOUT_URL;
 
