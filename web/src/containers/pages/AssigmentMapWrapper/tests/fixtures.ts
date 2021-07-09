@@ -742,7 +742,7 @@ export const payloadWithInvalidCoordinates = [
 
 export const fetchCalls = [
   [
-    'https://reveal-stage.smartregister.org/opensrp/rest/location/findByJurisdictionIds?is_jurisdiction=true&jurisdiction_ids=07b09ec1-0589-4a98-9480-4c403ac24d59,8fb28715-6c80-4e2c-980f-422798fe9f41&return_geometry=true',
+    'https://opensrp-ops.akros.online/opensrp/rest/location/findByJurisdictionIds?is_jurisdiction=true&jurisdiction_ids=07b09ec1-0589-4a98-9480-4c403ac24d59,8fb28715-6c80-4e2c-980f-422798fe9f41&return_geometry=true',
     {
       headers: {
         accept: 'application/json',

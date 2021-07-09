@@ -423,7 +423,7 @@ describe('components/InterventionPlan/UpdatePlan', () => {
 
     expect(fetch.mock.calls).toEqual([
       [
-        'https://test.smartregister.org/opensrp/rest/plans/311d4728-8e88-575d-8189-e88d9a4ae3b6',
+        'https://opensrp-ops.akros.online/opensrp/rest/plans/311d4728-8e88-575d-8189-e88d9a4ae3b6',
         {
           headers: {
             accept: 'application/json',
@@ -500,7 +500,7 @@ describe('components/InterventionPlan/UpdatePlan', () => {
     expect(confirmSpy).toBeCalledTimes(1);
     expect(confirmSpy).toBeCalledWith('You are about to complete a plan, click ok to proceed');
 
-    expect(fetch.mock.calls[1][0]).toEqual('https://test.smartregister.org/opensrp/rest/plans');
+    expect(fetch.mock.calls[1][0]).toEqual('https://opensrp-ops.akros.online/opensrp/rest/plans');
     expect(fetch.mock.calls[1][1].method).toEqual('PUT');
   });
 
@@ -559,11 +559,11 @@ describe('components/InterventionPlan/UpdatePlan', () => {
     expect(fetch).toHaveBeenCalledTimes(3);
     // get the plan to be edited
     expect(fetch.mock.calls[0][0]).toEqual(
-      'https://test.smartregister.org/opensrp/rest/plans/8fa7eb32-99d7-4b49-8332-9ecedd6d51ae'
+      'https://opensrp-ops.akros.online/opensrp/rest/plans/8fa7eb32-99d7-4b49-8332-9ecedd6d51ae'
     );
     // post retire reasons
     expect(fetch.mock.calls[1]).toEqual([
-      'https://test.smartregister.org/opensrp/rest/event',
+      'https://opensrp-ops.akros.online/opensrp/rest/event',
       {
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache',
@@ -584,7 +584,7 @@ describe('components/InterventionPlan/UpdatePlan', () => {
       version: 2,
     };
     expect(fetch.mock.calls[2]).toEqual([
-      'https://test.smartregister.org/opensrp/rest/plans',
+      'https://opensrp-ops.akros.online/opensrp/rest/plans',
       {
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache',
@@ -670,7 +670,7 @@ describe('components/InterventionPlan/UpdatePlan', () => {
       'Mosquito_Collection',
       'BCC_Focus',
     ]);
-    expect(fetch.mock.calls[3][0]).toEqual('https://test.smartregister.org/opensrp/rest/plans');
+    expect(fetch.mock.calls[3][0]).toEqual('https://opensrp-ops.akros.online/opensrp/rest/plans');
     expect(fetch.mock.calls[3][1].method).toEqual('PUT');
   });
 

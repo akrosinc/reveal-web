@@ -96,7 +96,7 @@ describe('components/forms/ExportForm', () => {
     ).toEqual({});
     expect(fetch.mock.calls).toEqual([
       [
-        'https://test.smartregister.org/opensrp/rest/upload/template?event_name=Child Registration&location_id=1337',
+        'https://opensrp-ops.akros.online/opensrp/rest/upload/template?event_name=Child Registration&location_id=1337',
         {
           headers: {
             accept: 'application/json',
