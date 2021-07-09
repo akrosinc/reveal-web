@@ -1,4 +1,5 @@
 import en from './en.json';
+import fr from './fr.json';
 import sw from './sw.json';
 import th from './th.json';
 
@@ -17,6 +18,7 @@ export interface Strings {
 
 export default {
   en,
+  fr,
   sw,
   th,
 } as Strings;

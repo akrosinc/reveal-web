@@ -119,7 +119,7 @@ describe('src/containers/pages/interventionPlan/updateplan/caseDetials', () => {
     await flushPromises();
 
     expect(fetch.mock.calls[0]).toEqual([
-      'https://test.smartregister.org/opensrp/rest/event/findById?id=88684506-605d-41db-b904-efbaf9795d2a',
+      'https://opensrp-ops.akros.online/opensrp/rest/event/findById?id=88684506-605d-41db-b904-efbaf9795d2a',
       {
         headers: {
           accept: 'application/json',

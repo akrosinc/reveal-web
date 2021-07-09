@@ -10,11 +10,11 @@ dotenv.config();
  * since the express backend is meant to be generic and api-agnostic
  */
 export const EXPRESS_OPENSRP_ACCESS_TOKEN_URL =
-    process.env.EXPRESS_OPENSRP_ACCESS_TOKEN_URL || 'https://reveal-stage.smartregister.org/opensrp/oauth/token';
+    process.env.EXPRESS_OPENSRP_ACCESS_TOKEN_URL || 'https://opensrp-ops.akros.online/opensrp/oauth/token';
 export type EXPRESS_OPENSRP_ACCESS_TOKEN_URL = typeof EXPRESS_OPENSRP_ACCESS_TOKEN_URL;
 
 export const EXPRESS_OPENSRP_AUTHORIZATION_URL =
-    process.env.EXPRESS_OPENSRP_AUTHORIZATION_URL || 'https://reveal-stage.smartregister.org/opensrp/oauth/authorize';
+    process.env.EXPRESS_OPENSRP_AUTHORIZATION_URL || 'https://opensrp-ops.akros.online/opensrp/oauth/authorize';
 export type EXPRESS_OPENSRP_AUTHORIZATION_URL = typeof EXPRESS_OPENSRP_AUTHORIZATION_URL;
 
 export const EXPRESS_OPENSRP_CALLBACK_URL =
@@ -22,7 +22,7 @@ export const EXPRESS_OPENSRP_CALLBACK_URL =
 export type EXPRESS_OPENSRP_CALLBACK_URL = typeof EXPRESS_OPENSRP_CALLBACK_URL;
 
 export const EXPRESS_OPENSRP_USER_URL =
-    process.env.EXPRESS_OPENSRP_USER_URL || 'https://reveal-stage.smartregister.org/opensrp/user-details';
+    process.env.EXPRESS_OPENSRP_USER_URL || 'https://opensrp-ops.akros.online/opensrp/user-details';
 export type EXPRESS_OPENSRP_USER_URL = typeof EXPRESS_OPENSRP_USER_URL;
 
 export const EXPRESS_SESSION_FILESTORE_PATH = process.env.EXPRESS_SESSION_FILESTORE_PATH || '/tmp/express-sessions';
@@ -75,10 +75,10 @@ export type EXPRESS_MAXIMUM_SESSION_LIFE_TIME = typeof EXPRESS_MAXIMUM_SESSION_L
 export const EXPRESS_SERVER_LOGOUT_URL = process.env.EXPRESS_SERVER_LOGOUT_URL || 'http://localhost:3000/logout';
 export type EXPRESS_SERVER_LOGOUT_URL = typeof EXPRESS_SERVER_LOGOUT_URL;
 
-export const EXPRESS_OPENSRP_LOGOUT_URL = process.env.EXPRESS_OPENSRP_LOGOUT_URL || 'https://reveal-stage.smartregister.org/opensrp/logout.do';
+export const EXPRESS_OPENSRP_LOGOUT_URL = process.env.EXPRESS_OPENSRP_LOGOUT_URL || 'https://opensrp-ops.akros.online/opensrp/logout.do';
 export type EXPRESS_OPENSRP_LOGOUT_URL = typeof EXPRESS_OPENSRP_LOGOUT_URL;
 
-export const EXPRESS_KEYCLOAK_LOGOUT_URL = process.env.EXPRESS_KEYCLOAK_LOGOUT_URL || 'https://keycloak-stage.smartregister.org/auth/realms/reveal-stage/protocol/openid-connect/logout';
+export const EXPRESS_KEYCLOAK_LOGOUT_URL = process.env.EXPRESS_KEYCLOAK_LOGOUT_URL || 'https://sso-ops.akros.online/auth/realms/reveal/protocol/openid-connect/logout';
 export type EXPRESS_KEYCLOAK_LOGOUT_URL = typeof EXPRESS_KEYCLOAK_LOGOUT_URL;
 
 export const EXPRESS_MAXIMUM_LOGS_FILE_SIZE = Number(process.env.EXPRESS_MAXIMUM_LOGS_FILE_SIZE || 5242880); // 5MB

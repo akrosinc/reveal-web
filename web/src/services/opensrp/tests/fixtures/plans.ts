@@ -5,7 +5,7 @@ export const updateResponse = {
   status: 201,
   statusText: 'Created',
   type: 'cors',
-  url: 'https://reveal-stage.smartregister.org/opensrp/rest/plans',
+  url: 'https://opensrp-ops.akros.online/opensrp/rest/plans',
 };
 export const plansListResponse = [
   {

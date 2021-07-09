@@ -40,7 +40,7 @@ export const assignment5 = {
 
 export const apiCall = [
   [
-    'https://test.smartregister.org/opensrp/rest/organization/assignLocationsAndPlans',
+    'https://opensrp-ops.akros.online/opensrp/rest/organization/assignLocationsAndPlans',
     {
       'Cache-Control': 'no-cache',
       Pragma: 'no-cache',
