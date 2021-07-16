@@ -5,6 +5,7 @@ import { Cell } from 'react-table';
 import {
   ADMINISTERED_LABEL,
   ADVERSE_REACTION,
+  ALB_ADMINISTERED,
   DAMAGED_LABEL,
   ELIGIBLE_TARGETED_SPRAY_AREAS,
   ELIGIBLE_TARGETED_SPRAY_AREAS_TIP,
@@ -15,6 +16,7 @@ import {
   FOUND_COVERAGE_TIP,
   IRS_RED_THRESHOLD,
   MALE_LABEL,
+  MBZ_ADMINISTERED,
   NAME,
   NAME_TIP,
   OFFICIAL_CENSUS_POP_TARGET,
@@ -705,6 +707,14 @@ export const drugDistributionColumns = [
   {
     Header: RECEIVED_BY_CDD,
     accessor: 'received_number',
+  },
+  {
+    Header: ALB_ADMINISTERED,
+    accessor: 'alb_administered',
+  },
+  {
+    Header: MBZ_ADMINISTERED,
+    accessor: 'mbz_administered',
   },
   {
     Header: ADMINISTERED_LABEL,

@@ -1019,7 +1019,7 @@ export const TOTAL_FEMALE = translate('FEMALE_LABEL', 'Total Female');
 export const TOTAL_TREATED = translate('TOTAL_TREATED', 'Total Treated');
 export const SUPERVISOR_DISTRIBUTED = translate('SUPERVISOR_DISTRIBUTED', 'Supervisor Distributed');
 export const RECEIVED_BY_CDD = translate('RECEIVED_BY_CDD', 'Received by CDD');
-export const ADMINISTERED_LABEL = translate('ADMINISTERED_LABEL', 'Administered');
+export const ADMINISTERED_LABEL = translate('ADMINISTERED_LABEL', 'Total Administered');
 export const DAMAGED_LABEL = translate('DAMAGED_LABEL', 'Damaged');
 export const REMAINING_WITH_CDD = translate('REMAINING_WITH_CDD', 'Remaining with CDD');
 export const RETURNED_TO_SUPERVISOR = translate('RETURNED_TO_SUPERVISOR', 'Returned to Supervisor');
@@ -1156,3 +1156,5 @@ export const REVIEW_WITH_DECISION_TIP = translate(
   'REVIEW_WITH_DECISION_TIP',
   'Reviewed with decision'
 );
+export const ALB_ADMINISTERED = translate('ALB_ADMINISTERED', 'ALB administered');
+export const MBZ_ADMINISTERED = translate('MBZ_ADMINISTERED', 'MBZ administered');
