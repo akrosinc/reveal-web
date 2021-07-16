@@ -25,7 +25,6 @@ FROM node:14.9.0-alpine as nodejsbuild
 COPY --from=sources /usr/src/express-server /usr/src/express-server
 
 WORKDIR /usr/src/express-server
-#RUN yarn && yarn tsc && npm prune -production
 RUN yarn && yarn tsc && npm prune -production
 RUN yarn add lodash && npm prune -production
 
@@ -36,19 +35,8 @@ FROM node:14.9.0-alpine as final
 
 RUN apk add --no-cache tini curl
 
-# confd
-RUN curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.16.0/confd-0.16.0-linux-amd64 \
-  && chmod +x /usr/local/bin/confd
-
-COPY ./docker/confd_env.toml /etc/confd/conf.d/appconfig.toml
-COPY ./docker/config.js.tmpl /etc/confd/templates/config.js.tmpl
-
-COPY ./docker/app.sh /usr/local/bin/app.sh
-RUN chmod +x /usr/local/bin/app.sh
-
 WORKDIR /usr/src/web
 
-COPY --from=build /project/node_modules /usr/src/web/node_modules
 COPY --from=build /project/build /usr/src/web
 
 RUN chown -R node /usr/src/web
@@ -66,6 +54,6 @@ ENV EXPRESS_REACT_BUILD_PATH /usr/src/web/
 
 EXPOSE 3000
 
-CMD [ "/bin/sh", "-c", "/usr/local/bin/app.sh && node ." ]
+CMD [ "/bin/sh", "-c", "node ." ]
 
 ENTRYPOINT ["/sbin/tini", "--"]
