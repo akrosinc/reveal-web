@@ -3,7 +3,6 @@ import { Dictionary } from '@onaio/utils';
 import { get } from 'lodash';
 import { Cell } from 'react-table';
 import {
-  ADMINISTERED_LABEL,
   ADVERSE_REACTION,
   ALB_ADMINISTERED,
   DAMAGED_LABEL,
@@ -56,6 +55,7 @@ import {
   SUCCESS_RATE,
   SUCCESS_RATE_TIP,
   SUPERVISOR_DISTRIBUTED,
+  TOTAL_ADMINISTERED,
   TOTAL_FEMALE,
   TOTAL_MALE,
   TOTAL_SPRAY_AREAS,
@@ -722,7 +722,7 @@ export const drugDistributionColumns = [
     accessor: 'mbz_administered',
   },
   {
-    Header: ADMINISTERED_LABEL,
+    Header: TOTAL_ADMINISTERED,
     accessor: 'adminstered',
   },
   {
