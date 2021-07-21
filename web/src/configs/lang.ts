@@ -1159,3 +1159,4 @@ export const REVIEW_WITH_DECISION_TIP = translate(
 export const ALB_ADMINISTERED = translate('ALB_ADMINISTERED', 'ALB administered');
 export const MBZ_ADMINISTERED = translate('MBZ_ADMINISTERED', 'MBZ administered');
 export const PZQ_ADMINISTERED = translate('PZQ_ADMINISTERED', 'PZQ administered');
+export const TOTAL_ADMINISTERED = translate('TOTAL_ADMINISTERED', 'Total administered');
