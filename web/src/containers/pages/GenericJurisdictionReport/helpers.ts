@@ -25,6 +25,7 @@ import {
   OTHER_POP_TARGET,
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED,
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED_TIP,
+  PZQ_ADMINISTERED,
   RECEIVED_BY_CDD,
   REMAINING_WITH_CDD,
   RETURNED_TO_SUPERVISOR,
@@ -707,6 +708,10 @@ export const drugDistributionColumns = [
   {
     Header: RECEIVED_BY_CDD,
     accessor: 'received_number',
+  },
+  {
+    Header: PZQ_ADMINISTERED,
+    accessor: 'pzq_administered',
   },
   {
     Header: ALB_ADMINISTERED,
