@@ -1187,3 +1187,10 @@ export const MBZ_SUPERVISOR_DISTRIBUTED = translate(
 export const PZQ_ADVERSE_REACTION = translate('PZQ_ADVERSE_REACTION', 'PZQ Adverse Reaction');
 export const ALB_ADVERSE_REACTION = translate('ALB_ADVERSE_REACTION', 'ALB Adverse Reaction');
 export const MBZ_ADVERSE_REACTION = translate('MBZ_ADVERSE_REACTION', 'MBZ Adverse Reaction');
+export const CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE = translate(
+  'CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE',
+  'Select drugs for columns to be displayed'
+);
+export const PZQ = translate('PZQ', 'PZQ');
+export const ALB = translate('ALB', 'ALB');
+export const MBZ = translate('MBZ', 'MBZ');

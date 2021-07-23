@@ -9,6 +9,7 @@ import { Cell } from 'react-table';
 import { Col, Row } from 'reactstrap';
 import HeaderBreadcrumb from '../../../components/page/HeaderBreadcrumb/HeaderBreadcrumb';
 import Loading from '../../../components/page/Loading';
+import { renderInFilterWithDrugsFactory } from '../../../components/Table/DrillDownFilters/utils';
 import { NoDataComponent } from '../../../components/Table/NoDataComponent';
 import { SUPERSET_MAX_RECORDS } from '../../../configs/env';
 import { HOME } from '../../../configs/lang';
@@ -27,6 +28,7 @@ import { fetchSMCPlans, SMCPLANType } from '../../../store/ducks/generic/SMCPlan
 import { getJurisdictionBreadcrumbs } from '../IRS/Map/helpers';
 import { GetColumnsToUse, getColumnsToUse, TableProps } from './helpers';
 import './style.css';
+
 /** register the reducers */
 reducerRegistry.register(GenericJurisdictionsReducerName, GenericJurisdictionsReducer);
 
@@ -258,6 +260,7 @@ const GenericJurisdictionReport = (
     linkerField: 'jurisdiction_name',
     paginate: false,
     parentIdentifierField: 'jurisdiction_parent_id',
+    renderInTopFilterBar: renderInFilterWithDrugsFactory(),
     renderNullDataComponent: () => <NoDataComponent />,
     resize: true,
     rootParentId: jurisdictionId || '',

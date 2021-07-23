@@ -9,6 +9,7 @@ import { RouteComponentProps } from 'react-router';
 import { NEXT, OF, PAGE, PREVIOUS, ROWS_TO_DISPLAY } from '../../../configs/lang';
 import { OpenSRPService } from '../../../services/opensrp';
 import { ColumnHider } from '../../forms/ColumnHider';
+import { RevealColumnHider } from '../../forms/RevealColumnHider';
 import { RowHeightFilter } from '../../forms/RowHeightPicker';
 import { createChangeHandler, SearchForm, SearchFormProps } from '../../forms/Search';
 import { UserSelectFilter } from '../../forms/UserFilter';
@@ -83,6 +84,22 @@ export const renderInFilterFactory = ({
           {showRowHeightPicker && <RowHeightFilter changeHandler={changeHandler} />}
           {showColumnHider && <ColumnHider {...tableProps} />}
           {showPagination && renderPaginationFun(tableProps)}
+        </div>
+      </div>
+    );
+  };
+};
+
+export const renderInFilterWithDrugsFactory = () => {
+  /** custom renderInFilter Function; renders the pagination, customize columns, and row height
+   * in the filter bar
+   * @param {RenderInFilterBar} tableProps - Table instance returned from useTable
+   */
+  return <T extends object>(tableProps: RenderFiltersInBarOptions<T>) => {
+    return (
+      <div className="row">
+        <div className="col">
+          <RevealColumnHider {...tableProps} />
         </div>
       </div>
     );
