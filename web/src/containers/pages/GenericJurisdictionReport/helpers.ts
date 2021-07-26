@@ -3,9 +3,12 @@ import { Dictionary } from '@onaio/utils';
 import { get } from 'lodash';
 import { Cell } from 'react-table';
 import {
-  ADMINISTERED_LABEL,
-  ADVERSE_REACTION,
-  DAMAGED_LABEL,
+  ALB,
+  ALB_ADMINISTERED,
+  ALB_ADVERSE_REACTION,
+  ALB_DAMAGED,
+  ALB_RECEIVED_BY_CDD,
+  ALB_SUPERVISOR_DISTRIBUTED,
   ELIGIBLE_TARGETED_SPRAY_AREAS,
   ELIGIBLE_TARGETED_SPRAY_AREAS_TIP,
   FEMALE_LABEL,
@@ -15,6 +18,12 @@ import {
   FOUND_COVERAGE_TIP,
   IRS_RED_THRESHOLD,
   MALE_LABEL,
+  MBZ,
+  MBZ_ADMINISTERED,
+  MBZ_ADVERSE_REACTION,
+  MBZ_DAMAGED,
+  MBZ_RECEIVED_BY_CDD,
+  MBZ_SUPERVISOR_DISTRIBUTED,
   NAME,
   NAME_TIP,
   OFFICIAL_CENSUS_POP_TARGET,
@@ -23,8 +32,12 @@ import {
   OTHER_POP_TARGET,
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED,
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED_TIP,
-  RECEIVED_BY_CDD,
-  REMAINING_WITH_CDD,
+  PZQ,
+  PZQ_ADMINISTERED,
+  PZQ_ADVERSE_REACTION,
+  PZQ_DAMAGED,
+  PZQ_RECEIVED_BY_CDD,
+  PZQ_SUPERVISOR_DISTRIBUTED,
   RETURNED_TO_SUPERVISOR,
   REVIEW_WITH_DECISION,
   REVIEW_WITH_DECISION_TIP,
@@ -52,13 +65,18 @@ import {
   STRUCTURES_SPRAYED_TIP,
   SUCCESS_RATE,
   SUCCESS_RATE_TIP,
-  SUPERVISOR_DISTRIBUTED,
+  TOTAL_ADMINISTERED,
+  TOTAL_ADVERSE_REACTION,
+  TOTAL_DAMAGED_LABEL,
   TOTAL_FEMALE,
   TOTAL_MALE,
+  TOTAL_RECEIVED_BY_CDD,
+  TOTAL_REMAINING_WITH_CDD,
   TOTAL_SPRAY_AREAS,
   TOTAL_SPRAY_AREAS_TIP,
   TOTAL_SPRAY_AREAS_VISITED,
   TOTAL_SPRAY_AREAS_VISITED_TIP,
+  TOTAL_SUPERVISOR_DISTRIBUTED,
   TOTAL_TARGETED_ROOMS,
   TOTAL_TARGETED_ROOMS_TIP,
   TOTAL_TARGETED_STRUCTURES,
@@ -699,23 +717,83 @@ export const genderReportColumns = [
 ];
 export const drugDistributionColumns = [
   {
-    Header: SUPERVISOR_DISTRIBUTED,
+    Header: PZQ_SUPERVISOR_DISTRIBUTED,
+    accessor: 'pzq_supervisor_distributed',
+    drug: PZQ,
+  },
+  {
+    Header: ALB_SUPERVISOR_DISTRIBUTED,
+    accessor: 'alb_supervisor_distributed',
+    drug: ALB,
+  },
+  {
+    Header: MBZ_SUPERVISOR_DISTRIBUTED,
+    accessor: 'mbz_supervisor_distributed',
+    drug: MBZ,
+  },
+  {
+    Header: TOTAL_SUPERVISOR_DISTRIBUTED,
     accessor: 'supervisor_distributed',
   },
   {
-    Header: RECEIVED_BY_CDD,
+    Header: PZQ_RECEIVED_BY_CDD,
+    accessor: 'pz_received',
+    drug: PZQ,
+  },
+  {
+    Header: ALB_RECEIVED_BY_CDD,
+    accessor: 'alb_received',
+    drug: ALB,
+  },
+  {
+    Header: MBZ_RECEIVED_BY_CDD,
+    accessor: 'mbz_received',
+    drug: MBZ,
+  },
+  {
+    Header: TOTAL_RECEIVED_BY_CDD,
     accessor: 'received_number',
   },
   {
-    Header: ADMINISTERED_LABEL,
+    Header: PZQ_ADMINISTERED,
+    accessor: 'pzq_administered',
+    drug: PZQ,
+  },
+  {
+    Header: ALB_ADMINISTERED,
+    accessor: 'alb_administered',
+    drug: ALB,
+  },
+  {
+    Header: MBZ_ADMINISTERED,
+    accessor: 'mbz_administered',
+    drug: MBZ,
+  },
+  {
+    Header: TOTAL_ADMINISTERED,
     accessor: 'adminstered',
   },
   {
-    Header: DAMAGED_LABEL,
+    Header: PZQ_DAMAGED,
+    accessor: 'pzq_damaged',
+    drug: PZQ,
+  },
+  {
+    Header: ALB_DAMAGED,
+    accessor: 'alb_damaged',
+    drug: ALB,
+  },
+  {
+    Header: MBZ_DAMAGED,
+    accessor: 'mbz_damaged',
+    drug: MBZ,
+  },
+  {
+    Header: TOTAL_DAMAGED_LABEL,
     accessor: 'damaged',
   },
   {
-    Header: REMAINING_WITH_CDD,
+    Header: TOTAL_REMAINING_WITH_CDD,
     accessor: 'remaining_with_cdd',
   },
   {
@@ -724,7 +802,22 @@ export const drugDistributionColumns = [
     accessor: 'returned_to_supervisor',
   },
   {
-    Header: ADVERSE_REACTION,
+    Header: PZQ_ADVERSE_REACTION,
+    accessor: 'pzq_adverse',
+    drug: PZQ,
+  },
+  {
+    Header: ALB_ADVERSE_REACTION,
+    accessor: 'alb_adverse',
+    drug: ALB,
+  },
+  {
+    Header: MBZ_ADVERSE_REACTION,
+    accessor: 'mbz_adverse',
+    drug: MBZ,
+  },
+  {
+    Header: TOTAL_ADVERSE_REACTION,
     accessor: 'adverse',
   },
 ];
@@ -793,6 +886,7 @@ export type TableProps = Pick<
   | 'useDrillDown'
   | 'renderNullDataComponent'
   | 'hasChildren'
+  | 'renderInTopFilterBar'
 >;
 
 export type GetColumnsToUse = (
