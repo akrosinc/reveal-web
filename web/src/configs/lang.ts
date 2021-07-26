@@ -1017,13 +1017,19 @@ export const FEMALE_LABEL = translate('FEMALE_LABEL', 'Female');
 export const TOTAL_MALE = translate('TOTAL_MALE', 'Total Male');
 export const TOTAL_FEMALE = translate('FEMALE_LABEL', 'Total Female');
 export const TOTAL_TREATED = translate('TOTAL_TREATED', 'Total Treated');
-export const SUPERVISOR_DISTRIBUTED = translate('SUPERVISOR_DISTRIBUTED', 'Supervisor Distributed');
-export const RECEIVED_BY_CDD = translate('RECEIVED_BY_CDD', 'Received by CDD');
-export const ADMINISTERED_LABEL = translate('ADMINISTERED_LABEL', 'Administered');
-export const DAMAGED_LABEL = translate('DAMAGED_LABEL', 'Damaged');
-export const REMAINING_WITH_CDD = translate('REMAINING_WITH_CDD', 'Remaining with CDD');
+export const TOTAL_SUPERVISOR_DISTRIBUTED = translate(
+  'TOTAL_SUPERVISOR_DISTRIBUTED',
+  'Total Supervisor Distributed'
+);
+export const TOTAL_RECEIVED_BY_CDD = translate('TOTAL_RECEIVED_BY_CDD', 'Total Received by CDD');
+export const ADMINISTERED_LABEL = translate('ADMINISTERED_LABEL', 'Total Administered');
+export const TOTAL_DAMAGED_LABEL = translate('TOTAL_DAMAGED_LABEL', 'Total Damaged');
+export const TOTAL_REMAINING_WITH_CDD = translate(
+  'TOTAL_REMAINING_WITH_CDD',
+  'Total Remaining with CDD'
+);
 export const RETURNED_TO_SUPERVISOR = translate('RETURNED_TO_SUPERVISOR', 'Returned to Supervisor');
-export const ADVERSE_REACTION = translate('ADVERSE_REACTION', 'Adverse Reaction');
+export const TOTAL_ADVERSE_REACTION = translate('TOTAL_ADVERSE_REACTION', 'Total Adverse Reaction');
 export const OFFICIAL_CENSUS_POP_TARGET = translate(
   'OFFICIAL_CENSUS_POP_TARGET',
   'Census Pop Target (Official)'
@@ -1156,3 +1162,35 @@ export const REVIEW_WITH_DECISION_TIP = translate(
   'REVIEW_WITH_DECISION_TIP',
   'Reviewed with decision'
 );
+export const ALB_ADMINISTERED = translate('ALB_ADMINISTERED', 'ALB administered');
+export const MBZ_ADMINISTERED = translate('MBZ_ADMINISTERED', 'MBZ administered');
+export const PZQ_ADMINISTERED = translate('PZQ_ADMINISTERED', 'PZQ administered');
+export const TOTAL_ADMINISTERED = translate('TOTAL_ADMINISTERED', 'Total administered');
+export const PZQ_DAMAGED = translate('PZQ_DAMAGED', 'PZQ Damaged');
+export const ALB_DAMAGED = translate('ALB_DAMAGED', 'ALB Damaged');
+export const MBZ_DAMAGED = translate('MBZ_DAMAGED', 'MBZ Damaged');
+export const PZQ_RECEIVED_BY_CDD = translate('PZQ_RECEIVED_BY_CDD', ' PZQ Received by CDD');
+export const ALB_RECEIVED_BY_CDD = translate('PZQ_RECEIVED_BY_CDD', ' ALB Received by CDD');
+export const MBZ_RECEIVED_BY_CDD = translate('MBZ_RECEIVED_BY_CDD', ' MBZ Received by CDD');
+export const PZQ_SUPERVISOR_DISTRIBUTED = translate(
+  'PZQ_SUPERVISOR_DISTRIBUTED',
+  'PZQ Supervisor Distributed'
+);
+export const ALB_SUPERVISOR_DISTRIBUTED = translate(
+  'ALB_SUPERVISOR_DISTRIBUTED',
+  'ALB Supervisor Distributed'
+);
+export const MBZ_SUPERVISOR_DISTRIBUTED = translate(
+  'MBZ_SUPERVISOR_DISTRIBUTED',
+  'MBZ Supervisor Distributed'
+);
+export const PZQ_ADVERSE_REACTION = translate('PZQ_ADVERSE_REACTION', 'PZQ Adverse Reaction');
+export const ALB_ADVERSE_REACTION = translate('ALB_ADVERSE_REACTION', 'ALB Adverse Reaction');
+export const MBZ_ADVERSE_REACTION = translate('MBZ_ADVERSE_REACTION', 'MBZ Adverse Reaction');
+export const CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE = translate(
+  'CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE',
+  'Select drugs for columns to be displayed'
+);
+export const PZQ = translate('PZQ', 'PZQ');
+export const ALB = translate('ALB', 'ALB');
+export const MBZ = translate('MBZ', 'MBZ');
