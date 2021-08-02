@@ -1066,10 +1066,8 @@ export const SIXTEEN_YEARS_AND_ABOVE = translate('SIXTEEN_YEARS_AND_ABOVE', '16+
 export const FIFTEEN_YEARS_AND_ABOVE_PZQ = translate('FIFTEEN_YEARS_AND_ABOVE_PZQ', '15+ (PZQ)');
 export const SIXTEEN_YEARS_AND_ABOVE_PZQ = translate('SIXTEEN_YEARS_AND_ABOVE_PZQ', '16+ (PZQ)');
 export const FIFTEEN_YEARS_AND_ABOVE_ALB = translate('FIFTEEN_YEARS_AND_ABOVE_ALB', '15+ (ALB)');
-export const SIXTEN_YEARS_AND_ABOVE_ALB_MEB = translate(
-  'SIXTEN_YEARS_AND_ABOVE_ALB_MEB',
-  '16+ (ALB/MEB)'
-);
+export const SIXTEN_YEARS_AND_ABOVE_ALB = translate('SIXTEN_YEARS_AND_ABOVE_ALB', '16+ (ALB)');
+export const SIXTEN_YEARS_AND_ABOVE_MEB = translate('SIXTEN_YEARS_AND_ABOVE_MEB', '16+ (MEB)');
 export const FIFTEEN_YEARS_AND_ABOVE_MBZ = translate('FIFTEEN_YEARS_AND_ABOVE_ALB', '15+ (MBZ)');
 export const HISTORICAL_INDEX_CASES = translate('HISTORICAL_INDEX_CASES', 'historical index cases');
 export const NAME_TIP = translate('NAME_TIP', 'Name');
