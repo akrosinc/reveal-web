@@ -57,6 +57,9 @@ import {
   ROOMS_ON_THE_GROUND_TIP,
   ROOMS_SPRAYED,
   ROOMS_SPRAYED_TIP,
+  SIXTEEN_YEARS_AND_ABOVE,
+  SIXTEEN_YEARS_AND_ABOVE_PZQ,
+  SIXTEN_YEARS_AND_ABOVE_ALB_MEB,
   SPRAY_COVERAGE_EFFECTIVENESS,
   SPRAY_COVERAGE_EFFECTIVENESS_TIP,
   SPRAY_COVERAGE_OF_TARGETED,
@@ -904,6 +907,129 @@ export const genderReportColumns = [
     drug: MBZ,
   },
 ];
+export const genderReportColumnsRwanda = [
+  {
+    Header: MALE_LABEL,
+    columns: [
+      {
+        Header: SIXTEEN_YEARS_AND_ABOVE,
+        accessor: 'treated_male_above_16',
+        drug: 'totals',
+        id: 'maleGreaterThanSixteen',
+        width: '100',
+      },
+      {
+        Header: SIXTEEN_YEARS_AND_ABOVE_PZQ,
+        accessor: 'pzq_treated_male_above_16',
+        drug: PZQ,
+        id: 'maleGreaterThanSixteenPZQ',
+        width: '100',
+      },
+      {
+        Header: SIXTEN_YEARS_AND_ABOVE_ALB_MEB,
+        accessor: 'alb_meb_treated_male_above_16',
+        drug: ALB,
+        id: 'maleGreaterThanSixteenALBMEB',
+        width: '100',
+      },
+    ],
+  },
+  {
+    Header: FEMALE_LABEL,
+    columns: [
+      {
+        Header: SIXTEEN_YEARS_AND_ABOVE,
+        accessor: 'treated_female_above_16',
+        drug: 'totals',
+        id: 'femaleGreaterThanSixteen',
+        width: '100',
+      },
+      {
+        Header: SIXTEEN_YEARS_AND_ABOVE_PZQ,
+        accessor: 'pzq_treated_female_above_16',
+        drug: PZQ,
+        id: 'femaleGreaterThanSixteenPZQ',
+        width: '100',
+      },
+      {
+        Header: SIXTEN_YEARS_AND_ABOVE_ALB_MEB,
+        accessor: 'alb_meb_treated_female_above_16',
+        drug: ALB,
+        id: 'femaleGreaterThanSixteenALBMEB',
+        width: '100',
+      },
+    ],
+  },
+  {
+    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'total_females', IRS_RED_THRESHOLD),
+    Header: TOTAL_MALE,
+    accessor: 'total_males',
+    drug: 'totals',
+  },
+  {
+    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'pzq_total_females', IRS_RED_THRESHOLD),
+    Header: TOTAL_MALE_PZQ,
+    accessor: 'pqz_total_males',
+    drug: PZQ,
+  },
+  {
+    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'alb_total_females', IRS_RED_THRESHOLD),
+    Header: TOTAL_MALE_ALB,
+    accessor: 'alb_total_males',
+    drug: ALB,
+  },
+  {
+    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'mbz_total_females', IRS_RED_THRESHOLD),
+    Header: TOTAL_MALE_MBZ,
+    accessor: 'mbz_total_males',
+    drug: MBZ,
+  },
+  {
+    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'total_males', IRS_RED_THRESHOLD),
+    Header: TOTAL_FEMALE_LABEL,
+    accessor: 'total_females',
+    drug: 'totals',
+  },
+  {
+    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'pzq_total_males', IRS_RED_THRESHOLD),
+    Header: TOTAL_FEMALE_PZQ,
+    accessor: 'pzq_total_females',
+    drug: PZQ,
+  },
+  {
+    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'alb_total_males', IRS_RED_THRESHOLD),
+    Header: TOTAL_FEMALE_ALB,
+    accessor: 'alb_total_females',
+    drug: ALB,
+  },
+  {
+    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'mbz_total_males', IRS_RED_THRESHOLD),
+    Header: TOTAL_FEMALE_MBZ,
+    accessor: 'mbz_total_females',
+    drug: MBZ,
+  },
+  {
+    Header: TOTAL_TREATED,
+    accessor: 'total_all_genders',
+    drug: 'totals',
+  },
+  {
+    Header: TOTAL_TREATED_PZQ,
+    accessor: 'pzq_total_all_genders',
+    drug: PZQ,
+  },
+  {
+    Header: TOTAL_TREATED_ALB,
+    accessor: 'alb_total_all_genders',
+    drug: ALB,
+  },
+  {
+    Header: TOTAL_TREATED_MBZ,
+    accessor: 'mbz_total_all_genders',
+    drug: MBZ,
+  },
+];
+
 export const drugDistributionColumns = [
   {
     Header: PZQ_SUPERVISOR_DISTRIBUTED,
@@ -1017,6 +1143,8 @@ export const drugDistributionColumns = [
     drug: 'totals',
   },
 ];
+export const drugDistributionColumnsRwanda = [...genderReportColumns];
+
 export const censusPopColumns = [
   {
     Header: OFFICIAL_CENSUS_POP_TARGET,
@@ -1048,6 +1176,17 @@ export const mdaLiteJurisdictionsColumns = [
   ...drugDistributionColumns,
 ];
 
+export const mdaLiteJurisdictionsColumnsRwanda = [
+  {
+    Header: NAME,
+    accessor: 'jurisdiction_name',
+    minWidth: 180,
+  },
+  ...genderReportColumnsRwanda,
+  ...censusPopColumns,
+  ...drugDistributionColumnsRwanda,
+];
+
 /** IRS Table Columns
  * These are all the table columns for IRS that we know about.
  */
@@ -1056,6 +1195,7 @@ export const plansTableColumns: { [key: string]: Array<DrillDownColumn<Dictionar
   irsLiteZambiaJurisdictions2020: IRSLiteZambiaJurisdictionsColumns,
   mdaJurisdictionsColumns,
   mdaLiteJurisdictionsColumns,
+  mdaLiteJurisdictionsColumnsRwanda,
   namibia2019: NamibiaColumns,
   senegalFocusArea2021: SenegalFocusAreasColumns,
   senegalJurisdictions2021: SenegalJurisdictionsColumns,
