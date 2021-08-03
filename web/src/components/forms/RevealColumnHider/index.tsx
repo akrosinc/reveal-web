@@ -14,7 +14,7 @@ export const RevealColumnHider = <T extends object>({ allColumns }: DrillDownIns
    */
   const salt = uuid();
   const anyColumnHidden = allColumns.some(column => !column.isVisible);
-  const drugs = ['PZQ', 'ALB', 'MBZ', 'totals'];
+  const drugs = ['PZQ', 'ALB', 'MBZ'];
   const [checkedState, setCheckedState] = useState(new Array(drugs.length).fill(true));
   const handleChange = (position: number) => {
     const updatedCheckedState = checkedState.map((item, index) =>
