@@ -75,7 +75,6 @@ import {
   STRUCTURES_SPRAYED_TIP,
   SUCCESS_RATE,
   SUCCESS_RATE_TIP,
-  TOTAL_ADVERSE_REACTION,
   TOTAL_FEMALE_ALB,
   TOTAL_FEMALE_MBZ,
   TOTAL_FEMALE_PZQ,
@@ -990,11 +989,6 @@ export const drugDistributionColumns = [
     Header: MBZ_ADVERSE_REACTION,
     accessor: 'mbz_adverse',
     drug: MBZ,
-  },
-  {
-    Header: TOTAL_ADVERSE_REACTION,
-    accessor: 'adverse',
-    drug: 'totals',
   },
 ];
 export const drugDistributionColumnsRwanda = [...genderReportColumns];
