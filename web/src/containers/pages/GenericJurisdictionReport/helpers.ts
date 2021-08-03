@@ -12,11 +12,9 @@ import {
   ELIGIBLE_TARGETED_SPRAY_AREAS,
   ELIGIBLE_TARGETED_SPRAY_AREAS_TIP,
   FEMALE_LABEL,
-  FIFTEEN_YEARS_AND_ABOVE,
   FIFTEEN_YEARS_AND_ABOVE_ALB,
   FIFTEEN_YEARS_AND_ABOVE_MBZ,
   FIFTEEN_YEARS_AND_ABOVE_PZQ,
-  FIVE_TO_FOURTEEN_YEARS,
   FIVE_TO_FOURTEEN_YEARS_ALB,
   FIVE_TO_FOURTEEN_YEARS_MBZ,
   FIVE_TO_FOURTEEN_YEARS_PZQ,
@@ -33,7 +31,6 @@ import {
   NAME,
   NAME_TIP,
   OFFICIAL_CENSUS_POP_TARGET,
-  ONE_TO_FOUR_YEARS,
   ONE_TO_FOUR_YEARS_ALB,
   ONE_TO_FOUR_YEARS_MBZ,
   OTHER_POP_COVERAGE,
@@ -679,13 +676,6 @@ export const genderReportColumns = [
     Header: MALE_LABEL,
     columns: [
       {
-        Header: ONE_TO_FOUR_YEARS,
-        accessor: 'treated_male_1_4',
-        drug: 'totals',
-        id: 'maleOneToFour',
-        width: '100',
-      },
-      {
         Header: ONE_TO_FOUR_YEARS_ALB,
         accessor: 'alb_treated_male_1_4',
         drug: ALB,
@@ -700,38 +690,24 @@ export const genderReportColumns = [
         width: '100',
       },
       {
-        Header: FIVE_TO_FOURTEEN_YEARS,
-        accessor: 'treated_male_5_14',
-        drug: 'totals',
-        id: 'maleOneToFourteen',
-        width: '100',
-      },
-      {
         Header: FIVE_TO_FOURTEEN_YEARS_PZQ,
         accessor: 'pzq_treated_male_5_14',
         drug: PZQ,
-        id: 'maleOneToFourteenPZQ',
+        id: 'maleFiveToFourteenPZQ',
         width: '100',
       },
       {
         Header: FIVE_TO_FOURTEEN_YEARS_ALB,
         accessor: 'alb_treated_male_5_14',
         drug: ALB,
-        id: 'maleOneToFourteenALB',
+        id: 'maleFiveToFourteenALB',
         width: '100',
       },
       {
         Header: FIVE_TO_FOURTEEN_YEARS_MBZ,
         accessor: 'mbz_treated_male_5_14',
         drug: MBZ,
-        id: 'maleOneToFourteenMBZ',
-        width: '100',
-      },
-      {
-        Header: FIFTEEN_YEARS_AND_ABOVE,
-        accessor: 'treated_male_above_15',
-        drug: 'totals',
-        id: 'maleGreaterThanFifteen',
+        id: 'maleFiveToFourteenMBZ',
         width: '100',
       },
       {
@@ -761,13 +737,6 @@ export const genderReportColumns = [
     Header: FEMALE_LABEL,
     columns: [
       {
-        Header: ONE_TO_FOUR_YEARS,
-        accessor: 'treated_female_1_4',
-        drug: 'totals',
-        id: 'femaleOneToFour',
-        width: '100',
-      },
-      {
         Header: ONE_TO_FOUR_YEARS_ALB,
         accessor: 'alb_treated_female_1_4',
         drug: ALB,
@@ -779,13 +748,6 @@ export const genderReportColumns = [
         accessor: 'mbz_treated_female_1_4',
         drug: MBZ,
         id: 'femaleOneToFourMBZ',
-        width: '100',
-      },
-      {
-        Header: FIVE_TO_FOURTEEN_YEARS,
-        accessor: 'treated_female_5_14',
-        drug: 'totals',
-        id: 'femaleOneToFourteen',
         width: '100',
       },
       {
@@ -810,13 +772,6 @@ export const genderReportColumns = [
         width: '100',
       },
       {
-        Header: FIFTEEN_YEARS_AND_ABOVE,
-        accessor: 'treated_female_above_15',
-        drug: 'totals',
-        id: 'femaleGreaterThanFifteen',
-        width: '100',
-      },
-      {
         Header: FIFTEEN_YEARS_AND_ABOVE_PZQ,
         accessor: 'pzq_treated_female_above_15',
         drug: PZQ,
@@ -838,74 +793,6 @@ export const genderReportColumns = [
         width: '100',
       },
     ],
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'total_females', IRS_RED_THRESHOLD),
-    Header: TOTAL_MALE,
-    accessor: 'total_males',
-    drug: 'totals',
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'pzq_total_females', IRS_RED_THRESHOLD),
-    Header: TOTAL_MALE_PZQ,
-    accessor: 'pqz_total_males',
-    drug: PZQ,
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'alb_total_females', IRS_RED_THRESHOLD),
-    Header: TOTAL_MALE_ALB,
-    accessor: 'alb_total_males',
-    drug: ALB,
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'mbz_total_females', IRS_RED_THRESHOLD),
-    Header: TOTAL_MALE_MBZ,
-    accessor: 'mbz_total_males',
-    drug: MBZ,
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'total_males', IRS_RED_THRESHOLD),
-    Header: TOTAL_FEMALE_LABEL,
-    accessor: 'total_females',
-    drug: 'totals',
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'pzq_total_males', IRS_RED_THRESHOLD),
-    Header: TOTAL_FEMALE_PZQ,
-    accessor: 'pzq_total_females',
-    drug: PZQ,
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'alb_total_males', IRS_RED_THRESHOLD),
-    Header: TOTAL_FEMALE_ALB,
-    accessor: 'alb_total_females',
-    drug: ALB,
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'mbz_total_males', IRS_RED_THRESHOLD),
-    Header: TOTAL_FEMALE_MBZ,
-    accessor: 'mbz_total_females',
-    drug: MBZ,
-  },
-  {
-    Header: TOTAL_TREATED,
-    accessor: 'total_all_genders',
-    drug: 'totals',
-  },
-  {
-    Header: TOTAL_TREATED_PZQ,
-    accessor: 'pzq_total_all_genders',
-    drug: PZQ,
-  },
-  {
-    Header: TOTAL_TREATED_ALB,
-    accessor: 'alb_total_all_genders',
-    drug: ALB,
-  },
-  {
-    Header: TOTAL_TREATED_MBZ,
-    accessor: 'mbz_total_all_genders',
-    drug: MBZ,
   },
 ];
 export const genderReportColumnsRwanda = [
