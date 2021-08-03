@@ -16,6 +16,9 @@ import {
   FIFTEEN_YEARS_AND_ABOVE_ALB,
   FIFTEEN_YEARS_AND_ABOVE_MBZ,
   FIFTEEN_YEARS_AND_ABOVE_PZQ,
+  FIVE_TO_FIFTEEN_YEARS_ALB,
+  FIVE_TO_FIFTEEN_YEARS_MEB,
+  FIVE_TO_FIFTEEN_YEARS_PZQ,
   FIVE_TO_FOURTEEN_YEARS_ALB,
   FIVE_TO_FOURTEEN_YEARS_MBZ,
   FIVE_TO_FOURTEEN_YEARS_PZQ,
@@ -30,11 +33,14 @@ import {
   MBZ_RECEIVED_BY_CDD,
   MBZ_RETURNED_TO_SUPERVISOR,
   MBZ_SUPERVISOR_DISTRIBUTED,
+  MEB,
+  MEB_ADVERSE_REACTION,
   NAME,
   NAME_TIP,
   OFFICIAL_CENSUS_POP_TARGET,
   ONE_TO_FOUR_YEARS_ALB,
   ONE_TO_FOUR_YEARS_MBZ,
+  ONE_TO_FOUR_YEARS_VITA,
   OTHER_POP_COVERAGE,
   OTHER_POP_TARGET,
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED,
@@ -56,6 +62,7 @@ import {
   ROOMS_ON_THE_GROUND_TIP,
   ROOMS_SPRAYED,
   ROOMS_SPRAYED_TIP,
+  SIX_TO_ELEVEN_MONTHS_VITA,
   SIXTEEN_YEARS_AND_ABOVE_PZQ,
   SIXTEN_YEARS_AND_ABOVE_ALB,
   SIXTEN_YEARS_AND_ABOVE_MEB,
@@ -75,12 +82,6 @@ import {
   STRUCTURES_SPRAYED_TIP,
   SUCCESS_RATE,
   SUCCESS_RATE_TIP,
-  TOTAL_FEMALE_ALB,
-  TOTAL_FEMALE_MBZ,
-  TOTAL_FEMALE_PZQ,
-  TOTAL_MALE_ALB,
-  TOTAL_MALE_MBZ,
-  TOTAL_MALE_PZQ,
   TOTAL_SPRAY_AREAS,
   TOTAL_SPRAY_AREAS_TIP,
   TOTAL_SPRAY_AREAS_VISITED,
@@ -89,16 +90,14 @@ import {
   TOTAL_TARGETED_ROOMS_TIP,
   TOTAL_TARGETED_STRUCTURES,
   TOTAL_TARGETED_STRUCTURES_TIP,
-  TOTAL_TREATED_ALB,
-  TOTAL_TREATED_MBZ,
-  TOTAL_TREATED_PZQ,
   TREATMENT_COVERAGE_CENSUS,
+  TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
+  VITAMIN_A,
 } from '../../../configs/lang';
 import { indicatorThresholdsMDALite } from '../../../configs/settings';
 import {
   getIRSLiteThresholdAdherenceIndicator,
   getIRSThresholdAdherenceIndicator,
-  MDALiteGenderComparison,
   renderCellWithNumberRounded,
   renderHeaderWithTooltip,
   renderPercentage,
@@ -792,6 +791,55 @@ export const genderReportColumnsRwanda = [
     Header: MALE_LABEL,
     columns: [
       {
+        Header: SIX_TO_ELEVEN_MONTHS_VITA,
+        accessor: 'vita_treated_male_6_to_11_mos',
+        drug: VITAMIN_A,
+        id: 'maleSixToElevenMonthsVITA',
+        width: '100',
+      },
+      {
+        Header: ONE_TO_FOUR_YEARS_VITA,
+        accessor: 'vita_treated_male_1_to_4',
+        drug: VITAMIN_A,
+        id: 'maleOneToFourYearsVITA',
+        width: '100',
+      },
+      {
+        Header: TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
+        accessor: 'alb_treated_male_1_to_4',
+        drug: ALB,
+        id: 'maleOneToFourYearsALB',
+        width: '100',
+      },
+      {
+        Header: TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
+        accessor: 'meb_treated_male_1_to_4',
+        drug: MEB,
+        id: 'maleOneToFourYearsMEB',
+        width: '100',
+      },
+      {
+        Header: FIVE_TO_FIFTEEN_YEARS_PZQ,
+        accessor: 'pzq_treated_male_5_to_15',
+        drug: PZQ,
+        id: 'maleFiveToFifteenPZQ',
+        width: '100',
+      },
+      {
+        Header: FIVE_TO_FIFTEEN_YEARS_ALB,
+        accessor: 'alb_treated_male_5_to_15',
+        drug: ALB,
+        id: 'maleFiveToFifteenALB',
+        width: '100',
+      },
+      {
+        Header: FIVE_TO_FIFTEEN_YEARS_MEB,
+        accessor: 'meb_treated_male_5_to_15',
+        drug: MEB,
+        id: 'maleFiveToFifteenMEB',
+        width: '100',
+      },
+      {
         Header: SIXTEEN_YEARS_AND_ABOVE_PZQ,
         accessor: 'pzq_treated_male_above_16',
         drug: PZQ,
@@ -808,7 +856,7 @@ export const genderReportColumnsRwanda = [
       {
         Header: SIXTEN_YEARS_AND_ABOVE_MEB,
         accessor: 'meb_treated_male_above_16',
-        drug: ALB,
+        drug: MEB,
         id: 'maleGreaterThanSixteenMEB',
         width: '100',
       },
@@ -817,6 +865,55 @@ export const genderReportColumnsRwanda = [
   {
     Header: FEMALE_LABEL,
     columns: [
+      {
+        Header: SIX_TO_ELEVEN_MONTHS_VITA,
+        accessor: 'vita_treated_female_6_to_11_mos',
+        drug: VITAMIN_A,
+        id: 'femaleSixToElevenMonthsVITA',
+        width: '100',
+      },
+      {
+        Header: ONE_TO_FOUR_YEARS_VITA,
+        accessor: 'vita_treated_female_1_to_4',
+        drug: VITAMIN_A,
+        id: 'femaleOneToFourYearsVITA',
+        width: '100',
+      },
+      {
+        Header: TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
+        accessor: 'alb_treated_female_1_to_4',
+        drug: ALB,
+        id: 'femaleOneToFourYearsALB',
+        width: '100',
+      },
+      {
+        Header: TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
+        accessor: 'meb_treated_female_1_to_4',
+        drug: MEB,
+        id: 'femaleOneToFourYearsMEB',
+        width: '100',
+      },
+      {
+        Header: FIVE_TO_FIFTEEN_YEARS_PZQ,
+        accessor: 'pzq_treated_female_5_to_15',
+        drug: PZQ,
+        id: 'femaleFiveToFifteenPZQ',
+        width: '100',
+      },
+      {
+        Header: FIVE_TO_FIFTEEN_YEARS_ALB,
+        accessor: 'alb_treated_female_5_to_15',
+        drug: ALB,
+        id: 'femaleFiveToFifteenALB',
+        width: '100',
+      },
+      {
+        Header: FIVE_TO_FIFTEEN_YEARS_MEB,
+        accessor: 'meb_treated_female_5_to_15',
+        drug: MEB,
+        id: 'femaleFiveToFifteenMEB',
+        width: '100',
+      },
       {
         Header: SIXTEEN_YEARS_AND_ABOVE_PZQ,
         accessor: 'pzq_treated_female_above_16',
@@ -834,62 +931,11 @@ export const genderReportColumnsRwanda = [
       {
         Header: SIXTEN_YEARS_AND_ABOVE_MEB,
         accessor: 'meb_treated_female_above_16',
-        drug: ALB,
+        drug: MEB,
         id: 'femaleGreaterThanSixteenMEB',
         width: '100',
       },
     ],
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'pzq_total_females', IRS_RED_THRESHOLD),
-    Header: TOTAL_MALE_PZQ,
-    accessor: 'pqz_total_males',
-    drug: PZQ,
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'alb_total_females', IRS_RED_THRESHOLD),
-    Header: TOTAL_MALE_ALB,
-    accessor: 'alb_total_males',
-    drug: ALB,
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'mbz_total_females', IRS_RED_THRESHOLD),
-    Header: TOTAL_MALE_MBZ,
-    accessor: 'mbz_total_males',
-    drug: MBZ,
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'pzq_total_males', IRS_RED_THRESHOLD),
-    Header: TOTAL_FEMALE_PZQ,
-    accessor: 'pzq_total_females',
-    drug: PZQ,
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'alb_total_males', IRS_RED_THRESHOLD),
-    Header: TOTAL_FEMALE_ALB,
-    accessor: 'alb_total_females',
-    drug: ALB,
-  },
-  {
-    Cell: (cell: Cell) => MDALiteGenderComparison(cell, 'mbz_total_males', IRS_RED_THRESHOLD),
-    Header: TOTAL_FEMALE_MBZ,
-    accessor: 'mbz_total_females',
-    drug: MBZ,
-  },
-  {
-    Header: TOTAL_TREATED_PZQ,
-    accessor: 'pzq_total_all_genders',
-    drug: PZQ,
-  },
-  {
-    Header: TOTAL_TREATED_ALB,
-    accessor: 'alb_total_all_genders',
-    drug: ALB,
-  },
-  {
-    Header: TOTAL_TREATED_MBZ,
-    accessor: 'mbz_total_all_genders',
-    drug: MBZ,
   },
 ];
 
@@ -991,7 +1037,104 @@ export const drugDistributionColumns = [
     drug: MBZ,
   },
 ];
-export const drugDistributionColumnsRwanda = [...genderReportColumns];
+export const drugDistributionColumnsRwanda = [
+  {
+    Header: PZQ_SUPERVISOR_DISTRIBUTED,
+    accessor: 'pzq_supervisor_distributed',
+    drug: PZQ,
+  },
+  {
+    Header: ALB_SUPERVISOR_DISTRIBUTED,
+    accessor: 'alb_supervisor_distributed',
+    drug: ALB,
+  },
+  {
+    Header: MBZ_SUPERVISOR_DISTRIBUTED,
+    accessor: 'meb_supervisor_distributed',
+    drug: MBZ,
+  },
+  {
+    Header: PZQ_RECEIVED_BY_CDD,
+    accessor: 'pzq_received',
+    drug: PZQ,
+  },
+  {
+    Header: ALB_RECEIVED_BY_CDD,
+    accessor: 'alb_received',
+    drug: ALB,
+  },
+  {
+    Header: MBZ_RECEIVED_BY_CDD,
+    accessor: 'meb_received',
+    drug: MEB,
+  },
+  {
+    Header: PZQ_ADMINISTERED,
+    accessor: 'pzq_administered',
+    drug: PZQ,
+  },
+  {
+    Header: ALB_ADMINISTERED,
+    accessor: 'alb_administered',
+    drug: ALB,
+  },
+  {
+    Header: MBZ_ADMINISTERED,
+    accessor: 'meb_administered',
+    drug: MEB,
+  },
+  {
+    Header: PZQ_DAMAGED,
+    accessor: 'pzq_damaged',
+    drug: PZQ,
+  },
+  {
+    Header: ALB_DAMAGED,
+    accessor: 'alb_damaged',
+    drug: ALB,
+  },
+  {
+    Header: MBZ_DAMAGED,
+    accessor: 'meb_damaged',
+    drug: MEB,
+  },
+  {
+    Cell: (cell: Cell) =>
+      returnedToSupervicerCol(cell, 'pzq_remaining_with_cdd', IRS_RED_THRESHOLD),
+    Header: PZQ_RETURNED_TO_SUPERVISOR,
+    accessor: 'pzq_returned_to_supervisor',
+    drug: PZQ,
+  },
+  {
+    Cell: (cell: Cell) =>
+      returnedToSupervicerCol(cell, 'alb_remaining_with_cdd', IRS_RED_THRESHOLD),
+    Header: ALB_RETURNED_TO_SUPERVISOR,
+    accessor: 'alb_returned_to_supervisor',
+    drug: ALB,
+  },
+  {
+    Cell: (cell: Cell) =>
+      returnedToSupervicerCol(cell, 'meb_remaining_with_cdd', IRS_RED_THRESHOLD),
+    Header: MBZ_RETURNED_TO_SUPERVISOR,
+    accessor: 'meb_returned_to_supervisor',
+    drug: MBZ,
+  },
+  {
+    Header: PZQ_ADVERSE_REACTION,
+    accessor: 'pzq_adverse',
+    drug: PZQ,
+  },
+  {
+    Header: ALB_ADVERSE_REACTION,
+    accessor: 'alb_adverse',
+    drug: ALB,
+  },
+  {
+    Header: MEB_ADVERSE_REACTION,
+    accessor: 'meb_adverse',
+    drug: MEB,
+  },
+];
 
 export const censusPopColumns = [
   {

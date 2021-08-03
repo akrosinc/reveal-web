@@ -1072,12 +1072,35 @@ export const ONE_TO_FOUR_YEARS_ALB = translate('ONE_TO_FOUR_YEARS_ALB', '1-4 (AL
 export const ONE_TO_FOUR_YEARS_MBZ = translate('ONE_TO_FOUR_YEARS_MBZ', '1-4 (MBZ)');
 export const FIVE_TO_FOURTEEN_YEARS = translate('FOUR_TO_FOURTEEN_YEARS', '5-14');
 export const FIVE_TO_FOURTEEN_YEARS_PZQ = translate('FOUR_TO_FOURTEEN_YEARS_PZQ', '5-14 (PZQ)');
+export const FIVE_TO_FIFTEEN_YEARS_PZQ = translate('FIVE_TO_FIFTEEN_YEARS_PZQ', '5-15 (PZQ)');
+export const ONE_TO_FOUR_YEARS_VITA = translate(
+  'ONE_TO_FOUR_YEARS_VITA',
+  '12-59 MONTHS (VITAMIN A)'
+);
+export const TWELVE_TO_FIFTY_NINE_MONTHS_ALB = translate(
+  'TWELVE_TO_FIFTY_NINE_MONTHS_ALB',
+  '12-59 MONTHS (ALB)'
+);
+export const TWELVE_TO_FIFTY_NINE_MONTHS_MEB = translate(
+  'TWELVE_TO_FIFTY_NINE_MONTHS_MEB',
+  '12-59 MONTHS (MEB)'
+);
+export const SIX_TO_ELEVEN_MONTHS_VITA = translate(
+  'SIX_TO_ELEVEN_MONTHS_VITA',
+  '6-11 MONTHS (VITAMIN A)'
+);
+export const FIVE_TO_FIFTEEN_YEARS_ALB = translate('FIVE_TO_FIFTEEN_YEARS_PZQ', '5-15 (ALB)');
+export const FIVE_TO_FIFTEEN_YEARS_MEB = translate('FIVE_TO_FIFTEEN_YEARS_MEB', '5-15 (MEB)');
 export const FIVE_TO_FOURTEEN_YEARS_ALB = translate('FOUR_TO_FOURTEEN_YEARS_ALB', '5-14 (ALB)');
 export const FIVE_TO_FOURTEEN_YEARS_MBZ = translate('FOUR_TO_FOURTEEN_YEARS_MBZ', '5-14 (MBZ)');
 export const FIFTEEN_YEARS_AND_ABOVE = translate('FIFTEEN_YEARS_AND_ABOVE', '15+');
 export const SIXTEEN_YEARS_AND_ABOVE = translate('SIXTEEN_YEARS_AND_ABOVE', '16+');
 export const FIFTEEN_YEARS_AND_ABOVE_PZQ = translate('FIFTEEN_YEARS_AND_ABOVE_PZQ', '15+ (PZQ)');
 export const SIXTEEN_YEARS_AND_ABOVE_PZQ = translate('SIXTEEN_YEARS_AND_ABOVE_PZQ', '16+ (PZQ)');
+export const SIXTEEN_YEARS_AND_ABOVE_VITA = translate(
+  'SIXTEEN_YEARS_AND_ABOVE_VITA',
+  '16+ (VITAMIN A)'
+);
 export const FIFTEEN_YEARS_AND_ABOVE_ALB = translate('FIFTEEN_YEARS_AND_ABOVE_ALB', '15+ (ALB)');
 export const SIXTEN_YEARS_AND_ABOVE_ALB = translate('SIXTEN_YEARS_AND_ABOVE_ALB', '16+ (ALB)');
 export const SIXTEN_YEARS_AND_ABOVE_MEB = translate('SIXTEN_YEARS_AND_ABOVE_MEB', '16+ (MEB)');
@@ -1220,6 +1243,7 @@ export const MBZ_SUPERVISOR_DISTRIBUTED = translate(
 );
 export const PZQ_ADVERSE_REACTION = translate('PZQ_ADVERSE_REACTION', 'PZQ Adverse Reaction');
 export const ALB_ADVERSE_REACTION = translate('ALB_ADVERSE_REACTION', 'ALB Adverse Reaction');
+export const MEB_ADVERSE_REACTION = translate('MEB_ADVERSE_REACTION', 'MEB Adverse Reaction');
 export const MBZ_ADVERSE_REACTION = translate('MBZ_ADVERSE_REACTION', 'MBZ Adverse Reaction');
 export const CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE = translate(
   'CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE',
@@ -1228,3 +1252,5 @@ export const CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE = translate(
 export const PZQ = translate('PZQ', 'PZQ');
 export const ALB = translate('ALB', 'ALB');
 export const MBZ = translate('MBZ', 'MBZ');
+export const MEB = translate('MEB', 'MEB');
+export const VITAMIN_A = translate('VITAMIN_A', 'Vitamin A');
