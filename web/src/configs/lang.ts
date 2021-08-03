@@ -1038,6 +1038,19 @@ export const TOTAL_REMAINING_WITH_CDD = translate(
   'Total Remaining with CDD'
 );
 export const RETURNED_TO_SUPERVISOR = translate('RETURNED_TO_SUPERVISOR', 'Returned to Supervisor');
+export const MBZ_RETURNED_TO_SUPERVISOR = translate(
+  'MBZ_RETURNED_TO_SUPERVISOR',
+  'MBZ Returned to Supervisor'
+);
+export const ALB_RETURNED_TO_SUPERVISOR = translate(
+  'ALB_RETURNED_TO_SUPERVISOR',
+  'ALB Returned to Supervisor'
+);
+
+export const PZQ_RETURNED_TO_SUPERVISOR = translate(
+  'PZQ_RETURNED_TO_SUPERVISOR',
+  ' PZQ Returned to Supervisor'
+);
 export const TOTAL_ADVERSE_REACTION = translate('TOTAL_ADVERSE_REACTION', 'Total Adverse Reaction');
 export const OFFICIAL_CENSUS_POP_TARGET = translate(
   'OFFICIAL_CENSUS_POP_TARGET',
