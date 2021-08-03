@@ -1221,14 +1221,17 @@ export const REVIEW_WITH_DECISION_TIP = translate(
 );
 export const ALB_ADMINISTERED = translate('ALB_ADMINISTERED', 'ALB administered');
 export const MBZ_ADMINISTERED = translate('MBZ_ADMINISTERED', 'MBZ administered');
+export const MEB_ADMINISTERED = translate('MEB_ADMINISTERED', 'MEB administered');
 export const PZQ_ADMINISTERED = translate('PZQ_ADMINISTERED', 'PZQ administered');
 export const TOTAL_ADMINISTERED = translate('TOTAL_ADMINISTERED', 'Total administered');
 export const PZQ_DAMAGED = translate('PZQ_DAMAGED', 'PZQ Damaged');
 export const ALB_DAMAGED = translate('ALB_DAMAGED', 'ALB Damaged');
 export const MBZ_DAMAGED = translate('MBZ_DAMAGED', 'MBZ Damaged');
+export const MEB_DAMAGED = translate('MEB_DAMAGED', 'MEB Damaged');
 export const PZQ_RECEIVED_BY_CDD = translate('PZQ_RECEIVED_BY_CDD', ' PZQ Received by CDD');
 export const ALB_RECEIVED_BY_CDD = translate('PZQ_RECEIVED_BY_CDD', ' ALB Received by CDD');
 export const MBZ_RECEIVED_BY_CDD = translate('MBZ_RECEIVED_BY_CDD', ' MBZ Received by CDD');
+export const MEB_RECEIVED_BY_CDD = translate('MEB_RECEIVED_BY_CDD', ' MEB Received by CDD');
 export const PZQ_SUPERVISOR_DISTRIBUTED = translate(
   'PZQ_SUPERVISOR_DISTRIBUTED',
   'PZQ Supervisor Distributed'
@@ -1240,6 +1243,10 @@ export const ALB_SUPERVISOR_DISTRIBUTED = translate(
 export const MBZ_SUPERVISOR_DISTRIBUTED = translate(
   'MBZ_SUPERVISOR_DISTRIBUTED',
   'MBZ Supervisor Distributed'
+);
+export const MEB_SUPERVISOR_DISTRIBUTED = translate(
+  'MEB_SUPERVISOR_DISTRIBUTED',
+  'MEB Supervisor Distributed'
 );
 export const PZQ_ADVERSE_REACTION = translate('PZQ_ADVERSE_REACTION', 'PZQ Adverse Reaction');
 export const ALB_ADVERSE_REACTION = translate('ALB_ADVERSE_REACTION', 'ALB Adverse Reaction');
