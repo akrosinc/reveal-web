@@ -1038,6 +1038,8 @@ export const TOTAL_REMAINING_WITH_CDD = translate(
   'Total Remaining with CDD'
 );
 export const PZQ_REMAINING_WITH_CHW = translate('PZQ_REMAINING_WITH_CHW', 'PZQ Remaining with CHW');
+export const MEB_REMAINING_WITH_CHW = translate('MEB_REMAINING_WITH_CHW', 'MEB Remaining with CHW');
+export const ALB_REMAINING_WITH_CHW = translate('ALB_REMAINING_WITH_CHW', 'ALB Remaining with CHW');
 export const RETURNED_TO_SUPERVISOR = translate('RETURNED_TO_SUPERVISOR', 'Returned to Supervisor');
 export const MBZ_RETURNED_TO_SUPERVISOR = translate(
   'MBZ_RETURNED_TO_SUPERVISOR',
@@ -1047,9 +1049,17 @@ export const MEB_RETURNED_TO_SUPERVISOR = translate(
   'MEB_RETURNED_TO_SUPERVISOR',
   'MEB Returned to Supervisor'
 );
+export const MEB_RETURNED_TO_COORDINATOR = translate(
+  'MEB_RETURNED_TO_SUPERVISOR',
+  'MEB Returned to Cell Coordinator'
+);
 export const ALB_RETURNED_TO_SUPERVISOR = translate(
   'ALB_RETURNED_TO_SUPERVISOR',
   'ALB Returned to Supervisor'
+);
+export const ALB_RETURNED_TO_COORDINATOR = translate(
+  'ALB_RETURNED_TO_COORDINATOR',
+  'ALB Returned to Cell Coordinator'
 );
 
 export const PZQ_RETURNED_TO_SUPERVISOR = translate(
@@ -1241,8 +1251,10 @@ export const VITA_DAMAGED = translate('VITA_DAMAGED', 'VITA Damaged');
 export const PZQ_RECEIVED_BY_CDD = translate('PZQ_RECEIVED_BY_CDD', ' PZQ Received by CDD');
 export const PZQ_RECEIVED_BY_CHW = translate('PZQ_RECEIVED_BY_CHW', ' PZQ Received by CHW');
 export const ALB_RECEIVED_BY_CDD = translate('PZQ_RECEIVED_BY_CDD', ' ALB Received by CDD');
+export const ALB_RECEIVED_BY_CHW = translate('ALB_RECEIVED_BY_CHW', ' ALB Received by CHW');
 export const MBZ_RECEIVED_BY_CDD = translate('MBZ_RECEIVED_BY_CDD', ' MBZ Received by CDD');
 export const MEB_RECEIVED_BY_CDD = translate('MEB_RECEIVED_BY_CDD', ' MEB Received by CDD');
+export const MEB_RECEIVED_BY_CHW = translate('MEB_RECEIVED_BY_CHW', ' MEB Received by CHW');
 export const PZQ_SUPERVISOR_DISTRIBUTED = translate(
   'PZQ_SUPERVISOR_DISTRIBUTED',
   'PZQ Supervisor Distributed'
@@ -1262,6 +1274,14 @@ export const MBZ_SUPERVISOR_DISTRIBUTED = translate(
 export const MEB_SUPERVISOR_DISTRIBUTED = translate(
   'MEB_SUPERVISOR_DISTRIBUTED',
   'MEB Supervisor Distributed'
+);
+export const MEB_COORDINATOR_DISTRIBUTED = translate(
+  'MEB_COORDINATOR_DISTRIBUTED',
+  'MEB Cell Coordinator Distributed'
+);
+export const ALB_COORDINATOR_DISTRIBUTED = translate(
+  'ALB_COORDINATOR_DISTRIBUTED',
+  'ALB Cell Coordinator Distributed'
 );
 export const PZQ_ADVERSE_REACTION = translate('PZQ_ADVERSE_REACTION', 'PZQ Adverse Reaction');
 export const ALB_ADVERSE_REACTION = translate('ALB_ADVERSE_REACTION', 'ALB Adverse Reaction');
