@@ -108,8 +108,13 @@ import {
   TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
   TWELVE_TO_FIFTY_NINE_MONTHS_MEB,
   VITA,
+  VITA_ADMINISTERED,
   VITA_ADVERSE_REACTION,
+  VITA_COORDINATOR_DISTRIBUTED,
   VITA_DAMAGED,
+  VITA_RECEIVED_BY_CHW,
+  VITA_REMAINING_WITH_CHW,
+  VITA_RETURNED_TO_COORDINATOR,
 } from '../../../configs/lang';
 import { indicatorThresholdsMDALite } from '../../../configs/settings';
 import {
@@ -1071,6 +1076,11 @@ export const drugDistributionColumnsRwanda = [
     drug: MEB,
   },
   {
+    Header: VITA_COORDINATOR_DISTRIBUTED,
+    accessor: 'vita_supervisor_distributed',
+    drug: VITA,
+  },
+  {
     Header: PZQ_RECEIVED_BY_CHW,
     accessor: 'pzq_received',
     drug: PZQ,
@@ -1086,6 +1096,11 @@ export const drugDistributionColumnsRwanda = [
     drug: MEB,
   },
   {
+    Header: VITA_RECEIVED_BY_CHW,
+    accessor: 'vita_received',
+    drug: VITA,
+  },
+  {
     Header: PZQ_ADMINISTERED,
     accessor: 'pzq_administered',
     drug: PZQ,
@@ -1099,6 +1114,11 @@ export const drugDistributionColumnsRwanda = [
     Header: MEB_ADMINISTERED,
     accessor: 'meb_administered',
     drug: MEB,
+  },
+  {
+    Header: VITA_ADMINISTERED,
+    accessor: 'vita_administered',
+    drug: VITA,
   },
   {
     Header: PZQ_DAMAGED,
@@ -1136,6 +1156,11 @@ export const drugDistributionColumnsRwanda = [
     drug: ALB,
   },
   {
+    Header: VITA_REMAINING_WITH_CHW,
+    accessor: 'vita_remaining_with_cdd',
+    drug: VITA,
+  },
+  {
     Cell: (cell: Cell) =>
       returnedToSupervicerCol(cell, 'pzq_remaining_with_cdd', IRS_RED_THRESHOLD),
     Header: PZQ_RETURNED_TO_COORDINATOR,
@@ -1155,6 +1180,13 @@ export const drugDistributionColumnsRwanda = [
     Header: MEB_RETURNED_TO_COORDINATOR,
     accessor: 'mbz_returned_to_supervisor',
     drug: MEB,
+  },
+  {
+    Cell: (cell: Cell) =>
+      returnedToSupervicerCol(cell, 'vita_remaining_with_cdd', IRS_RED_THRESHOLD),
+    Header: VITA_RETURNED_TO_COORDINATOR,
+    accessor: 'vita_returned_to_supervisor',
+    drug: VITA,
   },
   {
     Header: PZQ_ADVERSE_REACTION,
