@@ -3,6 +3,7 @@ import { DrillDownInstanceProps } from '@onaio/drill-down-table';
 import React, { useState } from 'react';
 import { DropdownMenu } from 'reactstrap';
 import uuid from 'uuid/v1';
+import { SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS } from '../../../configs/env';
 import { CUSTOMIZE_COLUMNS, CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE } from '../../../configs/lang';
 import { DropDownRenderer } from '../../DropDownRenderer';
 import './index.css';
@@ -14,7 +15,12 @@ export const RevealColumnHider = <T extends object>({ allColumns }: DrillDownIns
    */
   const salt = uuid();
   const anyColumnHidden = allColumns.some(column => !column.isVisible);
-  const drugs = ['PZQ', 'ALB', 'MBZ'];
+  const kenyaDrugs = ['PZQ', 'ALB', 'MBZ'];
+  const rwandaDrugs = ['PZQ', 'ALB', 'MEB', 'VITA'];
+  const drugs =
+    SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS === 'mdaLiteJurisdictionsColumns'
+      ? kenyaDrugs
+      : rwandaDrugs;
   const [checkedState, setCheckedState] = useState(new Array(drugs.length).fill(true));
   const handleChange = (position: number) => {
     const updatedCheckedState = checkedState.map((item, index) =>

@@ -1037,6 +1037,7 @@ export const TOTAL_REMAINING_WITH_CDD = translate(
   'TOTAL_REMAINING_WITH_CDD',
   'Total Remaining with CDD'
 );
+export const PZQ_REMAINING_WITH_CHW = translate('PZQ_REMAINING_WITH_CHW', 'PZQ Remaining with CHW');
 export const RETURNED_TO_SUPERVISOR = translate('RETURNED_TO_SUPERVISOR', 'Returned to Supervisor');
 export const MBZ_RETURNED_TO_SUPERVISOR = translate(
   'MBZ_RETURNED_TO_SUPERVISOR',
@@ -1054,6 +1055,10 @@ export const ALB_RETURNED_TO_SUPERVISOR = translate(
 export const PZQ_RETURNED_TO_SUPERVISOR = translate(
   'PZQ_RETURNED_TO_SUPERVISOR',
   ' PZQ Returned to Supervisor'
+);
+export const PZQ_RETURNED_TO_COORDINATOR = translate(
+  'PZQ_RETURNED_TO_SUPERVISOR',
+  ' PZQ Returned to  Cell Coordinator'
 );
 export const TOTAL_ADVERSE_REACTION = translate('TOTAL_ADVERSE_REACTION', 'Total Adverse Reaction');
 export const OFFICIAL_CENSUS_POP_TARGET = translate(
@@ -1232,13 +1237,19 @@ export const PZQ_DAMAGED = translate('PZQ_DAMAGED', 'PZQ Damaged');
 export const ALB_DAMAGED = translate('ALB_DAMAGED', 'ALB Damaged');
 export const MBZ_DAMAGED = translate('MBZ_DAMAGED', 'MBZ Damaged');
 export const MEB_DAMAGED = translate('MEB_DAMAGED', 'MEB Damaged');
+export const VITA_DAMAGED = translate('VITA_DAMAGED', 'VITA Damaged');
 export const PZQ_RECEIVED_BY_CDD = translate('PZQ_RECEIVED_BY_CDD', ' PZQ Received by CDD');
+export const PZQ_RECEIVED_BY_CHW = translate('PZQ_RECEIVED_BY_CHW', ' PZQ Received by CHW');
 export const ALB_RECEIVED_BY_CDD = translate('PZQ_RECEIVED_BY_CDD', ' ALB Received by CDD');
 export const MBZ_RECEIVED_BY_CDD = translate('MBZ_RECEIVED_BY_CDD', ' MBZ Received by CDD');
 export const MEB_RECEIVED_BY_CDD = translate('MEB_RECEIVED_BY_CDD', ' MEB Received by CDD');
 export const PZQ_SUPERVISOR_DISTRIBUTED = translate(
   'PZQ_SUPERVISOR_DISTRIBUTED',
   'PZQ Supervisor Distributed'
+);
+export const PZQ_COORDINATOR_DISTRIBUTED = translate(
+  'PZQ_COORDINATOR_DISTRIBUTED',
+  'PZQ Cell Coordinator Distributed'
 );
 export const ALB_SUPERVISOR_DISTRIBUTED = translate(
   'ALB_SUPERVISOR_DISTRIBUTED',
@@ -1265,4 +1276,4 @@ export const PZQ = translate('PZQ', 'PZQ');
 export const ALB = translate('ALB', 'ALB');
 export const MBZ = translate('MBZ', 'MBZ');
 export const MEB = translate('MEB', 'MEB');
-export const VITAMIN_A = translate('VITAMIN_A', 'Vitamin A');
+export const VITA = translate('VITA', 'VITA');
