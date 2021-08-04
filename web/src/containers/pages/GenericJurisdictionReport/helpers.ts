@@ -38,6 +38,7 @@ import {
   MEB_ADVERSE_REACTION,
   MEB_DAMAGED,
   MEB_RECEIVED_BY_CDD,
+  MEB_RETURNED_TO_SUPERVISOR,
   MEB_SUPERVISOR_DISTRIBUTED,
   NAME,
   NAME_TIP,
@@ -96,6 +97,7 @@ import {
   TOTAL_TARGETED_STRUCTURES_TIP,
   TREATMENT_COVERAGE_CENSUS,
   TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
+  VITA_ADVERSE_REACTION,
   VITAMIN_A,
 } from '../../../configs/lang';
 import { indicatorThresholdsMDALite } from '../../../configs/settings';
@@ -1119,7 +1121,7 @@ export const drugDistributionColumnsRwanda = [
   {
     Cell: (cell: Cell) =>
       returnedToSupervicerCol(cell, 'meb_remaining_with_cdd', IRS_RED_THRESHOLD),
-    Header: MBZ_RETURNED_TO_SUPERVISOR,
+    Header: MEB_RETURNED_TO_SUPERVISOR,
     accessor: 'meb_returned_to_supervisor',
     drug: MBZ,
   },
@@ -1137,6 +1139,11 @@ export const drugDistributionColumnsRwanda = [
     Header: MEB_ADVERSE_REACTION,
     accessor: 'meb_adverse',
     drug: MEB,
+  },
+  {
+    Header: VITA_ADVERSE_REACTION,
+    accessor: 'vita_adverse',
+    drug: VITAMIN_A,
   },
 ];
 
