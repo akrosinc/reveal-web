@@ -1037,7 +1037,47 @@ export const TOTAL_REMAINING_WITH_CDD = translate(
   'TOTAL_REMAINING_WITH_CDD',
   'Total Remaining with CDD'
 );
+export const PZQ_REMAINING_WITH_CHW = translate('PZQ_REMAINING_WITH_CHW', 'PZQ Remaining with CHW');
+export const MEB_REMAINING_WITH_CHW = translate('MEB_REMAINING_WITH_CHW', 'MEB Remaining with CHW');
+export const ALB_REMAINING_WITH_CHW = translate('ALB_REMAINING_WITH_CHW', 'ALB Remaining with CHW');
+export const VITA_REMAINING_WITH_CHW = translate(
+  'VITA_REMAINING_WITH_CHW',
+  'VITA Remaining with CHW'
+);
 export const RETURNED_TO_SUPERVISOR = translate('RETURNED_TO_SUPERVISOR', 'Returned to Supervisor');
+export const MBZ_RETURNED_TO_SUPERVISOR = translate(
+  'MBZ_RETURNED_TO_SUPERVISOR',
+  'MBZ Returned to Supervisor'
+);
+export const MEB_RETURNED_TO_SUPERVISOR = translate(
+  'MEB_RETURNED_TO_SUPERVISOR',
+  'MEB Returned to Supervisor'
+);
+export const MEB_RETURNED_TO_COORDINATOR = translate(
+  'MEB_RETURNED_TO_SUPERVISOR',
+  'MEB Returned to Cell Coordinator'
+);
+export const VITA_RETURNED_TO_COORDINATOR = translate(
+  'VITA_RETURNED_TO_COORDINATOR',
+  'VITA Returned to Cell Coordinator'
+);
+export const ALB_RETURNED_TO_SUPERVISOR = translate(
+  'ALB_RETURNED_TO_SUPERVISOR',
+  'ALB Returned to Supervisor'
+);
+export const ALB_RETURNED_TO_COORDINATOR = translate(
+  'ALB_RETURNED_TO_COORDINATOR',
+  'ALB Returned to Cell Coordinator'
+);
+
+export const PZQ_RETURNED_TO_SUPERVISOR = translate(
+  'PZQ_RETURNED_TO_SUPERVISOR',
+  ' PZQ Returned to Supervisor'
+);
+export const PZQ_RETURNED_TO_COORDINATOR = translate(
+  'PZQ_RETURNED_TO_SUPERVISOR',
+  ' PZQ Returned to  Cell Coordinator'
+);
 export const TOTAL_ADVERSE_REACTION = translate('TOTAL_ADVERSE_REACTION', 'Total Adverse Reaction');
 export const OFFICIAL_CENSUS_POP_TARGET = translate(
   'OFFICIAL_CENSUS_POP_TARGET',
@@ -1059,12 +1099,35 @@ export const ONE_TO_FOUR_YEARS_ALB = translate('ONE_TO_FOUR_YEARS_ALB', '1-4 (AL
 export const ONE_TO_FOUR_YEARS_MBZ = translate('ONE_TO_FOUR_YEARS_MBZ', '1-4 (MBZ)');
 export const FIVE_TO_FOURTEEN_YEARS = translate('FOUR_TO_FOURTEEN_YEARS', '5-14');
 export const FIVE_TO_FOURTEEN_YEARS_PZQ = translate('FOUR_TO_FOURTEEN_YEARS_PZQ', '5-14 (PZQ)');
+export const FIVE_TO_FIFTEEN_YEARS_PZQ = translate('FIVE_TO_FIFTEEN_YEARS_PZQ', '5-15 (PZQ)');
+export const ONE_TO_FOUR_YEARS_VITA = translate(
+  'ONE_TO_FOUR_YEARS_VITA',
+  '12-59 MONTHS (VITAMIN A)'
+);
+export const TWELVE_TO_FIFTY_NINE_MONTHS_ALB = translate(
+  'TWELVE_TO_FIFTY_NINE_MONTHS_ALB',
+  '12-59 MONTHS (ALB)'
+);
+export const TWELVE_TO_FIFTY_NINE_MONTHS_MEB = translate(
+  'TWELVE_TO_FIFTY_NINE_MONTHS_MEB',
+  '12-59 MONTHS (MEB)'
+);
+export const SIX_TO_ELEVEN_MONTHS_VITA = translate(
+  'SIX_TO_ELEVEN_MONTHS_VITA',
+  '6-11 MONTHS (VITAMIN A)'
+);
+export const FIVE_TO_FIFTEEN_YEARS_ALB = translate('FIVE_TO_FIFTEEN_YEARS_PZQ', '5-15 (ALB)');
+export const FIVE_TO_FIFTEEN_YEARS_MEB = translate('FIVE_TO_FIFTEEN_YEARS_MEB', '5-15 (MEB)');
 export const FIVE_TO_FOURTEEN_YEARS_ALB = translate('FOUR_TO_FOURTEEN_YEARS_ALB', '5-14 (ALB)');
 export const FIVE_TO_FOURTEEN_YEARS_MBZ = translate('FOUR_TO_FOURTEEN_YEARS_MBZ', '5-14 (MBZ)');
 export const FIFTEEN_YEARS_AND_ABOVE = translate('FIFTEEN_YEARS_AND_ABOVE', '15+');
 export const SIXTEEN_YEARS_AND_ABOVE = translate('SIXTEEN_YEARS_AND_ABOVE', '16+');
 export const FIFTEEN_YEARS_AND_ABOVE_PZQ = translate('FIFTEEN_YEARS_AND_ABOVE_PZQ', '15+ (PZQ)');
 export const SIXTEEN_YEARS_AND_ABOVE_PZQ = translate('SIXTEEN_YEARS_AND_ABOVE_PZQ', '16+ (PZQ)');
+export const SIXTEEN_YEARS_AND_ABOVE_VITA = translate(
+  'SIXTEEN_YEARS_AND_ABOVE_VITA',
+  '16+ (VITAMIN A)'
+);
 export const FIFTEEN_YEARS_AND_ABOVE_ALB = translate('FIFTEEN_YEARS_AND_ABOVE_ALB', '15+ (ALB)');
 export const SIXTEN_YEARS_AND_ABOVE_ALB = translate('SIXTEN_YEARS_AND_ABOVE_ALB', '16+ (ALB)');
 export const SIXTEN_YEARS_AND_ABOVE_MEB = translate('SIXTEN_YEARS_AND_ABOVE_MEB', '16+ (MEB)');
@@ -1185,17 +1248,30 @@ export const REVIEW_WITH_DECISION_TIP = translate(
 );
 export const ALB_ADMINISTERED = translate('ALB_ADMINISTERED', 'ALB administered');
 export const MBZ_ADMINISTERED = translate('MBZ_ADMINISTERED', 'MBZ administered');
+export const MEB_ADMINISTERED = translate('MEB_ADMINISTERED', 'MEB administered');
+export const VITA_ADMINISTERED = translate('VITA_ADMINISTERED', 'VITA administered');
 export const PZQ_ADMINISTERED = translate('PZQ_ADMINISTERED', 'PZQ administered');
 export const TOTAL_ADMINISTERED = translate('TOTAL_ADMINISTERED', 'Total administered');
 export const PZQ_DAMAGED = translate('PZQ_DAMAGED', 'PZQ Damaged');
 export const ALB_DAMAGED = translate('ALB_DAMAGED', 'ALB Damaged');
 export const MBZ_DAMAGED = translate('MBZ_DAMAGED', 'MBZ Damaged');
+export const MEB_DAMAGED = translate('MEB_DAMAGED', 'MEB Damaged');
+export const VITA_DAMAGED = translate('VITA_DAMAGED', 'VITA Damaged');
 export const PZQ_RECEIVED_BY_CDD = translate('PZQ_RECEIVED_BY_CDD', ' PZQ Received by CDD');
+export const PZQ_RECEIVED_BY_CHW = translate('PZQ_RECEIVED_BY_CHW', ' PZQ Received by CHW');
 export const ALB_RECEIVED_BY_CDD = translate('PZQ_RECEIVED_BY_CDD', ' ALB Received by CDD');
+export const ALB_RECEIVED_BY_CHW = translate('ALB_RECEIVED_BY_CHW', ' ALB Received by CHW');
 export const MBZ_RECEIVED_BY_CDD = translate('MBZ_RECEIVED_BY_CDD', ' MBZ Received by CDD');
+export const MEB_RECEIVED_BY_CDD = translate('MEB_RECEIVED_BY_CDD', ' MEB Received by CDD');
+export const MEB_RECEIVED_BY_CHW = translate('MEB_RECEIVED_BY_CHW', ' MEB Received by CHW');
+export const VITA_RECEIVED_BY_CHW = translate('VITA_RECEIVED_BY_CHW', 'VITA Received by CHW');
 export const PZQ_SUPERVISOR_DISTRIBUTED = translate(
   'PZQ_SUPERVISOR_DISTRIBUTED',
   'PZQ Supervisor Distributed'
+);
+export const PZQ_COORDINATOR_DISTRIBUTED = translate(
+  'PZQ_COORDINATOR_DISTRIBUTED',
+  'PZQ Cell Coordinator Distributed'
 );
 export const ALB_SUPERVISOR_DISTRIBUTED = translate(
   'ALB_SUPERVISOR_DISTRIBUTED',
@@ -1205,8 +1281,26 @@ export const MBZ_SUPERVISOR_DISTRIBUTED = translate(
   'MBZ_SUPERVISOR_DISTRIBUTED',
   'MBZ Supervisor Distributed'
 );
+export const MEB_SUPERVISOR_DISTRIBUTED = translate(
+  'MEB_SUPERVISOR_DISTRIBUTED',
+  'MEB Supervisor Distributed'
+);
+export const MEB_COORDINATOR_DISTRIBUTED = translate(
+  'MEB_COORDINATOR_DISTRIBUTED',
+  'MEB Cell Coordinator Distributed'
+);
+export const VITA_COORDINATOR_DISTRIBUTED = translate(
+  'VITA_COORDINATOR_DISTRIBUTED',
+  'VITA Cell Coordinator Distributed'
+);
+export const ALB_COORDINATOR_DISTRIBUTED = translate(
+  'ALB_COORDINATOR_DISTRIBUTED',
+  'ALB Cell Coordinator Distributed'
+);
 export const PZQ_ADVERSE_REACTION = translate('PZQ_ADVERSE_REACTION', 'PZQ Adverse Reaction');
 export const ALB_ADVERSE_REACTION = translate('ALB_ADVERSE_REACTION', 'ALB Adverse Reaction');
+export const MEB_ADVERSE_REACTION = translate('MEB_ADVERSE_REACTION', 'MEB Adverse Reaction');
+export const VITA_ADVERSE_REACTION = translate('VITA_ADVERSE_REACTION', 'VITA Adverse Reaction');
 export const MBZ_ADVERSE_REACTION = translate('MBZ_ADVERSE_REACTION', 'MBZ Adverse Reaction');
 export const CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE = translate(
   'CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE',
@@ -1215,3 +1309,5 @@ export const CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE = translate(
 export const PZQ = translate('PZQ', 'PZQ');
 export const ALB = translate('ALB', 'ALB');
 export const MBZ = translate('MBZ', 'MBZ');
+export const MEB = translate('MEB', 'MEB');
+export const VITA = translate('VITA', 'VITA');
