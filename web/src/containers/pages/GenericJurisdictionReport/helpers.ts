@@ -53,8 +53,12 @@ import {
   PZQ,
   PZQ_ADMINISTERED,
   PZQ_ADVERSE_REACTION,
+  PZQ_COORDINATOR_DISTRIBUTED,
   PZQ_DAMAGED,
   PZQ_RECEIVED_BY_CDD,
+  PZQ_RECEIVED_BY_CHW,
+  PZQ_REMAINING_WITH_CHW,
+  PZQ_RETURNED_TO_COORDINATOR,
   PZQ_RETURNED_TO_SUPERVISOR,
   PZQ_SUPERVISOR_DISTRIBUTED,
   REVIEW_WITH_DECISION,
@@ -97,8 +101,9 @@ import {
   TOTAL_TARGETED_STRUCTURES_TIP,
   TREATMENT_COVERAGE_CENSUS,
   TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
+  VITA,
   VITA_ADVERSE_REACTION,
-  VITAMIN_A,
+  VITA_DAMAGED,
 } from '../../../configs/lang';
 import { indicatorThresholdsMDALite } from '../../../configs/settings';
 import {
@@ -799,14 +804,14 @@ export const genderReportColumnsRwanda = [
       {
         Header: SIX_TO_ELEVEN_MONTHS_VITA,
         accessor: 'vita_treated_male_6_to_11_mos',
-        drug: VITAMIN_A,
+        drug: VITA,
         id: 'maleSixToElevenMonthsVITA',
         width: '100',
       },
       {
         Header: ONE_TO_FOUR_YEARS_VITA,
         accessor: 'vita_treated_male_1_4',
-        drug: VITAMIN_A,
+        drug: VITA,
         id: 'maleOneToFourYearsVITA',
         width: '100',
       },
@@ -874,14 +879,14 @@ export const genderReportColumnsRwanda = [
       {
         Header: SIX_TO_ELEVEN_MONTHS_VITA,
         accessor: 'vita_treated_female_6_to_11_mos',
-        drug: VITAMIN_A,
+        drug: VITA,
         id: 'femaleSixToElevenMonthsVITA',
         width: '100',
       },
       {
         Header: ONE_TO_FOUR_YEARS_VITA,
         accessor: 'vita_treated_female_1_4',
-        drug: VITAMIN_A,
+        drug: VITA,
         id: 'femaleOneToFourYearsVITA',
         width: '100',
       },
@@ -1045,7 +1050,7 @@ export const drugDistributionColumns = [
 ];
 export const drugDistributionColumnsRwanda = [
   {
-    Header: PZQ_SUPERVISOR_DISTRIBUTED,
+    Header: PZQ_COORDINATOR_DISTRIBUTED,
     accessor: 'pzq_supervisor_distributed',
     drug: PZQ,
   },
@@ -1057,10 +1062,10 @@ export const drugDistributionColumnsRwanda = [
   {
     Header: MEB_SUPERVISOR_DISTRIBUTED,
     accessor: 'meb_supervisor_distributed',
-    drug: MBZ,
+    drug: MEB,
   },
   {
-    Header: PZQ_RECEIVED_BY_CDD,
+    Header: PZQ_RECEIVED_BY_CHW,
     accessor: 'pzq_received',
     drug: PZQ,
   },
@@ -1105,9 +1110,19 @@ export const drugDistributionColumnsRwanda = [
     drug: MEB,
   },
   {
+    Header: VITA_DAMAGED,
+    accessor: 'vita_damaged',
+    drug: VITA,
+  },
+  {
+    Header: PZQ_REMAINING_WITH_CHW,
+    accessor: 'pzq_remaining_with_cdd',
+    drug: PZQ,
+  },
+  {
     Cell: (cell: Cell) =>
       returnedToSupervicerCol(cell, 'pzq_remaining_with_cdd', IRS_RED_THRESHOLD),
-    Header: PZQ_RETURNED_TO_SUPERVISOR,
+    Header: PZQ_RETURNED_TO_COORDINATOR,
     accessor: 'pzq_returned_to_supervisor',
     drug: PZQ,
   },
@@ -1123,7 +1138,7 @@ export const drugDistributionColumnsRwanda = [
       returnedToSupervicerCol(cell, 'meb_remaining_with_cdd', IRS_RED_THRESHOLD),
     Header: MEB_RETURNED_TO_SUPERVISOR,
     accessor: 'meb_returned_to_supervisor',
-    drug: MBZ,
+    drug: MEB,
   },
   {
     Header: PZQ_ADVERSE_REACTION,
@@ -1143,7 +1158,7 @@ export const drugDistributionColumnsRwanda = [
   {
     Header: VITA_ADVERSE_REACTION,
     accessor: 'vita_adverse',
-    drug: VITAMIN_A,
+    drug: VITA,
   },
 ];
 
