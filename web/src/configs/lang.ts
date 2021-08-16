@@ -1322,3 +1322,7 @@ export const VITA_6_TO_59_MOS_TREATMENT_COVERAGE = translate(
   'VITA_6_TO_59_MOS_TREATMENT_COVERAGE',
   'VITAMIN A 6 - 59 MONTHS - Treatment Coverage (Census)'
 );
+export const OTHER_POP_TARGET_6_TO_59_MOS_TRUSTED = translate(
+  'OTHER_POP_TARGET_6_TO_59_MOS_TRUSTED',
+  'Other Pop Target 6-59 MOS (Trusted)'
+);
