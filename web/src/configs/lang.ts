@@ -1326,3 +1326,7 @@ export const OTHER_POP_TARGET_6_TO_59_MOS_TRUSTED = translate(
   'OTHER_POP_TARGET_6_TO_59_MOS_TRUSTED',
   'Other Pop Target 6-59 MOS (Trusted)'
 );
+export const VITA_6_TO_69_MOS_OTHER_POP_COVERAGE_TRUSTED = translate(
+  'VITA_6_TO_69_MOS_OTHER_POP_COVERAGE_TRUSTED',
+  'VITAMIN A 6 - 59 MONTHS- Other Pop Coverage (Trusted)'
+);
