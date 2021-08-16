@@ -1268,7 +1268,7 @@ export const censusPopColumnsRwanda = [
   },
   {
     Header: OTHER_POP_TARGET_6_TO_59_MOS_TRUSTED,
-    accessor: 'other_pop_target_6_to_69_mos_trusted',
+    accessor: 'other_pop_target_6_to_59_mos_trusted',
     drug: VITA,
   },
   {
