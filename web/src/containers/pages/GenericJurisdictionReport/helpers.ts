@@ -117,6 +117,7 @@ import {
   VITA_RECEIVED_BY_CHW,
   VITA_REMAINING_WITH_CHW,
   VITA_RETURNED_TO_COORDINATOR,
+  VITA_TOTAL_TREATED,
 } from '../../../configs/lang';
 import { indicatorThresholdsMDALite } from '../../../configs/settings';
 import {
@@ -974,6 +975,11 @@ export const genderReportColumnsRwanda = [
         width: '100',
       },
     ],
+  },
+  {
+    Header: VITA_TOTAL_TREATED,
+    accessor: 'vita_total_treated',
+    drug: VITA,
   },
 ];
 
