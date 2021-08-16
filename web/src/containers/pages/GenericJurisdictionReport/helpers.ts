@@ -96,6 +96,8 @@ import {
   STRUCTURES_SPRAYED_TIP,
   SUCCESS_RATE,
   SUCCESS_RATE_TIP,
+  TOTAL_FEMALE_VITA,
+  TOTAL_MALE_VITA,
   TOTAL_SPRAY_AREAS,
   TOTAL_SPRAY_AREAS_TIP,
   TOTAL_SPRAY_AREAS_VISITED,
@@ -827,6 +829,13 @@ export const genderReportColumnsRwanda = [
         width: '100',
       },
       {
+        Header: TOTAL_MALE_VITA,
+        accessor: 'vita_total_male',
+        drug: VITA,
+        id: 'totalMaleVITA',
+        width: '100',
+      },
+      {
         Header: TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
         accessor: 'alb_treated_male_1_4',
         drug: ALB,
@@ -899,6 +908,13 @@ export const genderReportColumnsRwanda = [
         accessor: 'vita_treated_female_1_4',
         drug: VITA,
         id: 'femaleOneToFourYearsVITA',
+        width: '100',
+      },
+      {
+        Header: TOTAL_FEMALE_VITA,
+        accessor: 'vita_total_female',
+        drug: VITA,
+        id: 'totalFemaleVITA',
         width: '100',
       },
       {
