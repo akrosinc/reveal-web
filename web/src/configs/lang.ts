@@ -1311,3 +1311,5 @@ export const ALB = translate('ALB', 'ALB');
 export const MBZ = translate('MBZ', 'MBZ');
 export const MEB = translate('MEB', 'MEB');
 export const VITA = translate('VITA', 'VITA');
+export const TOTAL_MALE_VITA = translate('TOTAL_MALE_VITA', 'Total Male (VITA)');
+export const TOTAL_FEMALE_VITA = translate('TOTAL_FEMALE_VITA', 'Total Female(VITA)');
