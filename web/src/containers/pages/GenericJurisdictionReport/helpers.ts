@@ -14,6 +14,7 @@ import {
   ALB_RETURNED_TO_COORDINATOR,
   ALB_RETURNED_TO_SUPERVISOR,
   ALB_SUPERVISOR_DISTRIBUTED,
+  CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL,
   ELIGIBLE_TARGETED_SPRAY_AREAS,
   ELIGIBLE_TARGETED_SPRAY_AREAS_TIP,
   FEMALE_LABEL,
@@ -1252,6 +1253,31 @@ export const censusPopColumns = [
     accessor: 'other_pop_coverage',
   },
 ];
+export const censusPopColumnsRwanda = [
+  {
+    Header: CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL,
+    accessor: 'census_target_population_6_to_59_mos_official',
+    drug: VITA,
+  },
+  {
+    Header: OFFICIAL_CENSUS_POP_TARGET,
+    accessor: 'official_population',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
+    Header: TREATMENT_COVERAGE_CENSUS,
+    accessor: 'treatment_coverage',
+  },
+  {
+    Header: OTHER_POP_TARGET,
+    accessor: 'other_pop_target',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
+    Header: OTHER_POP_COVERAGE,
+    accessor: 'other_pop_coverage',
+  },
+];
 export const mdaLiteJurisdictionsColumns = [
   {
     Header: NAME,
@@ -1270,7 +1296,7 @@ export const mdaLiteJurisdictionsColumnsRwanda = [
     minWidth: 180,
   },
   ...genderReportColumnsRwanda,
-  ...censusPopColumns,
+  ...censusPopColumnsRwanda,
   ...drugDistributionColumnsRwanda,
 ];
 
