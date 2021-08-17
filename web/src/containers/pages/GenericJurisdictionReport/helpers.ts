@@ -126,6 +126,7 @@ import {
   VITA_REMAINING_WITH_CHW,
   VITA_RETURNED_TO_COORDINATOR,
   VITA_TOTAL_TREATED,
+  VITA_TOTAL_TREATED_12_TO_59_MOS,
   VITA_TOTAL_TREATED_6_TO_11_MOS,
 } from '../../../configs/lang';
 import { indicatorThresholdsMDALite } from '../../../configs/settings';
@@ -1305,6 +1306,11 @@ export const censusPopColumnsRwanda = [
   {
     Header: VITA_6_TO_11_MOS_OTHER_POP_COVERAGE,
     accessor: 'vita_6_to_11_mos_other_pop_coverage',
+    drug: VITA,
+  },
+  {
+    Header: VITA_TOTAL_TREATED_12_TO_59_MOS,
+    accessor: 'vita_total_treated_12_to_59_mos',
     drug: VITA,
   },
   {

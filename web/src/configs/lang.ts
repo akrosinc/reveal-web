@@ -1350,3 +1350,7 @@ export const VITA_6_TO_11_MOS_OTHER_POP_COVERAGE = translate(
   'VITA_6_TO_11_MOS_OTHER_POP_COVERAGE',
   'VITAMIN A 6 - 11 MONTHS- Other Pop Coverage (Trusted)'
 );
+export const VITA_TOTAL_TREATED_12_TO_59_MOS = translate(
+  'VITA_TOTAL_TREATED_12_TO_59_MOS',
+  'VITAMIN A - Total Treated - 12 - 59 MONTHS'
+);
