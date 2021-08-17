@@ -1310,7 +1310,7 @@ export const censusPopColumnsRwanda = [
   },
   {
     Header: VITA_TOTAL_TREATED_12_TO_59_MOS,
-    accessor: 'vita_total_treated_12_to_59_mos',
+    accessor: 'vita_total_treated_1_4',
     drug: VITA,
   },
   {
