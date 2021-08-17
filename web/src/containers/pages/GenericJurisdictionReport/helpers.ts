@@ -1292,7 +1292,7 @@ export const censusPopColumnsRwanda = [
   },
   {
     Header: VITA_6_TO_11_MOS_TREATMENT_COVERAGE_CENSUS,
-    accessor: 'vita_6_to_11_mos_treated_coverage',
+    accessor: 'vita_6_to_11_mos_treatment_coverage',
     drug: VITA,
   },
   {
