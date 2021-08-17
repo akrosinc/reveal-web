@@ -1018,7 +1018,7 @@ export const TOTAL_MALE = translate('TOTAL_MALE', 'Total Male');
 export const TOTAL_MALE_PZQ = translate('TOTAL_MALE_PZQ', 'Total Male (PZQ)');
 export const TOTAL_MALE_ALB = translate('TOTAL_MALE_ALB', 'Total Male (ALB)');
 export const TOTAL_MALE_MBZ = translate('TOTAL_MALE_MBZ', 'Total Male (MBZ)');
-export const TOTAL_FEMALE_LABEL = translate('FEMALE_LABEL', 'Total Female');
+export const TOTAL_FEMALE_LABEL = translate('TOTAL_FEMALE_LABEL', 'Total Female');
 export const TOTAL_FEMALE_PZQ = translate('TOTAL_FEMALE_PZQ', 'Total Female (PZQ)');
 export const TOTAL_FEMALE_ALB = translate('TOTAL_FEMALE_ALB', 'Total Female (ALB)');
 export const TOTAL_FEMALE_MBZ = translate('TOTAL_FEMALE_MBZ', 'Total Female (MBZ)');
@@ -1311,3 +1311,62 @@ export const ALB = translate('ALB', 'ALB');
 export const MBZ = translate('MBZ', 'MBZ');
 export const MEB = translate('MEB', 'MEB');
 export const VITA = translate('VITA', 'VITA');
+export const TOTAL_MALE_VITA = translate('TOTAL_MALE_VITA', 'Total Male (VITA)');
+export const TOTAL_FEMALE_VITA = translate('TOTAL_FEMALE_VITA', 'Total Female(VITA)');
+export const VITA_TOTAL_TREATED = translate('VITA_TOTAL_TREATED', 'Total Treated(VITA)');
+export const CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL = translate(
+  'CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL',
+  'Census Pop Target 6-59 MOS (Official)'
+);
+export const VITA_6_TO_59_MOS_TREATMENT_COVERAGE = translate(
+  'VITA_6_TO_59_MOS_TREATMENT_COVERAGE',
+  'VITAMIN A 6 - 59 MONTHS - Treatment Coverage (Census)'
+);
+export const OTHER_POP_TARGET_6_TO_59_MOS_TRUSTED = translate(
+  'OTHER_POP_TARGET_6_TO_59_MOS_TRUSTED',
+  'Other Pop Target 6-59 MOS (Trusted)'
+);
+export const VITA_6_TO_69_MOS_OTHER_POP_COVERAGE_TRUSTED = translate(
+  'VITA_6_TO_69_MOS_OTHER_POP_COVERAGE_TRUSTED',
+  'VITAMIN A 6 - 59 MONTHS- Other Pop Coverage (Trusted)'
+);
+export const VITA_TOTAL_TREATED_6_TO_11_MOS = translate(
+  'VITA_TOTAL_TREATED_6_TO_11_MOS',
+  'VITAMIN A - Total Treated - 6 - 11 MONTHS'
+);
+export const CENSUS_POP_TARGET_6_TO_11_MOS_OFFICIAL = translate(
+  'CENSUS_POP_TARGET_6_TO_11_MOS_OFFICIAL',
+  'Census Pop Target 6-11 MOS (Official)'
+);
+export const VITA_6_TO_11_MOS_TREATMENT_COVERAGE_CENSUS = translate(
+  'VITA_6_TO_11_MOS_TREATMENT_COVERAGE_CENSUS',
+  'VITAMIN A 6 - 11 MONTHS - Treatment Coverage (Census)'
+);
+export const OTHER_POP_TARGET_6_TO_11_MOS_TRUSTED = translate(
+  'OTHER_POP_TARGET_6_TO_11_MOS_TRUSTED',
+  'Other Pop Target 6-11 MOS (Trusted)'
+);
+export const VITA_6_TO_11_MOS_OTHER_POP_COVERAGE = translate(
+  'VITA_6_TO_11_MOS_OTHER_POP_COVERAGE',
+  'VITAMIN A 6 - 11 MONTHS- Other Pop Coverage (Trusted)'
+);
+export const VITA_TOTAL_TREATED_12_TO_59_MOS = translate(
+  'VITA_TOTAL_TREATED_12_TO_59_MOS',
+  'VITAMIN A - Total Treated - 12 - 59 MONTHS'
+);
+export const CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL = translate(
+  'CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL',
+  'Census Pop Target 12-59 MOS (Official)'
+);
+export const VITA_12_TO_59_TREATMENT_COVERAGE = translate(
+  'VITA_12_TO_59_TREATMENT_COVERAGE',
+  'VITAMIN A 12 - 59 MONTHS - Treatment Coverage (Census)'
+);
+export const OTHER_POP_TARGET_12_TO_59_MOS_TRUSTED = translate(
+  'OTHER_POP_TARGET_12_TO_59_MOS_TRUSTED',
+  'Other Pop Target 12-59 MOS (Trusted)'
+);
+export const VITA_12_TO_59_MOS_OTHER_POP_COVERAGE = translate(
+  'VITA_12_TO_59_MOS_OTHER_POP_COVERAGE',
+  'VITAMIN A 12 - 59 MONTHS- Other Pop Coverage (Trusted)'
+);
