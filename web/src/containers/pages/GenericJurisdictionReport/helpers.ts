@@ -72,6 +72,7 @@ import {
   PZQ_RETURNED_TO_COORDINATOR,
   PZQ_RETURNED_TO_SUPERVISOR,
   PZQ_SUPERVISOR_DISTRIBUTED,
+  PZQ_TOTAL_TREATED,
   REVIEW_WITH_DECISION,
   REVIEW_WITH_DECISION_TIP,
   ROOMS_COVERAGE_OF_STRUCTURES_SPRAYED,
@@ -1010,6 +1011,11 @@ export const genderReportColumnsRwanda = [
     Header: VITA_TOTAL_TREATED,
     accessor: 'vita_total_treated',
     drug: VITA,
+  },
+  {
+    Header: PZQ_TOTAL_TREATED,
+    accessor: 'pzq_total_treated',
+    drug: PZQ,
   },
 ];
 
