@@ -1358,3 +1358,7 @@ export const CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL = translate(
   'CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL',
   'Census Pop Target 12-59 MOS (Official)'
 );
+export const VITA_12_TO_59_TREATMENT_COVERAGE = translate(
+  'VITA_12_TO_59_TREATMENT_COVERAGE',
+  'VITAMIN A 12 - 59 MONTHS - Treatment Coverage (Census)'
+);
