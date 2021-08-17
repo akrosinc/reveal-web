@@ -55,6 +55,7 @@ import {
   ONE_TO_FOUR_YEARS_VITA,
   OTHER_POP_COVERAGE,
   OTHER_POP_TARGET,
+  OTHER_POP_TARGET_6_TO_11_MOS_TRUSTED,
   OTHER_POP_TARGET_6_TO_59_MOS_TRUSTED,
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED,
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED_TIP,
@@ -1293,6 +1294,11 @@ export const censusPopColumnsRwanda = [
   {
     Header: VITA_6_TO_11_MOS_TREATMENT_COVERAGE_CENSUS,
     accessor: 'vita_6_to_11_mos_treatment_coverage',
+    drug: VITA,
+  },
+  {
+    Header: OTHER_POP_TARGET_6_TO_11_MOS_TRUSTED,
+    accessor: 'other_pop_target_6_to_11_mos_trusted',
     drug: VITA,
   },
   {
