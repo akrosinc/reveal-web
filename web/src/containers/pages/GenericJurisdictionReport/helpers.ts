@@ -115,6 +115,7 @@ import {
   TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
   TWELVE_TO_FIFTY_NINE_MONTHS_MEB,
   VITA,
+  VITA_12_TO_59_TREATMENT_COVERAGE,
   VITA_6_TO_11_MOS_OTHER_POP_COVERAGE,
   VITA_6_TO_11_MOS_TREATMENT_COVERAGE_CENSUS,
   VITA_6_TO_59_MOS_TREATMENT_COVERAGE,
@@ -1317,6 +1318,11 @@ export const censusPopColumnsRwanda = [
   {
     Header: CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL,
     accessor: 'census_target_population_12_to_59_mos_official',
+    drug: VITA,
+  },
+  {
+    Header: VITA_12_TO_59_TREATMENT_COVERAGE,
+    accessor: 'vita_treatment_coverage_1_to_4',
     drug: VITA,
   },
   {
