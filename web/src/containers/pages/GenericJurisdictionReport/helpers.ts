@@ -14,6 +14,7 @@ import {
   ALB_RETURNED_TO_COORDINATOR,
   ALB_RETURNED_TO_SUPERVISOR,
   ALB_SUPERVISOR_DISTRIBUTED,
+  CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL,
   CENSUS_POP_TARGET_6_TO_11_MOS_OFFICIAL,
   CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL,
   ELIGIBLE_TARGETED_SPRAY_AREAS,
@@ -1311,6 +1312,11 @@ export const censusPopColumnsRwanda = [
   {
     Header: VITA_TOTAL_TREATED_12_TO_59_MOS,
     accessor: 'vita_total_treated_1_4',
+    drug: VITA,
+  },
+  {
+    Header: CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL,
+    accessor: 'census_target_population_12_to_59_mos_official',
     drug: VITA,
   },
   {
