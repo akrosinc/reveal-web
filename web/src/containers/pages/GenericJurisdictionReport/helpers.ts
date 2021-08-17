@@ -102,7 +102,9 @@ import {
   STRUCTURES_SPRAYED_TIP,
   SUCCESS_RATE,
   SUCCESS_RATE_TIP,
+  TOTAL_FEMALE_PZQ,
   TOTAL_FEMALE_VITA,
+  TOTAL_MALE_PZQ,
   TOTAL_MALE_VITA,
   TOTAL_SPRAY_AREAS,
   TOTAL_SPRAY_AREAS_TIP,
@@ -893,6 +895,13 @@ export const genderReportColumnsRwanda = [
         width: '100',
       },
       {
+        Header: TOTAL_MALE_PZQ,
+        accessor: 'pzq_total_male',
+        drug: PZQ,
+        id: 'totalMalePZQ',
+        width: '100',
+      },
+      {
         Header: SIXTEN_YEARS_AND_ABOVE_ALB,
         accessor: 'alb_treated_male_above_16',
         drug: ALB,
@@ -972,6 +981,13 @@ export const genderReportColumnsRwanda = [
         accessor: 'pzq_treated_female_above_16',
         drug: PZQ,
         id: 'femaleGreaterThanSixteenPZQ',
+        width: '100',
+      },
+      {
+        Header: TOTAL_FEMALE_PZQ,
+        accessor: 'pzq_total_female',
+        drug: PZQ,
+        id: 'totalFemalePZQ',
         width: '100',
       },
       {
