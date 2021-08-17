@@ -1354,3 +1354,7 @@ export const VITA_TOTAL_TREATED_12_TO_59_MOS = translate(
   'VITA_TOTAL_TREATED_12_TO_59_MOS',
   'VITAMIN A - Total Treated - 12 - 59 MONTHS'
 );
+export const CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL = translate(
+  'CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL',
+  'Census Pop Target 12-59 MOS (Official)'
+);
