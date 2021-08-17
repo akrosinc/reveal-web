@@ -1933,7 +1933,7 @@
     "message": "Total Hommes",
     "description": ""
   },
-  "FEMALE_LABEL": {
+  "TOTAL_FEMALE_LABEL": {
     "message": "Total Féminin",
     "description": ""
   },

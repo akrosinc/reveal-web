@@ -14,6 +14,9 @@ import {
   ALB_RETURNED_TO_COORDINATOR,
   ALB_RETURNED_TO_SUPERVISOR,
   ALB_SUPERVISOR_DISTRIBUTED,
+  CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL,
+  CENSUS_POP_TARGET_6_TO_11_MOS_OFFICIAL,
+  CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL,
   ELIGIBLE_TARGETED_SPRAY_AREAS,
   ELIGIBLE_TARGETED_SPRAY_AREAS_TIP,
   FEMALE_LABEL,
@@ -53,6 +56,9 @@ import {
   ONE_TO_FOUR_YEARS_VITA,
   OTHER_POP_COVERAGE,
   OTHER_POP_TARGET,
+  OTHER_POP_TARGET_12_TO_59_MOS_TRUSTED,
+  OTHER_POP_TARGET_6_TO_11_MOS_TRUSTED,
+  OTHER_POP_TARGET_6_TO_59_MOS_TRUSTED,
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED,
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED_TIP,
   PZQ,
@@ -96,6 +102,8 @@ import {
   STRUCTURES_SPRAYED_TIP,
   SUCCESS_RATE,
   SUCCESS_RATE_TIP,
+  TOTAL_FEMALE_VITA,
+  TOTAL_MALE_VITA,
   TOTAL_SPRAY_AREAS,
   TOTAL_SPRAY_AREAS_TIP,
   TOTAL_SPRAY_AREAS_VISITED,
@@ -108,6 +116,12 @@ import {
   TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
   TWELVE_TO_FIFTY_NINE_MONTHS_MEB,
   VITA,
+  VITA_12_TO_59_MOS_OTHER_POP_COVERAGE,
+  VITA_12_TO_59_TREATMENT_COVERAGE,
+  VITA_6_TO_11_MOS_OTHER_POP_COVERAGE,
+  VITA_6_TO_11_MOS_TREATMENT_COVERAGE_CENSUS,
+  VITA_6_TO_59_MOS_TREATMENT_COVERAGE,
+  VITA_6_TO_69_MOS_OTHER_POP_COVERAGE_TRUSTED,
   VITA_ADMINISTERED,
   VITA_ADVERSE_REACTION,
   VITA_COORDINATOR_DISTRIBUTED,
@@ -115,6 +129,9 @@ import {
   VITA_RECEIVED_BY_CHW,
   VITA_REMAINING_WITH_CHW,
   VITA_RETURNED_TO_COORDINATOR,
+  VITA_TOTAL_TREATED,
+  VITA_TOTAL_TREATED_12_TO_59_MOS,
+  VITA_TOTAL_TREATED_6_TO_11_MOS,
 } from '../../../configs/lang';
 import { indicatorThresholdsMDALite } from '../../../configs/settings';
 import {
@@ -827,6 +844,13 @@ export const genderReportColumnsRwanda = [
         width: '100',
       },
       {
+        Header: TOTAL_MALE_VITA,
+        accessor: 'vita_total_male',
+        drug: VITA,
+        id: 'totalMaleVITA',
+        width: '100',
+      },
+      {
         Header: TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
         accessor: 'alb_treated_male_1_4',
         drug: ALB,
@@ -902,6 +926,13 @@ export const genderReportColumnsRwanda = [
         width: '100',
       },
       {
+        Header: TOTAL_FEMALE_VITA,
+        accessor: 'vita_total_female',
+        drug: VITA,
+        id: 'totalFemaleVITA',
+        width: '100',
+      },
+      {
         Header: TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
         accessor: 'alb_treated_female_1_4',
         drug: ALB,
@@ -958,6 +989,11 @@ export const genderReportColumnsRwanda = [
         width: '100',
       },
     ],
+  },
+  {
+    Header: VITA_TOTAL_TREATED,
+    accessor: 'vita_total_treated',
+    drug: VITA,
   },
 ];
 
@@ -1230,6 +1266,96 @@ export const censusPopColumns = [
     accessor: 'other_pop_coverage',
   },
 ];
+export const censusPopColumnsRwanda = [
+  {
+    Header: CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL,
+    accessor: 'census_target_population_6_to_59_mos_official',
+    drug: VITA,
+  },
+  {
+    Header: VITA_6_TO_59_MOS_TREATMENT_COVERAGE,
+    accessor: 'vita_6_to_59_mos_treatment_coverage',
+    drug: VITA,
+  },
+  {
+    Header: OTHER_POP_TARGET_6_TO_59_MOS_TRUSTED,
+    accessor: 'other_pop_target_6_to_59_mos_trusted',
+    drug: VITA,
+  },
+  {
+    Header: VITA_6_TO_69_MOS_OTHER_POP_COVERAGE_TRUSTED,
+    accessor: 'vita_6_to_59_mos_other_pop_coverage',
+    drug: VITA,
+  },
+  {
+    Header: VITA_TOTAL_TREATED_6_TO_11_MOS,
+    accessor: 'vita_total_treated_6_to_11_mos',
+    drug: VITA,
+  },
+  {
+    Header: CENSUS_POP_TARGET_6_TO_11_MOS_OFFICIAL,
+    accessor: 'census_target_population_6_to_11_mos_official',
+    drug: VITA,
+  },
+  {
+    Header: VITA_6_TO_11_MOS_TREATMENT_COVERAGE_CENSUS,
+    accessor: 'vita_6_to_11_mos_treatment_coverage',
+    drug: VITA,
+  },
+  {
+    Header: OTHER_POP_TARGET_6_TO_11_MOS_TRUSTED,
+    accessor: 'other_pop_target_6_to_11_mos_trusted',
+    drug: VITA,
+  },
+  {
+    Header: VITA_6_TO_11_MOS_OTHER_POP_COVERAGE,
+    accessor: 'vita_6_to_11_mos_other_pop_coverage',
+    drug: VITA,
+  },
+  {
+    Header: VITA_TOTAL_TREATED_12_TO_59_MOS,
+    accessor: 'vita_total_treated_1_4',
+    drug: VITA,
+  },
+  {
+    Header: CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL,
+    accessor: 'census_target_population_12_to_59_mos_official',
+    drug: VITA,
+  },
+  {
+    Header: VITA_12_TO_59_TREATMENT_COVERAGE,
+    accessor: 'vita_treatment_coverage_1_to_4',
+    drug: VITA,
+  },
+  {
+    Header: OTHER_POP_TARGET_12_TO_59_MOS_TRUSTED,
+    accessor: 'other_pop_target_12_to_59_mos_trusted',
+    drug: VITA,
+  },
+  {
+    Header: VITA_12_TO_59_MOS_OTHER_POP_COVERAGE,
+    accessor: 'vita_1_to_4_years_other_pop_coverage',
+    drug: VITA,
+  },
+  {
+    Header: OFFICIAL_CENSUS_POP_TARGET,
+    accessor: 'official_population',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
+    Header: TREATMENT_COVERAGE_CENSUS,
+    accessor: 'treatment_coverage',
+  },
+  {
+    Header: OTHER_POP_TARGET,
+    accessor: 'other_pop_target',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
+    Header: OTHER_POP_COVERAGE,
+    accessor: 'other_pop_coverage',
+  },
+];
 export const mdaLiteJurisdictionsColumns = [
   {
     Header: NAME,
@@ -1248,7 +1374,7 @@ export const mdaLiteJurisdictionsColumnsRwanda = [
     minWidth: 180,
   },
   ...genderReportColumnsRwanda,
-  ...censusPopColumns,
+  ...censusPopColumnsRwanda,
   ...drugDistributionColumnsRwanda,
 ];
 
