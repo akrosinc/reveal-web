@@ -1398,3 +1398,7 @@ export const PZQ_16_YEARS_AND_ABOVE_OTHER_POP_COVERAGE = translate(
   'PZQ_16_YEARS_AND_ABOVE_OTHER_POP_COVERAGE',
   'PZQ 16 AND ABOVE YEARS- Other Pop Coverage (Trusted)'
 );
+export const PZQ_TOTAL_TREATED_5_15_YEARS = translate(
+  'PZQ_TOTAL_TREATED_5_15_YEARS',
+  'PZQ - Total Treated - 5 - 15 YEARS'
+);
