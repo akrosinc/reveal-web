@@ -15,6 +15,7 @@ import {
   ALB_RETURNED_TO_SUPERVISOR,
   ALB_SUPERVISOR_DISTRIBUTED,
   CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL,
+  CENSUS_POP_TARGET_16_AND_ABOVE_OFFICIAL,
   CENSUS_POP_TARGET_5_YEARS_AND_ADULTS_ABOVE_16,
   CENSUS_POP_TARGET_6_TO_11_MOS_OFFICIAL,
   CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL,
@@ -58,11 +59,13 @@ import {
   OTHER_POP_COVERAGE,
   OTHER_POP_TARGET,
   OTHER_POP_TARGET_12_TO_59_MOS_TRUSTED,
+  OTHER_POP_TARGET_16_YEARS_ABOVE_TRUSTED,
   OTHER_POP_TARGET_6_TO_11_MOS_TRUSTED,
   OTHER_POP_TARGET_6_TO_59_MOS_TRUSTED,
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED,
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED_TIP,
-  PZQ,
+  PZQ_16_YEARS_AND_ABOVE_OTHER_POP_COVERAGE,
+  PZQ_16_YEARS_AND_ABOVE_TREATMENT_COVERAGE,
   PZQ_ADMINISTERED,
   PZQ_ADVERSE_REACTION,
   PZQ_COORDINATOR_DISTRIBUTED,
@@ -74,6 +77,7 @@ import {
   PZQ_RETURNED_TO_SUPERVISOR,
   PZQ_SUPERVISOR_DISTRIBUTED,
   PZQ_TOTAL_TREATED,
+  PZQ_TOTAL_TREATED_16_YEARS_AND_ABOVE,
   REVIEW_WITH_DECISION,
   REVIEW_WITH_DECISION_TIP,
   ROOMS_COVERAGE_OF_STRUCTURES_SPRAYED,
@@ -137,6 +141,7 @@ import {
   VITA_TOTAL_TREATED_12_TO_59_MOS,
   VITA_TOTAL_TREATED_6_TO_11_MOS,
 } from '../../../configs/lang';
+import { PZQ } from '../../../configs/lang';
 import { indicatorThresholdsMDALite } from '../../../configs/settings';
 import {
   getIRSLiteThresholdAdherenceIndicator,
@@ -1362,8 +1367,33 @@ export const censusPopColumnsRwanda = [
   },
   {
     Header: CENSUS_POP_TARGET_5_YEARS_AND_ADULTS_ABOVE_16,
-    accessor: 'vita_1_to_4_years_other_pop_coverage',
-    drug: VITA,
+    accessor: 'census_pop_target_5_years_and_16_above',
+    drug: PZQ,
+  },
+  {
+    Header: PZQ_TOTAL_TREATED_16_YEARS_AND_ABOVE,
+    accessor: 'pzq_total_treated_above_16',
+    drug: PZQ,
+  },
+  {
+    Header: CENSUS_POP_TARGET_16_AND_ABOVE_OFFICIAL,
+    accessor: 'census_pop_target_above_16_official',
+    drug: PZQ,
+  },
+  {
+    Header: PZQ_16_YEARS_AND_ABOVE_TREATMENT_COVERAGE,
+    accessor: 'pzq_above_16_years_treatment_coverage',
+    drug: PZQ,
+  },
+  {
+    Header: OTHER_POP_TARGET_16_YEARS_ABOVE_TRUSTED,
+    accessor: 'other_pop_target_above_16_trusted',
+    drug: PZQ,
+  },
+  {
+    Header: PZQ_16_YEARS_AND_ABOVE_OTHER_POP_COVERAGE,
+    accessor: 'pzq_above_16_years_other_pop_coverage',
+    drug: PZQ,
   },
   {
     Header: OFFICIAL_CENSUS_POP_TARGET,
