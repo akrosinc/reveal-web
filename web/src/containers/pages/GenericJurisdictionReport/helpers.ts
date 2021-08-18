@@ -67,6 +67,7 @@ import {
   PERCENTAGE_VISITED_SPRAY_AREAS_EFFECTIVELY_SPRAYED_TIP,
   PZQ_16_YEARS_AND_ABOVE_OTHER_POP_COVERAGE,
   PZQ_16_YEARS_AND_ABOVE_TREATMENT_COVERAGE,
+  PZQ_5_TO_15_YEARS_TREATMENT_COVERAGE,
   PZQ_ADMINISTERED,
   PZQ_ADVERSE_REACTION,
   PZQ_COORDINATOR_DISTRIBUTED,
@@ -1380,6 +1381,11 @@ export const censusPopColumnsRwanda = [
   {
     Header: CENSUS_POP_TARGET_5_TO_15_YEARS_OFFICIAL,
     accessor: 'census_pop_target_5_to_15_official',
+    drug: PZQ,
+  },
+  {
+    Header: PZQ_5_TO_15_YEARS_TREATMENT_COVERAGE,
+    accessor: 'pzq_5_to_15_years_treatment_coverage',
     drug: PZQ,
   },
   {
