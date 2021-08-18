@@ -8,6 +8,7 @@ import {
   ALB_ADVERSE_REACTION,
   ALB_COORDINATOR_DISTRIBUTED,
   ALB_DAMAGED,
+  ALB_MEB,
   ALB_RECEIVED_BY_CDD,
   ALB_RECEIVED_BY_CHW,
   ALB_REMAINING_WITH_CHW,
@@ -870,14 +871,14 @@ export const genderReportColumnsRwanda = [
       {
         Header: TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
         accessor: 'alb_treated_male_1_4',
-        drug: ALB,
+        drug: ALB_MEB,
         id: 'maleOneToFourYearsALB',
         width: '100',
       },
       {
         Header: TWELVE_TO_FIFTY_NINE_MONTHS_MEB,
         accessor: 'meb_treated_male_1_4',
-        drug: MEB,
+        drug: ALB_MEB,
         id: 'maleOneToFourYearsMEB',
         width: '100',
       },
@@ -891,14 +892,14 @@ export const genderReportColumnsRwanda = [
       {
         Header: FIVE_TO_FIFTEEN_YEARS_ALB,
         accessor: 'alb_treated_male_5_15',
-        drug: ALB,
+        drug: ALB_MEB,
         id: 'maleFiveToFifteenALB',
         width: '100',
       },
       {
         Header: FIVE_TO_FIFTEEN_YEARS_MEB,
         accessor: 'meb_treated_male_5_15',
-        drug: MEB,
+        drug: ALB_MEB,
         id: 'maleFiveToFifteenMEB',
         width: '100',
       },
@@ -919,14 +920,14 @@ export const genderReportColumnsRwanda = [
       {
         Header: SIXTEN_YEARS_AND_ABOVE_ALB,
         accessor: 'alb_treated_male_above_16',
-        drug: ALB,
+        drug: ALB_MEB,
         id: 'maleGreaterThanSixteenALB',
         width: '100',
       },
       {
         Header: SIXTEN_YEARS_AND_ABOVE_MEB,
         accessor: 'meb_treated_male_above_16',
-        drug: MEB,
+        drug: ALB_MEB,
         id: 'maleGreaterThanSixteenMEB',
         width: '100',
       },
@@ -959,14 +960,14 @@ export const genderReportColumnsRwanda = [
       {
         Header: TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
         accessor: 'alb_treated_female_1_4',
-        drug: ALB,
+        drug: ALB_MEB,
         id: 'femaleOneToFourYearsALB',
         width: '100',
       },
       {
         Header: TWELVE_TO_FIFTY_NINE_MONTHS_MEB,
         accessor: 'meb_treated_female_1_4',
-        drug: MEB,
+        drug: ALB_MEB,
         id: 'femaleOneToFourYearsMEB',
         width: '100',
       },
@@ -980,14 +981,14 @@ export const genderReportColumnsRwanda = [
       {
         Header: FIVE_TO_FIFTEEN_YEARS_ALB,
         accessor: 'alb_treated_female_5_15',
-        drug: ALB,
+        drug: ALB_MEB,
         id: 'femaleFiveToFifteenALB',
         width: '100',
       },
       {
         Header: FIVE_TO_FIFTEEN_YEARS_MEB,
         accessor: 'meb_treated_female_5_15',
-        drug: MEB,
+        drug: ALB_MEB,
         id: 'femaleFiveToFifteenMEB',
         width: '100',
       },
@@ -1008,14 +1009,14 @@ export const genderReportColumnsRwanda = [
       {
         Header: SIXTEN_YEARS_AND_ABOVE_ALB,
         accessor: 'alb_treated_female_above_16',
-        drug: ALB,
+        drug: ALB_MEB,
         id: 'femaleGreaterThanSixteenALB',
         width: '100',
       },
       {
         Header: SIXTEN_YEARS_AND_ABOVE_MEB,
         accessor: 'meb_treated_female_above_16',
-        drug: MEB,
+        drug: ALB_MEB,
         id: 'femaleGreaterThanSixteenMEB',
         width: '100',
       },
@@ -1140,12 +1141,12 @@ export const drugDistributionColumnsRwanda = [
   {
     Header: ALB_COORDINATOR_DISTRIBUTED,
     accessor: 'alb_supervisor_distributed',
-    drug: ALB,
+    drug: ALB_MEB,
   },
   {
     Header: MEB_COORDINATOR_DISTRIBUTED,
     accessor: 'meb_supervisor_distributed',
-    drug: MEB,
+    drug: ALB_MEB,
   },
   {
     Header: VITA_COORDINATOR_DISTRIBUTED,
@@ -1160,7 +1161,7 @@ export const drugDistributionColumnsRwanda = [
   {
     Header: ALB_RECEIVED_BY_CHW,
     accessor: 'alb_received',
-    drug: ALB,
+    drug: ALB_MEB,
   },
   {
     Header: MEB_RECEIVED_BY_CHW,
@@ -1180,12 +1181,12 @@ export const drugDistributionColumnsRwanda = [
   {
     Header: ALB_ADMINISTERED,
     accessor: 'alb_administered',
-    drug: ALB,
+    drug: ALB_MEB,
   },
   {
     Header: MEB_ADMINISTERED,
     accessor: 'meb_administered',
-    drug: MEB,
+    drug: ALB_MEB,
   },
   {
     Header: VITA_ADMINISTERED,
@@ -1200,12 +1201,12 @@ export const drugDistributionColumnsRwanda = [
   {
     Header: ALB_DAMAGED,
     accessor: 'alb_damaged',
-    drug: ALB,
+    drug: ALB_MEB,
   },
   {
     Header: MEB_DAMAGED,
     accessor: 'meb_damaged',
-    drug: MEB,
+    drug: ALB_MEB,
   },
   {
     Header: VITA_DAMAGED,
@@ -1220,12 +1221,12 @@ export const drugDistributionColumnsRwanda = [
   {
     Header: MEB_REMAINING_WITH_CHW,
     accessor: 'meb_remaining_with_cdd',
-    drug: MEB,
+    drug: ALB_MEB,
   },
   {
     Header: ALB_REMAINING_WITH_CHW,
     accessor: 'alb_remaining_with_cdd',
-    drug: ALB,
+    drug: ALB_MEB,
   },
   {
     Header: VITA_REMAINING_WITH_CHW,
@@ -1244,14 +1245,14 @@ export const drugDistributionColumnsRwanda = [
       returnedToSupervicerCol(cell, 'alb_remaining_with_cdd', IRS_RED_THRESHOLD),
     Header: ALB_RETURNED_TO_COORDINATOR,
     accessor: 'alb_returned_to_supervisor',
-    drug: ALB,
+    drug: ALB_MEB,
   },
   {
     Cell: (cell: Cell) =>
       returnedToSupervicerCol(cell, 'meb_remaining_with_cdd', IRS_RED_THRESHOLD),
     Header: MEB_RETURNED_TO_COORDINATOR,
     accessor: 'mbz_returned_to_supervisor',
-    drug: MEB,
+    drug: ALB_MEB,
   },
   {
     Cell: (cell: Cell) =>
@@ -1268,12 +1269,12 @@ export const drugDistributionColumnsRwanda = [
   {
     Header: ALB_ADVERSE_REACTION,
     accessor: 'alb_adverse',
-    drug: ALB,
+    drug: ALB_MEB,
   },
   {
     Header: MEB_ADVERSE_REACTION,
     accessor: 'meb_adverse',
-    drug: MEB,
+    drug: ALB_MEB,
   },
   {
     Header: VITA_ADVERSE_REACTION,
