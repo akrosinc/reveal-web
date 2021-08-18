@@ -1374,3 +1374,7 @@ export const VITA_12_TO_59_MOS_OTHER_POP_COVERAGE = translate(
   'VITA_12_TO_59_MOS_OTHER_POP_COVERAGE',
   'VITAMIN A 12 - 59 MONTHS- Other Pop Coverage (Trusted)'
 );
+export const CENSUS_POP_TARGET_5_YEARS_AND_ADULTS_ABOVE_16 = translate(
+  'CENSUS_POP_TARGET_5_YEARS_AND_ADULTS_ABOVE_16',
+  'Census Pop Target 5 YEARS AND ADULT 16+ (Official)'
+);
