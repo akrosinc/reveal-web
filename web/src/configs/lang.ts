@@ -1306,12 +1306,6 @@ export const CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE = translate(
   'CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE',
   'Select drugs for columns to be displayed'
 );
-export const PZQ = translate('PZQ', 'PZQ');
-export const ALB = translate('ALB', 'ALB');
-export const ALB_MEB = translate('ALB/MEB', 'ALB/MEB');
-export const MBZ = translate('MBZ', 'MBZ');
-export const MEB = translate('MEB', 'MEB');
-export const VITA = translate('VITA', 'VITA');
 export const TOTAL_MALE_VITA = translate('TOTAL_MALE_VITA', 'Total Male (VITA)');
 export const TOTAL_FEMALE_VITA = translate('TOTAL_FEMALE_VITA', 'Total Female(VITA)');
 export const VITA_TOTAL_TREATED = translate('VITA_TOTAL_TREATED', 'Total Treated(VITA)');

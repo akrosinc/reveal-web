@@ -3,12 +3,10 @@ import { Dictionary } from '@onaio/utils';
 import { get } from 'lodash';
 import { Cell } from 'react-table';
 import {
-  ALB,
   ALB_ADMINISTERED,
   ALB_ADVERSE_REACTION,
   ALB_COORDINATOR_DISTRIBUTED,
   ALB_DAMAGED,
-  ALB_MEB,
   ALB_RECEIVED_BY_CDD,
   ALB_RECEIVED_BY_CHW,
   ALB_REMAINING_WITH_CHW,
@@ -37,14 +35,12 @@ import {
   FOUND_COVERAGE_TIP,
   IRS_RED_THRESHOLD,
   MALE_LABEL,
-  MBZ,
   MBZ_ADMINISTERED,
   MBZ_ADVERSE_REACTION,
   MBZ_DAMAGED,
   MBZ_RECEIVED_BY_CDD,
   MBZ_RETURNED_TO_SUPERVISOR,
   MBZ_SUPERVISOR_DISTRIBUTED,
-  MEB,
   MEB_ADMINISTERED,
   MEB_ADVERSE_REACTION,
   MEB_COORDINATOR_DISTRIBUTED,
@@ -132,7 +128,6 @@ import {
   TREATMENT_COVERAGE_CENSUS,
   TWELVE_TO_FIFTY_NINE_MONTHS_ALB,
   TWELVE_TO_FIFTY_NINE_MONTHS_MEB,
-  VITA,
   VITA_12_TO_59_MOS_OTHER_POP_COVERAGE,
   VITA_12_TO_59_TREATMENT_COVERAGE,
   VITA_6_TO_11_MOS_OTHER_POP_COVERAGE,
@@ -150,8 +145,8 @@ import {
   VITA_TOTAL_TREATED_12_TO_59_MOS,
   VITA_TOTAL_TREATED_6_TO_11_MOS,
 } from '../../../configs/lang';
-import { PZQ } from '../../../configs/lang';
 import { indicatorThresholdsMDALite } from '../../../configs/settings';
+import { ALB, ALB_MEB, MBZ, PZQ, VITA } from '../../../constants';
 import {
   getIRSLiteThresholdAdherenceIndicator,
   getIRSThresholdAdherenceIndicator,
@@ -1166,7 +1161,7 @@ export const drugDistributionColumnsRwanda = [
   {
     Header: MEB_RECEIVED_BY_CHW,
     accessor: 'meb_received',
-    drug: MEB,
+    drug: ALB_MEB,
   },
   {
     Header: VITA_RECEIVED_BY_CHW,
