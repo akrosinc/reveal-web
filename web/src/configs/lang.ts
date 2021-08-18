@@ -1410,3 +1410,7 @@ export const PZQ_5_TO_15_YEARS_TREATMENT_COVERAGE = translate(
   'PZQ_5_TO_15_YEARS_TREATMENT_COVERAGE',
   'PZQ 5 - 15 YEARS - Treatment Coverage (Census)'
 );
+export const OTHER_POP_TARGET_5_TO_15_YEARES_TRUSTED = translate(
+  'OTHER_POP_TARGET_5_TO_15_YEARES_TRUSTED',
+  'Other Pop Target 5 - 15 YEARS (Trusted)'
+);
