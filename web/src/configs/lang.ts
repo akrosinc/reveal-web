@@ -1402,3 +1402,7 @@ export const PZQ_TOTAL_TREATED_5_15_YEARS = translate(
   'PZQ_TOTAL_TREATED_5_15_YEARS',
   'PZQ - Total Treated - 5 - 15 YEARS'
 );
+export const CENSUS_POP_TARGET_5_TO_15_YEARS_OFFICIAL = translate(
+  'CENSUS_POP_TARGET_5_TO_15_YEARS_OFFICIAL',
+  'Census Pop Target 5 - 15 YEARS (Official)'
+);

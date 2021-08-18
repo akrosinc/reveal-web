@@ -16,6 +16,7 @@ import {
   ALB_SUPERVISOR_DISTRIBUTED,
   CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL,
   CENSUS_POP_TARGET_16_AND_ABOVE_OFFICIAL,
+  CENSUS_POP_TARGET_5_TO_15_YEARS_OFFICIAL,
   CENSUS_POP_TARGET_5_YEARS_AND_ADULTS_ABOVE_16,
   CENSUS_POP_TARGET_6_TO_11_MOS_OFFICIAL,
   CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL,
@@ -1374,6 +1375,11 @@ export const censusPopColumnsRwanda = [
   {
     Header: PZQ_TOTAL_TREATED_5_15_YEARS,
     accessor: 'pzq_total_treated_5_to_15',
+    drug: PZQ,
+  },
+  {
+    Header: CENSUS_POP_TARGET_5_TO_15_YEARS_OFFICIAL,
+    accessor: 'census_pop_target_5_to_15_official',
     drug: PZQ,
   },
   {
