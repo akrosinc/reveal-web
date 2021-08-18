@@ -36,7 +36,7 @@ export const RevealColumnHider = <T extends object>({ allColumns }: DrillDownIns
     });
   };
   return (
-    <>
+    <div style={{ marginBottom: '30px' }}>
       <DropDownRenderer
         filterActive={anyColumnHidden}
         // tslint:disable-next-line: jsx-no-lambda
@@ -71,6 +71,6 @@ export const RevealColumnHider = <T extends object>({ allColumns }: DrillDownIns
           </DropdownMenu>
         )}
       />
-    </>
+    </div>
   );
 };
