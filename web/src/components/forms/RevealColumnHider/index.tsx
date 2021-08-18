@@ -16,7 +16,7 @@ export const RevealColumnHider = <T extends object>({ allColumns }: DrillDownIns
   const salt = uuid();
   const anyColumnHidden = allColumns.some(column => !column.isVisible);
   const kenyaDrugs = ['PZQ', 'ALB', 'MBZ'];
-  const rwandaDrugs = ['PZQ', 'ALB', 'MEB', 'VITA'];
+  const rwandaDrugs = ['PZQ', 'ALB/MEB', 'VITA'];
   const drugs =
     SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS === 'mdaLiteJurisdictionsColumns'
       ? kenyaDrugs

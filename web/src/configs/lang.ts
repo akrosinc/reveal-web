@@ -1308,6 +1308,7 @@ export const CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE = translate(
 );
 export const PZQ = translate('PZQ', 'PZQ');
 export const ALB = translate('ALB', 'ALB');
+export const ALB_MEB = translate('ALB/MEB', 'ALB/MEB');
 export const MBZ = translate('MBZ', 'MBZ');
 export const MEB = translate('MEB', 'MEB');
 export const VITA = translate('VITA', 'VITA');
