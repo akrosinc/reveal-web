@@ -1414,3 +1414,7 @@ export const OTHER_POP_TARGET_5_TO_15_YEARES_TRUSTED = translate(
   'OTHER_POP_TARGET_5_TO_15_YEARES_TRUSTED',
   'Other Pop Target 5 - 15 YEARS (Trusted)'
 );
+export const PZQ_5_TO_15_YEARS_OTHER_POP_COVERAGE_TRUSTED = translate(
+  'PZQ_5_TO_15_YEARS_OTHER_POP_COVERAGE_TRUSTED',
+  'PZQ 5 - 15 YEARS- Other Pop Coverage (Trusted)'
+);
