@@ -1525,12 +1525,12 @@ export const censusPopColumnsRwanda = [
   },
   {
     Header: ALB_MEB_5_TO_15_YEARS_OTHER_POP_COVERAGE_TRUSTED,
-    accessor: '',
+    accessor: 'alb_meb_5_to_15_years_other_pop_coverage',
     drug: ALB_MEB,
   },
   {
     Header: ALB_MEB_TOTAL_TREATED_16_YEARS_AND_ABOVE,
-    accessor: '',
+    accessor: 'alb_meb_total_treated_above_16',
     drug: ALB_MEB,
   },
   {
