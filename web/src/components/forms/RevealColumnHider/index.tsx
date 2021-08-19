@@ -5,6 +5,7 @@ import { DropdownMenu } from 'reactstrap';
 import uuid from 'uuid/v1';
 import { SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS } from '../../../configs/env';
 import { CUSTOMIZE_COLUMNS, CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE } from '../../../configs/lang';
+import { ALB, ALB_MEB, MBZ, PZQ, VITA } from '../../../constants';
 import { DropDownRenderer } from '../../DropDownRenderer';
 import './index.css';
 
@@ -15,8 +16,8 @@ export const RevealColumnHider = <T extends object>({ allColumns }: DrillDownIns
    */
   const salt = uuid();
   const anyColumnHidden = allColumns.some(column => !column.isVisible);
-  const kenyaDrugs = ['PZQ', 'ALB', 'MBZ'];
-  const rwandaDrugs = ['PZQ', 'ALB', 'MEB', 'VITA'];
+  const kenyaDrugs = [PZQ, ALB, MBZ];
+  const rwandaDrugs = [PZQ, ALB_MEB, VITA];
   const drugs =
     SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS === 'mdaLiteJurisdictionsColumns'
       ? kenyaDrugs
@@ -35,7 +36,7 @@ export const RevealColumnHider = <T extends object>({ allColumns }: DrillDownIns
     });
   };
   return (
-    <>
+    <div style={{ marginBottom: '30px' }}>
       <DropDownRenderer
         filterActive={anyColumnHidden}
         // tslint:disable-next-line: jsx-no-lambda
@@ -70,6 +71,6 @@ export const RevealColumnHider = <T extends object>({ allColumns }: DrillDownIns
           </DropdownMenu>
         )}
       />
-    </>
+    </div>
   );
 };

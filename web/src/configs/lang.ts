@@ -1306,14 +1306,13 @@ export const CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE = translate(
   'CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE',
   'Select drugs for columns to be displayed'
 );
-export const PZQ = translate('PZQ', 'PZQ');
-export const ALB = translate('ALB', 'ALB');
-export const MBZ = translate('MBZ', 'MBZ');
-export const MEB = translate('MEB', 'MEB');
-export const VITA = translate('VITA', 'VITA');
 export const TOTAL_MALE_VITA = translate('TOTAL_MALE_VITA', 'Total Male (VITA)');
 export const TOTAL_FEMALE_VITA = translate('TOTAL_FEMALE_VITA', 'Total Female(VITA)');
 export const VITA_TOTAL_TREATED = translate('VITA_TOTAL_TREATED', 'Total Treated(VITA)');
+export const PZQ_TOTAL_TREATED = translate(
+  'PZQ_TOTAL_TREATED',
+  'PZQ - Total Treated - 5 YEARS AND ADULT 16+'
+);
 export const CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL = translate(
   'CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL',
   'Census Pop Target 6-59 MOS (Official)'
@@ -1369,4 +1368,107 @@ export const OTHER_POP_TARGET_12_TO_59_MOS_TRUSTED = translate(
 export const VITA_12_TO_59_MOS_OTHER_POP_COVERAGE = translate(
   'VITA_12_TO_59_MOS_OTHER_POP_COVERAGE',
   'VITAMIN A 12 - 59 MONTHS- Other Pop Coverage (Trusted)'
+);
+export const CENSUS_POP_TARGET_5_YEARS_AND_ADULTS_ABOVE_16 = translate(
+  'CENSUS_POP_TARGET_5_YEARS_AND_ADULTS_ABOVE_16',
+  'Census Pop Target 5 YEARS AND ADULT 16+ (Official)'
+);
+export const CENSUS_POP_TARGET_16_AND_ABOVE_OFFICIAL = translate(
+  'CENSUS_POP_TARGET_16_AND_ABOVE_OFFICIAL',
+  'Census Pop Target 16 AND ABOVE YEARS (Official)'
+);
+export const PZQ_TOTAL_TREATED_16_YEARS_AND_ABOVE = translate(
+  'PZQ_TOTAL_TREATED_16_YEARS_AND_ABOVE',
+  'PZQ - Total Treated - 16 AND ABOVE YEARS'
+);
+export const PZQ_16_YEARS_AND_ABOVE_TREATMENT_COVERAGE = translate(
+  'PZQ_16_YEARS_AND_ABOVE_TREATMENT_COVERAGE',
+  'PZQ - 16 AND ABOVE YEARS - Treatment Coverage (Census)'
+);
+export const OTHER_POP_TARGET_16_YEARS_ABOVE_TRUSTED = translate(
+  'OTHER_POP_TARGET_16_YEARS_ABOVE_TRUSTED',
+  'Other Pop Target 16 AND ABOVE YEARS (Trusted)'
+);
+export const PZQ_16_YEARS_AND_ABOVE_OTHER_POP_COVERAGE = translate(
+  'PZQ_16_YEARS_AND_ABOVE_OTHER_POP_COVERAGE',
+  'PZQ 16 AND ABOVE YEARS- Other Pop Coverage (Trusted)'
+);
+export const PZQ_TOTAL_TREATED_5_15_YEARS = translate(
+  'PZQ_TOTAL_TREATED_5_15_YEARS',
+  'PZQ - Total Treated - 5 - 15 YEARS'
+);
+export const CENSUS_POP_TARGET_5_TO_15_YEARS_OFFICIAL = translate(
+  'CENSUS_POP_TARGET_5_TO_15_YEARS_OFFICIAL',
+  'Census Pop Target 5 - 15 YEARS (Official)'
+);
+export const PZQ_5_TO_15_YEARS_TREATMENT_COVERAGE = translate(
+  'PZQ_5_TO_15_YEARS_TREATMENT_COVERAGE',
+  'PZQ 5 - 15 YEARS - Treatment Coverage (Census)'
+);
+export const OTHER_POP_TARGET_5_TO_15_YEARES_TRUSTED = translate(
+  'OTHER_POP_TARGET_5_TO_15_YEARES_TRUSTED',
+  'Other Pop Target 5 - 15 YEARS (Trusted)'
+);
+export const PZQ_5_TO_15_YEARS_OTHER_POP_COVERAGE_TRUSTED = translate(
+  'PZQ_5_TO_15_YEARS_OTHER_POP_COVERAGE_TRUSTED',
+  'PZQ 5 - 15 YEARS- Other Pop Coverage (Trusted)'
+);
+export const PZQ_5_YEARS_AND_ADULT_ABOVE_16_TREATMENT_COVERAGE = translate(
+  'PZQ_5_YEARS_AND_ADULT_ABOVE_16_TREATMENT_COVERAGE',
+  'PZQ 5 YEARS AND ADULT 16+ - Treatment Coverage (Census)'
+);
+export const OTHER_POP_TARGET_FROM_5_YEARS_TO_ABOVE_16_TRUSTED = translate(
+  'OTHER_POP_TARGET_FROM_5_YEARS_TO_ABOVE_16_TRUSTED',
+  'Other Pop Target 5 YEARS AND ADULT 16+ (Trusted)'
+);
+
+export const PZQ_5_YEARS_ABOVE_16_OTHER_POP_COVERAGE = translate(
+  'PZQ_5_YEARS_ABOVE_16_OTHER_POP_COVERAGE',
+  'PZQ 5 YEARS AND ADULT 16+- Other Pop Coverage (Trusted)'
+);
+export const ALB_TOTAL_MALE = translate('ALB_TOTAL_MALE', 'ALB Total Male');
+export const MEB_TOTAL_MALE = translate('MEB_TOTAL_MALE', 'MEB Total Male');
+export const ALB_TOTAL_FEMALE = translate('ALB_TOTAL_FEMALE', 'ALB Total Female');
+export const MEB_TOTAL_FEMALE = translate('MEB_TOTAL_FEMALE', 'MEB Total Female');
+export const ALB_TOTAL_TREATED = translate('ALB_TOTAL_TREATED', 'ALB Total Treated');
+export const MEB_TOTAL_TREATED = translate('MEB_TOTAL_TREATED', 'MEB Total Treated');
+export const ALB_MEB_TOTAL_TREATED = translate('ALB_MEB_TOTAL_TREATED', 'ALB/MEB Total Treated');
+export const ALB_MEB_TOTAL_TREATED_12_TO_59_MOS = translate(
+  'ALB_MEB_TOTAL_TREATED_12_TO_59_MOS',
+  'ALB/MEB - Total Treated - 12 - 59 MONTHS'
+);
+export const ALB_MEB_12_TO_59_MOS_OTHER_POP_COVERAGE = translate(
+  'ALB_MEB_12_TO_59_MOS_OTHER_POP_COVERAGE',
+  'ALB/MEB 12 - 59 MONTHS- Other Pop Coverage (Trusted)'
+);
+export const ALB_MEB_12_TO_59_MOS_TREATMENT_COVERAGE = translate(
+  'ALB_MEB_12_TO_59_MOS_TREATMENT_COVERAGE',
+  'ALB/MEB 12 - 59 MONTHS - Treatment Coverage (Census)'
+);
+export const ALB_MEB_TOTAL_TREATED_5_TO_15_YEARS = translate(
+  'ALB_MEB_TOTAL_TREATED_5_TO_15_YEARS',
+  'ALB/MEB - Total Treated - 5-15 YEARS'
+);
+export const ALB_MEB_5_TO_15_YEARS_TREATMENT_COVERAGE = translate(
+  'ALB_MEB_5_TO_15_YEARS_TREATMENT_COVERAGE',
+  'ALB/MEB 5 - 15 YEARS - Treatment Coverage (Census)'
+);
+
+export const ALB_MEB_5_TO_15_YEARS_OTHER_POP_COVERAGE_TRUSTED = translate(
+  'ALB_MEB_5_TO_15_YEARS_OTHER_POP_COVERAGE_TRUSTED',
+  'ALB/MEB 5 - 15 YEARS- Other Pop Coverage (Trusted)'
+);
+
+export const ALB_MEB_TOTAL_TREATED_16_YEARS_AND_ABOVE = translate(
+  'ALB_MEB_TOTAL_TREATED_16_YEARS_AND_ABOVE',
+  'ALB/MEB - Total Treated - 16 AND ABOVE YEARS'
+);
+export const ALB_MEB_ABOVE_16_YEARS_TREATMENT_COVERAGE = translate(
+  'ALB_MEB_ABOVE_16_YEARS_TREATMENT_COVERAGE',
+  'ALB/MEB 16 AND ABOVE YEARS - Treatment Coverage (Census)'
+);
+
+export const ALB_MEB_ABOVE_16_YEARS_OTHER_POP_COVERAGE = translate(
+  'ALB_MEB_ABOVE_16_YEARS_OTHER_POP_COVERAGE',
+  'ALB/MEB 16 AND ABOVE YEARS- Other Pop Coverage (Trusted)'
 );
