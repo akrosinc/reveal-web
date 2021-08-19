@@ -1535,7 +1535,7 @@ export const censusPopColumnsRwanda = [
   },
   {
     Header: ALB_MEB_ABOVE_16_YEARS_TREATMENT_COVERAGE,
-    accessor: 'alb_meb_total_treated_above_16',
+    accessor: 'alb_meb_above_16_treatment_coverage',
     drug: ALB_MEB,
   },
   {
