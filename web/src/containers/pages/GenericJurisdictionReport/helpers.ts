@@ -1515,7 +1515,7 @@ export const censusPopColumnsRwanda = [
   },
   {
     Header: ALB_MEB_TOTAL_TREATED_5_TO_15_YEARS,
-    accessor: '',
+    accessor: 'alb_meb_total_treated_5_15',
     drug: ALB_MEB,
   },
   {
