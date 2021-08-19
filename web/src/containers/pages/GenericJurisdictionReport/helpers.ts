@@ -1520,7 +1520,7 @@ export const censusPopColumnsRwanda = [
   },
   {
     Header: ALB_MEB_5_TO_15_YEARS_TREATMENT_COVERAGE,
-    accessor: '',
+    accessor: 'alb_meb_5_to_15_years_treatment_coverage',
     drug: ALB_MEB,
   },
   {
