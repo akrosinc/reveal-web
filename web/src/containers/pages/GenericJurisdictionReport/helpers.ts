@@ -1457,6 +1457,12 @@ export const censusPopColumnsRwanda = [
     drug: PZQ,
   },
   {
+    Header: CENSUS_POP_TARGET_5_YEARS_AND_ADULTS_ABOVE_16,
+    accessor: 'census_pop_target_5_to_15_and_above_16_official',
+    drug: ALB_MEB,
+    id: 'albMEBCensusPopTable5To15AndAbove16',
+  },
+  {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: PZQ_5_YEARS_AND_ADULT_ABOVE_16_TREATMENT_COVERAGE,
     accessor: 'pzq_5_years_and_above_16_treatment_coverage',
@@ -1533,10 +1539,22 @@ export const censusPopColumnsRwanda = [
     drug: ALB_MEB,
   },
   {
+    Header: CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL,
+    accessor: 'census_target_population_12_to_59_mos_official',
+    drug: ALB_MEB,
+    id: 'albMEB12To59PopulationOfficial',
+  },
+  {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: ALB_MEB_12_TO_59_MOS_TREATMENT_COVERAGE,
     accessor: 'alb_meb_treatment_coverage_1_to_4',
     drug: ALB_MEB,
+  },
+  {
+    Header: OTHER_POP_TARGET_12_TO_59_MOS_TRUSTED,
+    accessor: 'other_pop_target_12_to_59_mos_trusted',
+    drug: ALB_MEB,
+    id: 'albMEBOtherPopTarget12To59MosTrusted',
   },
   {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
@@ -1550,10 +1568,22 @@ export const censusPopColumnsRwanda = [
     drug: ALB_MEB,
   },
   {
+    Header: CENSUS_POP_TARGET_5_TO_15_YEARS_OFFICIAL,
+    accessor: 'census_pop_target_5_to_15_official',
+    drug: ALB_MEB,
+    id: 'albMEBCensusPopTarget5To15',
+  },
+  {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: ALB_MEB_5_TO_15_YEARS_TREATMENT_COVERAGE,
     accessor: 'alb_meb_5_to_15_years_treatment_coverage',
     drug: ALB_MEB,
+  },
+  {
+    Header: OTHER_POP_TARGET_5_TO_15_YEARES_TRUSTED,
+    accessor: 'other_pop_target_5_to_15_trusted',
+    drug: ALB_MEB,
+    id: 'albMEBOtherPopTarget5To15Trusted',
   },
   {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
@@ -1567,10 +1597,22 @@ export const censusPopColumnsRwanda = [
     drug: ALB_MEB,
   },
   {
+    Header: CENSUS_POP_TARGET_16_AND_ABOVE_OFFICIAL,
+    accessor: 'census_pop_target_above_16_official',
+    drug: ALB_MEB,
+    id: 'albMEBCensusPopTargetAbove16',
+  },
+  {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: ALB_MEB_ABOVE_16_YEARS_TREATMENT_COVERAGE,
     accessor: 'alb_meb_above_16_treatment_coverage',
     drug: ALB_MEB,
+  },
+  {
+    Header: OTHER_POP_TARGET_16_YEARS_ABOVE_TRUSTED,
+    accessor: 'other_pop_target_above_16_trusted',
+    drug: ALB_MEB,
+    id: 'albMEBOtherPopTargetAbove16',
   },
   {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),

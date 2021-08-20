@@ -30,7 +30,7 @@ export const RevealColumnHider = <T extends object>({ allColumns }: DrillDownIns
     setCheckedState(updatedCheckedState);
     const drug = drugs[position];
     allColumns.forEach((column: any) => {
-      if (column.drug && column.drug.split(',').includes(drug)) {
+      if (column.drug === drug) {
         column.toggleHidden(checkedState[position]);
       }
     });
