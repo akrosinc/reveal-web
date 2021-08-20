@@ -46,6 +46,8 @@ import {
   FIVE_TO_FOURTEEN_YEARS_PZQ,
   FOUND_COVERAGE,
   FOUND_COVERAGE_TIP,
+  HEALTH_EDUCATION_AGES_5_TO_15,
+  HEALTH_EDUCATION_AGES_ABOVE_16,
   IRS_RED_THRESHOLD,
   MALE_LABEL,
   MBZ_ADMINISTERED,
@@ -858,6 +860,18 @@ export const genderReportColumns = [
   },
 ];
 export const genderReportColumnsRwanda = [
+  {
+    Header: HEALTH_EDUCATION_AGES_5_TO_15,
+    accessor: 'health_education_5_to_15',
+    id: 'healthEducationAges5To15',
+    width: '100',
+  },
+  {
+    Header: HEALTH_EDUCATION_AGES_ABOVE_16,
+    accessor: 'health_education_above_16',
+    id: 'healthEducationAgesAbove16',
+    width: '100',
+  },
   {
     Header: MALE_LABEL,
     columns: [
