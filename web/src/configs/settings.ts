@@ -75,6 +75,7 @@ import {
   IRS_GOAL_MEASURE,
   IRS_GREEN_THRESHOLD,
   IRS_GREY_THRESHOLD,
+  IRS_LIGHT_GREEN_THRESHOLD,
   IRS_ORANGE_THRESHOLD,
   IRS_RED_THRESHOLD,
   IRS_YELLOW_THRESHOLD,
@@ -1987,6 +1988,33 @@ export const indicatorThresholdsMDALite: IndicatorThresholds = {
     name: IRS_YELLOW_THRESHOLD,
     orEquals: false,
     value: 0.8,
+  },
+};
+
+export const indicatorThresholdsMDALiteRwanda: IndicatorThresholds = {
+  GREEN_THRESHOLD: {
+    color: '#33ad33',
+    name: IRS_GREEN_THRESHOLD,
+    orEquals: false,
+    value: 1,
+  },
+  LIGHT_GREEN_THRESHOLD: {
+    color: '#b6d7a8',
+    name: IRS_LIGHT_GREEN_THRESHOLD,
+    orEquals: false,
+    value: 0.98,
+  },
+  RED_THRESHOLD: {
+    color: '#ff5c33',
+    name: IRS_RED_THRESHOLD,
+    orEquals: false,
+    value: 0.8,
+  },
+  YELLOW_THRESHOLD: {
+    color: '#ff3',
+    name: IRS_YELLOW_THRESHOLD,
+    orEquals: false,
+    value: 0.9,
   },
 };
 /** END MDA Lite Reporting Configs */

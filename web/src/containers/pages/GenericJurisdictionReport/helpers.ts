@@ -161,7 +161,10 @@ import {
   VITA_TOTAL_TREATED_12_TO_59_MOS,
   VITA_TOTAL_TREATED_6_TO_11_MOS,
 } from '../../../configs/lang';
-import { indicatorThresholdsMDALite } from '../../../configs/settings';
+import {
+  indicatorThresholdsMDALite,
+  indicatorThresholdsMDALiteRwanda,
+} from '../../../configs/settings';
 import { ALB, ALB_MEB, MBZ, PZQ, VITA } from '../../../constants';
 import {
   getIRSLiteThresholdAdherenceIndicator,
@@ -1364,6 +1367,7 @@ export const censusPopColumnsRwanda = [
     drug: VITA,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: VITA_6_TO_59_MOS_TREATMENT_COVERAGE,
     accessor: 'vita_6_to_59_mos_treatment_coverage',
     drug: VITA,
@@ -1374,6 +1378,7 @@ export const censusPopColumnsRwanda = [
     drug: VITA,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: VITA_6_TO_69_MOS_OTHER_POP_COVERAGE_TRUSTED,
     accessor: 'vita_6_to_59_mos_other_pop_coverage',
     drug: VITA,
@@ -1389,6 +1394,7 @@ export const censusPopColumnsRwanda = [
     drug: VITA,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: VITA_6_TO_11_MOS_TREATMENT_COVERAGE_CENSUS,
     accessor: 'vita_6_to_11_mos_treatment_coverage',
     drug: VITA,
@@ -1399,6 +1405,7 @@ export const censusPopColumnsRwanda = [
     drug: VITA,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: VITA_6_TO_11_MOS_OTHER_POP_COVERAGE,
     accessor: 'vita_6_to_11_mos_other_pop_coverage',
     drug: VITA,
@@ -1414,6 +1421,7 @@ export const censusPopColumnsRwanda = [
     drug: VITA,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: VITA_12_TO_59_TREATMENT_COVERAGE,
     accessor: 'vita_treatment_coverage_1_to_4',
     drug: VITA,
@@ -1424,6 +1432,7 @@ export const censusPopColumnsRwanda = [
     drug: VITA,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: VITA_12_TO_59_MOS_OTHER_POP_COVERAGE,
     accessor: 'vita_1_to_4_years_other_pop_coverage',
     drug: VITA,
@@ -1434,18 +1443,20 @@ export const censusPopColumnsRwanda = [
     drug: PZQ,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
+    Header: PZQ_5_YEARS_AND_ADULT_ABOVE_16_TREATMENT_COVERAGE,
+    accessor: 'pzq_5_years_and_above_16_treatment_coverage',
+    drug: PZQ,
+  },
+  {
     Header: OTHER_POP_TARGET_FROM_5_YEARS_TO_ABOVE_16_TRUSTED,
     accessor: 'other_pop_target_5_to_15_and_above_16_trusted',
     drug: PZQ,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: PZQ_5_YEARS_ABOVE_16_OTHER_POP_COVERAGE,
     accessor: 'pzq_5_years_above_16_other_pop_coverage',
-    drug: PZQ,
-  },
-  {
-    Header: PZQ_5_YEARS_AND_ADULT_ABOVE_16_TREATMENT_COVERAGE,
-    accessor: 'pzq_5_years_and_above_16_treatment_coverage',
     drug: PZQ,
   },
   {
@@ -1459,6 +1470,7 @@ export const censusPopColumnsRwanda = [
     drug: PZQ,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: PZQ_5_TO_15_YEARS_TREATMENT_COVERAGE,
     accessor: 'pzq_5_to_15_years_treatment_coverage',
     drug: PZQ,
@@ -1469,6 +1481,7 @@ export const censusPopColumnsRwanda = [
     drug: PZQ,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: PZQ_5_TO_15_YEARS_OTHER_POP_COVERAGE_TRUSTED,
     accessor: 'pzq_5_to_15_years_other_pop_coverage',
     drug: PZQ,
@@ -1484,6 +1497,7 @@ export const censusPopColumnsRwanda = [
     drug: PZQ,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: PZQ_16_YEARS_AND_ABOVE_TREATMENT_COVERAGE,
     accessor: 'pzq_above_16_years_treatment_coverage',
     drug: PZQ,
@@ -1494,6 +1508,7 @@ export const censusPopColumnsRwanda = [
     drug: PZQ,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: PZQ_16_YEARS_AND_ABOVE_OTHER_POP_COVERAGE,
     accessor: 'pzq_above_16_years_other_pop_coverage',
     drug: PZQ,
@@ -1504,11 +1519,13 @@ export const censusPopColumnsRwanda = [
     drug: ALB_MEB,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: ALB_MEB_12_TO_59_MOS_TREATMENT_COVERAGE,
     accessor: 'alb_meb_treatment_coverage_1_to_4',
     drug: ALB_MEB,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: ALB_MEB_12_TO_59_MOS_OTHER_POP_COVERAGE,
     accessor: 'alb_meb_1_to_4_years_other_pop_coverage',
     drug: ALB_MEB,
@@ -1519,11 +1536,13 @@ export const censusPopColumnsRwanda = [
     drug: ALB_MEB,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: ALB_MEB_5_TO_15_YEARS_TREATMENT_COVERAGE,
     accessor: 'alb_meb_5_to_15_years_treatment_coverage',
     drug: ALB_MEB,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: ALB_MEB_5_TO_15_YEARS_OTHER_POP_COVERAGE_TRUSTED,
     accessor: 'alb_meb_5_to_15_years_other_pop_coverage',
     drug: ALB_MEB,
@@ -1534,32 +1553,16 @@ export const censusPopColumnsRwanda = [
     drug: ALB_MEB,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: ALB_MEB_ABOVE_16_YEARS_TREATMENT_COVERAGE,
     accessor: 'alb_meb_above_16_treatment_coverage',
     drug: ALB_MEB,
   },
   {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALiteRwanda),
     Header: ALB_MEB_ABOVE_16_YEARS_OTHER_POP_COVERAGE,
     accessor: 'alb_meb_above_16_pop_coverage',
     drug: ALB_MEB,
-  },
-  {
-    Header: OFFICIAL_CENSUS_POP_TARGET,
-    accessor: 'official_population',
-  },
-  {
-    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
-    Header: TREATMENT_COVERAGE_CENSUS,
-    accessor: 'treatment_coverage',
-  },
-  {
-    Header: OTHER_POP_TARGET,
-    accessor: 'other_pop_target',
-  },
-  {
-    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
-    Header: OTHER_POP_COVERAGE,
-    accessor: 'other_pop_coverage',
   },
 ];
 export const mdaLiteJurisdictionsColumns = [
