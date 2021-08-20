@@ -2030,6 +2030,7 @@ export interface IndicatorThresholdsLookUp {
  */
 export const indicatorThresholdsLookUpIRS: IndicatorThresholdsLookUp = {
   MDALiteIndicators: indicatorThresholdsMDALite,
+  MDALiteIndicatorsRwanda: indicatorThresholdsMDALiteRwanda,
   namibia2019: indicatorThresholdsIRSNamibia,
 };
 
