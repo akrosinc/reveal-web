@@ -224,6 +224,8 @@ export const MEASURE = translate('MEASURE', 'Measure');
 export const MARK_AS_COMPLETE = translate('MARK_AS_COMPLETE', 'Mark as complete');
 export const STRUCTURES = translate('STRUCTURES', 'structure(s)');
 export const PERSONS = translate('PERSONS', 'person(s)');
+export const PEOPLE = translate('PEOPLE', 'people');
+export const TABLET = translate('TABLET', 'tablet(s)');
 
 export const FOCUS_AREA_HEADER = translate('FOCUS_AREA_HEADER', 'Focus Area');
 export const SPRAY_AREA_HEADER = translate('SPRAY_AREA_HEADER', 'Spray Area');
@@ -1012,6 +1014,8 @@ export const LOWEST_JURISDICTION = translate(
 export const SUBCOUNTY_LABEL = translate('SUBCOUNTY_LABEL', 'Subcounty');
 export const NOT_AVAILABLE_LABEL = translate('NOT_AVAILABLE_LABEL', 'Not Available');
 
+export const DRUGS_ADMINISTERED = translate('DRUGS_ADMINISTERED', 'Drugs Administered');
+export const DRUGS_DAMAGED = translate('DRUGS_DAMAGED', 'Drugs Damaged');
 export const MALE_LABEL = translate('MALE_LABEL', 'Male');
 export const FEMALE_LABEL = translate('FEMALE_LABEL', 'Female');
 export const TOTAL_MALE = translate('TOTAL_MALE', 'Total Male');
