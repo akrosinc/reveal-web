@@ -45,7 +45,10 @@ const MdaLiteJurisdictionReport = (
 };
 
 // change indicator rows component indicatorRows default prop
-IRSIndicatorLegend.defaultProps.indicatorRows = 'MDALiteIndicators';
+IRSIndicatorLegend.defaultProps.indicatorRows =
+  SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS === 'mdaLiteJurisdictionsColumns'
+    ? 'MDALiteIndicators'
+    : 'MDALiteIndicatorsRwanda';
 // Default props
 const defaultProps: GenericJurisdictionProps = {
   LegendIndicatorComp: IRSIndicatorLegend,
