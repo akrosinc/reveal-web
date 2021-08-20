@@ -1472,3 +1472,11 @@ export const ALB_MEB_ABOVE_16_YEARS_OTHER_POP_COVERAGE = translate(
   'ALB_MEB_ABOVE_16_YEARS_OTHER_POP_COVERAGE',
   'ALB/MEB 16 AND ABOVE YEARS- Other Pop Coverage (Trusted)'
 );
+export const HEALTH_EDUCATION_AGES_5_TO_15 = translate(
+  'HEALTH_EDUCATION_AGES_5_TO_15',
+  'Health Education (Ages 5- 15 years)'
+);
+export const HEALTH_EDUCATION_AGES_ABOVE_16 = translate(
+  'HEALTH_EDUCATION_AGES_ABOVE_16',
+  'Health Education (Ages 16+ years)'
+);
