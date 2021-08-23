@@ -1042,8 +1042,11 @@ export const TOTAL_REMAINING_WITH_CDD = translate(
   'Total Remaining with CDD'
 );
 export const PZQ_REMAINING_WITH_CHW = translate('PZQ_REMAINING_WITH_CHW', 'PZQ Remaining with CHW');
+export const PZQ_REMAINING_WITH_CDD = translate('PZQ_REMAINING_WITH_CDD', 'PZQ Remaining with CDD');
 export const MEB_REMAINING_WITH_CHW = translate('MEB_REMAINING_WITH_CHW', 'MEB Remaining with CHW');
+export const MBZ_REMAINING_WITH_CDD = translate('MBZ_REMAINING_WITH_CDD', 'MBZ Remaining with CDD');
 export const ALB_REMAINING_WITH_CHW = translate('ALB_REMAINING_WITH_CHW', 'ALB Remaining with CHW');
+export const ALB_REMAINING_WITH_CDD = translate('ALB_REMAINING_WITH_CDD', 'ALB Remaining with CDD');
 export const VITA_REMAINING_WITH_CHW = translate(
   'VITA_REMAINING_WITH_CHW',
   'VITA Remaining with CHW'
