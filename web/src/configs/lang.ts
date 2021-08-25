@@ -1101,12 +1101,15 @@ export const OTHER_POP_COVERAGE = translate(
 );
 export const DAYS_WORKED = translate('DAYS_WORKED', 'Days worked');
 export const AVERAGE_PER_DAY = translate('AVERAGE_PER_DAY', 'Average per day');
-export const ONE_TO_FOUR_YEARS = translate('ONE_TO_FOUR_YEARS', '1-4');
-export const ONE_TO_FOUR_YEARS_ALB = translate('ONE_TO_FOUR_YEARS_ALB', '1-4 (ALB)');
-export const ONE_TO_FOUR_YEARS_MBZ = translate('ONE_TO_FOUR_YEARS_MBZ', '1-4 (MBZ)');
-export const FIVE_TO_FOURTEEN_YEARS = translate('FOUR_TO_FOURTEEN_YEARS', '5-14');
-export const FIVE_TO_FOURTEEN_YEARS_PZQ = translate('FOUR_TO_FOURTEEN_YEARS_PZQ', '5-14 (PZQ)');
-export const FIVE_TO_FIFTEEN_YEARS_PZQ = translate('FIVE_TO_FIFTEEN_YEARS_PZQ', '5-15 (PZQ)');
+export const ONE_TO_FOUR_YEARS = translate('ONE_TO_FOUR_YEARS', '1-4 years');
+export const ONE_TO_FOUR_YEARS_ALB = translate('ONE_TO_FOUR_YEARS_ALB', '1-4 years (ALB)');
+export const ONE_TO_FOUR_YEARS_MBZ = translate('ONE_TO_FOUR_YEARS_MBZ', '1-4 years (MBZ)');
+export const FIVE_TO_FOURTEEN_YEARS = translate('FOUR_TO_FOURTEEN_YEARS', '5-14 years');
+export const FIVE_TO_FOURTEEN_YEARS_PZQ = translate(
+  'FIVE_TO_FOURTEEN_YEARS_PZQ',
+  '5-14 years (PZQ)'
+);
+export const FIVE_TO_FIFTEEN_YEARS_PZQ = translate('FIVE_TO_FIFTEEN_YEARS_PZQ', '5-15 years (PZQ)');
 export const ONE_TO_FOUR_YEARS_VITA = translate(
   'ONE_TO_FOUR_YEARS_VITA',
   '12-59 MONTHS (VITAMIN A)'
@@ -1123,22 +1126,46 @@ export const SIX_TO_ELEVEN_MONTHS_VITA = translate(
   'SIX_TO_ELEVEN_MONTHS_VITA',
   '6-11 MONTHS (VITAMIN A)'
 );
-export const FIVE_TO_FIFTEEN_YEARS_ALB = translate('FIVE_TO_FIFTEEN_YEARS_PZQ', '5-15 (ALB)');
-export const FIVE_TO_FIFTEEN_YEARS_MEB = translate('FIVE_TO_FIFTEEN_YEARS_MEB', '5-15 (MEB)');
-export const FIVE_TO_FOURTEEN_YEARS_ALB = translate('FOUR_TO_FOURTEEN_YEARS_ALB', '5-14 (ALB)');
-export const FIVE_TO_FOURTEEN_YEARS_MBZ = translate('FOUR_TO_FOURTEEN_YEARS_MBZ', '5-14 (MBZ)');
+export const FIVE_TO_FIFTEEN_YEARS_ALB = translate('FIVE_TO_FIFTEEN_YEARS_PZQ', '5-15 years (ALB)');
+export const FIVE_TO_FIFTEEN_YEARS_MEB = translate('FIVE_TO_FIFTEEN_YEARS_MEB', '5-15 years (MEB)');
+export const FIVE_TO_FOURTEEN_YEARS_ALB = translate(
+  'FOUR_TO_FOURTEEN_YEARS_ALB',
+  '5-14 years (ALB)'
+);
+export const FIVE_TO_FOURTEEN_YEARS_MBZ = translate(
+  'FOUR_TO_FOURTEEN_YEARS_MBZ',
+  '5-14 years (MBZ)'
+);
 export const FIFTEEN_YEARS_AND_ABOVE = translate('FIFTEEN_YEARS_AND_ABOVE', '15+');
 export const SIXTEEN_YEARS_AND_ABOVE = translate('SIXTEEN_YEARS_AND_ABOVE', '16+');
-export const FIFTEEN_YEARS_AND_ABOVE_PZQ = translate('FIFTEEN_YEARS_AND_ABOVE_PZQ', '15+ (PZQ)');
-export const SIXTEEN_YEARS_AND_ABOVE_PZQ = translate('SIXTEEN_YEARS_AND_ABOVE_PZQ', '16+ (PZQ)');
+export const FIFTEEN_YEARS_AND_ABOVE_PZQ = translate(
+  'FIFTEEN_YEARS_AND_ABOVE_PZQ',
+  '15+ years (PZQ)'
+);
+export const SIXTEEN_YEARS_AND_ABOVE_PZQ = translate(
+  'SIXTEEN_YEARS_AND_ABOVE_PZQ',
+  '16+ years (PZQ)'
+);
 export const SIXTEEN_YEARS_AND_ABOVE_VITA = translate(
   'SIXTEEN_YEARS_AND_ABOVE_VITA',
   '16+ (VITAMIN A)'
 );
-export const FIFTEEN_YEARS_AND_ABOVE_ALB = translate('FIFTEEN_YEARS_AND_ABOVE_ALB', '15+ (ALB)');
-export const SIXTEN_YEARS_AND_ABOVE_ALB = translate('SIXTEN_YEARS_AND_ABOVE_ALB', '16+ (ALB)');
-export const SIXTEN_YEARS_AND_ABOVE_MEB = translate('SIXTEN_YEARS_AND_ABOVE_MEB', '16+ (MEB)');
-export const FIFTEEN_YEARS_AND_ABOVE_MBZ = translate('FIFTEEN_YEARS_AND_ABOVE_ALB', '15+ (MBZ)');
+export const FIFTEEN_YEARS_AND_ABOVE_ALB = translate(
+  'FIFTEEN_YEARS_AND_ABOVE_ALB',
+  '15+ years (ALB)'
+);
+export const SIXTEN_YEARS_AND_ABOVE_ALB = translate(
+  'SIXTEN_YEARS_AND_ABOVE_ALB',
+  '16+ years (ALB)'
+);
+export const SIXTEN_YEARS_AND_ABOVE_MEB = translate(
+  'SIXTEN_YEARS_AND_ABOVE_MEB',
+  '16+ years (MEB)'
+);
+export const FIFTEEN_YEARS_AND_ABOVE_MBZ = translate(
+  'FIFTEEN_YEARS_AND_ABOVE_ALB',
+  '15+ years (MBZ)'
+);
 export const HISTORICAL_INDEX_CASES = translate('HISTORICAL_INDEX_CASES', 'historical index cases');
 export const NAME_TIP = translate('NAME_TIP', 'Name');
 export const TOTAL_SPRAY_AREAS = translate('TOTAL_SPRAY_AREAS', 'Total Spray Areas');
