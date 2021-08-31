@@ -26,7 +26,6 @@ import NewRecordBadge from '../components/NewRecordBadge';
 import { NoDataComponent } from '../components/Table/NoDataComponent';
 import {
   CHECK_SESSION_EXPIRY_STATUS,
-  DIGITAL_GLOBE_CONNECT_ID,
   DOMAIN_NAME,
   ONADATA_OAUTH_STATE,
   OPENSRP_MAX_PLANS_PER_REQUEST,
@@ -228,34 +227,7 @@ export const ConfigStore = (
   let mapConfig: SiteConfigAppMapconfig = {
     boxZoom: boxZoom || mapConfigBoxZoom,
     container: container || mapConfigContainer || 'map',
-    style:
-      style ||
-      mapConfigStyle ||
-      (DIGITAL_GLOBE_CONNECT_ID
-        ? {
-            glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
-            layers: [
-              {
-                id: 'earthwatch-basemap',
-                maxzoom: 22,
-                minzoom: 0,
-                source: 'diimagery',
-                type: 'raster',
-              },
-            ],
-            sources: {
-              diimagery: {
-                scheme: 'tms',
-                tileSize: 256,
-                tiles: [
-                  `https://access.maxar.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@png/{z}/{x}/{y}.png?connectId=${DIGITAL_GLOBE_CONNECT_ID}`,
-                ],
-                type: 'raster',
-              },
-            },
-            version: 8,
-          }
-        : 'mapbox://styles/mapbox/satellite-v9'),
+    style: style || mapConfigStyle || 'mapbox://styles/mapbox/satellite-v9',
   };
   if (bounds || mapConfigBounds) {
     mapConfig = {
