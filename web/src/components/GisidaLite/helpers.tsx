@@ -2,7 +2,6 @@ import { viewport } from '@mapbox/geo-viewport';
 import GeojsonExtent from '@mapbox/geojson-extent';
 import { center as turfCenter, FeatureCollection as TurfFeatureCollection } from '@turf/turf';
 import { Style } from 'mapbox-gl';
-import { DIGITAL_GLOBE_CONNECT_ID } from '../../configs/env';
 import { StructureFeatureCollection } from '../../store/ducks/generic/structures';
 import { Jurisdiction } from '../../store/ducks/jurisdictions';
 
@@ -70,31 +69,7 @@ export const fillLayerTemplate = {
   type: 'fill',
 };
 
-export const gsLiteStyle: Style | string = DIGITAL_GLOBE_CONNECT_ID
-  ? {
-      glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
-      layers: [
-        {
-          id: 'earthwatch-basemap',
-          maxzoom: 22,
-          minzoom: 0,
-          source: 'diimagery',
-          type: 'raster',
-        },
-      ],
-      sources: {
-        diimagery: {
-          scheme: 'tms',
-          tileSize: 256,
-          tiles: [
-            `https://access.maxar.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@png/{z}/{x}/{y}.png?connectId=${DIGITAL_GLOBE_CONNECT_ID}`,
-          ],
-          type: 'raster',
-        },
-      },
-      version: 8,
-    }
-  : 'mapbox://styles/mapbox/satellite-v9';
+export const gsLiteStyle: Style | string = 'mapbox://styles/mapbox/satellite-v9';
 
 /**
  * gets map zoom, center and bounds form structures or jurisdictions
