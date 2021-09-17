@@ -7,6 +7,7 @@ import {
   ALB_ADVERSE_REACTION,
   ALB_COORDINATOR_DISTRIBUTED,
   ALB_DAMAGED,
+  ALB_MBZ_TOTAL_TREATED,
   ALB_MEB_12_TO_59_MOS_OTHER_POP_COVERAGE,
   ALB_MEB_12_TO_59_MOS_TREATMENT_COVERAGE,
   ALB_MEB_5_TO_15_YEARS_OTHER_POP_COVERAGE_TRUSTED,
@@ -25,7 +26,6 @@ import {
   ALB_RETURNED_TO_SUPERVISOR,
   ALB_SUPERVISOR_DISTRIBUTED,
   ALB_TOTAL_FEMALE,
-  ALB_TOTAL_MALE,
   ALB_TOTAL_TREATED,
   CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL,
   CENSUS_POP_TARGET_16_AND_ABOVE_OFFICIAL,
@@ -137,6 +137,7 @@ import {
   TOTAL_FEMALE_MBZ,
   TOTAL_FEMALE_PZQ,
   TOTAL_FEMALE_VITA,
+  TOTAL_MALE_ALB,
   TOTAL_MALE_MBZ,
   TOTAL_MALE_PZQ,
   TOTAL_MALE_VITA,
@@ -808,7 +809,7 @@ export const genderReportColumns = [
         width: '100',
       },
       {
-        Header: ALB_TOTAL_MALE,
+        Header: TOTAL_MALE_ALB,
         accessor: 'alb_total_male',
         drug: ALB_MBZ,
         id: 'totalMaleALB',
@@ -904,6 +905,12 @@ export const genderReportColumns = [
         width: '100',
       },
     ],
+  },
+  {
+    Header: ALB_MBZ_TOTAL_TREATED,
+    accessor: 'alb_mbz_total_treated',
+    drug: ALB_MBZ,
+    width: '100',
   },
 ];
 export const genderReportColumnsRwanda = [
@@ -1014,7 +1021,7 @@ export const genderReportColumnsRwanda = [
         width: '100',
       },
       {
-        Header: ALB_TOTAL_MALE,
+        Header: TOTAL_MALE_ALB,
         accessor: 'alb_total_male',
         drug: ALB_MEB,
         id: 'totalMaleALB',
