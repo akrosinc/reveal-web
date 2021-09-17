@@ -1460,13 +1460,14 @@ export const PZQ_5_YEARS_ABOVE_16_OTHER_POP_COVERAGE = translate(
   'PZQ_5_YEARS_ABOVE_16_OTHER_POP_COVERAGE',
   'PZQ 5 YEARS AND ADULT 16+- Other Pop Coverage (Trusted)'
 );
-export const ALB_TOTAL_MALE = translate('ALB_TOTAL_MALE', 'ALB Total Male');
 export const MEB_TOTAL_MALE = translate('MEB_TOTAL_MALE', 'MEB Total Male');
-export const ALB_TOTAL_FEMALE = translate('ALB_TOTAL_FEMALE', 'ALB Total Female');
+export const ALB_TOTAL_FEMALE = translate('ALB_TOTAL_FEMALE', 'Total Female(ALB)');
 export const MEB_TOTAL_FEMALE = translate('MEB_TOTAL_FEMALE', 'MEB Total Female');
 export const ALB_TOTAL_TREATED = translate('ALB_TOTAL_TREATED', 'ALB Total Treated');
 export const MEB_TOTAL_TREATED = translate('MEB_TOTAL_TREATED', 'MEB Total Treated');
 export const ALB_MEB_TOTAL_TREATED = translate('ALB_MEB_TOTAL_TREATED', 'ALB/MEB Total Treated');
+export const ALB_MBZ_TOTAL_TREATED = translate('ALB_MBZ_TOTAL_TREATED', 'ALB/MBZ Total Treated');
+
 export const ALB_MEB_TOTAL_TREATED_12_TO_59_MOS = translate(
   'ALB_MEB_TOTAL_TREATED_12_TO_59_MOS',
   'ALB/MEB - Total Treated - 12 - 59 MONTHS'
