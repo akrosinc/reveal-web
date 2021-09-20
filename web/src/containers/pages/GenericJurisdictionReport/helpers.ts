@@ -818,7 +818,7 @@ export const genderReportColumns = [
       },
       {
         Header: TOTAL_MALE_MBZ,
-        accessor: 'mbz_total_male',
+        accessor: 'meb_total_male',
         drug: ALB_MBZ,
         id: 'totalMaleMBZ',
         width: '100',
@@ -900,7 +900,7 @@ export const genderReportColumns = [
       },
       {
         Header: TOTAL_FEMALE_MBZ,
-        accessor: 'mbz_total_female',
+        accessor: 'meb_total_female',
         drug: ALB_MBZ,
         id: 'totalFemaleMBZ',
         width: '100',
