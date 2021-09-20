@@ -292,4 +292,4 @@ export const ALB = 'ALB';
 export const MBZ = 'MBZ';
 export const VITA = 'VITA';
 export const ALB_MEB = 'ALB/MEB';
-export const PZQ_ALB_MEB = 'PZQ,ALB/MEB';
+export const ALB_MBZ = 'ALB/MBZ';
