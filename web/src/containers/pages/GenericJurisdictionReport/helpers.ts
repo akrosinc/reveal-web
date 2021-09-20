@@ -104,6 +104,7 @@ import {
   PZQ_TOTAL_TREATED,
   PZQ_TOTAL_TREATED_16_YEARS_AND_ABOVE,
   PZQ_TOTAL_TREATED_5_15_YEARS,
+  PZQ_TOTAL_TREATED_5_AND_16_PLUS,
   REVIEW_WITH_DECISION,
   REVIEW_WITH_DECISION_TIP,
   ROOMS_COVERAGE_OF_STRUCTURES_SPRAYED,
@@ -907,6 +908,12 @@ export const genderReportColumns = [
     ],
   },
   {
+    Header: PZQ_TOTAL_TREATED,
+    accessor: 'pzq_total_treated',
+    drug: PZQ,
+    width: '100',
+  },
+  {
     Header: ALB_MBZ_TOTAL_TREATED,
     accessor: 'alb_mbz_total_treated',
     drug: ALB_MBZ,
@@ -1138,7 +1145,7 @@ export const genderReportColumnsRwanda = [
     drug: VITA,
   },
   {
-    Header: PZQ_TOTAL_TREATED,
+    Header: PZQ_TOTAL_TREATED_5_AND_16_PLUS,
     accessor: 'pzq_total_treated',
     drug: PZQ,
   },

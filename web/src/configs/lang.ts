@@ -1343,8 +1343,9 @@ export const CUSTOMIZE_COLUMNS_BY_DRUG_FILTER_MESSAGE = translate(
 export const TOTAL_MALE_VITA = translate('TOTAL_MALE_VITA', 'Total Male (VITA)');
 export const TOTAL_FEMALE_VITA = translate('TOTAL_FEMALE_VITA', 'Total Female(VITA)');
 export const VITA_TOTAL_TREATED = translate('VITA_TOTAL_TREATED', 'Total Treated(VITA)');
-export const PZQ_TOTAL_TREATED = translate(
-  'PZQ_TOTAL_TREATED',
+export const PZQ_TOTAL_TREATED = translate('PZQ_TOTAL_TREATED', 'Total Treated(PZQ)');
+export const PZQ_TOTAL_TREATED_5_AND_16_PLUS = translate(
+  'PZQ_TOTAL_TREATED_5_AND_16_PLUS',
   'PZQ - Total Treated - 5 YEARS AND ADULT 16+'
 );
 export const CENSUS_POP_TARGET_6_TO_59_MOS_OFFICIAL = translate(
@@ -1466,7 +1467,7 @@ export const MEB_TOTAL_FEMALE = translate('MEB_TOTAL_FEMALE', 'MEB Total Female'
 export const ALB_TOTAL_TREATED = translate('ALB_TOTAL_TREATED', 'ALB Total Treated');
 export const MEB_TOTAL_TREATED = translate('MEB_TOTAL_TREATED', 'MEB Total Treated');
 export const ALB_MEB_TOTAL_TREATED = translate('ALB_MEB_TOTAL_TREATED', 'ALB/MEB Total Treated');
-export const ALB_MBZ_TOTAL_TREATED = translate('ALB_MBZ_TOTAL_TREATED', 'ALB/MBZ Total Treated');
+export const ALB_MBZ_TOTAL_TREATED = translate('ALB_MBZ_TOTAL_TREATED', 'Total Treated(ALB/MBZ)');
 
 export const ALB_MEB_TOTAL_TREATED_12_TO_59_MOS = translate(
   'ALB_MEB_TOTAL_TREATED_12_TO_59_MOS',
