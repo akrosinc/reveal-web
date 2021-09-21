@@ -167,7 +167,7 @@ const SMCReportingMap = (props: SMCReportingMapProps & RouteComponentProps<Route
 
       let fetchStructureParams: SupersetFormData | null = null;
       if (jurisdictionId && planId) {
-        fetchStructureParams = superset.getFormData(999, [
+        fetchStructureParams = superset.getFormData(SUPERSET_MAX_RECORDS, [
           { comparator: jurisdictionId, operator: '==', subject: 'jurisdiction_id' },
           { comparator: planId, operator: '==', subject: 'plan_id' },
         ]);
