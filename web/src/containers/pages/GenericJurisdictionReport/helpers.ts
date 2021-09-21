@@ -915,7 +915,7 @@ export const genderReportColumns = [
   },
   {
     Header: ALB_MBZ_TOTAL_TREATED,
-    accessor: 'alb_mbz_total_treated',
+    accessor: 'alb_meb_total_treated',
     drug: ALB_MBZ,
     width: '100',
   },
