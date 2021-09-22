@@ -11,8 +11,8 @@ import { Store } from 'redux';
 import HeaderBreadcrumb from '../../../../components/page/HeaderBreadcrumb/HeaderBreadcrumb';
 import Loading from '../../../../components/page/Loading';
 import {
-  defaultOptions,
   renderInFilterFactory,
+  renderInFilterWithDrugsFactory,
 } from '../../../../components/Table/DrillDownFilters/utils';
 import { NoDataComponent } from '../../../../components/Table/NoDataComponent';
 import {
@@ -193,11 +193,7 @@ const MDALiteWardsReport = (
       showRowHeightPicker: false,
       showSearch: false,
     }),
-    renderInTopFilterBar: renderInFilterFactory({
-      ...defaultOptions,
-      showColumnHider: false,
-      showRowHeightPicker: false,
-    }),
+    renderInTopFilterBar: renderInFilterWithDrugsFactory(),
     renderNullDataComponent: () => <NoDataComponent />,
     resize: true,
     useDrillDown: false,
