@@ -3,10 +3,14 @@ import { Dictionary } from '@onaio/utils';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Cell } from 'react-table';
-import { SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS } from '../../../../configs/env';
 import { NAME } from '../../../../configs/lang';
 import { REPORT_MDA_LITE_CDD_REPORT_URL } from '../../../../constants';
-import { censusPopColumns, genderReportColumns } from '../../GenericJurisdictionReport/helpers';
+import {
+  censusPopColumns,
+  censusPopColumnsRwanda,
+  genderReportColumns,
+  genderReportColumnsRwanda,
+} from '../../GenericJurisdictionReport/helpers';
 
 /** wards columns */
 export const wardColumns: Array<DrillDownColumn<Dictionary>> = [
@@ -14,14 +18,23 @@ export const wardColumns: Array<DrillDownColumn<Dictionary>> = [
     Cell: (cell: Cell) => {
       const original: Dictionary = cell.row.original;
       const url = `${REPORT_MDA_LITE_CDD_REPORT_URL}/${original.plan_id}/${original.base_entity_id}`;
-      if (SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS === 'mdaLiteJurisdictionsColumns') {
-        return <Link to={url}>{cell.value}</Link>;
-      }
-      return cell.value;
+      return <Link to={url}>{cell.value}</Link>;
     },
     Header: NAME,
     accessor: 'ward_name',
   },
   ...genderReportColumns,
   ...censusPopColumns,
+];
+
+export const wardColumnsRwanda: Array<DrillDownColumn<Dictionary>> = [
+  {
+    Cell: (cell: Cell) => {
+      return cell.value;
+    },
+    Header: NAME,
+    accessor: 'ward_name',
+  },
+  ...genderReportColumnsRwanda,
+  ...censusPopColumnsRwanda,
 ];
