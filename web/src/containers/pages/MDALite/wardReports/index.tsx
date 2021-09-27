@@ -17,6 +17,7 @@ import {
 import { NoDataComponent } from '../../../../components/Table/NoDataComponent';
 import {
   SUPERSET_MAX_RECORDS,
+  SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS,
   SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_DATA_SLICES,
   SUPERSET_MDA_LITE_REPORTING_PLANS_SLICE,
   SUPERSET_MDA_LITE_REPORTING_WARD_SLICE,
@@ -44,7 +45,7 @@ import wardReducer, {
   MDALiteWards,
   reducerName as wardReducerName,
 } from '../../../../store/ducks/superset/MDALite/wards';
-import { wardColumns } from './helpers';
+import { wardColumns, wardColumnsRwanda } from './helpers';
 
 /** register the reducers */
 reducerRegistry.register(genericJurisdictionsReducerName, GenericJurisdictionsReducer);
@@ -183,7 +184,10 @@ const MDALiteWardsReport = (
   };
 
   const tableProps = {
-    columns: wardColumns,
+    columns:
+      SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS === 'mdaLiteJurisdictionsColumns'
+        ? wardColumns
+        : wardColumnsRwanda,
     data: wardData || [],
     paginate: true,
     renderInBottomFilterBar: renderInFilterFactory({
