@@ -1454,11 +1454,6 @@ export const censusPopColumns = [
   {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
     Header: OTHER_POP_COVERAGE,
-    accessor: 'other_pop_coverage',
-  },
-  {
-    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
-    Header: OTHER_POP_COVERAGE,
     accessor: 'pzq_other_pop_coverage',
     drug: PZQ,
   },
