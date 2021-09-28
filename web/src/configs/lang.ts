@@ -1094,10 +1094,26 @@ export const TREATMENT_COVERAGE_CENSUS = translate(
   'TREATMENT_COVERAGE_CENSUS',
   'Treatment Coverage (Census)'
 );
+export const PZQ_TREATMENT_COVERAGE_CENSUS = translate(
+  'PZQ_TREATMENT_COVERAGE_CENSUS',
+  'PZQ - Treatment Coverage (Census)'
+);
+export const ALB_MBZ_TREATMENT_COVERAGE_CENSUS = translate(
+  'ALB_MBZ_TREATMENT_COVERAGE_CENSUS',
+  'ALB/MBZ Treatment Coverage (Census)'
+);
 export const OTHER_POP_TARGET = translate('OTHER_POP_TARGET', 'Other Pop Target (Unofficial)');
 export const OTHER_POP_COVERAGE = translate(
   'OTHER_POP_COVERAGE',
   'Other Pop Coverage (Unofficial)'
+);
+export const PZQ_OTHER_POP_COVERAGE = translate(
+  'PZQ_OTHER_POP_COVERAGE',
+  'PZQ Other Pop Coverage (Unofficial)'
+);
+export const ALB_MBZ_OTHER_POP_COVERAGE = translate(
+  'ALB_MBZ_OTHER_POP_COVERAGE',
+  'ALB/MBZ Other Pop Coverage (Unofficial)'
 );
 export const DAYS_WORKED = translate('DAYS_WORKED', 'Days worked');
 export const AVERAGE_PER_DAY = translate('AVERAGE_PER_DAY', 'Average per day');
