@@ -1438,7 +1438,14 @@ export const censusPopColumns = [
   {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
     Header: TREATMENT_COVERAGE_CENSUS,
-    accessor: 'treatment_coverage',
+    accessor: 'pzq_treatment_coverage',
+    drug: PZQ,
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
+    Header: TREATMENT_COVERAGE_CENSUS,
+    accessor: 'alb_mbz_treatment_coverage',
+    drug: ALB_MBZ,
   },
   {
     Header: OTHER_POP_TARGET,
@@ -1448,6 +1455,18 @@ export const censusPopColumns = [
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
     Header: OTHER_POP_COVERAGE,
     accessor: 'other_pop_coverage',
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
+    Header: OTHER_POP_COVERAGE,
+    accessor: 'pzq_other_pop_coverage',
+    drug: PZQ,
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
+    Header: OTHER_POP_COVERAGE,
+    accessor: 'alb_mbz_other_pop_coverage',
+    drug: ALB_MBZ,
   },
 ];
 export const censusPopColumnsRwanda = [
