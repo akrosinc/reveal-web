@@ -1456,6 +1456,18 @@ export const censusPopColumns = [
     Header: OTHER_POP_COVERAGE,
     accessor: 'other_pop_coverage',
   },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
+    Header: OTHER_POP_COVERAGE,
+    accessor: 'pzq_other_pop_coverage',
+    drug: PZQ,
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
+    Header: OTHER_POP_COVERAGE,
+    accessor: 'alb_mbz_other_pop_coverage',
+    drug: ALB_MBZ,
+  },
 ];
 export const censusPopColumnsRwanda = [
   {
