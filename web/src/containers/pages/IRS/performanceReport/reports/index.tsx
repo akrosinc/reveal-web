@@ -306,7 +306,9 @@ const mapStateToProps = (
       district_id: jurisdictionId,
       plan_id: planId,
     });
-    currentLabel = districtsData.length ? districtsData[0].district_name : 'district';
+    currentLabel = districtsData.length
+      ? districtsData.filter(data => data.district_id === jurisdictionId)[0].district_name
+      : 'district';
     currentUrl = `${currentUrl}/${jurisdictionId}`;
   }
 
