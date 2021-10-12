@@ -2,9 +2,12 @@ import { ProgressBar } from '@onaio/progress-indicators';
 import reducerRegistry from '@onaio/redux-reducer-registry';
 import superset, { SupersetFormData } from '@onaio/superset-connector';
 import { Dictionary } from '@onaio/utils';
+import { polygon as turfPolygon } from '@turf/helpers';
+import { centroid, featureCollection } from '@turf/turf';
 import { get } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { GeoJSONLayer } from 'react-mapbox-gl';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { Col, Row } from 'reactstrap';
@@ -42,7 +45,9 @@ import {
   CIRCLE_PAINT_COLOR_CATEGORICAL_TYPE,
   DefaultMapDimensions,
   HOME_URL,
+  IRS_LITE_STRUCTURES,
   IRS_REPORT_STRUCTURES,
+  POLYGON,
   REPORT_IRS_LITE_PLAN_URL,
 } from '../../../../constants';
 import { displayError } from '../../../../helpers/errors';
@@ -317,6 +322,42 @@ const IRSLiteReportingMap = (
     polygonColor,
     polygonLineColor,
   });
+
+  const polygons = structures?.features.filter(feature =>
+    [POLYGON].includes(feature.geometry.type)
+  );
+
+  const centroidPoints = polygons?.map(polygon => {
+    const genPolygon = turfPolygon((polygon as Dictionary).geometry?.coordinates);
+    const genCentroids = centroid(genPolygon);
+    return {
+      ...genCentroids,
+      properties: polygon.properties,
+    };
+  });
+
+  const points = centroidPoints ? featureCollection(centroidPoints) : null;
+
+  const preferredColor = '#FFFFFF'; // color for map lite and map text
+  if (points) {
+    structuresLayers.push(
+      <GeoJSONLayer
+        symbolLayout={{
+          'text-anchor': 'top',
+          'text-field': '{structure_name}',
+          'text-offset': [0, 0.6],
+          'text-size': 16,
+        }}
+        symbolPaint={{
+          'text-color': preferredColor,
+        }}
+        id={`${IRS_LITE_STRUCTURES}-symbol`}
+        key={`${IRS_LITE_STRUCTURES}-symbol`}
+        data={points}
+      />
+    );
+  }
+
   const gsLayers = [...jurisdictionLayers, ...structuresLayers];
 
   return (
