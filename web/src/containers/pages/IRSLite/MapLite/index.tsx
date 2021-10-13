@@ -321,6 +321,7 @@ const IRSLiteReportingMap = (
   const structuresLayers = buildGsLiteLayers(IRS_REPORT_STRUCTURES, null, structures as any, {
     polygonColor,
     polygonLineColor,
+    skipFill: true,
   });
 
   const polygons = structures?.features.filter(feature =>
