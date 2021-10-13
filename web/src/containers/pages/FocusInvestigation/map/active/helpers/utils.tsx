@@ -354,6 +354,7 @@ interface ExtraVars {
   polygonLineColor?: PolygonColor;
   polygonLinePaintColor?: string; // specify the color of polygon lines
   useId?: string; // override the goalId to be used for the layer;
+  skipFill?: boolean;
 }
 
 /** Build symbol layers for all other points , polygons and multi-polygons
@@ -493,6 +494,7 @@ export const buildGsLiteLayers = (
     const linePaint = {
       ...linePaintWithStops,
       'line-color': extraVars.polygonLinePaintColor || linePaintWithStops['line-color'],
+      'line-width': 3,
     };
     gsLayers.push(
       <GeoJSONLayer
@@ -503,15 +505,18 @@ export const buildGsLiteLayers = (
         key={`${idToUse}-fill-line`}
       />
     );
-    gsLayers.push(
-      <GeoJSONLayer
-        {...fillLayerTemplate}
-        fillPaint={fillPaint}
-        data={polygonFeatureCollection}
-        id={`${idToUse}-fill`}
-        key={`${idToUse}-fill`}
-      />
-    );
+
+    if (!extraVars.skipFill) {
+      gsLayers.push(
+        <GeoJSONLayer
+          {...fillLayerTemplate}
+          fillPaint={fillPaint}
+          data={polygonFeatureCollection}
+          id={`${idToUse}-fill`}
+          key={`${idToUse}-fill`}
+        />
+      );
+    }
   }
 
   return gsLayers;
