@@ -1877,7 +1877,7 @@ export const indicatorThresholdsIRS: IndicatorThresholds = {
     color: '#FF4136',
     name: IRS_RED_THRESHOLD,
     orEquals: true,
-    value: 0.75,
+    value: 0.7,
   },
   YELLOW_THRESHOLD: {
     color: '#FFDC00',

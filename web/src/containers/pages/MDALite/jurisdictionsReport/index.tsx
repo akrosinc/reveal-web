@@ -7,6 +7,7 @@ import { Store } from 'redux';
 import IRSIndicatorLegend from '../../../../components/formatting/IRSIndicatorLegend';
 import MDALiteTableCell from '../../../../components/MDALiteCellTable';
 import {
+  ENABLE_MDA_LITE,
   SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS,
   SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_DATA_SLICES,
   SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_FOCUS_AREA_LEVEL,
@@ -45,10 +46,13 @@ const MdaLiteJurisdictionReport = (
 };
 
 // change indicator rows component indicatorRows default prop
-IRSIndicatorLegend.defaultProps.indicatorRows =
-  SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS === 'mdaLiteJurisdictionsColumns'
-    ? 'MDALiteIndicators'
-    : 'MDALiteIndicatorsRwanda';
+
+if (ENABLE_MDA_LITE) {
+  IRSIndicatorLegend.defaultProps.indicatorRows =
+    SUPERSET_MDA_LITE_REPORTING_JURISDICTIONS_COLUMNS === 'mdaLiteJurisdictionsColumns'
+      ? 'MDALiteIndicators'
+      : 'MDALiteIndicatorsRwanda';
+}
 // Default props
 const defaultProps: GenericJurisdictionProps = {
   LegendIndicatorComp: IRSIndicatorLegend,
