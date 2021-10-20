@@ -1102,6 +1102,14 @@ export const ALB_MBZ_TREATMENT_COVERAGE_CENSUS = translate(
   'ALB_MBZ_TREATMENT_COVERAGE_CENSUS',
   'ALB/MBZ Treatment Coverage (Census)'
 );
+export const ALB_TREATMENT_COVERAGE_CENSUS = translate(
+  'ALB_TREATMENT_COVERAGE_CENSUS',
+  'ALB Treatment Coverage (Census)'
+);
+export const MBZ_TREATMENT_COVERAGE_CENSUS = translate(
+  'MBZ_TREATMENT_COVERAGE_CENSUS',
+  'MBZ Treatment Coverage (Census)'
+);
 export const OTHER_POP_TARGET = translate('OTHER_POP_TARGET', 'Other Pop Target (Unofficial)');
 export const OTHER_POP_COVERAGE = translate(
   'OTHER_POP_COVERAGE',
@@ -1111,9 +1119,13 @@ export const PZQ_OTHER_POP_COVERAGE = translate(
   'PZQ_OTHER_POP_COVERAGE',
   'PZQ Other Pop Coverage (Unofficial)'
 );
-export const ALB_MBZ_OTHER_POP_COVERAGE = translate(
-  'ALB_MBZ_OTHER_POP_COVERAGE',
-  'ALB/MBZ Other Pop Coverage (Unofficial)'
+export const ALB_OTHER_POP_COVERAGE = translate(
+  'ALB_OTHER_POP_COVERAGE',
+  'ALB Other Pop Coverage (Unofficial)'
+);
+export const MBZ_OTHER_POP_COVERAGE = translate(
+  'MBZ_OTHER_POP_COVERAGE',
+  'MBZ Other Pop Coverage (Unofficial)'
 );
 export const DAYS_WORKED = translate('DAYS_WORKED', 'Days worked');
 export const AVERAGE_PER_DAY = translate('AVERAGE_PER_DAY', 'Average per day');
@@ -1482,6 +1494,7 @@ export const ALB_TOTAL_FEMALE = translate('ALB_TOTAL_FEMALE', 'Total Female(ALB)
 export const MEB_TOTAL_FEMALE = translate('MEB_TOTAL_FEMALE', 'MEB Total Female');
 export const ALB_TOTAL_TREATED = translate('ALB_TOTAL_TREATED', 'ALB Total Treated');
 export const MEB_TOTAL_TREATED = translate('MEB_TOTAL_TREATED', 'MEB Total Treated');
+export const MBZ_TOTAL_TREATED = translate('MBZ_TOTAL_TREATED', 'MBZ Total Treated');
 export const ALB_MEB_TOTAL_TREATED = translate('ALB_MEB_TOTAL_TREATED', 'ALB/MEB Total Treated');
 export const ALB_MBZ_TOTAL_TREATED = translate('ALB_MBZ_TOTAL_TREATED', 'Total Treated(ALB/MBZ)');
 
