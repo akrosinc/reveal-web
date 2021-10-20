@@ -7,9 +7,6 @@ import {
   ALB_ADVERSE_REACTION,
   ALB_COORDINATOR_DISTRIBUTED,
   ALB_DAMAGED,
-  ALB_MBZ_OTHER_POP_COVERAGE,
-  ALB_MBZ_TOTAL_TREATED,
-  ALB_MBZ_TREATMENT_COVERAGE_CENSUS,
   ALB_MEB_12_TO_59_MOS_OTHER_POP_COVERAGE,
   ALB_MEB_12_TO_59_MOS_TREATMENT_COVERAGE,
   ALB_MEB_5_TO_15_YEARS_OTHER_POP_COVERAGE_TRUSTED,
@@ -20,6 +17,7 @@ import {
   ALB_MEB_TOTAL_TREATED_12_TO_59_MOS,
   ALB_MEB_TOTAL_TREATED_16_YEARS_AND_ABOVE,
   ALB_MEB_TOTAL_TREATED_5_TO_15_YEARS,
+  ALB_OTHER_POP_COVERAGE,
   ALB_RECEIVED_BY_CDD,
   ALB_RECEIVED_BY_CHW,
   ALB_REMAINING_WITH_CDD,
@@ -29,6 +27,7 @@ import {
   ALB_SUPERVISOR_DISTRIBUTED,
   ALB_TOTAL_FEMALE,
   ALB_TOTAL_TREATED,
+  ALB_TREATMENT_COVERAGE_CENSUS,
   CENSUS_POP_TARGET_12_TO_59_MOS_OFFICIAL,
   CENSUS_POP_TARGET_16_AND_ABOVE_OFFICIAL,
   CENSUS_POP_TARGET_5_TO_15_YEARS_OFFICIAL,
@@ -56,10 +55,13 @@ import {
   MBZ_ADMINISTERED,
   MBZ_ADVERSE_REACTION,
   MBZ_DAMAGED,
+  MBZ_OTHER_POP_COVERAGE,
   MBZ_RECEIVED_BY_CDD,
   MBZ_REMAINING_WITH_CDD,
   MBZ_RETURNED_TO_SUPERVISOR,
   MBZ_SUPERVISOR_DISTRIBUTED,
+  MBZ_TOTAL_TREATED,
+  MBZ_TREATMENT_COVERAGE_CENSUS,
   MEB_ADMINISTERED,
   MEB_ADVERSE_REACTION,
   MEB_COORDINATOR_DISTRIBUTED,
@@ -176,7 +178,7 @@ import {
   indicatorThresholdsMDALite,
   indicatorThresholdsMDALiteRwanda,
 } from '../../../configs/settings';
-import { ALB_MBZ, ALB_MEB, PZQ, VITA } from '../../../constants';
+import { ALB, ALB_MEB, MBZ, PZQ, VITA } from '../../../constants';
 import {
   getIRSLiteThresholdAdherenceIndicator,
   getIRSThresholdAdherenceIndicator,
@@ -751,14 +753,14 @@ export const genderReportColumns = [
       {
         Header: ONE_TO_FOUR_YEARS_ALB,
         accessor: 'alb_treated_male_1_4',
-        drug: ALB_MBZ,
+        drug: ALB,
         id: 'maleOneToFourALB',
         width: '100',
       },
       {
         Header: ONE_TO_FOUR_YEARS_MBZ,
         accessor: 'mbz_treated_male_1_4',
-        drug: ALB_MBZ,
+        drug: MBZ,
         id: 'maleOneToFourMBZ',
         width: '100',
       },
@@ -772,14 +774,14 @@ export const genderReportColumns = [
       {
         Header: FIVE_TO_FOURTEEN_YEARS_ALB,
         accessor: 'alb_treated_male_5_14',
-        drug: ALB_MBZ,
+        drug: ALB,
         id: 'maleFiveToFourteenALB',
         width: '100',
       },
       {
         Header: FIVE_TO_FOURTEEN_YEARS_MBZ,
         accessor: 'mbz_treated_male_5_14',
-        drug: ALB_MBZ,
+        drug: MBZ,
         id: 'maleFiveToFourteenMBZ',
         width: '100',
       },
@@ -793,14 +795,14 @@ export const genderReportColumns = [
       {
         Header: FIFTEEN_YEARS_AND_ABOVE_ALB,
         accessor: 'alb_treated_male_above_15',
-        drug: ALB_MBZ,
+        drug: ALB,
         id: 'maleGreaterThanFifteenALB',
         width: '100',
       },
       {
         Header: FIFTEEN_YEARS_AND_ABOVE_MBZ,
         accessor: 'mbz_treated_male_above_15',
-        drug: ALB_MBZ,
+        drug: MBZ,
         id: 'maleGreaterThanFifteenMBZ',
         width: '100',
       },
@@ -814,14 +816,14 @@ export const genderReportColumns = [
       {
         Header: TOTAL_MALE_ALB,
         accessor: 'alb_total_male',
-        drug: ALB_MBZ,
+        drug: ALB,
         id: 'totalMaleALB',
         width: '100',
       },
       {
         Header: TOTAL_MALE_MBZ,
         accessor: 'meb_total_male',
-        drug: ALB_MBZ,
+        drug: MBZ,
         id: 'totalMaleMBZ',
         width: '100',
       },
@@ -833,14 +835,14 @@ export const genderReportColumns = [
       {
         Header: ONE_TO_FOUR_YEARS_ALB,
         accessor: 'alb_treated_female_1_4',
-        drug: ALB_MBZ,
+        drug: ALB,
         id: 'femaleOneToFourALB',
         width: '100',
       },
       {
         Header: ONE_TO_FOUR_YEARS_MBZ,
         accessor: 'mbz_treated_female_1_4',
-        drug: ALB_MBZ,
+        drug: MBZ,
         id: 'femaleOneToFourMBZ',
         width: '100',
       },
@@ -854,14 +856,14 @@ export const genderReportColumns = [
       {
         Header: FIVE_TO_FOURTEEN_YEARS_ALB,
         accessor: 'alb_treated_female_5_14',
-        drug: ALB_MBZ,
+        drug: ALB,
         id: 'femaleOneToFourteenALB',
         width: '100',
       },
       {
         Header: FIVE_TO_FOURTEEN_YEARS_MBZ,
         accessor: 'mbz_treated_female_5_14',
-        drug: ALB_MBZ,
+        drug: MBZ,
         id: 'femaleOneToFourteenMBZ',
         width: '100',
       },
@@ -875,14 +877,14 @@ export const genderReportColumns = [
       {
         Header: FIFTEEN_YEARS_AND_ABOVE_ALB,
         accessor: 'alb_treated_female_above_15',
-        drug: ALB_MBZ,
+        drug: ALB,
         id: 'femaleGreaterThanFifteenALB',
         width: '100',
       },
       {
         Header: FIFTEEN_YEARS_AND_ABOVE_MBZ,
         accessor: 'mbz_treated_female_above_15',
-        drug: ALB_MBZ,
+        drug: MBZ,
         id: 'femaleGreaterThanFifteenMBZ',
         width: '100',
       },
@@ -896,14 +898,14 @@ export const genderReportColumns = [
       {
         Header: ALB_TOTAL_FEMALE,
         accessor: 'alb_total_female',
-        drug: ALB_MBZ,
+        drug: ALB,
         id: 'totalFemaleALB',
         width: '100',
       },
       {
         Header: TOTAL_FEMALE_MBZ,
         accessor: 'meb_total_female',
-        drug: ALB_MBZ,
+        drug: MBZ,
         id: 'totalFemaleMBZ',
         width: '100',
       },
@@ -916,9 +918,15 @@ export const genderReportColumns = [
     width: '100',
   },
   {
-    Header: ALB_MBZ_TOTAL_TREATED,
-    accessor: 'alb_meb_total_treated',
-    drug: ALB_MBZ,
+    Header: ALB_TOTAL_TREATED,
+    accessor: 'alb_total_treated',
+    drug: ALB,
+    width: '100',
+  },
+  {
+    Header: MBZ_TOTAL_TREATED,
+    accessor: 'meb_total_treated',
+    drug: MBZ,
     width: '100',
   },
 ];
@@ -1177,12 +1185,12 @@ export const drugDistributionColumns = [
   {
     Header: ALB_SUPERVISOR_DISTRIBUTED,
     accessor: 'alb_supervisor_distributed',
-    drug: ALB_MBZ,
+    drug: ALB,
   },
   {
     Header: MBZ_SUPERVISOR_DISTRIBUTED,
     accessor: 'mbz_supervisor_distributed',
-    drug: ALB_MBZ,
+    drug: MBZ,
   },
   {
     Header: PZQ_RECEIVED_BY_CDD,
@@ -1192,12 +1200,12 @@ export const drugDistributionColumns = [
   {
     Header: ALB_RECEIVED_BY_CDD,
     accessor: 'alb_received',
-    drug: ALB_MBZ,
+    drug: ALB,
   },
   {
     Header: MBZ_RECEIVED_BY_CDD,
     accessor: 'mbz_received',
-    drug: ALB_MBZ,
+    drug: MBZ,
   },
   {
     Header: PZQ_ADMINISTERED,
@@ -1207,12 +1215,12 @@ export const drugDistributionColumns = [
   {
     Header: ALB_ADMINISTERED,
     accessor: 'alb_administered',
-    drug: ALB_MBZ,
+    drug: ALB,
   },
   {
     Header: MBZ_ADMINISTERED,
     accessor: 'mbz_administered',
-    drug: ALB_MBZ,
+    drug: MBZ,
   },
   {
     Header: PZQ_DAMAGED,
@@ -1227,22 +1235,22 @@ export const drugDistributionColumns = [
   {
     Header: ALB_DAMAGED,
     accessor: 'alb_damaged',
-    drug: ALB_MBZ,
+    drug: ALB,
   },
   {
     Header: ALB_REMAINING_WITH_CDD,
     accessor: 'alb_remaining_with_cdd',
-    drug: ALB_MBZ,
+    drug: ALB,
   },
   {
     Header: MBZ_DAMAGED,
     accessor: 'mbz_damaged',
-    drug: ALB_MBZ,
+    drug: MBZ,
   },
   {
     Header: MBZ_REMAINING_WITH_CDD,
     accessor: 'mbz_remaining_with_cdd',
-    drug: ALB_MBZ,
+    drug: MBZ,
   },
   {
     Cell: (cell: Cell) =>
@@ -1256,14 +1264,14 @@ export const drugDistributionColumns = [
       returnedToSupervicerCol(cell, 'alb_remaining_with_cdd', IRS_RED_THRESHOLD),
     Header: ALB_RETURNED_TO_SUPERVISOR,
     accessor: 'alb_returned_to_supervisor',
-    drug: ALB_MBZ,
+    drug: ALB,
   },
   {
     Cell: (cell: Cell) =>
       returnedToSupervicerCol(cell, 'mbz_remaining_with_cdd', IRS_RED_THRESHOLD),
     Header: MBZ_RETURNED_TO_SUPERVISOR,
     accessor: 'mbz_returned_to_supervisor',
-    drug: ALB_MBZ,
+    drug: MBZ,
   },
   {
     Header: PZQ_ADVERSE_REACTION,
@@ -1273,12 +1281,12 @@ export const drugDistributionColumns = [
   {
     Header: ALB_ADVERSE_REACTION,
     accessor: 'alb_adverse',
-    drug: ALB_MBZ,
+    drug: ALB,
   },
   {
     Header: MBZ_ADVERSE_REACTION,
     accessor: 'mbz_adverse',
-    drug: ALB_MBZ,
+    drug: MBZ,
   },
 ];
 export const drugDistributionColumnsRwanda = [
@@ -1290,7 +1298,7 @@ export const drugDistributionColumnsRwanda = [
   {
     Header: ALB_COORDINATOR_DISTRIBUTED,
     accessor: 'alb_supervisor_distributed',
-    drug: ALB_MEB,
+    drug: ALB,
   },
   {
     Header: MEB_COORDINATOR_DISTRIBUTED,
@@ -1445,9 +1453,15 @@ export const censusPopColumns = [
   },
   {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
-    Header: ALB_MBZ_TREATMENT_COVERAGE_CENSUS,
-    accessor: 'alb_mbz_treatment_coverage',
-    drug: ALB_MBZ,
+    Header: ALB_TREATMENT_COVERAGE_CENSUS,
+    accessor: 'alb_treatment_coverage',
+    drug: ALB,
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
+    Header: MBZ_TREATMENT_COVERAGE_CENSUS,
+    accessor: 'mbz_treatment_coverage',
+    drug: MBZ,
   },
   {
     Header: OTHER_POP_TARGET,
@@ -1461,9 +1475,15 @@ export const censusPopColumns = [
   },
   {
     Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
-    Header: ALB_MBZ_OTHER_POP_COVERAGE,
-    accessor: 'alb_mbz_other_pop_coverage',
-    drug: ALB_MBZ,
+    Header: ALB_OTHER_POP_COVERAGE,
+    accessor: 'alb_other_pop_coverage',
+    drug: ALB,
+  },
+  {
+    Cell: (cell: Cell) => getIRSThresholdAdherenceIndicator(cell, indicatorThresholdsMDALite),
+    Header: MBZ_OTHER_POP_COVERAGE,
+    accessor: 'mbz_other_pop_coverage',
+    drug: MBZ,
   },
 ];
 export const censusPopColumnsRwanda = [
