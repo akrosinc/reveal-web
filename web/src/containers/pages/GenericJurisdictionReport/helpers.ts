@@ -54,7 +54,6 @@ import {
   MALE_LABEL,
   MBZ_ADMINISTERED,
   MBZ_ADVERSE_REACTION,
-  MBZ_DAMAGED,
   MBZ_OTHER_POP_COVERAGE,
   MBZ_RECEIVED_BY_CDD,
   MBZ_REMAINING_WITH_CDD,
@@ -1223,29 +1222,14 @@ export const drugDistributionColumns = [
     drug: MBZ,
   },
   {
-    Header: PZQ_DAMAGED,
-    accessor: 'pzq_damaged',
-    drug: PZQ,
-  },
-  {
     Header: PZQ_REMAINING_WITH_CDD,
     accessor: 'pzq_remaining_with_cdd',
     drug: PZQ,
   },
   {
-    Header: ALB_DAMAGED,
-    accessor: 'alb_damaged',
-    drug: ALB,
-  },
-  {
     Header: ALB_REMAINING_WITH_CDD,
     accessor: 'alb_remaining_with_cdd',
     drug: ALB,
-  },
-  {
-    Header: MBZ_DAMAGED,
-    accessor: 'mbz_damaged',
-    drug: MBZ,
   },
   {
     Header: MBZ_REMAINING_WITH_CDD,
