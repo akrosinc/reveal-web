@@ -2,6 +2,7 @@ import { Dictionary } from '@onaio/utils';
 import { TASK_GREEN, TASK_ORANGE, TASK_YELLOW } from '../../../../colors';
 import {
   DRUGS_ADMINISTERED,
+  DRUGS_IN_WARD,
   OTHER_POP_COVERAGE,
   PEOPLE,
   TABLET,
@@ -71,6 +72,12 @@ export const MDAIndicatorRows: { [key: string]: IndicatorRows } = {
       accessor: 'adminstered',
       listDisplay: true,
       title: DRUGS_ADMINISTERED,
+      unit: TABLET,
+    },
+    {
+      accessor: 'remaining_with_cdd',
+      listDisplay: true,
+      title: DRUGS_IN_WARD,
       unit: TABLET,
     },
   ],
