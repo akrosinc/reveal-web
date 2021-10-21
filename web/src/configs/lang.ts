@@ -1015,6 +1015,7 @@ export const SUBCOUNTY_LABEL = translate('SUBCOUNTY_LABEL', 'Subcounty');
 export const NOT_AVAILABLE_LABEL = translate('NOT_AVAILABLE_LABEL', 'Not Available');
 
 export const DRUGS_ADMINISTERED = translate('DRUGS_ADMINISTERED', 'Drugs Administered');
+export const DRUGS_IN_WARD = translate('DRUGS_IN_WARD', 'Number of drugs in ward');
 export const DRUGS_DAMAGED = translate('DRUGS_DAMAGED', 'Drugs Damaged');
 export const MALE_LABEL = translate('MALE_LABEL', 'Male');
 export const FEMALE_LABEL = translate('FEMALE_LABEL', 'Female');
