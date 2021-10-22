@@ -2,7 +2,9 @@ import { Dictionary } from '@onaio/utils';
 import { TASK_GREEN, TASK_ORANGE, TASK_YELLOW } from '../../../../colors';
 import {
   DRUGS_ADMINISTERED,
-  DRUGS_IN_WARD,
+  DRUGS_IN_WARD_ALB,
+  DRUGS_IN_WARD_MBZ,
+  DRUGS_IN_WARD_PZQ,
   OTHER_POP_COVERAGE,
   PEOPLE,
   TABLET,
@@ -75,9 +77,21 @@ export const MDAIndicatorRows: { [key: string]: IndicatorRows } = {
       unit: TABLET,
     },
     {
-      accessor: 'remaining_with_cdd',
+      accessor: 'pz_remaining_with_cdd',
       listDisplay: true,
-      title: DRUGS_IN_WARD,
+      title: DRUGS_IN_WARD_PZQ,
+      unit: TABLET,
+    },
+    {
+      accessor: 'alb_remaining_with_cdd',
+      listDisplay: true,
+      title: DRUGS_IN_WARD_ALB,
+      unit: TABLET,
+    },
+    {
+      accessor: 'mbz_remaining_with_cdd',
+      listDisplay: true,
+      title: DRUGS_IN_WARD_MBZ,
       unit: TABLET,
     },
   ],
