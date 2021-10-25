@@ -1,11 +1,10 @@
 import { Dictionary } from '@onaio/utils/dist/types/types';
 import React from 'react';
-import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 import { Cell } from 'react-table';
 import {
-  defaultOptions,
   renderInFilterFactory,
+  renderInFilterWithDrugsFactory,
 } from '../../../../components/Table/DrillDownFilters/utils';
 import { NoDataComponent } from '../../../../components/Table/NoDataComponent';
 import { AVERAGE_PER_DAY, DAYS_WORKED, NAME } from '../../../../configs/lang';
@@ -63,11 +62,7 @@ type ColumnsType = typeof supervisorColumns | typeof cddReportColumns;
  * @param {ColumnsType} columns - table columns
  * @param {Dictionary[]} data - table data
  */
-export const getCddTableProps = (
-  columns: ColumnsType,
-  data: Dictionary[],
-  props: RouteComponentProps<Dictionary>
-) => {
+export const getCddTableProps = (columns: ColumnsType, data: Dictionary[]) => {
   return {
     columns,
     data: data || [],
@@ -80,13 +75,7 @@ export const getCddTableProps = (
       showRowHeightPicker: false,
       showSearch: false,
     }),
-    renderInTopFilterBar: renderInFilterFactory({
-      ...defaultOptions,
-      componentProps: props,
-      showColumnHider: false,
-      showRowHeightPicker: false,
-      showSearch: false,
-    }),
+    renderInTopFilterBar: renderInFilterWithDrugsFactory(),
     renderNullDataComponent: () => <NoDataComponent />,
     resize: true,
     useDrillDown: false,
