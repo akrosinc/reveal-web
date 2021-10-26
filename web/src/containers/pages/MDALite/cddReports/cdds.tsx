@@ -137,7 +137,7 @@ const MDALiteCddReports = (props: MDALiteCddReportsProps & RouteComponentProps<R
     : MDA_LITE_REPORTING_TITLE;
 
   // table props
-  const tableProps = getCddTableProps(cddReportColumns, cddData, props);
+  const tableProps = getCddTableProps(cddReportColumns, cddData);
 
   return (
     <Fragment>
