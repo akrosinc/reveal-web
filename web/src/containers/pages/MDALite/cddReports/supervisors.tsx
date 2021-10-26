@@ -126,7 +126,7 @@ const MDALiteSupervisorReports = (
     : MDA_LITE_REPORTING_TITLE;
 
   // table props
-  const tableProps = getCddTableProps(supervisorColumns, supervisorData, props);
+  const tableProps = getCddTableProps(supervisorColumns, supervisorData);
   return (
     <Fragment>
       <Helmet>
