@@ -1,12 +1,14 @@
 import { Dictionary } from '@onaio/utils';
 import { TASK_GREEN, TASK_ORANGE, TASK_YELLOW } from '../../../../colors';
 import {
-  DRUGS_ADMINISTERED,
+  ALB_ADMINISTERED,
   DRUGS_IN_WARD_ALB,
   DRUGS_IN_WARD_MBZ,
   DRUGS_IN_WARD_PZQ,
+  MBZ_ADMINISTERED,
   OTHER_POP_COVERAGE,
   PEOPLE,
+  PZQ_ADMINISTERED,
   TABLET,
   TOTAL_TREATED,
   TREATMENT_COVERAGE_CENSUS,
@@ -71,9 +73,21 @@ export const MDAIndicatorRows: { [key: string]: IndicatorRows } = {
       unit: PEOPLE,
     },
     {
-      accessor: 'adminstered',
+      accessor: 'pzq_administered',
       listDisplay: true,
-      title: DRUGS_ADMINISTERED,
+      title: PZQ_ADMINISTERED,
+      unit: TABLET,
+    },
+    {
+      accessor: 'alb_administered',
+      listDisplay: true,
+      title: ALB_ADMINISTERED,
+      unit: TABLET,
+    },
+    {
+      accessor: 'mbz_administered',
+      listDisplay: true,
+      title: MBZ_ADMINISTERED,
       unit: TABLET,
     },
     {
