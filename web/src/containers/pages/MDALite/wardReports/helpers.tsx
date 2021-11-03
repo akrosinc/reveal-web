@@ -8,6 +8,7 @@ import { REPORT_MDA_LITE_CDD_REPORT_URL } from '../../../../constants';
 import {
   censusPopColumns,
   censusPopColumnsRwanda,
+  drugDistributionColumns,
   drugDistributionColumnsRwanda,
   genderReportColumns,
   genderReportColumnsRwanda,
@@ -26,6 +27,7 @@ export const wardColumns: Array<DrillDownColumn<Dictionary>> = [
   },
   ...genderReportColumns,
   ...censusPopColumns,
+  ...drugDistributionColumns,
 ];
 
 export const wardColumnsRwanda: Array<DrillDownColumn<Dictionary>> = [
