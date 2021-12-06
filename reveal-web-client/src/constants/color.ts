@@ -1,1 +1,0 @@
-export const REVEAL_GREEN = "#007742";
