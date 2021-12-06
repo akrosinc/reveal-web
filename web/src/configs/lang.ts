@@ -1108,11 +1108,11 @@ export const ALB_MBZ_TREATMENT_COVERAGE_CENSUS = translate(
 );
 export const ALB_TREATMENT_COVERAGE_CENSUS = translate(
   'ALB_TREATMENT_COVERAGE_CENSUS',
-  'ALB Treatment Coverage (Census)'
+  'ALB - Treatment Coverage (Census)'
 );
 export const MBZ_TREATMENT_COVERAGE_CENSUS = translate(
   'MBZ_TREATMENT_COVERAGE_CENSUS',
-  'MBZ Treatment Coverage (Census)'
+  'MBZ - Treatment Coverage (Census)'
 );
 export const OTHER_POP_TARGET = translate('OTHER_POP_TARGET', 'Other Pop Target (Unofficial)');
 export const OTHER_POP_COVERAGE = translate(
