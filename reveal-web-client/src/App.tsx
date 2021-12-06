@@ -1,17 +1,19 @@
+import { Route, Routes } from "react-router";
 import "./App.css";
 import NavbarComponent from "./components/Layout/Navbar/Navbar";
-import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
+import Footer from "./components/Layout/Footer/Footer";
+import Home from "./containers/Home";
+import Register from "./containers/Register";
 
 function App() {
   return (
     <>
       <NavbarComponent />
-      <Container className="text-center">
-        <h1>Welcome to Reveal</h1>
-        <p>Get started by selecting an intervention below</p>
-        <Button>Bootstrap button</Button>
-      </Container>
+      <Routes>
+        <Route path="/" element={<Home />}></Route>
+        <Route path="/registerUser" element={<Register/>}></Route>
+      </Routes>
+      <Footer />
     </>
   );
 }
