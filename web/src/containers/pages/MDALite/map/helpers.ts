@@ -2,16 +2,20 @@ import { Dictionary } from '@onaio/utils';
 import { TASK_GREEN, TASK_ORANGE, TASK_YELLOW } from '../../../../colors';
 import {
   ALB_ADMINISTERED,
+  ALB_OTHER_POP_COVERAGE,
+  ALB_TREATMENT_COVERAGE_CENSUS,
   DRUGS_IN_WARD_ALB,
   DRUGS_IN_WARD_MBZ,
   DRUGS_IN_WARD_PZQ,
   MBZ_ADMINISTERED,
-  OTHER_POP_COVERAGE,
+  MBZ_OTHER_POP_COVERAGE,
+  MBZ_TREATMENT_COVERAGE_CENSUS,
   PEOPLE,
   PZQ_ADMINISTERED,
+  PZQ_OTHER_POP_COVERAGE,
+  PZQ_TREATMENT_COVERAGE_CENSUS,
   TABLET,
   TOTAL_TREATED,
-  TREATMENT_COVERAGE_CENSUS,
 } from '../../../../configs/lang';
 import { IndicatorThresholdItemPercentage } from '../../../../helpers/utils';
 
@@ -51,19 +55,51 @@ export type IndicatorRows = MDAIndicatorRowItem[];
 export const MDAIndicatorRows: { [key: string]: IndicatorRows } = {
   kenya2021: [
     {
-      accessor: 'treatment_coverage',
+      accessor: 'pzq_treatment_coverage',
       denominator: 'official_population',
       description: '',
-      numerator: 'total_all_genders',
-      title: TREATMENT_COVERAGE_CENSUS,
+      numerator: 'pzq_total_treated',
+      title: PZQ_TREATMENT_COVERAGE_CENSUS,
       unit: PEOPLE,
     },
     {
-      accessor: 'other_pop_coverage',
+      accessor: 'alb_treatment_coverage',
+      denominator: 'official_population',
+      description: '',
+      numerator: 'alb_total_treated',
+      title: ALB_TREATMENT_COVERAGE_CENSUS,
+      unit: PEOPLE,
+    },
+    {
+      accessor: 'mbz_treatment_coverage',
+      denominator: 'official_population',
+      description: '',
+      numerator: 'meb_total_treated',
+      title: MBZ_TREATMENT_COVERAGE_CENSUS,
+      unit: PEOPLE,
+    },
+    {
+      accessor: 'pzq_other_pop_coverage',
       denominator: 'other_pop_target',
       description: '',
-      numerator: 'total_all_genders',
-      title: OTHER_POP_COVERAGE,
+      numerator: 'pzq_total_treated',
+      title: PZQ_OTHER_POP_COVERAGE,
+      unit: PEOPLE,
+    },
+    {
+      accessor: 'alb_other_pop_coverage',
+      denominator: 'other_pop_target',
+      description: '',
+      numerator: 'alb_total_treated',
+      title: ALB_OTHER_POP_COVERAGE,
+      unit: PEOPLE,
+    },
+    {
+      accessor: 'mbz_other_pop_coverage',
+      denominator: 'other_pop_target',
+      description: '',
+      numerator: 'meb_total_treated',
+      title: MBZ_OTHER_POP_COVERAGE,
       unit: PEOPLE,
     },
     {
