@@ -1,10 +1,11 @@
-import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
+import { Container, Nav, Navbar, NavDropdown, NavLink } from "react-bootstrap";
 import logo from "../../../assets/logos/reveal-logo.png";
 import { BsPerson } from "react-icons/bs";
 import { KEYCLOAK_LOGIN_URL } from "../../../constants/urls";
+import { useAppSelector } from "../../../store/hooks";
 
 export default function NavbarComponent() {
-  let isLoggedIn = false;
+  let user = useAppSelector((state) => state.user.value);
   return (
     <Navbar collapseOnSelect expand="lg" bg="light" variant="light">
       <Container fluid className="px-4 pt-1">
@@ -13,9 +14,9 @@ export default function NavbarComponent() {
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
-          {isLoggedIn ? (
+          {user ? (
             <Nav className="me-auto">
-              <Nav.Link href="#features">Home</Nav.Link>
+              <Nav.Link as={NavLink} to='/'>Home</Nav.Link>
               <NavDropdown title="Plan" id="collasible-nav-dropdown">
                 <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
                 <NavDropdown.Item href="#action/3.2">
@@ -40,7 +41,7 @@ export default function NavbarComponent() {
                   Something
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item href="#action/3.4">
+                <NavDropdown.Item as={NavLink} to='/register'>
                   User management
                 </NavDropdown.Item>
               </NavDropdown>
@@ -50,7 +51,7 @@ export default function NavbarComponent() {
               <Nav.Link href="/">Home</Nav.Link>
             </Nav>
           )}
-          {isLoggedIn ? (
+          {user ? (
             <Nav style={{ alignItems: "center" }}>
               <BsPerson />
               <NavDropdown title="User profile" id="collasible-nav-dropdown">
