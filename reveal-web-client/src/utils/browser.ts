@@ -3,7 +3,7 @@ export const setToBrowser = (key: string, value: string) =>
 
 export const getFromBrowser = (key: string) => {
   const item = localStorage.getItem(key);
-  return item ? JSON.parse(item) : null;
+  return item ? item : null;
 };
 
 export const removeFromBrowser = (keyName: string) =>
