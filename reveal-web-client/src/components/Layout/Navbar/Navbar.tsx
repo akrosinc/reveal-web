@@ -4,6 +4,7 @@ import { BsPerson } from "react-icons/bs";
 import { useAppSelector } from "../../../store/hooks";
 import { Link } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
+import { MAIN_MENU } from "./menuConstants";
 
 export default function NavbarComponent() {
   const { keycloak } = useKeycloak();
@@ -13,59 +14,46 @@ export default function NavbarComponent() {
   return (
     <Navbar collapseOnSelect expand="lg">
       <Container fluid className="px-4 pt-1">
-        <Navbar.Brand style={{ marginTop: "-10px" }} href="#home">
+        <Navbar.Brand style={{ marginTop: "-10px" }}>
           <img src={logo} alt="" />
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           {keycloak.authenticated ? (
             <Nav className="me-auto">
-              <Link to="/" className="nav-link">
-                Home
-              </Link>
-              <NavDropdown title="Plan" id="collasible-nav-dropdown">
-                <NavDropdown.Item>
-                  <Link to="/" className="nav-link">
-                    Manage Plans
-                  </Link>
-                </NavDropdown.Item>
-                <NavDropdown.Item>
-                  <Link to="/" className="nav-link">
-                    Planning tools
-                  </Link>
-                </NavDropdown.Item>
-              </NavDropdown>
-              <Link to="/" className="nav-link">
-                Assign
-              </Link>
-              <NavDropdown title="Monitor" id="collasible-nav-dropdown">
-                <NavDropdown.Item>
-                  <Link to="/" className="nav-link">
-                    IRS Reporting
-                  </Link>
-                </NavDropdown.Item>
-                <NavDropdown.Item>
-                  <Link to="/" className="nav-link">
-                    SMC Reporting
-                  </Link>
-                </NavDropdown.Item>
-              </NavDropdown>
-              <NavDropdown title="Admin" id="collasible-nav-dropdown">
-                <NavDropdown.Item>
-                  <Link to="/" className="nav-link">
-                    Teams
-                  </Link>
-                </NavDropdown.Item>
-                <NavDropdown.Item>
-                  <Link to="/register" className="nav-link">
-                    User Management
-                  </Link>
-                </NavDropdown.Item>
-              </NavDropdown>
+              {MAIN_MENU.map((el, index) => {
+                if (el.dropdown !== undefined && el.dropdown.length > 0) {
+                  return (
+                    <NavDropdown
+                      title={el.pageTitle}
+                      key={index}
+                      id="collasible-nav-dropdown"
+                    >
+                      {el.dropdown.map((child, childIndex) => {
+                        return (
+                          <NavDropdown.Item
+                            as={Link}
+                            role="button"
+                            key={index + "." + childIndex}
+                            to={child.route}
+                            className="py-2"
+                          >
+                            {child.pageTitle}
+                          </NavDropdown.Item>
+                        );
+                      })}
+                    </NavDropdown>
+                  );
+                } else {
+                  return (
+                    <Link key={index} to={el.route} className="nav-link">
+                      {el.pageTitle}
+                    </Link>
+                  );
+                }
+              })}
             </Nav>
-          ) : (
-            null
-          )}
+          ) : null}
           {keycloak.authenticated ? (
             <Nav style={{ alignItems: "center" }}>
               <BsPerson />
@@ -83,9 +71,7 @@ export default function NavbarComponent() {
                 </NavDropdown.Item>
               </NavDropdown>
             </Nav>
-          ) : (
-            ""
-          )}
+          ) : null}
         </Navbar.Collapse>
       </Container>
     </Navbar>

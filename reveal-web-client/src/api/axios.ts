@@ -8,7 +8,7 @@ const api = axios.create({
   },
 });
 
-// Add a request interceptor
+// Request interceptor to inject bearer token
 api.interceptors.request.use(
   function (config) {
     // Inject Bearer token in every request
@@ -20,7 +20,7 @@ api.interceptors.request.use(
   }
 );
 
-// Add a response interceptor to handle erros
+// Response interceptor to handle erros
 api.interceptors.response.use(
   function (response) {
     return response;
