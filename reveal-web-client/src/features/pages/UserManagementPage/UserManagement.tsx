@@ -1,12 +1,17 @@
 import { Container, Tab, Tabs } from "react-bootstrap";
-import Organization from './organization/Organization';
-import Users from "./users/Users";
+import { useParams } from "react-router-dom";
+import Organization from './OrganizationPage/Organization';
+import Users from "./UsersPage/Users";
+
 
 const UserManagement = () => {
+
+  let { tab } = useParams();
+
   return (
     <Container fluid className="my-4 px-2">
       <Tabs
-        defaultActiveKey="organization"
+        defaultActiveKey={tab}
         id="uncontrolled-tab-example"
         className="mb-3"
       >

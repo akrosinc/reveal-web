@@ -16,7 +16,11 @@ function App() {
     // if keycloak is initialized store user in state
     if (initialized) {
       keycloak.loadUserInfo().then((res) => {
-        dispatch(login(res));
+        let userDetails = {
+          ...res,
+          roles: keycloak.realmAccess
+        }
+        dispatch(login(userDetails));
       });
     }
   });

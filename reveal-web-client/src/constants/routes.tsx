@@ -1,5 +1,11 @@
+//MAIN PAGES
 export const HOME_PAGE = '/';
 export const USER_MANAGEMENT = '/user-management';
-export const USER_MANAGEMENT_SINGLE_ORGANIZATION = "/user-management/organization/view";
-export const USER_MANAGEMENT_SINGLE_USER = "/user-management/user/view";
-export const USER_MANAGEMENT_SINGLE_USER_CREATE = "/user-management/user/create";
+
+//USER PAGES
+export const USER_MANAGEMENT_USER_CREATE = USER_MANAGEMENT + "/user/create";
+export const USER_MANAGEMENT_USER_EDIT = USER_MANAGEMENT + "/user/edit/:userId";
+
+//ORGANIZATION PAGES
+export const USER_MANAGEMENT_ORGANIZATION_DETAILS = USER_MANAGEMENT + "/organization/:organizationId";
+export const USER_MANAGEMENT_ORGANIZATION_CREATE = USER_MANAGEMENT + "/organization/create";

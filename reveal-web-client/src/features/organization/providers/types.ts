@@ -2,7 +2,7 @@ export interface OrganizationModel {
   identifier: string;
   active: boolean;
   type: OrganizationType;
-  partOf: OrganizationPartOf;
+  partOf: string;
   name: string;
 }
 
