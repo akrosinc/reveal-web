@@ -1,4 +1,5 @@
 import {createSlice} from '@reduxjs/toolkit';
+import { KeycloakRoles } from 'keycloak-js';
 
 interface User {
     email: string,
@@ -7,7 +8,8 @@ interface User {
     given_name: string,
     name: string,
     preferred_username: string,
-    sub: string
+    sub: string,
+    roles: KeycloakRoles
 }
 
 const initialStateValue: User = {
@@ -17,7 +19,8 @@ const initialStateValue: User = {
     given_name: "",
     name: "",
     preferred_username: "",
-    sub: ""
+    sub: "",
+    roles: {roles: []}
 };
 
 const userSlice = createSlice({
