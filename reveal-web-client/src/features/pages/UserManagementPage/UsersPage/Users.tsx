@@ -6,30 +6,34 @@ import UsersTable from "../../../../components/Table/UsersTable";
 import { USER_MANAGEMENT_USER_CREATE } from "../../../../constants";
 import { UserModel } from "../../../user/providers/types";
 import { getUserList } from "../../../user/api";
+import { useAppDispatch } from "../../../../store/hooks";
+import { showError } from "../../../reducers/tostify";
+import Paginator from "../../../../components/Pagination/Paginator";
 
-//Mocking data for now
-const tableRowNames = ["Username", "First Name", "Last Name", "Organization"];  
+const tableRowNames = ["Username", "First Name", "Last Name", "Organization"];
 
 const Users = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [userList, setUserList] = useState<UserModel[]>([]);
   const [apiData, setApiData] = useState<UserModel[]>([]);
 
   useEffect(() => {
-    getUserList().then(res => {
-      setUserList(res);
-      setApiData(res);
+    getUserList().then((res) => {
+      setUserList(res.content);
+      setApiData(res.content);
+    }).catch(err => {
+      dispatch(showError(err.message))
+      console.log(err.message);
     })
-  })
+  }, [dispatch]);
 
   const filterData = (e: any) => {
     const flitered = apiData.filter((el) => {
-      
-      return el.username.toLowerCase().includes(e.target.value.toLowerCase());
-      
-    })
+      return el.userName.toLowerCase().includes(e.target.value.toLowerCase());
+    });
     setUserList([...flitered]);
-  }
+  };
 
   const openUserById = (id: string) => {
     navigate("user/edit/" + id);
@@ -42,23 +46,35 @@ const Users = () => {
         </Col>
         <Col>
           <Link
-            className="btn btn-primary float-end"
+            className="btn btn-primary float-end w-25"
             role="button"
             to={USER_MANAGEMENT_USER_CREATE}
           >
             Create
           </Link>
+          <Link
+            className="btn btn-primary me-2 w-25 float-end"
+            role="button"
+            to={USER_MANAGEMENT_USER_CREATE + '/bulk'}
+          >
+            Bulk import
+          </Link>
         </Col>
       </Row>
-      <input className="form-control w-25" placeholder="Search" onChange={(e) => {
-        filterData(e);
-      }}></input>
+      <input
+        className="form-control w-25"
+        placeholder="Search"
+        onChange={(e) => {
+          filterData(e);
+        }}
+      />
       <hr className="my-4" />
       <UsersTable
         head={tableRowNames}
         rows={userList}
         clickHandler={openUserById}
       />
+      <Paginator/>
     </>
   );
 };

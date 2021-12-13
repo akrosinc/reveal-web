@@ -10,6 +10,7 @@ interface Props {
 
 const UsersTable = ({head, rows, clickHandler}: Props) => {
     return (
+      <>
         <Table bordered>
         <thead className="border border-2">
           <tr>
@@ -19,20 +20,22 @@ const UsersTable = ({head, rows, clickHandler}: Props) => {
           </tr>
         </thead>
         <tbody>
-          {rows.map((user, index) => {
+          {rows.length > 0 ? rows.map((user, index) => {
               return <tr key={index} onClick={() => {
                 if (clickHandler !== undefined) {
                   clickHandler(user.identifier);
                 }
               }}>
-                  <td>{user.username}</td>
+                  <td>{user.userName}</td>
                   <td>{user.firstName}</td>
                   <td>{user.lastName}</td>
-                  <td>{user.organization}</td>
+                  <td>{user.organizations.toString()}</td>
               </tr>
-          })}
+          }) : null}
         </tbody>
       </Table>
+      {rows.length === 0 && <p className="text-center lead">No users found.</p>}
+      </>
     )
 }
 

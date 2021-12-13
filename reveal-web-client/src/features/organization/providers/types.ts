@@ -3,6 +3,7 @@ export interface OrganizationModel {
   active: boolean;
   type: OrganizationType;
   partOf: string;
+  headOf: OrganizationModel[];
   name: string;
 }
 

@@ -1,11 +1,12 @@
 import axios from "../../../api/axios";
+import { PageableModel } from "../../../api/sharedModel";
 import { USER } from "../../../constants";
 import { UserModel } from "../providers/types";
 
 
-export const getUserList = async (): Promise<UserModel[]> => {
+export const getUserList = async (): Promise<PageableModel<UserModel>> => {
   const data = await axios
-    .get<UserModel[]>(USER)
+    .get<PageableModel<UserModel>>(USER)
     .then((response) => response.data);
   return data;
 };

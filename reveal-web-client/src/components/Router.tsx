@@ -7,7 +7,8 @@ import {
   USER_MANAGEMENT_USER_CREATE,
   USER_MANAGEMENT_USER_EDIT,
   USER_MANAGEMENT_ORGANIZATION_DETAILS,
-  USER_MANAGEMENT_ORGANIZATION_CREATE
+  USER_MANAGEMENT_ORGANIZATION_CREATE,
+  USER_MANAGEMENT_USER_CREATE_BULK
 } from "../constants/";
 import { useKeycloak } from "@react-keycloak/web";
 import UserManagement from "../features/pages/UserManagementPage/UserManagement";
@@ -15,6 +16,7 @@ import OrganizationDetails from "../features/pages/UserManagementPage/Organizati
 import CreateOrganization from "../features/pages/UserManagementPage/OrganizationPage/create/CreateOrganization";
 import EditUser from "../features/pages/UserManagementPage/UsersPage/edit/Edit";
 import { Spinner, Container } from "react-bootstrap";
+import AuthGuard from "./AuthGuard";
 
 export default function Router() {
   const { initialized } = useKeycloak();
@@ -43,7 +45,8 @@ export default function Router() {
           path={USER_MANAGEMENT_ORGANIZATION_DETAILS}
           element={<OrganizationDetails />}
         />
-        <Route path={USER_MANAGEMENT_USER_CREATE} element={<CreateUser />} />
+        <Route path={USER_MANAGEMENT_USER_CREATE} element={<AuthGuard roles={["manage-users"]}><CreateUser bulk={false} /></AuthGuard>} />
+        <Route path={USER_MANAGEMENT_USER_CREATE_BULK} element={<CreateUser bulk={true} />} />
         <Route
           path={USER_MANAGEMENT_USER_EDIT}
           element={<EditUser />}

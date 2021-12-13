@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getFromBrowser } from '../utils'
+import keycloak from "../keycloak";
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
@@ -26,6 +27,9 @@ api.interceptors.response.use(
     return response;
   },
   function (error) {
+    if (error.status === 401) {
+      keycloak.logout();
+    }
     return Promise.reject(error);
   }
 );

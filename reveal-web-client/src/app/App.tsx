@@ -6,7 +6,10 @@ import { useKeycloak } from "@react-keycloak/web";
 import { useEffect } from "react";
 import { useAppDispatch } from "../store/hooks";
 import { login } from "../features/reducers/user";
+import { showInfo } from "../features/reducers/tostify";
 import { Container } from "react-bootstrap";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
@@ -16,11 +19,15 @@ function App() {
     // if keycloak is initialized store user in state
     if (initialized) {
       keycloak.loadUserInfo().then((res) => {
-        let userDetails = {
+        console.log(keycloak.resourceAccess);
+        console.log(keycloak.realmAccess);
+        let userDetails: any = {
           ...res,
-          roles: keycloak.realmAccess
+          roles: keycloak.realmAccess,
+          realmAccess: keycloak.resourceAccess
         }
         dispatch(login(userDetails));
+        dispatch(showInfo("Welcome back " + userDetails.preferred_username))
       });
     }
   });
@@ -34,6 +41,7 @@ function App() {
       <Container fluid={true} className="footer-row-container">
       <Footer />
       </Container>
+      <ToastContainer position="bottom-right"/>
     </Container>
   );
 }

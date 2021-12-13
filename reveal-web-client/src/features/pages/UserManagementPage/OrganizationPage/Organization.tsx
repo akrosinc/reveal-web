@@ -5,23 +5,21 @@ import { Link } from "react-router-dom";
 import { USER_MANAGEMENT_ORGANIZATION_CREATE } from "../../../../constants";
 import { getOrganizationList } from "../../../organization/api";
 import { OrganizationModel } from "../../../organization/providers/types";
-import MaterialTable, { Column } from "@material-table/core";
+import OrganizationTable from "../../../../components/Table/OrganizationsTable";
+import { PageableModel } from "../../../../api/sharedModel";
+import Paginator from "../../../../components/Pagination/Paginator";
 
-const columns: Array<Column<OrganizationModel>> = [
-  { title: "Name", field: "name" },
-  { title: "Type", field: "type.valueCodableConcept" },
-  { title: "Active", field: "active" },
-];
+const columns = ["Name", "Type", "Active"];
 
 const Organization = () => {
-  const [organizationList, setOrganizationList] = useState<OrganizationModel[]>([]);
+  const [organizationList, setOrganizationList] =
+    useState<PageableModel<OrganizationModel>>();
 
   const navigate = useNavigate();
 
   useEffect(() => {
     getOrganizationList().then((res) => {
-      console.log(res);
-      setOrganizationList(res.content);
+      setOrganizationList(res);
     });
   }, []);
 
@@ -35,11 +33,17 @@ const Organization = () => {
     <>
       <Row className="my-4">
         <Col>
-          <h2>Organizations ({organizationList.length})</h2>
+          <h2>
+            Organizations (
+            {organizationList !== undefined
+              ? organizationList.totalElements
+              : 0}
+            )
+          </h2>
         </Col>
         <Col>
           <Link
-            className="btn btn-primary float-end"
+            className="btn btn-primary float-end w-25"
             role="button"
             to={USER_MANAGEMENT_ORGANIZATION_CREATE}
           >
@@ -47,22 +51,21 @@ const Organization = () => {
           </Link>
         </Col>
       </Row>
-      <hr className="my-4" />
-      <MaterialTable
-        options={{
-          overflowY: "auto",
-          minBodyHeight: "500px",
-          maxBodyHeight: "500px"
+      <input
+        className="form-control w-25"
+        placeholder="Search"
+        onChange={(e) => {
+          //filterData(e);
+          console.log(e);
         }}
-        columns={columns}
-        data={organizationList}
-        onRowClick={(evt, rowData) => {
-          openOrganizationById(rowData?.identifier);
-        }}
-        parentChildData={(row, rows) =>
-          rows.find((childRow) => childRow.identifier === row.partOf)
-        }
       />
+      <hr className="my-4" />
+      <OrganizationTable
+        clickHandler={openOrganizationById}
+        rows={organizationList !== undefined ? organizationList.content : []}
+        head={columns}
+      />
+      <Paginator />
     </>
   );
 };
