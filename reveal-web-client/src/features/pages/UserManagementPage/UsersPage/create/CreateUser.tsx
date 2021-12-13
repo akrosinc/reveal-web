@@ -1,11 +1,14 @@
-import { useState } from "react";
-import { Button, Container, Form } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Button, Container, Form, Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { USER_MANAGEMENT } from "../../../../../constants";
 import Select, { MultiValue } from "react-select";
-import { useAppSelector } from "../../../../../store/hooks";
-import { uploadUserCsv } from "../../../../user/api";
+import axios from "../../../../../api/axios";
+import { createUser, uploadUserCsv } from "../../../../user/api";
 import { useForm } from 'react-hook-form';
+import { UserModel } from "../../../../user/providers/types";
+import { showError, showInfo } from "../../../../reducers/tostify";
+import { useAppDispatch } from "../../../../../store/hooks";
 
 
 interface RegisterValues {
@@ -19,23 +22,46 @@ interface RegisterValues {
   bulk: File[];
 }
 
-const CreateUser = () => {
-  const [bulkImport, setBulkImport] = useState(false);
+interface Groups {
+  id: string;
+  name: string;
+  path: string;
+  subgroups: Groups[]
+}
+
+interface Options {
+  value: string,
+  label: string
+}
+
+interface Props {
+  bulk: boolean
+}
+
+const CreateUser = ({bulk}: Props) => {
+  const [bulkImport] = useState(bulk);
+  const dispatch = useAppDispatch();
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<string[]>();
   const {
+    reset,
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm();
 
-  const options = useAppSelector((state) =>
-    state.user.value.roles.roles.map((role) => {
-      return {
-        value: role,
-        label: role,
-      };
+  const [groups, setGroups] = useState<Options[]>();
+
+  useEffect(() => {
+    axios.get<Groups[]>("https://sso-ops.akros.online/auth/admin/realms/reveal/groups").then(res => {
+      setGroups(res.data.map(el => {
+        return {
+          value: el.name,
+          label: el.name
+        }
+      }));
     })
-  );
+  }, [])
 
   const selectHandler = (selectedOption: MultiValue<{value: string;label: string;}>) => {
     const values = selectedOption.map((selected) => {
@@ -51,24 +77,36 @@ const CreateUser = () => {
         const formData = new FormData();
         formData.append('File', csv);
         uploadUserCsv(formData);
+      } else {
+        setError("bulk", {});
       }
     } else {
-      console.log(selectedSecurityGroups);
+      console.log(formValues);
+      let newUser: UserModel = {
+        identifier: "",
+        userName: formValues.username,
+        email: formValues.email,
+        firstName: formValues.firstname,
+        lastName: formValues.lastname,
+        organizations: [],
+        securityGroups: selectedSecurityGroups ?? [],
+        password: formValues.password,
+        tempPassword: false
+      }
+      createUser(newUser).then(res => {
+        dispatch(showInfo("User created successfully!"));
+        reset();
+      }).catch(err => {
+        dispatch(showError(err.message));
+      });
     }
   }
 
   return (
-    <Container>
-      <h2 className="text-center">Create User</h2>
-        <Form.Check
-          type="switch"
-          id="custom-switch"
-          label="Bulk import"
-          className="float-end"
-          onChange={() => {
-            setBulkImport(!bulkImport);
-          }}
-        />
+    <Container className="py-4">
+      <Row>
+        <Col md={8} className="mx-auto">
+      <h2 className="text-center">{bulk ? "Bulk user import" : "Create user"}</h2>
       <Form onSubmit={handleSubmit(submitHandler)}>
         {bulkImport ? (
           <Form.Group className="my-4">
@@ -103,19 +141,20 @@ const CreateUser = () => {
             </Form.Group>
             <Form.Group className="mb-3" controlId="formGridCity">
               <Form.Label>Password</Form.Label>
-              <Form.Control type="password" />
+              <Form.Control {...register('password', { required: true })} type="password" />
+              {errors.password && <Form.Label className="text-danger">Password must not be empty.</Form.Label>}
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formGridState">
               <Form.Label>Security groups</Form.Label>
-              <Select isMulti options={options} onChange={selectHandler} />
+              <Select isMulti options={groups} onChange={selectHandler} />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formGridState">
               <Form.Label>Organization</Form.Label>
               <Form.Select defaultValue="Choose...">
                 <option>Choose...</option>
-                <option>...</option>
+                <option>Backend get request</option>
               </Form.Select>
             </Form.Group>
           </>
@@ -132,6 +171,8 @@ const CreateUser = () => {
           Cancel
         </Link>
       </Form>
+      </Col>
+      </Row>
     </Container>
   );
 };

@@ -1,9 +1,11 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import userReducer from '../features/reducers/user';
+import toastReducer from '../features/reducers/tostify';
 
 export const store = configureStore({
   reducer: {
-    user: userReducer
+    user: userReducer,
+    toast: toastReducer
   },
 });
 

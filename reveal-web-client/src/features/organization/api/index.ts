@@ -5,7 +5,7 @@ import { ORGANIZATION } from "../../../constants";
 
 export const getOrganizationList = async (): Promise<PageableModel<OrganizationModel>> => {
   const data = await axios
-    .get<PageableModel<OrganizationModel>>(ORGANIZATION)
+    .get<PageableModel<OrganizationModel>>(ORGANIZATION + "?_summary=FALSE&root=true")
     .then((response) => response.data);
   return data;
 };

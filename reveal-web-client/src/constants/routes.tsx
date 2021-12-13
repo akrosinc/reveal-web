@@ -4,6 +4,7 @@ export const USER_MANAGEMENT = '/user-management';
 
 //USER PAGES
 export const USER_MANAGEMENT_USER_CREATE = USER_MANAGEMENT + "/user/create";
+export const USER_MANAGEMENT_USER_CREATE_BULK = USER_MANAGEMENT + "/user/create/bulk";
 export const USER_MANAGEMENT_USER_EDIT = USER_MANAGEMENT + "/user/edit/:userId";
 
 //ORGANIZATION PAGES

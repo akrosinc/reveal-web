@@ -10,23 +10,24 @@ interface Props {
 
 const OrganizationTable = ({ head, rows, clickHandler }: Props) => {
   
-  // const getChildren = (children: OrganizationModel[], ident: number): any => {
-  //   if (children !== undefined && children.length > 0) {
-  //     return children.map((row) => {
-  //       return [<tr key={row.identifier} onClick={() => {
-  //         clickHandler(row.identifier);
-  //       }}>
-  //           <td><span style={{paddingLeft:ident.toString() + "px"}}>{row.name}</span></td>
-  //           <td>{row.type.valueCodableConcept}</td>
-  //           <td>{row.active.toString()}</td>
-  //         </tr>, ...getChildren(row.headOf, ident + 20)]
-  //       });
-  //     } else {
-  //       return []
-  //     }
-  //   }
+  const getChildren = (children: OrganizationModel[], ident: number): any => {
+    if (children !== undefined && children.length > 0) {
+      return children.map((row) => {
+        return [<tr key={row.identifier} onClick={() => {
+          clickHandler(row.identifier);
+        }}>
+            <td><span style={{paddingLeft:ident.toString() + "px"}}>{row.name}</span></td>
+            <td>{row.type.valueCodableConcept}</td>
+            <td>{row.active.toString()}</td>
+          </tr>, ...getChildren(row.headOf, ident + 20)]
+        });
+      } else {
+        return []
+      }
+    }
 
   return (
+    <>
     <Table bordered>
       <thead className="border border-2">
         <tr>
@@ -44,15 +45,17 @@ const OrganizationTable = ({ head, rows, clickHandler }: Props) => {
                 clickHandler(row.identifier);
               }}
             >
-              <td>{row.name}</td>
+              <td><span style={{paddingLeft: "10px", fontWeight: 'bold'}}>{row.name}</span></td>
               <td>{row.type.valueCodableConcept}</td>
               <td>{row.active.toString()}</td>
             </tr>,
-            //...getChildren(row.headOf, 10),
+            ...getChildren(row.headOf, 20),
           ];
         })}
       </tbody>
     </Table>
+    {rows.length === 0 && <p className="text-center lead">No organizations found.</p>}
+    </>
   );
 };
 
