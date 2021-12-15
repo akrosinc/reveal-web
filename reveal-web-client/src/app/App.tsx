@@ -9,6 +9,7 @@ import { login } from "../features/reducers/user";
 import { showInfo } from "../features/reducers/tostify";
 import { Container } from "react-bootstrap";
 import { ToastContainer } from 'react-toastify';
+import Loader from '../components/Layout/Loader';
 import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
@@ -18,9 +19,8 @@ function App() {
   useEffect(() => {
     // if keycloak is initialized store user in state
     if (initialized) {
+      keycloak.onTokenExpired = () => console.log("expired token");
       keycloak.loadUserInfo().then((res) => {
-        console.log(keycloak.resourceAccess);
-        console.log(keycloak.realmAccess);
         let userDetails: any = {
           ...res,
           roles: keycloak.realmAccess,
@@ -42,6 +42,7 @@ function App() {
       <Footer />
       </Container>
       <ToastContainer position="bottom-right"/>
+      <Loader />
     </Container>
   );
 }

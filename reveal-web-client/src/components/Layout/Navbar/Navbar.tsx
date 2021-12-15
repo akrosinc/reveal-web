@@ -18,7 +18,7 @@ export default function NavbarComponent() {
           <img src={logo} alt="" />
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Navbar.Collapse id="responsive-navbar-nav">
+        <Navbar.Collapse id="responsive-navbar-nav" className={keycloak.authenticated ? "" : "justify-content-end"}>
           {keycloak.authenticated ? (
             <Nav className="me-auto">
               {MAIN_MENU.map((el, index) => {
@@ -54,7 +54,7 @@ export default function NavbarComponent() {
               })}
             </Nav>
           ) : null}
-          {keycloak.authenticated ? (
+          {(keycloak.authenticated) ? (
             <Nav style={{ alignItems: "center" }}>
               <BsPerson />
               <NavDropdown
@@ -71,7 +71,11 @@ export default function NavbarComponent() {
                 </NavDropdown.Item>
               </NavDropdown>
             </Nav>
-          ) : null}
+          ) : (
+            <Nav>
+              <Nav.Link className="btn btn-success text-white" style={{width: '100px'}} onClick={() => keycloak.login()}>Login</Nav.Link>
+            </Nav>
+          )}
         </Navbar.Collapse>
       </Container>
     </Navbar>

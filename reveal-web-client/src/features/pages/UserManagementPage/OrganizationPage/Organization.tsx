@@ -8,6 +8,9 @@ import { OrganizationModel } from "../../../organization/providers/types";
 import OrganizationTable from "../../../../components/Table/OrganizationsTable";
 import { PageableModel } from "../../../../api/sharedModel";
 import Paginator from "../../../../components/Pagination/Paginator";
+import { useAppDispatch } from "../../../../store/hooks";
+import { showLoader } from "../../../reducers/loader";
+import { showError } from "../../../reducers/tostify";
 
 const columns = ["Name", "Type", "Active"];
 
@@ -16,12 +19,18 @@ const Organization = () => {
     useState<PageableModel<OrganizationModel>>();
 
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
+    dispatch(showLoader(true));
     getOrganizationList().then((res) => {
       setOrganizationList(res);
+    }).catch(error => {
+      dispatch(showError(error.response !== undefined ? error.response.data.message : null));
+    }).finally(() => {
+      dispatch(showLoader(false));
     });
-  }, []);
+  }, [dispatch]);
 
   const openOrganizationById = (id?: string) => {
     if (id !== undefined) {

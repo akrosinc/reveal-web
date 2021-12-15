@@ -10,6 +10,13 @@ export const getOrganizationList = async (): Promise<PageableModel<OrganizationM
   return data;
 };
 
+export const getAllOrganizations = async (): Promise<PageableModel<OrganizationModel>> => {
+  const data = await axios
+    .get<PageableModel<OrganizationModel>>(ORGANIZATION + "?_summary=TRUE&root=false")
+    .then((response) => response.data);
+  return data;
+};
+
 export const getOrganizationById = async (id: string): Promise<OrganizationModel> => {
   const data = await axios
     .get<OrganizationModel>(ORGANIZATION + `/${id}`)
