@@ -20,11 +20,14 @@ const Users = () => {
 
   useEffect(() => {
     getUserList().then((res) => {
-      setUserList(res.content);
-      setApiData(res.content);
-    }).catch(err => {
-      dispatch(showError(err.message))
-      console.log(err.message);
+      if (res.content !== undefined) {
+        setUserList(res.content);
+        setApiData(res.content);
+      }
+    }).catch(error => {
+      dispatch(showError(error.response !== undefined ? error.response.data.message : null));
+    }).finally(() => {
+      dispatch(showError(false));
     })
   }, [dispatch]);
 

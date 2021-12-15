@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getFromBrowser } from '../utils'
+import { getFromBrowser, removeFromBrowser } from '../utils'
 import keycloak from "../keycloak";
 
 const api = axios.create({
@@ -21,13 +21,14 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle erros
+// Add a response interceptor
 api.interceptors.response.use(
-  function (response) {
+  (response) => {
     return response;
   },
-  function (error) {
-    if (error.status === 401) {
+  (error) => {
+    if (error.response.status === 401) {
+      removeFromBrowser("token");
       keycloak.logout();
     }
     return Promise.reject(error);

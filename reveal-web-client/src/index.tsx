@@ -19,16 +19,11 @@ const tokenLogger = (tokens: any) => {
   setToBrowser("token", tokens.token);
 };
 
-const keycloakProviderInitConfig = {
-  onLoad: "login-required",
-};
-
 ReactDOM.render(
   <ReactKeycloakProvider
     authClient={keycloak}
     onEvent={eventLogger}
     onTokens={tokenLogger}
-    initOptions={keycloakProviderInitConfig}
   >
     <Provider store={store}>
       <BrowserRouter>
