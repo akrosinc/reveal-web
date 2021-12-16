@@ -1,5 +1,4 @@
 import axios from "axios";
-import { getFromBrowser, removeFromBrowser } from '../utils'
 import keycloak from "../keycloak";
 
 const api = axios.create({
@@ -13,9 +12,8 @@ const api = axios.create({
 api.interceptors.request.use(
   function (config) {
     // Inject Bearer token in every request
-    const token = getFromBrowser("token");
     config.headers = {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${keycloak.token}`
     };
     return config;
   }
@@ -27,8 +25,7 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response.status === 401) {
-      removeFromBrowser("token");
+    if (error.response !== undefined && error.response.status === 401) {
       keycloak.logout();
     }
     return Promise.reject(error);

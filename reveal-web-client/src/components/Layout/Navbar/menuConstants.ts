@@ -1,5 +1,4 @@
-import { HOME_PAGE } from "../../../constants";
-import { USER_MANAGEMENT } from "../../../constants";
+import { HOME_PAGE, PLANS, USER_MANAGEMENT } from "../../../constants";
 
 export const MAIN_MENU = [
     {
@@ -8,11 +7,11 @@ export const MAIN_MENU = [
     },
     {
       pageTitle: "Plan",
-      route: "/plan",
+      route: "#",
       dropdown: [
         {
           pageTitle: "Manage Plans",
-          route: "",
+          route: PLANS,
         },
         {
           pageTitle: "Planning tools",
@@ -22,19 +21,19 @@ export const MAIN_MENU = [
     },
     {
       pageTitle: "Assign",
-      route: "",
+      route: "#",
     },
     {
       pageTitle: "Monitor",
-      route: "/monitor",
+      route: "#",
       dropdown: [
         {
           pageTitle: "IRS Reporting",
-          route: "",
+          route: "#",
         },
         {
           pageTitle: "SMC Reporting",
-          route: "",
+          route: "#",
         },
       ],
     },

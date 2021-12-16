@@ -28,7 +28,7 @@ const OrganizationTable = ({ head, rows, clickHandler }: Props) => {
 
   return (
     <>
-    <Table bordered>
+    <Table bordered responsive>
       <thead className="border border-2">
         <tr>
           {head.map((el, index) => {

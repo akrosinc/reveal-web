@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Col, Row } from "react-bootstrap";
+import React, { useEffect, useState, useCallback } from "react";
+import { Col, Row, Button } from "react-bootstrap";
 import { useNavigate } from "react-router";
-import { Link } from "react-router-dom";
-import { USER_MANAGEMENT_ORGANIZATION_CREATE } from "../../../../constants";
 import { getOrganizationList } from "../../../organization/api";
 import { OrganizationModel } from "../../../organization/providers/types";
 import OrganizationTable from "../../../../components/Table/OrganizationsTable";
@@ -11,26 +9,41 @@ import Paginator from "../../../../components/Pagination/Paginator";
 import { useAppDispatch } from "../../../../store/hooks";
 import { showLoader } from "../../../reducers/loader";
 import { showError } from "../../../reducers/tostify";
+import CreateOrganization from "./create/CreateOrganization";
 
 const columns = ["Name", "Type", "Active"];
 
 const Organization = () => {
   const [organizationList, setOrganizationList] =
     useState<PageableModel<OrganizationModel>>();
+  const [show, setShow] = useState(false);
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
     dispatch(showLoader(true));
-    getOrganizationList().then((res) => {
-      setOrganizationList(res);
-    }).catch(error => {
-      dispatch(showError(error.response !== undefined ? error.response.data.message : null));
-    }).finally(() => {
-      dispatch(showLoader(false));
-    });
+    getOrganizationList()
+      .then((res) => {
+        setOrganizationList(res);
+      })
+      .catch((error) => {
+        dispatch(
+          showError(
+            error.response !== undefined ? error.response.data.message : null
+          )
+        );
+      })
+      .finally(() => {
+        dispatch(showLoader(false));
+      });
   }, [dispatch]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const openOrganizationById = (id?: string) => {
     if (id !== undefined) {
@@ -51,13 +64,12 @@ const Organization = () => {
           </h2>
         </Col>
         <Col>
-          <Link
-            className="btn btn-primary float-end w-25"
-            role="button"
-            to={USER_MANAGEMENT_ORGANIZATION_CREATE}
+          <Button
+            className="btn btn-primary float-sm-end"
+            onClick={handleShow}
           >
             Create
-          </Link>
+          </Button>
         </Col>
       </Row>
       <input
@@ -75,6 +87,7 @@ const Organization = () => {
         head={columns}
       />
       <Paginator />
+      { show && <CreateOrganization handleClose={handleClose} show={show} />}
     </>
   );
 };

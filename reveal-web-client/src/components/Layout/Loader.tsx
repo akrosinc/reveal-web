@@ -10,6 +10,7 @@ const loaderBackdrop: CSSProperties = {
     top: '0',
     width: '100%',
     height: '100%',
+    zIndex: 9999,
 };
 
 const Loader = () => {
