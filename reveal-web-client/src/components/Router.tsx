@@ -1,24 +1,22 @@
 import { Route, Routes } from "react-router";
-import Home from "../features/pages/HomePage/Home";
-import CreateUser from "../features/pages/UserManagementPage/UsersPage/create/CreateUser";
+import { Navigate } from "react-router-dom";
 import {
   HOME_PAGE,
   USER_MANAGEMENT,
-  USER_MANAGEMENT_USER_CREATE,
   USER_MANAGEMENT_USER_EDIT,
   USER_MANAGEMENT_ORGANIZATION_DETAILS,
-  USER_MANAGEMENT_ORGANIZATION_CREATE,
-  USER_MANAGEMENT_USER_CREATE_BULK,
+  PLANS
 } from "../constants/";
-import { useKeycloak } from "@react-keycloak/web";
+import Home from "../features/pages/HomePage/Home";
+import Plans from "../features/pages/PlansPage/Plans";
 import UserManagement from "../features/pages/UserManagementPage/UserManagement";
 import OrganizationDetails from "../features/pages/UserManagementPage/OrganizationPage/details/OrganizationDetails";
-import CreateOrganization from "../features/pages/UserManagementPage/OrganizationPage/create/CreateOrganization";
 import EditUser from "../features/pages/UserManagementPage/UsersPage/edit/Edit";
-import { Spinner, Container } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
+import { useKeycloak } from "@react-keycloak/web";
 import AuthGuard from "./AuthGuard";
-import { Navigate } from "react-router-dom";
-import PublicPage from './pages/PublicPage';
+import PublicPage from "./pages/PublicPage";
+import ErrorPage from "./pages/ErrorPage";
 
 export default function Router() {
   const { keycloak, initialized } = useKeycloak();
@@ -27,49 +25,33 @@ export default function Router() {
     if (keycloak.authenticated) {
       return (
         <Routes>
-          <Route
-            path="*"
-            element={
-              <Container className="text-center mt-5">
-                <h2>Not found 404</h2>
-                <p>There's nothing here!</p>
-              </Container>
-            }
-          />
+          <Route path="*" element={<ErrorPage />} />
           <Route path={HOME_PAGE} element={<Home />} />
+          <Route path={PLANS} element={<Plans />} />
           <Route path={USER_MANAGEMENT} element={<UserManagement />}>
-            <Route path=":tab" element={<UserManagement />} />
+            <Route
+              path=":tab"
+              element={
+                <AuthGuard roles={["manage-users"]}>
+                  <UserManagement />
+                </AuthGuard>
+              }
+            />
           </Route>
-          <Route
-            path={USER_MANAGEMENT_ORGANIZATION_CREATE}
-            element={<CreateOrganization />}
-          />
           <Route
             path={USER_MANAGEMENT_ORGANIZATION_DETAILS}
             element={<OrganizationDetails />}
-          />
-          <Route
-            path={USER_MANAGEMENT_USER_CREATE}
-            element={
-              <AuthGuard roles={["manage-users"]}>
-                <CreateUser bulk={false} />
-              </AuthGuard>
-            }
-          />
-          <Route
-            path={USER_MANAGEMENT_USER_CREATE_BULK}
-            element={<CreateUser bulk={true} />}
           />
           <Route path={USER_MANAGEMENT_USER_EDIT} element={<EditUser />} />
         </Routes>
       );
     } else {
       return (
-      <Routes>
-        <Route path="*" element={<Navigate replace to="/" />} />
-        <Route path="/" element={<PublicPage />} />
-      </Routes>
-      )
+        <Routes>
+          <Route path="*" element={<Navigate replace to="/" />} />
+          <Route path="/" element={<PublicPage />} />
+        </Routes>
+      );
     }
   } else {
     return (

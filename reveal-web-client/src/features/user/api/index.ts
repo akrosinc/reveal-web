@@ -1,12 +1,13 @@
 import axios from "../../../api/axios";
 import { PageableModel } from "../../../api/sharedModel";
 import { USER } from "../../../constants";
-import { UserModel } from "../providers/types";
+import { CreateUserModel, UserModel } from "../providers/types";
 
 
-export const getUserList = async (): Promise<PageableModel<UserModel>> => {
+export const getUserList = async (search?: string): Promise<PageableModel<UserModel>> => {
+  let searchParam = search !== undefined ? "?search=" + search : "";
   const data = await axios
-    .get<PageableModel<UserModel>>(USER)
+    .get<PageableModel<UserModel>>(USER + searchParam)
     .then((response) => response.data);
   return data;
 };
@@ -19,7 +20,7 @@ export const getUserById = async (id: string): Promise<UserModel> => {
 };
 
 
-export const createUser = async (user: UserModel): Promise<UserModel> => {
+export const createUser = async (user: CreateUserModel): Promise<UserModel> => {
   const data = await axios
     .post<UserModel>(USER, user)
     .then((response) => response.data);

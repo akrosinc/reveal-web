@@ -1,3 +1,5 @@
+import { OrganizationModel } from "../../organization/providers/types";
+
 export interface UserModel {
   identifier: string;
   userName: string;
@@ -6,6 +8,17 @@ export interface UserModel {
   email: string;
   password?: string;
   tempPassword?: boolean;
-  organizations: string[];
+  organizations: OrganizationModel[];
+  securityGroups: string[];
+}
+
+export interface CreateUserModel {
+  userName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  tempPassword?: boolean;
+  organizations?: string[];
   securityGroups: string[];
 }

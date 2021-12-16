@@ -11,7 +11,7 @@ interface Props {
 const UsersTable = ({head, rows, clickHandler}: Props) => {
     return (
       <>
-        <Table bordered>
+        <Table bordered responsive>
         <thead className="border border-2">
           <tr>
             {head.map((el, index) => {
@@ -29,7 +29,7 @@ const UsersTable = ({head, rows, clickHandler}: Props) => {
                   <td>{user.userName}</td>
                   <td>{user.firstName}</td>
                   <td>{user.lastName}</td>
-                  <td>{user.organizations.toString()}</td>
+                  <td>{user.organizations.map(el => el.name).sort().toString()}</td>
               </tr>
           }) : null}
         </tbody>

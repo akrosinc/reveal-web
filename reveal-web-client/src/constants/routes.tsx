@@ -10,3 +10,6 @@ export const USER_MANAGEMENT_USER_EDIT = USER_MANAGEMENT + "/user/edit/:userId";
 //ORGANIZATION PAGES
 export const USER_MANAGEMENT_ORGANIZATION_DETAILS = USER_MANAGEMENT + "/organization/:organizationId";
 export const USER_MANAGEMENT_ORGANIZATION_CREATE = USER_MANAGEMENT + "/organization/create";
+
+//PLAN PAGES
+export const PLANS = "/plans"

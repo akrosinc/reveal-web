@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Col, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Button, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router";
 import UsersTable from "../../../../components/Table/UsersTable";
-import { USER_MANAGEMENT_USER_CREATE } from "../../../../constants";
 import { UserModel } from "../../../user/providers/types";
 import { getUserList } from "../../../user/api";
 import { useAppDispatch } from "../../../../store/hooks";
 import { showError } from "../../../reducers/tostify";
 import Paginator from "../../../../components/Pagination/Paginator";
+import { DebounceInput } from "react-debounce-input";
+import CreateUser from "./create/CreateUser";
+import CreateBulk from "./create/CreateBulk";
 
 const tableRowNames = ["Username", "First Name", "Last Name", "Organization"];
 
@@ -16,68 +17,84 @@ const Users = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [userList, setUserList] = useState<UserModel[]>([]);
-  const [apiData, setApiData] = useState<UserModel[]>([]);
+  const [show, setShow] = useState(false);
+  const [openBulk, setOpenBulk] = useState(false);
+  const handleClose = () => {
+    setShow(false)
+    getUserList().then(res => {
+      setUserList(res.content);
+    })
+  };
+  const handleShow = (bulk: boolean) => {
+    setOpenBulk(bulk);
+    setShow(true);
+  };
 
   useEffect(() => {
-    getUserList().then((res) => {
-      if (res.content !== undefined) {
+    getUserList()
+      .then((res) => {
         setUserList(res.content);
-        setApiData(res.content);
-      }
-    }).catch(error => {
-      dispatch(showError(error.response !== undefined ? error.response.data.message : null));
-    }).finally(() => {
-      dispatch(showError(false));
-    })
+      })
+      .catch((error) => {
+        dispatch(
+          showError(
+            error.response !== undefined ? error.response.data.message : null
+          )
+        );
+      })
+      .finally(() => {
+        dispatch(showError(false));
+      });
   }, [dispatch]);
 
   const filterData = (e: any) => {
-    const flitered = apiData.filter((el) => {
-      return el.userName.toLowerCase().includes(e.target.value.toLowerCase());
+    getUserList(e.target.value).then((res) => {
+      setUserList(res.content);
     });
-    setUserList([...flitered]);
   };
 
   const openUserById = (id: string) => {
     navigate("user/edit/" + id);
   };
+
   return (
     <>
       <Row className="my-4">
-        <Col>
+        <Col sm={4} md={6}>
           <h2>Users ({userList.length})</h2>
         </Col>
-        <Col>
-          <Link
-            className="btn btn-primary float-end w-25"
-            role="button"
-            to={USER_MANAGEMENT_USER_CREATE}
+        <Col sm={8} md={6}>
+          <Button
+            className="btn btn-primary float-sm-end"
+            onClick={() => handleShow(false)}
           >
             Create
-          </Link>
-          <Link
-            className="btn btn-primary me-2 w-25 float-end"
+          </Button>
+          <Button
+            className="btn btn-primary mx-2 float-sm-end"
             role="button"
-            to={USER_MANAGEMENT_USER_CREATE + '/bulk'}
+            onClick={() => handleShow(true)}
           >
             Bulk import
-          </Link>
+          </Button>
         </Col>
       </Row>
-      <input
-        className="form-control w-25"
+      <Col sm={12} md={4}>
+      <DebounceInput
+        className="form-control"
         placeholder="Search"
-        onChange={(e) => {
-          filterData(e);
-        }}
+        debounceTimeout={800}
+        onChange={(e) => filterData(e)}
       />
+      </Col>
       <hr className="my-4" />
       <UsersTable
         head={tableRowNames}
         rows={userList}
         clickHandler={openUserById}
       />
-      <Paginator/>
+      <Paginator />
+      {openBulk ? <CreateBulk show={show} handleClose={handleClose} /> : <CreateUser show={show} handleClose={handleClose} />}
     </>
   );
 };
