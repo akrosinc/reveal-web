@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { useNavigate } from "react-router";
 import UsersTable from "../../../../components/Table/UsersTable";
 import { UserModel } from "../../../user/providers/types";
 import { getUserList } from "../../../user/api";
@@ -10,30 +9,39 @@ import Paginator from "../../../../components/Pagination/Paginator";
 import { DebounceInput } from "react-debounce-input";
 import CreateUser from "./create/CreateUser";
 import CreateBulk from "./create/CreateBulk";
+import EditUser from "./edit/EditUser";
+import { PageableModel } from "../../../../api/sharedModel";
+import { showLoader } from "../../../reducers/loader";
+import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
 
 const tableRowNames = ["Username", "First Name", "Last Name", "Organization"];
 
 const Users = () => {
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const [userList, setUserList] = useState<UserModel[]>([]);
+  const [userList, setUserList] = useState<PageableModel<UserModel>>();
   const [show, setShow] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [openBulk, setOpenBulk] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const handleClose = () => {
-    setShow(false)
-    getUserList().then(res => {
-      setUserList(res.content);
-    })
+    setShow(false);
+    setShowEdit(false);
+    getUserList(PAGINATION_DEFAULT_SIZE, 0).then((res) => {
+      setUserList(res);
+    });
   };
   const handleShow = (bulk: boolean) => {
     setOpenBulk(bulk);
     setShow(true);
   };
 
-  useEffect(() => {
-    getUserList()
+  const loadData = useCallback(
+    (size: number, page: number, searchData?: string) => {
+      dispatch(showLoader(true));
+      getUserList(size, page, searchData !== undefined ? searchData : searchInput)
       .then((res) => {
-        setUserList(res.content);
+        setUserList(res);
       })
       .catch((error) => {
         dispatch(
@@ -43,58 +51,77 @@ const Users = () => {
         );
       })
       .finally(() => {
-        dispatch(showError(false));
+        dispatch(showLoader(false));
       });
-  }, [dispatch]);
+    },
+    [dispatch, searchInput]
+  );
+
+  useEffect(() => {
+    loadData(PAGINATION_DEFAULT_SIZE, 0);
+  }, [loadData]);
 
   const filterData = (e: any) => {
-    getUserList(e.target.value).then((res) => {
-      setUserList(res.content);
-    });
+    setSearchInput(e.target.value);
+    loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
+  };
+
+  const paginatonHandler = (size: number, page: number) => {
+    loadData(size, page);
   };
 
   const openUserById = (id: string) => {
-    navigate("user/edit/" + id);
+    setUserId(id);
+    setShowEdit(true)
   };
 
   return (
     <>
+      <h2>Users ({userList?.totalElements})</h2>
       <Row className="my-4">
-        <Col sm={4} md={6}>
-          <h2>Users ({userList.length})</h2>
-        </Col>
-        <Col sm={8} md={6}>
+        <Col md={8} className="mb-2">
           <Button
-            className="btn btn-primary float-sm-end"
+            className="btn btn-primary float-end"
             onClick={() => handleShow(false)}
           >
             Create
           </Button>
           <Button
-            className="btn btn-primary mx-2 float-sm-end"
+            className="btn btn-primary mx-2 float-end"
             role="button"
             onClick={() => handleShow(true)}
           >
             Bulk import
           </Button>
         </Col>
+        <Col sm={12} md={4} className="order-md-first">
+          <DebounceInput
+            className="form-control"
+            placeholder="Search"
+            debounceTimeout={800}
+            onChange={(e) => filterData(e)}
+          />
+        </Col>
       </Row>
-      <Col sm={12} md={4}>
-      <DebounceInput
-        className="form-control"
-        placeholder="Search"
-        debounceTimeout={800}
-        onChange={(e) => filterData(e)}
-      />
-      </Col>
       <hr className="my-4" />
       <UsersTable
         head={tableRowNames}
-        rows={userList}
+        rows={userList?.content ?? []}
         clickHandler={openUserById}
       />
-      <Paginator />
-      {openBulk ? <CreateBulk show={show} handleClose={handleClose} /> : <CreateUser show={show} handleClose={handleClose} />}
+      <Paginator
+        totalElements={userList?.totalElements ?? 0}
+        page={userList?.pageable.pageNumber ?? 1}
+        size={userList?.size ?? 5}
+        totalPages={userList?.totalPages ?? 1}
+        paginationHandler={paginatonHandler}
+      />
+      {openBulk ? (
+        <CreateBulk show={show} handleClose={handleClose} />
+      ) : (
+        <CreateUser show={show} handleClose={handleClose} />
+      )}
+      {showEdit && <EditUser show={showEdit} handleClose={handleClose} userId={userId} isEditable={false} />}
     </>
   );
 };

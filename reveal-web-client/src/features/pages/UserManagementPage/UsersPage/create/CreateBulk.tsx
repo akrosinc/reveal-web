@@ -4,16 +4,17 @@ import { useForm } from "react-hook-form";
 import { showError, showInfo } from "../../../../reducers/tostify";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { showLoader } from "../../../../reducers/loader";
+import axios from "../../../../../api/axios";
 
 interface RegisterValues {
-  username: string;
-  firstname: string;
-  lastname: string;
-  email: string;
-  password: string;
-  securityGroups: string[];
-  organizations: string[];
   bulk: File[];
+}
+
+interface Groups {
+  id: string;
+  name: string;
+  path: string;
+  subgroups: Groups[];
 }
 
 interface Props {
@@ -55,6 +56,24 @@ const CreateBulk = ({ show, handleClose }: Props) => {
     }
   };
 
+  const downloadSecurityGroups = () => {
+    axios
+      .get<Groups[]>(
+        "https://sso-ops.akros.online/auth/admin/realms/reveal/groups"
+      )
+      .then((res) => {
+        console.log(res.data);
+        let csvContent =
+          "data:text/csv;charset=utf-8," + res.data.map((group) => group.name);
+        var encodedUri = encodeURI(csvContent);
+        var link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "security_groups.csv");
+        document.body.appendChild(link);
+        link.click();
+      });
+  };
+
   return (
     <Modal
       show={show}
@@ -62,7 +81,6 @@ const CreateBulk = ({ show, handleClose }: Props) => {
       backdrop="static"
       keyboard={false}
       centered
-      fullscreen="sm-down"
     >
       <Modal.Header closeButton>
         <Modal.Title>{"Bulk user import"}</Modal.Title>
@@ -87,6 +105,10 @@ const CreateBulk = ({ show, handleClose }: Props) => {
             <a href="/SampleCSVFile.csv" download>
               here
             </a>
+          </p>
+          <p>
+            You can download security groups from{" "}
+            <Button variant="link" className="pb-1 p-0" onClick={() => downloadSecurityGroups()}>here</Button>
           </p>
         </Modal.Body>
         <Modal.Footer>

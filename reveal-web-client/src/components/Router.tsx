@@ -3,7 +3,6 @@ import { Navigate } from "react-router-dom";
 import {
   HOME_PAGE,
   USER_MANAGEMENT,
-  USER_MANAGEMENT_USER_EDIT,
   USER_MANAGEMENT_ORGANIZATION_DETAILS,
   PLANS
 } from "../constants/";
@@ -11,7 +10,6 @@ import Home from "../features/pages/HomePage/Home";
 import Plans from "../features/pages/PlansPage/Plans";
 import UserManagement from "../features/pages/UserManagementPage/UserManagement";
 import OrganizationDetails from "../features/pages/UserManagementPage/OrganizationPage/details/OrganizationDetails";
-import EditUser from "../features/pages/UserManagementPage/UsersPage/edit/Edit";
 import { Spinner } from "react-bootstrap";
 import { useKeycloak } from "@react-keycloak/web";
 import AuthGuard from "./AuthGuard";
@@ -42,7 +40,6 @@ export default function Router() {
             path={USER_MANAGEMENT_ORGANIZATION_DETAILS}
             element={<OrganizationDetails />}
           />
-          <Route path={USER_MANAGEMENT_USER_EDIT} element={<EditUser />} />
         </Routes>
       );
     } else {

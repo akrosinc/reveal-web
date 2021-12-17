@@ -16,7 +16,7 @@ export interface CreateUserModel {
   userName: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email: string | null;
   password: string;
   tempPassword?: boolean;
   organizations?: string[];

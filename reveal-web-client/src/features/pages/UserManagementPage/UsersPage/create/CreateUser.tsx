@@ -102,7 +102,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
     dispatch(showLoader(true));
     let newUser: CreateUserModel = {
       userName: formValues.username,
-      email: formValues.email,
+      email: formValues.email === "" ? null : formValues.email,
       firstName: formValues.firstname,
       lastName: formValues.lastname,
       organizations: selectedOrganizations?.map((el) => el.value) ?? [],
@@ -119,6 +119,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
         handleClose();
       })
       .catch((error) => {
+        console.log(error.response);
         dispatch(showError(error.response.data.message));
       })
       .finally(() => {
@@ -135,14 +136,13 @@ const CreateUser = ({ show, handleClose }: Props) => {
       centered
       size="lg"
       scrollable
-      fullscreen="sm-down"
     >
       <Modal.Header closeButton>
         <Modal.Title>Create user</Modal.Title>
       </Modal.Header>
         <Modal.Body>
         <Form>
-          <Form.Group className="mb-3" controlId="username">
+          <Form.Group className="mb-3">
             <Form.Label>Username</Form.Label>
             <Form.Control
               {...register("username", { required: true })}
@@ -156,7 +156,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             )}
           </Form.Group>
 
-          <Form.Group className="mb-3" controlId="firstname">
+          <Form.Group className="mb-3">
             <Form.Label>First name</Form.Label>
             <Form.Control
               {...register("firstname", { required: true })}
@@ -170,7 +170,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             )}
           </Form.Group>
 
-          <Form.Group className="mb-3" controlId="formGridAddress1">
+          <Form.Group className="mb-3">
             <Form.Label>Last name</Form.Label>
             <Form.Control
               {...register("lastname", { required: true })}
@@ -184,10 +184,10 @@ const CreateUser = ({ show, handleClose }: Props) => {
             )}
           </Form.Group>
 
-          <Form.Group className="mb-3" controlId="formGridAddress2">
+          <Form.Group className="mb-3">
             <Form.Label>Email</Form.Label>
             <Form.Control
-              {...register("email", { required: true })}
+              {...register("email", { required: false })}
               type="email"
               placeholder="Enter Email"
             />
@@ -197,7 +197,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
               </Form.Label>
             )}
           </Form.Group>
-          <Form.Group className="mb-3" controlId="formGridCity">
+          <Form.Group className="mb-3">
             <Form.Label>Password</Form.Label>
             <Form.Control
               {...register("password", { required: true })}
@@ -210,7 +210,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             )}
           </Form.Group>
 
-          <Form.Group className="mb-3" controlId="formGridState">
+          <Form.Group className="mb-3">
             <Form.Label>Security groups</Form.Label>
             <Select
               isMulti
@@ -220,7 +220,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             />
           </Form.Group>
 
-          <Form.Group className="mb-3" controlId="formGridState">
+          <Form.Group className="mb-3">
             <Form.Label>Organization</Form.Label>
             <Select
               isMulti
