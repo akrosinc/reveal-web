@@ -185,6 +185,19 @@ const CreateUser = ({ show, handleClose }: Props) => {
           </Form.Group>
 
           <Form.Group className="mb-3">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              {...register("password", { required: true })}
+              type="password"
+            />
+            {errors.password && (
+              <Form.Label className="text-danger">
+                Password must not be empty.
+              </Form.Label>
+            )}
+          </Form.Group>
+
+          <Form.Group className="mb-3">
             <Form.Label>Email</Form.Label>
             <Form.Control
               {...register("email", { required: false })}
@@ -194,18 +207,6 @@ const CreateUser = ({ show, handleClose }: Props) => {
             {errors.email && (
               <Form.Label className="text-danger">
                 Please enter a valid email.
-              </Form.Label>
-            )}
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              {...register("password", { required: true })}
-              type="password"
-            />
-            {errors.password && (
-              <Form.Label className="text-danger">
-                Password must not be empty.
               </Form.Label>
             )}
           </Form.Group>

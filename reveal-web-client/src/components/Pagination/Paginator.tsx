@@ -13,7 +13,7 @@ const Paginator = ({ totalElements, totalPages, size, page, paginationHandler }:
   let items = [];
   for (let number = 0; number <= totalPages - 1; number++) {
     items.push(
-      <Pagination.Item key={number} active={number === page} onClick={() => paginationHandler(size, number)}>
+      <Pagination.Item key={number} active={number === page} onClick={() => number !== page ? paginationHandler(size, number) : null}>
         {number + 1}
       </Pagination.Item>
     );

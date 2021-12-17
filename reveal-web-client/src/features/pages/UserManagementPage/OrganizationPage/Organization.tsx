@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Col, Row, Button } from "react-bootstrap";
-import { useNavigate } from "react-router";
 import {
   getOrganizationCount,
   getOrganizationList,
@@ -22,15 +21,16 @@ const Organization = () => {
   const [organizationList, setOrganizationList] =
     useState<PageableModel<OrganizationModel>>();
   const [show, setShow] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [organizationCount, setorganizationCount] = useState(0);
   const [searchInput, setSearchInput] = useState("");
   const handleClose = () => {
     setShow(false);
+    setShowDetails(false);
     loadData(PAGINATION_DEFAULT_SIZE, 0);
   };
   const handleShow = () => setShow(true);
 
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
   const loadData = useCallback(
@@ -71,10 +71,8 @@ const Organization = () => {
   };
 
 
-  const openOrganizationById = (id?: string) => {
-    if (id !== undefined) {
-      navigate("organization/" + id);
-    }
+  const openOrganizationById = (id: string) => {
+    setShowDetails(true);
   };
 
   return (
@@ -111,6 +109,7 @@ const Organization = () => {
         paginationHandler={paginatonHandler}
       />
       {show && <CreateOrganization handleClose={handleClose} show={show} />}
+      {showDetails && <CreateOrganization handleClose={handleClose} show={showDetails} />}
     </>
   );
 };
