@@ -1,5 +1,6 @@
 import React from 'react';
-import { Table } from 'react-bootstrap';
+import { Button, Table } from 'react-bootstrap';
+import { BsPencilSquare, BsTrashFill } from 'react-icons/bs';
 import { UserModel } from '../../features/user/providers/types';
 
 interface Props {
@@ -17,6 +18,7 @@ const UsersTable = ({head, rows, clickHandler}: Props) => {
             {head.map((el, index) => {
                 return <th key={index}>{el}</th>
             })}
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -30,6 +32,17 @@ const UsersTable = ({head, rows, clickHandler}: Props) => {
                   <td>{user.firstName}</td>
                   <td>{user.lastName}</td>
                   <td>{user.organizations.map(el => el.name).sort().toString()}</td>
+                  <td className="text-center"><Button onClick={(e) => {
+                    e.stopPropagation();
+                    console.log(user.identifier)
+                  }}><BsTrashFill /></Button>
+                  <Button className='ms-2' onClick={(e) => {
+                    e.stopPropagation();
+                    if (clickHandler !== undefined) {
+                      clickHandler(user.identifier);
+                    }
+                  }}><BsPencilSquare /></Button>
+                  </td>
               </tr>
           }) : null}
         </tbody>

@@ -13,9 +13,11 @@ interface Props {
 
 const EditUser = ({ show, userId, handleClose, isEditable }: Props) => {
   const [user, setUser] = useState<UserModel>();
+  const [edit, setEdit] = useState(false);
 
   useEffect(() => {
     const source = cancelTokenGenerator();
+    setEdit(isEditable);
     getUserById(userId, source.token).then((res) => {
       setUser(res);
     });
@@ -25,7 +27,7 @@ const EditUser = ({ show, userId, handleClose, isEditable }: Props) => {
         "Request is not done, request cancel. We don't need it anymore."
       );
     };
-  }, [userId]);
+  }, [userId, isEditable]);
 
   return (
     <Modal
@@ -43,7 +45,7 @@ const EditUser = ({ show, userId, handleClose, isEditable }: Props) => {
           <Form.Group className="mb-3">
             <Form.Label>Identifier</Form.Label>
             <Form.Control
-              readOnly={!isEditable}
+              readOnly={!edit}
               type="text"
               placeholder="Enter last name"
               defaultValue={user?.identifier}
@@ -54,7 +56,7 @@ const EditUser = ({ show, userId, handleClose, isEditable }: Props) => {
               <Form.Group className="mb-3">
                 <Form.Label>First name</Form.Label>
                 <Form.Control
-                  readOnly={!isEditable}
+                  readOnly={!edit}
                   type="text"
                   placeholder="Enter first name"
                   defaultValue={user?.firstName}
@@ -65,7 +67,7 @@ const EditUser = ({ show, userId, handleClose, isEditable }: Props) => {
               <Form.Group className="mb-3">
                 <Form.Label>Last name</Form.Label>
                 <Form.Control
-                  readOnly={!isEditable}
+                  readOnly={!edit}
                   type="text"
                   placeholder="Enter last name"
                   defaultValue={user?.lastName}
@@ -76,7 +78,7 @@ const EditUser = ({ show, userId, handleClose, isEditable }: Props) => {
           <Form.Group className="mb-3">
             <Form.Label>Email address</Form.Label>
             <Form.Control
-              readOnly={!isEditable}
+              readOnly={!edit}
               type="email"
               placeholder="Enter email"
               defaultValue={user?.email}
@@ -85,13 +87,13 @@ const EditUser = ({ show, userId, handleClose, isEditable }: Props) => {
           <Form.Group className="mb-3">
             <Form.Label>Username</Form.Label>
             <Form.Control
-              readOnly={!isEditable}
+              readOnly={!edit}
               type="username"
               placeholder="Enter last name"
               defaultValue={user?.userName}
             />
           </Form.Group>
-          {isEditable
+          {edit
             ? [
                 <Form.Group className="mb-3">
                   <Form.Label>Change password</Form.Label>
@@ -109,27 +111,36 @@ const EditUser = ({ show, userId, handleClose, isEditable }: Props) => {
               ]
             : null}
           <hr />
-          {isEditable ? (
-            [
+          {edit ? (
+            <>
               <Button className="float-end" variant="primary">
                 Save
-              </Button>,
-              <Button className="float-end me-2" variant="primary">
-                Cancel
-              </Button>,
-            ]
+              </Button>
+              <Button
+                className="float-end me-2 btn-secondary"
+                onClick={() => setEdit(!edit)}
+              >
+                Discard changes
+              </Button>
+            </>
           ) : (
-            <Button className="float-end" variant="primary">
-              Edit
-            </Button>
+            <>
+              <Button
+                className="float-end"
+                variant="primary"
+                onClick={() => setEdit(!edit)}
+              >
+                Edit
+              </Button>
+              <Button
+                className="float-start"
+                variant="secondary"
+                onClick={handleClose}
+              >
+                Close
+              </Button>
+            </>
           )}
-          <Button
-            className="float-start"
-            variant="secondary"
-            onClick={handleClose}
-          >
-            Close
-          </Button>
         </Form>
       </Modal.Body>
     </Modal>
