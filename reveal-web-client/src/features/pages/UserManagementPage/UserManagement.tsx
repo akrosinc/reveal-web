@@ -17,7 +17,7 @@ const UserManagement = () => {
         id="uncontrolled-tab-example"
         className="mb-3"
         mountOnEnter={true}
-        onSelect={(k) => navigate(USER_MANAGEMENT + "/" + k)}
+        onSelect={(tabName) => navigate(USER_MANAGEMENT + "/" + tabName)}
       >
         <Tab eventKey="organization" title="Organization">
           <Organization/>
