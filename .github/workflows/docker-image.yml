@@ -1,0 +1,58 @@
+name: Reveal Web test, build and deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: none
+
+jobs:
+
+  test:
+  
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          working-directory: ./reveal-web-client
+          cmd: install # will run `yarn install` command
+          
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          working-directory: ./reveal-web-client
+          cmd: build # will run `yarn build` command
+          
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          working-directory: ./reveal-web-client
+          cmd: test # will run `yarn test` command
+  
+
+  container:
+
+    runs-on: ubuntu-latest
+    needs: [test]
+
+    steps:
+
+    - name: Output Run Number
+      run: echo ${{ github.run_number }}
+
+    - name: Checkout the code
+      uses: actions/checkout@v2
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: akros
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: akrosinc/reveal-web:v3.0.${{ github.run_number }}
