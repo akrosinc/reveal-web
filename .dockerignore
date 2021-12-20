@@ -10,6 +10,7 @@
 **/dist
 **/node_modules
 **/npm-debug.log
+node_modules
 .dckerignore
 Dockerfile
 README.md
