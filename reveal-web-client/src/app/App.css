@@ -1,0 +1,10 @@
+.footer-row-container {
+  position: 'absolute';
+  bottom: '0';
+  line-height: 60px;
+  font-weight: bold;
+}
+
+main {
+  min-height: calc(100vh - 62px);
+}

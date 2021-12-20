@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`components/Table/NullDateTable renders completeReactivePlans correctly 1`] = `"ReactiveNameDate CompletedCase Notif. DateCase Class.    No Data Found"`;
-
-exports[`components/Table/NullDateTable renders completeRoutinePlans with no data correctly 1`] = `"RoutineNameStart DateEnd DateDate Completed    No Data Found"`;
-
-exports[`components/Table/NullDateTable renders currentReactivePlans correctly 1`] = `"ReactiveNameFI StatusCase Notif. DateCase Class.    No Data Found"`;
-
-exports[`components/Table/NullDateTable renders currentRoutinePlans with no data correctly 1`] = `"RoutineNameFI StatusProvinceDistrictCantonVillageFocus AreaStatusStart DateEnd DateActions           No Data Found"`;
