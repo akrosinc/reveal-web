@@ -1,6 +1,6 @@
 FROM node:16.5.0-alpine as build
 
-COPY reveal-web-client /project
+COPY . /project
 
 WORKDIR /project
 ENV PATH /project/node_modules/.bin:$PATH
