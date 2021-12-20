@@ -93,23 +93,23 @@ const EditUser = ({ show, userId, handleClose, isEditable }: Props) => {
               defaultValue={user?.userName}
             />
           </Form.Group>
-          {edit
-            ? [
-                <Form.Group className="mb-3">
-                  <Form.Label>Change password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    placeholder="Enter new password"
-                  />
-                </Form.Group>,
-                <Form.Group className="mb-3 d-flex">
-                  <Form.Label>
-                    Request user to change password after first login?
-                  </Form.Label>
-                  <Form.Check className="ms-2" type="checkbox" />
-                </Form.Group>,
-              ]
-            : null}
+          {edit ? (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Label>Change password</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Enter new password"
+                />
+              </Form.Group>
+              <Form.Group className="mb-3 d-flex">
+                <Form.Label>
+                  Request user to change password after first login?
+                </Form.Label>
+                <Form.Check className="ms-2" type="checkbox" />
+              </Form.Group>
+            </>
+          ) : null}
           <hr />
           {edit ? (
             <>

@@ -8,6 +8,7 @@ import { BrowserRouter } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 import keycloak from "./keycloak";
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 const eventLogger = (event: unknown, error: unknown) => {
   console.log("onKeycloakEvent", event, error);
