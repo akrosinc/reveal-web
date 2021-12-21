@@ -14,6 +14,8 @@ import { showError } from "../../../reducers/tostify";
 import CreateOrganization from "./create/CreateOrganization";
 import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
 import { DebounceInput } from "react-debounce-input";
+import ActionDialog from "../../../../components/dialogs/ActionDialog";
+import EditOrganization from "./edit/EditOrganization";
 
 const columns = ["Name", "Type", "Active"];
 
@@ -24,6 +26,7 @@ const Organization = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [organizationCount, setorganizationCount] = useState(0);
   const [searchInput, setSearchInput] = useState("");
+  const [selectedOrganizaton, setSelectedOrganization] = useState("");
   const handleClose = () => {
     setShow(false);
     setShowDetails(false);
@@ -36,20 +39,20 @@ const Organization = () => {
   const loadData = useCallback(
     (size: number, page: number, searchData?: string) => {
       dispatch(showLoader(true));
-      getOrganizationList(size, page, searchData !== undefined ? searchData : searchInput)
-        .then((res) => {
-          setOrganizationList(res);
-        })
-        .catch((error) => {
+      getOrganizationList(
+        size,
+        page,
+        searchData !== undefined ? searchData : searchInput
+      )
+        .then((data) => setOrganizationList(data))
+        .catch((error) =>
           dispatch(
             showError(
               error.response !== undefined ? error.response.data.message : null
             )
-          );
-        })
-        .finally(() => {
-          dispatch(showLoader(false));
-        });
+          )
+        )
+        .finally(() => dispatch(showLoader(false)));
     },
     [dispatch, searchInput]
   );
@@ -70,9 +73,9 @@ const Organization = () => {
     loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
 
-
   const openOrganizationById = (id: string) => {
     setShowDetails(true);
+    setSelectedOrganization(id);
   };
 
   return (
@@ -101,15 +104,30 @@ const Organization = () => {
           head={columns}
         />
       </div>
-      <Paginator
-        totalPages={organizationList?.totalPages ?? 1}
-        totalElements={organizationList?.totalElements ?? 0}
-        page={organizationList?.pageable.pageNumber ?? 1}
-        size={organizationList?.size ?? 10}
-        paginationHandler={paginatonHandler}
-      />
+      {organizationList !== undefined && organizationList.content.length > 0 ? (
+        <Paginator
+          totalPages={organizationList.totalPages}
+          totalElements={organizationList.totalElements}
+          page={organizationList.pageable.pageNumber}
+          size={organizationList.size}
+          paginationHandler={paginatonHandler}
+        />
+      ) : null}
       {show && <CreateOrganization handleClose={handleClose} show={show} />}
-      {showDetails && <CreateOrganization handleClose={handleClose} show={showDetails} />}
+      {showDetails && (
+        <ActionDialog
+          backdrop={true}
+          closeHandler={handleClose}
+          element={
+            <EditOrganization
+              organizationId={selectedOrganizaton}
+              handleClose={handleClose}
+              show={true}
+            />
+          }
+          title="Organization details"
+        />
+      )}
     </>
   );
 };

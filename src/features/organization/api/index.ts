@@ -1,7 +1,8 @@
 import axios, { controller } from "../../../api/axios";
-import { OrganizationModel } from "../providers/types";
+import { OrganizationModel, Groups } from "../providers/types";
 import { PageableModel } from '../../../api/sharedModel';
-import { ORGANIZATION } from "../../../constants";
+import { KEYCLOAK_SECURITY_GROUPS, ORGANIZATION } from "../../../constants";
+import { CancelToken } from "axios";
 
 export const getOrganizationList = async (size: number, page: number, search?: string): Promise<PageableModel<OrganizationModel>> => {
   const data = await axios
@@ -33,9 +34,11 @@ export const getAllOrganizations = async (): Promise<PageableModel<OrganizationM
   return data;
 };
 
-export const getOrganizationById = async (id: string): Promise<OrganizationModel> => {
+export const getOrganizationById = async (id: string, cancelToken: CancelToken): Promise<OrganizationModel> => {
   const data = await axios
-    .get<OrganizationModel>(ORGANIZATION + `/${id}`)
+    .get<OrganizationModel>(ORGANIZATION + `/${id}`, {
+      cancelToken: cancelToken
+    })
     .then((response) => response.data);
   return data;
 };
@@ -61,3 +64,10 @@ export const deleteOrganizationById = async (id: string): Promise<OrganizationMo
     .then((response) => response.data);
   return data;
 };
+
+export const getSecurityGroups = async (): Promise<Groups[]> => {
+  const data = await axios
+  .get<Groups[]>(KEYCLOAK_SECURITY_GROUPS)
+  .then((response) => response.data);
+  return data;
+}

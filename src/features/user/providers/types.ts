@@ -22,3 +22,14 @@ export interface CreateUserModel {
   organizations?: string[];
   securityGroups: string[];
 }
+
+export interface EditUserModel {
+  identifier: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  password?: string;
+  tempPassword?: boolean;
+  organizations?: string[];
+  securityGroups: string[];
+}

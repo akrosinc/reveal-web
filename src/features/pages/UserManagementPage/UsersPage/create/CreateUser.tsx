@@ -67,16 +67,16 @@ const CreateUser = ({ show, handleClose }: Props) => {
             };
           })
         );
-        getAllOrganizations().then((res) => {
-          setOrganizations(
-            res.content.map((el) => {
-              return {
-                value: el.identifier,
-                label: el.name,
-              };
-            })
-          );
-        });
+      });
+      getAllOrganizations().then((res) => {
+        setOrganizations(
+          res.content.map((el) => {
+            return {
+              value: el.identifier,
+              label: el.name,
+            };
+          })
+        );
       });
   }, []);
 

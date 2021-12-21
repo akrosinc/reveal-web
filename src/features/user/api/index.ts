@@ -2,7 +2,7 @@ import axios, { CancelToken } from "axios";
 import api from "../../../api/axios";
 import { PageableModel } from "../../../api/sharedModel";
 import { USER } from "../../../constants";
-import { CreateUserModel, UserModel } from "../providers/types";
+import { CreateUserModel, EditUserModel, UserModel } from "../providers/types";
 
 export const getUserList = async (size: number, page: number, search?: string,): Promise<PageableModel<UserModel>> => {
   const data = await api
@@ -33,7 +33,7 @@ export const createUser = async (user: CreateUserModel): Promise<UserModel> => {
   return data;
 };
 
-export const updateUser = async (user: UserModel): Promise<UserModel> => {
+export const updateUser = async (user: EditUserModel): Promise<UserModel> => {
   const data = await api
     .put<UserModel>(USER + `/${user.identifier}`, user)
     .then((response) => response.data);

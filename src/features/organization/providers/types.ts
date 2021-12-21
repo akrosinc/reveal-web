@@ -21,3 +21,10 @@ export enum Code {
   Cg = "CG",
   Other = "OTHER",
 }
+
+export interface Groups {
+  id: string;
+  name: string;
+  path: string;
+  subgroups: Groups[];
+}
