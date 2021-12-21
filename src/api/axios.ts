@@ -28,10 +28,8 @@ api.interceptors.response.use(
     if (error.response !== undefined && error.response.status === 401) {
       keycloak.logout();
     }
-    return Promise.reject(error);
+    return Promise.reject(error.response.data !== undefined ? error.response.data : error);
   }
 );
-
-export const controller = new AbortController();
 
 export default api;

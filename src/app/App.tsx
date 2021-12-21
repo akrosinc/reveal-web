@@ -6,9 +6,8 @@ import { useKeycloak } from "@react-keycloak/web";
 import { useEffect } from "react";
 import { useAppDispatch } from "../store/hooks";
 import { login } from "../features/reducers/user";
-import { showInfo } from "../features/reducers/tostify";
 import { Container } from "react-bootstrap";
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import Loader from '../components/Layout/Loader';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -27,7 +26,7 @@ function App() {
           realmAccess: keycloak.resourceAccess
         }
         dispatch(login(userDetails));
-        dispatch(showInfo("Welcome back " + userDetails.preferred_username))
+        toast.success("Welcome back " + userDetails.preferred_username)
       });
     }
   });
@@ -41,7 +40,7 @@ function App() {
       <Container fluid={true} className="footer-row-container">
       <Footer />
       </Container>
-      <ToastContainer position="bottom-right"/>
+      <ToastContainer position={toast.POSITION.BOTTOM_RIGHT}/>
       <Loader />
     </Container>
   );

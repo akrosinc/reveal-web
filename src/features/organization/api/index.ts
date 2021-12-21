@@ -1,4 +1,4 @@
-import axios, { controller } from "../../../api/axios";
+import axios from "../../../api/axios";
 import { OrganizationModel, Groups } from "../providers/types";
 import { PageableModel } from '../../../api/sharedModel';
 import { KEYCLOAK_SECURITY_GROUPS, ORGANIZATION } from "../../../constants";
@@ -20,9 +20,7 @@ export const getOrganizationCount = async (): Promise<{count: number}> => {
 
 export const getOrganizationListSummary = async (): Promise<PageableModel<OrganizationModel>> => {
   const data = await axios
-    .get<PageableModel<OrganizationModel>>(ORGANIZATION + "?_summary=TRUE&root=false", {
-      signal: controller.signal
-    })
+    .get<PageableModel<OrganizationModel>>(ORGANIZATION + "?_summary=TRUE&root=false")
     .then((response) => response.data);
   return data;
 };

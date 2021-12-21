@@ -10,12 +10,13 @@ import { PageableModel } from "../../../../api/sharedModel";
 import Paginator from "../../../../components/Pagination/Paginator";
 import { useAppDispatch } from "../../../../store/hooks";
 import { showLoader } from "../../../reducers/loader";
-import { showError } from "../../../reducers/tostify";
 import CreateOrganization from "./create/CreateOrganization";
 import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
 import { DebounceInput } from "react-debounce-input";
 import ActionDialog from "../../../../components/dialogs/ActionDialog";
 import EditOrganization from "./edit/EditOrganization";
+import { toast } from "react-toastify";
+import { ErrorModel } from "../../../../api/ErrorModel";
 
 const columns = ["Name", "Type", "Active"];
 
@@ -45,13 +46,7 @@ const Organization = () => {
         searchData !== undefined ? searchData : searchInput
       )
         .then((data) => setOrganizationList(data))
-        .catch((error) =>
-          dispatch(
-            showError(
-              error.response !== undefined ? error.response.data.message : null
-            )
-          )
-        )
+        .catch((error: ErrorModel) => toast.error(error.data.message))
         .finally(() => dispatch(showLoader(false)));
     },
     [dispatch, searchInput]

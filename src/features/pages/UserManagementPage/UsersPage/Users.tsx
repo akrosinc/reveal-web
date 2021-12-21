@@ -4,7 +4,6 @@ import UsersTable from "../../../../components/Table/UsersTable";
 import { UserModel } from "../../../user/providers/types";
 import { getUserList } from "../../../user/api";
 import { useAppDispatch } from "../../../../store/hooks";
-import { showError } from "../../../reducers/tostify";
 import Paginator from "../../../../components/Pagination/Paginator";
 import { DebounceInput } from "react-debounce-input";
 import CreateUser from "./create/CreateUser";
@@ -14,6 +13,7 @@ import ActionDialog from "../../../../components/dialogs/ActionDialog";
 import { PageableModel } from "../../../../api/sharedModel";
 import { showLoader } from "../../../reducers/loader";
 import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
+import { toast } from "react-toastify";
 
 const tableRowNames = ["Username", "First Name", "Last Name", "Organization"];
 
@@ -49,11 +49,7 @@ const Users = () => {
           setUserList(res);
         })
         .catch((error) => {
-          dispatch(
-            showError(
-              error.response !== undefined ? error.response.data.message : null
-            )
-          );
+          toast.error(error.response.data.message);
         })
         .finally(() => {
           dispatch(showLoader(false));
@@ -123,11 +119,12 @@ const Users = () => {
           paginationHandler={paginatonHandler}
         />
       ) : null}
-      {openBulk ? (
-        <CreateBulk show={show} handleClose={handleClose} />
-      ) : (
-        <CreateUser show={show} handleClose={handleClose} />
-      )}
+      {show &&
+        (openBulk ? (
+          <CreateBulk show={show} handleClose={handleClose} />
+        ) : (
+          <CreateUser show={show} handleClose={handleClose} />
+        ))}
       {showEdit && (
         <ActionDialog
           backdrop={true}
