@@ -9,7 +9,8 @@ import { useAppDispatch } from "../../../../../store/hooks";
 import { useForm } from "react-hook-form";
 import Select, { MultiValue } from "react-select";
 import { getSecurityGroups } from "../../../../organization/api";
-import { showError } from "../../../../reducers/tostify";
+import { toast } from "react-toastify";
+import { ErrorModel } from "../../../../../api/ErrorModel";
 
 interface Props {
   userId: string;
@@ -45,7 +46,7 @@ const EditUser = ({ userId, handleClose, isEditable }: Props) => {
     register,
     setValue,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm();
   const [groups, setGroups] = useState<Options[]>();
   const [organizations, setOrganizations] = useState<Options[]>([]);
@@ -57,8 +58,8 @@ const EditUser = ({ userId, handleClose, isEditable }: Props) => {
         data.map((el) => {
           let opt: Options = {
             label: el.name,
-            value: el.name
-          }
+            value: el.name,
+          };
           return opt;
         })
       );
@@ -70,6 +71,7 @@ const EditUser = ({ userId, handleClose, isEditable }: Props) => {
       setValue("username", res.userName);
       setValue("firstname", res.firstName);
       setValue("lastname", res.lastName);
+      setValue("email", res.email);
       setSelectedSecurityGroups(
         res.securityGroups !== undefined
           ? res.securityGroups.map((group) => {
@@ -94,9 +96,22 @@ const EditUser = ({ userId, handleClose, isEditable }: Props) => {
     setShowDialog(false);
     if (action) {
       dispatch(showLoader(true));
-      deleteUserById(userId)
-        .then(() => handleClose())
-        .catch((error) => dispatch(showError(error.response.data.message)))
+      toast
+        .promise(deleteUserById(userId), {
+          pending: "Loading...",
+          success: {
+            render() {
+              handleClose();
+              return `User with id ${userId} deleted successfully`;
+            },
+          },
+          error: {
+            render({ data }: ErrorModel) {
+              console.log(data.statusCode);
+              return data.message;
+            },
+          },
+        })
         .finally(() => dispatch(showLoader(false)));
     }
   };
@@ -113,9 +128,26 @@ const EditUser = ({ userId, handleClose, isEditable }: Props) => {
       password: formValues.password,
       tempPassword: formValues.isTemp,
     };
-    updateUser(updatedUser)
-      .then((res) => console.log(res))
-      .catch((error) => dispatch(showError(error.response.data.message)))
+    toast
+      .promise(updateUser(updatedUser), {
+        pending: "Loading...",
+        success: {
+          render() {
+            setEdit(false);
+            return `User with id ${userId} updated successfully`;
+          },
+        },
+        error: {
+          render({ data }: ErrorModel) {
+            console.log(data.statusCode);
+            return data.fieldValidationErrors.map((err) => [
+              "Error on field " + err.field,
+              " - ",
+              err.messageKey,
+            ]);
+          },
+        },
+      })
       .finally(() => dispatch(showLoader(false)));
   };
 
@@ -249,6 +281,7 @@ const EditUser = ({ userId, handleClose, isEditable }: Props) => {
           <Button
             className="float-end"
             variant="primary"
+            disabled={!isDirty}
             onClick={handleSubmit(submitHandler)}
           >
             Save
@@ -271,7 +304,7 @@ const EditUser = ({ userId, handleClose, isEditable }: Props) => {
           </Button>
           <Button
             className="float-end me-2"
-            variant="danger"
+            variant="secondary"
             onClick={() => setShowDialog(!showDialog)}
           >
             Delete
@@ -288,7 +321,10 @@ const EditUser = ({ userId, handleClose, isEditable }: Props) => {
       {showDialog && (
         <ConfirmDialog
           closeHandler={deleteHandler}
-          message={"Are you sure you want to delete " + user?.userName}
+          message={
+            "Are you sure you want to permanently delete the user " +
+            user?.userName
+          }
           title="Delete user"
           backdrop={true}
         />
