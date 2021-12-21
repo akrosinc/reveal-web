@@ -10,6 +10,7 @@ import { DebounceInput } from "react-debounce-input";
 import CreateUser from "./create/CreateUser";
 import CreateBulk from "./create/CreateBulk";
 import EditUser from "./edit/EditUser";
+import ActionDialog from "../../../../components/dialogs/ActionDialog";
 import { PageableModel } from "../../../../api/sharedModel";
 import { showLoader } from "../../../reducers/loader";
 import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
@@ -39,20 +40,24 @@ const Users = () => {
   const loadData = useCallback(
     (size: number, page: number, searchData?: string) => {
       dispatch(showLoader(true));
-      getUserList(size, page, searchData !== undefined ? searchData : searchInput)
-      .then((res) => {
-        setUserList(res);
-      })
-      .catch((error) => {
-        dispatch(
-          showError(
-            error.response !== undefined ? error.response.data.message : null
-          )
-        );
-      })
-      .finally(() => {
-        dispatch(showLoader(false));
-      });
+      getUserList(
+        size,
+        page,
+        searchData !== undefined ? searchData : searchInput
+      )
+        .then((res) => {
+          setUserList(res);
+        })
+        .catch((error) => {
+          dispatch(
+            showError(
+              error.response !== undefined ? error.response.data.message : null
+            )
+          );
+        })
+        .finally(() => {
+          dispatch(showLoader(false));
+        });
     },
     [dispatch, searchInput]
   );
@@ -72,7 +77,7 @@ const Users = () => {
 
   const openUserById = (id: string) => {
     setUserId(id);
-    setShowEdit(true)
+    setShowEdit(true);
   };
 
   return (
@@ -109,19 +114,34 @@ const Users = () => {
         rows={userList?.content ?? []}
         clickHandler={openUserById}
       />
-      <Paginator
-        totalElements={userList?.totalElements ?? 0}
-        page={userList?.pageable.pageNumber ?? 1}
-        size={userList?.size ?? 5}
-        totalPages={userList?.totalPages ?? 1}
-        paginationHandler={paginatonHandler}
-      />
+      {userList !== undefined && userList.content.length > 0 ? (
+        <Paginator
+          totalElements={userList.totalElements}
+          page={userList.pageable.pageNumber}
+          size={userList.size}
+          totalPages={userList.totalPages}
+          paginationHandler={paginatonHandler}
+        />
+      ) : null}
       {openBulk ? (
         <CreateBulk show={show} handleClose={handleClose} />
       ) : (
         <CreateUser show={show} handleClose={handleClose} />
       )}
-      {showEdit && <EditUser show={showEdit} handleClose={handleClose} userId={userId} isEditable={false} />}
+      {showEdit && (
+        <ActionDialog
+          backdrop={true}
+          closeHandler={handleClose}
+          element={
+            <EditUser
+              handleClose={handleClose}
+              isEditable={false}
+              userId={userId}
+            />
+          }
+          title="User details"
+        />
+      )}
     </>
   );
 };

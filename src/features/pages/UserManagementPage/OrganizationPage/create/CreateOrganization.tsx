@@ -31,21 +31,15 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
   useEffect(() => {
     getOrganizationListSummary().then((res) => {
       setOrganizations(res.content);
-    });
-    return () => {
-      console.log("called");
-    }
-  }, []);
+    })}, []);
 
   const submitHandler = (formValues: RegisterValues) => {
     createOrganization(formValues).then(res => {
       dispatch(showInfo(res.name + " created successfully!"));
       handleClose();
-    }).catch(error => {
-      dispatch(showError(error.response !== undefined ? error.response.data.error || error.response.data.message : null));
-    }).finally(() => {
-      dispatch(showLoader(false));
     })
+    .catch(error => dispatch(showError(error.response !== undefined ? error.response.data.error || error.response.data.message : null)))
+    .finally(() => dispatch(showLoader(false)));
   }
 
   return (
