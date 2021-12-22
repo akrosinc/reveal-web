@@ -5,7 +5,9 @@ import { OrganizationModel } from "../../../../organization/providers/types";
 import { useForm } from "react-hook-form";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { showLoader } from "../../../../reducers/loader";
-import { showError, showInfo } from "../../../../reducers/tostify";
+import { toast } from "react-toastify";
+import { ErrorModel } from "../../../../../api/ErrorModel";
+import { UserModel } from "../../../../user/providers/types";
 
 interface Props {
   show: boolean;
@@ -34,12 +36,24 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
     })}, []);
 
   const submitHandler = (formValues: RegisterValues) => {
-    createOrganization(formValues).then(res => {
-      dispatch(showInfo(res.name + " created successfully!"));
-      handleClose();
+    dispatch(showLoader(true))
+    toast.promise(createOrganization(formValues), {
+      pending: 'Loading...',
+      success: {
+        render({ data }: any) {
+          let newUser = data as UserModel;
+          dispatch(showLoader(false))
+          handleClose();
+          return "Organization with id: " + newUser.identifier + " created successfully."
+        }
+      },
+      error: {
+        render({ data }: ErrorModel) {
+          dispatch(showLoader(false))
+          return data.message;
+        }
+      }
     })
-    .catch(error => dispatch(showError(error.response !== undefined ? error.response.data.error || error.response.data.message : null)))
-    .finally(() => dispatch(showLoader(false)));
   }
 
   return (

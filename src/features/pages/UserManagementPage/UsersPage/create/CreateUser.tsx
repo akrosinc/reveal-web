@@ -1,14 +1,19 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import Select, { MultiValue } from "react-select";
-import axios from "../../../../../api/axios";
 import { createUser } from "../../../../user/api";
-import { getAllOrganizations } from "../../../../organization/api";
+import {
+  getAllOrganizations,
+  getSecurityGroups,
+} from "../../../../organization/api";
 import { useForm } from "react-hook-form";
 import { CreateUserModel } from "../../../../user/providers/types";
-import { showError, showInfo } from "../../../../reducers/tostify";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { showLoader } from "../../../../reducers/loader";
+import { toast } from "react-toastify";
+import { ErrorModel } from "../../../../../api/ErrorModel";
+import { cancelTokenGenerator } from "../../../../../utils/cancelTokenGenerator";
+import { CancelToken } from "axios";
 
 interface RegisterValues {
   username: string;
@@ -19,13 +24,6 @@ interface RegisterValues {
   securityGroups: string[];
   organizations: string[];
   bulk: File[];
-}
-
-interface Groups {
-  id: string;
-  name: string;
-  path: string;
-  subgroups: Groups[];
 }
 
 interface Options {
@@ -53,32 +51,37 @@ const CreateUser = ({ show, handleClose }: Props) => {
   const [groups, setGroups] = useState<Options[]>();
   const [organizations, setOrganizations] = useState<Options[]>([]);
 
-  useEffect(() => {
-    axios
-      .get<Groups[]>(
-        "https://sso-ops.akros.online/auth/admin/realms/reveal/groups"
-      )
-      .then((res) => {
-        setGroups(
-          res.data.map((el) => {
-            return {
-              value: el.name,
-              label: el.name,
-            };
-          })
-        );
-      });
-      getAllOrganizations().then((res) => {
-        setOrganizations(
-          res.content.map((el) => {
-            return {
-              value: el.identifier,
-              label: el.name,
-            };
-          })
-        );
-      });
+  const getData = useCallback((cancelToken: CancelToken) => {
+    getSecurityGroups(cancelToken).then((res) => {
+      setGroups(
+        res.map((el) => {
+          return {
+            value: el.name,
+            label: el.name,
+          };
+        })
+      );
+    });
+    getAllOrganizations().then((res) => {
+      setOrganizations(
+        res.content.map((el) => {
+          return {
+            value: el.identifier,
+            label: el.name,
+          };
+        })
+      );
+    });
   }, []);
+
+  useEffect(() => {
+    const source = cancelTokenGenerator();
+    getData(source.token);
+    return () => {
+      //Slow networks can cause a memory leak, cancel a request if its not done if modal is closed
+      source.cancel("Preventing memory leak - canceling pending promises.");
+    };
+  }, [getData]);
 
   const selectHandler = (
     selectedOption: MultiValue<{ value: string; label: string }>
@@ -110,21 +113,25 @@ const CreateUser = ({ show, handleClose }: Props) => {
       password: formValues.password,
       tempPassword: false,
     };
-    createUser(newUser)
-      .then((res) => {
-        dispatch(showInfo("User created successfully!"));
-        reset();
-        setSelectedOrganizations([]);
-        setSelectedSecurityGroups([]);
-        handleClose();
-      })
-      .catch((error) => {
-        console.log(error.response);
-        dispatch(showError(error.response.data.message));
-      })
-      .finally(() => {
-        dispatch(showLoader(false));
-      });
+    toast.promise(createUser(newUser), {
+      pending: "Loading...",
+      success: {
+        render({ data }) {
+          reset();
+          setSelectedOrganizations([]);
+          setSelectedSecurityGroups([]);
+          dispatch(showLoader(false));
+          handleClose();
+          return "User created successfully!";
+        },
+      },
+      error: {
+        render({ data }: ErrorModel) {
+          dispatch(showLoader(false));
+          return data.message;
+        },
+      },
+    });
   };
 
   return (
@@ -140,7 +147,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
       <Modal.Header closeButton>
         <Modal.Title>Create user</Modal.Title>
       </Modal.Header>
-        <Modal.Body>
+      <Modal.Body>
         <Form>
           <Form.Group className="mb-3">
             <Form.Label>Username</Form.Label>
@@ -230,16 +237,16 @@ const CreateUser = ({ show, handleClose }: Props) => {
               onChange={organizationSelectHandler}
             />
           </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleSubmit(submitHandler)}>
-            Submit
-          </Button>
-        </Modal.Footer>
+        </Form>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={handleClose}>
+          Close
+        </Button>
+        <Button variant="primary" onClick={handleSubmit(submitHandler)}>
+          Submit
+        </Button>
+      </Modal.Footer>
     </Modal>
   );
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Form, Row, Col } from "react-bootstrap";
 import { deleteUserById, getUserById, updateUser } from "../../../../user/api";
 import { EditUserModel, UserModel } from "../../../../user/providers/types";
@@ -11,10 +11,10 @@ import Select, { MultiValue } from "react-select";
 import { getSecurityGroups } from "../../../../organization/api";
 import { toast } from "react-toastify";
 import { ErrorModel } from "../../../../../api/ErrorModel";
+import { CancelToken } from "axios";
 
 interface Props {
   userId: string;
-  isEditable: boolean;
   handleClose: () => void;
 }
 
@@ -34,7 +34,7 @@ interface Options {
   label: string;
 }
 
-const EditUser = ({ userId, handleClose, isEditable }: Props) => {
+const EditUser = ({ userId, handleClose }: Props) => {
   const [user, setUser] = useState<UserModel>();
   const [edit, setEdit] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
@@ -52,45 +52,58 @@ const EditUser = ({ userId, handleClose, isEditable }: Props) => {
   const [organizations, setOrganizations] = useState<Options[]>([]);
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    getSecurityGroups().then((data) => {
-      setGroups(
-        data.map((el) => {
-          let opt: Options = {
-            label: el.name,
-            value: el.name,
-          };
-          return opt;
-        })
-      );
-    });
-    const source = cancelTokenGenerator();
-    setEdit(isEditable);
-    getUserById(userId, source.token).then((res) => {
-      setUser(res);
-      setValue("username", res.userName);
-      setValue("firstname", res.firstName);
-      setValue("lastname", res.lastName);
-      setValue("email", res.email);
-      setSelectedSecurityGroups(
-        res.securityGroups !== undefined
-          ? res.securityGroups.map((group) => {
+  const setStartValues = useCallback(
+    (userDetails: UserModel) => {
+      setUser(userDetails);
+      setValue("username", userDetails.userName);
+      setValue("firstname", userDetails.firstName);
+      setValue("lastname", userDetails.lastName);
+      setValue("email", userDetails.email);
+    }, [setValue]);
+
+  const getData = useCallback(
+    (cancelToken: CancelToken) => {
+      getSecurityGroups(cancelToken)
+        .then((res) => {
+          console.log(res);
+          setGroups(
+            res.map((el) => {
               return {
-                label: group,
-                value: group,
+                label: el.name,
+                value: el.name,
               };
             })
-          : []
-      );
-      setOrganizations([]);
-    });
+          );
+        })
+        .catch((err) => console.log(err));
+      getUserById(userId, cancelToken)
+        .then((res) => {
+          setStartValues(res);
+          setSelectedSecurityGroups(
+            res.securityGroups !== undefined
+              ? res.securityGroups.map((group) => {
+                  return {
+                    label: group,
+                    value: group,
+                  };
+                })
+              : []
+          );
+          setOrganizations([]);
+        })
+        .catch((err) => console.log(err));
+    },
+    [userId, setStartValues]
+  );
+
+  useEffect(() => {
+    const source = cancelTokenGenerator();
+    getData(source.token);
     return () => {
       //Slow networks can cause a memory leak, cancel a request if its not done if modal is closed
-      source.cancel(
-        "Request is not done, request cancel. We don't need it anymore."
-      );
+      source.cancel("Preventing memory leak - canceling pending promises.");
     };
-  }, [userId, isEditable, setValue]);
+  }, [getData]);
 
   const deleteHandler = (action: boolean) => {
     setShowDialog(false);
@@ -101,18 +114,18 @@ const EditUser = ({ userId, handleClose, isEditable }: Props) => {
           pending: "Loading...",
           success: {
             render() {
+              dispatch(showLoader(false))
               handleClose();
               return `User with id ${userId} deleted successfully`;
             },
           },
           error: {
             render({ data }: ErrorModel) {
-              console.log(data.statusCode);
+              dispatch(showLoader(false))
               return data.message;
             },
           },
         })
-        .finally(() => dispatch(showLoader(false)));
     }
   };
 
