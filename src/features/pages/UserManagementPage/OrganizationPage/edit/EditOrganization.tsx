@@ -2,6 +2,8 @@ import { CancelTokenSource } from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
+import { ErrorModel } from "../../../../../api/ErrorModel";
 import ConfirmDialog from "../../../../../components/dialogs/ConfirmDialog";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { cancelTokenGenerator } from "../../../../../utils/cancelTokenGenerator";
@@ -12,7 +14,7 @@ import {
   updateOrganization,
 } from "../../../../organization/api";
 import { OrganizationModel } from "../../../../organization/providers/types";
-import { showError, showInfo } from "../../../../reducers/tostify";
+import { showLoader } from "../../../../reducers/loader";
 
 interface Props {
   show: boolean;
@@ -44,7 +46,8 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
           setOrganizations(res.content);
           setValue("partOf", data.partOf);
         });
-      });
+      })
+      .catch(err => console.log(err));
     },
     [organizationId, setValue]
   );
@@ -61,18 +64,43 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
   }, [getData]);
 
   const updateHandler = (formData: OrganizationModel) => {
+    dispatch(showLoader(true));
     formData.identifier = organizationId;
-    updateOrganization(formData);
+    toast.promise(updateOrganization(formData), {
+        pending: "Loading...",
+        success: {
+            render({ data }) {
+                dispatch(showLoader(false));
+                setEdit(false);
+                return `Organization with id ${organizationId} updated successfully.`;
+            }
+        },
+        error: {
+            render({ data }: ErrorModel) {
+                return data.message;
+            }
+        }
+    })
   };
 
   const deleteHandler = (action: boolean) => {
     if (action) {
-      deleteOrganizationById(organizationId)
-        .then((_) => {
-          handleClose();
-          dispatch(showInfo("Organization deleted successfully"));
+        dispatch(showLoader(true));
+        toast.promise(deleteOrganizationById(organizationId), {
+            pending: "Loading...",
+            success: {
+                render({ data }) {
+                    dispatch(showLoader(false));
+                    handleClose();
+                    return "Organization deleted successfully";
+                }
+            },
+            error: {
+                render({ data }: ErrorModel) {
+                    return data.message
+                }
+            }
         })
-        .catch((err) => dispatch(showError(err.response.data.message)));
     } else {
       setShowConfirmDialog(action);
     }

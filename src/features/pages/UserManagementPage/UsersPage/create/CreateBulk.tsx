@@ -1,20 +1,14 @@
 import { Button, Form, Modal } from "react-bootstrap";
 import { uploadUserCsv } from "../../../../user/api";
 import { useForm } from "react-hook-form";
-import { showError, showInfo } from "../../../../reducers/tostify";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { showLoader } from "../../../../reducers/loader";
-import axios from "../../../../../api/axios";
+import { getSecurityGroups } from "../../../../organization/api";
+import { toast } from "react-toastify";
+import { ErrorModel } from "../../../../../api/ErrorModel";
 
 interface RegisterValues {
   bulk: File[];
-}
-
-interface Groups {
-  id: string;
-  name: string;
-  path: string;
-  subgroups: Groups[];
 }
 
 interface Props {
@@ -38,40 +32,44 @@ const CreateBulk = ({ show, handleClose }: Props) => {
       dispatch(showLoader(true));
       const formData = new FormData();
       formData.append("File", csv);
-      uploadUserCsv(formData)
-        .then((res) => {
-          reset();
-          handleClose();
-          dispatch(showInfo("User created successfully!"));
-        })
-        .catch((error) => {
-          dispatch(showError(error.response.data.message));
-          setError("bulk", {});
-        })
-        .then(() => {
-          dispatch(showLoader(false));
-        });
+      toast.promise(uploadUserCsv(formData), {
+        pending: "CSV file is uploading...",
+        success: {
+          render({ data }) {
+            reset();
+            dispatch(showLoader(false));
+            handleClose();
+            return "CSV file uploaded successfully, you can track user creation progress in bulk import section."
+          }
+        },
+        error: {
+          render({ data }: ErrorModel) {
+            dispatch(showLoader(false));
+            setError("bulk", {}, {
+              shouldFocus: true
+            });
+            return data.message;
+          }
+        }
+      });
     } else {
       setError("bulk", {});
     }
   };
 
   const downloadSecurityGroups = () => {
-    axios
-      .get<Groups[]>(
-        "https://sso-ops.akros.online/auth/admin/realms/reveal/groups"
-      )
-      .then((res) => {
-        console.log(res.data);
+      dispatch(showLoader(true));
+      getSecurityGroups().then(res => {
         let csvContent =
-          "data:text/csv;charset=utf-8," + res.data.map((group) => group.name);
+          "data:text/csv;charset=utf-8," + res.map((group) => group.name);
         var encodedUri = encodeURI(csvContent);
         var link = document.createElement("a");
         link.setAttribute("href", encodedUri);
         link.setAttribute("download", "security_groups.csv");
         document.body.appendChild(link);
+        dispatch(showLoader(false));
         link.click();
-      });
+      })
   };
 
   return (

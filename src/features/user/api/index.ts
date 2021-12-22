@@ -1,4 +1,4 @@
-import axios, { CancelToken } from "axios";
+import { CancelToken } from "axios";
 import api from "../../../api/axios";
 import { PageableModel } from "../../../api/sharedModel";
 import { USER } from "../../../constants";
@@ -16,12 +16,7 @@ export const getUserById = async (id: string, cancelToken: CancelToken): Promise
     .get<UserModel>(USER + `/${id}`, {
       cancelToken: cancelToken
     })
-    .then((response) => response.data).catch(function (thrown) {
-      if (axios.isCancel(thrown)) {
-        console.log('Request canceled', thrown.message);
-      } else {
-        return thrown;
-      }});
+    .then((response) => response.data)
   return data;
 };
 

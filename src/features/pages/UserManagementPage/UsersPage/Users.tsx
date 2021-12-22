@@ -132,7 +132,6 @@ const Users = () => {
           element={
             <EditUser
               handleClose={handleClose}
-              isEditable={false}
               userId={userId}
             />
           }
