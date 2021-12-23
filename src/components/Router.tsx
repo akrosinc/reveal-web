@@ -4,7 +4,7 @@ import {
   HOME_PAGE,
   USER_MANAGEMENT,
   USER_MANAGEMENT_ORGANIZATION_DETAILS,
-  PLANS
+  PLANS,
 } from "../constants/";
 import Home from "../features/pages/HomePage/Home";
 import Plans from "../features/pages/PlansPage/Plans";
@@ -26,15 +26,15 @@ export default function Router() {
           <Route path="*" element={<ErrorPage />} />
           <Route path={HOME_PAGE} element={<Home />} />
           <Route path={PLANS} element={<Plans />} />
-          <Route path={USER_MANAGEMENT} element={<UserManagement />}>
-            <Route
-              path=":tab"
-              element={
-                <AuthGuard roles={["manage-users"]}>
-                  <UserManagement />
-                </AuthGuard>
-              }
-            />
+          <Route
+            path={USER_MANAGEMENT}
+            element={
+              <AuthGuard roles={["manage-users"]}>
+                <UserManagement />
+              </AuthGuard>
+            }
+          >
+            <Route path=":tab" element={<UserManagement />} />
           </Route>
           <Route
             path={USER_MANAGEMENT_ORGANIZATION_DETAILS}

@@ -27,9 +27,9 @@ const Plans = () => {
     if (map.current !== undefined && map !== undefined) {
       map.current.on("move", () => {
         if (map !== undefined && map.current !== undefined) {
-          setLng(map.current.getCenter().lng);
-          setLat(map.current.getCenter().lat);
-          setZoom(map.current.getZoom());
+          setLng(Math.round(map.current.getCenter().lng * 100) / 100);
+          setLat(Math.round(map.current.getCenter().lat * 100) / 100);
+          setZoom(Math.round(map.current.getZoom() * 100) / 100);
         }
       });
       map.current.on("load", () => {
@@ -176,7 +176,7 @@ const Plans = () => {
 
   return (
     <Container fluid>
-      <Row>
+      <Row className="mt-4">
         <Col md={9} className="px-0">
         <div className="sidebar">
         Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}

@@ -19,9 +19,8 @@ const AuthGuard = ({ children, roles }: Props) => {
       if (keycloak && roles) {
           return roles.some(r => {
               const realm =  keycloak.hasRealmRole(r);
-              const accountResource = keycloak.hasResourceRole(r, "account");
               const managementResource = keycloak.hasResourceRole(r, "realm-management");
-              return realm || accountResource || managementResource;
+              return realm || managementResource;
           });
       }
       return false;

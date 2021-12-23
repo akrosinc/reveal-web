@@ -5,6 +5,7 @@ import { useAppSelector } from "../../../store/hooks";
 import { Link } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
 import { MAIN_MENU } from "./menuConstants";
+import AuthorizedElement from "../../AuthorizedElement";
 
 export default function NavbarComponent() {
   const { keycloak } = useKeycloak();
@@ -18,43 +19,52 @@ export default function NavbarComponent() {
           <img src={logo} alt="" />
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Navbar.Collapse id="responsive-navbar-nav" className={keycloak.authenticated ? "" : "justify-content-end"}>
+        <Navbar.Collapse
+          id="responsive-navbar-nav"
+          className={keycloak.authenticated ? "" : "justify-content-end"}
+        >
           {keycloak.authenticated ? (
             <Nav className="me-auto">
               {MAIN_MENU.map((el, index) => {
                 if (el.dropdown !== undefined && el.dropdown.length > 0) {
                   return (
-                    <NavDropdown
-                      title={el.pageTitle}
-                      key={index}
-                      id="collasible-nav-dropdown"
-                    >
-                      {el.dropdown.map((child, childIndex) => {
-                        return (
-                          <NavDropdown.Item
-                            as={Link}
-                            role="button"
-                            key={index + "." + childIndex}
-                            to={child.route}
-                            className="py-2"
-                          >
-                            {child.pageTitle}
-                          </NavDropdown.Item>
-                        );
-                      })}
-                    </NavDropdown>
+                    <AuthorizedElement roles={el.roles}>
+                      <NavDropdown
+                        title={el.pageTitle}
+                        key={index}
+                        id="collasible-nav-dropdown"
+                      >
+                        {el.dropdown.map((child, childIndex) => {
+                          return (
+                            <AuthorizedElement roles={child.roles}>
+                              <NavDropdown.Item
+                                as={Link}
+                                role="button"
+                                key={index + "." + childIndex}
+                                to={child.route}
+                                className="py-2"
+                              >
+                                {child.pageTitle}
+                              </NavDropdown.Item>
+                            </AuthorizedElement>
+                          );
+                        })}
+                      </NavDropdown>
+                    </AuthorizedElement>
                   );
                 } else {
                   return (
-                    <Link key={index} to={el.route} className="nav-link">
-                      {el.pageTitle}
-                    </Link>
+                    <AuthorizedElement roles={el.roles}>
+                      <Link key={index} to={el.route} className="nav-link">
+                        {el.pageTitle}
+                      </Link>
+                    </AuthorizedElement>
                   );
                 }
               })}
             </Nav>
           ) : null}
-          {(keycloak.authenticated) ? (
+          {keycloak.authenticated ? (
             <Nav style={{ alignItems: "center" }}>
               <BsPerson />
               <NavDropdown
@@ -73,7 +83,13 @@ export default function NavbarComponent() {
             </Nav>
           ) : (
             <Nav>
-              <Nav.Link className="btn btn-success text-white" style={{width: '100px'}} onClick={() => keycloak.login()}>Login</Nav.Link>
+              <Nav.Link
+                className="btn btn-success text-white"
+                style={{ width: "100px" }}
+                onClick={() => keycloak.login()}
+              >
+                Login
+              </Nav.Link>
             </Nav>
           )}
         </Navbar.Collapse>

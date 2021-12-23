@@ -6,7 +6,7 @@ import {
 } from "../../../organization/api";
 import { OrganizationModel } from "../../../organization/providers/types";
 import OrganizationTable from "../../../../components/Table/OrganizationsTable";
-import { PageableModel } from "../../../../api/sharedModel";
+import { PageableModel } from "../../../../api/PageableModel";
 import Paginator from "../../../../components/Pagination/Paginator";
 import { useAppDispatch } from "../../../../store/hooks";
 import { showLoader } from "../../../reducers/loader";
@@ -46,17 +46,21 @@ const Organization = () => {
         searchData !== undefined ? searchData : searchInput
       )
         .then((data) => setOrganizationList(data))
-        .catch((error: ErrorModel) => toast.error(error.data.message))
+        .catch((error: ErrorModel) =>
+          toast.error(
+            error.data !== undefined ? error.data.message : error.toString()
+          )
+        )
         .finally(() => dispatch(showLoader(false)));
+      getOrganizationCount()
+        .then((res) => setorganizationCount(res.count))
+        .catch((err) => toast.error(err.toString()));
     },
     [dispatch, searchInput]
   );
 
   useEffect(() => {
     loadData(PAGINATION_DEFAULT_SIZE, 0);
-    getOrganizationCount().then((res) => {
-      setorganizationCount(res.count);
-    });
   }, [loadData]);
 
   const paginatonHandler = (size: number, page: number) => {
@@ -92,13 +96,11 @@ const Organization = () => {
         </Col>
       </Row>
       <hr className="my-4" />
-      <div style={{ minHeight: "500px" }}>
-        <OrganizationTable
-          clickHandler={openOrganizationById}
-          rows={organizationList !== undefined ? organizationList.content : []}
-          head={columns}
-        />
-      </div>
+      <OrganizationTable
+        clickHandler={openOrganizationById}
+        rows={organizationList !== undefined ? organizationList.content : []}
+        head={columns}
+      />
       {organizationList !== undefined && organizationList.content.length > 0 ? (
         <Paginator
           totalPages={organizationList.totalPages}
@@ -108,7 +110,14 @@ const Organization = () => {
           paginationHandler={paginatonHandler}
         />
       ) : null}
-      {show && <CreateOrganization handleClose={handleClose} show={show} />}
+      {show && (
+        <ActionDialog
+          backdrop={true}
+          title={"Create organization"}
+          closeHandler={handleClose}
+          element={<CreateOrganization handleClose={handleClose} show={show} />}
+        />
+      )}
       {showDetails && (
         <ActionDialog
           backdrop={true}
