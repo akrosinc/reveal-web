@@ -10,10 +10,11 @@ import CreateUser from "./create/CreateUser";
 import CreateBulk from "./create/CreateBulk";
 import EditUser from "./edit/EditUser";
 import ActionDialog from "../../../../components/dialogs/ActionDialog";
-import { PageableModel } from "../../../../api/sharedModel";
+import { PageableModel } from "../../../../api/PageableModel";
 import { showLoader } from "../../../reducers/loader";
 import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
 import { toast } from "react-toastify";
+import { ErrorModel } from "../../../../api/ErrorModel";
 
 const tableRowNames = ["Username", "First Name", "Last Name", "Organization"];
 
@@ -48,8 +49,8 @@ const Users = () => {
         .then((res) => {
           setUserList(res);
         })
-        .catch((error) => {
-          toast.error(error.response.data.message);
+        .catch((error: ErrorModel) => {
+          toast.error(error.data !== undefined ? error.data.message : error.toString());
         })
         .finally(() => {
           dispatch(showLoader(false));

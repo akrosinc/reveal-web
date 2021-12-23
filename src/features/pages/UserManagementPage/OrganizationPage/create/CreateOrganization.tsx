@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
-import { createOrganization, getOrganizationListSummary } from "../../../../organization/api";
+import { Button, Form } from "react-bootstrap";
+import {
+  createOrganization,
+  getOrganizationListSummary,
+} from "../../../../organization/api";
 import { OrganizationModel } from "../../../../organization/providers/types";
 import { useForm } from "react-hook-form";
 import { useAppDispatch } from "../../../../../store/hooks";
@@ -33,90 +36,101 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
   useEffect(() => {
     getOrganizationListSummary().then((res) => {
       setOrganizations(res.content);
-    })}, []);
+    });
+  }, []);
 
   const submitHandler = (formValues: RegisterValues) => {
-    dispatch(showLoader(true))
+    dispatch(showLoader(true));
     toast.promise(createOrganization(formValues), {
-      pending: 'Loading...',
+      pending: "Loading...",
       success: {
         render({ data }: any) {
           let newUser = data as UserModel;
-          dispatch(showLoader(false))
+          dispatch(showLoader(false));
           handleClose();
-          return "Organization with id: " + newUser.identifier + " created successfully."
-        }
+          return (
+            "Organization with id: " +
+            newUser.identifier +
+            " created successfully."
+          );
+        },
       },
       error: {
         render({ data }: ErrorModel) {
-          dispatch(showLoader(false))
+          dispatch(showLoader(false));
           return data.message;
-        }
-      }
-    })
-  }
+        },
+      },
+    });
+  };
 
   return (
-    <Modal
-      show={show}
-      onHide={handleClose}
-      backdrop="static"
-      keyboard={false}
-      centered
-    >
-      <Modal.Header closeButton>
-        <Modal.Title>Create organization</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form>
-          <Form.Group className="my-4">
-            <Form.Label>Organization name</Form.Label>
-            <Form.Control {...register("name", { required: true })} type="input" />
-            {errors.name && (
-              <Form.Label className="text-danger">
-                Organization name must not be empty.
-              </Form.Label>
-            )}
-          </Form.Group>
-          <Form.Group className="my-4">
-            <Form.Label>Type</Form.Label>
-            <Form.Select {...register("type", { required: true })} aria-label="Default select example">
-              <option value=""></option>
-              <option value="CG">Community group</option>
-              <option value="TEAM">Team</option>
-              <option value="OTHER">Other</option>
-            </Form.Select>
-            {errors.type && (
-              <Form.Label className="text-danger">
-                Organization type must be selected.
-              </Form.Label>
-            )}
-          </Form.Group>
-          <Form.Group className="my-4">
-            <Form.Label>Part of</Form.Label>
-            <Form.Select {...register("partOf", { required: false })} aria-label="Default select example">
-              <option value=""></option>
-              {organizations.map((org) => {
-                return (
-                  <option key={org.identifier} value={org.identifier}>
-                    {org.name}
-                  </option>
-                );
-              })}
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="my-4" id="formGridCheckbox">
-            <Form.Check {...register("active", { required: false })} type="checkbox" label="Active" />
-          </Form.Group>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Close
-        </Button>
-        <Button variant="primary" onClick={handleSubmit(submitHandler)}>Save</Button>
-      </Modal.Footer>
-    </Modal>
+    <Form>
+      <Form.Group className="my-4">
+        <Form.Label>Organization name</Form.Label>
+        <Form.Control {...register("name", { required: true })} type="input" />
+        {errors.name && (
+          <Form.Label className="text-danger">
+            Organization name must not be empty.
+          </Form.Label>
+        )}
+      </Form.Group>
+      <Form.Group className="my-4">
+        <Form.Label>Type</Form.Label>
+        <Form.Select
+          {...register("type", { required: true })}
+          aria-label="Default select example"
+        >
+          <option value=""></option>
+          <option value="CG">Community group</option>
+          <option value="TEAM">Team</option>
+          <option value="OTHER">Other</option>
+        </Form.Select>
+        {errors.type && (
+          <Form.Label className="text-danger">
+            Organization type must be selected.
+          </Form.Label>
+        )}
+      </Form.Group>
+      <Form.Group className="my-4">
+        <Form.Label>Part of</Form.Label>
+        <Form.Select
+          {...register("partOf", { required: false })}
+          aria-label="Default select example"
+        >
+          <option value=""></option>
+          {organizations.map((org) => {
+            return (
+              <option key={org.identifier} value={org.identifier}>
+                {org.name}
+              </option>
+            );
+          })}
+        </Form.Select>
+      </Form.Group>
+      <Form.Group className="my-4" id="formGridCheckbox">
+        <Form.Check
+          {...register("active", { required: false })}
+          type="checkbox"
+          label="Active"
+        />
+      </Form.Group>
+      <hr />
+      <Button
+        variant="primary"
+        className="float-end"
+        onClick={handleSubmit(submitHandler)}
+      >
+        Save
+      </Button>
+      <Button
+        variant="secondary"
+        className="float-end me-2"
+        onClick={handleClose}
+      >
+        Close
+      </Button>
+    </Form>
   );
 };
 

@@ -8,7 +8,7 @@ import { showLoader } from "../../../../reducers/loader";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { useForm } from "react-hook-form";
 import Select, { MultiValue } from "react-select";
-import { getSecurityGroups } from "../../../../organization/api";
+import { getOrganizationListSummary, getSecurityGroups } from "../../../../organization/api";
 import { toast } from "react-toastify";
 import { ErrorModel } from "../../../../../api/ErrorModel";
 import { CancelToken } from "axios";
@@ -59,6 +59,24 @@ const EditUser = ({ userId, handleClose }: Props) => {
       setValue("firstname", userDetails.firstName);
       setValue("lastname", userDetails.lastName);
       setValue("email", userDetails.email);
+      setSelectedSecurityGroups(
+        userDetails.securityGroups !== undefined
+          ? userDetails.securityGroups.map((group) => {
+              return {
+                label: group,
+                value: group,
+              };
+            })
+          : []
+      );
+      setSelectedOrganizations(
+        userDetails.organizations.map((org) => {
+          return {
+            label: org.name,
+            value: org.identifier,
+          };
+        })
+      );
     }, [setValue]);
 
   const getData = useCallback(
@@ -75,23 +93,20 @@ const EditUser = ({ userId, handleClose }: Props) => {
             })
           );
         })
-        .catch((err) => console.log(err));
+        .catch((err) => toast.error(err.toString()));
+      getOrganizationListSummary().then(res => {
+        setOrganizations(res.content.map(org => {
+          return {
+            label: org.name,
+            value: org.identifier
+          }
+        }));
+      }) 
       getUserById(userId, cancelToken)
         .then((res) => {
           setStartValues(res);
-          setSelectedSecurityGroups(
-            res.securityGroups !== undefined
-              ? res.securityGroups.map((group) => {
-                  return {
-                    label: group,
-                    value: group,
-                  };
-                })
-              : []
-          );
-          setOrganizations([]);
         })
-        .catch((err) => console.log(err));
+        .catch((err) => toast.error(err.toString()));
     },
     [userId, setStartValues]
   );
@@ -170,6 +185,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
     const values = selectedOption.map((selected) => {
       return selected;
     });
+    setValue('securityGroups', values, { shouldDirty: true })
     setSelectedSecurityGroups(values);
   };
 
@@ -179,6 +195,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
     const values = selectedOption.map((selected) => {
       return selected;
     });
+    setValue('organizations', values, { shouldDirty: true })
     setSelectedOrganizations(values);
   };
 
@@ -249,6 +266,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
       <Form.Group className="mb-3">
         <Form.Label>Security groups</Form.Label>
         <Select
+          {...register("securityGroups", { required: false })}
           isDisabled={!edit}
           isMulti
           value={selectedSecurityGroups}
@@ -260,6 +278,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
       <Form.Group className="mb-3">
         <Form.Label>Organization</Form.Label>
         <Select
+          {...register("organizations", { required: false })}
           isDisabled={!edit}
           isMulti
           value={selectedOrganizations}
@@ -289,6 +308,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
           </Form.Group>
         </>
       ) : null}
+      <hr />
       {edit ? (
         <>
           <Button

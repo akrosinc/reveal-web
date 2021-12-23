@@ -141,7 +141,6 @@ const CreateUser = ({ show, handleClose }: Props) => {
       backdrop="static"
       keyboard={false}
       centered
-      size="lg"
       scrollable
     >
       <Modal.Header closeButton>
