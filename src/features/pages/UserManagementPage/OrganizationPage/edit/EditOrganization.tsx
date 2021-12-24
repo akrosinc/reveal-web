@@ -37,17 +37,20 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
 
   const getData = useCallback(
     (source: CancelTokenSource) => {
-      getOrganizationById(organizationId, source.token).then((data) => {
-        setOrganization(data);
-        setValue("name", data.name);
-        setValue("type", data.type.code);
-        setValue("active", data.active);
-        getOrganizationListSummary().then((res) => {
-          setOrganizations(res.content);
-          setValue("partOf", data.partOf);
-        });
-      })
-      .catch(err => console.log(err));
+      getOrganizationById(organizationId, source.token)
+        .then((data) => {
+          setOrganization(data);
+          setValue("name", data.name);
+          setValue("type", data.type.code);
+          setValue("active", data.active);
+          getOrganizationListSummary().then((res) => {
+            setOrganizations(
+              res.content.filter((el) => el.identifier !== organizationId)
+            );
+            setValue("partOf", data.partOf);
+          });
+        })
+        .catch((err) => console.log(err));
     },
     [organizationId, setValue]
   );
@@ -67,40 +70,40 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
     dispatch(showLoader(true));
     formData.identifier = organizationId;
     toast.promise(updateOrganization(formData), {
-        pending: "Loading...",
-        success: {
-            render({ data }) {
-                dispatch(showLoader(false));
-                setEdit(false);
-                return `Organization with id ${organizationId} updated successfully.`;
-            }
+      pending: "Loading...",
+      success: {
+        render({ data }) {
+          dispatch(showLoader(false));
+          setEdit(false);
+          return `Organization with id ${organizationId} updated successfully.`;
         },
-        error: {
-            render({ data }: ErrorModel) {
-                return data.message;
-            }
-        }
-    })
+      },
+      error: {
+        render({ data }: ErrorModel) {
+          return data.message;
+        },
+      },
+    });
   };
 
   const deleteHandler = (action: boolean) => {
     if (action) {
-        dispatch(showLoader(true));
-        toast.promise(deleteOrganizationById(organizationId), {
-            pending: "Loading...",
-            success: {
-                render({ data }) {
-                    dispatch(showLoader(false));
-                    handleClose();
-                    return "Organization deleted successfully";
-                }
-            },
-            error: {
-                render({ data }: ErrorModel) {
-                    return data.message
-                }
-            }
-        })
+      dispatch(showLoader(true));
+      toast.promise(deleteOrganizationById(organizationId), {
+        pending: "Loading...",
+        success: {
+          render({ data }) {
+            dispatch(showLoader(false));
+            handleClose();
+            return `Organization with id: ${organizationId} deleted successfully.`;
+          },
+        },
+        error: {
+          render({ data }: ErrorModel) {
+            return data.message;
+          },
+        },
+      });
     } else {
       setShowConfirmDialog(action);
     }

@@ -162,7 +162,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
         success: {
           render() {
             setEdit(false);
-            return `User with id ${userId} updated successfully`;
+            return `User with id ${userId} updated successfully.`;
           },
         },
         error: {

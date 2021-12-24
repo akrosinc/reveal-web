@@ -28,19 +28,17 @@ export default function NavbarComponent() {
               {MAIN_MENU.map((el, index) => {
                 if (el.dropdown !== undefined && el.dropdown.length > 0) {
                   return (
-                    <AuthorizedElement roles={el.roles}>
+                    <AuthorizedElement key={index} roles={el.roles}>
                       <NavDropdown
                         title={el.pageTitle}
-                        key={index}
                         id="collasible-nav-dropdown"
                       >
                         {el.dropdown.map((child, childIndex) => {
                           return (
-                            <AuthorizedElement roles={child.roles}>
+                            <AuthorizedElement key={index + "." + childIndex} roles={child.roles}>
                               <NavDropdown.Item
                                 as={Link}
                                 role="button"
-                                key={index + "." + childIndex}
                                 to={child.route}
                                 className="py-2"
                               >
@@ -54,8 +52,8 @@ export default function NavbarComponent() {
                   );
                 } else {
                   return (
-                    <AuthorizedElement roles={el.roles}>
-                      <Link key={index} to={el.route} className="nav-link">
+                    <AuthorizedElement key={index} roles={el.roles}>
+                      <Link to={el.route} className="nav-link">
                         {el.pageTitle}
                       </Link>
                     </AuthorizedElement>

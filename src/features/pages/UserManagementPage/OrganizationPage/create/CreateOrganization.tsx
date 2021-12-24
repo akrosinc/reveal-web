@@ -10,7 +10,6 @@ import { useAppDispatch } from "../../../../../store/hooks";
 import { showLoader } from "../../../../reducers/loader";
 import { toast } from "react-toastify";
 import { ErrorModel } from "../../../../../api/ErrorModel";
-import { UserModel } from "../../../../user/providers/types";
 
 interface Props {
   show: boolean;
@@ -45,14 +44,10 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
       pending: "Loading...",
       success: {
         render({ data }: any) {
-          let newUser = data as UserModel;
+          let newOrganization = data as OrganizationModel;
           dispatch(showLoader(false));
           handleClose();
-          return (
-            "Organization with id: " +
-            newUser.identifier +
-            " created successfully."
-          );
+          return `Organization with id: ${newOrganization.identifier} created successfully.`
         },
       },
       error: {
