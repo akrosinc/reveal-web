@@ -7,7 +7,7 @@ import {
   getSecurityGroups,
 } from "../../../../organization/api";
 import { useForm } from "react-hook-form";
-import { CreateUserModel } from "../../../../user/providers/types";
+import { CreateUserModel, UserModel } from "../../../../user/providers/types";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { showLoader } from "../../../../reducers/loader";
 import { toast } from "react-toastify";
@@ -117,12 +117,13 @@ const CreateUser = ({ show, handleClose }: Props) => {
       pending: "Loading...",
       success: {
         render({ data }) {
+          let res = data as UserModel;
           reset();
           setSelectedOrganizations([]);
           setSelectedSecurityGroups([]);
           dispatch(showLoader(false));
           handleClose();
-          return "User created successfully!";
+          return `User with id: ${res.identifier} created successfully.`;
         },
       },
       error: {

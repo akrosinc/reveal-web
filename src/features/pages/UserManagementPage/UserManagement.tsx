@@ -2,6 +2,7 @@ import { Container, Tab, Tabs } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { USER_MANAGEMENT } from "../../../constants";
 import Organization from './OrganizationPage/Organization';
+import UserImport from "./UserImport/UserImport";
 import Users from "./UsersPage/Users";
 
 
@@ -27,6 +28,9 @@ const UserManagement = () => {
         </Tab>
         <Tab eventKey="user" title="User">
           <Users />
+        </Tab>
+        <Tab eventKey="userImport" title="User Import">
+          <UserImport />
         </Tab>
       </Tabs>
     </Container>
