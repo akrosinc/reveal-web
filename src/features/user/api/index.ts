@@ -1,6 +1,6 @@
 import { CancelToken } from "axios";
 import api from "../../../api/axios";
-import { PageableModel } from "../../../api/PageableModel";
+import { PageableModel } from "../../../api/providers";
 import { USER } from "../../../constants";
 import { CreateUserModel, EditUserModel, UserModel } from "../providers/types";
 

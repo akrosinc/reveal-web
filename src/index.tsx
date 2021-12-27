@@ -8,7 +8,7 @@ import { BrowserRouter } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 import keycloak from "./keycloak";
-import 'mapbox-gl/dist/mapbox-gl.css';
+import "mapbox-gl/dist/mapbox-gl.css";
 
 const eventLogger = (event: unknown, error: unknown) => {
   console.log("onKeycloakEvent", event, error);
@@ -19,16 +19,18 @@ const tokenLogger = (tokens: any) => {
 };
 
 ReactDOM.render(
-  <ReactKeycloakProvider
-    authClient={keycloak}
-    onEvent={eventLogger}
-    onTokens={tokenLogger}
-  >
-    <Provider store={store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Provider>
-  </ReactKeycloakProvider>,
+  <React.StrictMode>
+    <ReactKeycloakProvider
+      authClient={keycloak}
+      onEvent={eventLogger}
+      onTokens={tokenLogger}
+    >
+      <Provider store={store}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Provider>
+    </ReactKeycloakProvider>
+  </React.StrictMode>,
   document.getElementById("root")
 );

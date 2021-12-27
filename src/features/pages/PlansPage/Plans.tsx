@@ -108,7 +108,9 @@ const Plans = () => {
             .setLngLat(e.lngLat)
             .setHTML(
               e.features !== undefined
-                ? `<h4>Structure details</h4><p>Identifier: ${feature}<br/>Status: Not visited</p><button class="btn btn-primary mx-auto my-2 d-block" id="view-full">Action</button>`
+                ? `<h4>Structure details</h4><p>Identifier: ${feature}
+                <br/>Status: Not visited</p>
+                <button class="btn btn-primary mx-auto my-2 d-block" id="view-full">Action</button>`
                 : "Building id not found"
             )
             .setMaxWidth("400px")

@@ -4,17 +4,15 @@ import UsersTable from "../../../../components/Table/UsersTable";
 import { UserModel } from "../../../user/providers/types";
 import { getUserList } from "../../../user/api";
 import { useAppDispatch } from "../../../../store/hooks";
-import Paginator from "../../../../components/Pagination/Paginator";
+import Paginator from "../../../../components/Pagination";
 import { DebounceInput } from "react-debounce-input";
 import CreateUser from "./create/CreateUser";
-import CreateBulk from "./create/CreateBulk";
 import EditUser from "./edit/EditUser";
-import ActionDialog from "../../../../components/dialogs/ActionDialog";
-import { PageableModel } from "../../../../api/PageableModel";
+import { ActionDialog } from "../../../../components/Dialogs";
 import { showLoader } from "../../../reducers/loader";
 import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
 import { toast } from "react-toastify";
-import { ErrorModel } from "../../../../api/ErrorModel";
+import { PageableModel, ErrorModel } from "../../../../api/providers";
 
 const tableRowNames = ["Username", "First Name", "Last Name", "Organization"];
 
@@ -23,7 +21,6 @@ const Users = () => {
   const [userList, setUserList] = useState<PageableModel<UserModel>>();
   const [show, setShow] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [openBulk, setOpenBulk] = useState(false);
   const [userId, setUserId] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const handleClose = () => {
@@ -33,8 +30,7 @@ const Users = () => {
       setUserList(res);
     });
   };
-  const handleShow = (bulk: boolean) => {
-    setOpenBulk(bulk);
+  const handleShow = () => {
     setShow(true);
   };
 
@@ -84,16 +80,9 @@ const Users = () => {
         <Col md={8} className="mb-2">
           <Button
             className="btn btn-primary float-end"
-            onClick={() => handleShow(false)}
+            onClick={() => handleShow()}
           >
             Create
-          </Button>
-          <Button
-            className="btn btn-primary mx-2 float-end"
-            role="button"
-            onClick={() => handleShow(true)}
-          >
-            Bulk import
           </Button>
         </Col>
         <Col sm={12} md={4} className="order-md-first">
@@ -120,12 +109,7 @@ const Users = () => {
           paginationHandler={paginatonHandler}
         />
       ) : null}
-      {show &&
-        (openBulk ? (
-          <CreateBulk show={show} handleClose={handleClose} />
-        ) : (
-          <CreateUser show={show} handleClose={handleClose} />
-        ))}
+      {show && <CreateUser show={show} handleClose={handleClose} />}
       {showEdit && (
         <ActionDialog
           backdrop={true}

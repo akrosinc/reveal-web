@@ -1,6 +1,6 @@
 import api from "../../../api/axios";
 import { OrganizationModel, Groups } from "../providers/types";
-import { PageableModel } from '../../../api/PageableModel';
+import { PageableModel } from '../../../api/providers';
 import { KEYCLOAK_SECURITY_GROUPS, ORGANIZATION } from "../../../constants";
 import { CancelToken } from "axios";
 

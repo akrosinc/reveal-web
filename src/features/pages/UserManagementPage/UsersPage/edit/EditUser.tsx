@@ -2,15 +2,15 @@ import { useCallback, useEffect, useState } from "react";
 import { Button, Form, Row, Col } from "react-bootstrap";
 import { deleteUserById, getUserById, updateUser } from "../../../../user/api";
 import { EditUserModel, UserModel } from "../../../../user/providers/types";
-import { cancelTokenGenerator } from "../../../../../utils/cancelTokenGenerator";
-import ConfirmDialog from "../../../../../components/dialogs/ConfirmDialog";
+import { cancelTokenGenerator } from "../../../../../utils";
+import { ConfirmDialog } from "../../../../../components/Dialogs";
 import { showLoader } from "../../../../reducers/loader";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { useForm } from "react-hook-form";
 import Select, { MultiValue } from "react-select";
 import { getOrganizationListSummary, getSecurityGroups } from "../../../../organization/api";
 import { toast } from "react-toastify";
-import { ErrorModel } from "../../../../../api/ErrorModel";
+import { ErrorModel } from "../../../../../api/providers";
 import { CancelToken } from "axios";
 
 interface Props {
@@ -83,7 +83,6 @@ const EditUser = ({ userId, handleClose }: Props) => {
     (cancelToken: CancelToken) => {
       getSecurityGroups(cancelToken)
         .then((res) => {
-          console.log(res);
           setGroups(
             res.map((el) => {
               return {

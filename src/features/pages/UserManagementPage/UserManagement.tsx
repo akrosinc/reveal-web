@@ -29,7 +29,7 @@ const UserManagement = () => {
         <Tab eventKey="user" title="User">
           <Users />
         </Tab>
-        <Tab eventKey="userImport" title="User Import">
+        <Tab eventKey="user-import" title="User Import">
           <UserImport />
         </Tab>
       </Tabs>
