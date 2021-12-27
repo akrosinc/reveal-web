@@ -6,17 +6,16 @@ import {
 } from "../../../organization/api";
 import { OrganizationModel } from "../../../organization/providers/types";
 import OrganizationTable from "../../../../components/Table/OrganizationsTable";
-import { PageableModel } from "../../../../api/PageableModel";
-import Paginator from "../../../../components/Pagination/Paginator";
+import Paginator from "../../../../components/Pagination";
 import { useAppDispatch } from "../../../../store/hooks";
 import { showLoader } from "../../../reducers/loader";
-import CreateOrganization from "./create/CreateOrganization";
+import CreateOrganization from "./create";
 import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
 import { DebounceInput } from "react-debounce-input";
-import ActionDialog from "../../../../components/dialogs/ActionDialog";
-import EditOrganization from "./edit/EditOrganization";
+import { ActionDialog } from "../../../../components/Dialogs";
+import EditOrganization from "./edit";
 import { toast } from "react-toastify";
-import { ErrorModel } from "../../../../api/ErrorModel";
+import { PageableModel, ErrorModel } from "../../../../api/providers";
 
 const columns = ["Name", "Type", "Active"];
 

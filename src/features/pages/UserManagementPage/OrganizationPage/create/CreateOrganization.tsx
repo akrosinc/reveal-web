@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { showLoader } from "../../../../reducers/loader";
 import { toast } from "react-toastify";
-import { ErrorModel } from "../../../../../api/ErrorModel";
+import { ErrorModel } from "../../../../../api/providers";
 
 interface Props {
   show: boolean;
@@ -74,7 +74,6 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
         <Form.Label>Type</Form.Label>
         <Form.Select
           {...register("type", { required: true })}
-          aria-label="Default select example"
         >
           <option value=""></option>
           <option value="CG">Community group</option>
@@ -91,7 +90,6 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
         <Form.Label>Part of</Form.Label>
         <Form.Select
           {...register("partOf", { required: false })}
-          aria-label="Default select example"
         >
           <option value=""></option>
           {organizations.map((org) => {

@@ -3,10 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { ErrorModel } from "../../../../../api/ErrorModel";
-import ConfirmDialog from "../../../../../components/dialogs/ConfirmDialog";
+import { ErrorModel } from "../../../../../api/providers";
+import { ConfirmDialog } from "../../../../../components/Dialogs";
 import { useAppDispatch } from "../../../../../store/hooks";
-import { cancelTokenGenerator } from "../../../../../utils/cancelTokenGenerator";
+import { cancelTokenGenerator } from "../../../../../utils";
 import {
   deleteOrganizationById,
   getOrganizationById,
@@ -129,7 +129,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
           placeholder="Enter organization name"
           {...register("name", { required: true })}
         />
-        {errors.type && (
+        {errors.name && (
           <Form.Label className="text-danger">
             Organization name can't be empty.
           </Form.Label>

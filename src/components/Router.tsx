@@ -7,7 +7,7 @@ import {
   PLANS,
 } from "../constants/";
 import Home from "../features/pages/HomePage/Home";
-import Plans from "../features/pages/PlansPage/Plans";
+import Plans from "../features/pages/PlansPage";
 import UserManagement from "../features/pages/UserManagementPage/UserManagement";
 import OrganizationDetails from "../features/pages/UserManagementPage/OrganizationPage/details/OrganizationDetails";
 import { Spinner } from "react-bootstrap";
@@ -34,7 +34,14 @@ export default function Router() {
               </AuthGuard>
             }
           >
-            <Route path=":tab" element={<UserManagement />} />
+            <Route
+              path=":tab"
+              element={
+                <AuthGuard roles={["manage-users"]}>
+                  <UserManagement />
+                </AuthGuard>
+              }
+            />
           </Route>
           <Route
             path={USER_MANAGEMENT_ORGANIZATION_DETAILS}

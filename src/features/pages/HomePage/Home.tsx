@@ -8,12 +8,13 @@ function Home() {
       <h2>Welcome to Reveal</h2>
       <p>Get started by selecting an intervention below</p>
       <AuthorizedElement roles={["manage-users"]}>
-        <Link to="/user-management" className="w-25 btn btn-success">
+        <Link to="/user-management" className="btn btn-success">
           User management
         </Link>
       </AuthorizedElement>
+      <br />
       <AuthorizedElement roles={["plan_view"]}>
-        <Link to="/plans" className="w-25 ms-2 btn btn-success">
+        <Link to="/plans" className="mt-2 btn btn-success">
           Manage plans
         </Link>
       </AuthorizedElement>

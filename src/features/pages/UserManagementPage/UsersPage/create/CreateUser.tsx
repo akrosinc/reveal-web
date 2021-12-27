@@ -11,8 +11,8 @@ import { CreateUserModel, UserModel } from "../../../../user/providers/types";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { showLoader } from "../../../../reducers/loader";
 import { toast } from "react-toastify";
-import { ErrorModel } from "../../../../../api/ErrorModel";
-import { cancelTokenGenerator } from "../../../../../utils/cancelTokenGenerator";
+import { ErrorModel } from "../../../../../api/providers";
+import { cancelTokenGenerator } from "../../../../../utils";
 import { CancelToken } from "axios";
 
 interface RegisterValues {

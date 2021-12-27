@@ -6,11 +6,21 @@ import { Link } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
 import { MAIN_MENU } from "./menuConstants";
 import AuthorizedElement from "../../AuthorizedElement";
+import i18n, { LOCALES } from "../../../i18n";
+import { useTranslation } from 'react-i18next';
+import { useState } from "react";
+
 
 export default function NavbarComponent() {
+  const { t } = useTranslation();
   const { keycloak } = useKeycloak();
+  const [language, setLanguage] = useState(LOCALES[0]);
 
   let user = useAppSelector((state) => state.user.value);
+  const changeLaguagePrefferences = (event: any) => {
+    setLanguage(event.target.value);
+    i18n.changeLanguage(event.target.value);
+  };
 
   return (
     <Navbar collapseOnSelect expand="lg">
@@ -75,7 +85,7 @@ export default function NavbarComponent() {
                     keycloak.logout();
                   }}
                 >
-                  Sign out
+                  {t('topNav.logOut')}
                 </NavDropdown.Item>
               </NavDropdown>
             </Nav>
@@ -86,10 +96,24 @@ export default function NavbarComponent() {
                 style={{ width: "100px" }}
                 onClick={() => keycloak.login()}
               >
-                Login
+                {t('topNav.logIn')}
               </Nav.Link>
             </Nav>
           )}
+          <Nav>
+            <Nav.Link>
+              <form id="language-form">
+                <select
+                  value={language}
+                  className="form-control input-sm"
+                  id="language-selection"
+                  onChange={changeLaguagePrefferences}
+                >
+                  <option value={LOCALES[0]}>{LOCALES[0].toUpperCase()}</option>
+                </select>
+              </form>
+            </Nav.Link>
+          </Nav>
         </Navbar.Collapse>
       </Container>
     </Navbar>
