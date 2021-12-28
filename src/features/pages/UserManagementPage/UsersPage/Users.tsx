@@ -22,7 +22,6 @@ const Users = () => {
   const [show, setShow] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [userId, setUserId] = useState("");
-  const [searchInput, setSearchInput] = useState("");
   const handleClose = () => {
     setShow(false);
     setShowEdit(false);
@@ -40,7 +39,7 @@ const Users = () => {
       getUserList(
         size,
         page,
-        searchData !== undefined ? searchData : searchInput
+        searchData !== undefined ? searchData : ""
       )
         .then((res) => {
           setUserList(res);
@@ -52,7 +51,7 @@ const Users = () => {
           dispatch(showLoader(false));
         });
     },
-    [dispatch, searchInput]
+    [dispatch]
   );
 
   useEffect(() => {
@@ -60,7 +59,6 @@ const Users = () => {
   }, [loadData]);
 
   const filterData = (e: any) => {
-    setSearchInput(e.target.value);
     loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
 

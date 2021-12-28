@@ -12,7 +12,7 @@ import { showLoader } from "../../../reducers/loader";
 import CreateOrganization from "./create";
 import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
 import { DebounceInput } from "react-debounce-input";
-import { ActionDialog } from "../../../../components/Dialogs";
+import { ActionDialog } from "../../../../components/Dialogs/";
 import EditOrganization from "./edit";
 import { toast } from "react-toastify";
 import { PageableModel, ErrorModel } from "../../../../api/providers";
@@ -24,8 +24,7 @@ const Organization = () => {
     useState<PageableModel<OrganizationModel>>();
   const [show, setShow] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [organizationCount, setorganizationCount] = useState(0);
-  const [searchInput, setSearchInput] = useState("");
+  const [organizationCount, setOrganizationCount] = useState(0);
   const [selectedOrganizaton, setSelectedOrganization] = useState("");
   const handleClose = () => {
     setShow(false);
@@ -42,20 +41,26 @@ const Organization = () => {
       getOrganizationList(
         size,
         page,
-        searchData !== undefined ? searchData : searchInput
+        searchData !== undefined ? searchData : ""
       )
-        .then((data) => setOrganizationList(data))
+        .then((data) => {
+          setOrganizationList(data);
+          if(searchData !== undefined) {
+            setOrganizationCount(data.numberOfElements)
+          } else {
+            getOrganizationCount()
+            .then((res) => setOrganizationCount(res.count))
+            .catch((err) => toast.error(err.toString()));
+          }
+        })
         .catch((error: ErrorModel) =>
           toast.error(
             error.data !== undefined ? error.data.message : error.toString()
           )
         )
         .finally(() => dispatch(showLoader(false)));
-      getOrganizationCount()
-        .then((res) => setorganizationCount(res.count))
-        .catch((err) => toast.error(err.toString()));
     },
-    [dispatch, searchInput]
+    [dispatch]
   );
 
   useEffect(() => {
@@ -67,7 +72,6 @@ const Organization = () => {
   };
 
   const filterData = (e: any) => {
-    setSearchInput(e.target.value);
     loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
 

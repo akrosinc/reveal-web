@@ -9,17 +9,19 @@ import AuthorizedElement from "../../AuthorizedElement";
 import i18n, { LOCALES } from "../../../i18n";
 import { useTranslation } from 'react-i18next';
 import { useState } from "react";
+import { setToBrowser } from "../../../utils";
 
 
 export default function NavbarComponent() {
   const { t } = useTranslation();
   const { keycloak } = useKeycloak();
-  const [language, setLanguage] = useState(LOCALES[0]);
+  const [language, setLanguage] = useState(i18n.language);
 
   let user = useAppSelector((state) => state.user.value);
   const changeLaguagePrefferences = (event: any) => {
     setLanguage(event.target.value);
     i18n.changeLanguage(event.target.value);
+    setToBrowser("locale", event.target.value);
   };
 
   return (
@@ -40,7 +42,7 @@ export default function NavbarComponent() {
                   return (
                     <AuthorizedElement key={index} roles={el.roles}>
                       <NavDropdown
-                        title={el.pageTitle}
+                        title={t('topNav.' + el.pageTitle)}
                         id="collasible-nav-dropdown"
                       >
                         {el.dropdown.map((child, childIndex) => {
@@ -52,7 +54,7 @@ export default function NavbarComponent() {
                                 to={child.route}
                                 className="py-2"
                               >
-                                {child.pageTitle}
+                                {t('topNav.' + child.pageTitle)}
                               </NavDropdown.Item>
                             </AuthorizedElement>
                           );
@@ -64,7 +66,7 @@ export default function NavbarComponent() {
                   return (
                     <AuthorizedElement key={index} roles={el.roles}>
                       <Link to={el.route} className="nav-link">
-                        {el.pageTitle}
+                        {t('topNav.' + el.pageTitle)}
                       </Link>
                     </AuthorizedElement>
                   );
@@ -109,7 +111,7 @@ export default function NavbarComponent() {
                   id="language-selection"
                   onChange={changeLaguagePrefferences}
                 >
-                  <option value={LOCALES[0]}>{LOCALES[0].toUpperCase()}</option>
+                  {LOCALES.map((lang, index) => <option key={index} value={lang}>{lang.toUpperCase()}</option>)}
                 </select>
               </form>
             </Nav.Link>

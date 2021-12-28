@@ -30,11 +30,12 @@ const CreateBulk = ({ handleClose }: Props) => {
     if (csv !== undefined && csv.name.includes(".csv")) {
       dispatch(showLoader(true));
       const formData = new FormData();
-      formData.append("File", csv);
+      formData.append("file", csv);
       toast.promise(uploadUserCsv(formData), {
         pending: "CSV file is uploading...",
         success: {
           render({ data }) {
+            console.log(data)
             reset();
             dispatch(showLoader(false));
             handleClose();
