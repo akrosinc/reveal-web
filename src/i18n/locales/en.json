@@ -1,6 +1,31 @@
 {
   "topNav": {
     "logOut": "Log out",
-    "logIn": "Login"
+    "logIn": "Login",
+    "Home": "Home",
+    "Plan": "Plan",
+    "Assign": "Assign",
+    "Monitor": "Monitor",
+    "Admin": "Admin",
+    "Manage Plans": "Manage Plans",
+    "Planning tools": "Planning tools",
+    "IRS Reporting": "IRS Reporting",
+    "SMC Reporting": "SMC Reporting",
+    "User Management": "User management"
+  },
+  "publicPage": {
+    "description": "Reveal is a Global Good and an open-source platform taht uses spatial intelligence to drive delivery of live-saving interventions",
+    "question": "WHAT IS REVEAL?",
+    "firstPartAbout": "REVEAL IS AN APPROVED",
+    "secondPartAbout": "THROUGH DIGITAL SQUARE AND IS FEATURED IN THE WORLD HEALTH ORGANIZATION’S",
+    "about": "Reveal supports decision makers and intervention managers by guiding and tracking delivery of in-field activities with precision and holding field teams accountable for action. Reveal uses smart maps and technology appropriate for low-resource settings to monitor coverage of interventions as they happen. Modeled on the mSpray and DiSARM tool, Reveal helps to optimize available resources and ensure no one is missed in the process."
+  },
+  "homePage": {
+    "welcomeMessage": "Welcome to Reveal",
+    "description": "Get started by selecting an intervention below"
+  },
+  "buttons": {
+      "userManagement": "User management",
+      "plans": "Plans"
   }
 }
