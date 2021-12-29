@@ -11,7 +11,7 @@
       "Planning tools": "Planungstools",
       "IRS Reporting": "IRS Berichterstattung",
       "SMC Reporting": "SMC Berichterstellung",
-      "User Management": "Benutzerverwaltung"
+      "Management": "Verwaltung"
     },
     "publicPage": {
       "description": "Reveal ist ein globales Gut und eine Open-Source-Plattform, die räumliche Intelligenz verwendet, um die Bereitstellung lebensrettender Interventionen voranzutreiben",
@@ -25,7 +25,7 @@
         "description": "Beginnen Sie, indem Sie unten eine Intervention auswählen"
     },
     "buttons": {
-        "userManagement": "Benutzerverwaltung",
+        "management": "Verwaltung",
         "plans": "Pläne"
     }
   }

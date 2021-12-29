@@ -1,21 +1,43 @@
-import React from "react";
+import React, { useState } from "react";
 import { Table } from "react-bootstrap";
+import { BsArrowUpCircleFill, BsArrowDownCircleFill } from "react-icons/bs";
 import { UserModel } from "../../features/user/providers/types";
 
 interface Props {
   head: string[];
   rows: UserModel[];
   clickHandler?: (id: string) => void;
+  sortHandler: (field: string, direction: boolean) => void;
 }
 
-const UsersTable = ({ head, rows, clickHandler }: Props) => {
+const UsersTable = ({ head, rows, clickHandler, sortHandler }: Props) => {
+  const [sortDirection, setSortDirection] = useState(false);
+  const [activeSortField, setActiveSortField] = useState("");
   return (
     <>
       <Table bordered responsive>
         <thead className="border border-2">
           <tr>
             {head.map((el, index) => {
-              return <th key={index}>{el}</th>;
+              return (
+                <th
+                  key={index}
+                  onClick={() => {
+                    setSortDirection(!sortDirection);
+                    setActiveSortField(el);
+                    sortHandler(el, sortDirection);
+                  }}
+                >
+                  {el}
+                  {activeSortField === el ? (
+                    sortDirection ? (
+                      <BsArrowDownCircleFill className="ms-2" />
+                    ) : (
+                      <BsArrowUpCircleFill className="ms-2" />
+                    )
+                  ) : null}
+                </th>
+              );
             })}
           </tr>
         </thead>

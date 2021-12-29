@@ -1,4 +1,4 @@
-import { HOME_PAGE, PLANS, USER_MANAGEMENT } from "../../../constants";
+import { HOME_PAGE, PLANS, MANAGEMENT } from "../../../constants";
 
 export const MAIN_MENU = [
     {
@@ -51,8 +51,8 @@ export const MAIN_MENU = [
       roles: ["manage-users"],
       dropdown: [
         {
-          pageTitle: "User Management",
-          route: USER_MANAGEMENT,
+          pageTitle: "Management",
+          route: MANAGEMENT,
           roles: ["manage-users"]
         },
       ],

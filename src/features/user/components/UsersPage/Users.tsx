@@ -22,6 +22,8 @@ const Users = () => {
   const [show, setShow] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [userId, setUserId] = useState("");
+  const [currentSearchInput, setCurrentSearchInput] = useState("");
+
   const handleClose = () => {
     setShow(false);
     setShowEdit(false);
@@ -59,10 +61,11 @@ const Users = () => {
   }, [loadData]);
 
   const filterData = (e: any) => {
+    setCurrentSearchInput(e.target.value);
     loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
 
-  const paginatonHandler = (size: number, page: number) => {
+  const paginationHandler = (size: number, page: number) => {
     loadData(size, page);
   };
 
@@ -70,6 +73,19 @@ const Users = () => {
     setUserId(id);
     setShowEdit(true);
   };
+
+  const sortHanlder = (field: string, sortDirection: boolean) => {
+    console.log(field, sortDirection);
+    if (userList !== undefined) {
+      getUserList(
+        userList.size,
+        userList.pageable.pageNumber,
+        currentSearchInput,
+        field,
+        sortDirection
+      )
+    }
+  }
 
   return (
     <>
@@ -97,6 +113,7 @@ const Users = () => {
         head={tableRowNames}
         rows={userList?.content ?? []}
         clickHandler={openUserById}
+        sortHandler={sortHanlder}
       />
       {userList !== undefined && userList.content.length > 0 ? (
         <Paginator
@@ -104,7 +121,7 @@ const Users = () => {
           page={userList.pageable.pageNumber}
           size={userList.size}
           totalPages={userList.totalPages}
-          paginationHandler={paginatonHandler}
+          paginationHandler={paginationHandler}
         />
       ) : null}
       {show && <CreateUser show={show} handleClose={handleClose} />}

@@ -7,7 +7,7 @@ const Footer = () => (
   <footer>
     <hr className="p-0 m-0" />
     <Row className="align-items-center">
-      <Col md={12}>
+      <Col>
         <img src={revealLogo} alt="Reveal Logo" />
         &nbsp; &nbsp;supported by&nbsp; &nbsp;
         <img src={akrosLogo} alt="Akros Logo" />

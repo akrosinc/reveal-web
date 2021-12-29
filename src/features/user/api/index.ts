@@ -4,9 +4,9 @@ import { PageableModel } from "../../../api/providers";
 import { USER } from "../../../constants";
 import { BulkDetailsModel, CreateUserModel, EditUserModel, UserBulk, UserModel } from "../providers/types";
 
-export const getUserList = async (size: number, page: number, search?: string,): Promise<PageableModel<UserModel>> => {
+export const getUserList = async (size: number, page: number, search?: string, sortField?: string, direction?: boolean): Promise<PageableModel<UserModel>> => {
   const data = await api
-    .get<PageableModel<UserModel>>(USER + `?search=${search !== undefined ? search : ""}&size=${size}&page=${page}&_summary=FALSE&root=true`)
+    .get<PageableModel<UserModel>>(USER + `?search=${search !== undefined ? search : ""}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField ? sortField.toLowerCase() : ""},${direction ? "asc" : "desc"}`)
     .then((response) => response.data);
   return data;
 };
