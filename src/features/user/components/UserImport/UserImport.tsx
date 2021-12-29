@@ -3,6 +3,7 @@ import { Button, Table, Col, Row } from "react-bootstrap";
 import { PageableModel } from "../../../../api/providers";
 import { ActionDialog } from "../../../../components/Dialogs";
 import Paginator from "../../../../components/Pagination";
+import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
 import { useAppDispatch } from "../../../../store/hooks";
 import { showLoader } from "../../../reducers/loader";
 import { getBulkById, getBulkList } from "../../api";
@@ -26,6 +27,12 @@ const UserImport = () => {
     });
   };
 
+  const paginationHandler = (size: number, page: number) => {
+    getBulkList(size, page).then((res) => {
+      setBulkList(res);
+    });
+  };
+
   const openBulkById = (selectedFile: UserBulk) => {
     dispatch(showLoader(true));
     getBulkById(1000, 0, selectedFile.identifier).then((res) => {
@@ -37,7 +44,7 @@ const UserImport = () => {
   };
 
   useEffect(() => {
-    getBulkList(10, 0).then((res) => {
+    getBulkList(PAGINATION_DEFAULT_SIZE, 0).then((res) => {
       setBulkList(res);
     });
   }, []);
@@ -74,7 +81,15 @@ const UserImport = () => {
           ))}
         </tbody>
       </Table>
-      <Paginator paginationHandler={() => {}} page={bulkList?.number ?? 0} size={bulkList?.size ?? 0} totalElements={bulkList?.totalElements ?? 0} totalPages={bulkList?.totalPages ?? 0} />
+      {bulkList !== undefined && bulkList.content.length > 0 ? (
+        <Paginator
+          totalElements={bulkList.totalElements}
+          page={bulkList.pageable.pageNumber}
+          size={bulkList.size}
+          totalPages={bulkList.totalPages}
+          paginationHandler={paginationHandler}
+        />
+      ) : null}
       {openCreate && (
         <ActionDialog
           backdrop={true}

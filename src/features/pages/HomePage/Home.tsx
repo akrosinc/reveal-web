@@ -10,8 +10,8 @@ function Home() {
       <h2>{t('homePage.welcomeMessage')}</h2>
       <p>{t('homePage.description')}</p>
       <AuthorizedElement roles={["manage-users"]}>
-        <Link to="/user-management" className="btn btn-success">
-        {t('buttons.userManagement')}
+        <Link to="/management" className="btn btn-success">
+        {t('buttons.management')}
         </Link>
       </AuthorizedElement>
       <br />

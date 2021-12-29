@@ -1,6 +1,6 @@
 import { Container, Tab, Tabs } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-import { USER_MANAGEMENT } from "../../../constants";
+import { MANAGEMENT } from "../../../constants";
 import Organization from '../../organization/components';
 import UserImport from "../../user/components/UserImport/UserImport";
 import Users from "../../user/components/UsersPage";
@@ -20,7 +20,7 @@ const Management = () => {
         mountOnEnter={true}
         unmountOnExit={true}
         onSelect={(tabName) => {
-          navigate(USER_MANAGEMENT + "/" + tabName)
+          navigate(MANAGEMENT + "/" + tabName)
         }}
       >
         <Tab eventKey="organization" title="Organization">

@@ -2,7 +2,7 @@ import { Route, Routes } from "react-router";
 import { Navigate } from "react-router-dom";
 import {
   HOME_PAGE,
-  USER_MANAGEMENT,
+  MANAGEMENT,
   PLANS,
   ROLE_MANAGE_USER
 } from "../constants/";
@@ -25,7 +25,7 @@ export default function Router() {
           <Route path={HOME_PAGE} element={<Home />} />
           <Route path={PLANS} element={<Plans />} />
           <Route
-            path={USER_MANAGEMENT}
+            path={MANAGEMENT}
             element={
               <AuthGuard roles={[ROLE_MANAGE_USER]}>
                 <Management />
