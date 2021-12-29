@@ -3,6 +3,8 @@ export interface ErrorModel {
     fieldValidationErrors: fieldValidationError[];
     statusCode: number;
     message: string;
+    error: string;
+    status: number;
   };
 }
 

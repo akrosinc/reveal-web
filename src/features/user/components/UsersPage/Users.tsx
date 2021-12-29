@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
 import UsersTable from "../../../../components/Table/UsersTable";
 import { UserModel } from "../../../user/providers/types";
-import { getUserList } from "../../../user/api";
+import { getUserList } from "../../api/";
 import { useAppDispatch } from "../../../../store/hooks";
 import Paginator from "../../../../components/Pagination";
 import { DebounceInput } from "react-debounce-input";

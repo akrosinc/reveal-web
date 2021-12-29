@@ -3,13 +3,13 @@ import { Button, Form } from "react-bootstrap";
 import {
   createOrganization,
   getOrganizationListSummary,
-} from "../../../../organization/api";
-import { OrganizationModel } from "../../../../organization/providers/types";
+} from "../../api";
+import { OrganizationModel } from "../../../organization/providers/types";
 import { useForm } from "react-hook-form";
-import { useAppDispatch } from "../../../../../store/hooks";
-import { showLoader } from "../../../../reducers/loader";
+import { useAppDispatch } from "../../../../store/hooks";
+import { showLoader } from "../../../reducers/loader";
 import { toast } from "react-toastify";
-import { ErrorModel } from "../../../../../api/providers";
+import { ErrorModel } from "../../../../api/providers";
 
 interface Props {
   show: boolean;

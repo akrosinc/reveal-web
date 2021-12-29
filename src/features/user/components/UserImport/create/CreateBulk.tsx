@@ -1,5 +1,5 @@
 import { Button, Form } from "react-bootstrap";
-import { uploadUserCsv } from "../../../../user/api";
+import { uploadUserCsv } from "../../../api";
 import { useForm } from "react-hook-form";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { showLoader } from "../../../../reducers/loader";
@@ -34,12 +34,12 @@ const CreateBulk = ({ handleClose }: Props) => {
       toast.promise(uploadUserCsv(formData), {
         pending: "CSV file is uploading...",
         success: {
-          render({ data }) {
+          render({ data }: any) {
             console.log(data)
             reset();
             dispatch(showLoader(false));
             handleClose();
-            return "CSV file uploaded successfully, you can track user creation progress in bulk import section.";
+            return `CSV file uploaded successfully, you can track user creation progress in bulk import section with identifier ${data.identifier}`;
           },
         },
         error: {

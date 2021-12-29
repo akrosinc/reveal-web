@@ -4,13 +4,13 @@ import { BsPerson } from "react-icons/bs";
 import { useAppSelector } from "../../../store/hooks";
 import { Link } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
-import { MAIN_MENU } from "./menuConstants";
+import { MAIN_MENU } from "./menuItems";
 import AuthorizedElement from "../../AuthorizedElement";
 import i18n, { LOCALES } from "../../../i18n";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { setToBrowser } from "../../../utils";
-
+import "./index.css";
 
 export default function NavbarComponent() {
   const { t } = useTranslation();
@@ -18,10 +18,10 @@ export default function NavbarComponent() {
   const [language, setLanguage] = useState(i18n.language);
 
   let user = useAppSelector((state) => state.user.value);
-  const changeLaguagePrefferences = (event: any) => {
-    setLanguage(event.target.value);
-    i18n.changeLanguage(event.target.value);
-    setToBrowser("locale", event.target.value);
+  const changeLaguagePrefferences = (lang: string) => {
+    setLanguage(lang);
+    i18n.changeLanguage(lang);
+    setToBrowser("locale", lang);
   };
 
   return (
@@ -42,19 +42,21 @@ export default function NavbarComponent() {
                   return (
                     <AuthorizedElement key={index} roles={el.roles}>
                       <NavDropdown
-                        title={t('topNav.' + el.pageTitle)}
+                        title={t("topNav." + el.pageTitle)}
                         id="collasible-nav-dropdown"
                       >
                         {el.dropdown.map((child, childIndex) => {
                           return (
-                            <AuthorizedElement key={index + "." + childIndex} roles={child.roles}>
+                            <AuthorizedElement
+                              key={index + "." + childIndex}
+                              roles={child.roles}
+                            >
                               <NavDropdown.Item
                                 as={Link}
                                 role="button"
                                 to={child.route}
-                                className="py-2"
                               >
-                                {t('topNav.' + child.pageTitle)}
+                                {t("topNav." + child.pageTitle)}
                               </NavDropdown.Item>
                             </AuthorizedElement>
                           );
@@ -66,7 +68,7 @@ export default function NavbarComponent() {
                   return (
                     <AuthorizedElement key={index} roles={el.roles}>
                       <Link to={el.route} className="nav-link">
-                        {t('topNav.' + el.pageTitle)}
+                        {t("topNav." + el.pageTitle)}
                       </Link>
                     </AuthorizedElement>
                   );
@@ -75,46 +77,56 @@ export default function NavbarComponent() {
             </Nav>
           ) : null}
           {keycloak.authenticated ? (
-            <Nav style={{ alignItems: "center" }}>
-              <BsPerson />
-              <NavDropdown
-                title={user !== null ? user.preferred_username : "User Profile"}
-                id="collasible-nav-dropdown"
-                align="end"
-              >
-                <NavDropdown.Item
-                  onClick={() => {
-                    keycloak.logout();
-                  }}
+            <Nav>
+              <div className="d-flex align-items-center">
+                <BsPerson />
+                <NavDropdown
+                  title={
+                    user !== null ? user.preferred_username : "User Profile"
+                  }
+                  id="collasible-nav-dropdown"
+                  align="end"
                 >
-                  {t('topNav.logOut')}
-                </NavDropdown.Item>
-              </NavDropdown>
+                  <NavDropdown.Item
+                    className="text-center"
+                    onClick={() => {
+                      keycloak.logout();
+                    }}
+                  >
+                    {t("topNav.logOut")}
+                  </NavDropdown.Item>
+                </NavDropdown>
+              </div>
             </Nav>
           ) : (
             <Nav>
               <Nav.Link
-                className="btn btn-success text-white"
-                style={{ width: "100px" }}
+                className="btn btn-success text-white mw-100"
                 onClick={() => keycloak.login()}
               >
-                {t('topNav.logIn')}
+                {t("topNav.logIn")}
               </Nav.Link>
             </Nav>
           )}
           <Nav>
-            <Nav.Link>
-              <form id="language-form">
-                <select
-                  value={language}
-                  className="form-control input-sm"
-                  id="language-selection"
-                  onChange={changeLaguagePrefferences}
-                >
-                  {LOCALES.map((lang, index) => <option key={index} value={lang}>{lang.toUpperCase()}</option>)}
-                </select>
-              </form>
-            </Nav.Link>
+            <NavDropdown title={language.toUpperCase()} align="end">
+              <NavDropdown.Item
+                className="text-center"
+                onClick={() => {
+                  changeLaguagePrefferences(LOCALES[0]);
+                }}
+              >
+                <span className={"fi me-2 fi-gb"}></span>
+                {LOCALES[0].toUpperCase()}
+              </NavDropdown.Item>
+              <NavDropdown.Item
+                className="text-center"
+                onClick={() => changeLaguagePrefferences(LOCALES[1])}
+              >
+                <span className={"fi me-2 fi-de"}></span>
+                {LOCALES[1].toUpperCase()}
+              </NavDropdown.Item>
+            </NavDropdown>
           </Nav>
         </Navbar.Collapse>
       </Container>

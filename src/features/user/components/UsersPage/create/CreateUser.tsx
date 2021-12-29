@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import Select, { MultiValue } from "react-select";
-import { createUser } from "../../../../user/api";
+import { createUser } from "../../../api";
 import {
   getAllOrganizations,
   getSecurityGroups,
 } from "../../../../organization/api";
 import { useForm } from "react-hook-form";
-import { CreateUserModel, UserModel } from "../../../../user/providers/types";
+import { CreateUserModel } from "../../../providers/types";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { showLoader } from "../../../../reducers/loader";
 import { toast } from "react-toastify";
@@ -117,13 +117,12 @@ const CreateUser = ({ show, handleClose }: Props) => {
       pending: "Loading...",
       success: {
         render({ data }) {
-          let res = data as UserModel;
           reset();
           setSelectedOrganizations([]);
           setSelectedSecurityGroups([]);
           dispatch(showLoader(false));
           handleClose();
-          return `User with id: ${res.identifier} created successfully.`;
+          return `User ${newUser.userName} created successfully.`;
         },
       },
       error: {

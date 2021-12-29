@@ -5405,6 +5405,11 @@ find-up@^3.0.0:
   dependencies:
     locate-path "^3.0.0"
 
+flag-icons@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/flag-icons/-/flag-icons-6.0.0.tgz#0ff45fca76ca7bf96297dbb8ef4f25d445584284"
+  integrity sha512-DHibS8eGjwGehRReqZRuIhtVp9qt2XIqBUBY3sX1U+dkVjbKVPjfidkQ0LFDA5dtds9seGooEl8XxlUCN1A4tA==
+
 flat-cache@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/flat-cache/-/flat-cache-3.0.4.tgz#61b0338302b2fe9f957dcc32fc2a87f1c3048b11"

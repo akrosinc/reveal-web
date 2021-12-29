@@ -3,18 +3,18 @@ import { useCallback, useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { ErrorModel } from "../../../../../api/providers";
-import { ConfirmDialog } from "../../../../../components/Dialogs";
-import { useAppDispatch } from "../../../../../store/hooks";
-import { cancelTokenGenerator } from "../../../../../utils";
+import { ErrorModel } from "../../../../api/providers";
+import { ConfirmDialog } from "../../../../components/Dialogs";
+import { useAppDispatch } from "../../../../store/hooks";
+import { cancelTokenGenerator } from "../../../../utils";
 import {
   deleteOrganizationById,
   getOrganizationById,
   getOrganizationListSummary,
   updateOrganization,
-} from "../../../../organization/api";
-import { OrganizationModel } from "../../../../organization/providers/types";
-import { showLoader } from "../../../../reducers/loader";
+} from "../../api";
+import { OrganizationModel } from "../../../organization/providers/types";
+import { showLoader } from "../../../reducers/loader";
 
 interface Props {
   show: boolean;
