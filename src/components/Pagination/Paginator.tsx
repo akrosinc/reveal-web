@@ -12,11 +12,13 @@ interface Props {
 const Paginator = ({ totalElements, totalPages, size, page, paginationHandler }: Props) => {
   let items = [];
   for (let number = 0; number <= totalPages - 1; number++) {
-    items.push(
-      <Pagination.Item key={number} active={number === page} onClick={() => number !== page ? paginationHandler(size, number) : null}>
-        {number + 1}
-      </Pagination.Item>
-    );
+    if (number === page || number === page -1 || number === page + 1) {
+      items.push(
+        <Pagination.Item key={number} active={number === page} onClick={() => number !== page ? paginationHandler(size, number) : null}>
+          {number + 1}
+        </Pagination.Item>
+      );
+    }
   }
 
   return (

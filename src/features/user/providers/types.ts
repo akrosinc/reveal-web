@@ -33,3 +33,26 @@ export interface EditUserModel {
   organizations?: string[];
   securityGroups: string[];
 }
+
+export interface UserBulk {
+  identifier: string;
+  filename: string;
+  uploadDatetime: Date;
+  status: BulkStatus;
+}
+
+export enum BulkStatus {
+  PROCESSING,
+  COMPLETE,
+}
+
+export interface BulkDetailsModel {
+  username: string;
+  message: string;
+  status: BulkEntryStatus;
+}
+
+export enum BulkEntryStatus {
+  ERROR,
+  SUCCESSFUL
+}

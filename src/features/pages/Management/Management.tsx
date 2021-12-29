@@ -1,12 +1,12 @@
 import { Container, Tab, Tabs } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { USER_MANAGEMENT } from "../../../constants";
-import Organization from './OrganizationPage/Organization';
-import UserImport from "./UserImport/UserImport";
-import Users from "./UsersPage/Users";
+import Organization from '../../organization/components';
+import UserImport from "../../user/components/UserImport/UserImport";
+import Users from "../../user/components/UsersPage";
 
 
-const UserManagement = () => {
+const Management = () => {
 
   let { tab } = useParams();
   let navigate = useNavigate();
@@ -37,4 +37,4 @@ const UserManagement = () => {
   );
 };
 
-export default UserManagement;
+export default Management;

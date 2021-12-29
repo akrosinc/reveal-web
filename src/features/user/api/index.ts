@@ -2,7 +2,7 @@ import { CancelToken } from "axios";
 import api from "../../../api/axios";
 import { PageableModel } from "../../../api/providers";
 import { USER } from "../../../constants";
-import { CreateUserModel, EditUserModel, UserModel } from "../providers/types";
+import { BulkDetailsModel, CreateUserModel, EditUserModel, UserBulk, UserModel } from "../providers/types";
 
 export const getUserList = async (size: number, page: number, search?: string,): Promise<PageableModel<UserModel>> => {
   const data = await api
@@ -46,6 +46,20 @@ export const deleteUserById = async (id: string): Promise<UserModel> => {
 export const uploadUserCsv = async (csv: FormData): Promise<string> => {
   const data = await api
     .post(USER + '/bulk', csv)
+    .then((response) => response.data);
+  return data;
+};
+
+export const getBulkList = async (size: number, page: number, search?: string): Promise<PageableModel<UserBulk>> => {
+  const data = await api
+    .get<PageableModel<UserBulk>>(USER + `/bulk?search=${search !== undefined ? search : ""}&size=${size}&page=${page}`)
+    .then((response) => response.data);
+  return data;
+};
+
+export const getBulkById = async (size: number, page: number, id: string, search?: string,): Promise<PageableModel<BulkDetailsModel>> => {
+  const data = await api
+    .get<PageableModel<BulkDetailsModel>>(USER + `/bulk/${id}?size=${size}&page=${page}`)
     .then((response) => response.data);
   return data;
 };

@@ -3,19 +3,19 @@ import { Col, Row, Button } from "react-bootstrap";
 import {
   getOrganizationCount,
   getOrganizationList,
-} from "../../../organization/api";
-import { OrganizationModel } from "../../../organization/providers/types";
-import OrganizationTable from "../../../../components/Table/OrganizationsTable";
-import Paginator from "../../../../components/Pagination";
-import { useAppDispatch } from "../../../../store/hooks";
-import { showLoader } from "../../../reducers/loader";
+} from "../api";
+import { OrganizationModel } from "../providers/types";
+import OrganizationTable from "../../../components/Table/OrganizationsTable";
+import Paginator from "../../../components/Pagination";
+import { useAppDispatch } from "../../../store/hooks";
+import { showLoader } from "../../reducers/loader";
 import CreateOrganization from "./create";
-import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
+import { PAGINATION_DEFAULT_SIZE } from "../../../constants";
 import { DebounceInput } from "react-debounce-input";
-import { ActionDialog } from "../../../../components/Dialogs/";
+import { ActionDialog } from "../../../components/Dialogs/";
 import EditOrganization from "./edit";
 import { toast } from "react-toastify";
-import { PageableModel, ErrorModel } from "../../../../api/providers";
+import { PageableModel, ErrorModel } from "../../../api/providers";
 
 const columns = ["Name", "Type", "Active"];
 

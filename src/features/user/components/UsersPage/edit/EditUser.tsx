@@ -134,9 +134,9 @@ const EditUser = ({ userId, handleClose }: Props) => {
             },
           },
           error: {
-            render({ data }: ErrorModel) {
-              dispatch(showLoader(false))
-              return data.message;
+            render(error: ErrorModel) {
+              dispatch(showLoader(false));
+              return error.data.message !== undefined ? error.data.message : error.data.error;
             },
           },
         })
@@ -285,31 +285,12 @@ const EditUser = ({ userId, handleClose }: Props) => {
           onChange={organizationSelectHandler}
         />
       </Form.Group>
-      {edit ? (
-        <>
-          <Form.Group className="mb-3">
-            <Form.Label>Change password</Form.Label>
-            <Form.Control
-              type="password"
-              placeholder="Enter new password"
-              {...register("password", { required: false })}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3 d-flex">
-            <Form.Label>
-              Request user to change password after first login?
-            </Form.Label>
-            <Form.Check
-              className="ms-2"
-              type="checkbox"
-              {...register("isTemp", { required: false })}
-            />
-          </Form.Group>
-        </>
-      ) : null}
       <hr />
       {edit ? (
         <>
+        <Button className="float-start">
+        Change password
+        </Button>
           <Button
             className="float-end"
             variant="primary"
@@ -364,5 +345,29 @@ const EditUser = ({ userId, handleClose }: Props) => {
     </Form>
   );
 };
+
+/**
+ * To do - Add user password screen
+ * <>
+          <Form.Group className="mb-3">
+            <Form.Label>Change password</Form.Label>
+            <Form.Control
+              type="password"
+              placeholder="Enter new password"
+              {...register("password", { required: false })}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3 d-flex">
+            <Form.Label>
+              Request user to change password after first login?
+            </Form.Label>
+            <Form.Check
+              className="ms-2"
+              type="checkbox"
+              {...register("isTemp", { required: false })}
+            />
+          </Form.Group>
+        </>
+ */
 
 export default EditUser;

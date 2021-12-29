@@ -1,5 +1,5 @@
 import "./App.css";
-import NavbarComponent from "../components/Layout/Navbar/Navbar";
+import NavbarComponent from "../components/Layout/Navbar";
 import Footer from "../components/Layout/Footer/Footer";
 import Router from "../components/Router";
 import { useKeycloak } from "@react-keycloak/web";
@@ -10,6 +10,8 @@ import { Container } from "react-bootstrap";
 import { toast, ToastContainer } from 'react-toastify';
 import Loader from '../components/Layout/Loader';
 import 'react-toastify/dist/ReactToastify.css';
+import { showLoader } from "../features/reducers/loader";
+import 'flag-icons/css/flag-icons.css';
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
@@ -18,6 +20,7 @@ function App() {
   useEffect(() => {
     // if keycloak is initialized store user in state
     if (initialized) {
+      dispatch(showLoader(false));
       keycloak.onTokenExpired = () => console.log("expired token");
       keycloak.loadUserInfo().then((res) => {
         let userDetails: any = {
@@ -28,6 +31,8 @@ function App() {
         dispatch(login(userDetails));
         toast.success("Welcome back " + userDetails.preferred_username)
       });
+    } else {
+      dispatch(showLoader(true));
     }
   });
 
