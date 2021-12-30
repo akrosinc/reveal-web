@@ -11,7 +11,6 @@ import { toast, ToastContainer } from 'react-toastify';
 import Loader from '../components/Layout/Loader';
 import 'react-toastify/dist/ReactToastify.css';
 import { showLoader } from "../features/reducers/loader";
-import 'flag-icons/css/flag-icons.css';
 
 function App() {
   const { keycloak, initialized } = useKeycloak();

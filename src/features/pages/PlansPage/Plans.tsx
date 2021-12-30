@@ -61,7 +61,13 @@ const Plans = () => {
 
   const loadBuildings = () => {
     buildingData.forEach((jsonData, index) => {
-      createBuilding(jsonData, "building." + index, "#fff000");
+      createBuilding(
+        jsonData,
+        "building." + index,
+        "#000000".replace(/0/g, function () {
+          return (~~(Math.random() * 16)).toString(16);
+        })
+      );
     });
   };
 
@@ -71,8 +77,8 @@ const Plans = () => {
     status: string
   ) => {
     if (map?.current?.getSource(buildingName) !== undefined) {
-      map.current.removeSource(buildingName);
       map.current.removeLayer(buildingName + "fill");
+      map.current.removeSource(buildingName);
     } else {
       if (map.current !== undefined) {
         map.current.addSource(buildingName, {
@@ -115,28 +121,31 @@ const Plans = () => {
             )
             .setMaxWidth("400px")
             .addTo(map!.current!);
-            const handler = () => {
-              setShow(true);
-              setBuildingId(feature);
-            };
-            document.getElementById('view-full')?.addEventListener('click', handler);
+          const handler = () => {
+            setShow(true);
+            setBuildingId(feature);
+          };
+          document
+            .getElementById("view-full")
+            ?.addEventListener("click", handler);
 
-            map?.current?.flyTo({
-              center: e.lngLat,
-              zoom: 17
-            });
+          map?.current?.flyTo({
+            center: e.lngLat,
+            zoom: 17,
+          });
         });
       }
     }
   };
 
- const createRegion = (
+  const createRegion = (
     coordinates: number[][],
     regionName: string,
     borderColor: string
   ) => {
     if (map?.current?.getSource(regionName) !== undefined) {
-      
+      map?.current?.removeLayer(regionName + "outline");
+      map?.current?.removeSource(regionName);
     } else {
       map?.current?.addSource(regionName, {
         type: "geojson",
@@ -164,7 +173,7 @@ const Plans = () => {
 
       map?.current?.flyTo({
         center: [24.65, -34.17],
-        zoom: 16
+        zoom: 16,
       });
     }
   };
@@ -190,11 +199,28 @@ const Plans = () => {
               onClick={() =>
                 createRegion(
                   [
-                    [24.64930772781372, -34.17155635814535],
-                    [24.653502702713013, -34.17155635814535],
-                    [24.653502702713013, -34.16943482299446],
-                    [24.64930772781372, -34.16943482299446],
-                    [24.64930772781372, -34.17155635814535],
+                    [24.649742245674133, -34.170770774986714],
+                    [24.64981734752655, -34.17131668948224],
+                    [24.652150869369503, -34.171432085590176],
+                    [24.65321838855743, -34.1715252900237],
+                    [24.653304219245907, -34.171010445200054],
+                    [24.6530681848526, -34.17087729516556],
+                    [24.652960896492004, -34.17060211776195],
+                    [24.6530681848526, -34.17048672051923],
+                    [24.652896523475643, -34.17040683002801],
+                    [24.652644395828244, -34.17014496622104],
+                    [24.652633666992188, -34.16993192388043],
+                    [24.652622938156128, -34.16969225060447],
+                    [24.652563929557797, -34.16955909849042],
+                    [24.65223670005798, -34.16951027599597],
+                    [24.651764631271362, -34.169554660083],
+                    [24.651233553886414, -34.16968781220406],
+                    [24.65081512928009, -34.1698431560798],
+                    [24.650246500968933, -34.16997186936026],
+                    [24.649876356124878, -34.170060637025514],
+                    [24.649538397789, -34.170207103469096],
+                    [24.649624228477478, -34.1706243095213],
+                    [24.649742245674133, -34.170770774986714],
                   ],
                   "fds1-saxv-12sa",
                   "#fff000"
@@ -222,18 +248,16 @@ const Plans = () => {
         </Col>
       </Row>
       <Modal show={show}>
-              <Modal.Header>
-                Custom action modal
-              </Modal.Header>
-              <Modal.Body>
-                You have selected building with id: {buildingId}
-                <br />
-                Here we can do all actions with this building.
-              </Modal.Body>
-              <Modal.Footer>
-                <Button onClick={() => setShow(false)}>Close</Button>
-              </Modal.Footer>
-            </Modal>
+        <Modal.Header>Custom action modal</Modal.Header>
+        <Modal.Body>
+          You have selected building with id: {buildingId}
+          <br />
+          Here we can do all actions with this building.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={() => setShow(false)}>Close</Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

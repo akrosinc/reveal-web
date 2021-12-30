@@ -2,7 +2,7 @@ import { OrganizationModel } from "../../organization/providers/types";
 
 export interface UserModel {
   identifier: string;
-  userName: string;
+  username: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -13,7 +13,7 @@ export interface UserModel {
 }
 
 export interface CreateUserModel {
-  userName: string;
+  username: string;
   firstName: string;
   lastName: string;
   email: string | null;

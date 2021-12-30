@@ -75,15 +75,16 @@ const Users = () => {
   };
 
   const sortHanlder = (field: string, sortDirection: boolean) => {
-    console.log(field, sortDirection);
     if (userList !== undefined) {
       getUserList(
         userList.size,
-        userList.pageable.pageNumber,
+        0,
         currentSearchInput,
         field,
         sortDirection
-      )
+      ).then(res => {
+        setUserList(res);
+      })
     }
   }
 

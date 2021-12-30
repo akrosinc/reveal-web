@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { setToBrowser } from "../../../utils";
 import "./index.css";
+import 'flag-icons/css/flag-icons.css';
 
 export default function NavbarComponent() {
   const { t } = useTranslation();

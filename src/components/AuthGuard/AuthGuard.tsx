@@ -16,12 +16,16 @@ const AuthGuard = ({ children, roles }: Props) => {
   const { keycloak } = useKeycloak();
 
   const isAutherized = (roles: string[], clientResource?: string) => {
+    //If all provided roles match condition user has permissions
       if (keycloak && roles) {
-          return roles.some(r => {
+          let a = roles.filter(r => {
               const realm =  keycloak.hasRealmRole(r);
               const managementResource = keycloak.hasResourceRole(r, "realm-management");
               return realm || managementResource;
           });
+          if (a.length === roles.length) {
+            return true;
+          }
       }
       return false;
   }
