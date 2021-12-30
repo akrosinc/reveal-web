@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button, Form, Row, Col } from "react-bootstrap";
-import { deleteUserById, getUserById, updateUser } from "../../../../user/api";
+import { deleteUserById, getUserById, resetUserPassword, updateUser } from "../../../../user/api";
 import { EditUserModel, UserModel } from "../../../../user/providers/types";
 import { cancelTokenGenerator } from "../../../../../utils";
 import { ConfirmDialog } from "../../../../../components/Dialogs";
@@ -8,10 +8,13 @@ import { showLoader } from "../../../../reducers/loader";
 import { useAppDispatch } from "../../../../../store/hooks";
 import { useForm } from "react-hook-form";
 import Select, { MultiValue } from "react-select";
-import { getOrganizationListSummary, getSecurityGroups } from "../../../../organization/api";
+import {
+  getOrganizationListSummary,
+  getSecurityGroups,
+} from "../../../../organization/api";
 import { toast } from "react-toastify";
 import { ErrorModel } from "../../../../../api/providers";
-import { CancelToken } from "axios";
+import { AxiosResponse, CancelToken } from "axios";
 
 interface Props {
   userId: string;
@@ -37,6 +40,7 @@ interface Options {
 const EditUser = ({ userId, handleClose }: Props) => {
   const [user, setUser] = useState<UserModel>();
   const [edit, setEdit] = useState(false);
+  const [changePassword, setChangePassword] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [selectedSecurityGroups, setSelectedSecurityGroups] =
     useState<Options[]>();
@@ -55,7 +59,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
   const setStartValues = useCallback(
     (userDetails: UserModel) => {
       setUser(userDetails);
-      setValue("username", userDetails.userName);
+      setValue("username", userDetails.username);
       setValue("firstname", userDetails.firstName);
       setValue("lastname", userDetails.lastName);
       setValue("email", userDetails.email);
@@ -77,7 +81,9 @@ const EditUser = ({ userId, handleClose }: Props) => {
           };
         })
       );
-    }, [setValue]);
+    },
+    [setValue]
+  );
 
   const getData = useCallback(
     (cancelToken: CancelToken) => {
@@ -93,14 +99,16 @@ const EditUser = ({ userId, handleClose }: Props) => {
           );
         })
         .catch((err) => toast.error(err.toString()));
-      getOrganizationListSummary().then(res => {
-        setOrganizations(res.content.map(org => {
-          return {
-            label: org.name,
-            value: org.identifier
-          }
-        }));
-      }) 
+      getOrganizationListSummary().then((res) => {
+        setOrganizations(
+          res.content.map((org) => {
+            return {
+              label: org.name,
+              value: org.identifier,
+            };
+          })
+        );
+      });
       getUserById(userId, cancelToken)
         .then((res) => {
           setStartValues(res);
@@ -123,59 +131,96 @@ const EditUser = ({ userId, handleClose }: Props) => {
     setShowDialog(false);
     if (action) {
       dispatch(showLoader(true));
-      toast
-        .promise(deleteUserById(userId), {
-          pending: "Loading...",
-          success: {
-            render() {
-              dispatch(showLoader(false))
-              handleClose();
-              return `User with id ${userId} deleted successfully`;
-            },
+      toast.promise(deleteUserById(userId), {
+        pending: "Loading...",
+        success: {
+          render() {
+            dispatch(showLoader(false));
+            handleClose();
+            return `User with id ${userId} deleted successfully`;
           },
-          error: {
-            render(error: ErrorModel) {
-              dispatch(showLoader(false));
-              return error.data.message !== undefined ? error.data.message : error.data.error;
-            },
+        },
+        error: {
+          render(error: ErrorModel) {
+            dispatch(showLoader(false));
+            return error.data.message !== undefined
+              ? error.data.message
+              : error.data.error;
           },
-        })
+        },
+      });
     }
   };
 
   const submitHandler = (formValues: RegisterValues) => {
     dispatch(showLoader(true));
-    let updatedUser: EditUserModel = {
-      identifier: userId,
-      email: formValues.email,
-      firstName: formValues.firstname,
-      lastName: formValues.lastname,
-      organizations: selectedOrganizations?.map((el) => el.value) ?? [],
-      securityGroups: selectedSecurityGroups?.map((el) => el.value) ?? [],
-      password: formValues.password,
-      tempPassword: formValues.isTemp,
-    };
-    toast
-      .promise(updateUser(updatedUser), {
+    if (changePassword) {
+      const passwordModel = {
+        identifier: userId,
+        password: formValues.password,
+        tempPassword: formValues.isTemp,
+      }
+      console.log(passwordModel);
+      toast.promise(resetUserPassword(passwordModel), {
         pending: "Loading...",
         success: {
-          render() {
-            setEdit(false);
-            return `User with id ${userId} updated successfully.`;
-          },
+          render({ data }) {
+            const response = data as AxiosResponse;
+            if (response.status === 204) {
+              console.log(response);
+              setChangePassword(false);
+              dispatch(showLoader(false));
+              return "Password updated successfully."
+            }
+          }
         },
         error: {
-          render({ data }: ErrorModel) {
-            console.log(data.statusCode);
-            return data.fieldValidationErrors.map((err) => [
-              "Error on field " + err.field,
-              " - ",
-              err.messageKey,
-            ]);
-          },
-        },
+          render ( { data }: ErrorModel ) {
+            dispatch(showLoader(false));
+            console.log(data);
+            return data.error;
+          }
+        }
       })
-      .finally(() => dispatch(showLoader(false)));
+      resetUserPassword(passwordModel).then(res => {
+        if(res.status === 204) {
+          setChangePassword(false);
+          dispatch(showLoader(false));
+        }
+      }, err => {
+
+      })
+    } else {
+      let updatedUser: EditUserModel = {
+        identifier: userId,
+        email: formValues.email,
+        firstName: formValues.firstname,
+        lastName: formValues.lastname,
+        organizations: selectedOrganizations?.map((el) => el.value) ?? [],
+        securityGroups: selectedSecurityGroups?.map((el) => el.value) ?? [],
+      };
+      toast
+        .promise(updateUser(updatedUser), {
+          pending: "Loading...",
+          success: {
+            render() {
+              setEdit(false);
+              return `User with id ${userId} updated successfully.`;
+            },
+          },
+          error: {
+            render({ data }: ErrorModel) {
+              console.log(data.statusCode);
+              return data.fieldValidationErrors.map((err) => [
+                "Error on field " + err.field,
+                " - ",
+                err.messageKey,
+              ]);
+            },
+          },
+        })
+        .finally(() => dispatch(showLoader(false)));
+    }
   };
 
   const selectHandler = (
@@ -184,7 +229,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
     const values = selectedOption.map((selected) => {
       return selected;
     });
-    setValue('securityGroups', values, { shouldDirty: true })
+    setValue("securityGroups", values, { shouldDirty: true });
     setSelectedSecurityGroups(values);
   };
 
@@ -194,7 +239,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
     const values = selectedOption.map((selected) => {
       return selected;
     });
-    setValue('organizations', values, { shouldDirty: true })
+    setValue("organizations", values, { shouldDirty: true });
     setSelectedOrganizations(values);
   };
 
@@ -205,7 +250,6 @@ const EditUser = ({ userId, handleClose }: Props) => {
         <Form.Control
           readOnly={true}
           type="text"
-          placeholder="Enter last name"
           defaultValue={user?.identifier}
         />
       </Form.Group>
@@ -214,83 +258,115 @@ const EditUser = ({ userId, handleClose }: Props) => {
         <Form.Control
           readOnly={true}
           type="username"
-          placeholder="Enter last name"
-          defaultValue={user?.userName}
+          defaultValue={user?.username}
         />
       </Form.Group>
-      <Row>
-        <Col>
+      {changePassword ? (
+        <>
           <Form.Group className="mb-3">
-            <Form.Label>First name</Form.Label>
+            <Form.Label>Change password</Form.Label>
+            <Form.Control
+              type="password"
+              placeholder="Enter new password"
+              {...register("password", { required: true, minLength: 5 })}
+            />
+            {errors.password && (
+                  <Form.Label className="text-danger">
+                    Password must containt at least 5 characters
+                  </Form.Label>
+                )}
+          </Form.Group>
+          <Form.Group className="mb-3 d-flex">
+            <Form.Label>
+              Request user to change password after first login?
+            </Form.Label>
+            <Form.Check
+              className="ms-2"
+              type="checkbox"
+              {...register("isTemp", { required: false })}
+            />
+          </Form.Group>
+        </>
+      ) : (
+        <>
+          <Row>
+            <Col>
+              <Form.Group className="mb-3">
+                <Form.Label>First name</Form.Label>
+                <Form.Control
+                  readOnly={!edit}
+                  type="text"
+                  placeholder="Enter first name"
+                  {...register("firstname", { required: true })}
+                />
+                {errors.firstname && (
+                  <Form.Label className="text-danger">
+                    First name must not be empty.
+                  </Form.Label>
+                )}
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group className="mb-3">
+                <Form.Label>Last name</Form.Label>
+                <Form.Control
+                  readOnly={!edit}
+                  type="text"
+                  placeholder="Enter last name"
+                  {...register("lastname", { required: true })}
+                />
+                {errors.lastname && (
+                  <Form.Label className="text-danger">
+                    Last name must not be empty.
+                  </Form.Label>
+                )}
+              </Form.Group>
+            </Col>
+          </Row>
+          <Form.Group className="mb-3">
+            <Form.Label>Email address</Form.Label>
             <Form.Control
               readOnly={!edit}
-              type="text"
-              placeholder="Enter first name"
-              {...register("firstname", { required: true })}
+              type="email"
+              placeholder="Enter email"
+              defaultValue={user?.email}
+              {...register("email", { required: false })}
             />
-            {errors.firstname && (
-              <Form.Label className="text-danger">
-                First name must not be empty.
-              </Form.Label>
-            )}
           </Form.Group>
-        </Col>
-        <Col>
           <Form.Group className="mb-3">
-            <Form.Label>Last name</Form.Label>
-            <Form.Control
-              readOnly={!edit}
-              type="text"
-              placeholder="Enter last name"
-              {...register("lastname", { required: true })}
+            <Form.Label>Security groups</Form.Label>
+            <Select
+              {...register("securityGroups", { required: false })}
+              isDisabled={!edit}
+              isMulti
+              value={selectedSecurityGroups}
+              options={groups}
+              onChange={selectHandler}
             />
-            {errors.lastname && (
-              <Form.Label className="text-danger">
-                Last name must not be empty.
-              </Form.Label>
-            )}
           </Form.Group>
-        </Col>
-      </Row>
-      <Form.Group className="mb-3">
-        <Form.Label>Email address</Form.Label>
-        <Form.Control
-          readOnly={!edit}
-          type="email"
-          placeholder="Enter email"
-          defaultValue={user?.email}
-          {...register("email", { required: false })}
-        />
-      </Form.Group>
-      <Form.Group className="mb-3">
-        <Form.Label>Security groups</Form.Label>
-        <Select
-          {...register("securityGroups", { required: false })}
-          isDisabled={!edit}
-          isMulti
-          value={selectedSecurityGroups}
-          options={groups}
-          onChange={selectHandler}
-        />
-      </Form.Group>
 
-      <Form.Group className="mb-3">
-        <Form.Label>Organization</Form.Label>
-        <Select
-          {...register("organizations", { required: false })}
-          isDisabled={!edit}
-          isMulti
-          value={selectedOrganizations}
-          options={organizations}
-          onChange={organizationSelectHandler}
-        />
-      </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Organization</Form.Label>
+            <Select
+              {...register("organizations", { required: false })}
+              isDisabled={!edit}
+              isMulti
+              value={selectedOrganizations}
+              options={organizations}
+              onChange={organizationSelectHandler}
+            />
+          </Form.Group>
+        </>
+      )}
       <hr />
       {edit ? (
         <>
-        <Button className="float-start">
-        Change password
-        </Button>
+          <Button
+            className="float-start"
+            onClick={() => setChangePassword(!changePassword)}
+          >
+            Change password
+          </Button>
           <Button
             className="float-end"
             variant="primary"
@@ -301,7 +377,10 @@ const EditUser = ({ userId, handleClose }: Props) => {
           </Button>
           <Button
             className="float-end me-2 btn-secondary"
-            onClick={() => setEdit(!edit)}
+            onClick={() => {
+              setEdit(!edit);
+              setChangePassword(false);
+            }}
           >
             Discard changes
           </Button>
@@ -336,7 +415,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
           closeHandler={deleteHandler}
           message={
             "Are you sure you want to permanently delete the user " +
-            user?.userName
+            user?.username
           }
           title="Delete user"
           backdrop={true}
@@ -345,29 +424,5 @@ const EditUser = ({ userId, handleClose }: Props) => {
     </Form>
   );
 };
-
-/**
- * To do - Add user password screen
- * <>
-          <Form.Group className="mb-3">
-            <Form.Label>Change password</Form.Label>
-            <Form.Control
-              type="password"
-              placeholder="Enter new password"
-              {...register("password", { required: false })}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3 d-flex">
-            <Form.Label>
-              Request user to change password after first login?
-            </Form.Label>
-            <Form.Check
-              className="ms-2"
-              type="checkbox"
-              {...register("isTemp", { required: false })}
-            />
-          </Form.Group>
-        </>
- */
 
 export default EditUser;

@@ -6,6 +6,7 @@ import { showLoader } from "../../../../reducers/loader";
 import { getSecurityGroups } from "../../../../organization/api";
 import { toast } from "react-toastify";
 import { ErrorModel } from "../../../../../api/providers";
+import { DOWNLOAD_USER_BULK_TEMPLATE } from "../../../../../constants";
 
 interface RegisterValues {
   bulk: File[];
@@ -91,7 +92,7 @@ const CreateBulk = ({ handleClose }: Props) => {
       </Form.Group>
       <p>
         You can download CSV sample from{" "}
-        <a href="/SampleCSVFile.csv" download>
+        <a href={DOWNLOAD_USER_BULK_TEMPLATE} download>
           here
         </a>
       </p>

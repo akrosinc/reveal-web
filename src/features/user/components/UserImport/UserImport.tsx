@@ -5,6 +5,7 @@ import { ActionDialog } from "../../../../components/Dialogs";
 import Paginator from "../../../../components/Pagination";
 import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
 import { useAppDispatch } from "../../../../store/hooks";
+import { formatDate } from "../../../../utils";
 import { showLoader } from "../../../reducers/loader";
 import { getBulkById, getBulkList } from "../../api";
 import { BulkDetailsModel, UserBulk } from "../../providers/types";
@@ -15,7 +16,7 @@ const UserImport = () => {
   const [openCreate, setOpenCreate] = useState(false);
   const [openDetails, setOpenDetails] = useState(false);
   const [bulkList, setBulkList] = useState<PageableModel<UserBulk>>();
-  const [selectedBulk, setSelectedBulk] = useState<BulkDetailsModel[]>();
+  const [selectedBulk, setSelectedBulk] = useState<PageableModel<BulkDetailsModel>>();
   const [selectedBulkFile, setSelectedBulkFile] = useState<UserBulk>();
   const dispatch = useAppDispatch();
 
@@ -28,15 +29,24 @@ const UserImport = () => {
   };
 
   const paginationHandler = (size: number, page: number) => {
-    getBulkList(size, page).then((res) => {
-      setBulkList(res);
-    });
+    if (openDetails && selectedBulkFile !== undefined) {
+      dispatch(showLoader(true));
+      getBulkById(size, page, selectedBulkFile.identifier).then((res) => {
+        setSelectedBulk(res);
+        setSelectedBulkFile(selectedBulkFile);
+        dispatch(showLoader(false));
+      });
+    } else {
+      getBulkList(size, page).then((res) => {
+        setBulkList(res);
+      });
+    }
   };
 
   const openBulkById = (selectedFile: UserBulk) => {
     dispatch(showLoader(true));
-    getBulkById(1000, 0, selectedFile.identifier).then((res) => {
-      setSelectedBulk(res.content);
+    getBulkById(PAGINATION_DEFAULT_SIZE, 0, selectedFile.identifier).then((res) => {
+      setSelectedBulk(res);
       setSelectedBulkFile(selectedFile);
       setOpenDetails(true);
       dispatch(showLoader(false));
@@ -75,7 +85,7 @@ const UserImport = () => {
           {bulkList?.content?.map((el) => (
             <tr onClick={() => openBulkById(el)} key={el.identifier}>
               <td>{el.filename}</td>
-              <td>{el.uploadDatetime}</td>
+              <td>{formatDate(el.uploadDatetime)}</td>
               <td>{el.status}</td>
             </tr>
           ))}
@@ -98,11 +108,12 @@ const UserImport = () => {
           element={<CreateBulk handleClose={closeHandler} />}
         />
       )}
-      {openDetails && (
+      {openDetails && selectedBulk !== undefined && (
         <BulkDetails
-          userList={selectedBulk ?? []}
+          userList={selectedBulk}
           bulkFile={selectedBulkFile}
           handleClose={closeHandler}
+          paginationHandler={paginationHandler}
         />
       )}
     </>

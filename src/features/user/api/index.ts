@@ -1,12 +1,17 @@
-import { CancelToken } from "axios";
+import { AxiosResponse, CancelToken } from "axios";
 import api from "../../../api/axios";
 import { PageableModel } from "../../../api/providers";
 import { USER } from "../../../constants";
 import { BulkDetailsModel, CreateUserModel, EditUserModel, UserBulk, UserModel } from "../providers/types";
 
 export const getUserList = async (size: number, page: number, search?: string, sortField?: string, direction?: boolean): Promise<PageableModel<UserModel>> => {
+  let sortFieldFormatted = ""
+  if (sortField !== undefined) {
+    sortFieldFormatted = sortField.charAt(0).toLowerCase() + sortField.replace(/\s+/, "").slice(1);
+  }
   const data = await api
-    .get<PageableModel<UserModel>>(USER + `?search=${search !== undefined ? search : ""}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField ? sortField.toLowerCase() : ""},${direction ? "asc" : "desc"}`)
+    .get<PageableModel<UserModel>>(USER + 
+      `?search=${search !== undefined ? search : ""}&size=${size}&page=${page}&sort=${sortFieldFormatted},${direction ? "asc" : "desc"}`)
     .then((response) => response.data);
   return data;
 };
@@ -41,6 +46,14 @@ export const deleteUserById = async (id: string): Promise<UserModel> => {
     .then((response) => response.data);
   return data;
 };
+
+export const resetUserPassword = async (user: any): Promise<AxiosResponse> => {
+  const data = await api
+    .put(USER + `/resetPassword/${user.identifier}`, user)
+    .then((response) => response);
+  return data;
+};
+
 
 
 export const uploadUserCsv = async (csv: FormData): Promise<string> => {

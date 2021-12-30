@@ -104,7 +104,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
   const submitHandler = (formValues: RegisterValues) => {
     dispatch(showLoader(true));
     let newUser: CreateUserModel = {
-      userName: formValues.username,
+      username: formValues.username,
       email: formValues.email === "" ? null : formValues.email,
       firstName: formValues.firstname,
       lastName: formValues.lastname,
@@ -122,7 +122,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
           setSelectedSecurityGroups([]);
           dispatch(showLoader(false));
           handleClose();
-          return `User ${newUser.userName} created successfully.`;
+          return `User ${newUser.username} created successfully.`;
         },
       },
       error: {

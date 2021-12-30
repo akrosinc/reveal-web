@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Table } from "react-bootstrap";
-import { BsArrowUpCircleFill, BsArrowDownCircleFill } from "react-icons/bs";
 import { UserModel } from "../../features/user/providers/types";
 
 interface Props {
@@ -31,9 +30,9 @@ const UsersTable = ({ head, rows, clickHandler, sortHandler }: Props) => {
                   {el}
                   {activeSortField === el ? (
                     sortDirection ? (
-                      <BsArrowDownCircleFill className="ms-2" />
+                      " ▲"
                     ) : (
-                      <BsArrowUpCircleFill className="ms-2" />
+                      " ▼"
                     )
                   ) : null}
                 </th>
@@ -53,7 +52,7 @@ const UsersTable = ({ head, rows, clickHandler, sortHandler }: Props) => {
                       }
                     }}
                   >
-                    <td>{user.userName}</td>
+                    <td>{user.username}</td>
                     <td>{user.firstName}</td>
                     <td>{user.lastName}</td>
                     <td>
