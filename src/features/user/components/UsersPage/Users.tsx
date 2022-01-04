@@ -12,7 +12,7 @@ import { ActionDialog } from "../../../../components/Dialogs";
 import { showLoader } from "../../../reducers/loader";
 import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
 import { toast } from "react-toastify";
-import { PageableModel, ErrorModel } from "../../../../api/providers";
+import { PageableModel } from "../../../../api/providers";
 
 const Users = () => {
   const dispatch = useAppDispatch();
@@ -46,8 +46,8 @@ const Users = () => {
         .then((res) => {
           setUserList(res);
         })
-        .catch((error: ErrorModel) => {
-          toast.error(error.data !== undefined ? error.data.message : error.toString());
+        .catch((error) => {
+          toast.error(error.message);
         })
         .finally(() => {
           dispatch(showLoader(false));
