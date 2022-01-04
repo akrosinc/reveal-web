@@ -27,10 +27,12 @@ const Organization = () => {
   const [organizationCount, setOrganizationCount] = useState(0);
   const [selectedOrganizaton, setSelectedOrganization] = useState("");
   const [currentSearchInput, setCurrentSearchInput] = useState("");
+  const [currentSortField, setCurrentSortField] = useState("");
+  const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const handleClose = () => {
     setShow(false);
     setShowDetails(false);
-    loadData(PAGINATION_DEFAULT_SIZE, 0);
+    loadData(PAGINATION_DEFAULT_SIZE, 0, currentSearchInput, currentSortField, currentSortDirection);
   };
   const handleShow = () => setShow(true);
 
@@ -86,6 +88,8 @@ const Organization = () => {
 
   const sortHandler = (field: string, sortDirection: boolean) => {
     if (organizationList !== undefined) {
+      setCurrentSortField(field);
+      setCurrentSortDirection(sortDirection);
       loadData(organizationList.size,
         0,
         currentSearchInput,
@@ -109,6 +113,7 @@ const Organization = () => {
             placeholder="Search"
             debounceTimeout={800}
             onChange={(e) => filterData(e)}
+            disabled={organizationCount === 0}
           />
         </Col>
       </Row>

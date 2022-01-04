@@ -63,9 +63,9 @@ export const uploadUserCsv = async (csv: FormData): Promise<string> => {
   return data;
 };
 
-export const getBulkList = async (size: number, page: number, search?: string): Promise<PageableModel<UserBulk>> => {
+export const getBulkList = async (size: number, page: number, search?: string, sortField?: string, direction?: boolean): Promise<PageableModel<UserBulk>> => {
   const data = await api
-    .get<PageableModel<UserBulk>>(USER + `/bulk?search=${search !== undefined ? search : ""}&size=${size}&page=${page}`)
+    .get<PageableModel<UserBulk>>(USER + `/bulk?search=${search !== undefined ? search : ""}&size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ""},${direction ? "asc" : "desc"}`)
     .then((response) => response.data);
   return data;
 };

@@ -23,11 +23,13 @@ const Users = () => {
   const [showEdit, setShowEdit] = useState(false);
   const [userId, setUserId] = useState("");
   const [currentSearchInput, setCurrentSearchInput] = useState("");
+  const [currentSortField, setCurrentSortField] = useState("");
+  const [currentSortDirection, setCurrentSortDirection] = useState(false);
 
   const handleClose = () => {
     setShow(false);
     setShowEdit(false);
-    getUserList(PAGINATION_DEFAULT_SIZE, 0).then((res) => {
+    getUserList(PAGINATION_DEFAULT_SIZE, 0, currentSearchInput, currentSortField, currentSortDirection).then((res) => {
       setUserList(res);
     });
   };
@@ -76,6 +78,8 @@ const Users = () => {
 
   const sortHanlder = (field: string, sortDirection: boolean) => {
     if (userList !== undefined) {
+      setCurrentSortField(field);
+      setCurrentSortDirection(sortDirection);
       getUserList(
         userList.size,
         0,
@@ -106,6 +110,7 @@ const Users = () => {
             placeholder="Search"
             debounceTimeout={800}
             onChange={(e) => filterData(e)}
+            disabled={userList?.totalElements === 0}
           />
         </Col>
       </Row>

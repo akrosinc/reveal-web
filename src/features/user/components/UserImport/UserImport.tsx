@@ -12,20 +12,33 @@ import { BulkDetailsModel, UserBulk } from "../../providers/types";
 import CreateBulk from "./create";
 import BulkDetails from "./details";
 
+const columns = [
+  { name: "File name", sortValue: "filename" },
+  { name: "Upload Date", sortValue: "uploadedDatetime" },
+  { name: "Status", sortValue: "status" },
+];
+
 const UserImport = () => {
   const [openCreate, setOpenCreate] = useState(false);
   const [openDetails, setOpenDetails] = useState(false);
   const [bulkList, setBulkList] = useState<PageableModel<UserBulk>>();
-  const [selectedBulk, setSelectedBulk] = useState<PageableModel<BulkDetailsModel>>();
+  const [selectedBulk, setSelectedBulk] =
+    useState<PageableModel<BulkDetailsModel>>();
   const [selectedBulkFile, setSelectedBulkFile] = useState<UserBulk>();
+  const [currentSortField, setCurrentSortField] = useState("");
+  const [currentSortDirection, setCurrentSortDirection] = useState(false);
+  const [sortDirection, setSortDirection] = useState(false);
+  const [activeSortField, setActiveSortField] = useState("");
   const dispatch = useAppDispatch();
 
   const closeHandler = () => {
     setOpenCreate(false);
     setOpenDetails(false);
-    getBulkList(10, 0).then((res) => {
-      setBulkList(res);
-    });
+    getBulkList(10, 0, "", currentSortField, currentSortDirection).then(
+      (res) => {
+        setBulkList(res);
+      }
+    );
   };
 
   const paginationHandler = (size: number, page: number) => {
@@ -45,12 +58,14 @@ const UserImport = () => {
 
   const openBulkById = (selectedFile: UserBulk) => {
     dispatch(showLoader(true));
-    getBulkById(PAGINATION_DEFAULT_SIZE, 0, selectedFile.identifier).then((res) => {
-      setSelectedBulk(res);
-      setSelectedBulkFile(selectedFile);
-      setOpenDetails(true);
-      dispatch(showLoader(false));
-    });
+    getBulkById(PAGINATION_DEFAULT_SIZE, 0, selectedFile.identifier).then(
+      (res) => {
+        setSelectedBulk(res);
+        setSelectedBulkFile(selectedFile);
+        setOpenDetails(true);
+        dispatch(showLoader(false));
+      }
+    );
   };
 
   useEffect(() => {
@@ -58,6 +73,14 @@ const UserImport = () => {
       setBulkList(res);
     });
   }, []);
+
+  const sortHandler = (field: string, sortDirection: boolean) => {
+    if (bulkList !== undefined) {
+      setCurrentSortField(field);
+      setCurrentSortDirection(sortDirection);
+      getBulkList(bulkList.size, 0, "", field, sortDirection);
+    }
+  };
 
   return (
     <>
@@ -73,24 +96,42 @@ const UserImport = () => {
       </Row>
 
       <hr className="my-4" />
-      <Table bordered responsive>
-        <thead className="border border-2">
-          <tr>
-            <th>File name</th>
-            <th>Upload date</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {bulkList?.content?.map((el) => (
-            <tr onClick={() => openBulkById(el)} key={el.identifier}>
-              <td>{el.filename}</td>
-              <td>{formatDate(el.uploadDatetime)}</td>
-              <td>{el.status}</td>
+      {bulkList !== undefined && bulkList?.totalElements > 0 ? (
+        <Table bordered responsive>
+          <thead className="border border-2">
+            <tr>
+              {columns.map((el, index) => (
+                <th
+                  key={index}
+                  onClick={() => {
+                    setSortDirection(!sortDirection);
+                    setActiveSortField(el.name);
+                    sortHandler(el.sortValue, sortDirection);
+                  }}
+                >
+                  {el.name}
+                  {activeSortField === el.name
+                    ? sortDirection
+                      ? " ▲"
+                      : " ▼"
+                    : null}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </Table>
+          </thead>
+          <tbody>
+            {bulkList?.content?.map((el) => (
+              <tr onClick={() => openBulkById(el)} key={el.identifier}>
+                <td>{el.filename}</td>
+                <td>{formatDate(el.uploadDatetime)}</td>
+                <td>{el.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      ) : (
+        <p className="text-center lead">No bulk files found.</p>
+      )}
       {bulkList !== undefined && bulkList.content.length > 0 ? (
         <Paginator
           totalElements={bulkList.totalElements}
