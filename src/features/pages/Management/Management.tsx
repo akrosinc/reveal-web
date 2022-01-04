@@ -11,10 +11,15 @@ const Management = () => {
   let { tab } = useParams();
   let navigate = useNavigate();
 
+  const checkTab = () => {
+    if (tab === "organization" || tab === "user" || tab === "userBulk")
+    return tab
+  }
+
   return (
     <Container fluid className="my-4 px-2">
       <Tabs
-        defaultActiveKey={tab}
+        defaultActiveKey={checkTab()}
         id="uncontrolled-tab-example"
         className="mb-3"
         mountOnEnter={true}
