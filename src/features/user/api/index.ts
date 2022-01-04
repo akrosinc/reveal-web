@@ -2,29 +2,45 @@ import { AxiosResponse, CancelToken } from "axios";
 import api from "../../../api/axios";
 import { PageableModel } from "../../../api/providers";
 import { USER } from "../../../constants";
-import { BulkDetailsModel, CreateUserModel, EditUserModel, UserBulk, UserModel } from "../providers/types";
+import {
+  BulkDetailsModel,
+  CreateUserModel,
+  EditUserModel,
+  UserBulk,
+  UserModel,
+} from "../providers/types";
 
-export const getUserList = async (size: number, page: number, search?: string, sortField?: string, direction?: boolean): Promise<PageableModel<UserModel>> => {
-  let sortFieldFormatted = ""
-  if (sortField !== undefined) {
-    sortFieldFormatted = sortField.charAt(0).toLowerCase() + sortField.replace(/\s+/, "").slice(1);
-  }
+export const getUserList = async (
+  size: number,
+  page: number,
+  search?: string,
+  sortField?: string,
+  direction?: boolean
+): Promise<PageableModel<UserModel>> => {
   const data = await api
-    .get<PageableModel<UserModel>>(USER + 
-      `?search=${search !== undefined ? search : ""}&size=${size}&page=${page}&sort=${sortFieldFormatted},${direction ? "asc" : "desc"}`)
+    .get<PageableModel<UserModel>>(
+      USER +
+        `?search=${
+          search !== undefined ? search : ""
+        }&size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ""},${
+          direction ? "asc" : "desc"
+        }`
+    )
     .then((response) => response.data);
   return data;
 };
 
-export const getUserById = async (id: string, cancelToken: CancelToken): Promise<UserModel> => {
+export const getUserById = async (
+  id: string,
+  cancelToken: CancelToken
+): Promise<UserModel> => {
   const data = await api
     .get<UserModel>(USER + `/${id}`, {
-      cancelToken: cancelToken
+      cancelToken: cancelToken,
     })
-    .then((response) => response.data)
+    .then((response) => response.data);
   return data;
 };
-
 
 export const createUser = async (user: CreateUserModel): Promise<UserModel> => {
   const data = await api
@@ -54,25 +70,43 @@ export const resetUserPassword = async (user: any): Promise<AxiosResponse> => {
   return data;
 };
 
-
-
 export const uploadUserCsv = async (csv: FormData): Promise<string> => {
   const data = await api
-    .post(USER + '/bulk', csv)
+    .post(USER + "/bulk", csv)
     .then((response) => response.data);
   return data;
 };
 
-export const getBulkList = async (size: number, page: number, search?: string, sortField?: string, direction?: boolean): Promise<PageableModel<UserBulk>> => {
+export const getBulkList = async (
+  size: number,
+  page: number,
+  search?: string,
+  sortField?: string,
+  direction?: boolean
+): Promise<PageableModel<UserBulk>> => {
   const data = await api
-    .get<PageableModel<UserBulk>>(USER + `/bulk?search=${search !== undefined ? search : ""}&size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ""},${direction ? "asc" : "desc"}`)
+    .get<PageableModel<UserBulk>>(
+      USER +
+        `/bulk?search=${
+          search !== undefined ? search : ""
+        }&size=${size}&page=${page}&sort=${
+          sortField !== undefined ? sortField : ""
+        },${direction ? "asc" : "desc"}`
+    )
     .then((response) => response.data);
   return data;
 };
 
-export const getBulkById = async (size: number, page: number, id: string, search?: string,): Promise<PageableModel<BulkDetailsModel>> => {
+export const getBulkById = async (
+  size: number,
+  page: number,
+  id: string,
+  search?: string
+): Promise<PageableModel<BulkDetailsModel>> => {
   const data = await api
-    .get<PageableModel<BulkDetailsModel>>(USER + `/bulk/${id}?size=${size}&page=${page}`)
+    .get<PageableModel<BulkDetailsModel>>(
+      USER + `/bulk/${id}?size=${size}&page=${page}`
+    )
     .then((response) => response.data);
   return data;
 };

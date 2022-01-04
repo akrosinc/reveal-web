@@ -160,15 +160,14 @@ const EditUser = ({ userId, handleClose }: Props) => {
         password: formValues.password,
         tempPassword: formValues.isTemp,
       }
-      console.log(passwordModel);
       toast.promise(resetUserPassword(passwordModel), {
         pending: "Loading...",
         success: {
           render({ data }) {
             const response = data as AxiosResponse;
             if (response.status === 204) {
-              console.log(response);
               setChangePassword(false);
+              setEdit(false);
               dispatch(showLoader(false));
               return "Password updated successfully."
             }
@@ -177,18 +176,9 @@ const EditUser = ({ userId, handleClose }: Props) => {
         error: {
           render ( { data }: ErrorModel ) {
             dispatch(showLoader(false));
-            console.log(data);
             return data.error;
           }
         }
-      })
-      resetUserPassword(passwordModel).then(res => {
-        if(res.status === 204) {
-          setChangePassword(false);
-          dispatch(showLoader(false));
-        }
-      }, err => {
-
       })
     } else {
       let updatedUser: EditUserModel = {
@@ -205,12 +195,12 @@ const EditUser = ({ userId, handleClose }: Props) => {
           success: {
             render() {
               setEdit(false);
+              handleClose();
               return `User with id ${userId} updated successfully.`;
             },
           },
           error: {
             render({ data }: ErrorModel) {
-              console.log(data.statusCode);
               return data.fieldValidationErrors.map((err) => [
                 "Error on field " + err.field,
                 " - ",
@@ -364,6 +354,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
           <Button
             className="float-start"
             onClick={() => setChangePassword(!changePassword)}
+            hidden={changePassword}
           >
             Change password
           </Button>

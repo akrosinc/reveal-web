@@ -1,16 +1,15 @@
 import React, { useState } from "react";
 import { Table } from "react-bootstrap";
+import { ORGANIZATION_TABLE_COLUMNS } from "../../constants";
 import { OrganizationModel } from "../../features/organization/providers/types";
 
 interface Props {
-  head: string[];
   rows: OrganizationModel[];
   clickHandler: (id: string) => void;
   sortHandler: (field: string, direction: boolean) => void;
 }
 
 const OrganizationTable = ({
-  head,
   rows,
   clickHandler,
   sortHandler,
@@ -50,18 +49,18 @@ const OrganizationTable = ({
     <Table bordered responsive>
       <thead className="border border-2">
         <tr>
-          {head.map((el, index) => {
+          {ORGANIZATION_TABLE_COLUMNS.map((el, index) => {
             return (
               <th
                 key={index}
                 onClick={() => {
                   setSortDirection(!sortDirection);
-                  setActiveSortField(el);
-                  sortHandler(el, sortDirection);
+                  setActiveSortField(el.name);
+                  sortHandler(el.sortValue, sortDirection);
                 }}
               >
-                {el}
-                {activeSortField === el ? (sortDirection ? " ▲" : " ▼") : null}
+                {el.name}
+                {activeSortField === el.name ? (sortDirection ? " ▲" : " ▼") : null}
               </th>
             );
           })}

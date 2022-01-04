@@ -17,8 +17,6 @@ import EditOrganization from "./edit";
 import { toast } from "react-toastify";
 import { PageableModel, ErrorModel } from "../../../api/providers";
 
-const columns = ["Name", "Type", "Active"];
-
 const Organization = () => {
   const [organizationList, setOrganizationList] =
     useState<PageableModel<OrganizationModel>>();
@@ -113,7 +111,7 @@ const Organization = () => {
             placeholder="Search"
             debounceTimeout={800}
             onChange={(e) => filterData(e)}
-            disabled={organizationCount === 0}
+            disabled={organizationCount === 0 && currentSearchInput === ""}
           />
         </Col>
       </Row>
@@ -122,7 +120,6 @@ const Organization = () => {
       sortHandler={sortHandler}
         clickHandler={openOrganizationById}
         rows={organizationList !== undefined ? organizationList.content : []}
-        head={columns}
       />
       {organizationList !== undefined && organizationList.content.length > 0 ? (
         <Paginator
