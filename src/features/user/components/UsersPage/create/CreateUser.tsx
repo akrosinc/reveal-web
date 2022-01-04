@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
+import { Button, Col, Form, Modal, Row } from "react-bootstrap";
 import Select, { MultiValue } from "react-select";
 import { createUser } from "../../../api";
 import {
@@ -46,6 +46,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
     reset,
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm();
   const [groups, setGroups] = useState<Options[]>();
@@ -128,7 +129,11 @@ const CreateUser = ({ show, handleClose }: Props) => {
       error: {
         render({ data }: ErrorModel) {
           dispatch(showLoader(false));
-          return data.message;
+          data.fieldValidationErrors.map(el => {
+            setError(el.field as any, {});
+            return ""
+          })
+          return data.message !== undefined ? data.message : "Error creating user, please try again.";
         },
       },
     });
@@ -148,7 +153,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Form.Group className="mb-3">
+          <Form.Group className="mb-2">
             <Form.Label>Username</Form.Label>
             <Form.Control
               {...register("username", { required: true })}
@@ -157,12 +162,13 @@ const CreateUser = ({ show, handleClose }: Props) => {
             />
             {errors.username && (
               <Form.Label className="text-danger">
-                Username must not be empty.
+                Username must not be empty and can't contain uppercase characters or numbers.
               </Form.Label>
             )}
           </Form.Group>
-
-          <Form.Group className="mb-3">
+          <Row>
+          <Col>
+          <Form.Group className="mb-2">
             <Form.Label>First name</Form.Label>
             <Form.Control
               {...register("firstname", { required: true })}
@@ -175,8 +181,9 @@ const CreateUser = ({ show, handleClose }: Props) => {
               </Form.Label>
             )}
           </Form.Group>
-
-          <Form.Group className="mb-3">
+          </Col>
+          <Col>
+          <Form.Group className="mb-2">
             <Form.Label>Last name</Form.Label>
             <Form.Control
               {...register("lastname", { required: true })}
@@ -189,21 +196,22 @@ const CreateUser = ({ show, handleClose }: Props) => {
               </Form.Label>
             )}
           </Form.Group>
-
-          <Form.Group className="mb-3">
+          </Col>
+          </Row>
+          <Form.Group className="mb-2">
             <Form.Label>Password</Form.Label>
             <Form.Control
-              {...register("password", { required: true })}
+              {...register("password", { required: true, minLength: 5 })}
               type="password"
             />
             {errors.password && (
               <Form.Label className="text-danger">
-                Password must not be empty.
+                Password must not be empty and at least 5 chars long.
               </Form.Label>
             )}
           </Form.Group>
 
-          <Form.Group className="mb-3">
+          <Form.Group className="mb-2">
             <Form.Label>Email</Form.Label>
             <Form.Control
               {...register("email", { required: false })}
@@ -217,9 +225,10 @@ const CreateUser = ({ show, handleClose }: Props) => {
             )}
           </Form.Group>
 
-          <Form.Group className="mb-3">
+          <Form.Group className="mb-2">
             <Form.Label>Security groups</Form.Label>
             <Select
+              menuPosition="fixed"
               isMulti
               value={selectedSecurityGroups}
               options={groups}
@@ -227,9 +236,10 @@ const CreateUser = ({ show, handleClose }: Props) => {
             />
           </Form.Group>
 
-          <Form.Group className="mb-3">
+          <Form.Group className="mb-2">
             <Form.Label>Organization</Form.Label>
             <Select
+              menuPosition="fixed"
               isMulti
               value={selectedOrganizations}
               options={organizations}

@@ -54,5 +54,5 @@ export interface BulkDetailsModel {
 
 export enum BulkEntryStatus {
   ERROR,
-  SUCCESSFUL
+  SUCCESSFUL,
 }

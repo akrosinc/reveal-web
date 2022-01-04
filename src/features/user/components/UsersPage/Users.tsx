@@ -14,8 +14,6 @@ import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
 import { toast } from "react-toastify";
 import { PageableModel, ErrorModel } from "../../../../api/providers";
 
-const tableRowNames = ["Username", "First Name", "Last Name", "Organization"];
-
 const Users = () => {
   const dispatch = useAppDispatch();
   const [userList, setUserList] = useState<PageableModel<UserModel>>();
@@ -110,13 +108,12 @@ const Users = () => {
             placeholder="Search"
             debounceTimeout={800}
             onChange={(e) => filterData(e)}
-            disabled={userList?.totalElements === 0}
+            disabled={userList?.totalElements === 0 && currentSearchInput === ""}
           />
         </Col>
       </Row>
       <hr className="my-4" />
       <UsersTable
-        head={tableRowNames}
         rows={userList?.content ?? []}
         clickHandler={openUserById}
         sortHandler={sortHanlder}

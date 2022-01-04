@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { Table } from "react-bootstrap";
+import { USER_TABLE_COLUMNS } from "../../constants";
 import { UserModel } from "../../features/user/providers/types";
 
 interface Props {
-  head: string[];
   rows: UserModel[];
   clickHandler?: (id: string) => void;
   sortHandler: (field: string, direction: boolean) => void;
 }
 
-const UsersTable = ({ head, rows, clickHandler, sortHandler }: Props) => {
+const UsersTable = ({ rows, clickHandler, sortHandler }: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState("");
   return (
@@ -19,18 +19,20 @@ const UsersTable = ({ head, rows, clickHandler, sortHandler }: Props) => {
         <Table bordered responsive>
           <thead className="border border-2">
             <tr>
-              {head.map((el, index) => {
+              {USER_TABLE_COLUMNS.map((el, index) => {
                 return (
                   <th
                     key={index}
                     onClick={() => {
-                      setSortDirection(!sortDirection);
-                      setActiveSortField(el);
-                      sortHandler(el, sortDirection);
+                      if (el.sortValue !== "organization") {
+                        setSortDirection(!sortDirection);
+                        setActiveSortField(el.name);
+                        sortHandler(el.sortValue, sortDirection);
+                      }
                     }}
                   >
-                    {el}
-                    {activeSortField === el
+                    {el.name}
+                    {activeSortField === el.name
                       ? sortDirection
                         ? " ▲"
                         : " ▼"

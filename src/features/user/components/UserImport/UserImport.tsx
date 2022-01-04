@@ -3,7 +3,7 @@ import { Button, Table, Col, Row } from "react-bootstrap";
 import { PageableModel } from "../../../../api/providers";
 import { ActionDialog } from "../../../../components/Dialogs";
 import Paginator from "../../../../components/Pagination";
-import { PAGINATION_DEFAULT_SIZE } from "../../../../constants";
+import { PAGINATION_DEFAULT_SIZE, USER_BULK_TABLE_COLUMNS } from "../../../../constants";
 import { useAppDispatch } from "../../../../store/hooks";
 import { formatDate } from "../../../../utils";
 import { showLoader } from "../../../reducers/loader";
@@ -11,12 +11,6 @@ import { getBulkById, getBulkList } from "../../api";
 import { BulkDetailsModel, UserBulk } from "../../providers/types";
 import CreateBulk from "./create";
 import BulkDetails from "./details";
-
-const columns = [
-  { name: "File name", sortValue: "filename" },
-  { name: "Upload Date", sortValue: "uploadedDatetime" },
-  { name: "Status", sortValue: "status" },
-];
 
 const UserImport = () => {
   const [openCreate, setOpenCreate] = useState(false);
@@ -100,7 +94,7 @@ const UserImport = () => {
         <Table bordered responsive>
           <thead className="border border-2">
             <tr>
-              {columns.map((el, index) => (
+              {USER_BULK_TABLE_COLUMNS.map((el, index) => (
                 <th
                   key={index}
                   onClick={() => {

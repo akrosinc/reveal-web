@@ -7,9 +7,9 @@ import { useEffect } from "react";
 import { useAppDispatch } from "../store/hooks";
 import { login } from "../features/reducers/user";
 import { Container } from "react-bootstrap";
-import { toast, ToastContainer } from 'react-toastify';
-import Loader from '../components/Layout/Loader';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from "react-toastify";
+import Loader from "../components/Layout/Loader";
+import "react-toastify/dist/ReactToastify.css";
 import { showLoader } from "../features/reducers/loader";
 
 function App() {
@@ -25,10 +25,10 @@ function App() {
         let userDetails: any = {
           ...res,
           roles: keycloak.realmAccess,
-          realmAccess: keycloak.resourceAccess
-        }
+          realmAccess: keycloak.resourceAccess,
+        };
         dispatch(login(userDetails));
-        toast.success("Welcome back " + userDetails.preferred_username)
+        toast.success("Welcome back " + userDetails.preferred_username);
       });
     } else {
       dispatch(showLoader(true));
@@ -36,15 +36,15 @@ function App() {
   });
 
   return (
-    <Container fluid style={{minHeight: '100vh', position: 'relative'}}>
+    <Container fluid style={{ minHeight: "100vh", position: "relative" }}>
       <main>
-      <NavbarComponent />
-      <Router />
+        <NavbarComponent />
+        <Router />
       </main>
       <Container fluid={true} className="footer-row-container">
-      <Footer />
+        <Footer />
       </Container>
-      <ToastContainer position={toast.POSITION.BOTTOM_RIGHT}/>
+      <ToastContainer position={toast.POSITION.BOTTOM_RIGHT} />
       <Loader />
     </Container>
   );
