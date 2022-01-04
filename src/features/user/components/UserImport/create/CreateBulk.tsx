@@ -35,8 +35,7 @@ const CreateBulk = ({ handleClose }: Props) => {
       toast.promise(uploadUserCsv(formData), {
         pending: "CSV file is uploading...",
         success: {
-          render({ data }: any) {
-            console.log(data)
+          render({ data }: {data: {identifier: string}}) {
             reset();
             dispatch(showLoader(false));
             handleClose();

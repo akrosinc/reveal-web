@@ -11,11 +11,13 @@ import keycloak from "./keycloak";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const eventLogger = (event: unknown, error: unknown) => {
-  console.log("onKeycloakEvent", event, error);
+  //we can capture all keycloak events here
+  //console.log("onKeycloakEvent", event, error);
 };
 
 const tokenLogger = (tokens: any) => {
-  console.log("onToken", tokens);
+  // we can capture token events here
+  //console.log("onToken", tokens);
 };
 
 ReactDOM.render(

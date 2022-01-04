@@ -108,7 +108,6 @@ const Plans = () => {
         // open a popup at the location of the click, with description
         // HTML from the click event's properties.
         map.current.on("click", buildingName + "fill", (e) => {
-          console.log(e.features);
           const feature = e.features !== undefined ? e.features[0].source : "";
           new mapboxgl.Popup()
             .setLngLat(e.lngLat)

@@ -12,7 +12,7 @@ export const PAGINATION_DEFAULT_SIZE = 10;
 
 export const ORGANIZATION_TABLE_COLUMNS = [
   { name: "Name", sortValue: "name" },
-  { name: "Type", sortValue: "Type" },
+  { name: "Type", sortValue: "type" },
   { name: "Active", sortValue: "active" },
 ];
 export const USER_TABLE_COLUMNS = [

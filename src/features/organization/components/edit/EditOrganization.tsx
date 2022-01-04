@@ -50,7 +50,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
             setValue("partOf", data.partOf);
           });
         })
-        .catch((err) => console.log(err));
+        .catch((err: ErrorModel) => toast.error(err.data !== undefined ? err.data.message : "There was an error getting organization by identifier."));
     },
     [organizationId, setValue]
   );
