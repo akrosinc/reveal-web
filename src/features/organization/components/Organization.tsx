@@ -26,6 +26,7 @@ const Organization = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [organizationCount, setOrganizationCount] = useState(0);
   const [selectedOrganizaton, setSelectedOrganization] = useState("");
+  const [currentSearchInput, setCurrentSearchInput] = useState("");
   const handleClose = () => {
     setShow(false);
     setShowDetails(false);
@@ -36,12 +37,14 @@ const Organization = () => {
   const dispatch = useAppDispatch();
 
   const loadData = useCallback(
-    (size: number, page: number, searchData?: string) => {
+    (size: number, page: number, searchData?: string, field?: string, sortDirection?: boolean) => {
       dispatch(showLoader(true));
       getOrganizationList(
         size,
         page,
-        searchData !== undefined ? searchData : ""
+        searchData !== undefined ? searchData : "",
+        field,
+        sortDirection
       )
         .then((data) => {
           setOrganizationList(data);
@@ -72,6 +75,7 @@ const Organization = () => {
   };
 
   const filterData = (e: any) => {
+    setCurrentSearchInput(e.target.value);
     loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
 
@@ -79,6 +83,16 @@ const Organization = () => {
     setShowDetails(true);
     setSelectedOrganization(id);
   };
+
+  const sortHandler = (field: string, sortDirection: boolean) => {
+    if (organizationList !== undefined) {
+      loadData(organizationList.size,
+        0,
+        currentSearchInput,
+        field,
+        sortDirection)
+    }
+  }
 
   return (
     <>
@@ -100,6 +114,7 @@ const Organization = () => {
       </Row>
       <hr className="my-4" />
       <OrganizationTable
+      sortHandler={sortHandler}
         clickHandler={openOrganizationById}
         rows={organizationList !== undefined ? organizationList.content : []}
         head={columns}

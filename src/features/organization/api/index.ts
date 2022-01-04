@@ -4,9 +4,13 @@ import { PageableModel } from '../../../api/providers';
 import { KEYCLOAK_SECURITY_GROUPS, ORGANIZATION } from "../../../constants";
 import { CancelToken } from "axios";
 
-export const getOrganizationList = async (size: number, page: number, search?: string): Promise<PageableModel<OrganizationModel>> => {
+export const getOrganizationList = async (size: number, page: number, search?: string, sortField?: string, direction?: boolean): Promise<PageableModel<OrganizationModel>> => {
+  let sortFieldFormatted = ""
+  if (sortField !== undefined) {
+    sortFieldFormatted = sortField.charAt(0).toLowerCase() + sortField.replace(/\s+/, "").slice(1);
+  }
   const data = await api
-    .get<PageableModel<OrganizationModel>>(ORGANIZATION + `?search=${search !== undefined ? search : ""}&size=${size}&page=${page}&_summary=FALSE&root=true`)
+    .get<PageableModel<OrganizationModel>>(ORGANIZATION + `?search=${search !== undefined ? search : ""}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortFieldFormatted},${direction ? "asc" : "desc"}`)
     .then((response) => response.data);
   return data;
 };
