@@ -2,12 +2,14 @@ name: Reveal Web test, build and deploy
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
     branches: none
 
 jobs:
+
   test:
+
     runs-on: ubuntu-latest
 
     steps:
@@ -26,25 +28,27 @@ jobs:
           cmd: test # will run `yarn test` command
 
   container:
+
     runs-on: ubuntu-latest
     needs: [test]
 
     steps:
-      - name: Output Run Number
-        run: echo ${{ github.run_number }}
 
-      - name: Checkout the code
-        uses: actions/checkout@v2
+    - name: Output Run Number
+      run: echo ${{ github.run_number }}
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: akros
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Checkout the code
+      uses: actions/checkout@v2
 
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: akrosinc/reveal-web:v3.0.${{ github.run_number }}
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: akros
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: akrosinc/reveal-web:v3.0.${{ github.run_number }}
