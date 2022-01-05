@@ -28,6 +28,7 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
   const submitHandler = (formValues: FormValues) => {
     dispatch(showLoader(true));
     toast.promise(createGeographicLevel(formValues), {
+      pending: "Loading...",
       success: {
         render({ data }: { data: GeographicLevel }) {
           dispatch(showLoader(false));

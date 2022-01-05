@@ -10,6 +10,7 @@ import { GeographicLevel } from '../../providers/types';
 import { PageableModel } from '../../../../api/providers';
 import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
+import { toast } from 'react-toastify';
 
 const GeographicLevels = () => {
   const [currentSortField, setCurrentSortField] = useState('');
@@ -21,8 +22,15 @@ const GeographicLevels = () => {
   const dispatch = useAppDispatch();
 
   const sortHandler = (field: string, sortDirection: boolean) => {
+    dispatch(showLoader(true));
     setCurrentSortField(field);
     setCurrentSortDirection(sortDirection);
+    if (geoLevelList !== undefined) {
+      getGeographicLevelList(geoLevelList.pageable.pageSize, geoLevelList.pageable.pageNumber, "", field, sortDirection).then(res => {
+        setGeoLevelList(res);
+        dispatch(showLoader(false));
+      });
+    }
   };
 
   const paginationHandler = (size: number, page: number) => {
@@ -44,9 +52,9 @@ const GeographicLevels = () => {
     getGeographicLevelList(PAGINATION_DEFAULT_SIZE, 0)
       .then(res => {
         setGeoLevelList(res);
-        dispatch(showLoader(false));
       })
-      .catch(err => console.log(err));
+      .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
+      .finally(() => dispatch(showLoader(false)));
   }, [dispatch]);
 
   return (

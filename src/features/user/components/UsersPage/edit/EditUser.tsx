@@ -112,7 +112,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
           console.log(err);
           if (err.statusCode === 404) {
             handleClose();
-            toast.error(err.message)
+            toast.error(err.message);
           }
         });
     },
@@ -142,7 +142,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
           }
         },
         error: {
-          render( { data }: { data: ErrorModel }) {
+          render({ data }: { data: ErrorModel }) {
             dispatch(showLoader(false));
             return data.message !== undefined ? data.message : data.error;
           }
@@ -175,7 +175,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
         error: {
           render({ data }: { data: ErrorModel }) {
             dispatch(showLoader(false));
-            return data !== undefined ? data.error : "Something went wrong!";
+            return data !== undefined ? data.error : 'Something went wrong!';
           }
         }
       });
@@ -241,11 +241,9 @@ const EditUser = ({ userId, handleClose }: Props) => {
             <Form.Control
               type="password"
               placeholder="Enter new password"
-              {...register('password', { required: true, minLength: 5 })}
+              {...register('password', { required: 'Password must containt at least 5 characters', minLength: 5 })}
             />
-            {errors.password && (
-              <Form.Label className="text-danger">Password must containt at least 5 characters</Form.Label>
-            )}
+            {errors.password && <Form.Label className="text-danger">{errors.password.message}</Form.Label>}
           </Form.Group>
           <Form.Group className="mb-3 d-flex">
             <Form.Label>Request user to change password after first login?</Form.Label>
@@ -262,9 +260,16 @@ const EditUser = ({ userId, handleClose }: Props) => {
                   readOnly={!edit}
                   type="text"
                   placeholder="Enter first name"
-                  {...register('firstname', { required: true })}
+                  {...register('firstname', {
+                    required: 'First name must not be empty.',
+                    minLength: 1,
+                    pattern: {
+                      value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
+                      message: "First name can't start with empty space."
+                    }
+                  })}
                 />
-                {errors.firstname && <Form.Label className="text-danger">First name must not be empty.</Form.Label>}
+                {errors.firstname && <Form.Label className="text-danger">{errors.firstname.message}</Form.Label>}
               </Form.Group>
             </Col>
             <Col>
@@ -274,9 +279,16 @@ const EditUser = ({ userId, handleClose }: Props) => {
                   readOnly={!edit}
                   type="text"
                   placeholder="Enter last name"
-                  {...register('lastname', { required: true })}
+                  {...register('lastname', {
+                    required: 'Last name must not be empty.',
+                    minLength: 1,
+                    pattern: {
+                      value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
+                      message: "Last name can't start with empty space."
+                    }
+                  })}
                 />
-                {errors.lastname && <Form.Label className="text-danger">Last name must not be empty.</Form.Label>}
+                {errors.lastname && <Form.Label className="text-danger">{errors.lastname.message}</Form.Label>}
               </Form.Group>
             </Col>
           </Row>
@@ -287,8 +299,15 @@ const EditUser = ({ userId, handleClose }: Props) => {
               type="email"
               placeholder="Enter email"
               defaultValue={user?.email}
-              {...register('email', { required: false })}
+              {...register('email', {
+                required: false,
+                pattern: {
+                  value: new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$'),
+                  message: 'Please enter a valid email address'
+                }
+              })}
             />
+            {errors.email && <Form.Label className="text-danger">{errors.email.message}</Form.Label>}
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Security groups</Form.Label>
