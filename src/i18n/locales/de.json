@@ -1,31 +1,37 @@
 {
-    "topNav": {
-      "logOut": "Ausloggen",
-      "logIn": "Einloggen",
-      "Home": "Startseite",
-      "Plan": "Planen",
-      "Assign": "Zuordnen",
-      "Monitor": "Überwachung",
-      "Admin": "Administrator",
-      "Manage Plans": "Pläne verwalten",
-      "Planning tools": "Planungstools",
-      "IRS Reporting": "IRS Berichterstattung",
-      "SMC Reporting": "SMC Berichterstellung",
-      "Management": "Verwaltung"
-    },
-    "publicPage": {
-      "description": "Reveal ist ein globales Gut und eine Open-Source-Plattform, die räumliche Intelligenz verwendet, um die Bereitstellung lebensrettender Interventionen voranzutreiben",
-      "question": "WAS IST REVEAL?",
-      "firstPartAbout": "REVEAL IST EINE ANERKANNTES",
-      "secondPartAbout": "DURCH DIGITAL SQUARE UND WIRD IM DIGITALEN GESUNDHEITSATLAS DER WORLD HEALTH ORGANISATION",
-      "about": "Reveal unterstützt Entscheidungsträger und Interventionsmanager, indem es die Durchführung von Aktivitäten vor Ort mit Präzision leitet und verfolgt und die Außendienstteams für Maßnahmen verantwortlich macht. Reveal verwendet intelligente Karten und Technologien, die für ressourcenarme Einstellungen geeignet sind, um die Abdeckung von Interventionen zu überwachen, sobald sie erfolgen. Nach dem Vorbild des mSpray- und DiSARM-Tools hilft Reveal dabei, die verfügbaren Ressourcen zu optimieren und sicherzustellen, dass niemand im Prozess übersehen wird."
-    },
-    "homePage": {
-        "welcomeMessage": " Willkommen bei Reveal",
-        "description": "Beginnen Sie, indem Sie unten eine Intervention auswählen"
-    },
-    "buttons": {
-        "management": "Verwaltung",
-        "plans": "Pläne"
-    }
+  "topNav": {
+    "logOut": "Ausloggen",
+    "logIn": "Einloggen",
+    "Home": "Startseite",
+    "Plan": "Planen",
+    "Assign": "Zuordnen",
+    "Monitor": "Überwachung",
+    "Admin": "Administrator",
+    "Manage Plans": "Pläne verwalten",
+    "Planning tools": "Planungstools",
+    "IRS Reporting": "IRS Berichterstattung",
+    "SMC Reporting": "SMC Berichterstellung",
+    "Management": "Verwaltung",
+    "Location": "Location Management"
+  },
+  "publicPage": {
+    "description": "Reveal ist ein globales Gut und eine Open-Source-Plattform, die räumliche Intelligenz verwendet, um die Bereitstellung lebensrettender Interventionen voranzutreiben",
+    "question": "WAS IST REVEAL?",
+    "firstPartAbout": "REVEAL IST EINE ANERKANNTES",
+    "secondPartAbout": "DURCH DIGITAL SQUARE UND WIRD IM DIGITALEN GESUNDHEITSATLAS DER WORLD HEALTH ORGANISATION",
+    "about": "Reveal unterstützt Entscheidungsträger und Interventionsmanager, indem es die Durchführung von Aktivitäten vor Ort mit Präzision leitet und verfolgt und die Außendienstteams für Maßnahmen verantwortlich macht. Reveal verwendet intelligente Karten und Technologien, die für ressourcenarme Einstellungen geeignet sind, um die Abdeckung von Interventionen zu überwachen, sobald sie erfolgen. Nach dem Vorbild des mSpray- und DiSARM-Tools hilft Reveal dabei, die verfügbaren Ressourcen zu optimieren und sicherzustellen, dass niemand im Prozess übersehen wird."
+  },
+  "homePage": {
+    "welcomeMessage": " Willkommen bei Reveal",
+    "description": "Beginnen Sie, indem Sie unten eine Intervention auswählen"
+  },
+  "buttons": {
+    "management": "Verwaltung",
+    "plans": "Pläne"
+  },
+  "managementPage": {
+    "organization": "Organisation",
+    "user": "Nutzer",
+    "userImport": "Benutzerimport"
   }
+}

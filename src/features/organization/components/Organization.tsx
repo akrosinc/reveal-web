@@ -1,36 +1,38 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { Col, Row, Button } from "react-bootstrap";
-import {
-  getOrganizationCount,
-  getOrganizationList,
-} from "../api";
-import { OrganizationModel } from "../providers/types";
-import OrganizationTable from "../../../components/Table/OrganizationsTable";
-import Paginator from "../../../components/Pagination";
-import { useAppDispatch } from "../../../store/hooks";
-import { showLoader } from "../../reducers/loader";
-import CreateOrganization from "./create";
-import { PAGINATION_DEFAULT_SIZE } from "../../../constants";
-import { DebounceInput } from "react-debounce-input";
-import { ActionDialog } from "../../../components/Dialogs/";
-import EditOrganization from "./edit";
-import { toast } from "react-toastify";
-import { PageableModel, ErrorModel } from "../../../api/providers";
+import React, { useEffect, useState, useCallback } from 'react';
+import { Col, Row, Button } from 'react-bootstrap';
+import { getOrganizationCount, getOrganizationList } from '../api';
+import { OrganizationModel } from '../providers/types';
+import OrganizationTable from '../../../components/Table/OrganizationsTable';
+import Paginator from '../../../components/Pagination';
+import { useAppDispatch } from '../../../store/hooks';
+import { showLoader } from '../../reducers/loader';
+import CreateOrganization from './create';
+import { PAGINATION_DEFAULT_SIZE } from '../../../constants';
+import { DebounceInput } from 'react-debounce-input';
+import { ActionDialog } from '../../../components/Dialogs/';
+import EditOrganization from './edit';
+import { toast } from 'react-toastify';
+import { PageableModel, ErrorModel } from '../../../api/providers';
 
 const Organization = () => {
-  const [organizationList, setOrganizationList] =
-    useState<PageableModel<OrganizationModel>>();
+  const [organizationList, setOrganizationList] = useState<PageableModel<OrganizationModel>>();
   const [show, setShow] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [organizationCount, setOrganizationCount] = useState(0);
-  const [selectedOrganizaton, setSelectedOrganization] = useState("");
-  const [currentSearchInput, setCurrentSearchInput] = useState("");
-  const [currentSortField, setCurrentSortField] = useState("");
+  const [selectedOrganizaton, setSelectedOrganization] = useState('');
+  const [currentSearchInput, setCurrentSearchInput] = useState('');
+  const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const handleClose = () => {
     setShow(false);
     setShowDetails(false);
-    loadData(PAGINATION_DEFAULT_SIZE, 0, currentSearchInput, currentSortField, currentSortDirection);
+    loadData(
+      organizationList?.size ?? PAGINATION_DEFAULT_SIZE,
+      organizationList?.pageable.pageNumber ?? 0,
+      currentSearchInput,
+      currentSortField,
+      currentSortDirection
+    );
   };
   const handleShow = () => setShow(true);
 
@@ -39,28 +41,18 @@ const Organization = () => {
   const loadData = useCallback(
     (size: number, page: number, searchData?: string, field?: string, sortDirection?: boolean) => {
       dispatch(showLoader(true));
-      getOrganizationList(
-        size,
-        page,
-        searchData !== undefined ? searchData : "",
-        field,
-        sortDirection
-      )
-        .then((data) => {
+      getOrganizationList(size, page, searchData !== undefined ? searchData : '', field, sortDirection)
+        .then(data => {
           setOrganizationList(data);
-          if(searchData !== undefined) {
-            setOrganizationCount(data.numberOfElements)
+          if (searchData !== undefined) {
+            setOrganizationCount(data.numberOfElements);
           } else {
             getOrganizationCount()
-            .then((res) => setOrganizationCount(res.count))
-            .catch((err) => toast.error(err.toString()));
+              .then(res => setOrganizationCount(res.count))
+              .catch(err => toast.error(err.toString()));
           }
         })
-        .catch((error: ErrorModel) =>
-          toast.error(
-            error.data !== undefined ? error.data.message : error.toString()
-          )
-        )
+        .catch((error: ErrorModel) => toast.error(error !== undefined ? error.message : "Unexpected error!"))
         .finally(() => dispatch(showLoader(false)));
     },
     [dispatch]
@@ -88,13 +80,9 @@ const Organization = () => {
     if (organizationList !== undefined) {
       setCurrentSortField(field);
       setCurrentSortDirection(sortDirection);
-      loadData(organizationList.size,
-        0,
-        currentSearchInput,
-        field,
-        sortDirection)
+      loadData(organizationList.size, 0, currentSearchInput, field, sortDirection);
     }
-  }
+  };
 
   return (
     <>
@@ -110,14 +98,14 @@ const Organization = () => {
             className="form-control"
             placeholder="Search"
             debounceTimeout={800}
-            onChange={(e) => filterData(e)}
-            disabled={organizationCount === 0 && currentSearchInput === ""}
+            onChange={e => filterData(e)}
+            disabled={organizationCount === 0 && currentSearchInput === ''}
           />
         </Col>
       </Row>
       <hr className="my-4" />
       <OrganizationTable
-      sortHandler={sortHandler}
+        sortHandler={sortHandler}
         clickHandler={openOrganizationById}
         rows={organizationList !== undefined ? organizationList.content : []}
       />
@@ -133,7 +121,7 @@ const Organization = () => {
       {show && (
         <ActionDialog
           backdrop={true}
-          title={"Create organization"}
+          title={'Create organization'}
           closeHandler={handleClose}
           element={<CreateOrganization handleClose={handleClose} show={show} />}
         />
@@ -142,13 +130,7 @@ const Organization = () => {
         <ActionDialog
           backdrop={true}
           closeHandler={handleClose}
-          element={
-            <EditOrganization
-              organizationId={selectedOrganizaton}
-              handleClose={handleClose}
-              show={true}
-            />
-          }
+          element={<EditOrganization organizationId={selectedOrganizaton} handleClose={handleClose} show={true} />}
           title="Organization details"
         />
       )}

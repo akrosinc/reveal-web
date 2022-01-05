@@ -1,4 +1,4 @@
-import { OrganizationModel } from "../../organization/providers/types";
+import { OrganizationModel } from '../../organization/providers/types';
 
 export interface UserModel {
   identifier: string;
@@ -43,7 +43,7 @@ export interface UserBulk {
 
 export enum BulkStatus {
   PROCESSING,
-  COMPLETE,
+  COMPLETE
 }
 
 export interface BulkDetailsModel {
@@ -54,5 +54,5 @@ export interface BulkDetailsModel {
 
 export enum BulkEntryStatus {
   ERROR,
-  SUCCESSFUL,
+  SUCCESSFUL
 }

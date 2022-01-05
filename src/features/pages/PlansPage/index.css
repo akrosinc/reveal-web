@@ -11,8 +11,8 @@
 }
 
 .map-container {
-    min-height: 80vh;
-    width: 100%;
+  min-height: 80vh;
+  width: 100%;
 }
 
 @media screen and (max-width: 768px) {
@@ -27,7 +27,7 @@
   width: 1rem;
   vertical-align: middle;
   margin-right: 0.5rem;
-  border: 1px solid hsla(0,0%,100%,.75);
+  border: 1px solid hsla(0, 0%, 100%, 0.75);
 }
 
 ul {

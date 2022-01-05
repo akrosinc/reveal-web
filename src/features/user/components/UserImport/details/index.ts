@@ -1,3 +1,3 @@
-import BulkDetails from "./BulkDetails";
+import BulkDetails from './BulkDetails';
 
 export default BulkDetails;

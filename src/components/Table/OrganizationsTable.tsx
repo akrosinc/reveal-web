@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import { Table } from "react-bootstrap";
-import { ORGANIZATION_TABLE_COLUMNS } from "../../constants";
-import { OrganizationModel } from "../../features/organization/providers/types";
+import React, { useState } from 'react';
+import { Table } from 'react-bootstrap';
+import { ORGANIZATION_TABLE_COLUMNS } from '../../constants';
+import { OrganizationModel } from '../../features/organization/providers/types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface Props {
   rows: OrganizationModel[];
@@ -9,17 +10,13 @@ interface Props {
   sortHandler: (field: string, direction: boolean) => void;
 }
 
-const OrganizationTable = ({
-  rows,
-  clickHandler,
-  sortHandler,
-}: Props) => {
+const OrganizationTable = ({ rows, clickHandler, sortHandler }: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
-  const [activeSortField, setActiveSortField] = useState("");
+  const [activeSortField, setActiveSortField] = useState('');
 
   const getChildren = (children: OrganizationModel[], ident: number): any => {
     if (children !== undefined && children.length > 0) {
-      return children.map((row) => {
+      return children.map(row => {
         return [
           <tr
             key={row.identifier}
@@ -28,14 +25,12 @@ const OrganizationTable = ({
             }}
           >
             <td>
-              <span style={{ paddingLeft: ident.toString() + "px" }}>
-                {row.name}
-              </span>
+              <span style={{ paddingLeft: ident.toString() + 'px' }}>{row.name}</span>
             </td>
             <td>{row.type.valueCodableConcept}</td>
             <td>{row.active.toString()}</td>
           </tr>,
-          ...getChildren(row.headOf, ident + 20),
+          ...getChildren(row.headOf, ident + 20)
         ];
       });
     } else {
@@ -53,6 +48,7 @@ const OrganizationTable = ({
             return (
               <th
                 key={index}
+                style={{ cursor: 'pointer' }}
                 onClick={() => {
                   setSortDirection(!sortDirection);
                   setActiveSortField(el.name);
@@ -60,30 +56,37 @@ const OrganizationTable = ({
                 }}
               >
                 {el.name}
-                {activeSortField === el.name ? (sortDirection ? " ▲" : " ▼") : null}
+                {activeSortField === el.name ? (
+                  sortDirection ? (
+                    <FontAwesomeIcon className="ms-1" icon="sort-up" />
+                  ) : (
+                    <FontAwesomeIcon className="ms-1" icon="sort-down" />
+                  )
+                ) : (
+                  <FontAwesomeIcon className="ms-1" icon="sort" />
+                )}
               </th>
             );
           })}
         </tr>
       </thead>
       <tbody>
-        {rows.map((row) => {
+        {rows.map(row => {
           return [
             <tr
+              style={{ cursor: 'pointer' }}
               key={row.identifier}
               onClick={() => {
                 clickHandler(row.identifier);
               }}
             >
               <td>
-                <span style={{ paddingLeft: "10px", fontWeight: "bold" }}>
-                  {row.name}
-                </span>
+                <span style={{ paddingLeft: '10px', fontWeight: 'bold' }}>{row.name}</span>
               </td>
               <td>{row.type.valueCodableConcept}</td>
               <td>{row.active.toString()}</td>
             </tr>,
-            ...getChildren(row.headOf, 20),
+            ...getChildren(row.headOf, 20)
           ];
         })}
       </tbody>

@@ -1,3 +1,3 @@
-import AuthorizedElement from "./AuthorizedElement";
+import AuthorizedElement from './AuthorizedElement';
 
 export default AuthorizedElement;

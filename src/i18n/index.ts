@@ -11,7 +11,7 @@ const LOCALE_DE = 'de';
 export const LOCALES = [LOCALE_EN, LOCALE_DE];
 
 export const DEFAULT_LOCALE = LOCALE_EN;
-export const USER_PREF_LOCALE = getFromBrowser("locale") ?? undefined;
+export const USER_PREF_LOCALE = getFromBrowser('locale') ?? undefined;
 
 const resources = {
   en: {

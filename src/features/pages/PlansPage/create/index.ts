@@ -1,3 +1,3 @@
-import CreatePlan from "./CreatePlan";
+import CreatePlan from './CreatePlan';
 
 export default CreatePlan;

@@ -1,5 +1,5 @@
-import React from "react";
-import { Button, Modal } from "react-bootstrap";
+import React from 'react';
+import { Button, Modal } from 'react-bootstrap';
 
 interface Props {
   title: string;
@@ -10,13 +10,7 @@ interface Props {
 
 const ConfirmDialog = ({ title, message, closeHandler, backdrop }: Props) => {
   return (
-    <Modal
-      show={true}
-      centered
-      size="sm"
-      backdrop={backdrop}
-      style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
-    >
+    <Modal show={true} centered size="sm" backdrop={backdrop} style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
       <Modal.Header>
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>

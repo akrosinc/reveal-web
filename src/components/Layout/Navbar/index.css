@@ -1,9 +1,9 @@
 .dropdown-menu {
-    min-width: 6rem !important;
+  min-width: 6rem !important;
 }
 .dropdown-item {
-    padding: 0.5rem !important;
+  padding: 0.8rem !important;
 }
 .mw-100 {
-    min-width: 100px;
+  min-width: 100px;
 }

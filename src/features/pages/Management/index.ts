@@ -1,3 +1,3 @@
-import Management from "./Management";
+import Management from './Management';
 
 export default Management;

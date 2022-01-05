@@ -2,7 +2,6 @@
 import { useKeycloak } from '@react-keycloak/web';
 import { Navigate, useLocation } from 'react-router-dom';
 
-
 interface Props {
   children: JSX.Element;
   roles: string[];
@@ -17,20 +16,20 @@ const AuthGuard = ({ children, roles }: Props) => {
 
   const isAutherized = (roles: string[], clientResource?: string) => {
     //If all provided roles match condition user has permissions
-      if (keycloak && roles) {
-          let a = roles.filter(r => {
-              const realm =  keycloak.hasRealmRole(r);
-              const managementResource = keycloak.hasResourceRole(r, "realm-management");
-              return realm || managementResource;
-          });
-          if (a.length === roles.length) {
-            return true;
-          }
+    if (keycloak && roles) {
+      let a = roles.filter(r => {
+        const realm = keycloak.hasRealmRole(r);
+        const managementResource = keycloak.hasResourceRole(r, 'realm-management');
+        return realm || managementResource;
+      });
+      if (a.length === roles.length) {
+        return true;
       }
-      return false;
-  }
+    }
+    return false;
+  };
 
   return isAutherized(roles) ? children : <Navigate to="/" state={{ from: location }} />;
-}
+};
 
 export default AuthGuard;
