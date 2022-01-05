@@ -1,10 +1,9 @@
-import React from "react";
-import { Button, Modal, Table } from "react-bootstrap";
-import { PageableModel } from "../../../../../api/providers";
-import Paginator from "../../../../../components/Pagination";
-import { formatDate } from "../../../../../utils";
-import { BulkDetailsModel, UserBulk } from "../../../providers/types";
-
+import React from 'react';
+import { Button, Modal, Table } from 'react-bootstrap';
+import { PageableModel } from '../../../../../api/providers';
+import Paginator from '../../../../../components/Pagination';
+import { formatDate } from '../../../../../utils';
+import { BulkDetailsModel, UserBulk } from '../../../providers/types';
 
 interface Props {
   userList: PageableModel<BulkDetailsModel>;
@@ -17,8 +16,8 @@ const BulkDetails = ({ userList, bulkFile, handleClose, paginationHandler }: Pro
   return (
     <Modal show={true} centered size="lg" scrollable>
       <Modal.Header>
-      <Modal.Title>{bulkFile?.filename}</Modal.Title>
-      <p className="mb-0 ms-2">Upload date: {formatDate(bulkFile?.uploadDatetime)}</p>
+        <Modal.Title>{bulkFile?.filename}</Modal.Title>
+        <p className="mb-0 ms-2">Upload date: {formatDate(bulkFile?.uploadDatetime)}</p>
       </Modal.Header>
       <Modal.Body>
         <Table bordered responsive>
@@ -40,14 +39,14 @@ const BulkDetails = ({ userList, bulkFile, handleClose, paginationHandler }: Pro
           </tbody>
         </Table>
         {userList.content.length > 5 ? (
-        <Paginator
-          totalElements={userList.totalElements}
-          page={userList.pageable.pageNumber}
-          size={userList.size}
-          totalPages={userList.totalPages}
-          paginationHandler={paginationHandler}
-        />
-      ) : null}
+          <Paginator
+            totalElements={userList.totalElements}
+            page={userList.pageable.pageNumber}
+            size={userList.size}
+            totalPages={userList.totalPages}
+            paginationHandler={paginationHandler}
+          />
+        ) : null}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>

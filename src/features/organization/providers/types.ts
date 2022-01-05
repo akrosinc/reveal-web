@@ -17,9 +17,9 @@ export interface OrganizationPartOf {
 }
 
 export enum Code {
-  Team = "TEAM",
-  Cg = "CG",
-  Other = "OTHER",
+  Team = 'TEAM',
+  Cg = 'CG',
+  Other = 'OTHER'
 }
 
 export interface Groups {

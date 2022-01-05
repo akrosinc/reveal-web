@@ -1,7 +1,7 @@
-import { Row, Col } from "react-bootstrap";
-import { FOOTER_TEXT } from "../../../constants";
-import revealLogo from "../../../assets/logos/reveal-logo.png";
-import akrosLogo from "../../../assets/logos/akros-logo.png";
+import { Row, Col } from 'react-bootstrap';
+import { FOOTER_TEXT } from '../../../constants';
+import revealLogo from '../../../assets/logos/reveal-logo.png';
+import akrosLogo from '../../../assets/logos/akros-logo.png';
 
 const Footer = () => (
   <footer>

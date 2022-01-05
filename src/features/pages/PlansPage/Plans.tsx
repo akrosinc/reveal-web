@@ -1,32 +1,22 @@
-import React, { useEffect, useState, useRef } from "react";
-import mapboxgl, { Map } from "mapbox-gl";
-import "./index.css";
-import { Button, Col, Container, Modal, Row } from "react-bootstrap";
-import { buildingData } from "./jsonMocks";
+import React, { useEffect, useState, useRef } from 'react';
+import mapboxgl, { Map } from 'mapbox-gl';
+import './index.css';
+import { Button, Col, Container, Modal, Row } from 'react-bootstrap';
+import { buildingData } from './jsonMocks';
 
-mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? "";
+mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 const legend = [
-  "Complete",
-  "SPAQ Complete",
-  "SMC Complete",
-  "Not Dispensed",
-  "Family Registered",
-  "Ineligible",
-  "Not Eligible",
-  "Not Visited",
-  "No Tasks",
+  'Complete',
+  'SPAQ Complete',
+  'SMC Complete',
+  'Not Dispensed',
+  'Family Registered',
+  'Ineligible',
+  'Not Eligible',
+  'Not Visited',
+  'No Tasks'
 ];
-const legendColors = [
-  "green",
-  "orange",
-  "darkorange",
-  "orange",
-  "teal",
-  "gray",
-  "black",
-  "yellow",
-  "gray",
-];
+const legendColors = ['green', 'orange', 'darkorange', 'orange', 'teal', 'gray', 'black', 'yellow', 'gray'];
 
 const Plans = () => {
   const mapContainer = useRef<any>();
@@ -35,21 +25,21 @@ const Plans = () => {
   const [lat, setLat] = useState(-34.16764168475747);
   const [zoom, setZoom] = useState(16);
   const [show, setShow] = useState(false);
-  const [buildingId, setBuildingId] = useState("");
+  const [buildingId, setBuildingId] = useState('');
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/satellite-v9",
+      style: 'mapbox://styles/mapbox/satellite-v9',
       center: [lng, lat],
-      zoom: zoom,
+      zoom: zoom
     });
   });
 
   useEffect(() => {
     if (map.current !== undefined && map !== undefined) {
-      map.current.on("move", () => {
+      map.current.on('move', () => {
         if (map !== undefined && map.current !== undefined) {
           setLng(Math.round(map.current.getCenter().lng * 100) / 100);
           setLat(Math.round(map.current.getCenter().lat * 100) / 100);
@@ -63,52 +53,48 @@ const Plans = () => {
     buildingData.forEach((jsonData, index) => {
       createBuilding(
         jsonData,
-        "building." + index,
-        "#000000".replace(/0/g, function () {
+        'building.' + index,
+        '#000000'.replace(/0/g, function () {
           return (~~(Math.random() * 16)).toString(16);
         })
       );
     });
   };
 
-  const createBuilding = (
-    coordinates: number[][],
-    buildingName: string,
-    status: string
-  ) => {
+  const createBuilding = (coordinates: number[][], buildingName: string, status: string) => {
     if (map?.current?.getSource(buildingName) !== undefined) {
-      map.current.removeLayer(buildingName + "fill");
+      map.current.removeLayer(buildingName + 'fill');
       map.current.removeSource(buildingName);
     } else {
       if (map.current !== undefined) {
         map.current.addSource(buildingName, {
-          type: "geojson",
+          type: 'geojson',
           data: {
-            type: "Feature",
+            type: 'Feature',
             properties: {},
             geometry: {
-              type: "Polygon",
+              type: 'Polygon',
               // These coordinates outline Maine.
-              coordinates: [coordinates],
-            },
-          },
+              coordinates: [coordinates]
+            }
+          }
         });
         map.current.addLayer({
-          id: buildingName + "fill",
-          type: "fill",
+          id: buildingName + 'fill',
+          type: 'fill',
           source: buildingName, // reference the data source
           layout: {},
           paint: {
-            "fill-color": status, // blue color fill
-            "fill-opacity": 0.5,
-          },
+            'fill-color': status, // blue color fill
+            'fill-opacity': 0.5
+          }
         });
 
         // When a click event occurs on a feature in the states layer,
         // open a popup at the location of the click, with description
         // HTML from the click event's properties.
-        map.current.on("click", buildingName + "fill", (e) => {
-          const feature = e.features !== undefined ? e.features[0].source : "";
+        map.current.on('click', buildingName + 'fill', e => {
+          const feature = e.features !== undefined ? e.features[0].source : '';
           new mapboxgl.Popup()
             .setLngLat(e.lngLat)
             .setHTML(
@@ -116,63 +102,57 @@ const Plans = () => {
                 ? `<h4>Structure details</h4><p>Identifier: ${feature}
                 <br/>Status: Not visited</p>
                 <button class="btn btn-primary mx-auto my-2 d-block" id="view-full">Action</button>`
-                : "Building id not found"
+                : 'Building id not found'
             )
-            .setMaxWidth("400px")
+            .setMaxWidth('400px')
             .addTo(map!.current!);
           const handler = () => {
             setShow(true);
             setBuildingId(feature);
           };
-          document
-            .getElementById("view-full")
-            ?.addEventListener("click", handler);
+          document.getElementById('view-full')?.addEventListener('click', handler);
 
           map?.current?.flyTo({
             center: e.lngLat,
-            zoom: 17,
+            zoom: 17
           });
         });
       }
     }
   };
 
-  const createRegion = (
-    coordinates: number[][],
-    regionName: string,
-    borderColor: string
-  ) => {
+  const createRegion = (coordinates: number[][], regionName: string, borderColor: string) => {
     if (map?.current?.getSource(regionName) !== undefined) {
-      map?.current?.removeLayer(regionName + "outline");
+      map?.current?.removeLayer(regionName + 'outline');
       map?.current?.removeSource(regionName);
     } else {
       map?.current?.addSource(regionName, {
-        type: "geojson",
+        type: 'geojson',
         data: {
-          type: "Feature",
+          type: 'Feature',
           properties: {},
           geometry: {
-            type: "Polygon",
+            type: 'Polygon',
             // These coordinates outline Maine.
-            coordinates: [coordinates],
-          },
-        },
+            coordinates: [coordinates]
+          }
+        }
       });
       // Add a black outline around the polygon.
       map?.current?.addLayer({
-        id: regionName + "outline",
-        type: "line",
+        id: regionName + 'outline',
+        type: 'line',
         source: regionName,
         layout: {},
         paint: {
-          "line-color": borderColor,
-          "line-width": 3,
-        },
+          'line-color': borderColor,
+          'line-width': 3
+        }
       });
 
       map?.current?.flyTo({
         center: [24.65, -34.17],
-        zoom: 16,
+        zoom: 16
       });
     }
   };
@@ -219,10 +199,10 @@ const Plans = () => {
                     [24.649876356124878, -34.170060637025514],
                     [24.649538397789, -34.170207103469096],
                     [24.649624228477478, -34.1706243095213],
-                    [24.649742245674133, -34.170770774986714],
+                    [24.649742245674133, -34.170770774986714]
                   ],
-                  "fds1-saxv-12sa",
-                  "#fff000"
+                  'fds1-saxv-12sa',
+                  '#fff000'
                 )
               }
             >
@@ -230,14 +210,11 @@ const Plans = () => {
             </Button>
             <hr />
             <p className="lead">Legend</p>
-            <ul style={{ listStyle: "none" }}>
+            <ul style={{ listStyle: 'none' }}>
               {legend.map((el, index) => {
                 return (
                   <li key={index}>
-                    <span
-                      className="sidebar-legend"
-                      style={{ backgroundColor: legendColors[index] }}
-                    />
+                    <span className="sidebar-legend" style={{ backgroundColor: legendColors[index] }} />
                     {el}
                   </li>
                 );

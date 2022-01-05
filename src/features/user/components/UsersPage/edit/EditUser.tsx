@@ -1,20 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
-import { Button, Form, Row, Col } from "react-bootstrap";
-import { deleteUserById, getUserById, resetUserPassword, updateUser } from "../../../../user/api";
-import { EditUserModel, UserModel } from "../../../../user/providers/types";
-import { cancelTokenGenerator } from "../../../../../utils";
-import { ConfirmDialog } from "../../../../../components/Dialogs";
-import { showLoader } from "../../../../reducers/loader";
-import { useAppDispatch } from "../../../../../store/hooks";
-import { useForm } from "react-hook-form";
-import Select, { MultiValue } from "react-select";
-import {
-  getOrganizationListSummary,
-  getSecurityGroups,
-} from "../../../../organization/api";
-import { toast } from "react-toastify";
-import { ErrorModel } from "../../../../../api/providers";
-import { AxiosResponse, CancelToken } from "axios";
+import { useCallback, useEffect, useState } from 'react';
+import { Button, Form, Row, Col } from 'react-bootstrap';
+import { deleteUserById, getUserById, resetUserPassword, updateUser } from '../../../../user/api';
+import { EditUserModel, UserModel } from '../../../../user/providers/types';
+import { cancelTokenGenerator } from '../../../../../utils';
+import { ConfirmDialog } from '../../../../../components/Dialogs';
+import { showLoader } from '../../../../reducers/loader';
+import { useAppDispatch } from '../../../../../store/hooks';
+import { useForm } from 'react-hook-form';
+import Select, { MultiValue } from 'react-select';
+import { getOrganizationListSummary, getSecurityGroups } from '../../../../organization/api';
+import { toast } from 'react-toastify';
+import { ErrorModel } from '../../../../../api/providers';
+import { AxiosResponse, CancelToken } from 'axios';
 
 interface Props {
   userId: string;
@@ -42,15 +39,13 @@ const EditUser = ({ userId, handleClose }: Props) => {
   const [edit, setEdit] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-  const [selectedSecurityGroups, setSelectedSecurityGroups] =
-    useState<Options[]>();
-  const [selectedOrganizations, setSelectedOrganizations] =
-    useState<Options[]>();
+  const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
+  const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
   const {
     register,
     setValue,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty }
   } = useForm();
   const [groups, setGroups] = useState<Options[]>();
   const [organizations, setOrganizations] = useState<Options[]>([]);
@@ -59,25 +54,25 @@ const EditUser = ({ userId, handleClose }: Props) => {
   const setStartValues = useCallback(
     (userDetails: UserModel) => {
       setUser(userDetails);
-      setValue("username", userDetails.username);
-      setValue("firstname", userDetails.firstName);
-      setValue("lastname", userDetails.lastName);
-      setValue("email", userDetails.email);
+      setValue('username', userDetails.username);
+      setValue('firstname', userDetails.firstName);
+      setValue('lastname', userDetails.lastName);
+      setValue('email', userDetails.email);
       setSelectedSecurityGroups(
         userDetails.securityGroups !== undefined
-          ? userDetails.securityGroups.map((group) => {
+          ? userDetails.securityGroups.map(group => {
               return {
                 label: group,
-                value: group,
+                value: group
               };
             })
           : []
       );
       setSelectedOrganizations(
-        userDetails.organizations.map((org) => {
+        userDetails.organizations.map(org => {
           return {
             label: org.name,
-            value: org.identifier,
+            value: org.identifier
           };
         })
       );
@@ -88,34 +83,40 @@ const EditUser = ({ userId, handleClose }: Props) => {
   const getData = useCallback(
     (cancelToken: CancelToken) => {
       getSecurityGroups(cancelToken)
-        .then((res) => {
+        .then(res => {
           setGroups(
-            res.map((el) => {
+            res.map(el => {
               return {
                 label: el.name,
-                value: el.name,
+                value: el.name
               };
             })
           );
         })
-        .catch((err) => toast.error(err.toString()));
-      getOrganizationListSummary().then((res) => {
+        .catch(err => console.log(err));
+      getOrganizationListSummary().then(res => {
         setOrganizations(
-          res.content.map((org) => {
+          res.content.map(org => {
             return {
               label: org.name,
-              value: org.identifier,
+              value: org.identifier
             };
           })
         );
       });
       getUserById(userId, cancelToken)
-        .then((res) => {
+        .then(res => {
           setStartValues(res);
         })
-        .catch((err) => toast.error(err.toString()));
+        .catch((err: ErrorModel) => {
+          console.log(err);
+          if (err.statusCode === 404) {
+            handleClose();
+            toast.error(err.message)
+          }
+        });
     },
-    [userId, setStartValues]
+    [userId, setStartValues, handleClose]
   );
 
   useEffect(() => {
@@ -123,7 +124,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
     getData(source.token);
     return () => {
       //Slow networks can cause a memory leak, cancel a request if its not done if modal is closed
-      source.cancel("Preventing memory leak - canceling pending promises.");
+      source.cancel('Preventing memory leak - canceling pending promises.');
     };
   }, [getData]);
 
@@ -132,22 +133,20 @@ const EditUser = ({ userId, handleClose }: Props) => {
     if (action) {
       dispatch(showLoader(true));
       toast.promise(deleteUserById(userId), {
-        pending: "Loading...",
+        pending: 'Loading...',
         success: {
           render() {
             dispatch(showLoader(false));
             handleClose();
             return `User with id ${userId} deleted successfully`;
-          },
+          }
         },
         error: {
-          render(error: ErrorModel) {
+          render( { data }: { data: ErrorModel }) {
             dispatch(showLoader(false));
-            return error.data.message !== undefined
-              ? error.data.message
-              : error.data.error;
-          },
-        },
+            return data.message !== undefined ? data.message : data.error;
+          }
+        }
       });
     }
   };
@@ -158,10 +157,10 @@ const EditUser = ({ userId, handleClose }: Props) => {
       const passwordModel = {
         identifier: userId,
         password: formValues.password,
-        tempPassword: formValues.isTemp,
-      }
+        tempPassword: formValues.isTemp
+      };
       toast.promise(resetUserPassword(passwordModel), {
-        pending: "Loading...",
+        pending: 'Loading...',
         success: {
           render({ data }) {
             const response = data as AxiosResponse;
@@ -169,67 +168,59 @@ const EditUser = ({ userId, handleClose }: Props) => {
               setChangePassword(false);
               setEdit(false);
               dispatch(showLoader(false));
-              return "Password updated successfully."
+              return 'Password updated successfully.';
             }
           }
         },
         error: {
-          render ( { data }: ErrorModel ) {
+          render({ data }: { data: ErrorModel }) {
             dispatch(showLoader(false));
-            return data.error;
+            return data !== undefined ? data.error : "Something went wrong!";
           }
         }
-      })
+      });
     } else {
       let updatedUser: EditUserModel = {
         identifier: userId,
         email: formValues.email,
         firstName: formValues.firstname,
         lastName: formValues.lastname,
-        organizations: selectedOrganizations?.map((el) => el.value) ?? [],
-        securityGroups: selectedSecurityGroups?.map((el) => el.value) ?? [],
+        organizations: selectedOrganizations?.map(el => el.value) ?? [],
+        securityGroups: selectedSecurityGroups?.map(el => el.value) ?? []
       };
       toast
         .promise(updateUser(updatedUser), {
-          pending: "Loading...",
+          pending: 'Loading...',
           success: {
             render() {
               setEdit(false);
               handleClose();
               return `User with id ${userId} updated successfully.`;
-            },
+            }
           },
           error: {
-            render({ data }: ErrorModel) {
-              return data.fieldValidationErrors.map((err) => [
-                "Error on field " + err.field,
-                " - ",
-                err.messageKey,
-              ]);
-            },
-          },
+            render({ data }: { data: ErrorModel }) {
+              return data.fieldValidationErrors.map(err => ['Error on field ' + err.field, ' - ', err.messageKey]);
+            }
+          }
         })
         .finally(() => dispatch(showLoader(false)));
     }
   };
 
-  const selectHandler = (
-    selectedOption: MultiValue<{ value: string; label: string }>
-  ) => {
-    const values = selectedOption.map((selected) => {
+  const selectHandler = (selectedOption: MultiValue<{ value: string; label: string }>) => {
+    const values = selectedOption.map(selected => {
       return selected;
     });
-    setValue("securityGroups", values, { shouldDirty: true });
+    setValue('securityGroups', values, { shouldDirty: true });
     setSelectedSecurityGroups(values);
   };
 
-  const organizationSelectHandler = (
-    selectedOption: MultiValue<{ value: string; label: string }>
-  ) => {
-    const values = selectedOption.map((selected) => {
+  const organizationSelectHandler = (selectedOption: MultiValue<{ value: string; label: string }>) => {
+    const values = selectedOption.map(selected => {
       return selected;
     });
-    setValue("organizations", values, { shouldDirty: true });
+    setValue('organizations', values, { shouldDirty: true });
     setSelectedOrganizations(values);
   };
 
@@ -237,19 +228,11 @@ const EditUser = ({ userId, handleClose }: Props) => {
     <Form>
       <Form.Group className="mb-3">
         <Form.Label>Identifier</Form.Label>
-        <Form.Control
-          readOnly={true}
-          type="text"
-          defaultValue={user?.identifier}
-        />
+        <Form.Control readOnly={true} type="text" defaultValue={user?.identifier} />
       </Form.Group>
       <Form.Group className="mb-3">
         <Form.Label>Username</Form.Label>
-        <Form.Control
-          readOnly={true}
-          type="username"
-          defaultValue={user?.username}
-        />
+        <Form.Control readOnly={true} type="username" defaultValue={user?.username} />
       </Form.Group>
       {changePassword ? (
         <>
@@ -258,23 +241,15 @@ const EditUser = ({ userId, handleClose }: Props) => {
             <Form.Control
               type="password"
               placeholder="Enter new password"
-              {...register("password", { required: true, minLength: 5 })}
+              {...register('password', { required: true, minLength: 5 })}
             />
             {errors.password && (
-                  <Form.Label className="text-danger">
-                    Password must containt at least 5 characters
-                  </Form.Label>
-                )}
+              <Form.Label className="text-danger">Password must containt at least 5 characters</Form.Label>
+            )}
           </Form.Group>
           <Form.Group className="mb-3 d-flex">
-            <Form.Label>
-              Request user to change password after first login?
-            </Form.Label>
-            <Form.Check
-              className="ms-2"
-              type="checkbox"
-              {...register("isTemp", { required: false })}
-            />
+            <Form.Label>Request user to change password after first login?</Form.Label>
+            <Form.Check className="ms-2" type="checkbox" {...register('isTemp', { required: false })} />
           </Form.Group>
         </>
       ) : (
@@ -287,13 +262,9 @@ const EditUser = ({ userId, handleClose }: Props) => {
                   readOnly={!edit}
                   type="text"
                   placeholder="Enter first name"
-                  {...register("firstname", { required: true })}
+                  {...register('firstname', { required: true })}
                 />
-                {errors.firstname && (
-                  <Form.Label className="text-danger">
-                    First name must not be empty.
-                  </Form.Label>
-                )}
+                {errors.firstname && <Form.Label className="text-danger">First name must not be empty.</Form.Label>}
               </Form.Group>
             </Col>
             <Col>
@@ -303,13 +274,9 @@ const EditUser = ({ userId, handleClose }: Props) => {
                   readOnly={!edit}
                   type="text"
                   placeholder="Enter last name"
-                  {...register("lastname", { required: true })}
+                  {...register('lastname', { required: true })}
                 />
-                {errors.lastname && (
-                  <Form.Label className="text-danger">
-                    Last name must not be empty.
-                  </Form.Label>
-                )}
+                {errors.lastname && <Form.Label className="text-danger">Last name must not be empty.</Form.Label>}
               </Form.Group>
             </Col>
           </Row>
@@ -320,13 +287,13 @@ const EditUser = ({ userId, handleClose }: Props) => {
               type="email"
               placeholder="Enter email"
               defaultValue={user?.email}
-              {...register("email", { required: false })}
+              {...register('email', { required: false })}
             />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Security groups</Form.Label>
             <Select
-              {...register("securityGroups", { required: false })}
+              {...register('securityGroups', { required: false })}
               isDisabled={!edit}
               isMulti
               value={selectedSecurityGroups}
@@ -338,7 +305,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
           <Form.Group className="mb-3">
             <Form.Label>Organization</Form.Label>
             <Select
-              {...register("organizations", { required: false })}
+              {...register('organizations', { required: false })}
               isDisabled={!edit}
               isMulti
               value={selectedOrganizations}
@@ -351,19 +318,10 @@ const EditUser = ({ userId, handleClose }: Props) => {
       <hr />
       {edit ? (
         <>
-          <Button
-            className="float-start"
-            onClick={() => setChangePassword(!changePassword)}
-            hidden={changePassword}
-          >
+          <Button className="float-start" onClick={() => setChangePassword(!changePassword)} hidden={changePassword}>
             Change password
           </Button>
-          <Button
-            className="float-end"
-            variant="primary"
-            disabled={!isDirty}
-            onClick={handleSubmit(submitHandler)}
-          >
+          <Button className="float-end" variant="primary" disabled={!isDirty} onClick={handleSubmit(submitHandler)}>
             Save
           </Button>
           <Button
@@ -378,25 +336,13 @@ const EditUser = ({ userId, handleClose }: Props) => {
         </>
       ) : (
         <>
-          <Button
-            className="float-end"
-            variant="primary"
-            onClick={() => setEdit(!edit)}
-          >
+          <Button className="float-end" variant="primary" onClick={() => setEdit(!edit)}>
             Edit
           </Button>
-          <Button
-            className="float-end me-2"
-            variant="secondary"
-            onClick={() => setShowDialog(!showDialog)}
-          >
+          <Button className="float-end me-2" variant="secondary" onClick={() => setShowDialog(!showDialog)}>
             Delete
           </Button>
-          <Button
-            className="float-start"
-            variant="secondary"
-            onClick={handleClose}
-          >
+          <Button className="float-start" variant="secondary" onClick={handleClose}>
             Close
           </Button>
         </>
@@ -404,10 +350,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
       {showDialog && (
         <ConfirmDialog
           closeHandler={deleteHandler}
-          message={
-            "Are you sure you want to permanently delete the user " +
-            user?.username
-          }
+          message={'Are you sure you want to permanently delete the user ' + user?.username}
           title="Delete user"
           backdrop={true}
         />

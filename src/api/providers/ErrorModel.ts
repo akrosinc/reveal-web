@@ -1,11 +1,8 @@
 export interface ErrorModel {
-  data: {
     fieldValidationErrors: fieldValidationError[];
     statusCode: number;
     message: string;
     error: string;
-    status: number;
-  };
 }
 
 interface fieldValidationError {

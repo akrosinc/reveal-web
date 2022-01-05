@@ -1,12 +1,12 @@
-import React from "react";
-import { render } from "@testing-library/react";
-import { Provider } from "react-redux";
-import { store } from "../store/store";
-import App from "./App";
-import { ReactKeycloakProvider } from "@react-keycloak/web";
-import keycloak from "../keycloak";
+import React from 'react';
+import { render } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import { store } from '../store/store';
+import App from './App';
+import { ReactKeycloakProvider } from '@react-keycloak/web';
+import keycloak from '../keycloak';
 
-test("renders learn react link", () => {
+test('renders learn react link', () => {
   const { initialized } = render(
     <ReactKeycloakProvider authClient={keycloak}>
       <Provider store={store}>

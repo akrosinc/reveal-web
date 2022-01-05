@@ -8,3 +8,8 @@
 main {
   min-height: calc(100vh - 62px);
 }
+
+td,
+th {
+  padding: 15px 10px !important;
+}

@@ -1,7 +1,7 @@
-import Moment from "moment";
-import { getFromBrowser } from ".";
+import Moment from 'moment';
+import { getFromBrowser } from '.';
 
-Moment.locale(getFromBrowser('locale') ?? "en");
+Moment.locale(getFromBrowser('locale') ?? 'en');
 
 export const formatDate = (date?: Date) => {
   if (date !== undefined) {

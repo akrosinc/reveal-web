@@ -1,17 +1,17 @@
-import React, { CSSProperties } from "react";
-import { Col, Image, Row } from "react-bootstrap";
-import logo from "../../assets/logos/Reveal_logo_400.png";
-import devicesImage from "../../assets/images/reveal-devices.png";
+import React, { CSSProperties } from 'react';
+import { Col, Image, Row } from 'react-bootstrap';
+import logo from '../../assets/logos/Reveal_logo_400.png';
+import devicesImage from '../../assets/images/reveal-devices.png';
 
-import Container from "react-bootstrap/Container";
-import { useTranslation } from "react-i18next";
+import Container from 'react-bootstrap/Container';
+import { useTranslation } from 'react-i18next';
 
 const imageTextStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  alignContent: "center",
-  flexWrap: "wrap",
-  justifyContent: "center",
+  display: 'flex',
+  alignItems: 'center',
+  alignContent: 'center',
+  flexWrap: 'wrap',
+  justifyContent: 'center'
 };
 
 function PublicPage() {
@@ -22,9 +22,7 @@ function PublicPage() {
       <Row>
         <Col style={imageTextStyle} md={6}>
           <Image src={logo} alt="Reveal logo" fluid />
-          <p className="lead">
-            {t('publicPage.description')}
-          </p>
+          <p className="lead">{t('publicPage.description')}</p>
         </Col>
         <Col md={6}>
           <Image src={devicesImage} alt="Reveal devices" fluid />
@@ -42,30 +40,32 @@ function PublicPage() {
             allowFullScreen
           />
         </Col>
-        <Col style={{ textAlign: "left" }} md={6}>
-          <h1 style={{ fontWeight: "700" }}>{t('publicPage.question')}</h1>
+        <Col style={{ textAlign: 'left' }} md={6}>
+          <h1 style={{ fontWeight: '700' }}>{t('publicPage.question')}</h1>
           <p className="lead text-secondary">
-            {t('publicPage.firstPartAbout')}{" "}
+            {t('publicPage.firstPartAbout')}{' '}
             <a
               href="https://digitalsquare.org/resourcesrepository/global-goods-guidebook"
               target="_blank"
               rel="noreferrer"
               className="text-decoration-none"
-              style={{color: '#8cc63e'}}
+              style={{ color: '#8cc63e' }}
             >
               GLOBAL GOOD
-            </a>{" "}
-            {t('publicPage.secondPartAbout')} <a
+            </a>{' '}
+            {t('publicPage.secondPartAbout')}{' '}
+            <a
               href="https://digitalhealthatlas.org/en/-/"
               target="_blank"
               rel="noreferrer"
               className="text-decoration-none"
-              style={{color: '#8cc63e'}}
-            >DIGITAL HEALTH ATLAS</a>.
+              style={{ color: '#8cc63e' }}
+            >
+              DIGITAL HEALTH ATLAS
+            </a>
+            .
           </p>
-          <p className="text-secondary">
-            {t('publicPage.about')}
-          </p>
+          <p className="text-secondary">{t('publicPage.about')}</p>
         </Col>
       </Row>
     </Container>

@@ -1,4 +1,4 @@
-import { Modal } from "react-bootstrap";
+import { Modal } from 'react-bootstrap';
 
 interface Props {
   title: string;
@@ -13,9 +13,7 @@ const ActionDialog = ({ title, closeHandler, backdrop, element }: Props) => {
       <Modal.Header closeButton>
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        {element}
-      </Modal.Body>
+      <Modal.Body>{element}</Modal.Body>
     </Modal>
   );
 };

@@ -1,3 +1,3 @@
-import CreateBulk from "./CreateBulk";
+import CreateBulk from './CreateBulk';
 
 export default CreateBulk;

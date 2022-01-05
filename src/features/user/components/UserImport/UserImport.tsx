@@ -1,50 +1,54 @@
-import React, { useState, useEffect } from "react";
-import { Button, Table, Col, Row } from "react-bootstrap";
-import { PageableModel } from "../../../../api/providers";
-import { ActionDialog } from "../../../../components/Dialogs";
-import Paginator from "../../../../components/Pagination";
-import { PAGINATION_DEFAULT_SIZE, USER_BULK_TABLE_COLUMNS } from "../../../../constants";
-import { useAppDispatch } from "../../../../store/hooks";
-import { formatDate } from "../../../../utils";
-import { showLoader } from "../../../reducers/loader";
-import { getBulkById, getBulkList } from "../../api";
-import { BulkDetailsModel, UserBulk } from "../../providers/types";
-import CreateBulk from "./create";
-import BulkDetails from "./details";
+import React, { useState, useEffect } from 'react';
+import { Button, Table, Col, Row } from 'react-bootstrap';
+import { PageableModel } from '../../../../api/providers';
+import { ActionDialog } from '../../../../components/Dialogs';
+import Paginator from '../../../../components/Pagination';
+import { PAGINATION_DEFAULT_SIZE, USER_BULK_TABLE_COLUMNS } from '../../../../constants';
+import { useAppDispatch } from '../../../../store/hooks';
+import { formatDate } from '../../../../utils';
+import { showLoader } from '../../../reducers/loader';
+import { getBulkById, getBulkList } from '../../api';
+import { BulkDetailsModel, UserBulk } from '../../providers/types';
+import CreateBulk from './create';
+import BulkDetails from './details';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const UserImport = () => {
   const [openCreate, setOpenCreate] = useState(false);
   const [openDetails, setOpenDetails] = useState(false);
   const [bulkList, setBulkList] = useState<PageableModel<UserBulk>>();
-  const [selectedBulk, setSelectedBulk] =
-    useState<PageableModel<BulkDetailsModel>>();
+  const [selectedBulk, setSelectedBulk] = useState<PageableModel<BulkDetailsModel>>();
   const [selectedBulkFile, setSelectedBulkFile] = useState<UserBulk>();
-  const [currentSortField, setCurrentSortField] = useState("");
+  const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [sortDirection, setSortDirection] = useState(false);
-  const [activeSortField, setActiveSortField] = useState("");
+  const [activeSortField, setActiveSortField] = useState('');
   const dispatch = useAppDispatch();
 
   const closeHandler = () => {
     setOpenCreate(false);
     setOpenDetails(false);
-    getBulkList(10, 0, "", currentSortField, currentSortDirection).then(
-      (res) => {
-        setBulkList(res);
-      }
-    );
+    getBulkList(
+      bulkList?.size ?? PAGINATION_DEFAULT_SIZE,
+      bulkList?.pageable.pageNumber ?? 0,
+      '',
+      currentSortField,
+      currentSortDirection
+    ).then(res => {
+      setBulkList(res);
+    });
   };
 
   const paginationHandler = (size: number, page: number) => {
     if (openDetails && selectedBulkFile !== undefined) {
       dispatch(showLoader(true));
-      getBulkById(size, page, selectedBulkFile.identifier).then((res) => {
+      getBulkById(size, page, selectedBulkFile.identifier).then(res => {
         setSelectedBulk(res);
         setSelectedBulkFile(selectedBulkFile);
         dispatch(showLoader(false));
       });
     } else {
-      getBulkList(size, page).then((res) => {
+      getBulkList(size, page).then(res => {
         setBulkList(res);
       });
     }
@@ -52,18 +56,16 @@ const UserImport = () => {
 
   const openBulkById = (selectedFile: UserBulk) => {
     dispatch(showLoader(true));
-    getBulkById(PAGINATION_DEFAULT_SIZE, 0, selectedFile.identifier).then(
-      (res) => {
-        setSelectedBulk(res);
-        setSelectedBulkFile(selectedFile);
-        setOpenDetails(true);
-        dispatch(showLoader(false));
-      }
-    );
+    getBulkById(PAGINATION_DEFAULT_SIZE, 0, selectedFile.identifier).then(res => {
+      setSelectedBulk(res);
+      setSelectedBulkFile(selectedFile);
+      setOpenDetails(true);
+      dispatch(showLoader(false));
+    });
   };
 
   useEffect(() => {
-    getBulkList(PAGINATION_DEFAULT_SIZE, 0).then((res) => {
+    getBulkList(PAGINATION_DEFAULT_SIZE, 0).then(res => {
       setBulkList(res);
     });
   }, []);
@@ -72,7 +74,7 @@ const UserImport = () => {
     if (bulkList !== undefined) {
       setCurrentSortField(field);
       setCurrentSortDirection(sortDirection);
-      getBulkList(bulkList.size, 0, "", field, sortDirection);
+      getBulkList(bulkList.size, 0, '', field, sortDirection);
     }
   };
 
@@ -104,17 +106,21 @@ const UserImport = () => {
                   }}
                 >
                   {el.name}
-                  {activeSortField === el.name
-                    ? sortDirection
-                      ? " ▲"
-                      : " ▼"
-                    : null}
+                  {activeSortField === el.name ? (
+                    sortDirection ? (
+                      <FontAwesomeIcon className="ms-1" icon="sort-up" />
+                    ) : (
+                      <FontAwesomeIcon className="ms-1" icon="sort-down" />
+                    )
+                  ) : (
+                    <FontAwesomeIcon className="ms-1" icon="sort" />
+                  )}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {bulkList?.content?.map((el) => (
+            {bulkList?.content?.map(el => (
               <tr onClick={() => openBulkById(el)} key={el.identifier}>
                 <td>{el.filename}</td>
                 <td>{formatDate(el.uploadDatetime)}</td>

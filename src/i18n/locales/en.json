@@ -11,7 +11,8 @@
     "Planning tools": "Planning tools",
     "IRS Reporting": "IRS Reporting",
     "SMC Reporting": "SMC Reporting",
-    "Management": "Management"
+    "Management": "Management",
+    "Location": "Location Management"
   },
   "publicPage": {
     "description": "Reveal is a Global Good and an open-source platform taht uses spatial intelligence to drive delivery of live-saving interventions",
@@ -25,7 +26,12 @@
     "description": "Get started by selecting an intervention below"
   },
   "buttons": {
-      "management": "Management",
-      "plans": "Plans"
+    "management": "Management",
+    "plans": "Plans"
+  },
+  "managementPage": {
+    "organization": "Organization",
+    "user": "User",
+    "userImport": "User Import"
   }
 }

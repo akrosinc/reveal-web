@@ -1,18 +1,14 @@
-import { Route, Routes } from "react-router";
-import { Navigate } from "react-router-dom";
-import {
-  HOME_PAGE,
-  MANAGEMENT,
-  PLANS,
-  ROLE_MANAGE_USER
-} from "../constants/";
-import Home from "../features/pages/HomePage/Home";
-import Plans from "../features/pages/PlansPage";
-import Management from "../features/pages/Management";
-import { useKeycloak } from "@react-keycloak/web";
-import AuthGuard from "./AuthGuard";
-import PublicPage from "./pages/PublicPage";
-import ErrorPage from "./pages/ErrorPage";
+import { Route, Routes } from 'react-router';
+import { Navigate } from 'react-router-dom';
+import { HOME_PAGE, LOCATION, MANAGEMENT, PLANS, ROLE_MANAGE_USER } from '../constants/';
+import Home from '../features/pages/HomePage/Home';
+import Plans from '../features/pages/PlansPage';
+import Management from '../features/pages/Management';
+import { useKeycloak } from '@react-keycloak/web';
+import AuthGuard from './AuthGuard';
+import PublicPage from './pages/PublicPage';
+import ErrorPage from './pages/ErrorPage';
+import Location from '../features/pages/Location';
 
 export default function Router() {
   const { keycloak, initialized } = useKeycloak();
@@ -37,6 +33,23 @@ export default function Router() {
               element={
                 <AuthGuard roles={[ROLE_MANAGE_USER]}>
                   <Management />
+                </AuthGuard>
+              }
+            />
+          </Route>
+          <Route
+            path={LOCATION}
+            element={
+              <AuthGuard roles={[]}>
+                <Location />
+              </AuthGuard>
+            }
+          >
+            <Route
+              path=":tab"
+              element={
+                <AuthGuard roles={[]}>
+                  <Location />
                 </AuthGuard>
               }
             />
