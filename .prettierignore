@@ -1,0 +1,11 @@
+.gitignore
+.dockerignore
+.github/*
+azure-pipelines.yml
+Dockerfile
+package.json
+README.md
+tsconfig.json
+yarn.lock
+node_modules/*
+public/*
