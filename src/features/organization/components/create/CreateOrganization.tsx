@@ -27,7 +27,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm();
+  } = useForm<RegisterValues>();
 
   useEffect(() => {
     getOrganizationListSummary().then(res => {
@@ -40,11 +40,10 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
     toast.promise(createOrganization(formValues), {
       pending: 'Loading...',
       success: {
-        render({ data }: any) {
-          let newOrganization = data as OrganizationModel;
+        render({ data }: {data: OrganizationModel}) {
           dispatch(showLoader(false));
           handleClose();
-          return `Organization with id: ${newOrganization.identifier} created successfully.`;
+          return `Organization with id: ${data.identifier} created successfully.`;
         }
       },
       error: {
@@ -60,18 +59,18 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
     <Form>
       <Form.Group className="my-4">
         <Form.Label>Organization name</Form.Label>
-        <Form.Control {...register('name', { required: true })} type="input" />
-        {errors.name && <Form.Label className="text-danger">Organization name must not be empty.</Form.Label>}
+        <Form.Control {...register('name', { required: "Organization name must not be empty." })} type="input" />
+        {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Type</Form.Label>
-        <Form.Select {...register('type', { required: true })}>
+        <Form.Select {...register('type', { required: "Organization type must be selected." })}>
           <option value=""></option>
           <option value="CG">Community group</option>
           <option value="TEAM">Team</option>
           <option value="OTHER">Other</option>
         </Form.Select>
-        {errors.type && <Form.Label className="text-danger">Organization type must be selected.</Form.Label>}
+        {errors.type && <Form.Label className="text-danger">{errors.type.message}</Form.Label>}
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Part of</Form.Label>
@@ -87,7 +86,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
         </Form.Select>
       </Form.Group>
       <Form.Group className="my-4" id="formGridCheckbox">
-        <Form.Check {...register('active', { required: false })} type="checkbox" label="Active" />
+        <Form.Check {...register("isActive", { required: false })} type="checkbox" label="Active" />
       </Form.Group>
       <hr />
       <Button variant="primary" className="float-end" onClick={handleSubmit(submitHandler)}>

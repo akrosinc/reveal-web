@@ -44,9 +44,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
           });
         })
         .catch((err: ErrorModel) =>
-          toast.error(
-            err !== undefined ? err.message : 'There was an error getting organization by identifier.'
-          )
+          toast.error(err !== undefined ? err.message : 'There was an error getting organization by identifier.')
         );
     },
     [organizationId, setValue]
@@ -74,7 +72,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
         }
       },
       error: {
-        render({ data }: {data: ErrorModel}) {
+        render({ data }: { data: ErrorModel }) {
           return data.message;
         }
       }
@@ -100,6 +98,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
         }
       });
     } else {
+      //hide confirm dialog and don't update anything
       setShowConfirmDialog(action);
     }
   };
@@ -122,19 +121,19 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
           readOnly={!edit}
           type="text"
           placeholder="Enter organization name"
-          {...register('name', { required: true })}
+          {...register('name', { required: "Organization name can't be empty." })}
         />
-        {errors.name && <Form.Label className="text-danger">Organization name can't be empty.</Form.Label>}
+        {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Type</Form.Label>
-        <Form.Select disabled={!edit} {...register('type', { required: true })} aria-label="Default select example">
+        <Form.Select disabled={!edit} {...register('type', { required: "Organization type must be selected." })} aria-label="Default select example">
           <option value=""></option>
           <option value="CG">Community group</option>
           <option value="TEAM">Team</option>
           <option value="OTHER">Other</option>
         </Form.Select>
-        {errors.type && <Form.Label className="text-danger">Organization type must be selected.</Form.Label>}
+        {errors.type && <Form.Label className="text-danger">{errors.type.message}</Form.Label>}
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Part of</Form.Label>

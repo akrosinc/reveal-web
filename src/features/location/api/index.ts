@@ -21,7 +21,28 @@ export const getGeographicLevelList = async (
   return data;
 };
 
+export const getGeographicLevelById = async (id: string): Promise<GeographicLevel> => {
+  const data = await api
+    .get<GeographicLevel>(GEOGRAPHIC_LEVEL + `/${id}`)
+    .then(response => response.data);
+  return data;
+};
+
 export const createGeographicLevel = async (formData: { name: string; title: string }): Promise<GeographicLevel> => {
   const data = await api.post<GeographicLevel>(GEOGRAPHIC_LEVEL, formData).then(response => response.data);
+  return data;
+};
+
+export const updateGeographicLevel = async (formData: GeographicLevel): Promise<GeographicLevel> => {
+  const data = await api
+    .put<GeographicLevel>(GEOGRAPHIC_LEVEL + `/${formData.identifier}`, formData)
+    .then(response => response.data);
+  return data;
+};
+
+export const deleteGeographicLevel = async (formData: GeographicLevel): Promise<GeographicLevel> => {
+  const data = await api
+    .delete<GeographicLevel>(GEOGRAPHIC_LEVEL + `/${formData.identifier}`)
+    .then(response => response.data);
   return data;
 };
