@@ -93,7 +93,7 @@ const UserImport = () => {
 
       <hr className="my-4" />
       {bulkList !== undefined && bulkList?.totalElements > 0 ? (
-        <Table bordered responsive>
+        <Table bordered responsive hover>
           <thead className="border border-2">
             <tr>
               {USER_BULK_TABLE_COLUMNS.map((el, index) => (

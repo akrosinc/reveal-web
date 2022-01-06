@@ -17,7 +17,7 @@ interface RegisterValues {
   name: string;
   type: string;
   partOf: string;
-  isActive: boolean;
+  active: boolean;
 }
 
 const CreateOrganization = ({ show, handleClose }: Props) => {
@@ -40,7 +40,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
     toast.promise(createOrganization(formValues), {
       pending: 'Loading...',
       success: {
-        render({ data }: {data: OrganizationModel}) {
+        render({ data }: { data: OrganizationModel }) {
           dispatch(showLoader(false));
           handleClose();
           return `Organization with id: ${data.identifier} created successfully.`;
@@ -59,12 +59,12 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
     <Form>
       <Form.Group className="my-4">
         <Form.Label>Organization name</Form.Label>
-        <Form.Control {...register('name', { required: "Organization name must not be empty." })} type="input" />
+        <Form.Control {...register('name', { required: 'Organization name must not be empty.' })} type="input" />
         {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Type</Form.Label>
-        <Form.Select {...register('type', { required: "Organization type must be selected." })}>
+        <Form.Select {...register('type', { required: 'Organization type must be selected.' })}>
           <option value=""></option>
           <option value="CG">Community group</option>
           <option value="TEAM">Team</option>
@@ -85,8 +85,8 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
           })}
         </Form.Select>
       </Form.Group>
-      <Form.Group className="my-4" id="formGridCheckbox">
-        <Form.Check {...register("isActive", { required: false })} type="checkbox" label="Active" />
+      <Form.Group className="my-4">
+        <Form.Switch {...register('active', { required: false })} label="Active" />
       </Form.Group>
       <hr />
       <Button variant="primary" className="float-end" onClick={handleSubmit(submitHandler)}>

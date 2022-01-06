@@ -68,6 +68,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
         render({ data }) {
           dispatch(showLoader(false));
           setEdit(false);
+          handleClose();
           return `Organization with id ${organizationId} updated successfully.`;
         }
       },
@@ -148,8 +149,8 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
           })}
         </Form.Select>
       </Form.Group>
-      <Form.Group className="my-4" id="formGridCheckbox">
-        <Form.Check disabled={!edit} {...register('active', { required: false })} type="checkbox" label="Active" />
+      <Form.Group className="my-4">
+        <Form.Switch {...register('active', { required: false })} label="Active" />
       </Form.Group>
       <hr />
       {edit ? (
