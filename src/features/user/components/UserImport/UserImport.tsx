@@ -12,6 +12,7 @@ import { BulkDetailsModel, UserBulk } from '../../providers/types';
 import CreateBulk from './create';
 import BulkDetails from './details';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useTranslation } from 'react-i18next';
 
 const UserImport = () => {
   const [openCreate, setOpenCreate] = useState(false);
@@ -24,6 +25,7 @@ const UserImport = () => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const closeHandler = () => {
     setOpenCreate(false);
@@ -84,11 +86,11 @@ const UserImport = () => {
     <>
       <Row className="mt-2">
         <Col>
-          <h2 className="m-0">Imported files ({bulkList?.totalElements})</h2>
+          <h2 className="m-0">{t('userImportPage.importedFiles')} ({bulkList?.totalElements})</h2>
         </Col>
         <Col>
           <Button className="float-end" onClick={() => setOpenCreate(true)}>
-            Bulk import
+            {t('userImportPage.bulkImport')}
           </Button>
         </Col>
       </Row>
@@ -107,7 +109,7 @@ const UserImport = () => {
                     sortHandler(el.sortValue, sortDirection);
                   }}
                 >
-                  {el.name}
+                  {t('userImportPage.' + el.name)}
                   {activeSortField === el.name ? (
                     sortDirection ? (
                       <FontAwesomeIcon className="ms-1" icon="sort-up" />

@@ -3,6 +3,7 @@ import { Table } from 'react-bootstrap';
 import { ORGANIZATION_TABLE_COLUMNS } from '../../constants';
 import { OrganizationModel } from '../../features/organization/providers/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   rows: OrganizationModel[];
@@ -13,6 +14,7 @@ interface Props {
 const OrganizationTable = ({ rows, clickHandler, sortHandler }: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
+  const { t } = useTranslation();
 
   const getChildren = (children: OrganizationModel[], ident: number): any => {
     if (children !== undefined && children.length > 0) {
@@ -54,7 +56,7 @@ const OrganizationTable = ({ rows, clickHandler, sortHandler }: Props) => {
                   sortHandler(el.sortValue, sortDirection);
                 }}
               >
-                {el.name}
+                {t('organizationPage.' + el.name)}
                 {activeSortField === el.name ? (
                   sortDirection ? (
                     <FontAwesomeIcon className="ms-1" icon="sort-up" />

@@ -13,6 +13,7 @@ import { showLoader } from '../../../reducers/loader';
 import { PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
+import { useTranslation } from 'react-i18next';
 
 const Users = () => {
   const dispatch = useAppDispatch();
@@ -23,6 +24,7 @@ const Users = () => {
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
+  const { t } = useTranslation();
 
   const handleClose = () => {
     setShow(false);
@@ -88,17 +90,17 @@ const Users = () => {
 
   return (
     <>
-      <h2>Users ({userList?.totalElements})</h2>
+      <h2>{t('userPage.users')} ({userList?.totalElements})</h2>
       <Row className="my-4">
         <Col md={8} className="mb-2">
           <Button className="btn btn-primary float-end" onClick={() => handleShow()}>
-            Create
+            {t('buttons.create')}
           </Button>
         </Col>
         <Col sm={12} md={4} className="order-md-first">
           <DebounceInput
             className="form-control"
-            placeholder="Search"
+            placeholder={t('userPage.search')}
             debounceTimeout={800}
             onChange={e => filterData(e)}
             disabled={userList?.totalElements === 0 && currentSearchInput === ''}
