@@ -109,14 +109,14 @@ const EditUser = ({ userId, handleClose }: Props) => {
           setStartValues(res);
         })
         .catch((err: ErrorModel) => {
-          console.log(err);
           if (err.statusCode === 404) {
-            handleClose();
             toast.error(err.message);
+          } else {
+            toast.error("Unexpected error.");
           }
         });
     },
-    [userId, setStartValues, handleClose]
+    [userId, setStartValues]
   );
 
   useEffect(() => {
@@ -175,7 +175,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
         error: {
           render({ data }: { data: ErrorModel }) {
             dispatch(showLoader(false));
-            return data !== undefined ? data.error : 'Something went wrong!';
+            return data !== undefined ? data.message : 'Something went wrong!';
           }
         }
       });
@@ -200,7 +200,8 @@ const EditUser = ({ userId, handleClose }: Props) => {
           },
           error: {
             render({ data }: { data: ErrorModel }) {
-              return data.fieldValidationErrors.map(err => ['Error on field ' + err.field, ' - ', err.messageKey]);
+              console.log(data);
+              return data !== undefined ? data.message : 'Something went wrong!';
             }
           }
         })

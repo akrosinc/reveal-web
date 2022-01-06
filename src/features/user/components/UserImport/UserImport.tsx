@@ -74,7 +74,9 @@ const UserImport = () => {
     if (bulkList !== undefined) {
       setCurrentSortField(field);
       setCurrentSortDirection(sortDirection);
-      getBulkList(bulkList.size, 0, '', field, sortDirection);
+      getBulkList(bulkList.size, 0, '', field, sortDirection).then(res => {
+        setBulkList(res);
+      });
     }
   };
 
