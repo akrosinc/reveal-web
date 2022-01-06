@@ -3,6 +3,7 @@ import { Table } from 'react-bootstrap';
 import { USER_TABLE_COLUMNS } from '../../constants';
 import { UserModel } from '../../features/user/providers/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   rows: UserModel[];
@@ -13,6 +14,8 @@ interface Props {
 const UsersTable = ({ rows, clickHandler, sortHandler }: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
+  const { t } = useTranslation();
+
   return rows.length === 0 ? (
     <p className="text-center lead">No users found.</p>
   ) : (
@@ -32,7 +35,7 @@ const UsersTable = ({ rows, clickHandler, sortHandler }: Props) => {
                   }
                 }}
               >
-                {el.name}
+                {t('userPage.' + el.name)}
                 {activeSortField === el.name ? (
                   sortDirection ? (
                     <FontAwesomeIcon className="ms-2" icon="sort-up" />

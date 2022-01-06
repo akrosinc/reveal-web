@@ -15,6 +15,7 @@
     "Location": "Location Management"
   },
   "publicPage": {
+    "supportedBy": "supported by",
     "description": "Reveal is a Global Good and an open-source platform taht uses spatial intelligence to drive delivery of live-saving interventions",
     "question": "WHAT IS REVEAL?",
     "firstPartAbout": "REVEAL IS AN APPROVED",
@@ -27,11 +28,35 @@
   },
   "buttons": {
     "management": "Management",
-    "plans": "Plans"
+    "plans": "Plans",
+    "create": "Create"
   },
   "managementPage": {
     "organization": "Organization",
     "user": "User",
     "userImport": "User Import"
+  },
+  "userPage": {
+    "Username": "Username",
+    "First Name": "First Name",
+    "Last Name": "Last Name",
+    "Organization": "Organization",
+    "users": "Users",
+    "search": "Search"
+  },
+  "userImportPage": {
+    "importedFiles": "Imported files",
+    "bulkImport": "Bulk Import",
+    "search": "Search",
+    "File name": "File Name",
+    "Upload Date": "Upload Date",
+    "Status": "Status"
+  },
+  "organizationPage": {
+    "organization": "Organization",
+    "Name": "Name",
+    "Type": "Type",
+    "Active": "Active",
+    "search": "Search"
   }
 }

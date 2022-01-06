@@ -15,6 +15,7 @@
     "Location": "Location Management"
   },
   "publicPage": {
+    "supportedBy": "unterstützt von",
     "description": "Reveal ist ein globales Gut und eine Open-Source-Plattform, die räumliche Intelligenz verwendet, um die Bereitstellung lebensrettender Interventionen voranzutreiben",
     "question": "WAS IST REVEAL?",
     "firstPartAbout": "REVEAL IST EINE ANERKANNTES",
@@ -27,11 +28,35 @@
   },
   "buttons": {
     "management": "Verwaltung",
-    "plans": "Pläne"
+    "plans": "Pläne",
+    "create": "Kreieren"
   },
   "managementPage": {
     "organization": "Organisation",
     "user": "Nutzer",
     "userImport": "Benutzerimport"
+  },
+  "userPage": {
+    "Username": "Nutzername",
+    "First Name": "Vorname",
+    "Last Name": "Nachname",
+    "Organization": "Organisation",
+    "users": "Benutzer",
+    "search": "Suche"
+  },
+  "userImportPage": {
+    "importedFiles": "Importierte Dateien",
+    "bulkImport": "Massenimport",
+    "search": "Suche",
+    "File name": "Dateinamen",
+    "Upload Date": "Hochladedatum",
+    "Status": "Status"
+  },
+  "organizationPage": {
+    "organization": "Organisation",
+    "Name": "Name",
+    "Type": "Typ",
+    "Active": "Aktiv",
+    "search": "Suche"
   }
 }

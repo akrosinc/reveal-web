@@ -13,6 +13,7 @@ import { ActionDialog } from '../../../components/Dialogs/';
 import EditOrganization from './edit';
 import { toast } from 'react-toastify';
 import { PageableModel, ErrorModel } from '../../../api/providers';
+import { useTranslation } from 'react-i18next';
 
 const Organization = () => {
   const [organizationList, setOrganizationList] = useState<PageableModel<OrganizationModel>>();
@@ -23,6 +24,7 @@ const Organization = () => {
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
+  const { t } = useTranslation();
   const handleClose = () => {
     setShow(false);
     setShowDetails(false);
@@ -86,17 +88,17 @@ const Organization = () => {
 
   return (
     <>
-      <h2>Organizations ({organizationCount})</h2>
+      <h2>{t('organizationPage.organization')} ({organizationCount})</h2>
       <Row className="my-4">
         <Col md={8} className="mb-2">
           <Button className="btn btn-primary float-end" onClick={handleShow}>
-            Create
+            {t('buttons.create')}
           </Button>
         </Col>
         <Col sm={12} md={4} className="order-md-first">
           <DebounceInput
             className="form-control"
-            placeholder="Search"
+            placeholder={t('organizationPage.search')}
             debounceTimeout={800}
             onChange={e => filterData(e)}
             disabled={organizationCount === 0 && currentSearchInput === ''}
