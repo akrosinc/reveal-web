@@ -26,7 +26,7 @@ const GeographicLevels = () => {
     setCurrentSortField(field);
     setCurrentSortDirection(sortDirection);
     if (geoLevelList !== undefined) {
-      getGeographicLevelList(geoLevelList.pageable.pageSize, geoLevelList.pageable.pageNumber, "", field, sortDirection).then(res => {
+      getGeographicLevelList(geoLevelList.pageable.pageSize, 0, "", field, sortDirection).then(res => {
         setGeoLevelList(res);
         dispatch(showLoader(false));
       });
@@ -72,7 +72,7 @@ const GeographicLevels = () => {
       <hr className="my-4" />
       {geoLevelList !== undefined && geoLevelList.totalElements > 0 ? (
         <>
-          <Table bordered responsive>
+          <Table bordered responsive hover>
             <thead className="border border-2">
               <tr>
                 {GEOGRAPHY_LEVEL_TABLE_COLUMNS.map((el, index) => {

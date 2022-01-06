@@ -53,6 +53,7 @@ export const getOrganizationById = async (id: string, cancelToken: CancelToken):
 };
 
 export const createOrganization = async (organization: any): Promise<OrganizationModel> => {
+  console.log(organization);
   const data = await api.post<OrganizationModel>(ORGANIZATION, organization).then(response => response.data);
   return data;
 };

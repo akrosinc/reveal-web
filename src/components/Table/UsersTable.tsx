@@ -16,13 +16,13 @@ const UsersTable = ({ rows, clickHandler, sortHandler }: Props) => {
   return rows.length === 0 ? (
     <p className="text-center lead">No users found.</p>
   ) : (
-    <Table bordered responsive>
+    <Table bordered responsive hover>
       <thead className="border border-2">
         <tr>
           {USER_TABLE_COLUMNS.map((el, index) => {
             return (
               <th
-                style={{ cursor: el.name !== 'Organization' ? 'pointer' : '' }}
+                style={{ cursor: el.name !== 'Organization' ? 'pointer' : 'default' }}
                 key={index}
                 onClick={() => {
                   if (el.sortValue !== 'organization') {
@@ -52,7 +52,6 @@ const UsersTable = ({ rows, clickHandler, sortHandler }: Props) => {
           ? rows.map((user, index) => {
               return (
                 <tr
-                  style={{ cursor: 'pointer' }}
                   key={index}
                   onClick={() => {
                     if (clickHandler !== undefined) {

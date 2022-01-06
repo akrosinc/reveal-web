@@ -41,14 +41,13 @@ const OrganizationTable = ({ rows, clickHandler, sortHandler }: Props) => {
   return rows.length === 0 ? (
     <p className="text-center lead">No organizations found.</p>
   ) : (
-    <Table bordered responsive>
+    <Table bordered responsive hover>
       <thead className="border border-2">
         <tr>
           {ORGANIZATION_TABLE_COLUMNS.map((el, index) => {
             return (
               <th
                 key={index}
-                style={{ cursor: 'pointer' }}
                 onClick={() => {
                   setSortDirection(!sortDirection);
                   setActiveSortField(el.name);
@@ -74,7 +73,6 @@ const OrganizationTable = ({ rows, clickHandler, sortHandler }: Props) => {
         {rows.map(row => {
           return [
             <tr
-              style={{ cursor: 'pointer' }}
               key={row.identifier}
               onClick={() => {
                 clickHandler(row.identifier);
