@@ -62,22 +62,24 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
   const updateHandler = (formData: OrganizationModel) => {
     dispatch(showLoader(true));
     formData.identifier = organizationId;
-    toast.promise(updateOrganization(formData), {
-      pending: 'Loading...',
-      success: {
-        render({ data }) {
-          dispatch(showLoader(false));
-          setEdit(false);
-          handleClose();
-          return `Organization with id ${organizationId} updated successfully.`;
+    toast
+      .promise(updateOrganization(formData), {
+        pending: 'Loading...',
+        success: {
+          render({ data }) {
+            dispatch(showLoader(false));
+            setEdit(false);
+            handleClose();
+            return `Organization with id ${organizationId} updated successfully.`;
+          }
+        },
+        error: {
+          render({ data }: { data: ErrorModel }) {
+            return data !== undefined ? data.message : 'Something went wrong!';
+          }
         }
-      },
-      error: {
-        render({ data }: { data: ErrorModel }) {
-          return data.message;
-        }
-      }
-    });
+      })
+      .finally(() => dispatch(showLoader(false)));
   };
 
   const deleteHandler = (action: boolean) => {
@@ -122,13 +124,24 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
           readOnly={!edit}
           type="text"
           placeholder="Enter organization name"
-          {...register('name', { required: "Organization name can't be empty." })}
+          {...register('name', {
+            required: "Organization name can't be empty.",
+            minLength: 1,
+            pattern: {
+              value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
+              message: "Organization name can't start with empty space."
+            }
+          })}
         />
         {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Type</Form.Label>
-        <Form.Select disabled={!edit} {...register('type', { required: "Organization type must be selected." })} aria-label="Default select example">
+        <Form.Select
+          disabled={!edit}
+          {...register('type', { required: 'Organization type must be selected.' })}
+          aria-label="Default select example"
+        >
           <option value=""></option>
           <option value="CG">Community group</option>
           <option value="TEAM">Team</option>
@@ -150,7 +163,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
         </Form.Select>
       </Form.Group>
       <Form.Group className="my-4">
-        <Form.Switch {...register('active', { required: false })} label="Active" />
+        <Form.Switch disabled={!edit} {...register('active', { required: false })} label="Active" />
       </Form.Group>
       <hr />
       {edit ? (

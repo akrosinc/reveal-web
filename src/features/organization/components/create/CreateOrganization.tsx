@@ -59,7 +59,17 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
     <Form>
       <Form.Group className="my-4">
         <Form.Label>Organization name</Form.Label>
-        <Form.Control {...register('name', { required: 'Organization name must not be empty.' })} type="input" />
+        <Form.Control
+          {...register('name', {
+            required: 'Organization name must not be empty.',
+            minLength: 1,
+            pattern: {
+              value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
+              message: "Organization name can't start with empty space."
+            }
+          })}
+          type="input"
+        />
         {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
       </Form.Group>
       <Form.Group className="my-4">

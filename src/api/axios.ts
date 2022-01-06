@@ -26,9 +26,6 @@ api.interceptors.response.use(
     if (error.response !== undefined && error.response.status === 401) {
       keycloak.logout();
     }
-    console.log(error.response);
-    console.log(error.request);
-    console.log(error);
     return Promise.reject(error.response !== undefined ? error.response.data : error);
   }
 );
