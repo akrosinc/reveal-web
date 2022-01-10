@@ -64,7 +64,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
             required: 'Organization name must not be empty.',
             minLength: 1,
             pattern: {
-              value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
+              value: new RegExp('^[^-\\s][\\w\\s-]+$'),
               message: "Organization name can't start with empty space."
             }
           })}

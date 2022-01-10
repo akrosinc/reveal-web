@@ -11,9 +11,9 @@ export const PAGE_TITLE_ADMIN = 'Admin';
 export const PAGINATION_DEFAULT_SIZE = 10;
 
 export const ORGANIZATION_TABLE_COLUMNS = [
-  { name: 'Name', sortValue: 'name' },
-  { name: 'Type', sortValue: 'type' },
-  { name: 'Active', sortValue: 'active' }
+  { Header: 'Name', accessor: 'name' },
+  { Header: 'Type', accessor: 'type' },
+  { Header: 'Active', accessor: 'active' }
 ];
 export const USER_TABLE_COLUMNS = [
   { name: 'Username', sortValue: 'username' },

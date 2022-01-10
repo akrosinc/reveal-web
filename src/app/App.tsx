@@ -12,10 +12,10 @@ import Loader from '../components/Layout/Loader';
 import 'react-toastify/dist/ReactToastify.css';
 import { showLoader } from '../features/reducers/loader';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
+import { faSort, faSortUp, faSortDown, faChevronRight, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
-library.add(faSort, faSortUp, faSortDown);
+library.add(faSort, faSortUp, faSortDown, faChevronRight, faChevronDown);
 
 function App() {
   const { keycloak, initialized } = useKeycloak();

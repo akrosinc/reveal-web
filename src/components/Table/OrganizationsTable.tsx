@@ -52,12 +52,12 @@ const OrganizationTable = ({ rows, clickHandler, sortHandler }: Props) => {
                 key={index}
                 onClick={() => {
                   setSortDirection(!sortDirection);
-                  setActiveSortField(el.name);
-                  sortHandler(el.sortValue, sortDirection);
+                  setActiveSortField(el.Header);
+                  sortHandler(el.accessor, sortDirection);
                 }}
               >
-                {t('organizationPage.' + el.name)}
-                {activeSortField === el.name ? (
+                {t('organizationPage.' + el.Header)}
+                {activeSortField === el.Header ? (
                   sortDirection ? (
                     <FontAwesomeIcon className="ms-1" icon="sort-up" />
                   ) : (
