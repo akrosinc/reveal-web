@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Col, Row, Button } from 'react-bootstrap';
-import { getOrganizationCount, getOrganizationListExpandable } from '../api';
-import { OrganizationExpandableModel } from '../providers/types';
+import { getOrganizationCount, getOrganizationList } from '../api';
+import { OrganizationModel } from '../providers/types';
 import ExpandingTable from '../../../components/Table/ExpandingTable';
 import Paginator from '../../../components/Pagination';
 import { useAppDispatch } from '../../../store/hooks';
@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const Organization = () => {
-  const [organizationList, setOrganizationList] = useState<PageableModel<OrganizationExpandableModel>>();
+  const [organizationList, setOrganizationList] = useState<PageableModel<OrganizationModel>>();
   const [show, setShow] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [organizationCount, setOrganizationCount] = useState(0);
@@ -27,16 +27,18 @@ const Organization = () => {
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const { t } = useTranslation();
-  const handleClose = () => {
+  const handleClose = (isEdited: boolean) => {
     setShow(false);
     setShowDetails(false);
-    loadData(
-      organizationList?.size ?? PAGINATION_DEFAULT_SIZE,
-      organizationList?.pageable.pageNumber ?? 0,
-      currentSearchInput,
-      currentSortField,
-      currentSortDirection
-    );
+    if (isEdited) {
+      loadData(
+        organizationList?.size ?? PAGINATION_DEFAULT_SIZE,
+        organizationList?.pageable.pageNumber ?? 0,
+        currentSearchInput,
+        currentSortField,
+        currentSortDirection
+      );
+    }
   };
 
   const columns = React.useMemo(
@@ -77,10 +79,18 @@ const Organization = () => {
   const loadData = useCallback(
     (size: number, page: number, searchData?: string, field?: string, sortDirection?: boolean) => {
       dispatch(showLoader(true));
-      getOrganizationListExpandable(size, page, searchData !== undefined ? searchData : '', field, sortDirection)
+      getOrganizationList(size, page, searchData !== undefined ? searchData : '', field, sortDirection)
         .then(data => {
           setOrganizationList(data);
-          setData(data.content);
+          setData(data.content.map(el => {
+            return {
+              name: el.name,
+              identifier: el.identifier,
+              active: el.active.toString(),
+              headOf: el.headOf,
+              type: el.type.valueCodableConcept,
+            }
+          }));
           if (searchData !== undefined) {
             setOrganizationCount(data.numberOfElements);
           } else {

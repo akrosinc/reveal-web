@@ -17,7 +17,16 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
     {
       columns,
-      data
+      data,
+      getSubRows: (row: any) => row.headOf !== undefined ? row.headOf.map((el: any) => {
+        return {
+          name: el.name,
+          identifier: el.identifier,
+          active: el.active.toString(),
+          headOf: el.headOf,
+          type: el.type.valueCodableConcept
+        }
+      }) : [],
     },
     useExpanded // Use the useExpanded plugin hook
   );

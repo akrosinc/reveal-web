@@ -7,14 +7,6 @@ export interface OrganizationModel {
   name: string;
 }
 
-export interface OrganizationExpandableModel {
-  identifier: string;
-  active: string;
-  type: string;
-  subRows: OrganizationExpandableModel[];
-  name: string;
-}
-
 export interface OrganizationType {
   code: Code;
   valueCodableConcept: string;

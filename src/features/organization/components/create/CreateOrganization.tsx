@@ -10,7 +10,7 @@ import { ErrorModel } from '../../../../api/providers';
 
 interface Props {
   show: boolean;
-  handleClose: () => void;
+  handleClose: (isEdited: boolean) => void;
 }
 
 interface RegisterValues {
@@ -42,7 +42,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
       success: {
         render({ data }: { data: OrganizationModel }) {
           dispatch(showLoader(false));
-          handleClose();
+          handleClose(true);
           return `Organization with id: ${data.identifier} created successfully.`;
         }
       },
@@ -102,7 +102,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
       <Button variant="primary" className="float-end" onClick={handleSubmit(submitHandler)}>
         Save
       </Button>
-      <Button variant="secondary" className="float-end me-2" onClick={handleClose}>
+      <Button variant="secondary" className="float-end me-2" onClick={() => handleClose(false)}>
         Close
       </Button>
     </Form>

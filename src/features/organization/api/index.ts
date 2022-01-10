@@ -1,5 +1,5 @@
 import api from '../../../api/axios';
-import { OrganizationModel, Groups, OrganizationExpandableModel } from '../providers/types';
+import { OrganizationModel, Groups } from '../providers/types';
 import { PageableModel } from '../../../api/providers';
 import { KEYCLOAK_SECURITY_GROUPS, ORGANIZATION } from '../../../constants';
 import { CancelToken } from 'axios';
@@ -17,24 +17,6 @@ export const getOrganizationList = async (
         `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${
           sortField !== undefined ? sortField : ''
         },${direction ? 'asc' : 'desc'}`
-    )
-    .then(response => response.data);
-  return data;
-};
-
-export const getOrganizationListExpandable = async (
-  size: number,
-  page: number,
-  search?: string,
-  sortField?: string,
-  direction?: boolean
-): Promise<PageableModel<OrganizationExpandableModel>> => {
-  const data = await api
-    .get<PageableModel<OrganizationExpandableModel>>(
-      ORGANIZATION +
-        `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${
-          sortField !== undefined ? sortField : ''
-        },${direction ? 'asc' : 'desc'}&expandable=true`
     )
     .then(response => response.data);
   return data;
@@ -71,7 +53,6 @@ export const getOrganizationById = async (id: string, cancelToken: CancelToken):
 };
 
 export const createOrganization = async (organization: any): Promise<OrganizationModel> => {
-  console.log(organization);
   const data = await api.post<OrganizationModel>(ORGANIZATION, organization).then(response => response.data);
   return data;
 };
