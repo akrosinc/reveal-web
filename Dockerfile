@@ -1,4 +1,4 @@
-FROM node:17.3.0-alpine3.15 as build
+FROM node:17.3.0 as build
 
 COPY . /project
 
@@ -17,7 +17,7 @@ RUN yarn build
 
 FROM node:17.3.0-alpine3.15 as final
 
-RUN apk add --no-cache tini curl
+RUN apk add --no-cache tini
 
 WORKDIR /usr/src/web
 
