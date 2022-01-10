@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Col, Row, Button } from 'react-bootstrap';
-import { getOrganizationCount, getOrganizationList } from '../api';
-import { OrganizationModel } from '../providers/types';
+import { getOrganizationCount, getOrganizationListExpandable } from '../api';
+import { OrganizationExpandableModel } from '../providers/types';
 import ExpandingTable from '../../../components/Table/ExpandingTable';
 import Paginator from '../../../components/Pagination';
 import { useAppDispatch } from '../../../store/hooks';
@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const Organization = () => {
-  const [organizationList, setOrganizationList] = useState<PageableModel<OrganizationModel>>();
+  const [organizationList, setOrganizationList] = useState<PageableModel<OrganizationExpandableModel>>();
   const [show, setShow] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [organizationCount, setOrganizationCount] = useState(0);
@@ -55,6 +55,9 @@ const Organization = () => {
                   // and paddingLeft to indicate the depth
                   // of the row
                   paddingLeft: `${row.depth * 2}rem`,
+                  paddingTop: '15px',
+                  paddingBottom: '15px',
+                  paddingRight: '15px',
                 }
               })}
             >
@@ -74,35 +77,10 @@ const Organization = () => {
   const loadData = useCallback(
     (size: number, page: number, searchData?: string, field?: string, sortDirection?: boolean) => {
       dispatch(showLoader(true));
-      getOrganizationList(size, page, searchData !== undefined ? searchData : '', field, sortDirection)
+      getOrganizationListExpandable(size, page, searchData !== undefined ? searchData : '', field, sortDirection)
         .then(data => {
           setOrganizationList(data);
-          setData(
-            data.content.map(el => {
-              return {
-                identifier: el.identifier,
-                name: el.name,
-                type: el.type.valueCodableConcept,
-                active: el.active.toString(),
-                subRows: el.headOf.map(el => {
-                  return {
-                    identifier: el.identifier,
-                    name: el.name,
-                    type: el.type.valueCodableConcept,
-                    active: el.active.toString(),
-                    subRows: el.headOf !== undefined ? el.headOf.map(el => {
-                      return {
-                        identifier: el.identifier,
-                        name: el.name,
-                        type: el.type.valueCodableConcept,
-                        active: el.active.toString(),  
-                      }
-                    }) : [],
-                  }
-                })
-              };
-            })
-          );
+          setData(data.content);
           if (searchData !== undefined) {
             setOrganizationCount(data.numberOfElements);
           } else {
