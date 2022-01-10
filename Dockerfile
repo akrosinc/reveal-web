@@ -15,7 +15,7 @@ RUN chown -R node .
 USER node
 RUN yarn build
 
-FROM node:17.2.0-slim as final
+FROM node:17.2.0-alpine as final
 
 RUN apk add --no-cache tini
 
