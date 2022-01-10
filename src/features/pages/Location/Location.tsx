@@ -28,7 +28,7 @@ const Location = () => {
         <Tab eventKey="geographic-levels" title="Geographic Levels">
           <GeographicLevels />
         </Tab>
-        <Tab eventKey="location-hierarchy" title="Location heirarchy">
+        <Tab eventKey="location-hierarchy" title="Location Heirarchy">
           <LocationHierarchy />
         </Tab>
         <Tab eventKey="locations" title="Locations">

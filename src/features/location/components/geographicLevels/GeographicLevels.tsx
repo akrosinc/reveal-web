@@ -61,7 +61,7 @@ const GeographicLevels = () => {
     <>
       <Row>
         <Col>
-          <h2 className="m-0">Geographic levels ({geoLevelList?.totalElements})</h2>
+          <h2 className="m-0">Geographic Levels ({geoLevelList?.totalElements})</h2>
         </Col>
         <Col>
           <Button className="float-end" onClick={() => setOpenCreate(true)}>
