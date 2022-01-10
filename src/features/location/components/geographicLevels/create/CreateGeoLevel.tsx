@@ -33,7 +33,7 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
         render({ data }: { data: GeographicLevel }) {
           dispatch(showLoader(false));
           closeHandler();
-          return 'Geographic location created successfully with id: ' + data.identifier;
+          return 'Geographic Location created successfully with id: ' + data.identifier;
         }
       },
       error: {
@@ -43,11 +43,11 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
             data.fieldValidationErrors.forEach((el: any) => {
               if (el.field === 'name') {
                 setError('name', {
-                  message: "Name can't contain uppercase characters or numbers."
+                  message: el.messageKey
                 });
               } else {
                 setError('title', {
-                  message: "Title can't contain uppercase characters or numbers."
+                  message: el.messageKey
                 });
               }
             });
@@ -64,10 +64,11 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
         <Form.Label>Name</Form.Label>
         <Form.Control
           {...register('name', {
-            required: 'Name can not be empty.',
+            required: 'Geographic Level name must not be empty.',
+            minLength: 1,
             pattern: {
-              message: 'Name can not contain uppercase characters or numbers.',
-              value: new RegExp('^[a-z0-9_\\-]+$')
+              value: new RegExp('^[a-z0-9\\-]+$'),
+              message: "Geographic Level name can't start with empty space and can't containt uppercase characters."
             }
           })}
           type="text"
@@ -79,10 +80,11 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
         <Form.Label>Title</Form.Label>
         <Form.Control
           {...register('title', {
-            required: 'Title can not be empty.',
+            required: 'Geographic Level title must not be empty.',
+            minLength: 1,
             pattern: {
-              message: 'Title can not contain uppercase characters or numbers.',
-              value: new RegExp('^[a-z0-9_\\-]+$')
+              value: new RegExp('^[^-\\s][\\w\\s-]+$'),
+              message: "Geographic Level title can't start with empty space."
             }
           })}
           type="text"

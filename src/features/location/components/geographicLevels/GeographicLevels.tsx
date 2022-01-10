@@ -5,12 +5,13 @@ import { GEOGRAPHY_LEVEL_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../..
 import Paginator from '../../../../components/Pagination';
 import CreateGeoLevel from './create';
 import { ActionDialog } from '../../../../components/Dialogs';
-import { getGeographicLevelList } from '../../api';
+import { getGeographicLevelById, getGeographicLevelList } from '../../api';
 import { GeographicLevel } from '../../providers/types';
 import { PageableModel } from '../../../../api/providers';
 import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
+import GeoLevelDetails from './details/GeoLevelDetails';
 
 const GeographicLevels = () => {
   const [currentSortField, setCurrentSortField] = useState('');
@@ -18,6 +19,8 @@ const GeographicLevels = () => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
   const [openCreate, setOpenCreate] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [selectedGeoLevel, setSelectedGeoLocation] = useState<GeographicLevel>();
   const [geoLevelList, setGeoLevelList] = useState<PageableModel<GeographicLevel>>();
   const dispatch = useAppDispatch();
 
@@ -41,10 +44,24 @@ const GeographicLevels = () => {
     });
   };
 
+  const openDetails = (identifier: string) => {
+    dispatch(showLoader(true));
+    getGeographicLevelById(identifier).then(data => {
+      setSelectedGeoLocation(data);
+      setOpenEdit(true);
+      dispatch(showLoader(false));
+    })
+  }
+
   const closeHandler = () => {
-    console.log(currentSortDirection);
-    console.log(currentSortField);
     setOpenCreate(false);
+    setOpenEdit(false);
+    getGeographicLevelList(geoLevelList?.pageable.pageSize ?? PAGINATION_DEFAULT_SIZE, geoLevelList?.pageable.pageNumber ?? 0, "", currentSortField, currentSortDirection)
+      .then(data => {
+        setGeoLevelList(data);
+      })
+      .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
+      .finally(() => dispatch(showLoader(false)));
   };
 
   useEffect(() => {
@@ -104,7 +121,7 @@ const GeographicLevels = () => {
             <tbody>
               {geoLevelList.content.map(el => {
                 return (
-                  <tr key={el.identifier}>
+                  <tr key={el.identifier} onClick={() => openDetails(el.identifier)}>
                     <td>{el.name}</td>
                     <td>{el.title}</td>
                   </tr>
@@ -129,6 +146,14 @@ const GeographicLevels = () => {
           closeHandler={closeHandler}
           element={<CreateGeoLevel closeHandler={closeHandler} />}
           title="Create Geographic Level"
+        />
+      )}
+      {openEdit && (
+        <ActionDialog
+          backdrop={true}
+          closeHandler={closeHandler}
+          element={<GeoLevelDetails closeHandler={closeHandler} data={selectedGeoLevel} />}
+          title="Geographic Level Details"
         />
       )}
     </>

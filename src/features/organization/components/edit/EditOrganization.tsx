@@ -14,7 +14,7 @@ import { showLoader } from '../../../reducers/loader';
 interface Props {
   show: boolean;
   organizationId: string;
-  handleClose: () => void;
+  handleClose: (isEdited: boolean) => void;
 }
 
 const EditOrganization = ({ organizationId, handleClose }: Props) => {
@@ -69,7 +69,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
           render({ data }) {
             dispatch(showLoader(false));
             setEdit(false);
-            handleClose();
+            handleClose(true);
             return `Organization with id ${organizationId} updated successfully.`;
           }
         },
@@ -90,7 +90,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
         success: {
           render({ data }) {
             dispatch(showLoader(false));
-            handleClose();
+            handleClose(true);
             return `Organization with id: ${organizationId} deleted successfully.`;
           }
         },
@@ -187,7 +187,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
           >
             Delete
           </Button>
-          <Button className="float-start" variant="secondary" onClick={handleClose}>
+          <Button className="float-start" variant="secondary" onClick={() => handleClose(false)}>
             Close
           </Button>
         </>

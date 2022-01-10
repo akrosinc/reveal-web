@@ -40,9 +40,9 @@ export const updateGeographicLevel = async (formData: GeographicLevel): Promise<
   return data;
 };
 
-export const deleteGeographicLevel = async (formData: GeographicLevel): Promise<GeographicLevel> => {
+export const deleteGeographicLevel = async (identifier: string): Promise<GeographicLevel> => {
   const data = await api
-    .delete<GeographicLevel>(GEOGRAPHIC_LEVEL + `/${formData.identifier}`)
+    .delete<GeographicLevel>(GEOGRAPHIC_LEVEL + `/${identifier}`)
     .then(response => response.data);
   return data;
 };
