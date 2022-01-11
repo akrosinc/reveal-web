@@ -1,4 +1,4 @@
-FROM node:17.2.0 as build
+FROM node:16.5.0-alpine as build
 
 COPY . /project
 
@@ -15,7 +15,7 @@ RUN chown -R node .
 USER node
 RUN yarn build
 
-FROM node:17.2.0-alpine as final
+FROM node:16.5.0-alpine as final
 
 RUN apk add --no-cache tini
 
