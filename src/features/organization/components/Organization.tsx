@@ -153,8 +153,9 @@ const Organization = () => {
         </Col>
       </Row>
       <hr className="my-4" />
-      <ExpandingTable columns={columns} data={data} clickHandler={openOrganizationById} sortHandler={sortHandler} />
       {organizationList !== undefined && organizationList.content.length > 0 ? (
+        <>
+        <ExpandingTable columns={columns} data={data} clickHandler={openOrganizationById} sortHandler={sortHandler} />
         <Paginator
           totalPages={organizationList.totalPages}
           totalElements={organizationList.totalElements}
@@ -162,7 +163,8 @@ const Organization = () => {
           size={organizationList.size}
           paginationHandler={paginatonHandler}
         />
-      ) : null}
+        </>
+      ) : <p className="text-center lead">No organizations found.</p>}
       {show && (
         <ActionDialog
           backdrop={true}

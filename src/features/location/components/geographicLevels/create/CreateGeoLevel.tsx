@@ -2,6 +2,7 @@ import React from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
+import { ErrorModel } from '../../../../../api/providers';
 import { useAppDispatch } from '../../../../../store/hooks';
 import { showLoader } from '../../../../reducers/loader';
 import { createGeographicLevel } from '../../../api';
@@ -28,7 +29,7 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
   const submitHandler = (formValues: FormValues) => {
     dispatch(showLoader(true));
     toast.promise(createGeographicLevel(formValues), {
-      pending: "Loading...",
+      pending: 'Loading...',
       success: {
         render({ data }: { data: GeographicLevel }) {
           dispatch(showLoader(false));
@@ -37,7 +38,7 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
         }
       },
       error: {
-        render({ data }: any) {
+        render({ data }: { data: ErrorModel }) {
           dispatch(showLoader(false));
           if (data.fieldValidationErrors) {
             data.fieldValidationErrors.forEach((el: any) => {
