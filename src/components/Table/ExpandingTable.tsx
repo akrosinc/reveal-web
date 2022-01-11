@@ -39,7 +39,6 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
               <th
                 style={{width: column.id === "expander" ? '37px' : 'auto'}}
                 onClick={() => {
-                  console.log(column);
                   if (column.id !== 'expander') {
                     setSortDirection(!sortDirection);
                     setActiveSortField(column.Header?.toString() ?? '');
@@ -71,7 +70,6 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
               {row.cells.map(cell => {
                 return <td {...cell.getCellProps()}
                 onClick={() => {
-                    console.log(cell);
                     if(cell.column.id !== "expander") {
                         let organization = row.original as OrganizationModel;
                         clickHandler(organization.identifier);

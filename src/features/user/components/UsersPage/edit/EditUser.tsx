@@ -200,7 +200,6 @@ const EditUser = ({ userId, handleClose }: Props) => {
           },
           error: {
             render({ data }: { data: ErrorModel }) {
-              console.log(data);
               return data !== undefined ? data.message : 'Something went wrong!';
             }
           }

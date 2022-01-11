@@ -3,3 +3,8 @@ export interface GeographicLevel {
   title: string;
   name: string;
 }
+
+export interface LocationHierarchyModel {
+  identifier?: string;
+  nodeOrder: string[];
+}

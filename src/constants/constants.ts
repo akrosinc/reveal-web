@@ -30,3 +30,7 @@ export const GEOGRAPHY_LEVEL_TABLE_COLUMNS = [
   { name: 'Name', sortValue: 'name' },
   { name: 'Title', sortValue: 'title' }
 ];
+
+export const LOCATION_HIERARCHY_TABLE_COLUMNS = [
+  { name: 'Node Order', sortValue: 'nodeOrder'}
+]
