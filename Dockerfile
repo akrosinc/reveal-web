@@ -3,8 +3,6 @@ FROM node:16.13.0-alpine
 WORKDIR /usr/local/app
 ADD . .
 
-COPY .env.production /.env
-
 RUN yarn && \
     yarn build
 
