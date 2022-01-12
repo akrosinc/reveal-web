@@ -4,3 +4,5 @@ Dockerfile
 README.md
 docs
 waypoint.hcl
+.env.development
+.env.production
