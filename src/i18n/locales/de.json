@@ -12,7 +12,7 @@
     "IRS Reporting": "IRS Berichterstattung",
     "SMC Reporting": "SMC Berichterstellung",
     "Management": "Verwaltung",
-    "Location": "Location Management"
+    "Location": "Standortverwaltung"
   },
   "publicPage": {
     "supportedBy": "unterstützt von",
@@ -29,7 +29,8 @@
   "buttons": {
     "management": "Verwaltung",
     "plans": "Pläne",
-    "create": "Kreieren"
+    "create": "Kreieren",
+    "delete": "Löschen"
   },
   "managementPage": {
     "organization": "Organisation",
@@ -58,5 +59,10 @@
     "Type": "Typ",
     "Active": "Aktiv",
     "search": "Suche"
+  },
+  "locationsPage": {
+    "geographicLevels": "Geografische Ebenen",
+    "locationHierarchy": "Standorthierarchie",
+    "locations": "Standorte"
   }
 }

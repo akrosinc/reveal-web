@@ -5,12 +5,12 @@ import { getFromBrowser } from '../utils';
 import translationEn from './locales/en.json';
 import translationDe from './locales/de.json';
 
-const LOCALE_EN = 'en';
-const LOCALE_DE = 'de';
+const LOCALE_EN = {name: 'en', flag: 'fi fi-gb'};
+const LOCALE_DE = {name: 'de', flag: 'fi fi-de'};
 
 export const LOCALES = [LOCALE_EN, LOCALE_DE];
 
-export const DEFAULT_LOCALE = LOCALE_EN;
+export const DEFAULT_LOCALE = LOCALE_EN.name;
 export const USER_PREF_LOCALE = getFromBrowser('locale') ?? undefined;
 
 const resources = {

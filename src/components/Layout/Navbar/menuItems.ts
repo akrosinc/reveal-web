@@ -1,4 +1,4 @@
-import { HOME_PAGE, PLANS, MANAGEMENT, LOCATION } from '../../../constants';
+import { HOME_PAGE, PLANS, MANAGEMENT, LOCATION_PAGE } from '../../../constants';
 
 export const MAIN_MENU = [
   {
@@ -57,7 +57,7 @@ export const MAIN_MENU = [
       },
       {
         pageTitle: 'Location',
-        route: LOCATION,
+        route: LOCATION_PAGE,
         roles: []
       }
     ]

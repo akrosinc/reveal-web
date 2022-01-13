@@ -26,8 +26,8 @@ const Paginator = ({ totalElements, totalPages, size, page, paginationHandler }:
   }
 
   return (
-    <div className="d-flex justify-content-end align-items-center">
-      <Pagination className="mt-3">
+    <div className="d-flex justify-content-end align-items-end">
+      <Pagination className="mt-3 mb-0">
         <Pagination.First disabled={page === 0} onClick={() => paginationHandler(size, 0)} />
         <Pagination.Prev disabled={page === 0} onClick={() => paginationHandler(size, page - 1)} />
         {items}

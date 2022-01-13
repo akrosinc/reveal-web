@@ -8,7 +8,6 @@ import { MAIN_MENU } from './menuItems';
 import AuthorizedElement from '../../AuthorizedElement';
 import i18n, { LOCALES } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
 import { setToBrowser } from '../../../utils';
 import './index.css';
 import 'flag-icons/css/flag-icons.css';
@@ -16,14 +15,17 @@ import 'flag-icons/css/flag-icons.css';
 export default function NavbarComponent() {
   const { t } = useTranslation();
   const { keycloak } = useKeycloak();
-  const [language, setLanguage] = useState(i18n.language);
 
   let user = useAppSelector(state => state.user.value);
-  const changeLaguagePrefferences = (lang: string) => {
-    setLanguage(lang);
-    i18n.changeLanguage(lang);
-    setToBrowser('locale', lang);
+  const changeLaguagePrefferences = (lang: any) => {
+    i18n.changeLanguage(lang.name);
+    setToBrowser('locale', lang.name);
   };
+
+  const loadFlag = () => {
+    let currentLanguage = LOCALES.filter(el => el.name === i18n.language);
+    return <span className={currentLanguage[0].flag}></span>;
+  }
 
   return (
     <Navbar collapseOnSelect expand="lg">
@@ -91,21 +93,14 @@ export default function NavbarComponent() {
               </Nav.Link>
             </Nav>
           )}
-          <Nav>
-            <NavDropdown title={language.toUpperCase()} align="end">
-              <NavDropdown.Item
-                className="text-center"
-                onClick={() => {
-                  changeLaguagePrefferences(LOCALES[0]);
-                }}
-              >
-                <span className={'fi me-2 fi-gb'}></span>
-                {LOCALES[0].toUpperCase()}
-              </NavDropdown.Item>
-              <NavDropdown.Item className="text-center" onClick={() => changeLaguagePrefferences(LOCALES[1])}>
-                <span className={'fi me-2 fi-de'}></span>
-                {LOCALES[1].toUpperCase()}
-              </NavDropdown.Item>
+          <Nav className="ms-1">
+            <NavDropdown title={loadFlag()} align="end">
+              {LOCALES.map(locale => (
+                <NavDropdown.Item key={locale.name} className="text-center" onClick={() => changeLaguagePrefferences(locale)}>
+                  <span className={locale.flag + " me-2"}></span>
+                  {locale.name.toUpperCase()}
+                </NavDropdown.Item>
+              ))}
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>

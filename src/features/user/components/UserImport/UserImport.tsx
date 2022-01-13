@@ -86,7 +86,7 @@ const UserImport = () => {
     <>
       <Row className="mt-2">
         <Col>
-          <h2 className="m-0">{t('userImportPage.importedFiles')} ({bulkList?.totalElements})</h2>
+          <h2 className="m-0">{t('userImportPage.importedFiles')} ({bulkList?.totalElements ?? 0})</h2>
         </Col>
         <Col>
           <Button className="float-end" onClick={() => setOpenCreate(true)}>

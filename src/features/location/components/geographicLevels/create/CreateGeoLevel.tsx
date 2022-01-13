@@ -69,7 +69,8 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
             minLength: 1,
             pattern: {
               value: new RegExp('^[a-z0-9\\-]+$'),
-              message: "Geographic Level name can't start with empty space and can't containt uppercase characters."
+              message:
+                "Geographic Level name can't start with empty space and can't containt uppercase characters or special letters."
             }
           })}
           type="text"
@@ -85,7 +86,7 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
             minLength: 1,
             pattern: {
               value: new RegExp('^[^-\\s][\\w\\s-]+$'),
-              message: "Geographic Level title can't start with empty space."
+              message: "Geographic Level title can't start with empty space or special letters."
             }
           })}
           type="text"

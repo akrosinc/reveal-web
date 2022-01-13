@@ -29,7 +29,8 @@
   "buttons": {
     "management": "Management",
     "plans": "Plans",
-    "create": "Create"
+    "create": "Create",
+    "delete": "Delete"
   },
   "managementPage": {
     "organization": "Organization",
@@ -58,5 +59,10 @@
     "Type": "Type",
     "Active": "Active",
     "search": "Search"
+  },
+  "locationsPage": {
+    "geographicLevels": "Geographic Levels",
+    "locationHierarchy": "Location Hierarchy",
+    "locations": "Location Inspector"
   }
 }

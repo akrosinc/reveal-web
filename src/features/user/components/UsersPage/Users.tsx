@@ -66,7 +66,7 @@ const Users = () => {
 
   const filterData = (e: any) => {
     setCurrentSearchInput(e.target.value);
-    loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
+    loadData(userList?.pageable.pageSize ?? PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
 
   const paginationHandler = (size: number, page: number) => {
@@ -90,7 +90,7 @@ const Users = () => {
 
   return (
     <>
-      <h2>{t('userPage.users')} ({userList?.totalElements})</h2>
+      <h2>{t('userPage.users')} ({userList?.totalElements ?? 0})</h2>
       <Row className="my-4">
         <Col md={8} className="mb-2">
           <Button className="btn btn-primary float-end" onClick={() => handleShow()}>

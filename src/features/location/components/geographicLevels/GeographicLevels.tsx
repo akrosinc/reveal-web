@@ -12,6 +12,7 @@ import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import GeoLevelDetails from './details/GeoLevelDetails';
+import { useTranslation } from 'react-i18next';
 
 const GeographicLevels = () => {
   const [currentSortField, setCurrentSortField] = useState('');
@@ -23,6 +24,7 @@ const GeographicLevels = () => {
   const [selectedGeoLevel, setSelectedGeoLocation] = useState<GeographicLevel>();
   const [geoLevelList, setGeoLevelList] = useState<PageableModel<GeographicLevel>>();
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const sortHandler = (field: string, sortDirection: boolean) => {
     dispatch(showLoader(true));
@@ -78,11 +80,11 @@ const GeographicLevels = () => {
     <>
       <Row>
         <Col>
-          <h2 className="m-0">Geographic Levels ({geoLevelList?.totalElements ?? 0})</h2>
+          <h2 className="m-0">{t('locationsPage.geographicLevels')} ({geoLevelList?.totalElements ?? 0})</h2>
         </Col>
         <Col>
           <Button className="float-end" onClick={() => setOpenCreate(true)}>
-            Create
+            {t('buttons.create')}
           </Button>
         </Col>
       </Row>

@@ -4,3 +4,5 @@ export const KEYCLOAK_SECURITY_GROUPS = process.env.REACT_APP_KEYCLOAK_URL + 'au
 export const DOWNLOAD_USER_BULK_TEMPLATE = process.env.REACT_APP_API_URL + 'user/bulk/csv';
 export const GEOGRAPHIC_LEVEL = 'geographicLevel';
 export const LOCATION_HIERARCHY = 'locationHierarchy';
+export const LOCATION = 'location';
+export const PLAN = 'plan';

@@ -18,7 +18,7 @@ const legend = [
 ];
 const legendColors = ['green', 'orange', 'darkorange', 'orange', 'teal', 'gray', 'black', 'yellow', 'gray'];
 
-const Plans = () => {
+const MapViewDetail = () => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(24.651775360107422);
@@ -238,4 +238,4 @@ const Plans = () => {
   );
 };
 
-export default Plans;
+export default MapViewDetail;

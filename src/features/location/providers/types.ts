@@ -8,3 +8,22 @@ export interface LocationHierarchyModel {
   identifier?: string;
   nodeOrder: string[];
 }
+
+export interface LocationModel {
+  identifier: string;
+  type:       string;
+  geometry:   Geometry;
+  properties: Properties;
+}
+
+export interface Geometry {
+  type:        string;
+  coordinates: Array<Array<Array<number[]>>>;
+}
+
+export interface Properties {
+  name:            string;
+  status:          string;
+  externalId:      string;
+  geographicLevel: string;
+}

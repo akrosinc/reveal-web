@@ -34,3 +34,8 @@ export const GEOGRAPHY_LEVEL_TABLE_COLUMNS = [
 export const LOCATION_HIERARCHY_TABLE_COLUMNS = [
   { name: 'Node Order', sortValue: 'nodeOrder'}
 ]
+
+export const LOCATION_TABLE_COLUMNS = [
+  { name: 'Location', sortValue: 'name'},
+  { name: 'Geography Level', sortValue: 'geographicLevel'}
+]
