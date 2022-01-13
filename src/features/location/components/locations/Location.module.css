@@ -1,0 +1,9 @@
+.layoutHeight {
+    min-height: 70vh;
+}
+
+@media screen and (max-width: 768px) {
+    .layoutHeight {
+      min-height: auto;
+    }
+}

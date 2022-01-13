@@ -10,6 +10,26 @@
   border-radius: 4px;
 }
 
+.mapbox-container {
+  width: 100%;
+  height: 100%;
+}
+
+@media screen and (max-width: 768px) {
+  .mapbox-container {
+    margin-top: 1em;
+    height: 50vh;
+  }
+}
+
+.clearButton {
+  z-index: 1;
+  position: absolute;
+  margin: 12px;
+  right: 20px;
+  box-shadow: 4px 4px 3px rgba(24, 24, 24, 0.8);
+}
+
 .map-container {
   min-height: 80vh;
   width: 100%;

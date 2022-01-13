@@ -16,7 +16,7 @@ const ConfirmDialog = ({ title, message, closeHandler, backdrop }: Props) => {
       </Modal.Header>
 
       <Modal.Body>
-        <p>{message}</p>
+        <p style={{wordWrap: 'break-word'}}>{message}</p>
       </Modal.Body>
 
       <Modal.Footer>

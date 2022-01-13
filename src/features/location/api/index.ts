@@ -1,7 +1,7 @@
-import { GeographicLevel, LocationHierarchyModel } from '../providers/types';
+import { GeographicLevel, LocationHierarchyModel, LocationModel } from '../providers/types';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
-import { GEOGRAPHIC_LEVEL, LOCATION_HIERARCHY } from '../../../constants';
+import { GEOGRAPHIC_LEVEL, LOCATION, LOCATION_HIERARCHY } from '../../../constants';
 
 export const getGeographicLevelList = async (
   size: number,
@@ -69,5 +69,29 @@ export const createLocationHierarchy = async (formData: { nodeOrder: string[] })
 
 export const deleteLocationHierarchy = async (identifier: string): Promise<string> => {
   const data = await api.delete<string>(LOCATION_HIERARCHY + `/${identifier}`).then(response => response.data);
+  return data;
+};
+
+export const getLocationList = async (
+  size: number,
+  page: number,
+  summary: boolean,
+  search?: string,
+  sortField?: string,
+  direction?: boolean
+): Promise<PageableModel<LocationModel>> => {
+  const data = await api
+    .get<PageableModel<LocationModel>>(
+      LOCATION +
+        `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&sort=${
+          sortField !== undefined ? sortField : ''
+        },${direction ? 'asc' : 'desc'}&_summary=${summary.toString()}`
+    )
+    .then(response => response.data);
+  return data;
+};
+
+export const getLocationById = async (id: string): Promise<LocationModel> => {
+  const data = await api.get<LocationModel>(LOCATION + `/${id}`).then(response => response.data);
   return data;
 };

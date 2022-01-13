@@ -11,4 +11,4 @@ export const MANAGEMENT_ORGANIZATION_DETAILS = MANAGEMENT + '/organization/';
 //PLAN PAGES
 export const PLANS = '/plans';
 
-export const LOCATION = '/location';
+export const LOCATION_PAGE = '/location';

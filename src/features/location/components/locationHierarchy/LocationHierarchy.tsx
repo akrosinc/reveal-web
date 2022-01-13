@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Button, Table } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LOCATION_HIERARCHY_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import { deleteLocationHierarchy, getGeographicLevelList, getLocationHierarchyList } from '../../api';
 import { ActionDialog, ConfirmDialog } from '../../../../components/Dialogs';
@@ -10,6 +9,7 @@ import { LocationHierarchyModel } from '../../providers/types';
 import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 interface Options {
   value: string;
@@ -17,20 +17,22 @@ interface Options {
 }
 
 const LocationHierarchy = () => {
-  const [activeSortField, setActiveSortField] = useState('');
-  const [sortDirection, setSortDirection] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [geographyLevelList, setGeographyLevelList] = useState<Options[]>();
   const [locationHierarchy, setLocationHierarchy] = useState<PageableModel<LocationHierarchyModel>>();
   const dispatch = useAppDispatch();
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedHierarchy, setSelectedHierarchy] = useState<LocationHierarchyModel>();
+  const { t } = useTranslation();
 
   useEffect(() => {
     dispatch(showLoader(true));
-    getLocationHierarchyList(10, 0, true).then(res => {
+    getLocationHierarchyList(PAGINATION_DEFAULT_SIZE, 0, true).then(res => {
       setLocationHierarchy(res);
       dispatch(showLoader(false));
+    }).catch(err => {
+      dispatch(showLoader(false));
+      toast.error(err.message !== undefined ? err.message : err.toString());
     });
   }, [dispatch]);
 
@@ -87,23 +89,17 @@ const LocationHierarchy = () => {
     });
   };
 
-  const sortHandler = (sortValue: string, sortDirection: boolean) => {
-    dispatch(showLoader(true));
-    getLocationHierarchyList(locationHierarchy?.size ?? PAGINATION_DEFAULT_SIZE, 0, true).then(res => {
-      setLocationHierarchy(res);
-      dispatch(showLoader(false));
-    });
-  };
-
   return (
     <>
       <Row>
         <Col>
-          <h2 className="m-0">Location Hierarchy ({locationHierarchy?.totalElements ?? 0})</h2>
+          <h2 className="m-0">
+            {t('locationsPage.locationHierarchy')} ({locationHierarchy?.totalElements ?? 0})
+          </h2>
         </Col>
         <Col>
           <Button className="float-end" onClick={createHandler}>
-            Create
+            {t('buttons.create')}
           </Button>
         </Col>
       </Row>
@@ -114,25 +110,8 @@ const LocationHierarchy = () => {
             <tr>
               {LOCATION_HIERARCHY_TABLE_COLUMNS.map((el, index) => {
                 return (
-                  <th
-                    style={{ cursor: 'pointer' }}
-                    key={index}
-                    onClick={() => {
-                      setSortDirection(!sortDirection);
-                      setActiveSortField(el.name);
-                      sortHandler(el.sortValue, sortDirection);
-                    }}
-                  >
+                  <th style={{ cursor: 'default' }} key={index} onClick={() => {}}>
                     {el.name}
-                    {activeSortField === el.name ? (
-                      sortDirection ? (
-                        <FontAwesomeIcon className="float-end mt-1" icon="sort-up" />
-                      ) : (
-                        <FontAwesomeIcon className="float-end mt-1" icon="sort-down" />
-                      )
-                    ) : (
-                      <FontAwesomeIcon className="float-end mt-1" icon="sort" />
-                    )}
                   </th>
                 );
               })}
@@ -154,7 +133,7 @@ const LocationHierarchy = () => {
                       }}
                       className="float-end"
                     >
-                      Delete
+                      {t('buttons.delete')}
                     </Button>
                   </td>
                 </tr>

@@ -2,7 +2,7 @@ import Container from 'react-bootstrap/Container';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AuthorizedElement from '../../../components/AuthorizedElement';
-import { MANAGEMENT, PLANS, LOCATION } from '../../../constants';
+import { MANAGEMENT, PLANS, LOCATION_PAGE } from '../../../constants';
 
 function Home() {
   const { t } = useTranslation();
@@ -23,7 +23,7 @@ function Home() {
       </AuthorizedElement>
       <br />
       <AuthorizedElement roles={[]}>
-        <Link to={LOCATION} className="mt-2 btn btn-success">
+        <Link to={LOCATION_PAGE} className="mt-2 btn btn-success">
           Location Management
         </Link>
       </AuthorizedElement>

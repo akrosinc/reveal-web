@@ -1,8 +1,8 @@
 import { Route, Routes } from 'react-router';
 import { Navigate } from 'react-router-dom';
-import { HOME_PAGE, LOCATION, MANAGEMENT, PLANS, ROLE_MANAGE_USER } from '../constants/';
+import { HOME_PAGE, LOCATION_PAGE, MANAGEMENT, PLANS, ROLE_MANAGE_USER } from '../constants/';
 import Home from '../features/pages/HomePage/Home';
-import Plans from '../features/pages/PlansPage';
+import Plan from '../features/pages/Plan';
 import Management from '../features/pages/Management';
 import { useKeycloak } from '@react-keycloak/web';
 import AuthGuard from './AuthGuard';
@@ -19,7 +19,7 @@ export default function Router() {
         <Routes>
           <Route path="*" element={<ErrorPage />} />
           <Route path={HOME_PAGE} element={<Home />} />
-          <Route path={PLANS} element={<Plans />} />
+          <Route path={PLANS} element={<Plan />} />
           <Route
             path={MANAGEMENT}
             element={
@@ -38,7 +38,7 @@ export default function Router() {
             />
           </Route>
           <Route
-            path={LOCATION}
+            path={LOCATION_PAGE}
             element={
               <AuthGuard roles={[]}>
                 <Location />

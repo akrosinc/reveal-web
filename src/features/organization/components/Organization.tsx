@@ -115,7 +115,7 @@ const Organization = () => {
 
   const filterData = (e: any) => {
     setCurrentSearchInput(e.target.value);
-    loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
+    loadData(organizationList?.pageable.pageSize ?? PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
 
   const openOrganizationById = (id: string) => {
