@@ -1,36 +1,11 @@
-FROM node:16.5.0-alpine as build
+FROM node:16.13.0-alpine
 
-COPY . /project
+WORKDIR /usr/local/app
+ADD . .
 
-WORKDIR /project
-ENV PATH /project/node_modules/.bin:$PATH
-
-RUN chown -R node .
-USER node
-
-RUN cp /project/.env.production /project/.env && yarn
-
-USER root
-RUN chown -R node .
-USER node
-RUN yarn build
-
-FROM node:16.5.0-alpine as final
-
-RUN apk add --no-cache tini curl
-
-WORKDIR /usr/src/web
-
-COPY --from=build /project/build /usr/src/app
-
-RUN chown -R node /usr/src/app
-
-WORKDIR /usr/src/app
-
-USER node
+RUN yarn && \
+    yarn build
 
 EXPOSE 3000
 
-CMD [ "/bin/sh", "-c", "node ." ]
-
-ENTRYPOINT ["/sbin/tini", "--"]
+CMD [ "yarn", "start", "production" ]
