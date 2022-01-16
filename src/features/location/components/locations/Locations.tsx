@@ -7,12 +7,18 @@ import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import { LOCATION_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import Paginator from '../../../../components/Pagination';
-import { getLocationById, getLocationList } from '../../api';
+import { getLocationById, getLocationHierarchyList, getLocationList } from '../../api';
 import { LocationModel } from '../../providers/types';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
 import classes from './Location.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Select from 'react-select';
+
+interface Options {
+  value: string;
+  label: string;
+}
 
 const Locations = () => {
   const { t } = useTranslation();
@@ -22,6 +28,8 @@ const Locations = () => {
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<LocationModel>();
   const [locationList, setLocationList] = useState<PageableModel<LocationModel>>();
+  const [locationHierarchyList, setLocationHierarchyList] = useState<Options[]>();
+  const [,setSelectedLocationHierarchy] = useState<Options>();
 
   const filterData = (e: any) => {
     setCurrentSearchInput(e.target.value);
@@ -54,12 +62,22 @@ const Locations = () => {
         })
         .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
         .finally(() => dispatch(showLoader(false)));
+      getLocationHierarchyList(100, 0, true).then(res => {
+        setLocationHierarchyList(
+          res.content.map(el => {
+            return {
+              value: el.identifier ?? '',
+              label: el.name
+            };
+          })
+        );
+      });
     },
     [dispatch]
   );
 
   useEffect(() => {
-    loadData(10, 0);
+    loadData(PAGINATION_DEFAULT_SIZE, 0);
   }, [loadData]);
 
   return (
@@ -69,6 +87,15 @@ const Locations = () => {
         <Col md={3} className={classes.layoutHeight}>
           {locationList?.content !== undefined && locationList.totalElements > 0 ? (
             <div className="d-flex flex-column h-100">
+              <Select
+                className="mb-2"
+                placeholder="Select Location Hierarcy"
+                menuPosition="fixed"
+                options={locationHierarchyList}
+                onChange={e => {
+                  setSelectedLocationHierarchy(e !== null ? e : undefined);
+                }}
+              />
               <DebounceInput
                 className="form-control mb-2"
                 placeholder={t('userPage.search')}

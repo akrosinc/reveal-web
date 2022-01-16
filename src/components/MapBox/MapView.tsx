@@ -97,7 +97,15 @@ const MapView = ({ latitude, longitude, showCoordinates, startingZoom, data, cle
         });
       }
     }
-  }, [data, lat, lng, zoom, map]);
+  });
+
+  useEffect(() => {
+    return () => {
+      //Clear map and all WebGLContext from browser memory
+      map.current?.remove();
+      map.current = undefined;
+    };
+  }, []);
 
   const setListeners = () => {
     if (map !== undefined && map.current !== undefined) {
