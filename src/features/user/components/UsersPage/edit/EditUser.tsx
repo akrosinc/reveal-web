@@ -93,7 +93,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
             })
           );
         })
-        .catch(err => console.log(err));
+        .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()));
       getOrganizationListSummary().then(res => {
         setOrganizations(
           res.content.map(org => {

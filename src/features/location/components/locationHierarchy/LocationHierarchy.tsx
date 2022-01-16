@@ -10,6 +10,7 @@ import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import Paginator from '../../../../components/Pagination';
 
 interface Options {
   value: string;
@@ -27,13 +28,15 @@ const LocationHierarchy = () => {
 
   useEffect(() => {
     dispatch(showLoader(true));
-    getLocationHierarchyList(PAGINATION_DEFAULT_SIZE, 0, true).then(res => {
-      setLocationHierarchy(res);
-      dispatch(showLoader(false));
-    }).catch(err => {
-      dispatch(showLoader(false));
-      toast.error(err.message !== undefined ? err.message : err.toString());
-    });
+    getLocationHierarchyList(PAGINATION_DEFAULT_SIZE, 0, true)
+      .then(res => {
+        setLocationHierarchy(res);
+        dispatch(showLoader(false));
+      })
+      .catch(err => {
+        dispatch(showLoader(false));
+        toast.error(err.message !== undefined ? err.message : err.toString());
+      });
   }, [dispatch]);
 
   const createHandler = () => {
@@ -89,6 +92,18 @@ const LocationHierarchy = () => {
     });
   };
 
+  const paginationHandler = (size: number, page: number) => {
+    dispatch(showLoader(true));
+    getLocationHierarchyList(size, page, true)
+      .then(res => {
+        setLocationHierarchy(res);
+      })
+      .catch(err => {
+        toast.error(err.message !== undefined ? err.message : err.toString());
+      })
+      .finally(() => dispatch(showLoader(false)));
+  };
+
   return (
     <>
       <Row>
@@ -105,42 +120,52 @@ const LocationHierarchy = () => {
       </Row>
       <hr className="my-4" />
       {locationHierarchy !== undefined && locationHierarchy.content.length > 0 ? (
-        <Table bordered responsive hover>
-          <thead className="border border-2">
-            <tr>
-              {LOCATION_HIERARCHY_TABLE_COLUMNS.map((el, index) => {
+        <>
+          <Table bordered responsive hover>
+            <thead className="border border-2">
+              <tr>
+                {LOCATION_HIERARCHY_TABLE_COLUMNS.map((el, index) => {
+                  return (
+                    <th style={{ cursor: 'default' }} key={index} onClick={() => {}}>
+                      {el.name}
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {locationHierarchy.content.map(el => {
                 return (
-                  <th style={{ cursor: 'default' }} key={index} onClick={() => {}}>
-                    {el.name}
-                  </th>
+                  <tr key={el.identifier}>
+                    <td>
+                      <b>{el.name}</b>
+                      {' - ' + el.nodeOrder.toString()}
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          if (el.identifier) {
+                            setSelectedHierarchy(el);
+                            setShowConfirm(true);
+                          }
+                        }}
+                        className="float-end"
+                      >
+                        {t('buttons.delete')}
+                      </Button>
+                    </td>
+                  </tr>
                 );
               })}
-            </tr>
-          </thead>
-          <tbody>
-            {locationHierarchy.content.map(el => {
-              return (
-                <tr key={el.identifier}>
-                  <td>
-                    {el.nodeOrder.toString()}
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        if (el.identifier) {
-                          setSelectedHierarchy(el);
-                          setShowConfirm(true);
-                        }
-                      }}
-                      className="float-end"
-                    >
-                      {t('buttons.delete')}
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </Table>
+            </tbody>
+          </Table>
+          <Paginator
+            page={locationHierarchy.pageable.pageNumber}
+            paginationHandler={paginationHandler}
+            size={locationHierarchy.pageable.pageSize}
+            totalElements={locationHierarchy.totalElements}
+            totalPages={locationHierarchy.totalPages}
+          />
+        </>
       ) : (
         <p className="text-center lead">No content found.</p>
       )}

@@ -36,9 +36,10 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) =>
     setValue('nodeOrder', selected.toString());
   };
 
-  const submitHandler = () => {
+  const submitHandler = (formData: LocationHierarchyModel) => {
     if (locationHierarchy.length > 0) {
       const newHierarchy: LocationHierarchyModel = {
+        name: formData.name,
         nodeOrder: locationHierarchy
       };
       dispatch(showLoader(true));
@@ -72,6 +73,17 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) =>
 
   return (
     <Form>
+      <Form.Group>
+        <Form.Label>Hierarchy name</Form.Label>
+        <Form.Control
+          {...register('name', {
+            required: 'Hierarchy name must not be empty.'
+          })}
+          type="text"
+          placeholder="Hierarchy name"
+        ></Form.Control>
+        {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
+      </Form.Group>
       <Form.Group>
         <Form.Label>Current Node List</Form.Label>
         <Form.Control
