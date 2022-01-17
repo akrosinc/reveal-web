@@ -1,4 +1,4 @@
-import { GeographicLevel, LocationHierarchyModel, LocationModel } from '../providers/types';
+import { GeographicLevel, LocationBulkModel, LocationHierarchyModel, LocationModel } from '../providers/types';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { GEOGRAPHIC_LEVEL, LOCATION, LOCATION_HIERARCHY } from '../../../constants';
@@ -93,5 +93,25 @@ export const getLocationList = async (
 
 export const getLocationById = async (id: string): Promise<LocationModel> => {
   const data = await api.get<LocationModel>(LOCATION + `/${id}`).then(response => response.data);
+  return data;
+};
+
+export const getLocationBulkList = async (
+  size: number,
+  page: number,
+  sortField?: string,
+  direction?: boolean
+): Promise<PageableModel<LocationBulkModel>> => {
+  const data = await api
+    .get<PageableModel<LocationBulkModel>>(
+      LOCATION +
+        `/bulk?size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ''},${direction ? 'asc' : 'desc'}`
+    )
+    .then(response => response.data);
+  return data;
+};
+
+export const uploadLocationJSON = async (json: FormData): Promise<{ identifier: string }> => {
+  const data = await api.post<{ identifier: string }>(LOCATION + '/bulk', json).then(response => response.data);
   return data;
 };

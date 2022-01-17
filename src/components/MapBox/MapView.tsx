@@ -47,8 +47,8 @@ const MapView = ({ latitude, longitude, showCoordinates, startingZoom, data, cle
           source: data.properties.name,
           layout: {},
           paint: {
-            'line-color': data.properties.geographicLevel === 'country' ? 'yellow' : 'blue',
-            'line-width': 4
+            'line-color': data.properties.geographicLevel === 'country' ? 'black' : 'blue',
+            'line-width': 6
           }
         });
 

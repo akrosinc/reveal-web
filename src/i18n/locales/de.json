@@ -63,6 +63,7 @@
   "locationsPage": {
     "geographicLevels": "Geografische Ebenen",
     "locationHierarchy": "Standorthierarchie",
-    "locations": "Standorte"
+    "locations": "Standorte",
+    "locationsBulk": "Location Import"
   }
 }
