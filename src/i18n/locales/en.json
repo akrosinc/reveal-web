@@ -63,6 +63,7 @@
   "locationsPage": {
     "geographicLevels": "Geographic Levels",
     "locationHierarchy": "Location Hierarchy",
-    "locations": "Location Inspector"
+    "locations": "Location Inspector",
+    "locationsBulk": "Location Import"
   }
 }
