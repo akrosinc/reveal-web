@@ -1,9 +1,28 @@
 .layoutHeight {
-    min-height: 70vh;
+  min-height: 700px;
+  width: 350px;
 }
 
+.floatingLocationPicker {
+  box-shadow: 5px 5px 4px rgba(24, 24, 24, 0.5);
+  width: 350px;
+  min-width: 350px;
+  max-width: 600px;
+  max-height: 70vh;
+  resize: horizontal;
+  overflow-x: auto;
+}
+
+
 @media screen and (max-width: 768px) {
-    .layoutHeight {
-      min-height: auto;
-    }
+  .layoutHeight {
+    min-height: auto;
+  }
+  .floatingLocationPicker {
+    box-shadow: 5px 5px 4px rgba(24, 24, 24, 0.5);
+    width: 100%;
+    min-width: 100%;
+    resize: none;
+    overflow-x: hidden;
+  }
 }
