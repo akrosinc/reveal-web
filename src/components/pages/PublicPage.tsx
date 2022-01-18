@@ -1,28 +1,28 @@
-import React, { CSSProperties } from "react";
-import { Col, Image, Row } from "react-bootstrap";
-import logo from "../../assets/logos/Reveal_logo_400.png";
-import devicesImage from "../../assets/images/reveal-devices.png";
+import React, { CSSProperties } from 'react';
+import { Col, Image, Row } from 'react-bootstrap';
+import logo from '../../assets/logos/Reveal_logo_400.png';
+import devicesImage from '../../assets/images/reveal-devices.png';
 
-import Container from "react-bootstrap/Container";
+import Container from 'react-bootstrap/Container';
+import { useTranslation } from 'react-i18next';
 
 const imageTextStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  alignContent: "center",
-  flexWrap: "wrap",
-  justifyContent: "center",
+  display: 'flex',
+  alignItems: 'center',
+  alignContent: 'center',
+  flexWrap: 'wrap',
+  justifyContent: 'center'
 };
 
 function PublicPage() {
+  const { t } = useTranslation();
+
   return (
     <Container className="text-center my-5 py-3">
       <Row>
         <Col style={imageTextStyle} md={6}>
           <Image src={logo} alt="Reveal logo" fluid />
-          <p className="lead">
-            Reveal is a Global Good and an open-source platform taht uses
-            spatial intelligence to drive delivery of live-saving interventions
-          </p>
+          <p className="lead">{t('publicPage.description')}</p>
         </Col>
         <Col md={6}>
           <Image src={devicesImage} alt="Reveal devices" fluid />
@@ -40,37 +40,32 @@ function PublicPage() {
             allowFullScreen
           />
         </Col>
-        <Col style={{ textAlign: "left" }} md={6}>
-          <h1 style={{ fontWeight: "700" }}>WHAT IS REVEAL?</h1>
+        <Col style={{ textAlign: 'left' }} md={6}>
+          <h1 style={{ fontWeight: '700' }}>{t('publicPage.question')}</h1>
           <p className="lead text-secondary">
-            REVEAL IS AN APPROVED{" "}
+            {t('publicPage.firstPartAbout')}{' '}
             <a
               href="https://digitalsquare.org/resourcesrepository/global-goods-guidebook"
               target="_blank"
               rel="noreferrer"
-              className="text-success text-decoration-none"
-              style={{color: '#8cc63e'}}
+              className="text-decoration-none"
+              style={{ color: '#8cc63e' }}
             >
               GLOBAL GOOD
-            </a>{" "}
-            THROUGH DIGITAL SQUARE AND IS FEATURED IN THE WORLD HEALTH
-            ORGANIZATION’S <a
-              href="https://digitalsquare.org/resourcesrepository/global-goods-guidebook"
+            </a>{' '}
+            {t('publicPage.secondPartAbout')}{' '}
+            <a
+              href="https://digitalhealthatlas.org/en/-/"
               target="_blank"
               rel="noreferrer"
               className="text-decoration-none"
-              style={{color: '#8cc63e'}}
-            >DIGITAL HEALTH ATLAS</a>.
+              style={{ color: '#8cc63e' }}
+            >
+              DIGITAL HEALTH ATLAS
+            </a>
+            .
           </p>
-          <p className="text-secondary">
-            Reveal supports decision makers and intervention managers by guiding
-            and tracking delivery of in-field activities with precision and
-            holding field teams accountable for action. Reveal uses smart maps
-            and technology appropriate for low-resource settings to monitor
-            coverage of interventions as they happen. Modeled on the mSpray and
-            DiSARM tool, Reveal helps to optimize available resources and ensure
-            no one is missed in the process.
-          </p>
+          <p className="text-secondary">{t('publicPage.about')}</p>
         </Col>
       </Row>
     </Container>

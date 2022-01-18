@@ -1,0 +1,68 @@
+{
+  "topNav": {
+    "logOut": "Log out",
+    "logIn": "Login",
+    "Home": "Home",
+    "Plan": "Plan",
+    "Assign": "Assign",
+    "Monitor": "Monitor",
+    "Admin": "Admin",
+    "Manage Plans": "Manage Plans",
+    "Planning tools": "Planning tools",
+    "IRS Reporting": "IRS Reporting",
+    "SMC Reporting": "SMC Reporting",
+    "Management": "Management",
+    "Location": "Location Management"
+  },
+  "publicPage": {
+    "supportedBy": "supported by",
+    "description": "Reveal is a Global Good and an open-source platform taht uses spatial intelligence to drive delivery of live-saving interventions",
+    "question": "WHAT IS REVEAL?",
+    "firstPartAbout": "REVEAL IS AN APPROVED",
+    "secondPartAbout": "THROUGH DIGITAL SQUARE AND IS FEATURED IN THE WORLD HEALTH ORGANIZATION’S",
+    "about": "Reveal supports decision makers and intervention managers by guiding and tracking delivery of in-field activities with precision and holding field teams accountable for action. Reveal uses smart maps and technology appropriate for low-resource settings to monitor coverage of interventions as they happen. Modeled on the mSpray and DiSARM tool, Reveal helps to optimize available resources and ensure no one is missed in the process."
+  },
+  "homePage": {
+    "welcomeMessage": "Welcome to Reveal",
+    "description": "Get started by selecting an intervention below"
+  },
+  "buttons": {
+    "management": "Management",
+    "plans": "Plans",
+    "create": "Create",
+    "delete": "Delete"
+  },
+  "managementPage": {
+    "organization": "Organization",
+    "user": "User",
+    "userImport": "User Import"
+  },
+  "userPage": {
+    "Username": "Username",
+    "First Name": "First Name",
+    "Last Name": "Last Name",
+    "Organization": "Organization",
+    "users": "Users",
+    "search": "Search"
+  },
+  "userImportPage": {
+    "importedFiles": "Imported files",
+    "bulkImport": "Bulk Import",
+    "search": "Search",
+    "File name": "File Name",
+    "Upload Date": "Upload Date",
+    "Status": "Status"
+  },
+  "organizationPage": {
+    "organization": "Organization",
+    "Name": "Name",
+    "Type": "Type",
+    "Active": "Active",
+    "search": "Search"
+  },
+  "locationsPage": {
+    "geographicLevels": "Geographic Levels",
+    "locationHierarchy": "Location Hierarchy",
+    "locations": "Location Inspector"
+  }
+}

@@ -1,81 +1,108 @@
-import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
-import logo from "../../../assets/logos/reveal-logo.png";
-import { BsPerson } from "react-icons/bs";
-import { useAppSelector } from "../../../store/hooks";
-import { Link } from "react-router-dom";
-import { useKeycloak } from "@react-keycloak/web";
-import { MAIN_MENU } from "./menuConstants";
+import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
+import logo from '../../../assets/logos/reveal-logo.png';
+import { BsPerson } from 'react-icons/bs';
+import { useAppSelector } from '../../../store/hooks';
+import { Link } from 'react-router-dom';
+import { useKeycloak } from '@react-keycloak/web';
+import { MAIN_MENU } from './menuItems';
+import AuthorizedElement from '../../AuthorizedElement';
+import i18n, { LOCALES } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
+import { setToBrowser } from '../../../utils';
+import './index.css';
+import 'flag-icons/css/flag-icons.css';
 
 export default function NavbarComponent() {
+  const { t } = useTranslation();
   const { keycloak } = useKeycloak();
 
-  let user = useAppSelector((state) => state.user.value);
+  let user = useAppSelector(state => state.user.value);
+  const changeLaguagePrefferences = (lang: any) => {
+    i18n.changeLanguage(lang.name);
+    setToBrowser('locale', lang.name);
+  };
+
+  const loadFlag = () => {
+    let currentLanguage = LOCALES.filter(el => el.name === i18n.language);
+    return <span className={currentLanguage[0].flag}></span>;
+  }
 
   return (
     <Navbar collapseOnSelect expand="lg">
       <Container fluid className="px-4 pt-1">
-        <Navbar.Brand style={{ marginTop: "-10px" }}>
+        <Navbar.Brand style={{ marginTop: '-10px' }}>
           <img src={logo} alt="" />
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Navbar.Collapse id="responsive-navbar-nav" className={keycloak.authenticated ? "" : "justify-content-end"}>
+        <Navbar.Collapse id="responsive-navbar-nav" className={keycloak.authenticated ? '' : 'justify-content-end'}>
           {keycloak.authenticated ? (
             <Nav className="me-auto">
               {MAIN_MENU.map((el, index) => {
                 if (el.dropdown !== undefined && el.dropdown.length > 0) {
                   return (
-                    <NavDropdown
-                      title={el.pageTitle}
-                      key={index}
-                      id="collasible-nav-dropdown"
-                    >
-                      {el.dropdown.map((child, childIndex) => {
-                        return (
-                          <NavDropdown.Item
-                            as={Link}
-                            role="button"
-                            key={index + "." + childIndex}
-                            to={child.route}
-                            className="py-2"
-                          >
-                            {child.pageTitle}
-                          </NavDropdown.Item>
-                        );
-                      })}
-                    </NavDropdown>
+                    <AuthorizedElement key={index} roles={el.roles}>
+                      <NavDropdown title={t('topNav.' + el.pageTitle)} id="collasible-nav-dropdown">
+                        {el.dropdown.map((child, childIndex) => {
+                          return (
+                            <AuthorizedElement key={index + '.' + childIndex} roles={child.roles}>
+                              <NavDropdown.Item as={Link} role="button" to={child.route}>
+                                {t('topNav.' + child.pageTitle)}
+                              </NavDropdown.Item>
+                            </AuthorizedElement>
+                          );
+                        })}
+                      </NavDropdown>
+                    </AuthorizedElement>
                   );
                 } else {
                   return (
-                    <Link key={index} to={el.route} className="nav-link">
-                      {el.pageTitle}
-                    </Link>
+                    <AuthorizedElement key={index} roles={el.roles}>
+                      <Link to={el.route} className="nav-link">
+                        {t('topNav.' + el.pageTitle)}
+                      </Link>
+                    </AuthorizedElement>
                   );
                 }
               })}
             </Nav>
           ) : null}
-          {(keycloak.authenticated) ? (
-            <Nav style={{ alignItems: "center" }}>
-              <BsPerson />
-              <NavDropdown
-                title={user !== null ? user.preferred_username : "User Profile"}
-                id="collasible-nav-dropdown"
-                align="end"
-              >
-                <NavDropdown.Item
-                  onClick={() => {
-                    keycloak.logout();
-                  }}
+          {keycloak.authenticated ? (
+            <Nav>
+              <div className="d-flex align-items-center">
+                <BsPerson />
+                <NavDropdown
+                  title={user !== null ? user.preferred_username : 'User Profile'}
+                  id="collasible-nav-dropdown"
+                  align="end"
                 >
-                  Sign out
-                </NavDropdown.Item>
-              </NavDropdown>
+                  <NavDropdown.Item
+                    className="text-center"
+                    onClick={() => {
+                      keycloak.logout();
+                    }}
+                  >
+                    {t('topNav.logOut')}
+                  </NavDropdown.Item>
+                </NavDropdown>
+              </div>
             </Nav>
           ) : (
             <Nav>
-              <Nav.Link className="btn btn-success text-white" style={{width: '100px'}} onClick={() => keycloak.login()}>Login</Nav.Link>
+              <Nav.Link className="btn btn-success text-white mw-100" onClick={() => keycloak.login()}>
+                {t('topNav.logIn')}
+              </Nav.Link>
             </Nav>
           )}
+          <Nav className="ms-1">
+            <NavDropdown title={loadFlag()} align="end">
+              {LOCALES.map(locale => (
+                <NavDropdown.Item key={locale.name} className="text-center" onClick={() => changeLaguagePrefferences(locale)}>
+                  <span className={locale.flag + " me-2"}></span>
+                  {locale.name.toUpperCase()}
+                </NavDropdown.Item>
+              ))}
+            </NavDropdown>
+          </Nav>
         </Navbar.Collapse>
       </Container>
     </Navbar>
