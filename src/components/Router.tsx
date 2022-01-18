@@ -1,20 +1,14 @@
-import { Route, Routes } from "react-router";
-import { Navigate } from "react-router-dom";
-import {
-  HOME_PAGE,
-  USER_MANAGEMENT,
-  USER_MANAGEMENT_ORGANIZATION_DETAILS,
-  PLANS
-} from "../constants/";
-import Home from "../features/pages/HomePage/Home";
-import Plans from "../features/pages/PlansPage/Plans";
-import UserManagement from "../features/pages/UserManagementPage/UserManagement";
-import OrganizationDetails from "../features/pages/UserManagementPage/OrganizationPage/details/OrganizationDetails";
-import { Spinner } from "react-bootstrap";
-import { useKeycloak } from "@react-keycloak/web";
-import AuthGuard from "./AuthGuard";
-import PublicPage from "./pages/PublicPage";
-import ErrorPage from "./pages/ErrorPage";
+import { Route, Routes } from 'react-router';
+import { Navigate } from 'react-router-dom';
+import { HOME_PAGE, LOCATION_PAGE, MANAGEMENT, PLANS, ROLE_MANAGE_USER } from '../constants/';
+import Home from '../features/pages/HomePage/Home';
+import Plan from '../features/pages/Plan';
+import Management from '../features/pages/Management';
+import { useKeycloak } from '@react-keycloak/web';
+import AuthGuard from './AuthGuard';
+import PublicPage from './pages/PublicPage';
+import ErrorPage from './pages/ErrorPage';
+import Location from '../features/pages/Location';
 
 export default function Router() {
   const { keycloak, initialized } = useKeycloak();
@@ -25,21 +19,41 @@ export default function Router() {
         <Routes>
           <Route path="*" element={<ErrorPage />} />
           <Route path={HOME_PAGE} element={<Home />} />
-          <Route path={PLANS} element={<Plans />} />
-          <Route path={USER_MANAGEMENT} element={<UserManagement />}>
+          <Route path={PLANS} element={<Plan />} />
+          <Route
+            path={MANAGEMENT}
+            element={
+              <AuthGuard roles={[ROLE_MANAGE_USER]}>
+                <Management />
+              </AuthGuard>
+            }
+          >
             <Route
               path=":tab"
               element={
-                <AuthGuard roles={["manage-users"]}>
-                  <UserManagement />
+                <AuthGuard roles={[ROLE_MANAGE_USER]}>
+                  <Management />
                 </AuthGuard>
               }
             />
           </Route>
           <Route
-            path={USER_MANAGEMENT_ORGANIZATION_DETAILS}
-            element={<OrganizationDetails />}
-          />
+            path={LOCATION_PAGE}
+            element={
+              <AuthGuard roles={[]}>
+                <Location />
+              </AuthGuard>
+            }
+          >
+            <Route
+              path=":tab"
+              element={
+                <AuthGuard roles={[]}>
+                  <Location />
+                </AuthGuard>
+              }
+            />
+          </Route>
         </Routes>
       );
     } else {
@@ -51,19 +65,6 @@ export default function Router() {
       );
     }
   } else {
-    return (
-      <Spinner
-        animation="grow"
-        variant="success"
-        style={{
-          width: "3rem",
-          height: "3rem",
-          position: "absolute",
-          left: "50%",
-          top: "40%",
-          marginLeft: "-1.5rem",
-        }}
-      />
-    );
+    return null;
   }
 }
