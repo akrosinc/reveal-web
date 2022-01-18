@@ -128,7 +128,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
             required: "Organization name can't be empty.",
             minLength: 1,
             pattern: {
-              value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
+              value: new RegExp('^[^-\\s][\\w\\s-]+$'),
               message: "Organization name can't start with empty space."
             }
           })}
