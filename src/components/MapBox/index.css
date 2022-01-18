@@ -1,33 +1,28 @@
 .sidebar {
-  background-color: rgba(35, 55, 75, 0.9);
-  color: #fff;
-  padding: 6px 12px;
-  font-family: monospace;
   z-index: 1;
   position: absolute;
-  margin: 12px;
-  margin-right: 24px;
-  border-radius: 4px;
+  top: 0;
+  left: 0;
+  margin: 1em;
 }
 
 .mapbox-container {
   width: 100%;
-  height: 100%;
+  height: 80vh;
 }
 
 @media screen and (max-width: 768px) {
   .mapbox-container {
     margin-top: 1em;
-    height: 50vh;
+    height: 800px;
   }
 }
 
 .clearButton {
   z-index: 1;
   position: absolute;
-  margin: 12px;
-  right: 20px;
-  box-shadow: 4px 4px 3px rgba(24, 24, 24, 0.8);
+  margin: 1em 1em;
+  right: 0;
 }
 
 .map-container {
@@ -38,6 +33,13 @@
 @media screen and (max-width: 768px) {
   .map-container {
     min-height: 60vh;
+  }
+  .clearButton {
+    z-index: 1;
+    position: absolute;
+    right: 0;
+    margin-right: 10px;
+    bottom: 36px;
   }
 }
 
