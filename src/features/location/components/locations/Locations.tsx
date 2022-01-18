@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import { Row, Col, Table, Card } from 'react-bootstrap';
+import { Button, Collapse, Table, Card } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import MapView from '../../../../components/MapBox/MapView';
 import { DebounceInput } from 'react-debounce-input';
@@ -23,13 +23,14 @@ interface Options {
 const Locations = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const [open, setOpen] = useState(false);
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<LocationModel>();
   const [locationList, setLocationList] = useState<PageableModel<LocationModel>>();
   const [locationHierarchyList, setLocationHierarchyList] = useState<Options[]>();
-  const [,setSelectedLocationHierarchy] = useState<Options>();
+  const [, setSelectedLocationHierarchy] = useState<Options>();
 
   const filterData = (e: any) => {
     setCurrentSearchInput(e.target.value);
@@ -83,107 +84,125 @@ const Locations = () => {
   return (
     <>
       <h2 className="m-0 mb-4">{t('locationsPage.locations')}</h2>
-      <Row>
-        <Col md={3} className={classes.layoutHeight}>
-          {locationList?.content !== undefined && locationList.totalElements > 0 ? (
-            <div className="d-flex flex-column h-100">
-              <Select
-                className="mb-2"
-                placeholder="Select Location Hierarcy"
-                menuPosition="fixed"
-                options={locationHierarchyList}
-                onChange={e => {
-                  setSelectedLocationHierarchy(e !== null ? e : undefined);
-                }}
-              />
-              <DebounceInput
-                className="form-control mb-2"
-                placeholder={t('userPage.search')}
-                debounceTimeout={800}
-                onChange={e => filterData(e)}
-              />
-              <div className="flex-grow-1">
-                <Table responsive bordered>
-                  <thead className="border border-2">
-                    <tr>
-                      {LOCATION_TABLE_COLUMNS.map((el, index) => {
-                        return (
-                          <th
-                            style={{ cursor: 'pointer' }}
-                            key={index}
+      <hr className="my-4" />
+      <Card className="mb-2 p-2">
+        <p className="text-center m-0">
+          {currentLocation !== undefined
+            ? 'Location name: ' +
+              currentLocation.properties.name +
+              ' | Location Status: ' +
+              currentLocation.properties.status +
+              ' | Geography Level: ' +
+              currentLocation.properties.geographicLevel
+            : 'To inspect a location on the map select location from locations browser menu.'}
+        </p>
+      </Card>
+      <MapView
+        data={currentLocation}
+        startingZoom={12}
+        showCoordinates={true}
+        clearHandler={() => setCurrentLocation(undefined)}
+      >
+        <div
+          className={classes.floatingLocationPicker + " bg-white p-2 rounded"}
+        >
+          <Button
+            onClick={() => setOpen(!open)}
+            aria-controls="expand-table"
+            aria-expanded={open}
+            style={{ width: '100%', border: 'none' }}
+            variant="light"
+            className="text-start bg-white"
+          >
+            Browse locations
+            {open ? (
+              <FontAwesomeIcon className="ms-2 mt-1 float-end" icon="chevron-up" />
+            ) : (
+              <FontAwesomeIcon className="ms-2 mt-1 float-end" icon="chevron-down" />
+            )}
+          </Button>
+          <Collapse in={open}>
+            <div id="expand-table" className="mt-2">
+              {locationList?.content !== undefined && locationList.totalElements > 0 ? (
+                <>
+                  <Select
+                    className="mb-2"
+                    placeholder="Select Location Hierarcy"
+                    menuPosition="fixed"
+                    value={locationHierarchyList !== undefined && locationHierarchyList.length > 0 ? locationHierarchyList[0] : undefined}
+                    options={locationHierarchyList}
+                    onChange={e => {
+                      setSelectedLocationHierarchy(e !== null ? e : undefined);
+                    }}
+                  />
+                  <DebounceInput
+                    className="form-control mb-2"
+                    placeholder={t('userPage.search')}
+                    debounceTimeout={800}
+                    onChange={e => filterData(e)}
+                  />
+                  <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
+                    <Table responsive bordered className="bg-white">
+                      <thead className="border border-2">
+                        <tr>
+                          {LOCATION_TABLE_COLUMNS.map((el, index) => {
+                            return (
+                              <th
+                                key={index}
+                                onClick={() => {
+                                  setCurrentSortField(el.name);
+                                  setCurrentSortDirection(!currentSortDirection);
+                                  sortHandler(el.sortValue, !currentSortDirection);
+                                }}
+                              >
+                                {el.name}
+                                {currentSortField === el.name ? (
+                                  currentSortDirection ? (
+                                    <FontAwesomeIcon className="ms-1" icon="sort-up" />
+                                  ) : (
+                                    <FontAwesomeIcon className="ms-1" icon="sort-down" />
+                                  )
+                                ) : (
+                                  <FontAwesomeIcon className="ms-1" icon="sort" />
+                                )}
+                              </th>
+                            );
+                          })}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {locationList.content.map(el => (
+                          <tr
+                            key={el.identifier}
                             onClick={() => {
-                              setCurrentSortField(el.name);
-                              setCurrentSortDirection(!currentSortDirection);
-                              sortHandler(el.sortValue, !currentSortDirection);
+                              setOpen(!open);
+                              getLocationById(el.identifier).then(res => {
+                                setCurrentLocation(res);
+                              });
                             }}
                           >
-                            {el.name}
-                            {currentSortField === el.name ? (
-                              currentSortDirection ? (
-                                <FontAwesomeIcon className="ms-1" icon="sort-up" />
-                              ) : (
-                                <FontAwesomeIcon className="ms-1" icon="sort-down" />
-                              )
-                            ) : (
-                              <FontAwesomeIcon className="ms-1" icon="sort" />
-                            )}
-                          </th>
-                        );
-                      })}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {locationList.content.map(el => (
-                      <tr
-                        key={el.identifier}
-                        onClick={() => {
-                          getLocationById(el.identifier).then(res => {
-                            setCurrentLocation(res);
-                          });
-                        }}
-                      >
-                        <td>{el.properties.name}</td>
-                        <td>{el.properties.geographicLevel}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-              <Paginator
-                totalElements={locationList.totalElements}
-                totalPages={locationList.totalPages}
-                paginationHandler={paginationHandler}
-                size={locationList.pageable.pageSize}
-                page={locationList.pageable.pageNumber}
-              />
+                            <td>{el.properties.name}</td>
+                            <td>{el.properties.geographicLevel}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                  <Paginator
+                    totalElements={locationList.totalElements}
+                    totalPages={locationList.totalPages}
+                    paginationHandler={paginationHandler}
+                    size={locationList.pageable.pageSize}
+                    page={locationList.pageable.pageNumber}
+                  />
+                </>
+              ) : (
+                <p>No data found</p>
+              )}
             </div>
-          ) : (
-            <p>No data found</p>
-          )}
-        </Col>
-        <Col md={9}>
-          <div className="d-flex flex-column h-100">
-            <MapView
-              data={currentLocation}
-              startingZoom={12}
-              showCoordinates={true}
-              clearHandler={() => setCurrentLocation(undefined)}
-            ></MapView>
-            <Card className="mt-2 p-2">
-              <p className="text-center m-0">
-                {currentLocation !== undefined
-                  ? 'Location name: ' +
-                    currentLocation.properties.name +
-                    ' | Location Status: ' +
-                    currentLocation.properties.status +
-                    ' | Geography Level: ' +
-                    currentLocation.properties.geographicLevel
-                  : null}
-              </p>
-            </Card>
-          </div>
-        </Col>
-      </Row>
+          </Collapse>
+        </div>
+      </MapView>
     </>
   );
 };

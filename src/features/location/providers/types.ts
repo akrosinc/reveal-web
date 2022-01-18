@@ -1,3 +1,5 @@
+import { BulkStatus } from "../../user/providers/types";
+
 export interface GeographicLevel {
   identifier: string;
   title: string;
@@ -27,4 +29,11 @@ export interface Properties {
   status:          string;
   externalId:      string;
   geographicLevel: string;
+}
+
+export interface LocationBulkModel {
+  identifier: string;
+  filename: string;
+  uploadDatetime: Date;
+  status: BulkStatus;
 }
