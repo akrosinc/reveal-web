@@ -9,7 +9,7 @@ import Paginator from '../../../../components/Pagination';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { formatDate } from '../../../../utils';
 import { useAppDispatch } from '../../../../store/hooks';
-import { PAGINATION_DEFAULT_SIZE, USER_BULK_TABLE_COLUMNS } from '../../../../constants';
+import { PAGINATION_DEFAULT_SIZE, BULK_TABLE_COLUMNS } from '../../../../constants';
 import { getLocationBulkList } from '../../api';
 import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
@@ -90,7 +90,7 @@ const LocationBulk = () => {
         <Table bordered responsive hover>
           <thead className="border border-2">
             <tr>
-              {USER_BULK_TABLE_COLUMNS.map((el, index) => (
+              {BULK_TABLE_COLUMNS.map((el, index) => (
                 <th
                   key={index}
                   onClick={() => {
@@ -119,6 +119,7 @@ const LocationBulk = () => {
                 <td>{el.filename}</td>
                 <td>{formatDate(el.uploadDatetime)}</td>
                 <td>{el.status}</td>
+                <td>user.username</td>
               </tr>
             ))}
           </tbody>

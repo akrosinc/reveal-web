@@ -3,7 +3,7 @@ import { Button, Table, Col, Row } from 'react-bootstrap';
 import { PageableModel } from '../../../../api/providers';
 import { ActionDialog } from '../../../../components/Dialogs';
 import Paginator from '../../../../components/Pagination';
-import { PAGINATION_DEFAULT_SIZE, USER_BULK_TABLE_COLUMNS } from '../../../../constants';
+import { PAGINATION_DEFAULT_SIZE, BULK_TABLE_COLUMNS } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
 import { formatDate } from '../../../../utils';
 import { showLoader } from '../../../reducers/loader';
@@ -100,7 +100,7 @@ const UserImport = () => {
         <Table bordered responsive hover>
           <thead className="border border-2">
             <tr>
-              {USER_BULK_TABLE_COLUMNS.map((el, index) => (
+              {BULK_TABLE_COLUMNS.map((el, index) => (
                 <th
                   key={index}
                   onClick={() => {

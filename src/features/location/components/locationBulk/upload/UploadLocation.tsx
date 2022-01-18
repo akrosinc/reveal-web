@@ -46,7 +46,7 @@ const UploadLocation = ({ handleClose }: Props) => {
             dispatch(showLoader(false));
             setError(
               'bulk',
-              {},
+              {message: data.message},
               {
                 shouldFocus: true
               }
@@ -56,7 +56,7 @@ const UploadLocation = ({ handleClose }: Props) => {
         }
       });
     } else {
-      setError('bulk', {});
+      setError('bulk', {message: 'Unexpected file type, please try again.'});
     }
   };
 
@@ -64,8 +64,8 @@ const UploadLocation = ({ handleClose }: Props) => {
     <Form onSubmit={handleSubmit(submitHandler)}>
       <Form.Group className="mb-3">
         <Form.Label>Please provide a JSON file:</Form.Label>
-        <Form.Control {...register('bulk', { required: true })} type="file" accept=".json" />
-        {errors.bulk && <Form.Label className="text-danger mt-1">Invalid file type.</Form.Label>}
+        <Form.Control {...register('bulk', { required: "Please provide a JSON file." })} type="file" accept=".json" />
+        {errors.bulk && <Form.Label className="text-danger mt-1">{errors.bulk && (errors.bulk as any).message}</Form.Label>}
       </Form.Group>
       <p>
         You can download JSON sample from{' '}
