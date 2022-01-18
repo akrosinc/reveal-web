@@ -13,9 +13,10 @@ interface Props {
   startingZoom: number;
   data: any;
   clearHandler: () => void;
+  children: JSX.Element;
 }
 
-const MapView = ({ latitude, longitude, showCoordinates, startingZoom, data, clearHandler }: Props) => {
+const MapView = ({ latitude, longitude, showCoordinates, startingZoom, data, clearHandler, children }: Props) => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(longitude ?? 28.283333);
@@ -47,8 +48,8 @@ const MapView = ({ latitude, longitude, showCoordinates, startingZoom, data, cle
           source: data.properties.name,
           layout: {},
           paint: {
-            'line-color': data.properties.geographicLevel === 'country' ? 'yellow' : 'blue',
-            'line-width': 4
+            'line-color': data.properties.geographicLevel === 'country' ? 'black' : 'blue',
+            'line-width': 6
           }
         });
 
@@ -114,13 +115,16 @@ const MapView = ({ latitude, longitude, showCoordinates, startingZoom, data, cle
           setLng(Math.round(map.current.getCenter().lng * 100) / 100);
           setLat(Math.round(map.current.getCenter().lat * 100) / 100);
           setZoom(Math.round(map.current.getZoom() * 100) / 100);
+          if (Math.round(map.current.getZoom() * 100) / 100 === 8) {
+            console.log('load children locations event');
+          }
         }
       });
       map.current.on('load', e => {
-        console.log('resize map after load');
+        //resize map after load
         setTimeout(() => {
           e.target.resize();
-        }, 100);
+        }, 200);
       });
     }
   };
@@ -134,16 +138,25 @@ const MapView = ({ latitude, longitude, showCoordinates, startingZoom, data, cle
   };
 
   return (
-    <div className="flex-grow-1">
+    <div className="flex-grow-1" style={{ position: 'relative' }}>
       {showCoordinates && (
         <div className="sidebar">
-          Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
+          {children}
           <br />
         </div>
       )}
-      <Button className="clearButton" onClick={() => deleteMapData()}>
-        Clear Map
-      </Button>
+      <div className="clearButton">
+        <p className='small m-0 p-0 text-white rounded mb-1'>
+          Lat: {lat} Lng: {lng} Zoom: {zoom}
+        </p>
+        <Button
+          className="float-end"
+          style={{ boxShadow: '4px 4px 3px rgba(24, 24, 24, 0.8)' }}
+          onClick={() => deleteMapData()}
+        >
+          Clear Map
+        </Button>
+      </div>
       <div ref={mapContainer} className="mapbox-container" />
     </div>
   );

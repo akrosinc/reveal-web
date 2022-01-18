@@ -51,6 +51,7 @@
     "search": "Suche",
     "File name": "Dateinamen",
     "Upload Date": "Hochladedatum",
+    "Uploaded By": "Nutzer",
     "Status": "Status"
   },
   "organizationPage": {
@@ -63,6 +64,7 @@
   "locationsPage": {
     "geographicLevels": "Geografische Ebenen",
     "locationHierarchy": "Standorthierarchie",
-    "locations": "Standorte"
+    "locations": "Standorte",
+    "locationsBulk": "Location Import"
   }
 }

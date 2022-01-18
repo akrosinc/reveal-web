@@ -126,7 +126,7 @@ const LocationHierarchy = () => {
               <tr>
                 {LOCATION_HIERARCHY_TABLE_COLUMNS.map((el, index) => {
                   return (
-                    <th style={{ cursor: 'default' }} key={index} onClick={() => {}}>
+                    <th style={{ cursor: 'default' }} key={index}>
                       {el.name}
                     </th>
                   );
@@ -138,9 +138,10 @@ const LocationHierarchy = () => {
                 return (
                   <tr key={el.identifier}>
                     <td>
-                      <b>{el.name}</b>
-                      {' - ' + el.nodeOrder.toString()}
-                      <Button
+                      {el.name}
+                     
+                    </td>
+                    <td>{el.nodeOrder.toString()} <Button
                         variant="secondary"
                         onClick={() => {
                           if (el.identifier) {
@@ -151,8 +152,8 @@ const LocationHierarchy = () => {
                         className="float-end"
                       >
                         {t('buttons.delete')}
-                      </Button>
-                    </td>
+                      </Button></td>
+                                        
                   </tr>
                 );
               })}

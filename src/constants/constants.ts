@@ -21,10 +21,11 @@ export const USER_TABLE_COLUMNS = [
   { name: 'Last Name', sortValue: 'lastName' },
   { name: 'Organization', sortValue: 'organization' }
 ];
-export const USER_BULK_TABLE_COLUMNS = [
+export const BULK_TABLE_COLUMNS = [
   { name: 'File name', sortValue: 'filename' },
   { name: 'Upload Date', sortValue: 'uploadedDatetime' },
-  { name: 'Status', sortValue: 'status' }
+  { name: 'Status', sortValue: 'status' },
+  { name: 'Uploaded By', sortValue: 'username'}
 ];
 export const GEOGRAPHY_LEVEL_TABLE_COLUMNS = [
   { name: 'Name', sortValue: 'name' },
@@ -32,6 +33,7 @@ export const GEOGRAPHY_LEVEL_TABLE_COLUMNS = [
 ];
 
 export const LOCATION_HIERARCHY_TABLE_COLUMNS = [
+  { name: 'Name', sortValue: 'name'},
   { name: 'Node Order', sortValue: 'nodeOrder'}
 ]
 
