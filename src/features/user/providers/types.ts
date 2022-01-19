@@ -39,6 +39,7 @@ export interface UserBulk {
   filename: string;
   uploadDatetime: Date;
   status: BulkStatus;
+  uploadedBy: string;
 }
 
 export enum BulkStatus {
