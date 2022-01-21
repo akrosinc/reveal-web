@@ -1,4 +1,4 @@
-import { GeographicLevel, LocationBulkModel, LocationHierarchyModel, LocationModel } from '../providers/types';
+import { GeographicLevel, LocationBulkModel, LocationHierarchyModel, LocationModel, LocationBulkDetailsModel } from '../providers/types';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { GEOGRAPHIC_LEVEL, LOCATION, LOCATION_HIERARCHY } from '../../../constants';
@@ -91,6 +91,26 @@ export const getLocationList = async (
   return data;
 };
 
+export const getLocationListByHierarchyId = async (
+  size: number,
+  page: number,
+  identifier: string,
+  summary: boolean,
+  search?: string,
+  sortField?: string,
+  direction?: boolean
+): Promise<PageableModel<LocationModel>> => {
+  const data = await api
+    .get<PageableModel<LocationModel>>(
+      LOCATION_HIERARCHY +
+        `/${identifier}/location?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&sort=${
+          sortField !== undefined ? sortField : ''
+        },${direction ? 'asc' : 'desc'}&_summary=${summary.toString()}`
+    )
+    .then(response => response.data);
+  return data;
+};
+
 export const getLocationById = async (id: string): Promise<LocationModel> => {
   const data = await api.get<LocationModel>(LOCATION + `/${id}`).then(response => response.data);
   return data;
@@ -107,6 +127,18 @@ export const getLocationBulkList = async (
       LOCATION +
         `/bulk?size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ''},${direction ? 'asc' : 'desc'}`
     )
+    .then(response => response.data);
+  return data;
+};
+
+export const getLocationBulkListById = async (
+  size: number,
+  page: number,
+  id: string,
+  search?: string
+): Promise<PageableModel<LocationBulkDetailsModel>> => {
+  const data = await api
+    .get<PageableModel<LocationBulkDetailsModel>>(LOCATION + `/bulk/${id}?size=${size}&page=${page}`)
     .then(response => response.data);
   return data;
 };

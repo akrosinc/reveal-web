@@ -129,6 +129,7 @@ const UserImport = () => {
                 <td>{el.filename}</td>
                 <td>{formatDate(el.uploadDatetime)}</td>
                 <td>{el.status}</td>
+                <td>{el.uploadedBy}</td>
               </tr>
             ))}
           </tbody>
