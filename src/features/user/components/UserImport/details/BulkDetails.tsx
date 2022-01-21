@@ -17,7 +17,10 @@ const BulkDetails = ({ userList, bulkFile, handleClose, paginationHandler }: Pro
     <Modal show={true} centered size="lg" scrollable>
       <Modal.Header>
         <Modal.Title>{bulkFile?.filename}</Modal.Title>
-        <p className="mb-0 ms-2">Upload date: {formatDate(bulkFile?.uploadDatetime)}</p>
+        <div>
+        <p className="mb-0 ms-2 text-end">Upload date: {formatDate(bulkFile?.uploadDatetime)}</p>
+        <p className="mb-0 ms-2 text-end">Uploaded by: {bulkFile?.uploadedBy}</p>
+        </div>
       </Modal.Header>
       <Modal.Body>
         <Table bordered responsive>

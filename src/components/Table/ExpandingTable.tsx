@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Table } from 'react-bootstrap';
 import { useTable, useExpanded } from 'react-table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { OrganizationModel } from '../../features/organization/providers/types';
 
 interface Props {
   columns: any;
@@ -14,19 +13,41 @@ interface Props {
 const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
-    {
-      columns,
-      data,
-      getSubRows: (row: any) => row.headOf !== undefined ? row.headOf.map((el: any) => {
+
+  const mapRows = (row: any): object[] => {
+    if (row.headOf !== undefined) {
+      return row.headOf.map((el: any) => {
         return {
           name: el.name,
           identifier: el.identifier,
           active: el.active.toString(),
           headOf: el.headOf,
           type: el.type.valueCodableConcept
-        }
-      }) : [],
+        };
+      });
+    } else if (row.children !== undefined) {
+      return row.children.map((el: any) => {
+        return {
+          identifier: el.identifier,
+          children: el.children,
+          properties: {
+            name: el.properties.name,
+            status: el.properties.status,
+            externalId: el.properties.externalId,
+            geographicLevel: el.properties.geographicLevel
+          }
+        };
+      });
+    } else {
+      return [];
+    }
+  };
+
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
+    {
+      columns,
+      data,
+      getSubRows: (row: any) => mapRows(row)
     },
     useExpanded // Use the useExpanded plugin hook
   );
@@ -37,7 +58,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
               <th
-                style={{width: column.id === "expander" ? '37px' : 'auto'}}
+                style={{ width: column.id === 'expander' ? '37px' : 'auto' }}
                 onClick={() => {
                   if (column.id !== 'expander') {
                     setSortDirection(!sortDirection);
@@ -66,16 +87,22 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
         {rows.map((row, i) => {
           prepareRow(row);
           return (
-            <tr {...row.getRowProps()}>
+            //row.depth is not existing in react table types for some reason, casting to any type solves the issue
+            <tr {...row.getRowProps()} style={{backgroundColor: (row as any).depth > 0 ? 'whiteSmoke' : ''}}>
               {row.cells.map(cell => {
-                return <td {...cell.getCellProps()}
-                onClick={() => {
-                    if(cell.column.id !== "expander") {
-                        let organization = row.original as OrganizationModel;
-                        clickHandler(organization.identifier);
-                    }
-                  }}
-                >{cell.render('Cell')}</td>;
+                return (
+                  <td
+                    {...cell.getCellProps()}
+                    onClick={() => {
+                      if (cell.column.id !== 'expander') {
+                        let col = row.original as any;
+                        clickHandler(col.identifier);
+                      }
+                    }}
+                  >
+                    {cell.render('Cell')}
+                  </td>
+                );
               })}
             </tr>
           );

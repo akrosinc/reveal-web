@@ -11,6 +11,7 @@ import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import Paginator from '../../../../components/Pagination';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface Options {
   value: string;
@@ -151,7 +152,7 @@ const LocationHierarchy = () => {
                         }}
                         className="float-end"
                       >
-                        {t('buttons.delete')}
+                        <FontAwesomeIcon className="m-0" icon="trash" />
                       </Button></td>
                                         
                   </tr>

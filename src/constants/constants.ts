@@ -38,6 +38,6 @@ export const LOCATION_HIERARCHY_TABLE_COLUMNS = [
 ]
 
 export const LOCATION_TABLE_COLUMNS = [
-  { name: 'Location', sortValue: 'name'},
-  { name: 'Geography Level', sortValue: 'geographicLevel.name'}
+  { Header: 'Location', accessor: 'properties.name'},
+  { Header: 'Geography Level', accessor: 'properties.geographicLevel'}
 ]
