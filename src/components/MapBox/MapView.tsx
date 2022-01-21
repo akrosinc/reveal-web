@@ -9,14 +9,13 @@ mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 interface Props {
   latitude?: number;
   longitude?: number;
-  showCoordinates: boolean;
   startingZoom: number;
   data: any;
   clearHandler: () => void;
   children: JSX.Element;
 }
 
-const MapView = ({ latitude, longitude, showCoordinates, startingZoom, data, clearHandler, children }: Props) => {
+const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, children }: Props) => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(longitude ?? 28.283333);
@@ -139,14 +138,9 @@ const MapView = ({ latitude, longitude, showCoordinates, startingZoom, data, cle
 
   return (
     <div className="flex-grow-1" style={{ position: 'relative' }}>
-      {showCoordinates && (
-        <div className="sidebar">
-          {children}
-          <br />
-        </div>
-      )}
+      <div className="sidebar">{children}</div>
       <div className="clearButton">
-        <p className='small m-0 p-0 text-white rounded mb-1'>
+        <p className="small m-0 p-0 text-white rounded mb-1">
           Lat: {lat} Lng: {lng} Zoom: {zoom}
         </p>
         <Button

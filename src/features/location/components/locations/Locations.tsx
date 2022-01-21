@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import { Button, Collapse, Table, Card } from 'react-bootstrap';
+import { Button, Collapse, Card } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import MapView from '../../../../components/MapBox/MapView';
 import { DebounceInput } from 'react-debounce-input';
@@ -7,13 +7,14 @@ import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import { LOCATION_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import Paginator from '../../../../components/Pagination';
-import { getLocationById, getLocationHierarchyList, getLocationList, getLocationListByHierarchyId } from '../../api';
+import { getLocationById, getLocationHierarchyList, getLocationListByHierarchyId } from '../../api';
 import { LocationModel } from '../../providers/types';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
 import classes from './Location.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Select from 'react-select';
+import ExpandingTable from '../../../../components/Table/ExpandingTable';
 
 interface Options {
   value: string;
@@ -25,8 +26,6 @@ const Locations = () => {
   const dispatch = useAppDispatch();
   const [open, setOpen] = useState(false);
   const [currentSearchInput, setCurrentSearchInput] = useState('');
-  const [currentSortField, setCurrentSortField] = useState('');
-  const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<LocationModel>();
   const [locationList, setLocationList] = useState<PageableModel<LocationModel>>();
   const [locationHierarchyList, setLocationHierarchyList] = useState<Options[]>();
@@ -50,20 +49,13 @@ const Locations = () => {
   };
 
   const paginationHandler = (size: number, page: number) => {
-    setCurrentSortField('');
     loadData(size, page, currentSearchInput, '', false);
   };
 
   const loadData = useCallback(
     (size: number, page: number, searchData?: string, sortField?: string, sortDirection?: boolean) => {
       dispatch(showLoader(true));
-      getLocationList(size, page, true, searchData, sortField, sortDirection)
-        .then(res => {
-          setLocationList(res);
-        })
-        .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
-        .finally(() => dispatch(showLoader(false)));
-      getLocationHierarchyList(100, 0, true).then(res => {
+      getLocationHierarchyList(0, 0, true).then(res => {
         setLocationHierarchyList(
           res.content.map(el => {
             return {
@@ -80,7 +72,10 @@ const Locations = () => {
           searchData,
           sortField,
           sortDirection
-        ).then(res => console.log(res));
+        )
+          .then(res => setLocationList(res))
+          .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
+          .finally(() => dispatch(showLoader(false)));
       });
     },
     [dispatch, selectedLocationHierarchy]
@@ -89,6 +84,41 @@ const Locations = () => {
   useEffect(() => {
     loadData(PAGINATION_DEFAULT_SIZE, 0);
   }, [loadData]);
+
+  const columns = React.useMemo(
+    () => [
+      {
+        // Build our expander column
+        id: 'expander', // Make sure it has an ID
+        Cell: ({ row }: { row: any }) =>
+          // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
+          // to build the toggle for expanding a row
+          row.canExpand ? (
+            <span
+              {...row.getToggleRowExpandedProps({
+                style: {
+                  // We can even use the row.depth property
+                  // and paddingLeft to indicate the depth
+                  // of the row
+                  paddingLeft: `${row.depth * 2}rem`,
+                  paddingTop: '15px',
+                  paddingBottom: '15px',
+                  paddingRight: '15px'
+                }
+              })}
+            >
+              {row.isExpanded ? (
+                <FontAwesomeIcon className="ms-1" icon="chevron-down" />
+              ) : (
+                <FontAwesomeIcon className="ms-1" icon="chevron-right" />
+              )}
+            </span>
+          ) : null
+      },
+      ...LOCATION_TABLE_COLUMNS
+    ],
+    []
+  );
 
   return (
     <>
@@ -109,7 +139,6 @@ const Locations = () => {
       <MapView
         data={currentLocation}
         startingZoom={12}
-        showCoordinates={true}
         clearHandler={() => setCurrentLocation(undefined)}
       >
         <div className={classes.floatingLocationPicker + ' bg-white p-2 rounded'}>
@@ -154,51 +183,21 @@ const Locations = () => {
                     onChange={e => filterData(e)}
                   />
                   <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
-                    <Table responsive bordered className="bg-white">
-                      <thead className="border border-2">
-                        <tr>
-                          {LOCATION_TABLE_COLUMNS.map((el, index) => {
-                            return (
-                              <th
-                                key={index}
-                                onClick={() => {
-                                  setCurrentSortField(el.name);
-                                  setCurrentSortDirection(!currentSortDirection);
-                                  sortHandler(el.sortValue, !currentSortDirection);
-                                }}
-                              >
-                                {el.name}
-                                {currentSortField === el.name ? (
-                                  currentSortDirection ? (
-                                    <FontAwesomeIcon className="ms-1" icon="sort-up" />
-                                  ) : (
-                                    <FontAwesomeIcon className="ms-1" icon="sort-down" />
-                                  )
-                                ) : (
-                                  <FontAwesomeIcon className="ms-1" icon="sort" />
-                                )}
-                              </th>
-                            );
-                          })}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {locationList.content.map(el => (
-                          <tr
-                            key={el.identifier}
-                            onClick={() => {
-                              setOpen(!open);
-                              getLocationById(el.identifier).then(res => {
-                                setCurrentLocation(res);
-                              });
-                            }}
-                          >
-                            <td>{el.properties.name}</td>
-                            <td>{el.properties.geographicLevel}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
+                    <ExpandingTable
+                      columns={columns}
+                      clickHandler={(identifier: string) => {
+                        setOpen(!open);
+                        dispatch(showLoader(true));
+                        getLocationById(identifier)
+                          .then(res => {
+                            setCurrentLocation(res);
+                          })
+                          .catch(err => toast.error('Error loading geoJSON data'))
+                          .finally(() => dispatch(showLoader(false)));
+                      }}
+                      data={locationList.content}
+                      sortHandler={sortHandler}
+                    />
                   </div>
                   <Paginator
                     totalElements={locationList.totalElements}
