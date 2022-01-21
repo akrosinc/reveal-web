@@ -8,6 +8,7 @@ import { useAppDispatch } from '../../../../../store/hooks';
 import { showLoader } from '../../../../reducers/loader';
 import { deleteGeographicLevel, updateGeographicLevel } from '../../../api';
 import { GeographicLevel } from '../../../providers/types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface Props {
   closeHandler: () => void;
@@ -67,24 +68,24 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
 
   const deleteHandler = (action: boolean) => {
     if (action) {
-        dispatch(showLoader(true));
-        if (data !== undefined) {
-            toast.promise(deleteGeographicLevel(data.identifier), {
-                pending: 'Loading...',
-                success: `Geographic Level with id: ${data.identifier} deleted successfully!`,
-                error: {
-                    render({ data }: { data: ErrorModel }) {
-                        return data.message !== undefined ? data.message : 'An error has occured!';
-                    }
-                }
-            })
-          deleteGeographicLevel(data.identifier).then(res => {
-            dispatch(showLoader(false));
-            closeHandler();
-          });
-        }   
+      dispatch(showLoader(true));
+      if (data !== undefined) {
+        toast.promise(deleteGeographicLevel(data.identifier), {
+          pending: 'Loading...',
+          success: `Geographic Level with id: ${data.identifier} deleted successfully!`,
+          error: {
+            render({ data }: { data: ErrorModel }) {
+              return data.message !== undefined ? data.message : 'An error has occured!';
+            }
+          }
+        });
+        deleteGeographicLevel(data.identifier).then(res => {
+          dispatch(showLoader(false));
+          closeHandler();
+        });
+      }
     } else {
-        setShowConfirmDialog(false);
+      setShowConfirmDialog(false);
     }
   };
 
@@ -137,19 +138,25 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
       <hr style={{ margin: '15px -15px' }} />
       <div className="mt-3">
         {edit ? (
-          <Button variant="primary" className="float-end ms-2" onClick={handleSubmit(submitHandler)}>
-            Submit
-          </Button>
+          <>
+            <Button
+              variant="secondary"
+              className="float-start"
+              onClick={() => (edit ? setEdit(false) : closeHandler())}
+            >
+              Discard
+            </Button>
+            <Button variant="primary" className="float-end ms-2" onClick={handleSubmit(submitHandler)}>
+              Submit
+            </Button>
+          </>
         ) : (
-          <Button variant="primary" className="float-end ms-2" onClick={() => setEdit(true)}>
-            Edit
+          <Button variant="primary" className="float-end ms-2 px-3 py-2" onClick={() => setEdit(true)}>
+            <FontAwesomeIcon className="m-0 ms-1" icon="edit" />
           </Button>
         )}
-        <Button variant="secondary" className="float-end" onClick={() => setShowConfirmDialog(true)}>
-          Delete
-        </Button>
-        <Button variant="secondary" className="float-start" onClick={() => (edit ? setEdit(false) : closeHandler())}>
-          {edit ? 'Discard' : 'Close'}
+        <Button variant="secondary" className="float-end px-3 py-2" onClick={() => setShowConfirmDialog(true)}>
+          <FontAwesomeIcon className="my-0 mx-1" icon="trash" />
         </Button>
       </div>
       {showConfirmDialog && (
