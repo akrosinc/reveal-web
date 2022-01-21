@@ -17,6 +17,7 @@ export interface LocationModel {
   type:       string;
   geometry:   Geometry;
   properties: Properties;
+  children: LocationModel[];
 }
 
 export interface Geometry {
@@ -36,6 +37,7 @@ export interface LocationBulkModel {
   filename: string;
   uploadDatetime: Date;
   status: BulkStatus;
+  uploadedBy: string;
 }
 
 export interface LocationBulkDetailsModel {

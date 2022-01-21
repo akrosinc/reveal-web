@@ -146,16 +146,16 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
             >
               Discard
             </Button>
-            <Button variant="primary" className="float-end ms-2" onClick={handleSubmit(submitHandler)}>
-              Submit
+            <Button variant="primary" className="float-end ms-2 py-2" onClick={handleSubmit(submitHandler)}>
+            <FontAwesomeIcon className="my-0 mx-1" icon="save" />
             </Button>
           </>
         ) : (
-          <Button variant="primary" className="float-end ms-2 px-3 py-2" onClick={() => setEdit(true)}>
+          <Button variant="primary" className="float-end ms-2 py-2" onClick={() => setEdit(true)}>
             <FontAwesomeIcon className="m-0 ms-1" icon="edit" />
           </Button>
         )}
-        <Button variant="secondary" className="float-end px-3 py-2" onClick={() => setShowConfirmDialog(true)}>
+        <Button variant="secondary" className="float-end py-2" onClick={() => setShowConfirmDialog(true)}>
           <FontAwesomeIcon className="my-0 mx-1" icon="trash" />
         </Button>
       </div>
