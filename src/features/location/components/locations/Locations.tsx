@@ -30,7 +30,7 @@ const Locations = () => {
   const [currentLocation, setCurrentLocation] = useState<LocationModel>();
   const [locationList, setLocationList] = useState<PageableModel<LocationModel>>();
   const [locationHierarchyList, setLocationHierarchyList] = useState<Options[]>();
-  const [, setSelectedLocationHierarchy] = useState<Options>();
+  const [selectedLocationHierarchy, setSelectedLocationHierarchy] = useState<Options>();
 
   const filterData = (e: any) => {
     setCurrentSearchInput(e.target.value);
@@ -72,10 +72,18 @@ const Locations = () => {
             };
           })
         );
-        getLocationListByHierarchyId(10, 0, res.content[0].identifier!, true).then(res => console.log(res));
+        getLocationListByHierarchyId(
+          size,
+          page,
+          selectedLocationHierarchy !== undefined ? selectedLocationHierarchy.value : res.content[0].identifier!,
+          true,
+          searchData,
+          sortField,
+          sortDirection
+        ).then(res => console.log(res));
       });
     },
-    [dispatch]
+    [dispatch, selectedLocationHierarchy]
   );
 
   useEffect(() => {
@@ -104,9 +112,7 @@ const Locations = () => {
         showCoordinates={true}
         clearHandler={() => setCurrentLocation(undefined)}
       >
-        <div
-          className={classes.floatingLocationPicker + " bg-white p-2 rounded"}
-        >
+        <div className={classes.floatingLocationPicker + ' bg-white p-2 rounded'}>
           <Button
             onClick={() => setOpen(!open)}
             aria-controls="expand-table"
@@ -130,10 +136,15 @@ const Locations = () => {
                     className="mb-2"
                     placeholder="Select Location Hierarcy"
                     menuPosition="fixed"
-                    value={locationHierarchyList !== undefined && locationHierarchyList.length > 0 ? locationHierarchyList[0] : undefined}
+                    defaultValue={
+                      locationHierarchyList !== undefined && locationHierarchyList.length > 0
+                        ? locationHierarchyList[0]
+                        : undefined
+                    }
                     options={locationHierarchyList}
                     onChange={e => {
                       setSelectedLocationHierarchy(e !== null ? e : undefined);
+                      console.log(e);
                     }}
                   />
                   <DebounceInput

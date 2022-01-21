@@ -137,7 +137,7 @@ const LocationBulk = () => {
                 <td>{el.filename}</td>
                 <td>{formatDate(el.uploadDatetime)}</td>
                 <td>{el.status}</td>
-                <td>Not implemented on BE</td>
+                <td>{el.uploadedBy}</td>
               </tr>
             ))}
           </tbody>

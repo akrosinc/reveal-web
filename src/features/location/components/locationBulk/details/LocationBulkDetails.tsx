@@ -19,7 +19,7 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
         <Modal.Title>{locationBulkFile.filename}</Modal.Title>
         <div>
           <p className="mb-0 ms-2 text-end">Upload date: {formatDate(locationBulkFile.uploadDatetime)}</p>
-          <p className="mb-0 ms-2 text-end">Created by: Not implemented on BE</p>
+          <p className="mb-0 ms-2 text-end">Uploaded by: {locationBulkFile.uploadedBy}</p>
         </div>
       </Modal.Header>
       <Modal.Body>
