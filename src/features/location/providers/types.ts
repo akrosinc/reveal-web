@@ -37,3 +37,9 @@ export interface LocationBulkModel {
   uploadDatetime: Date;
   status: BulkStatus;
 }
+
+export interface LocationBulkDetailsModel {
+  name: string;
+  status: BulkStatus;
+  message: string;
+}

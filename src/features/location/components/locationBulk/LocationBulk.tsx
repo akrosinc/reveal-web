@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Row, Col, Button, Table } from 'react-bootstrap';
 import { PageableModel } from '../../../../api/providers';
 import { useTranslation } from 'react-i18next';
-import { LocationBulkModel } from '../../providers/types';
+import { LocationBulkModel, LocationBulkDetailsModel } from '../../providers/types';
 import { ActionDialog } from '../../../../components/Dialogs';
 import UploadLocation from './upload';
 import Paginator from '../../../../components/Pagination';
@@ -10,7 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { formatDate } from '../../../../utils';
 import { useAppDispatch } from '../../../../store/hooks';
 import { PAGINATION_DEFAULT_SIZE, BULK_TABLE_COLUMNS } from '../../../../constants';
-import { getLocationBulkList } from '../../api';
+import { getLocationBulkListById, getLocationBulkList } from '../../api';
 import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import LocationBulkDetails from './details';
@@ -19,6 +19,7 @@ const LocationBulk = () => {
   const [openUpload, setOpenUpload] = useState(false);
   const [openDetails, setOpenDetails] = useState(false);
   const [locationBulkList, setLocationBulkList] = useState<PageableModel<LocationBulkModel>>();
+  const [selectedBulkLocationList, setSelectedBulkLocationList] = useState<PageableModel<LocationBulkDetailsModel>>();
   const { t } = useTranslation();
   const [selectedBulkFile, setSelectedBulkFile] = useState<LocationBulkModel>();
   const [currentSortField, setCurrentSortField] = useState('');
@@ -53,8 +54,15 @@ const LocationBulk = () => {
   };
 
   const openBulkById = (selectedBulk: LocationBulkModel) => {
-    setSelectedBulkFile(selectedBulk);
-    setOpenDetails(true);
+    dispatch(showLoader(true));
+    getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier)
+      .then(res => {
+        setSelectedBulkFile(selectedBulk);
+        setSelectedBulkLocationList(res);
+        setOpenDetails(true);
+      })
+      .catch(err => toast.error('Error loading bulk details'))
+      .finally(() => dispatch(showLoader(false)));
   };
 
   const closeHandler = () => {
@@ -67,7 +75,17 @@ const LocationBulk = () => {
   };
 
   const paginationHandler = (size: number, page: number) => {
-    loadData(size, page, currentSortField, currentSortDirection);
+    if (openDetails) {
+      dispatch(showLoader(true));
+      getLocationBulkListById(size, page, selectedBulkFile?.identifier ?? "")
+        .then(res => {
+          setSelectedBulkLocationList(res);
+        })
+        .catch(err => toast.error('Error loading bulk details'))
+        .finally(() => dispatch(showLoader(false)));
+    } else {
+      loadData(size, page, currentSortField, currentSortDirection);
+    }
   };
 
   return (
@@ -119,7 +137,7 @@ const LocationBulk = () => {
                 <td>{el.filename}</td>
                 <td>{formatDate(el.uploadDatetime)}</td>
                 <td>{el.status}</td>
-                <td>user.username</td>
+                <td>Not implemented on BE</td>
               </tr>
             ))}
           </tbody>
@@ -144,8 +162,13 @@ const LocationBulk = () => {
           element={<UploadLocation handleClose={() => closeHandler()} />}
         />
       )}
-      {openDetails && selectedBulkFile !== undefined && (
-        <LocationBulkDetails closeHandler={() => closeHandler()} locationBulkFile={selectedBulkFile} />
+      {openDetails && selectedBulkFile !== undefined && selectedBulkLocationList !== undefined && (
+        <LocationBulkDetails
+          closeHandler={() => closeHandler()}
+          locationBulkFile={selectedBulkFile}
+          locationList={selectedBulkLocationList}
+          paginationHandler={paginationHandler}
+        />
       )}
     </>
   );

@@ -7,7 +7,7 @@ import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import { LOCATION_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import Paginator from '../../../../components/Pagination';
-import { getLocationById, getLocationHierarchyList, getLocationList } from '../../api';
+import { getLocationById, getLocationHierarchyList, getLocationList, getLocationListByHierarchyId } from '../../api';
 import { LocationModel } from '../../providers/types';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
@@ -72,6 +72,7 @@ const Locations = () => {
             };
           })
         );
+        getLocationListByHierarchyId(10, 0, res.content[0].identifier!, true).then(res => console.log(res));
       });
     },
     [dispatch]

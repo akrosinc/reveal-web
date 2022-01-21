@@ -4,7 +4,7 @@ import { useAppDispatch } from '../../../../../store/hooks';
 import { showLoader } from '../../../../reducers/loader';
 import { toast } from 'react-toastify';
 import { ErrorModel } from '../../../../../api/providers';
-import { DOWNLOAD_USER_BULK_TEMPLATE } from '../../../../../constants';
+import { DOWNLOAD_LOCATION_BULK_TEMPLATE } from '../../../../../constants';
 import { uploadLocationJSON } from '../../../api';
 
 interface RegisterValues {
@@ -69,7 +69,7 @@ const UploadLocation = ({ handleClose }: Props) => {
       </Form.Group>
       <p>
         You can download JSON sample from{' '}
-        <a href={DOWNLOAD_USER_BULK_TEMPLATE} download>
+        <a href={DOWNLOAD_LOCATION_BULK_TEMPLATE} download>
           here
         </a>
       </p>
