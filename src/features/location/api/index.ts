@@ -99,9 +99,9 @@ export const getLocationListByHierarchyId = async (
   search?: string,
   sortField?: string,
   direction?: boolean
-): Promise<PageableModel<LocationHierarchyModel>> => {
+): Promise<PageableModel<LocationModel>> => {
   const data = await api
-    .get<PageableModel<LocationHierarchyModel>>(
+    .get<PageableModel<LocationModel>>(
       LOCATION_HIERARCHY +
         `/${identifier}/location?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&sort=${
           sortField !== undefined ? sortField : ''
