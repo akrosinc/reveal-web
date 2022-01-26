@@ -8,6 +8,12 @@ export const PAGE_TITLE_ASSIGN = 'Assign';
 export const PAGE_TITLE_MONITOR = 'Monitor';
 export const PAGE_TITLE_ADMIN = 'Admin';
 
+export const ROW_DEPTH_COLOR_1 = '#F5F5F5'
+
+export const ROW_DEPTH_COLOR_2 = '#E8E8E8'
+
+export const ROW_DEPTH_COLOR_3 = '#DCDCDC'
+
 export const PAGINATION_DEFAULT_SIZE = 10;
 
 export const ORGANIZATION_TABLE_COLUMNS = [
@@ -40,4 +46,13 @@ export const LOCATION_HIERARCHY_TABLE_COLUMNS = [
 export const LOCATION_TABLE_COLUMNS = [
   { Header: 'Location', accessor: 'properties.name'},
   { Header: 'Geography Level', accessor: 'properties.geographicLevel'}
+]
+
+export const PLAN_TABLE_COLUMNS = [
+  { name: 'Title', sortValue: 'title'},
+  { name: 'Status', sortValue: 'status'},
+  { name: 'Intervention Type', sortValue: 'interventionType'},
+  { name: 'Jurisdiction', sortValue: 'jurisdiction'},
+  { name: 'Start Date', sortValue: 'startDate'},
+  { name: 'End Date', sortValue: 'endDate'},
 ]

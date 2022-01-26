@@ -7,21 +7,9 @@ export const MAIN_MENU = [
     roles: []
   },
   {
-    pageTitle: 'Plan',
-    route: '#',
+    pageTitle: 'Plan Management',
+    route: PLANS,
     roles: ['plan_view'],
-    dropdown: [
-      {
-        pageTitle: 'Manage Plans',
-        route: PLANS,
-        roles: []
-      },
-      {
-        pageTitle: 'Planning tools',
-        route: '',
-        roles: []
-      }
-    ]
   },
   {
     pageTitle: 'Assign',
