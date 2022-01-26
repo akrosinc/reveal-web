@@ -27,6 +27,7 @@ const Locations = () => {
   const [open, setOpen] = useState(false);
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [currentLocation, setCurrentLocation] = useState<LocationModel>();
+  const [currentLocationChildList, setCurrentLocationChildList] = useState<LocationModel[]>();
   const [locationList, setLocationList] = useState<PageableModel<LocationModel>>();
   const [locationHierarchyList, setLocationHierarchyList] = useState<Options[]>();
   const [selectedLocationHierarchy, setSelectedLocationHierarchy] = useState<Options>();
@@ -64,18 +65,22 @@ const Locations = () => {
             };
           })
         );
-        getLocationListByHierarchyId(
-          size,
-          page,
-          selectedLocationHierarchy !== undefined ? selectedLocationHierarchy.value : res.content[0].identifier!,
-          true,
-          searchData,
-          sortField,
-          sortDirection
-        )
-          .then(res => setLocationList(res))
-          .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
-          .finally(() => dispatch(showLoader(false)));
+        if (res.content.length > 0) {
+          getLocationListByHierarchyId(
+            size,
+            page,
+            selectedLocationHierarchy !== undefined ? selectedLocationHierarchy.value : res.content[0].identifier!,
+            true,
+            searchData,
+            sortField,
+            sortDirection
+          )
+            .then(res => setLocationList(res))
+            .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
+            .finally(() => dispatch(showLoader(false)));
+        } else {
+          dispatch(showLoader(false));
+        }
       });
     },
     [dispatch, selectedLocationHierarchy]
@@ -120,6 +125,11 @@ const Locations = () => {
     []
   );
 
+  const clearHandler = () => {
+    setCurrentLocation(undefined);
+    setCurrentLocationChildList(undefined);
+  }
+
   return (
     <>
       <h2 className="m-0 mb-4">{t('locationsPage.locations')}</h2>
@@ -136,11 +146,7 @@ const Locations = () => {
             : 'To inspect a location on the map select location from locations browser menu.'}
         </p>
       </Card>
-      <MapView
-        data={currentLocation}
-        startingZoom={12}
-        clearHandler={() => setCurrentLocation(undefined)}
-      >
+      <MapView data={currentLocation} locationChildList={currentLocationChildList ?? []} startingZoom={12} clearHandler={clearHandler}>
         <div className={classes.floatingLocationPicker + ' bg-white p-2 rounded'}>
           <Button
             onClick={() => setOpen(!open)}
@@ -173,7 +179,6 @@ const Locations = () => {
                     options={locationHierarchyList}
                     onChange={e => {
                       setSelectedLocationHierarchy(e !== null ? e : undefined);
-                      console.log(e);
                     }}
                   />
                   <DebounceInput
@@ -185,12 +190,14 @@ const Locations = () => {
                   <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
                     <ExpandingTable
                       columns={columns}
-                      clickHandler={(identifier: string) => {
+                      clickHandler={(identifier: string, col?: any) => {
                         setOpen(!open);
                         dispatch(showLoader(true));
+                        console.log(col.children);
+                        setCurrentLocationChildList(col.children);
                         getLocationById(identifier)
                           .then(res => {
-                            setCurrentLocation(res);
+                            setCurrentLocation(res);                            
                           })
                           .catch(err => toast.error('Error loading geoJSON data'))
                           .finally(() => dispatch(showLoader(false)));

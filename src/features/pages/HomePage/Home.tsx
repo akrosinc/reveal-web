@@ -16,7 +16,7 @@ function Home() {
         </Link>
       </AuthorizedElement>
       <br />
-      <AuthorizedElement roles={['plan_view']}>
+      <AuthorizedElement roles={[]}>
         <Link to={PLANS} className="mt-2 btn btn-success">
           {t('buttons.plans')}
         </Link>
