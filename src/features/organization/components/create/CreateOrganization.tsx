@@ -96,7 +96,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
         </Form.Select>
       </Form.Group>
       <Form.Group className="my-4">
-        <Form.Switch {...register('active', { required: false })} label="Active" />
+        <Form.Switch {...register('active', { required: false })} defaultChecked label="Active" />
       </Form.Group>
       <hr />
       <Button variant="primary" className="float-end" onClick={handleSubmit(submitHandler)}>

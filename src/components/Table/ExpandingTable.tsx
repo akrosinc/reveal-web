@@ -2,17 +2,30 @@ import React, { useState } from 'react';
 import { Table } from 'react-bootstrap';
 import { useTable, useExpanded } from 'react-table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3 } from '../../constants';
 
 interface Props {
   columns: any;
   data: any;
-  clickHandler: (id: string) => void;
+  clickHandler: (id: string, el?: any) => void;
   sortHandler: (field: string, direction: boolean) => void;
 }
 
 const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
+
+  const getColorLevel = (depth: number) => {
+    if (depth === 0) {
+      return '';
+    } else if (depth === 1) {
+      return ROW_DEPTH_COLOR_1;
+    } else if (depth === 2) {
+      return ROW_DEPTH_COLOR_2;
+    } else {
+      return ROW_DEPTH_COLOR_3;
+    }
+  };
 
   const mapRows = (row: any): object[] => {
     if (row.headOf !== undefined) {
@@ -88,7 +101,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
           prepareRow(row);
           return (
             //row.depth is not existing in react table types for some reason, casting to any type solves the issue
-            <tr {...row.getRowProps()} style={{backgroundColor: (row as any).depth > 0 ? 'whiteSmoke' : ''}}>
+            <tr {...row.getRowProps()} style={{ backgroundColor: getColorLevel((row as any).depth)}}>
               {row.cells.map(cell => {
                 return (
                   <td
@@ -96,7 +109,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
                     onClick={() => {
                       if (cell.column.id !== 'expander') {
                         let col = row.original as any;
-                        clickHandler(col.identifier);
+                        clickHandler(col.identifier, col);
                       }
                     }}
                   >

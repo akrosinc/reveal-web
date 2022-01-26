@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl, { Map } from 'mapbox-gl';
 import './index.css';
-import { centroid } from '@turf/turf';
 import { Button } from 'react-bootstrap';
+import { createLocation, createLocationLabel, getPolygonCenter } from '../../utils';
+import { LocationModel } from '../../features/location/providers/types';
+import { getLocationById } from '../../features/location/api';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
@@ -13,10 +15,11 @@ interface Props {
   data: any;
   clearHandler: () => void;
   children: JSX.Element;
+  locationChildList: LocationModel[];
 }
 
-const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, children }: Props) => {
-  const mapContainer = useRef<any>();
+const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, children, locationChildList }: Props) => {
+  const mapContainer = useRef<any>(null);
   const map = useRef<Map>();
   const [lng, setLng] = useState(longitude ?? 28.283333);
   const [lat, setLat] = useState(latitude ?? -15.416667);
@@ -26,7 +29,6 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
   useEffect(() => {
     // initialize map only once
     if (map.current === undefined) {
-      console.log('init map');
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/satellite-v9',
@@ -36,68 +38,39 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
       setListeners();
     } else {
       if (data !== undefined && map.current.getSource(data.properties.name) === undefined) {
-        map?.current?.addSource(data.properties.name, {
-          type: 'geojson',
-          data: data
-        });
-
-        map?.current?.addLayer({
-          id: data.properties.name + 'Outline',
-          type: 'line',
-          source: data.properties.name,
-          layout: {},
-          paint: {
-            'line-color': data.properties.geographicLevel === 'country' ? 'black' : 'blue',
-            'line-width': 6
-          }
-        });
-
-        map?.current?.addLayer({
-          id: data.properties.name + 'Fill',
-          type: 'fill',
-          source: data.properties.name,
-          layout: {},
-          paint: {
-            'fill-color':
-              data.properties.geographicLevel === 'country'
-                ? 'yellow'
-                : '#000000'.replace(/0/g, function () {
-                    return (~~(Math.random() * 16)).toString(16);
-                  }),
-            'fill-opacity': 0.5
-          }
-        });
-
-        let centerLabel = centroid(data);
-
-        map.current.addSource(data.properties.name + 'Label', {
-          type: 'geojson',
-          data: centerLabel
-        });
-
-        map.current.addLayer({
-          id: data.properties.name + 'Label',
-          minzoom: data.properties.geographicLevel === 'country' ? 5 : 6.5,
-          type: 'symbol',
-          source: data.properties.name + 'Label',
-          layout: {
-            'text-field': data.properties.name,
-            'text-font': ['Open Sans Bold', 'Open Sans Semibold'],
-            'text-offset': [1, 0.6],
-            'text-anchor': 'bottom'
+        createLocation(map.current, data);
+        loadChildren(map.current);
+        let centerLabel = getPolygonCenter(data);
+        map.current.fitBounds(
+          centerLabel.bounds,
+          {
+            padding: 20
           },
-          paint: {
-            'text-color': 'white'
+          {
+            data: data,
+            center: centerLabel.center
           }
-        });
-
-        map?.current?.flyTo({
-          center: [centerLabel.geometry.coordinates[0], centerLabel.geometry.coordinates[1]],
-          zoom: data.properties.geographicLevel === 'country' ? 6 : 8
-        });
+        );
       }
     }
   });
+
+  const loadChildren = (map: Map) => {
+    let isLoaded = false;
+    map.on('zoom', e => {
+      if (e.target.getZoom() < 7.5 && e.target.getZoom() > 7.3 && !isLoaded && e.data === undefined) {
+        if (locationChildList.length) {
+          isLoaded = true;
+          locationChildList.forEach(element => {
+            getLocationById(element.identifier).then(res => {
+              createLocation(map, res);
+              createLocationLabel(map, res, getPolygonCenter(res).center);
+            });
+          });
+        }
+      }
+    });
+  };
 
   useEffect(() => {
     return () => {
@@ -114,9 +87,11 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
           setLng(Math.round(map.current.getCenter().lng * 100) / 100);
           setLat(Math.round(map.current.getCenter().lat * 100) / 100);
           setZoom(Math.round(map.current.getZoom() * 100) / 100);
-          if (Math.round(map.current.getZoom() * 100) / 100 === 8) {
-            console.log('load children locations event');
-          }
+        }
+      });
+      map.current.on('moveend', e => {
+        if (e.data !== undefined && map.current !== undefined) {
+          createLocationLabel(map.current, e.data, e.center);
         }
       });
       map.current.on('load', e => {

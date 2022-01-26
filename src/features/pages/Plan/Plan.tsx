@@ -1,10 +1,12 @@
 import React from 'react'
+import { Container } from 'react-bootstrap'
+import Plans from '../../plan/components/Plans/Plans'
 
 const Plan = () => {
   return (
-    <div>
-      This is Plans page.
-    </div>
+    <Container fluid className="my-4 px-2">
+      <Plans />
+    </Container>
   )
 }
 
