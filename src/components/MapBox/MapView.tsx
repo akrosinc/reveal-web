@@ -63,7 +63,6 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
           isLoaded = true;
           locationChildList.forEach(element => {
             getLocationById(element.identifier).then(res => {
-              console.log(res);
               createLocation(map, res);
               createLocationLabel(map, res, getPolygonCenter(res).center);
             });

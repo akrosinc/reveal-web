@@ -193,7 +193,6 @@ const Locations = () => {
                       clickHandler={(identifier: string, col?: any) => {
                         setOpen(!open);
                         dispatch(showLoader(true));
-                        console.log(col.children);
                         setCurrentLocationChildList(col.children);
                         getLocationById(identifier)
                           .then(res => {

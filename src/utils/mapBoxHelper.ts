@@ -7,8 +7,6 @@ export const getPolygonCenter = (data: any) => {
   // Geographic coordinates of the LineString
   let coordinates = data.geometry.coordinates[0][0];
 
-  console.log(coordinates[0], coordinates[0]);
-
   if (typeof(coordinates[0]) === 'number') {
       coordinates = data.geometry.coordinates[0];
   }

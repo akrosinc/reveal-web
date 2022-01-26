@@ -36,7 +36,6 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
   }, []);
 
   const submitHandler = (formValues: RegisterValues) => {
-    console.log(formValues);
     dispatch(showLoader(true));
     toast.promise(createOrganization(formValues), {
       pending: 'Loading...',

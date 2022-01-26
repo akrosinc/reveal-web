@@ -12,7 +12,6 @@ const Plans = () => {
 
   useEffect(() => {
     getPlanList(PAGINATION_DEFAULT_SIZE, 0).then(res => {
-      console.log(res);
       setPlanList(res);
     });
   }, []);
