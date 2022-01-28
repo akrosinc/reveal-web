@@ -16,9 +16,10 @@ interface Props {
   clearHandler: () => void;
   children: JSX.Element;
   locationChildList: LocationModel[];
+  loadHandler: (data: any) => void;
 }
 
-const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, children, locationChildList }: Props) => {
+const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, children, locationChildList, loadHandler }: Props) => {
   const mapContainer = useRef<any>(null);
   const map = useRef<Map>();
   const [lng, setLng] = useState(longitude ?? 28.283333);
@@ -37,9 +38,9 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
       });
       setListeners();
     } else {
-      if (data !== undefined && map.current.getSource(data.properties.name) === undefined) {
+      if (data !== undefined && map.current.getSource(data.identifier) === undefined) {
+        console.log('uslo')
         createLocation(map.current, data);
-        loadChildren(map.current);
         let centerLabel = getPolygonCenter(data);
         map.current.fitBounds(
           centerLabel.bounds,
@@ -51,20 +52,24 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
             center: centerLabel.center
           }
         );
+        if (locationChildList.length) {
+          loadChildren(map.current, locationChildList);
+        }
       }
     }
   });
 
-  const loadChildren = (map: Map) => {
+  const loadChildren = (map: Map, children: LocationModel[]) => {
     let isLoaded = false;
     map.on('zoom', e => {
       if (e.target.getZoom() < 7.5 && e.target.getZoom() > 7.3 && !isLoaded && e.data === undefined) {
+        console.log('uslo u 7 ', children);
         if (locationChildList.length) {
           isLoaded = true;
           locationChildList.forEach(element => {
             getLocationById(element.identifier).then(res => {
-              createLocation(map, res);
-              createLocationLabel(map, res, getPolygonCenter(res).center);
+              loadHandler(res);
+              console.log('evo ga - ', res.children)
             });
           });
         }
