@@ -52,7 +52,7 @@ export const PLAN_TABLE_COLUMNS = [
   { name: 'Title', sortValue: 'title'},
   { name: 'Status', sortValue: 'status'},
   { name: 'Intervention Type', sortValue: 'interventionType'},
-  { name: 'Jurisdiction', sortValue: 'jurisdiction'},
+  { name: 'Location Hierarchy', sortValue: 'locationHierarchy'},
   { name: 'Start Date', sortValue: 'startDate'},
   { name: 'End Date', sortValue: 'endDate'},
 ]
