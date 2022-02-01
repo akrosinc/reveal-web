@@ -1,54 +1,78 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Table, Row, Col } from 'react-bootstrap';
 import { DebounceInput } from 'react-debounce-input';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
 import Paginator from '../../../../components/Pagination';
-import { PAGINATION_DEFAULT_SIZE, PLAN_TABLE_COLUMNS } from '../../../../constants';
-import { getPlanList } from '../../api';
+import { PAGINATION_DEFAULT_SIZE, PLANS, PLAN_TABLE_COLUMNS } from '../../../../constants';
+import { useAppDispatch } from '../../../../store/hooks';
+import { showLoader } from '../../../reducers/loader';
+import { getPlanList, updatePlanStatus } from '../../api';
 import { PlanModel } from '../../providers/types';
-import CreatePlan from './create';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const Plans = () => {
-  const [showCreate, setShowCreate] = useState(false);
-  const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const [currentSearchInput, setCurrentSearchInput] = useState('');
+  const [currentSortField, setCurrentSortField] = useState('');
+  const [activeSortField, setActiveSortField] = useState('');
+  const [currentSortDirection, setCurrentSortDirection] = useState(false);
+
+  const loadData = useCallback(
+    (size: number, page: number, search?: string, sortDirection?: boolean, sortField?: string) => {
+      dispatch(showLoader(true));
+      getPlanList(size, page, false, search, sortField, sortDirection)
+        .then(res => {
+          setPlanList(res);
+        })
+        .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
+        .finally(() => dispatch(showLoader(false)));
+    },
+    [dispatch]
+  );
 
   useEffect(() => {
-    getPlanList(PAGINATION_DEFAULT_SIZE, 0, false).then(res => {
-      setPlanList(res);
-    });
-  }, []);
+    loadData(PAGINATION_DEFAULT_SIZE, 0);
+  }, [loadData]);
 
-  const paginationHandler = () => {};
+  const paginationHandler = (size: number, page: number) => {
+    loadData(size, page);
+  };
 
   const filterData = (e: any) => {
     setCurrentSearchInput(e.target.value);
-    getPlanList(PAGINATION_DEFAULT_SIZE, 0, false, e.target.value).then(res => {
-      setPlanList(res);
-    });
-  }
+    loadData(planList?.size ?? PAGINATION_DEFAULT_SIZE, 0, e.target.value, currentSortDirection, currentSortField);
+  };
+
+  const sortHandler = (field: string, sortDirection: boolean) => {
+    if (planList !== undefined) {
+      loadData(planList.size, 0, currentSearchInput, sortDirection, field);
+    }
+  };
 
   return (
     <>
       <h2>
         Plans ({planList?.totalElements ?? 0})
         <Row className="my-4">
-        <Col md={8} className="mb-2">
-          <Button className="btn btn-primary float-end" onClick={() => setShowCreate(true)}>
-            Create
-          </Button>
-        </Col>
-        <Col sm={12} md={4} className="order-md-first">
-          <DebounceInput
-            className="form-control"
-            placeholder='Search (minimum 3 charaters)'
-            debounceTimeout={800}
-            onChange={e => filterData(e)}
-            disabled={planList?.totalElements === 0 && currentSearchInput === ''}
-          />
-        </Col>
-      </Row>
+          <Col md={8} className="mb-2">
+            <Link to={PLANS + '/create'} className="btn btn-primary float-end">
+              Create
+            </Link>
+          </Col>
+          <Col sm={12} md={4} className="order-md-first">
+            <DebounceInput
+              className="form-control"
+              placeholder="Search (minimum 3 charaters)"
+              debounceTimeout={800}
+              onChange={e => filterData(e)}
+              disabled={planList?.totalElements === 0 && currentSearchInput === ''}
+            />
+          </Col>
+        </Row>
       </h2>
       <hr className="mb-4" />
       {planList !== undefined && planList.content.length > 0 ? (
@@ -57,13 +81,37 @@ const Plans = () => {
             <thead className="border border-2">
               <tr>
                 {PLAN_TABLE_COLUMNS.map(el => (
-                  <th key={el.name}>{el.name}</th>
+                  <th
+                    key={el.name}
+                    onClick={() => {
+                      setActiveSortField(el.name);
+                      setCurrentSortField(el.sortValue);
+                      setCurrentSortDirection(!currentSortDirection);
+                      sortHandler(el.sortValue, !currentSortDirection);
+                    }}
+                  >
+                    {el.name}{' '}
+                    {activeSortField === el.name ? (
+                      currentSortDirection ? (
+                        <FontAwesomeIcon icon="sort-down" />
+                      ) : (
+                        <FontAwesomeIcon icon="sort-up" />
+                      )
+                    ) : (
+                      <FontAwesomeIcon icon="sort" />
+                    )}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {planList.content.map(el => (
-                <tr key={el.identifier} onClick={() => setShowCreate(true)}>
+                <tr
+                  key={el.identifier}
+                  onClick={() => {
+                    navigate(PLANS + '/' + el.identifier);
+                  }}
+                >
                   <td>{el.title}</td>
                   <td>{el.status}</td>
                   <td>{el.interventionType.name}</td>
@@ -71,10 +119,18 @@ const Plans = () => {
                   <td>{el.effectivePeriod.start}</td>
                   <td>{el.effectivePeriod.end}</td>
                   <td className="text-center">
-                    <Button onClick={(e: React.MouseEvent<HTMLElement>) => {
-                      e.stopPropagation();
-                      toast.success(`Plan with identifier: ${el.identifier} activated successfully!`)
-                    }} disabled={el.status !== 'DRAFT'}>{el.status === 'DRAFT' ? 'Activate' : 'Active'}</Button>
+                    <Button
+                      onClick={(e: React.MouseEvent<HTMLElement>) => {
+                        e.stopPropagation();
+                        updatePlanStatus(el.identifier).then(res => {
+                          toast.success(`Plan with identifier: ${el.identifier} activated successfully!`);
+                          loadData(10, 0);
+                        });
+                      }}
+                      disabled={el.status !== 'DRAFT'}
+                    >
+                      {el.status === 'DRAFT' ? 'Activate' : 'Active'}
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -91,7 +147,6 @@ const Plans = () => {
       ) : (
         <p className="text-center lead">No plans found.</p>
       )}
-      <CreatePlan show={showCreate} handleClose={() => setShowCreate(false)} />
     </>
   );
 };

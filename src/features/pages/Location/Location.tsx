@@ -14,7 +14,8 @@ const Location = () => {
   const { t } = useTranslation();
 
   const checkTab = () => {
-    if (tab === 'geographic-levels' || tab === 'location-hierarchy' || tab === 'locations' || tab === 'locations-bulk') return tab;
+    if (tab === 'geographic-levels' || tab === 'location-hierarchy' || tab === 'locations' || tab === 'locations-bulk')
+      return tab;
   };
   return (
     <Container fluid className="my-4 px-2">
@@ -34,11 +35,11 @@ const Location = () => {
         <Tab eventKey="location-hierarchy" title={t('locationsPage.locationHierarchy')}>
           <LocationHierarchy />
         </Tab>
-        <Tab eventKey="locations" title={t('locationsPage.locations')}>
-          <Locations />
-        </Tab>
         <Tab eventKey="locations-bulk" title={t('locationsPage.locationsBulk')}>
           <LocationBulk />
+        </Tab>
+        <Tab eventKey="locations" title={t('locationsPage.locations')}>
+          <Locations />
         </Tab>
       </Tabs>
     </Container>

@@ -182,7 +182,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
           </Button>
           <Button
             className="float-end me-2"
-            variant="secondary"
+            variant="primary"
             onClick={() => setShowConfirmDialog(!showConfirmDialog)}
           >
             Delete

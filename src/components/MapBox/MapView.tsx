@@ -4,7 +4,6 @@ import './index.css';
 import { Button } from 'react-bootstrap';
 import { createLocation, createLocationLabel, getPolygonCenter } from '../../utils';
 import { LocationModel } from '../../features/location/providers/types';
-import { getLocationById } from '../../features/location/api';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
@@ -39,7 +38,6 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
       setListeners();
     } else {
       if (data !== undefined && map.current.getSource(data.identifier) === undefined) {
-        console.log('uslo')
         createLocation(map.current, data);
         let centerLabel = getPolygonCenter(data);
         map.current.fitBounds(
@@ -52,30 +50,29 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
             center: centerLabel.center
           }
         );
-        if (locationChildList.length) {
-          loadChildren(map.current, locationChildList);
-        }
+        // if (locationChildList.length) {
+        //   loadChildren(map.current, locationChildList);
+        // }
       }
     }
   });
 
-  const loadChildren = (map: Map, children: LocationModel[]) => {
-    let isLoaded = false;
-    map.on('zoom', e => {
-      if (e.target.getZoom() < 7.5 && e.target.getZoom() > 7.3 && !isLoaded && e.data === undefined) {
-        console.log('uslo u 7 ', children);
-        if (locationChildList.length) {
-          isLoaded = true;
-          locationChildList.forEach(element => {
-            getLocationById(element.identifier).then(res => {
-              loadHandler(res);
-              console.log('evo ga - ', res.children)
-            });
-          });
-        }
-      }
-    });
-  };
+  // const loadChildren = (map: Map, children: LocationModel[]) => {
+  //   let isLoaded = false;
+  //   map.on('zoom', e => {
+  //     if (e.target.getZoom() < 7.5 && e.target.getZoom() > 7.3 && !isLoaded && e.data === undefined) {
+  //       console.log('uslo u 7 ', children);
+  //       if (locationChildList.length) {
+  //         isLoaded = true;
+  //         locationChildList.forEach(element => {
+  //           getLocationById(element.identifier).then(res => {
+  //             loadHandler(res);
+  //           });
+  //         });
+  //       }
+  //     }
+  //   });
+  // };
 
   useEffect(() => {
     return () => {
