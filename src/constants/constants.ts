@@ -53,6 +53,6 @@ export const PLAN_TABLE_COLUMNS = [
   { name: 'Status', sortValue: 'status'},
   { name: 'Intervention Type', sortValue: 'interventionType'},
   { name: 'Location Hierarchy', sortValue: 'locationHierarchy'},
-  { name: 'Start Date', sortValue: 'startDate'},
-  { name: 'End Date', sortValue: 'endDate'},
+  { name: 'Start Date', sortValue: 'effectivePeriodStart'},
+  { name: 'End Date', sortValue: 'effectivePeriodEnd'},
 ]

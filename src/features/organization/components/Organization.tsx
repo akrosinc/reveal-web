@@ -82,7 +82,7 @@ const Organization = () => {
             }
           })}
         >
-          {row.depth > 0 ? '—' : null}
+          {row.depth > 0 ? '-' : null}
         </span>
       },
       ...ORGANIZATION_TABLE_COLUMNS

@@ -1,26 +1,60 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
-import { Button, Modal, Tab, Tabs } from 'react-bootstrap';
+import { Col, Row, Container, Tab, Tabs, Form, Button, Accordion } from 'react-bootstrap';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { PLANS } from '../../../../../constants';
 import { useAppDispatch } from '../../../../../store/hooks';
 import { getLocationHierarchyList } from '../../../../location/api';
 import { showLoader } from '../../../../reducers/loader';
-import { getInterventionTypeList } from '../../../api';
-import Details from './Details';
-
-interface Props {
-  show: boolean;
-  handleClose: () => void;
-}
+import { createPlan, getInterventionTypeList, getPlanById } from '../../../api';
+import Moment from 'moment';
+import { useForm, Controller } from 'react-hook-form';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import Select, { SingleValue } from 'react-select';
+import { Goal, Action } from '../../../providers/types';
+import Item from './Goals/Items';
+import { ConfirmDialog } from '../../../../../components/Dialogs';
+import { toast } from 'react-toastify';
 
 interface Options {
   value: string;
   label: string;
 }
 
-const CreatePlan = ({ show, handleClose }: Props) => {
+interface RegisterValues {
+  name: string;
+  title: string;
+  effectivePeriod: {
+    start: Date;
+    end: Date;
+  };
+  locationHierarchy: string;
+  interventionType: string;
+}
+
+const CreatePlan = () => {
   const [activeTab, setActiveTab] = useState('plan-details');
   const [hierarchyList, setHierarchyList] = useState<Options[]>([]);
   const [interventionTypeList, setInterventionTypeList] = useState<Options[]>([]);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const [selectedHierarchy, setSelectedHierarchy] = useState<SingleValue<Options>>();
+  const [selectedInterventionType, setSelectedInterventionType] = useState<SingleValue<Options>>();
+  const [goalList, setGoalList] = useState<Goal[]>([]);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [currentFrom, setCurrentForm] = useState<any>();
+  const { id } = useParams();
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    resetField,
+    formState: { errors },
+    setValue
+  } = useForm<RegisterValues>();
 
   useEffect(() => {
     dispatch(showLoader(true));
@@ -42,45 +76,299 @@ const CreatePlan = ({ show, handleClose }: Props) => {
             };
           })
         );
-      })
-      .finally(() => dispatch(showLoader(false)));
-  }, [show, dispatch]);
+        if (id) {
+          getPlanById(id).then(res => {
+            setValue('effectivePeriod.start', Moment(res.effectivePeriod.start).toDate());
+            setValue('effectivePeriod.end', Moment(res.effectivePeriod.end).toDate());
+            setValue('name', res.name);
+            setValue('title', res.title);
+            setValue('locationHierarchy', res.locationHierarchy.identifier);
+            setValue('interventionType', res.interventionType.identifier);
+            setSelectedHierarchy({ value: res.locationHierarchy.identifier, label: res.locationHierarchy.name });
+            setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
+            let action: Action = {
+              description: 'Spray buildings',
+              formIdentifier: 'IRS intervention form',
+              title: 'Spray',
+              reason: 'Reason',
+              timingPeriod: {
+                start: Moment(res.effectivePeriod.start).toDate(),
+                end: Moment(res.effectivePeriod.end).toDate()
+              },
+              type: 'action'
+            };
+            let action1_1: Action = {
+              description: 'Spray buildings',
+              formIdentifier: 'IRS intervention form',
+              title: 'Need name for action 2',
+              reason: 'Reason',
+              timingPeriod: {
+                start: Moment(res.effectivePeriod.start).toDate(),
+                end: Moment(res.effectivePeriod.end).toDate()
+              },
+              type: 'action'
+            };
+            let action1: Action = {
+              description: 'Vaccinate people',
+              formIdentifier: 'SRC intervention form',
+              title: 'Vaccinate',
+              reason: 'Reason',
+              timingPeriod: {
+                start: Moment(res.effectivePeriod.start).toDate(),
+                end: Moment(res.effectivePeriod.end).toDate()
+              },
+              type: 'action'
+            };
+            let newGoal: Goal = {
+              identifier: '1',
+              actions: [action, action1_1],
+              description: 'Spray buildings to prevent malaria',
+              priority: '',
+              targets: []
+            };
+            let newGoal1: Goal = {
+              identifier: '2',
+              actions: [action1],
+              description: 'Vaccinate people to prevent spread of disease',
+              priority: '',
+              targets: []
+            };
+            setGoalList([newGoal, newGoal1]);
+          }).finally(() => dispatch(showLoader(false)));
+        } else {
+          dispatch(showLoader(false));
+        }
+      }).catch(err => {
+        if(err.message) {
+          toast.error(err.message);
+        } else {
+          toast.error(err.toString());
+        }
+        dispatch(showLoader(false));
+      });
+  }, [dispatch, id, setValue]);
 
-  const goNext = (formData: any) => {
-    console.log(formData);
-    setActiveTab('create-goals');
+  const submitHandler = (formData: any) => {
+    dispatch(showLoader(true));
+    let mStart = Moment(formData.effectivePeriod.start);
+    let mEnd = Moment(formData.effectivePeriod.end);
+    formData.effectivePeriod.start = Moment(mStart).utc().add(mStart.utcOffset(), 'm');
+    formData.effectivePeriod.end = Moment(mEnd).utc().add(mEnd.utcOffset(), 'm');
+    if (goalList.length) {
+      //formData.goals = goalList;
+      createPlan(formData).then(_ => {
+        dispatch(showLoader(false));
+        navigate(PLANS);
+      });
+    } else {
+      dispatch(showLoader(false));
+      setCurrentForm(formData);
+      setShowConfirmDialog(true);
+    }
+  };
+
+  const deleteGoal = (goalNumber: string) => {
+    let newArr = goalList.filter(el => el.identifier !== goalNumber);
+    setGoalList(newArr);
+  };
+
+  const closeHandler = (action: boolean) => {
+    if (action) {
+      dispatch(showLoader(true));
+      createPlan(currentFrom)
+        .then(_ => {
+          navigate(PLANS);
+        })
+        .finally(() => dispatch(showLoader(false)));
+    } else {
+      setShowConfirmDialog(false);
+    }
   };
 
   return (
-    <Modal show={show} size="lg" centered animation onHide={handleClose} backdrop="static">
-      <Modal.Header closeButton>
-        <Modal.Title>Create Plan</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Tabs className="mb-3" activeKey={activeTab} onSelect={tabName => setActiveTab(tabName ?? activeTab)}>
-          <Tab eventKey="plan-details" title="Details">
-            <Details
-              locationHierarchyList={hierarchyList}
-              interventionTypeList={interventionTypeList}
-              nextHandler={goNext}
-            />
-          </Tab>
-          <Tab eventKey="create-goals" title="Goals">
-            Goals
-            <br />
-            <Button onClick={() => setActiveTab('create-actions')}>Next</Button>
-          </Tab>
-          <Tab eventKey="create-actions" title="Actions">
-            Actions
-          </Tab>
-        </Tabs>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={handleClose} disabled={activeTab !== 'create-actions'}>
-          Submit
-        </Button>
-      </Modal.Footer>
-    </Modal>
+    <Container fluid className="my-4">
+      <Link to={PLANS} className="btn btn-primary mb-4 px-4">
+        <FontAwesomeIcon size="lg" icon="arrow-left" />
+      </Link>
+      <h2>{id !== undefined ? 'Plan details' : 'Create Plan'}</h2>
+      <hr />
+      <Row>
+        <Col md={8} className="mx-auto">
+          <Form>
+            <Tabs className="mb-3" activeKey={activeTab} onSelect={tabName => setActiveTab(tabName ?? activeTab)}>
+              <Tab eventKey="plan-details" title="Details">
+                <Form.Group className="mb-2">
+                  <Form.Label>Plan name</Form.Label>
+                  <Form.Control
+                    {...register('name', {
+                      required: 'Plan name must not be empty',
+                      pattern: {
+                        value: new RegExp('^[a-z]+([._]?[a-z]+)*$'),
+                        message: 'Plan name containts unsupported characters.'
+                      }
+                    })}
+                    type="name"
+                    placeholder="Enter plan name"
+                  />
+                  {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
+                </Form.Group>
+                <Form.Group className="mb-2">
+                  <Form.Label>Plan title</Form.Label>
+                  <Form.Control
+                    {...register('title', {
+                      required: 'Plan title must not be empty.',
+                      minLength: 1,
+                      pattern: {
+                        value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
+                        message: "Plan title can't start with empty space."
+                      }
+                    })}
+                    type="text"
+                    placeholder="Enter plan title"
+                  />
+                  {errors.title && <Form.Label className="text-danger">{errors.title.message}</Form.Label>}
+                </Form.Group>
+                <Row>
+                  <Col>
+                    <Form.Group className="mb-2">
+                      <Form.Label>Start date</Form.Label>
+                      <Controller
+                        control={control}
+                        name="effectivePeriod.start"
+                        rules={{ required: 'Start date must be selected!' }}
+                        render={({ field: { onChange, value } }) => (
+                          <DatePicker
+                            placeholderText="Select date"
+                            onChange={e => {
+                              resetField('effectivePeriod.end');
+                              onChange(e);
+                            }}
+                            selected={value}
+                            className="form-control"
+                            dropdownMode="select"
+                            preventOpenOnFocus
+                            showPopperArrow={false}
+                            popperPlacement="bottom-end"
+                            dateFormat="yyyy-MM-dd"
+                            minDate={new Date()}
+                          />
+                        )}
+                      />
+                      {errors.effectivePeriod?.start && (
+                        <Form.Label className="text-danger">{errors.effectivePeriod?.start.message}</Form.Label>
+                      )}
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-2">
+                      <Form.Label>End date</Form.Label>
+                      <Controller
+                        control={control}
+                        name="effectivePeriod.end"
+                        rules={{
+                          required: 'End date must be selected!'
+                        }}
+                        render={({ field: { onChange, value } }) => (
+                          <DatePicker
+                            placeholderText="Select date"
+                            onChange={onChange}
+                            selected={value}
+                            className="form-control"
+                            dropdownMode="select"
+                            preventOpenOnFocus
+                            showPopperArrow={false}
+                            popperPlacement="bottom-end"
+                            dateFormat="yyyy-MM-dd"
+                            minDate={watch('effectivePeriod.start')}
+                            disabled={
+                              watch('effectivePeriod.start') === null || watch('effectivePeriod.start') === undefined
+                            }
+                          />
+                        )}
+                      />
+                      {errors.effectivePeriod?.end && (
+                        <Form.Label className="text-danger">{errors.effectivePeriod?.end.message}</Form.Label>
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Form.Group className="mb-2">
+                  <Form.Label>Select Hierarchy</Form.Label>
+                  <Controller
+                    control={control}
+                    name="locationHierarchy"
+                    render={({ field }) => (
+                      <Select
+                        menuPosition="fixed"
+                        options={hierarchyList}
+                        value={selectedHierarchy}
+                        onChange={selected => {
+                          setSelectedHierarchy(selected);
+                          field.onChange(selected?.value);
+                        }}
+                      />
+                    )}
+                  />
+                </Form.Group>
+                <Form.Group className="mb-4">
+                  <Form.Label>Select Intervention Type</Form.Label>
+                  <Controller
+                    control={control}
+                    name="interventionType"
+                    render={({ field }) => (
+                      <Select
+                        menuPosition="fixed"
+                        options={interventionTypeList}
+                        value={selectedInterventionType}
+                        onChange={selected => {
+                          setSelectedInterventionType(selected);
+                          field.onChange(selected?.value);
+                        }}
+                      />
+                    )}
+                  />
+                </Form.Group>
+              </Tab>
+              <Tab eventKey="create-goals" title="Goals">
+                <Accordion defaultActiveKey="0" flush>
+                  {goalList.map(el => (
+                    <Item key={el.identifier} goal={el} deleteHandler={deleteGoal} />
+                  ))}
+                </Accordion>
+                <Button
+                  className="float-start mt-2 me-2"
+                  onClick={() => {
+                    let newGoal: Goal = {
+                      identifier: (goalList.length + 1).toString(),
+                      actions: [],
+                      description: '',
+                      priority: '',
+                      targets: []
+                    };
+                    setGoalList([...goalList, newGoal]);
+                    console.log([...goalList, newGoal]);
+                  }}
+                >
+                  Create Goal
+                </Button>
+              </Tab>
+            </Tabs>
+            <Button onClick={handleSubmit(submitHandler)} disabled={id !== undefined} className="float-end mt-2">
+              {id !== undefined ? 'Update plan' : 'Submit Plan'}
+            </Button>
+          </Form>
+        </Col>
+      </Row>
+      {showConfirmDialog && (
+        <ConfirmDialog
+          backdrop={false}
+          closeHandler={closeHandler}
+          message="You are creating a plan without any goals set. 
+          Without a goal plan will be created as draft and you won't be able to activate it until you add at least one goal."
+          title="Create Plan"
+        />
+      )}
+    </Container>
   );
 };
 

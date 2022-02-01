@@ -1,7 +1,7 @@
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { PLAN } from '../../../constants';
-import { InterventionType, PlanModel } from '../providers/types';
+import { InterventionType, PlanCreateModel, PlanModel } from '../providers/types';
 
 export const getPlanList = async (
   size: number,
@@ -22,7 +22,23 @@ export const getPlanList = async (
   return data;
 };
 
+export const getPlanById = async (id: string): Promise<PlanModel> => {
+  const data = await api.get<PlanModel>(PLAN + '/' + id).then(response => response.data);
+  return data;
+};
+
 export const getInterventionTypeList = async (): Promise<InterventionType[]> => {
   const data = await api.get<InterventionType[]>('lookupInterventionType').then(response => response.data);
+  return data;
+};
+
+export const createPlan = async (plan: PlanCreateModel): Promise<PlanModel> => {
+  plan.jurisdictions = [];
+  const data = await api.post<PlanModel>(PLAN, plan).then(response => response.data);
+  return data;
+};
+
+export const updatePlanStatus = async (id: string): Promise<any> => {
+  const data = await api.patch(PLAN + '/' + id).then(response => response.data);
   return data;
 };

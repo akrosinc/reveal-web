@@ -14,7 +14,6 @@ interface RegisterValues {
   };
   locationHierarchy: string;
   interventionType: string;
-  jurisdictions: string[];
 }
 
 interface Options {
@@ -112,9 +111,6 @@ const Details = ({ locationHierarchyList, interventionTypeList, nextHandler }: P
               name="effectivePeriod.end"
               rules={{
                 required: 'End date must be selected!',
-                onChange: ((e) => {
-                  
-                })
               }}
               render={({ field: { onChange, value } }) => (
                 <DatePicker
@@ -156,7 +152,7 @@ const Details = ({ locationHierarchyList, interventionTypeList, nextHandler }: P
           )}
         />
       </Form.Group>
-      <Form.Group className="mb-2">
+      <Form.Group className="mb-4">
         <Form.Label>Select Intervention Type</Form.Label>
         <Controller
           control={control}
@@ -174,12 +170,8 @@ const Details = ({ locationHierarchyList, interventionTypeList, nextHandler }: P
           )}
         />
       </Form.Group>
-      <Form.Group className="mb-2">
-        <Form.Label>Select Jurisdictions</Form.Label>
-        <Select menuPosition="fixed" />
-      </Form.Group>
       <Button onClick={handleSubmit(nextHandler)} className="float-end mt-2">
-        Next
+        Submit
       </Button>
     </Form>
   );
