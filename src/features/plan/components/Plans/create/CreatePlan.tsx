@@ -12,7 +12,7 @@ import { useForm, Controller } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Select, { SingleValue } from 'react-select';
-import { Goal, Action } from '../../../providers/types';
+import { Goal, Action, ConditionModel } from '../../../providers/types';
 import Item from './Goals/Items';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
 import { toast } from 'react-toastify';
@@ -54,7 +54,7 @@ const CreatePlan = () => {
     resetField,
     formState: { errors },
     setValue,
-    getValues,
+    getValues
   } = useForm<RegisterValues>();
 
   useEffect(() => {
@@ -78,58 +78,69 @@ const CreatePlan = () => {
           })
         );
         if (id) {
-          getPlanById(id).then(res => {
-            setValue('effectivePeriod.start', Moment(res.effectivePeriod.start).toDate());
-            setValue('effectivePeriod.end', Moment(res.effectivePeriod.end).toDate());
-            setValue('name', res.name);
-            setValue('title', res.title);
-            setValue('locationHierarchy', res.locationHierarchy.identifier);
-            setValue('interventionType', res.interventionType.identifier);
-            setSelectedHierarchy({ value: res.locationHierarchy.identifier, label: res.locationHierarchy.name });
-            setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
-            let action: Action = {
-              description: 'Register persons',
-              formIdentifier: 'Person registration form',
-              title: 'Register persons',
-              reason: 'Reason',
-              timingPeriod: {
-                start: Moment(res.effectivePeriod.start).toDate(),
-                end: Moment(res.effectivePeriod.end).toDate()
-              },
-              type: 'action'
-            };
-            let action1: Action = {
-              description: 'Distribute drugs to eligible persons',
-              formIdentifier: 'Drug distribution form',
-              title: 'Distribute drugs',
-              reason: 'Reason',
-              timingPeriod: {
-                start: Moment(res.effectivePeriod.start).toDate(),
-                end: Moment(res.effectivePeriod.end).toDate()
-              },
-              type: 'action'
-            };
-            let newGoal: Goal = {
-              identifier: '1',
-              actions: [action],
-              description: 'Understand location demographics',
-              priority: '',
-              targets: []
-            };
-            let newGoal1: Goal = {
-              identifier: '2',
-              actions: [action1],
-              description: 'Reduce impact of malaria',
-              priority: '',
-              targets: []
-            };
-            setGoalList([newGoal, newGoal1]);
-          }).finally(() => dispatch(showLoader(false)));
+          getPlanById(id)
+            .then(res => {
+              setValue('effectivePeriod.start', Moment(res.effectivePeriod.start).toDate());
+              setValue('effectivePeriod.end', Moment(res.effectivePeriod.end).toDate());
+              setValue('name', res.name);
+              setValue('title', res.title);
+              setValue('locationHierarchy', res.locationHierarchy.identifier);
+              setValue('interventionType', res.interventionType.identifier);
+              setSelectedHierarchy({ value: res.locationHierarchy.identifier, label: res.locationHierarchy.name });
+              setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
+              let condition: ConditionModel = {
+                entity: 'Person',
+                entityProperties: 'Age',
+                filterValue: 'Age',
+                operator: '<',
+              }
+              let action: Action = {
+                description: 'Register persons',
+                formIdentifier: 'Person registration form',
+                title: 'Register persons',
+                reason: 'Reason',
+                timingPeriod: {
+                  start: Moment(res.effectivePeriod.start).toDate(),
+                  end: Moment(res.effectivePeriod.end).toDate()
+                },
+                type: 'action',
+                conditions: [condition]
+              };
+              let action1: Action = {
+                description: 'Distribute drugs to eligible persons',
+                formIdentifier: 'Drug distribution form',
+                title: 'Distribute drugs',
+                reason: 'Reason',
+                timingPeriod: {
+                  start: Moment(res.effectivePeriod.start).toDate(),
+                  end: Moment(res.effectivePeriod.end).toDate()
+                },
+                type: 'action',
+                conditions: []
+              };
+              let newGoal: Goal = {
+                identifier: '1',
+                actions: [action],
+                description: 'Understand location demographics',
+                priority: '',
+                targets: []
+              };
+              let newGoal1: Goal = {
+                identifier: '2',
+                actions: [action1],
+                description: 'Reduce impact of malaria',
+                priority: '',
+                targets: []
+              };
+              setGoalList([newGoal, newGoal1]);
+            })
+            .finally(() => dispatch(showLoader(false)));
         } else {
           dispatch(showLoader(false));
         }
-      }).catch(err => {
-        if(err.message) {
+      })
+      .catch(err => {
+        if (err.message) {
           toast.error(err.message);
         } else {
           toast.error(err.toString());
@@ -169,6 +180,7 @@ const CreatePlan = () => {
         .then(_ => {
           navigate(PLANS);
         })
+        .catch(err => toast.error(err.message !== undefined ? err.message : 'Server Error has occured!'))
         .finally(() => dispatch(showLoader(false)));
     } else {
       setShowConfirmDialog(false);
@@ -287,6 +299,7 @@ const CreatePlan = () => {
                   <Controller
                     control={control}
                     name="locationHierarchy"
+                    rules={{required: 'Please selecet location hierarchy.', minLength: 1}}
                     render={({ field }) => (
                       <Select
                         menuPosition="fixed"
@@ -299,11 +312,15 @@ const CreatePlan = () => {
                       />
                     )}
                   />
+                  {errors.locationHierarchy && (
+                        <Form.Label className="text-danger">{errors.locationHierarchy.message}</Form.Label>
+                      )}
                 </Form.Group>
                 <Form.Group className="mb-4">
                   <Form.Label>Select Intervention Type</Form.Label>
                   <Controller
                     control={control}
+                    rules={{required: 'Please selecet intervention type.', minLength: 1}}
                     name="interventionType"
                     render={({ field }) => (
                       <Select
@@ -317,14 +334,22 @@ const CreatePlan = () => {
                       />
                     )}
                   />
+                  {errors.interventionType && (
+                        <Form.Label className="text-danger">{errors.interventionType.message}</Form.Label>
+                      )}
                 </Form.Group>
               </Tab>
               <Tab eventKey="create-goals" title="Goals">
                 <Accordion defaultActiveKey="0" flush>
                   {goalList.map(el => {
                     return (
-                      <Item key={el.identifier} goal={el} planPeriod={getValues('effectivePeriod')} deleteHandler={deleteGoal} />
-                    )
+                      <Item
+                        key={el.identifier}
+                        goal={el}
+                        planPeriod={getValues('effectivePeriod')}
+                        deleteHandler={deleteGoal}
+                      />
+                    );
                   })}
                 </Accordion>
                 <Button
@@ -344,17 +369,20 @@ const CreatePlan = () => {
                 </Button>
               </Tab>
             </Tabs>
-            <Button onClick={() => {
-              if (id) {
-                dispatch(showLoader(true));
-                setTimeout(() => {
-                  dispatch(showLoader(false))
-                  navigate(PLANS);
-                }, 2000)
-              } else {
-                handleSubmit(submitHandler)();
-              }
-            }} className="float-end mt-2">
+            <Button
+              onClick={() => {
+                if (id) {
+                  dispatch(showLoader(true));
+                  setTimeout(() => {
+                    dispatch(showLoader(false));
+                    navigate(PLANS);
+                  }, 2000);
+                } else {
+                  handleSubmit(submitHandler)();
+                }
+              }}
+              className="float-end mt-2"
+            >
               {id !== undefined ? 'Update plan' : 'Submit Plan'}
             </Button>
           </Form>

@@ -3,7 +3,7 @@ import { Accordion, Form, Row, Col, Button, Table } from 'react-bootstrap';
 import Actions from '../Actions';
 import Condition from '../Conditions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Action, Goal } from '../../../../../providers/types';
+import { Action, ConditionModel, Goal } from '../../../../../providers/types';
 
 interface Props {
   goal: Goal;
@@ -18,6 +18,8 @@ const Item = ({ goal, deleteHandler, planPeriod }: Props) => {
   const [show, setShow] = useState(false);
   const [showCondition, setShowCondition] = useState(false);
   const [actionsList, setActionsList] = useState<Action[]>(goal.actions);
+  const [selectedAction, setSelectedAction] = useState<Action>();
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   return (
     <Accordion.Item eventKey={goal.identifier} className="p-2">
@@ -72,7 +74,11 @@ const Item = ({ goal, deleteHandler, planPeriod }: Props) => {
                 </td>
                 <td>{el.formIdentifier}</td>
                 <td className="text-center">
-                  <Button onClick={() => setShowCondition(true)}>Edit</Button>
+                  <Button onClick={() => {
+                    setSelectedAction(el);
+                    setSelectedIndex(index);
+                    setShowCondition(true);
+                    }}>Edit</Button>
                 </td>
               </tr>
             ))}
@@ -83,6 +89,7 @@ const Item = ({ goal, deleteHandler, planPeriod }: Props) => {
           planPeriod={planPeriod}
           closeHandler={(action?: Action) => {
             if (action !== undefined) {
+              action.conditions = [];
               setActionsList([...actionsList, action]);
               goal.actions = [...actionsList, action];
             }
@@ -91,7 +98,11 @@ const Item = ({ goal, deleteHandler, planPeriod }: Props) => {
         />
         <Condition
           show={showCondition}
-          closeHandler={(action?: Action) => {
+          conditionList={selectedAction?.conditions ?? []}
+          closeHandler={(condition?: ConditionModel) => {
+            if (condition !== undefined && selectedAction !== undefined) {
+              actionsList[selectedIndex].conditions.push(condition);
+            }
             setShowCondition(false);
           }}
         />

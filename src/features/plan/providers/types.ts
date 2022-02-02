@@ -53,6 +53,14 @@ export interface Action {
   reason: string;
   formIdentifier: string;
   type: string;
+  conditions: ConditionModel[]
+}
+
+export interface ConditionModel {
+  entity: string;
+  entityProperties: string;
+  operator: string;
+  filterValue: string;
 }
 
 export interface Target {

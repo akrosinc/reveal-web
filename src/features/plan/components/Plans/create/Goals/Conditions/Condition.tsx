@@ -1,14 +1,15 @@
 import React from 'react';
 import { Button, Card, Form, Modal, Table } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
-import { Action } from '../../../../../providers/types';
+import { ConditionModel } from '../../../../../providers/types';
 
 interface Props {
   show: boolean;
-  closeHandler: (action?: Action) => void;
+  closeHandler: (action?: ConditionModel) => void;
+  conditionList: ConditionModel[];
 }
 
-const Condition = ({ show, closeHandler }: Props) => {
+const Condition = ({ show, closeHandler, conditionList }: Props) => {
   const {
     register,
     handleSubmit,
@@ -37,12 +38,14 @@ const Condition = ({ show, closeHandler }: Props) => {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Person</td>
-              <td>Age</td>
-              <td>{'<'}</td>
-              <td>5</td>
-            </tr>
+            {conditionList.map((el, index) => (
+              <tr key={index}>
+                <td>{el.entity}</td>
+                <td>{el.entityProperties}</td>
+                <td>{el.operator}</td>
+                <td>{el.filterValue}</td>
+              </tr>
+            ))}
           </tbody>
         </Table>
         <hr />
