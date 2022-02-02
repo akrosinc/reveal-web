@@ -12,10 +12,10 @@ import Loader from '../components/Layout/Loader';
 import 'react-toastify/dist/ReactToastify.css';
 import { showLoader } from '../features/reducers/loader';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faSort, faSortUp, faSortDown, faChevronRight, faChevronDown, faChevronUp, faTrash, faEdit, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faSort, faSortUp, faSortDown, faChevronRight, faChevronDown, faChevronUp, faTrash, faEdit, faSave, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
-library.add(faSort, faSortUp, faSortDown, faChevronRight, faChevronDown, faChevronUp, faTrash, faEdit, faSave);
+library.add(faSort, faSortUp, faSortDown, faChevronRight, faChevronDown, faChevronUp, faTrash, faEdit, faSave, faArrowLeft);
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
@@ -25,7 +25,6 @@ function App() {
     // if keycloak is initialized store user in state
     if (initialized) {
       dispatch(showLoader(false));
-      keycloak.onTokenExpired = () => console.log('expired token');
       keycloak.loadUserInfo().then(res => {
         let userDetails: any = {
           ...res,

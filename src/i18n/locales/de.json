@@ -30,7 +30,8 @@
     "management": "Verwaltung",
     "plans": "Pläne",
     "create": "Kreieren",
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "locationManagement": "Standortverwaltung"
   },
   "managementPage": {
     "organization": "Organisation",

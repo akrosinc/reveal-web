@@ -4,7 +4,6 @@ import './index.css';
 import { Button } from 'react-bootstrap';
 import { createLocation, createLocationLabel, getPolygonCenter } from '../../utils';
 import { LocationModel } from '../../features/location/providers/types';
-import { getLocationById } from '../../features/location/api';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
@@ -16,9 +15,10 @@ interface Props {
   clearHandler: () => void;
   children: JSX.Element;
   locationChildList: LocationModel[];
+  loadHandler: (data: any) => void;
 }
 
-const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, children, locationChildList }: Props) => {
+const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, children, locationChildList, loadHandler }: Props) => {
   const mapContainer = useRef<any>(null);
   const map = useRef<Map>();
   const [lng, setLng] = useState(longitude ?? 28.283333);
@@ -37,9 +37,8 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
       });
       setListeners();
     } else {
-      if (data !== undefined && map.current.getSource(data.properties.name) === undefined) {
+      if (data !== undefined && map.current.getSource(data.identifier) === undefined) {
         createLocation(map.current, data);
-        loadChildren(map.current);
         let centerLabel = getPolygonCenter(data);
         map.current.fitBounds(
           centerLabel.bounds,
@@ -54,23 +53,6 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
       }
     }
   });
-
-  const loadChildren = (map: Map) => {
-    let isLoaded = false;
-    map.on('zoom', e => {
-      if (e.target.getZoom() < 7.5 && e.target.getZoom() > 7.3 && !isLoaded && e.data === undefined) {
-        if (locationChildList.length) {
-          isLoaded = true;
-          locationChildList.forEach(element => {
-            getLocationById(element.identifier).then(res => {
-              createLocation(map, res);
-              createLocationLabel(map, res, getPolygonCenter(res).center);
-            });
-          });
-        }
-      }
-    });
-  };
 
   useEffect(() => {
     return () => {

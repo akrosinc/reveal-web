@@ -9,6 +9,7 @@ import AuthGuard from './AuthGuard';
 import PublicPage from './pages/PublicPage';
 import ErrorPage from './pages/ErrorPage';
 import Location from '../features/pages/Location';
+import CreatePlan from '../features/plan/components/Plans/create';
 
 export default function Router() {
   const { keycloak, initialized } = useKeycloak();
@@ -20,6 +21,8 @@ export default function Router() {
           <Route path="*" element={<ErrorPage />} />
           <Route path={HOME_PAGE} element={<Home />} />
           <Route path={PLANS} element={<Plan />} />
+          <Route path={PLANS + '/create'} element={<CreatePlan />}/>
+          <Route path={PLANS + '/:id'} element={<CreatePlan />}/>
           <Route
             path={MANAGEMENT}
             element={

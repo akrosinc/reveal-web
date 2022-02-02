@@ -7,8 +7,8 @@ export const getPolygonCenter = (data: any) => {
   // Geographic coordinates of the LineString
   let coordinates = data.geometry.coordinates[0][0];
 
-  if (typeof(coordinates[0]) === 'number') {
-      coordinates = data.geometry.coordinates[0];
+  if (typeof coordinates[0] === 'number') {
+    coordinates = data.geometry.coordinates[0];
   }
 
   // Create a 'LngLatBounds' with both corners at the first coordinate.
@@ -25,45 +25,46 @@ export const getPolygonCenter = (data: any) => {
 };
 
 export const createLocation = (map: mapboxgl.Map, data: any): void => {
-  map.addSource(data.properties.name, {
-    type: 'geojson',
-    data: data
-  });
+  if (map.getSource(data.identifier) === undefined) {
+    map.addSource(data.identifier, {
+      type: 'geojson',
+      data: data
+    });
 
-  map.addLayer({
-    id: data.properties.name + 'Outline',
-    type: 'line',
-    source: data.properties.name,
-    layout: {},
-    paint: {
-      'line-color': data.properties.geographicLevel === 'country' ? 'black' : 'blue',
-      'line-width': 6
-    }
-  });
-
-  map.addLayer({
-    id: data.properties.name + 'Fill',
-    type: 'fill',
-    source: data.properties.name,
-    layout: {},
-    paint: {
-      'fill-color': data.properties.geographicLevel === 'country' ? 'yellow' : 'blue',
-      'fill-opacity': 0.5
-    }
-  });
+    map.addLayer({
+      id: data.identifier + 'Outline',
+      type: 'line',
+      source: data.identifier,
+      layout: {},
+      paint: {
+        'line-color': data.properties.geographicLevel === 'country' ? 'black' : 'blue',
+        'line-width': 6
+      }
+    });
+    map.addLayer({
+        id: data.identifier + 'Fill',
+        type: 'fill',
+        source: data.identifier,
+        layout: {},
+        paint: {
+          'fill-color': data.properties.geographicLevel === 'country' ? 'yellow' : 'blue',
+          'fill-opacity': 0.5
+        }
+      });
+  }
 };
 
 export const createLocationLabel = (map: mapboxgl.Map, data: any, center: Feature<Point, Properties>) => {
-  map.addSource(data.properties.name + 'Label', {
+  map.addSource(data.identifier + 'Label', {
     type: 'geojson',
     data: center
   });
-  
+
   map.addLayer({
-    id: data.properties.name + 'Label',
+    id: data.identifier + 'Label',
     minzoom: map.getZoom() - 1.0,
     type: 'symbol',
-    source: data.properties.name + 'Label',
+    source: data.identifier + 'Label',
     layout: {
       'text-field': data.properties.name,
       'text-font': ['Open Sans Bold', 'Open Sans Semibold'],

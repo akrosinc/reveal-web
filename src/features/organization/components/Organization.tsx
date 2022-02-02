@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Col, Row, Button } from 'react-bootstrap';
 import { getOrganizationCount, getOrganizationList } from '../api';
 import { OrganizationModel } from '../providers/types';
@@ -27,6 +27,7 @@ const Organization = () => {
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const { t } = useTranslation();
+  const expandAll = useRef<HTMLSpanElement>();
   const handleClose = (isEdited: boolean) => {
     setShow(false);
     setShowDetails(false);
@@ -46,9 +47,15 @@ const Organization = () => {
       {
         // Build our expander column
         id: 'expander', // Make sure it has an ID
+        Header: ({ getToggleAllRowsExpandedProps, }: { getToggleAllRowsExpandedProps: Function}) => (
+          <span {...getToggleAllRowsExpandedProps()} ref={expandAll}>
+          </span>
+        ),
         Cell: ({ row }: { row: any }) =>
           // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
           // to build the toggle for expanding a row
+          // show expanding icons if row.canExpand is true, if not check where is it a root element
+          // if its a root element don't set anything otherwise set dash so user can see what is the last element
           row.canExpand ? (
             <span
               {...row.getToggleRowExpandedProps({
@@ -56,7 +63,7 @@ const Organization = () => {
                   // We can even use the row.depth property
                   // and paddingLeft to indicate the depth
                   // of the row
-                  paddingLeft: `${row.depth * 2}rem`,
+                  paddingLeft: `${row.depth * 1.5}rem`,
                   paddingTop: '15px',
                   paddingBottom: '15px',
                   paddingRight: '15px',
@@ -65,7 +72,18 @@ const Organization = () => {
             >
               {row.isExpanded ? <FontAwesomeIcon className="ms-1" icon="chevron-down" /> : <FontAwesomeIcon className="ms-1" icon="chevron-right" />}
             </span>
-          ) : null
+          ) : <span
+          {...row.getToggleRowExpandedProps({
+            style: {
+              paddingLeft: `${row.depth * 1.5}rem`,
+              paddingTop: '15px',
+              paddingBottom: '15px',
+              paddingRight: '15px',
+            }
+          })}
+        >
+          {row.depth > 0 ? '-' : null}
+        </span>
       },
       ...ORGANIZATION_TABLE_COLUMNS
     ],
@@ -91,8 +109,9 @@ const Organization = () => {
               type: el.type.valueCodableConcept,
             }
           }));
-          if (searchData !== undefined) {
+          if (searchData !== undefined && searchData.length) {
             setOrganizationCount(data.numberOfElements);
+            expandAll?.current?.click();
           } else {
             getOrganizationCount()
               .then(res => setOrganizationCount(res.count))
@@ -145,7 +164,7 @@ const Organization = () => {
         <Col sm={12} md={4} className="order-md-first">
           <DebounceInput
             className="form-control"
-            placeholder={t('organizationPage.search')}
+            placeholder={t('organizationPage.search') + ' (min 3 charaters)'}
             debounceTimeout={800}
             onChange={e => filterData(e)}
             disabled={organizationCount === 0 && currentSearchInput === ''}
