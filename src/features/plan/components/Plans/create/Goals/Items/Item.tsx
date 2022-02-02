@@ -8,16 +8,20 @@ import { Action, Goal } from '../../../../../providers/types';
 interface Props {
   goal: Goal;
   deleteHandler: (num: string) => void;
+  planPeriod: {
+    start: Date;
+    end: Date;
+  };
 }
 
-const Item = ({ goal, deleteHandler }: Props) => {
+const Item = ({ goal, deleteHandler, planPeriod }: Props) => {
   const [show, setShow] = useState(false);
   const [showCondition, setShowCondition] = useState(false);
   const [actionsList, setActionsList] = useState<Action[]>(goal.actions);
 
   return (
     <Accordion.Item eventKey={goal.identifier} className="p-2">
-      <Accordion.Header>Goal {goal.identifier}</Accordion.Header>
+      <Accordion.Header>Goal {goal.identifier}{goal.description !== "" ? (' - ' + goal.description) : ''}</Accordion.Header>
       <Accordion.Body>
         <Form.Group>
           <Row>
@@ -61,7 +65,7 @@ const Item = ({ goal, deleteHandler }: Props) => {
           </thead>
           <tbody>
             {actionsList.map((el, index) => (
-              <tr key={index} onClick={() => console.log('test')}>
+              <tr key={index}>
                 <td>{el.title}</td>
                 <td>
                   {el.timingPeriod.start.toLocaleDateString()} - {el.timingPeriod.end.toLocaleDateString()}
@@ -76,6 +80,7 @@ const Item = ({ goal, deleteHandler }: Props) => {
         </Table>
         <Actions
           show={show}
+          planPeriod={planPeriod}
           closeHandler={(action?: Action) => {
             if (action !== undefined) {
               setActionsList([...actionsList, action]);

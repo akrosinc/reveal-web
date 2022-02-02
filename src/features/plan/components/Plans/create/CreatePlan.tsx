@@ -53,7 +53,8 @@ const CreatePlan = () => {
     watch,
     resetField,
     formState: { errors },
-    setValue
+    setValue,
+    getValues,
   } = useForm<RegisterValues>();
 
   useEffect(() => {
@@ -87,20 +88,9 @@ const CreatePlan = () => {
             setSelectedHierarchy({ value: res.locationHierarchy.identifier, label: res.locationHierarchy.name });
             setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
             let action: Action = {
-              description: 'Spray buildings',
-              formIdentifier: 'IRS intervention form',
-              title: 'Spray',
-              reason: 'Reason',
-              timingPeriod: {
-                start: Moment(res.effectivePeriod.start).toDate(),
-                end: Moment(res.effectivePeriod.end).toDate()
-              },
-              type: 'action'
-            };
-            let action1_1: Action = {
-              description: 'Spray buildings',
-              formIdentifier: 'IRS intervention form',
-              title: 'Need name for action 2',
+              description: 'Register persons',
+              formIdentifier: 'Person registration form',
+              title: 'Register persons',
               reason: 'Reason',
               timingPeriod: {
                 start: Moment(res.effectivePeriod.start).toDate(),
@@ -109,9 +99,9 @@ const CreatePlan = () => {
               type: 'action'
             };
             let action1: Action = {
-              description: 'Vaccinate people',
-              formIdentifier: 'SRC intervention form',
-              title: 'Vaccinate',
+              description: 'Distribute drugs to eligible persons',
+              formIdentifier: 'Drug distribution form',
+              title: 'Distribute drugs',
               reason: 'Reason',
               timingPeriod: {
                 start: Moment(res.effectivePeriod.start).toDate(),
@@ -121,15 +111,15 @@ const CreatePlan = () => {
             };
             let newGoal: Goal = {
               identifier: '1',
-              actions: [action, action1_1],
-              description: 'Spray buildings to prevent malaria',
+              actions: [action],
+              description: 'Understand location demographics',
               priority: '',
               targets: []
             };
             let newGoal1: Goal = {
               identifier: '2',
               actions: [action1],
-              description: 'Vaccinate people to prevent spread of disease',
+              description: 'Reduce impact of malaria',
               priority: '',
               targets: []
             };
@@ -331,9 +321,11 @@ const CreatePlan = () => {
               </Tab>
               <Tab eventKey="create-goals" title="Goals">
                 <Accordion defaultActiveKey="0" flush>
-                  {goalList.map(el => (
-                    <Item key={el.identifier} goal={el} deleteHandler={deleteGoal} />
-                  ))}
+                  {goalList.map(el => {
+                    return (
+                      <Item key={el.identifier} goal={el} planPeriod={getValues('effectivePeriod')} deleteHandler={deleteGoal} />
+                    )
+                  })}
                 </Accordion>
                 <Button
                   className="float-start mt-2 me-2"
@@ -346,14 +338,23 @@ const CreatePlan = () => {
                       targets: []
                     };
                     setGoalList([...goalList, newGoal]);
-                    console.log([...goalList, newGoal]);
                   }}
                 >
                   Create Goal
                 </Button>
               </Tab>
             </Tabs>
-            <Button onClick={handleSubmit(submitHandler)} disabled={id !== undefined} className="float-end mt-2">
+            <Button onClick={() => {
+              if (id) {
+                dispatch(showLoader(true));
+                setTimeout(() => {
+                  dispatch(showLoader(false))
+                  navigate(PLANS);
+                }, 2000)
+              } else {
+                handleSubmit(submitHandler);
+              }
+            }} className="float-end mt-2">
               {id !== undefined ? 'Update plan' : 'Submit Plan'}
             </Button>
           </Form>

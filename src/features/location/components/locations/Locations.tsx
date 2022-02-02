@@ -133,7 +133,6 @@ const Locations = () => {
   const loadNew = (data: any) => {
     setCurrentLocationChildList(data.children !== undefined ? data.children : []);
     setCurrentLocation(data);
-    console.log(data, data.children)
   }
 
   return (
