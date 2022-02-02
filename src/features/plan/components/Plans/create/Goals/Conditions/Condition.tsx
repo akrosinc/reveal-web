@@ -87,7 +87,12 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
               type="text"
               {...register('operator', {
                 required: 'Operator field must not be empty.',
-                minLength: 1
+                minLength: 1,
+                maxLength: { value: 2, message: 'Enter only operator ( <, <=, >, >=, = )' },
+                pattern: {
+                  value: new RegExp('^[<>=]+$'),
+                  message: 'Enter only operator ( <, <=, >, >=, = )'
+                }
               })}
             />
             {errors.operator && <Form.Label className="text-danger">{errors.operator.message}</Form.Label>}
