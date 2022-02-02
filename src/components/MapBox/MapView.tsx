@@ -61,7 +61,6 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
   //   let isLoaded = false;
   //   map.on('zoom', e => {
   //     if (e.target.getZoom() < 7.5 && e.target.getZoom() > 7.3 && !isLoaded && e.data === undefined) {
-  //       console.log('uslo u 7 ', children);
   //       if (locationChildList.length) {
   //         isLoaded = true;
   //         locationChildList.forEach(element => {

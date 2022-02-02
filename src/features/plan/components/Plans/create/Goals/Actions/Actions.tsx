@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button, Form, Modal, Row, Col } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
 import { Action } from '../../../../../providers/types';
@@ -7,9 +7,13 @@ import DatePicker from 'react-datepicker';
 interface Props {
   show: boolean;
   closeHandler: (action?: Action) => void;
+  planPeriod: {
+    start: Date,
+    end: Date
+  }
 }
 
-const Actions = ({ show, closeHandler }: Props) => {
+const Actions = ({ show, closeHandler, planPeriod }: Props) => {
   const {
     register,
     handleSubmit,
@@ -17,11 +21,16 @@ const Actions = ({ show, closeHandler }: Props) => {
     watch,
     control,
     resetField,
-    reset
+    reset,
+    setValue
   } = useForm();
 
+  useEffect(() => {
+    setValue('timingPeriod.start', planPeriod.start)
+    setValue('timingPeriod.end', planPeriod.end)
+  }, [planPeriod, setValue])
+
   const submitHandler = (formData: any) => {
-    console.log(formData);
     closeHandler(formData);
   };
 
@@ -119,19 +128,6 @@ const Actions = ({ show, closeHandler }: Props) => {
             </Col>
           </Row>
           <Form.Group className="mb-2">
-            <Form.Label>Reason</Form.Label>
-            <Form.Select
-              placeholder="Enter action title"
-              {...register('reason', {
-                required: true
-              })}
-            >
-              <option></option>
-              <option>1</option>
-              <option>2</option>
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="mb-2">
             <Form.Label>Form</Form.Label>
             <Form.Select
               defaultValue={undefined}
@@ -140,8 +136,11 @@ const Actions = ({ show, closeHandler }: Props) => {
                 required: true
               })}
             >
+              <option></option>
               <option>IRS intervention form</option>
               <option>SMC intervention form</option>
+              <option>Drug distribution form</option>
+              <option>Person registration form</option>
             </Form.Select>
           </Form.Group>
         </Form>
