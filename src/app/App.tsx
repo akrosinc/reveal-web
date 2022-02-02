@@ -25,7 +25,6 @@ function App() {
     // if keycloak is initialized store user in state
     if (initialized) {
       dispatch(showLoader(false));
-      // keycloak.onTokenExpired = () => console.log('expired token');
       keycloak.loadUserInfo().then(res => {
         let userDetails: any = {
           ...res,
