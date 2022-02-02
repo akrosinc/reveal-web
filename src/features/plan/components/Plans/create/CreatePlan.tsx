@@ -352,7 +352,7 @@ const CreatePlan = () => {
                   navigate(PLANS);
                 }, 2000)
               } else {
-                handleSubmit(submitHandler);
+                handleSubmit(submitHandler)();
               }
             }} className="float-end mt-2">
               {id !== undefined ? 'Update plan' : 'Submit Plan'}

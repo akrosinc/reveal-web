@@ -8,9 +8,9 @@ interface Props {
   show: boolean;
   closeHandler: (action?: Action) => void;
   planPeriod: {
-    start: Date,
-    end: Date
-  }
+    start: Date;
+    end: Date;
+  };
 }
 
 const Actions = ({ show, closeHandler, planPeriod }: Props) => {
@@ -26,9 +26,10 @@ const Actions = ({ show, closeHandler, planPeriod }: Props) => {
   } = useForm();
 
   useEffect(() => {
-    setValue('timingPeriod.start', planPeriod.start)
-    setValue('timingPeriod.end', planPeriod.end)
-  }, [planPeriod, setValue])
+    reset();
+    setValue('timingPeriod.start', planPeriod.start);
+    setValue('timingPeriod.end', planPeriod.end);
+  }, [planPeriod, setValue, reset, show]);
 
   const submitHandler = (formData: any) => {
     closeHandler(formData);
@@ -130,18 +131,19 @@ const Actions = ({ show, closeHandler, planPeriod }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Form</Form.Label>
             <Form.Select
-              defaultValue={undefined}
               placeholder="Choose form"
-              {...register('form', {
-                required: true
+              {...register('formIdentifier', {
+                required: 'Action form must be selected.',
+                minLength: 1
               })}
             >
               <option></option>
-              <option>IRS intervention form</option>
-              <option>SMC intervention form</option>
-              <option>Drug distribution form</option>
-              <option>Person registration form</option>
+              <option value="IRS intervention form">IRS intervention form</option>
+              <option value="SMC intervention form">SMC intervention form</option>
+              <option value="Drug distribution form">Drug distribution form</option>
+              <option value="Person registration form">Person registration form</option>
             </Form.Select>
+            {errors.formIdentifier && <Form.Label className="text-danger">{errors.formIdentifier.message}</Form.Label>}
           </Form.Group>
         </Form>
       </Modal.Body>
