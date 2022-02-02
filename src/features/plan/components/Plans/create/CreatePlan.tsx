@@ -205,7 +205,7 @@ const CreatePlan = () => {
                     {...register('name', {
                       required: 'Plan name must not be empty',
                       pattern: {
-                        value: new RegExp('^[a-z]+([._]?[a-z]+)*$'),
+                        value: new RegExp('^[^\\s]+([a-z0-9_.-])*$'),
                         message: 'Plan name containts unsupported characters.'
                       }
                     })}
@@ -221,7 +221,7 @@ const CreatePlan = () => {
                       required: 'Plan title must not be empty.',
                       minLength: 1,
                       pattern: {
-                        value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
+                        value: new RegExp('^[^\\s]+[-a-zA-Z0-9\\s]+([-a-zA-Z0-9\\s]+)*$'),
                         message: "Plan title can't start with empty space."
                       }
                     })}
