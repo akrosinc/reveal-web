@@ -50,28 +50,9 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
             center: centerLabel.center
           }
         );
-        // if (locationChildList.length) {
-        //   loadChildren(map.current, locationChildList);
-        // }
       }
     }
   });
-
-  // const loadChildren = (map: Map, children: LocationModel[]) => {
-  //   let isLoaded = false;
-  //   map.on('zoom', e => {
-  //     if (e.target.getZoom() < 7.5 && e.target.getZoom() > 7.3 && !isLoaded && e.data === undefined) {
-  //       if (locationChildList.length) {
-  //         isLoaded = true;
-  //         locationChildList.forEach(element => {
-  //           getLocationById(element.identifier).then(res => {
-  //             loadHandler(res);
-  //           });
-  //         });
-  //       }
-  //     }
-  //   });
-  // };
 
   useEffect(() => {
     return () => {
