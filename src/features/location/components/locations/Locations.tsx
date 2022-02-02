@@ -65,7 +65,7 @@ const Locations = () => {
             };
           })
         );
-        if (res.content.length > 0) {
+        if (res.content.length) {
           getLocationListByHierarchyId(
             size,
             page,
@@ -130,6 +130,11 @@ const Locations = () => {
     setCurrentLocationChildList(undefined);
   }
 
+  const loadNew = (data: any) => {
+    setCurrentLocationChildList(data.children !== undefined ? data.children : []);
+    setCurrentLocation(data);
+  }
+
   return (
     <>
       <h2 className="m-0 mb-4">{t('locationsPage.locations')}</h2>
@@ -146,7 +151,7 @@ const Locations = () => {
             : 'To inspect a location on the map select location from locations browser menu.'}
         </p>
       </Card>
-      <MapView data={currentLocation} locationChildList={currentLocationChildList ?? []} startingZoom={12} clearHandler={clearHandler}>
+      <MapView data={currentLocation} locationChildList={currentLocationChildList ?? []} startingZoom={12} clearHandler={clearHandler} loadHandler={loadNew}>
         <div className={classes.floatingLocationPicker + ' bg-white p-2 rounded'}>
           <Button
             onClick={() => setOpen(!open)}

@@ -30,7 +30,8 @@
     "management": "Management",
     "plans": "Plans",
     "create": "Create",
-    "delete": "Delete"
+    "delete": "Delete",
+    "locationManagement": "Location Management"
   },
   "managementPage": {
     "organization": "Organization",

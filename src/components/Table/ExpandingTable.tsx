@@ -60,10 +60,12 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
     {
       columns,
       data,
-      getSubRows: (row: any) => mapRows(row)
+      getSubRows: (row: any) => mapRows(row),
+      autoResetExpanded: false
     },
     useExpanded // Use the useExpanded plugin hook
   );
+  
   return (
     <Table bordered responsive hover {...getTableProps()}>
       <thead className="border border-2">

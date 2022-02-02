@@ -358,7 +358,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
           <Button className="float-end" variant="primary" onClick={() => setEdit(!edit)}>
             Edit
           </Button>
-          <Button className="float-end me-2" variant="secondary" onClick={() => setShowDialog(!showDialog)}>
+          <Button className="float-end me-2" variant="primary" onClick={() => setShowDialog(!showDialog)}>
             Delete
           </Button>
           <Button className="float-start" variant="secondary" onClick={handleClose}>
