@@ -104,7 +104,7 @@ const CreatePlan = () => {
                   end: Moment(res.effectivePeriod.end).toDate()
                 },
                 type: 'action',
-                conditions: [condition]
+                conditions: []
               };
               let action1: Action = {
                 description: 'Distribute drugs to eligible persons',
@@ -116,12 +116,12 @@ const CreatePlan = () => {
                   end: Moment(res.effectivePeriod.end).toDate()
                 },
                 type: 'action',
-                conditions: []
+                conditions: [condition]
               };
               let newGoal: Goal = {
                 identifier: '1',
                 actions: [action],
-                description: 'Understand location demographics',
+                description: 'Understand population count',
                 priority: '',
                 targets: []
               };

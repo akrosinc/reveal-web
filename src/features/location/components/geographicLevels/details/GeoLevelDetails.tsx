@@ -41,7 +41,7 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
         render({ data }: { data: GeographicLevel }) {
           dispatch(showLoader(false));
           closeHandler();
-          return 'Geographic location created successfully with id: ' + data.identifier;
+          return 'Geographic location updated successfully with id: ' + data.identifier;
         }
       },
       error: {
@@ -72,16 +72,19 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
       if (data !== undefined) {
         toast.promise(deleteGeographicLevel(data.identifier), {
           pending: 'Loading...',
-          success: `Geographic Level with id: ${data.identifier} deleted successfully!`,
+          success: {
+            render() {
+              dispatch(showLoader(false));
+              closeHandler();
+              return `Geographic Level with id: ${data.identifier} deleted successfully!`;
+            }
+          },
           error: {
             render({ data }: { data: ErrorModel }) {
+              dispatch(showLoader(false));
               return data.message !== undefined ? data.message : 'An error has occured!';
             }
           }
-        });
-        deleteGeographicLevel(data.identifier).then(res => {
-          dispatch(showLoader(false));
-          closeHandler();
         });
       }
     } else {
