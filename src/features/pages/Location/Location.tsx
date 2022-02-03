@@ -32,11 +32,11 @@ const Location = () => {
         <Tab eventKey="geographic-levels" title={t('locationsPage.geographicLevels')}>
           <GeographicLevels />
         </Tab>
-        <Tab eventKey="location-hierarchy" title={t('locationsPage.locationHierarchy')}>
-          <LocationHierarchy />
-        </Tab>
         <Tab eventKey="locations-bulk" title={t('locationsPage.locationsBulk')}>
           <LocationBulk />
+        </Tab>
+        <Tab eventKey="location-hierarchy" title={t('locationsPage.locationHierarchy')}>
+          <LocationHierarchy />
         </Tab>
         <Tab eventKey="locations" title={t('locationsPage.locations')}>
           <Locations />
