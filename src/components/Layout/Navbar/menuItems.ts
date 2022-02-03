@@ -12,28 +12,6 @@ export const MAIN_MENU = [
     roles: ['plan_view'],
   },
   {
-    pageTitle: 'Assign',
-    route: '#',
-    roles: []
-  },
-  {
-    pageTitle: 'Monitor',
-    route: '#',
-    roles: [],
-    dropdown: [
-      {
-        pageTitle: 'IRS Reporting',
-        route: '#',
-        roles: []
-      },
-      {
-        pageTitle: 'SMC Reporting',
-        route: '#',
-        roles: []
-      }
-    ]
-  },
-  {
     pageTitle: 'Admin',
     route: '/admin',
     roles: ['manage-users'],
