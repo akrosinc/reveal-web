@@ -9,7 +9,7 @@ interface Props {
 
 const ActionDialog = ({ title, closeHandler, backdrop, element }: Props) => {
   return (
-    <Modal show={true} centered backdrop={backdrop} onHide={() => closeHandler(false)}>
+    <Modal show={true} centered backdrop='static' keyboard={false} onHide={() => closeHandler(false)}>
       <Modal.Header closeButton>
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>

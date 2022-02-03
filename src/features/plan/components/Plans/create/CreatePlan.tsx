@@ -91,7 +91,7 @@ const CreatePlan = () => {
               let condition: ConditionModel = {
                 entity: 'Person',
                 entityProperties: 'Age',
-                filterValue: 'Age',
+                filterValue: '5',
                 operator: '<',
               }
               let action: Action = {
