@@ -1,5 +1,4 @@
 <img src='./public/reveal-logo.png' width='180px' />
-<hr />
 
 #  Reveal Web 
 
@@ -10,6 +9,10 @@
 ## Available Scripts
 
 In the project directory, you can run:
+
+### `yarn install`
+
+Used to install all dependencies for a project.<br />
 
 ### `yarn start`
 
