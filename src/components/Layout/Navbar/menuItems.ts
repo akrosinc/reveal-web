@@ -12,6 +12,11 @@ export const MAIN_MENU = [
     roles: ['plan_view'],
   },
   {
+    pageTitle: 'Assign',
+    route: '#',
+    roles: []
+  },
+  {
     pageTitle: 'Admin',
     route: '/admin',
     roles: ['manage-users'],

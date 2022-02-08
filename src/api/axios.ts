@@ -1,6 +1,7 @@
 import axios from 'axios';
 import keycloak from '../keycloak';
 
+// Create axios instance
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
   headers: {
