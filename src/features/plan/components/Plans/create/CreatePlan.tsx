@@ -12,7 +12,7 @@ import { useForm, Controller } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Select, { SingleValue } from 'react-select';
-import { Goal, Action, ConditionModel } from '../../../providers/types';
+import { Goal } from '../../../providers/types';
 import Item from './Goals/Items';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
 import { toast } from 'react-toastify';
@@ -78,6 +78,7 @@ const CreatePlan = () => {
           })
         );
         if (id) {
+          // id exists show plan details
           getPlanById(id)
             .then(res => {
               setValue('effectivePeriod.start', Moment(res.effectivePeriod.start).toDate());
@@ -88,51 +89,6 @@ const CreatePlan = () => {
               setValue('interventionType', res.interventionType.identifier);
               setSelectedHierarchy({ value: res.locationHierarchy.identifier, label: res.locationHierarchy.name });
               setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
-              let condition: ConditionModel = {
-                entity: 'Person',
-                entityProperties: 'Age',
-                filterValue: '5',
-                operator: '<',
-              }
-              let action: Action = {
-                description: 'Register persons',
-                formIdentifier: 'Person registration form',
-                title: 'Register persons',
-                reason: 'Reason',
-                timingPeriod: {
-                  start: Moment(res.effectivePeriod.start).toDate(),
-                  end: Moment(res.effectivePeriod.end).toDate()
-                },
-                type: 'action',
-                conditions: []
-              };
-              let action1: Action = {
-                description: 'Distribute drugs to eligible persons',
-                formIdentifier: 'Drug distribution form',
-                title: 'Distribute drugs',
-                reason: 'Reason',
-                timingPeriod: {
-                  start: Moment(res.effectivePeriod.start).toDate(),
-                  end: Moment(res.effectivePeriod.end).toDate()
-                },
-                type: 'action',
-                conditions: [condition]
-              };
-              let newGoal: Goal = {
-                identifier: '1',
-                actions: [action],
-                description: 'Understand population count',
-                priority: '',
-                targets: []
-              };
-              let newGoal1: Goal = {
-                identifier: '2',
-                actions: [action1],
-                description: 'Reduce impact of malaria',
-                priority: '',
-                targets: []
-              };
-              setGoalList([newGoal, newGoal1]);
             })
             .finally(() => dispatch(showLoader(false)));
         } else {

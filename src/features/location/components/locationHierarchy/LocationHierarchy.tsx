@@ -179,7 +179,6 @@ const LocationHierarchy = () => {
             <CreateLocationHierarchy geographyLevelList={geographyLevelList ?? []} closeHandler={closeHandler} />
           }
           closeHandler={closeHandler}
-          backdrop
         />
       )}
       {showConfirm && (
@@ -187,7 +186,7 @@ const LocationHierarchy = () => {
           closeHandler={deleteHandler}
           message={'Are you sure you want to permanently delete hierarchy: ' + selectedHierarchy?.nodeOrder.toString()}
           title="Delete hierarchy"
-          backdrop={true}
+          backdrop
         />
       )}
     </>

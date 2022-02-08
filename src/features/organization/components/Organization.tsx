@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Col, Row, Button } from 'react-bootstrap';
-import { getOrganizationCount, getOrganizationList } from '../api';
+import { getOrganizationById, getOrganizationCount, getOrganizationList, getOrganizationListSummary } from '../api';
 import { OrganizationModel } from '../providers/types';
 import ExpandingTable from '../../../components/Table/ExpandingTable';
 import Paginator from '../../../components/Pagination';
@@ -21,7 +21,8 @@ const Organization = () => {
   const [show, setShow] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [organizationCount, setOrganizationCount] = useState(0);
-  const [selectedOrganizaton, setSelectedOrganization] = useState('');
+  const [selectedOrganizaton, setSelectedOrganization] = useState<OrganizationModel>();
+  const [organizationDropdown, setOrganizationDropdown] = useState<OrganizationModel[]>([]);
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
@@ -47,9 +48,8 @@ const Organization = () => {
       {
         // Build our expander column
         id: 'expander', // Make sure it has an ID
-        Header: ({ getToggleAllRowsExpandedProps, }: { getToggleAllRowsExpandedProps: Function}) => (
-          <span {...getToggleAllRowsExpandedProps()} ref={expandAll}>
-          </span>
+        Header: ({ getToggleAllRowsExpandedProps }: { getToggleAllRowsExpandedProps: Function }) => (
+          <span {...getToggleAllRowsExpandedProps()} ref={expandAll}></span>
         ),
         Cell: ({ row }: { row: any }) =>
           // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
@@ -66,24 +66,30 @@ const Organization = () => {
                   paddingLeft: `${row.depth * 1.5}rem`,
                   paddingTop: '15px',
                   paddingBottom: '15px',
-                  paddingRight: '15px',
+                  paddingRight: '15px'
                 }
               })}
             >
-              {row.isExpanded ? <FontAwesomeIcon className="ms-1" icon="chevron-down" /> : <FontAwesomeIcon className="ms-1" icon="chevron-right" />}
+              {row.isExpanded ? (
+                <FontAwesomeIcon className="ms-1" icon="chevron-down" />
+              ) : (
+                <FontAwesomeIcon className="ms-1" icon="chevron-right" />
+              )}
             </span>
-          ) : <span
-          {...row.getToggleRowExpandedProps({
-            style: {
-              paddingLeft: `${row.depth * 1.5}rem`,
-              paddingTop: '15px',
-              paddingBottom: '15px',
-              paddingRight: '15px',
-            }
-          })}
-        >
-          {row.depth > 0 ? '-' : null}
-        </span>
+          ) : (
+            <span
+              {...row.getToggleRowExpandedProps({
+                style: {
+                  paddingLeft: `${row.depth * 1.5}rem`,
+                  paddingTop: '15px',
+                  paddingBottom: '15px',
+                  paddingRight: '15px'
+                }
+              })}
+            >
+              {row.depth > 0 ? '-' : null}
+            </span>
+          )
       },
       ...ORGANIZATION_TABLE_COLUMNS
     ],
@@ -100,15 +106,17 @@ const Organization = () => {
       getOrganizationList(size, page, searchData !== undefined ? searchData : '', field, sortDirection)
         .then(data => {
           setOrganizationList(data);
-          setData(data.content.map(el => {
-            return {
-              name: el.name,
-              identifier: el.identifier,
-              active: el.active.toString(),
-              headOf: el.headOf,
-              type: el.type.valueCodableConcept,
-            }
-          }));
+          setData(
+            data.content.map(el => {
+              return {
+                name: el.name,
+                identifier: el.identifier,
+                active: el.active.toString(),
+                headOf: el.headOf,
+                type: el.type.valueCodableConcept
+              };
+            })
+          );
           if (searchData !== undefined && searchData.length) {
             setOrganizationCount(data.numberOfElements);
             expandAll?.current?.click();
@@ -138,8 +146,17 @@ const Organization = () => {
   };
 
   const openOrganizationById = (id: string) => {
-    setShowDetails(true);
-    setSelectedOrganization(id);
+    dispatch(showLoader(true));
+    getOrganizationById(id)
+      .then(res => {
+        setShowDetails(true);
+        setSelectedOrganization(res);
+        getOrganizationListSummary().then(res => {
+          setOrganizationDropdown(res.content.filter(el => el.identifier !== id));
+        });
+      })
+      .catch(_ => toast.error('An error has occured while loading organization.'))
+      .finally(() => dispatch(showLoader(false)));
   };
 
   const sortHandler = (field: string, sortDirection: boolean) => {
@@ -174,29 +191,36 @@ const Organization = () => {
       <hr className="my-4" />
       {organizationList !== undefined && organizationList.content.length > 0 ? (
         <>
-        <ExpandingTable columns={columns} data={data} clickHandler={openOrganizationById} sortHandler={sortHandler} />
-        <Paginator
-          totalPages={organizationList.totalPages}
-          totalElements={organizationList.totalElements}
-          page={organizationList.pageable.pageNumber}
-          size={organizationList.size}
-          paginationHandler={paginatonHandler}
-        />
+          <ExpandingTable columns={columns} data={data} clickHandler={openOrganizationById} sortHandler={sortHandler} />
+          <Paginator
+            totalPages={organizationList.totalPages}
+            totalElements={organizationList.totalElements}
+            page={organizationList.pageable.pageNumber}
+            size={organizationList.size}
+            paginationHandler={paginatonHandler}
+          />
         </>
-      ) : <p className="text-center lead">No organizations found.</p>}
+      ) : (
+        <p className="text-center lead">No organizations found.</p>
+      )}
       {show && (
         <ActionDialog
-          backdrop={true}
           title={'Create organization'}
           closeHandler={handleClose}
           element={<CreateOrganization handleClose={handleClose} show={show} />}
         />
       )}
-      {showDetails && (
+      {showDetails && selectedOrganizaton && (
         <ActionDialog
-          backdrop={true}
           closeHandler={handleClose}
-          element={<EditOrganization organizationId={selectedOrganizaton} handleClose={handleClose} show={true} />}
+          element={
+            <EditOrganization
+              organization={selectedOrganizaton}
+              organizations={organizationDropdown}
+              handleClose={handleClose}
+              show={true}
+            />
+          }
           title="Organization details"
         />
       )}

@@ -6,8 +6,8 @@ import App from './App';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import keycloak from '../keycloak';
 
-test('renders learn react link', () => {
-  const { initialized } = render(
+test('renders start page', () => {
+  const renderResult = render(
     <ReactKeycloakProvider authClient={keycloak}>
       <Provider store={store}>
         <App />
@@ -15,5 +15,5 @@ test('renders learn react link', () => {
     </ReactKeycloakProvider>
   );
 
-  expect(initialized).toBeTruthy();
+  expect(renderResult).toBeTruthy();
 });

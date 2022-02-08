@@ -121,7 +121,6 @@ const Users = () => {
       {show && <CreateUser show={show} handleClose={handleClose} />}
       {showEdit && (
         <ActionDialog
-          backdrop={true}
           closeHandler={handleClose}
           element={<EditUser handleClose={handleClose} userId={userId} />}
           title="User details"
