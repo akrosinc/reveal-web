@@ -46,7 +46,7 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
             {conditionList.map((el, index) => (
               <tr key={index}>
                 <td>{el.entity}</td>
-                <td>{el.entityProperties}</td>
+                <td>{el.entityProperty}</td>
                 <td>{el.operator}</td>
                 <td>{el.filterValue}</td>
               </tr>

@@ -1,59 +1,80 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pie, Doughnut } from 'react-chartjs-2';
 import { Chart, registerables } from 'chart.js';
 import { Col, Row } from 'react-bootstrap';
+import { getOrganizationCount } from '../organization/api';
+import { getUserList } from '../user/api';
+import { getPlanCount } from '../plan/api';
+import { useAppDispatch } from '../../store/hooks';
+import { showLoader } from '../reducers/loader';
 Chart.register(...registerables);
 
 const Dashboard = () => {
-  const data = {
-    labels: ['Users', 'Organizations', 'Plans'],
-    datasets: [
-      {
-        label: 'My First Dataset',
-        data: [6, 3, 5],
-        backgroundColor: ['#198754', '#34568B', 'rgb(255, 205, 86)'],
-        hoverOffset: 4
-      }
-    ]
-  };
+  const [data, setData] = useState<any>();
+  const [dougData, setDougData] = useState<any>();
+  const dispatch = useAppDispatch();
 
-  const dougData = {
-    labels: ['Active Plans', 'Active Organizations'],
-    datasets: [
-      {
-        label: '# of Votes',
-        data: [2, 3],
-        backgroundColor: ['#198754', '#34568B']
+  useEffect(() => {
+    dispatch(showLoader(true));
+    Promise.all([getOrganizationCount(), getUserList(5, 0), getPlanCount()]).then(
+      async ([organizationCount, userCount, planCount]) => {
+        if (userCount.totalElements !== 0 || organizationCount.count !== 0 || planCount.count !== 0) {
+          setData({
+            labels: ['Users', 'Organizations', 'Plans'],
+            datasets: [
+              {
+                label: 'Count',
+                data: [userCount.totalElements, organizationCount.count, planCount.count],
+                backgroundColor: ['#198754', '#34568B', 'rgb(255, 205, 86)'],
+                hoverOffset: 4
+              }
+            ]
+          });
+        }
+        setDougData({
+          labels: ['Active Plans', 'Active Organizations'],
+          datasets: [
+            {
+              label: '# of active',
+              data: [2, 3],
+              backgroundColor: ['#198754', '#34568B']
+            }
+          ]
+        });
       }
-    ]
-  };
+    ).catch(err => console.log(err)).finally(() => dispatch(showLoader(false)));
+  }, [dispatch]);
 
   return (
     <>
       <h4 className="my-4">Dashboard</h4>
       <Row>
         <Col md={6}>
-          <Pie
-            data={data}
-            height="450px"
-            width="450px"
-            options={{
-              maintainAspectRatio: false
-            }}
-          />
+          {data !== undefined && data.datasets[0].data.length ? (
+            <Pie
+              data={data}
+              height="450px"
+              width="450px"
+              options={{
+                maintainAspectRatio: false
+              }}
+            />
+          ) : <p className='lead mt-5'>No data to display.</p>}
         </Col>
         <Col md={6}>
-          <Doughnut
-            data={dougData}
-            height="450px"
-            width="450px"
-            options={{
-              maintainAspectRatio: false,
-              rotation: 270,
-              circumference: 180,
-              cutout: 120
-            }}
-          />
+          {dougData !== undefined && dougData.datasets[0].data.length && (
+            <Doughnut
+              data={dougData}
+              height="450px"
+              width="450px"
+              options={{
+                maintainAspectRatio: false,
+                rotation: 270,
+                circumference: 180,
+                cutout: 120
+              }}
+            />
+          )}
         </Col>
       </Row>
     </>
