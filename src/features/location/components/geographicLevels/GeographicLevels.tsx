@@ -144,7 +144,6 @@ const GeographicLevels = () => {
       )}
       {openCreate && (
         <ActionDialog
-          backdrop={true}
           closeHandler={closeHandler}
           element={<CreateGeoLevel closeHandler={closeHandler} />}
           title="Create Geographic Level"
@@ -152,7 +151,6 @@ const GeographicLevels = () => {
       )}
       {openEdit && (
         <ActionDialog
-          backdrop={true}
           closeHandler={closeHandler}
           element={<GeoLevelDetails closeHandler={closeHandler} data={selectedGeoLevel} />}
           title="Geographic Level Details"

@@ -148,7 +148,6 @@ const UserImport = () => {
       ) : null}
       {openCreate && (
         <ActionDialog
-          backdrop={true}
           closeHandler={closeHandler}
           title="Import users"
           element={<CreateBulk handleClose={closeHandler} />}

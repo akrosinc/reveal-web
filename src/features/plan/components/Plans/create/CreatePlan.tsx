@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
 import { Col, Row, Container, Tab, Tabs, Form, Button, Accordion } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { PLANS } from '../../../../../constants';
+import { PLANS, REGEX_NAME_VALIDATION, REGEX_TITLE_VALIDATION } from '../../../../../constants';
 import { useAppDispatch } from '../../../../../store/hooks';
 import { getLocationHierarchyList } from '../../../../location/api';
 import { showLoader } from '../../../../reducers/loader';
@@ -12,10 +12,11 @@ import { useForm, Controller } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Select, { SingleValue } from 'react-select';
-import { Goal, Action, ConditionModel } from '../../../providers/types';
+import { Goal } from '../../../providers/types';
 import Item from './Goals/Items';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
 import { toast } from 'react-toastify';
+import CreateGoal from './Goals/Items/CreateGoal/CreateGoal';
 
 interface Options {
   value: string;
@@ -43,6 +44,7 @@ const CreatePlan = () => {
   const [selectedInterventionType, setSelectedInterventionType] = useState<SingleValue<Options>>();
   const [goalList, setGoalList] = useState<Goal[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showCreateGoal, setShowCreateGoal] = useState(false);
   const [currentFrom, setCurrentForm] = useState<any>();
   const { id } = useParams();
 
@@ -53,6 +55,7 @@ const CreatePlan = () => {
     watch,
     resetField,
     formState: { errors },
+    trigger,
     setValue,
     getValues
   } = useForm<RegisterValues>();
@@ -78,6 +81,7 @@ const CreatePlan = () => {
           })
         );
         if (id) {
+          // id exists show plan details
           getPlanById(id)
             .then(res => {
               setValue('effectivePeriod.start', Moment(res.effectivePeriod.start).toDate());
@@ -86,53 +90,9 @@ const CreatePlan = () => {
               setValue('title', res.title);
               setValue('locationHierarchy', res.locationHierarchy.identifier);
               setValue('interventionType', res.interventionType.identifier);
+              setGoalList(res.goals);
               setSelectedHierarchy({ value: res.locationHierarchy.identifier, label: res.locationHierarchy.name });
               setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
-              let condition: ConditionModel = {
-                entity: 'Person',
-                entityProperties: 'Age',
-                filterValue: '5',
-                operator: '<',
-              }
-              let action: Action = {
-                description: 'Register persons',
-                formIdentifier: 'Person registration form',
-                title: 'Register persons',
-                reason: 'Reason',
-                timingPeriod: {
-                  start: Moment(res.effectivePeriod.start).toDate(),
-                  end: Moment(res.effectivePeriod.end).toDate()
-                },
-                type: 'action',
-                conditions: []
-              };
-              let action1: Action = {
-                description: 'Distribute drugs to eligible persons',
-                formIdentifier: 'Drug distribution form',
-                title: 'Distribute drugs',
-                reason: 'Reason',
-                timingPeriod: {
-                  start: Moment(res.effectivePeriod.start).toDate(),
-                  end: Moment(res.effectivePeriod.end).toDate()
-                },
-                type: 'action',
-                conditions: [condition]
-              };
-              let newGoal: Goal = {
-                identifier: '1',
-                actions: [action],
-                description: 'Understand population count',
-                priority: '',
-                targets: []
-              };
-              let newGoal1: Goal = {
-                identifier: '2',
-                actions: [action1],
-                description: 'Reduce impact of malaria',
-                priority: '',
-                targets: []
-              };
-              setGoalList([newGoal, newGoal1]);
             })
             .finally(() => dispatch(showLoader(false)));
         } else {
@@ -153,10 +113,10 @@ const CreatePlan = () => {
     dispatch(showLoader(true));
     let mStart = Moment(formData.effectivePeriod.start);
     let mEnd = Moment(formData.effectivePeriod.end);
-    formData.effectivePeriod.start = Moment(mStart).utc().add(mStart.utcOffset(), 'm');
-    formData.effectivePeriod.end = Moment(mEnd).utc().add(mEnd.utcOffset(), 'm');
+    formData.effectivePeriod.start = Moment(mStart).utc().add(mStart.utcOffset(), 'm').format('yyyy-MM-DD');
+    formData.effectivePeriod.end = Moment(mEnd).utc().add(mEnd.utcOffset(), 'm').format('yyyy-MM-DD');
     if (goalList.length) {
-      //formData.goals = goalList;
+      formData.goals = goalList;
       createPlan(formData).then(_ => {
         dispatch(showLoader(false));
         navigate(PLANS);
@@ -169,8 +129,12 @@ const CreatePlan = () => {
   };
 
   const deleteGoal = (goalNumber: string) => {
-    let newArr = goalList.filter(el => el.identifier !== goalNumber);
-    setGoalList(newArr);
+    if (id) {
+      console.log('delete goal when in edit mode');
+    } else {
+      let newArr = goalList.filter(el => el.identifier !== goalNumber);
+      setGoalList(newArr);
+    }
   };
 
   const closeHandler = (action: boolean) => {
@@ -180,7 +144,7 @@ const CreatePlan = () => {
         .then(_ => {
           navigate(PLANS);
         })
-        .catch(err => toast.error(err.message !== undefined ? err.message : 'Server Error has occured!'))
+        .catch(err => toast.error(err.message !== undefined ? err.message : 'Server Error occured!'))
         .finally(() => dispatch(showLoader(false)));
     } else {
       setShowConfirmDialog(false);
@@ -197,7 +161,34 @@ const CreatePlan = () => {
       <Row>
         <Col md={8} className="mx-auto">
           <Form>
-            <Tabs className="mb-3" activeKey={activeTab} onSelect={tabName => setActiveTab(tabName ?? activeTab)}>
+            {activeTab === 'create-goals' && (
+              <Button
+                className="float-end"
+                style={{ marginLeft: '-45px' }}
+                onClick={() => {
+                  setShowCreateGoal(true);
+                }}
+              >
+                <FontAwesomeIcon icon="plus" />
+              </Button>
+            )}
+            <Tabs
+              className="mb-3"
+              activeKey={activeTab}
+              onSelect={tabName => {
+                if (activeTab === 'plan-details') {
+                  if (tabName === 'create-goals') {
+                    trigger().then(value => {
+                      if (value) {
+                        setActiveTab(tabName);
+                      }
+                    });
+                  }
+                } else {
+                  setActiveTab('plan-details');
+                }
+              }}
+            >
               <Tab eventKey="plan-details" title="Details">
                 <Form.Group className="mb-2">
                   <Form.Label>Plan name</Form.Label>
@@ -205,7 +196,7 @@ const CreatePlan = () => {
                     {...register('name', {
                       required: 'Plan name must not be empty',
                       pattern: {
-                        value: new RegExp('^[^\\s]+([a-z0-9_.-])*$'),
+                        value: REGEX_NAME_VALIDATION,
                         message: 'Plan name containts unsupported characters.'
                       }
                     })}
@@ -221,8 +212,8 @@ const CreatePlan = () => {
                       required: 'Plan title must not be empty.',
                       minLength: 1,
                       pattern: {
-                        value: new RegExp('^[^\\s]+[-a-zA-Z0-9\\s]+([-a-zA-Z0-9\\s]+)*$'),
-                        message: "Plan title can't start with empty space."
+                        value: REGEX_TITLE_VALIDATION,
+                        message: 'Plan title containts unsupported characters.'
                       }
                     })}
                     type="text"
@@ -299,7 +290,7 @@ const CreatePlan = () => {
                   <Controller
                     control={control}
                     name="locationHierarchy"
-                    rules={{required: 'Please selecet location hierarchy.', minLength: 1}}
+                    rules={{ required: 'Please selecet location hierarchy.', minLength: 1 }}
                     render={({ field }) => (
                       <Select
                         menuPosition="fixed"
@@ -313,14 +304,14 @@ const CreatePlan = () => {
                     )}
                   />
                   {errors.locationHierarchy && (
-                        <Form.Label className="text-danger">{errors.locationHierarchy.message}</Form.Label>
-                      )}
+                    <Form.Label className="text-danger">{errors.locationHierarchy.message}</Form.Label>
+                  )}
                 </Form.Group>
                 <Form.Group className="mb-4">
                   <Form.Label>Select Intervention Type</Form.Label>
                   <Controller
                     control={control}
-                    rules={{required: 'Please selecet intervention type.', minLength: 1}}
+                    rules={{ required: 'Please selecet intervention type.', minLength: 1 }}
                     name="interventionType"
                     render={({ field }) => (
                       <Select
@@ -335,11 +326,11 @@ const CreatePlan = () => {
                     )}
                   />
                   {errors.interventionType && (
-                        <Form.Label className="text-danger">{errors.interventionType.message}</Form.Label>
-                      )}
+                    <Form.Label className="text-danger">{errors.interventionType.message}</Form.Label>
+                  )}
                 </Form.Group>
               </Tab>
-              <Tab eventKey="create-goals" title="Goals">
+              <Tab eventKey="create-goals" title="Goals" style={{ minHeight: '406px' }}>
                 <Accordion defaultActiveKey="0" flush>
                   {goalList.map(el => {
                     return (
@@ -352,39 +343,32 @@ const CreatePlan = () => {
                     );
                   })}
                 </Accordion>
-                <Button
-                  className="float-start mt-2 me-2"
-                  onClick={() => {
-                    let newGoal: Goal = {
-                      identifier: (goalList.length + 1).toString(),
-                      actions: [],
-                      description: '',
-                      priority: '',
-                      targets: []
-                    };
-                    setGoalList([...goalList, newGoal]);
-                  }}
-                >
-                  Create Goal
-                </Button>
               </Tab>
             </Tabs>
-            <Button
-              onClick={() => {
-                if (id) {
+            {id !== undefined && activeTab === 'plan-details' && (
+              <Button
+                onClick={() => {
                   dispatch(showLoader(true));
                   setTimeout(() => {
                     dispatch(showLoader(false));
                     navigate(PLANS);
                   }, 2000);
-                } else {
+                }}
+                className="float-end mt-2"
+              >
+                Update details
+              </Button>
+            )}
+            {id === undefined && (
+              <Button
+                onClick={() => {
                   handleSubmit(submitHandler)();
-                }
-              }}
-              className="float-end mt-2"
-            >
-              {id !== undefined ? 'Update plan' : 'Submit Plan'}
-            </Button>
+                }}
+                className="float-end mt-2"
+              >
+                Create plan
+              </Button>
+            )}
           </Form>
         </Col>
       </Row>
@@ -395,6 +379,14 @@ const CreatePlan = () => {
           message="You are creating a plan without any goals set. 
           Without a goal plan will be created as draft and you won't be able to activate it until you add at least one goal."
           title="Create Plan"
+        />
+      )}
+      {showCreateGoal && (
+        <CreateGoal
+          planId={id}
+          goalList={goalList}
+          closeHandler={() => setShowCreateGoal(false)}
+          show={showCreateGoal}
         />
       )}
     </Container>

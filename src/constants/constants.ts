@@ -8,13 +8,18 @@ export const PAGE_TITLE_ASSIGN = 'Assign';
 export const PAGE_TITLE_MONITOR = 'Monitor';
 export const PAGE_TITLE_ADMIN = 'Admin';
 
-export const ROW_DEPTH_COLOR_1 = '#F5F5F5'
+//Table depth colors
+export const ROW_DEPTH_COLOR_1 = '#F5F5F5';
+export const ROW_DEPTH_COLOR_2 = '#E8E8E8';
+export const ROW_DEPTH_COLOR_3 = '#DCDCDC';
 
-export const ROW_DEPTH_COLOR_2 = '#E8E8E8'
-
-export const ROW_DEPTH_COLOR_3 = '#DCDCDC'
+//REGEX
+export const REGEX_NAME_VALIDATION = new RegExp('^[^-\\s][a-z0-9_.-]*$');
+export const REGEX_TITLE_VALIDATION = new RegExp('^[^-\\s][a-zA-Z0-9.__\\s-]*$');
 
 export const PAGINATION_DEFAULT_SIZE = 10;
+
+export const MAPBOX_STYLE = 'mapbox://styles/mapbox/satellite-v9';
 
 export const ORGANIZATION_TABLE_COLUMNS = [
   { Header: 'Name', accessor: 'name' },
