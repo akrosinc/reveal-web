@@ -149,14 +149,14 @@ const Organization = () => {
     dispatch(showLoader(true));
     getOrganizationById(id)
       .then(res => {
-        setShowDetails(true);
         setSelectedOrganization(res);
         getOrganizationListSummary().then(res => {
           setOrganizationDropdown(res.content.filter(el => el.identifier !== id));
-        });
+          setShowDetails(true);
+          dispatch(showLoader(false))
+        }).catch(_ => toast.error('An error has occured while loading organization.'));
       })
-      .catch(_ => toast.error('An error has occured while loading organization.'))
-      .finally(() => dispatch(showLoader(false)));
+      .catch(_ => toast.error('An error has occured while loading organization.'));
   };
 
   const sortHandler = (field: string, sortDirection: boolean) => {
