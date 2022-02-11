@@ -43,11 +43,9 @@ export const getAllOrganizations = async (cancelToken?: CancelToken): Promise<Pa
   return data;
 };
 
-export const getOrganizationById = async (id: string, cancelToken: CancelToken): Promise<OrganizationModel> => {
+export const getOrganizationById = async (id: string): Promise<OrganizationModel> => {
   const data = await api
-    .get<OrganizationModel>(ORGANIZATION + `/${id}`, {
-      cancelToken: cancelToken
-    })
+    .get<OrganizationModel>(ORGANIZATION + `/${id}`)
     .then(response => response.data);
   return data;
 };

@@ -4,6 +4,7 @@ import './index.css';
 import { Button } from 'react-bootstrap';
 import { createLocation, createLocationLabel, getPolygonCenter } from '../../utils';
 import { LocationModel } from '../../features/location/providers/types';
+import { MAPBOX_STYLE } from '../../constants';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
@@ -24,14 +25,13 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
   const [lng, setLng] = useState(longitude ?? 28.283333);
   const [lat, setLat] = useState(latitude ?? -15.416667);
   const [zoom, setZoom] = useState(startingZoom);
-  //const [location, setLocation] = useState<any>();
 
   useEffect(() => {
     // initialize map only once
     if (map.current === undefined) {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/satellite-v9',
+        style: MAPBOX_STYLE,
         center: [lng, lat],
         zoom: zoom
       });

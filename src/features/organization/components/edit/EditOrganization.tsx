@@ -1,67 +1,50 @@
-import { CancelTokenSource } from 'axios';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { ErrorModel } from '../../../../api/providers';
 import { ConfirmDialog } from '../../../../components/Dialogs';
 import { useAppDispatch } from '../../../../store/hooks';
-import { cancelTokenGenerator } from '../../../../utils';
-import { deleteOrganizationById, getOrganizationById, getOrganizationListSummary, updateOrganization } from '../../api';
+import { deleteOrganizationById, updateOrganization } from '../../api';
 import { OrganizationModel } from '../../../organization/providers/types';
 import { showLoader } from '../../../reducers/loader';
 
 interface Props {
   show: boolean;
-  organizationId: string;
+  organization: OrganizationModel;
+  organizations: OrganizationModel[];
   handleClose: (isEdited: boolean) => void;
 }
 
-const EditOrganization = ({ organizationId, handleClose }: Props) => {
-  const [organization, setOrganization] = useState<OrganizationModel>();
+interface OrganizationValues {
+  identifier: string;
+  name: string;
+  type: string;
+  active: boolean;
+  partOf: string;
+}
+
+const EditOrganization = ({ organization, organizations, handleClose }: Props) => {
   const [edit, setEdit] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const dispatch = useAppDispatch();
-  const [organizations, setOrganizations] = useState<OrganizationModel[]>([]);
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors }
-  } = useForm();
-
-  const getData = useCallback(
-    (source: CancelTokenSource) => {
-      getOrganizationById(organizationId, source.token)
-        .then(data => {
-          setOrganization(data);
-          setValue('name', data.name);
-          setValue('type', data.type.code);
-          setValue('active', data.active);
-          getOrganizationListSummary().then(res => {
-            setOrganizations(res.content.filter(el => el.identifier !== organizationId));
-            setValue('partOf', data.partOf);
-          });
-        })
-        .catch((err: ErrorModel) =>
-          toast.error(err !== undefined ? err.message : 'There was an error getting organization by identifier.')
-        );
-    },
-    [organizationId, setValue]
-  );
-
-  useEffect(() => {
-    const source = cancelTokenGenerator();
-    getData(source);
-    return () => {
-      //Slow networks can cause a memory leak, cancel a request if its not done if modal is closed
-      source.cancel("Request is not done, request cancel. We don't need it anymore.");
-    };
-  }, [getData]);
+  } = useForm<OrganizationValues>({
+    defaultValues: {
+      identifier: organization.identifier,
+      name: organization.name,
+      type: organization.type.code,
+      active: organization.active,
+      partOf: organization.partOf
+    }
+  });
 
   const updateHandler = (formData: OrganizationModel) => {
     dispatch(showLoader(true));
-    formData.identifier = organizationId;
+    formData.identifier = organization.identifier;
     toast
       .promise(updateOrganization(formData), {
         pending: 'Loading...',
@@ -70,7 +53,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
             dispatch(showLoader(false));
             setEdit(false);
             handleClose(true);
-            return `Organization with id ${organizationId} updated successfully.`;
+            return `Organization with id ${organization.identifier} updated successfully.`;
           }
         },
         error: {
@@ -85,13 +68,13 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
   const deleteHandler = (action: boolean) => {
     if (action) {
       dispatch(showLoader(true));
-      toast.promise(deleteOrganizationById(organizationId), {
+      toast.promise(deleteOrganizationById(organization.identifier), {
         pending: 'Loading...',
         success: {
           render({ data }) {
             dispatch(showLoader(false));
             handleClose(true);
-            return `Organization with id: ${organizationId} deleted successfully.`;
+            return `Organization with id: ${organization.identifier} deleted successfully.`;
           }
         },
         error: {
@@ -137,11 +120,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Type</Form.Label>
-        <Form.Select
-          disabled={!edit}
-          {...register('type', { required: 'Organization type must be selected.' })}
-          aria-label="Default select example"
-        >
+        <Form.Select disabled={!edit} {...register('type', { required: 'Organization type must be selected.' })}>
           <option value=""></option>
           <option value="CG">Community group</option>
           <option value="TEAM">Team</option>
@@ -151,7 +130,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Part of</Form.Label>
-        <Form.Select disabled={!edit} {...register('partOf', { required: false })} aria-label="Default select example">
+        <Form.Select disabled={!edit} {...register('partOf', { required: false })}>
           <option value=""></option>
           {organizations.map(org => {
             return (
@@ -180,11 +159,7 @@ const EditOrganization = ({ organizationId, handleClose }: Props) => {
           <Button className="float-end" variant="primary" onClick={() => setEdit(!edit)}>
             Edit
           </Button>
-          <Button
-            className="float-end me-2"
-            variant="primary"
-            onClick={() => setShowConfirmDialog(!showConfirmDialog)}
-          >
+          <Button className="float-end me-2" variant="primary" onClick={() => setShowConfirmDialog(!showConfirmDialog)}>
             Delete
           </Button>
           <Button className="float-start" variant="secondary" onClick={() => handleClose(false)}>

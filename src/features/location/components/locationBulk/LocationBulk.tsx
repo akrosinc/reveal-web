@@ -156,7 +156,6 @@ const LocationBulk = () => {
       ) : null}
       {openUpload && (
         <ActionDialog
-          backdrop
           closeHandler={() => closeHandler()}
           title="Upload Locations"
           element={<UploadLocation handleClose={() => closeHandler()} />}

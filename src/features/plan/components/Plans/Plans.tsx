@@ -8,9 +8,10 @@ import Paginator from '../../../../components/Pagination';
 import { PAGINATION_DEFAULT_SIZE, PLANS, PLAN_TABLE_COLUMNS } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
-import { getPlanList, updatePlanStatus } from '../../api';
+import { getPlanList } from '../../api';
 import { PlanModel } from '../../providers/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import ActivatePlan from './activate';
 
 const Plans = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
@@ -20,6 +21,8 @@ const Plans = () => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [activeSortField, setActiveSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
+  const [showActivate, setShowActivate] = useState(false);
+  const [currentPlanId, setCurrentPlanId] = useState('');
 
   const loadData = useCallback(
     (size: number, page: number, search?: string, sortDirection?: boolean, sortField?: string) => {
@@ -52,6 +55,10 @@ const Plans = () => {
       loadData(planList.size, 0, currentSearchInput, sortDirection, field);
     }
   };
+
+  const closeHandler = () => {
+    setShowActivate(false);
+  }
 
   return (
     <>
@@ -122,10 +129,8 @@ const Plans = () => {
                     <Button
                       onClick={(e: React.MouseEvent<HTMLElement>) => {
                         e.stopPropagation();
-                        updatePlanStatus(el.identifier).then(res => {
-                          toast.success(`Plan with identifier: ${el.identifier} activated successfully!`);
-                          loadData(10, 0);
-                        });
+                        setCurrentPlanId(el.identifier);
+                        setShowActivate(true);
                       }}
                       disabled={el.status !== 'DRAFT'}
                     >
@@ -147,6 +152,7 @@ const Plans = () => {
       ) : (
         <p className="text-center lead">No plans found.</p>
       )}
+      <ActivatePlan show={showActivate} closeHandler={closeHandler} planId={currentPlanId} />
     </>
   );
 };
