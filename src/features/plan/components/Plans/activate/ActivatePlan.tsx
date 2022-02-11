@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Modal } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 import { updatePlanStatus } from '../../../api';
 
 interface Props {
@@ -11,7 +12,10 @@ interface Props {
 const ActivatePlan = ({ show, closeHandler, planId }: Props) => {
 
 const activatePlanHandler = () => {
-    updatePlanStatus(planId)
+    updatePlanStatus(planId).then(res => {
+      toast.success('Plan activated successfully');
+      closeHandler();
+    }).catch(err => toast.error(err.toString()))
 } 
 
   return (
