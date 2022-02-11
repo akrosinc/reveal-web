@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Form, Modal, Row, Col } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
 import { Action } from '../../../../../providers/types';
 import DatePicker from 'react-datepicker';
+import { getformList } from '../../../../../api';
+import Moment from 'moment';
 
 interface Props {
   show: boolean;
@@ -14,6 +16,11 @@ interface Props {
 }
 
 const Actions = ({ show, closeHandler, planPeriod }: Props) => {
+  const [formList, setFormList] = useState<{identifier: string, name: string}[]>();
+
+  useEffect(() => {
+    getformList().then(res => setFormList(res));
+  }, [])
   const {
     register,
     handleSubmit,
@@ -32,6 +39,10 @@ const Actions = ({ show, closeHandler, planPeriod }: Props) => {
   }, [planPeriod, setValue, reset, show]);
 
   const submitHandler = (formData: any) => {
+    let mStart = Moment(formData.timingPeriod.start);
+    let mEnd = Moment(formData.timingPeriod.end);
+    formData.timingPeriod.start = Moment(mStart).utc().add(mStart.utcOffset(), 'm').format('yyyy-MM-DD');
+    formData.timingPeriod.end = Moment(mEnd).utc().add(mEnd.utcOffset(), 'm').format('yyyy-MM-DD');
     closeHandler(formData);
   };
 
@@ -138,10 +149,7 @@ const Actions = ({ show, closeHandler, planPeriod }: Props) => {
               })}
             >
               <option></option>
-              <option value="IRS intervention form">IRS intervention form</option>
-              <option value="SMC intervention form">SMC intervention form</option>
-              <option value="Drug distribution form">Drug distribution form</option>
-              <option value="Person registration form">Person registration form</option>
+              {formList !== undefined ? formList.map(el => <option key={el.identifier} value={el.identifier}>{el.name}</option>) : null}
             </Form.Select>
             {errors.formIdentifier && <Form.Label className="text-danger">{errors.formIdentifier.message}</Form.Label>}
           </Form.Group>

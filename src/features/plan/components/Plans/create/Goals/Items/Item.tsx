@@ -23,7 +23,7 @@ const Item = ({ goal, deleteHandler, planPeriod }: Props) => {
 
   return (
     <Accordion.Item eventKey={goal.identifier} className="p-2">
-      <Accordion.Header>Goal {goal.identifier}{goal.description !== "" ? (' - ' + goal.description) : ''}</Accordion.Header>
+      <Accordion.Header>Goal - {goal.description}</Accordion.Header>
       <Accordion.Body>
         <Form.Group>
           <Row>
@@ -31,7 +31,14 @@ const Item = ({ goal, deleteHandler, planPeriod }: Props) => {
               <Form.Label className="mt-3">Description</Form.Label>
             </Col>
             <Col>
-              <Button variant="secondary float-end" onClick={() => deleteHandler(goal.identifier)}>
+            <Button variant="primary" className='float-end ms-2' onClick={() => {
+              console.log('edit open goal')
+            }}>
+                <FontAwesomeIcon icon="edit" />
+              </Button>
+              <Button variant="secondary" className='float-end' onClick={() => {
+                deleteHandler(goal.identifier)
+              }}>
                 <FontAwesomeIcon icon="trash" />
               </Button>
             </Col>
@@ -70,7 +77,7 @@ const Item = ({ goal, deleteHandler, planPeriod }: Props) => {
               <tr key={index}>
                 <td>{el.title}</td>
                 <td>
-                  {el.timingPeriod.start.toLocaleDateString()} - {el.timingPeriod.end.toLocaleDateString()}
+                  {el.timingPeriod.start} - {el.timingPeriod.end}
                 </td>
                 <td>{el.formIdentifier}</td>
                 <td className="text-center">
