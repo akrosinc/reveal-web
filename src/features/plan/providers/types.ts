@@ -28,6 +28,7 @@ export enum Priority {
 }
 
 export interface Action {
+  identifier: string;
   title: string;
   description: string;
   timingPeriod: Period;
@@ -37,6 +38,7 @@ export interface Action {
 }
 
 export interface ConditionModel {
+  identifier: string;
   entity: string;
   entityProperty: string;
   operator: string;
@@ -69,7 +71,6 @@ export interface PlanCreateModel {
   };
   locationHierarchy: string;
   interventionType: string;
-  jurisdictions: string[];
 }
 
 export interface InterventionType {

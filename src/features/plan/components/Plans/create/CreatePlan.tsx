@@ -1,12 +1,12 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Col, Row, Container, Tab, Tabs, Form, Button, Accordion } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PLANS, REGEX_NAME_VALIDATION, REGEX_TITLE_VALIDATION } from '../../../../../constants';
 import { useAppDispatch } from '../../../../../store/hooks';
 import { getLocationHierarchyList } from '../../../../location/api';
 import { showLoader } from '../../../../reducers/loader';
-import { createPlan, getInterventionTypeList, getPlanById } from '../../../api';
+import { createPlan, deleteGoalById, getInterventionTypeList, getPlanById, updatePlanDetails } from '../../../api';
 import Moment from 'moment';
 import { useForm, Controller } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
@@ -14,7 +14,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Select, { SingleValue } from 'react-select';
 import { Goal } from '../../../providers/types';
 import Item from './Goals/Items';
-import { ConfirmDialog } from '../../../../../components/Dialogs';
+import { ConfirmDialog, ConfirmDialogService } from '../../../../../components/Dialogs';
 import { toast } from 'react-toastify';
 import CreateGoal from './Goals/Items/CreateGoal/CreateGoal';
 
@@ -45,6 +45,7 @@ const CreatePlan = () => {
   const [goalList, setGoalList] = useState<Goal[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showCreateGoal, setShowCreateGoal] = useState(false);
+  const [currentGoal, setCurrentGoal] = useState<Goal>();
   const [currentFrom, setCurrentForm] = useState<any>();
   const { id } = useParams();
 
@@ -54,11 +55,30 @@ const CreatePlan = () => {
     control,
     watch,
     resetField,
-    formState: { errors },
+    formState: { errors, isDirty },
     trigger,
     setValue,
     getValues
   } = useForm<RegisterValues>();
+
+  const loadPlan = useCallback(
+    (planId: string) => {
+      getPlanById(planId)
+        .then(res => {
+          setValue('effectivePeriod.start', Moment(res.effectivePeriod.start).toDate());
+          setValue('effectivePeriod.end', Moment(res.effectivePeriod.end).toDate());
+          setValue('name', res.name);
+          setValue('title', res.title);
+          setValue('locationHierarchy', res.locationHierarchy.identifier);
+          setValue('interventionType', res.interventionType.identifier);
+          setGoalList(res.goals);
+          setSelectedHierarchy({ value: res.locationHierarchy.identifier, label: res.locationHierarchy.name });
+          setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
+        })
+        .finally(() => dispatch(showLoader(false)));
+    },
+    [dispatch, setValue]
+  );
 
   useEffect(() => {
     dispatch(showLoader(true));
@@ -82,19 +102,7 @@ const CreatePlan = () => {
         );
         if (id) {
           // id exists show plan details
-          getPlanById(id)
-            .then(res => {
-              setValue('effectivePeriod.start', Moment(res.effectivePeriod.start).toDate());
-              setValue('effectivePeriod.end', Moment(res.effectivePeriod.end).toDate());
-              setValue('name', res.name);
-              setValue('title', res.title);
-              setValue('locationHierarchy', res.locationHierarchy.identifier);
-              setValue('interventionType', res.interventionType.identifier);
-              setGoalList(res.goals);
-              setSelectedHierarchy({ value: res.locationHierarchy.identifier, label: res.locationHierarchy.name });
-              setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
-            })
-            .finally(() => dispatch(showLoader(false)));
+          loadPlan(id);
         } else {
           dispatch(showLoader(false));
         }
@@ -107,9 +115,9 @@ const CreatePlan = () => {
         }
         dispatch(showLoader(false));
       });
-  }, [dispatch, id, setValue]);
+  }, [dispatch, id, loadPlan]);
 
-  const submitHandler = (formData: any) => {
+  const createPlanHandler = (formData: any) => {
     dispatch(showLoader(true));
     let mStart = Moment(formData.effectivePeriod.start);
     let mEnd = Moment(formData.effectivePeriod.end);
@@ -128,13 +136,43 @@ const CreatePlan = () => {
     }
   };
 
-  const deleteGoal = (goalNumber: string) => {
-    if (id) {
-      console.log('delete goal when in edit mode');
-    } else {
-      let newArr = goalList.filter(el => el.identifier !== goalNumber);
-      setGoalList(newArr);
+  const updatePlanHandler = (form: any) => {
+    if (id !== undefined) {
+      dispatch(showLoader(true));
+      toast
+        .promise(updatePlanDetails(form, id), {
+          pending: 'Loading...',
+          success: 'Plan updated successfully.',
+          error: 'There was an error updating plan details'
+        })
+        .finally(() => dispatch(showLoader(false)));
     }
+  };
+
+  const createGoalHandler = (goal?: Goal) => {
+    //we are updating a plan add goal to existing plan by id
+    setCurrentGoal(goal);
+    setShowCreateGoal(true);
+  };
+
+  const deleteGoal = (goalId: string) => {
+    ConfirmDialogService(({ giveAnswer }) => (
+      <ConfirmDialog closeHandler={giveAnswer} backdrop message={"Are you sure you want to delete goal with identifier: " + goalId + "?"} title="Delete Goal" />
+    )).then(res => {
+      if (res) {
+        if (id) {
+          // we are in edit mode call api to delete goal
+          dispatch(showLoader(true));
+          deleteGoalById(goalId, id).then(_ => {
+            loadPlan(id);
+            dispatch(showLoader(false));
+          });
+        } else {
+          let newArr = goalList.filter(el => el.identifier !== goalId);
+          setGoalList(newArr);
+        }
+      }
+    });
   };
 
   const closeHandler = (action: boolean) => {
@@ -166,7 +204,7 @@ const CreatePlan = () => {
                 className="float-end"
                 style={{ marginLeft: '-45px' }}
                 onClick={() => {
-                  setShowCreateGoal(true);
+                  createGoalHandler();
                 }}
               >
                 <FontAwesomeIcon icon="plus" />
@@ -335,6 +373,13 @@ const CreatePlan = () => {
                   {goalList.map(el => {
                     return (
                       <Item
+                        planId={id}
+                        loadData={() => {
+                          if (id) {
+                            loadPlan(id);
+                          }
+                        }}
+                        editGoalHandler={createGoalHandler}
                         key={el.identifier}
                         goal={el}
                         planPeriod={getValues('effectivePeriod')}
@@ -347,12 +392,9 @@ const CreatePlan = () => {
             </Tabs>
             {id !== undefined && activeTab === 'plan-details' && (
               <Button
+              disabled={!isDirty}
                 onClick={() => {
-                  dispatch(showLoader(true));
-                  setTimeout(() => {
-                    dispatch(showLoader(false));
-                    navigate(PLANS);
-                  }, 2000);
+                  handleSubmit(updatePlanHandler)();
                 }}
                 className="float-end mt-2"
               >
@@ -362,7 +404,7 @@ const CreatePlan = () => {
             {id === undefined && (
               <Button
                 onClick={() => {
-                  handleSubmit(submitHandler)();
+                  handleSubmit(createPlanHandler)();
                 }}
                 className="float-end mt-2"
               >
@@ -385,7 +427,13 @@ const CreatePlan = () => {
         <CreateGoal
           planId={id}
           goalList={goalList}
-          closeHandler={() => setShowCreateGoal(false)}
+          currentGoal={currentGoal}
+          closeHandler={() => {
+            setShowCreateGoal(false);
+            if (id) {
+              loadPlan(id);
+            }
+          }}
           show={showCreateGoal}
         />
       )}

@@ -7,36 +7,41 @@ import { getformList } from '../../../../../api';
 import Moment from 'moment';
 
 interface Props {
-  show: boolean;
-  closeHandler: (action?: Action) => void;
+  selectedAction?: Action;
+  closeHandler: (action?: Action, isDeleted?: boolean) => void;
   planPeriod: {
     start: Date;
     end: Date;
   };
 }
 
-const Actions = ({ show, closeHandler, planPeriod }: Props) => {
+const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
   const [formList, setFormList] = useState<{identifier: string, name: string}[]>();
 
-  useEffect(() => {
-    getformList().then(res => setFormList(res));
-  }, [])
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     watch,
     control,
     resetField,
-    reset,
     setValue
-  } = useForm();
+  } = useForm<Action>({
+    defaultValues: {
+      conditions: selectedAction?.conditions,
+      description: selectedAction?.description,
+      identifier: selectedAction?.identifier,
+      title: selectedAction?.title,
+      timingPeriod: selectedAction !== undefined ? {start: Moment(selectedAction.timingPeriod.start).toDate(), end: Moment(selectedAction.timingPeriod.end).toDate()} : planPeriod
+    }
+  });
 
   useEffect(() => {
-    reset();
-    setValue('timingPeriod.start', planPeriod.start);
-    setValue('timingPeriod.end', planPeriod.end);
-  }, [planPeriod, setValue, reset, show]);
+    getformList().then(res => {
+      setFormList(res);
+      setValue('formIdentifier', selectedAction?.formIdentifier ?? "");
+    });
+  }, [setValue, selectedAction]);
 
   const submitHandler = (formData: any) => {
     let mStart = Moment(formData.timingPeriod.start);
@@ -47,9 +52,9 @@ const Actions = ({ show, closeHandler, planPeriod }: Props) => {
   };
 
   return (
-    <Modal show={show} onHide={closeHandler} backdrop="static" keyboard={false} centered>
+    <Modal show={true} onHide={closeHandler} backdrop="static" keyboard={false} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Create Action</Modal.Title>
+        <Modal.Title>{selectedAction ? 'Edit Action' : 'Create Action'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
@@ -69,13 +74,13 @@ const Actions = ({ show, closeHandler, planPeriod }: Props) => {
             <Form.Label>Description</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Enter action title"
+              placeholder="Enter description title"
               {...register('description', {
                 required: 'Description must not be empty.',
                 minLength: 1
               })}
             />
-            {errors.title && <Form.Label className="text-danger">{errors.description.message}</Form.Label>}
+            {errors.description && <Form.Label className="text-danger">{errors.description.message}</Form.Label>}
           </Form.Group>
           <Row>
             <Col>
@@ -158,14 +163,15 @@ const Actions = ({ show, closeHandler, planPeriod }: Props) => {
       <Modal.Footer>
         <Button
           variant="secondary"
+          className='me-auto'
           onClick={() => {
-            reset();
             closeHandler();
           }}
         >
           Discard
         </Button>
-        <Button onClick={handleSubmit(submitHandler)}>Add action</Button>
+        {selectedAction && <Button onClick={() => closeHandler(selectedAction, true)}>Delete</Button>}
+        <Button disabled={!isDirty} onClick={handleSubmit(submitHandler)}>{selectedAction ? 'Save Changes' : 'Create Action'}</Button>
       </Modal.Footer>
     </Modal>
   );
