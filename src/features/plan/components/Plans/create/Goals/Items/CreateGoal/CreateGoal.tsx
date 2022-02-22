@@ -44,7 +44,7 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
           .promise(updateGoal(currentGoal, planId), {
             pending: 'Loading...',
             success: 'Goal updated successfully',
-            error: 'There was an error creating goal.'
+            error: 'There was an error creating goal'
           })
           .finally(() => {
             dispatch(showLoader(false));
@@ -56,7 +56,7 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
           .promise(createGoal(form as Goal, planId), {
             pending: 'Loading...',
             success: 'Goal added successfully',
-            error: 'There was an error creating goal.'
+            error: 'There was an error creating goal'
           })
           .finally(() => {
             dispatch(showLoader(false));

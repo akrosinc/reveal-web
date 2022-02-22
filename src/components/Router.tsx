@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router';
 import { Navigate } from 'react-router-dom';
-import { HOME_PAGE, LOCATION_PAGE, MANAGEMENT, PLANS, ROLE_MANAGE_USER } from '../constants/';
+import { ASSIGNMENT_PAGE, HOME_PAGE, LOCATION_PAGE, MANAGEMENT, PLANS, ROLE_MANAGE_USER } from '../constants/';
 import Home from '../features/pages/HomePage/Home';
 import Plan from '../features/pages/Plan';
 import Management from '../features/pages/Management';
@@ -10,6 +10,8 @@ import PublicPage from './pages/PublicPage';
 import ErrorPage from './pages/ErrorPage';
 import Location from '../features/pages/Location';
 import CreatePlan from '../features/plan/components/Plans/create';
+import Assignment from '../features/pages/AssignmentPage';
+import Assign from '../features/assignment/components/assign/Assign';
 
 export default function Router() {
   const { keycloak, initialized } = useKeycloak();
@@ -21,8 +23,8 @@ export default function Router() {
           <Route path="*" element={<ErrorPage />} />
           <Route path={HOME_PAGE} element={<Home />} />
           <Route path={PLANS} element={<Plan />} />
-          <Route path={PLANS + '/create'} element={<CreatePlan />}/>
-          <Route path={PLANS + '/:id'} element={<CreatePlan />}/>
+          <Route path={PLANS + '/create'} element={<CreatePlan />} />
+          <Route path={PLANS + '/:id'} element={<CreatePlan />} />
           <Route
             path={MANAGEMENT}
             element={
@@ -57,6 +59,22 @@ export default function Router() {
               }
             />
           </Route>
+          <Route
+            path={ASSIGNMENT_PAGE}
+            element={
+              <AuthGuard roles={[]}>
+                <Assignment />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path={ASSIGNMENT_PAGE + '/:planId'}
+            element={
+              <AuthGuard roles={[]}>
+                <Assign />
+              </AuthGuard>
+            }
+          />
         </Routes>
       );
     } else {
