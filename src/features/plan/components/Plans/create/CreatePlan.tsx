@@ -200,7 +200,7 @@ const CreatePlan = () => {
 
   return (
     <Container fluid>
-      <Row className='mt-3'>
+      <Row className='mt-3 align-items-center'>
         <Col md={3}>
           <Link to={PLANS} className="btn btn-primary">
             <FontAwesomeIcon icon="arrow-left" className='me-2' /> Plans
