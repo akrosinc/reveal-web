@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Pie, Doughnut } from 'react-chartjs-2';
 import { Chart, registerables } from 'chart.js';
 import { Col, Row } from 'react-bootstrap';
-import { getOrganizationCount } from '../organization/api';
+import { getOrganizationCount, getOrganizationList } from '../organization/api';
 import { getUserList } from '../user/api';
-import { getPlanCount } from '../plan/api';
+import { getPlanCount, getPlanList } from '../plan/api';
 import { useAppDispatch } from '../../store/hooks';
 import { showLoader } from '../reducers/loader';
 Chart.register(...registerables);
@@ -16,8 +16,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     dispatch(showLoader(true));
-    Promise.all([getOrganizationCount(), getUserList(5, 0), getPlanCount()]).then(
-      async ([organizationCount, userCount, planCount]) => {
+    Promise.all([getOrganizationCount(), getUserList(5, 0), getPlanCount(), getOrganizationList(50, 0), getPlanList(50, 0, true)]).then(
+      async ([organizationCount, userCount, planCount, orgList, planList]) => {
         if (userCount.totalElements !== 0 || organizationCount.count !== 0 || planCount.count !== 0) {
           setData({
             labels: ['Users', 'Organizations', 'Plans'],
@@ -36,7 +36,7 @@ const Dashboard = () => {
           datasets: [
             {
               label: '# of active',
-              data: [2, 3],
+              data: [planList.content.filter(el => el.status === 'ACTIVE').length, orgList.content.filter(el => el.active).length],
               backgroundColor: ['#198754', '#34568B']
             }
           ]

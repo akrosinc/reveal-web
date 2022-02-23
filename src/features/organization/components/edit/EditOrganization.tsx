@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Form } from 'react-bootstrap';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { ErrorModel } from '../../../../api/providers';
 import { ConfirmDialog } from '../../../../components/Dialogs';
@@ -8,6 +8,7 @@ import { useAppDispatch } from '../../../../store/hooks';
 import { deleteOrganizationById, updateOrganization } from '../../api';
 import { OrganizationModel } from '../../../organization/providers/types';
 import { showLoader } from '../../../reducers/loader';
+import Select, { SingleValue } from 'react-select';
 
 interface Props {
   show: boolean;
@@ -24,13 +25,20 @@ interface OrganizationValues {
   partOf: string;
 }
 
+interface Option {
+  label: string;
+  value: string;
+}
+
 const EditOrganization = ({ organization, organizations, handleClose }: Props) => {
   const [edit, setEdit] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<SingleValue<Option>>();
   const dispatch = useAppDispatch();
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors }
   } = useForm<OrganizationValues>({
     defaultValues: {
@@ -41,6 +49,14 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
       partOf: organization.partOf
     }
   });
+
+  // set selected organization
+  useEffect(() => {
+    let selectedOrganization = organizations.filter(el => el.identifier === organization.partOf);
+    if (selectedOrganization.length) {
+      setSelectedSecurityGroups({label: selectedOrganization[0].name, value: selectedOrganization[0].identifier});
+    }
+  }, [setSelectedSecurityGroups, organization, organizations])
 
   const updateHandler = (formData: OrganizationModel) => {
     dispatch(showLoader(true));
@@ -130,16 +146,29 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Part of</Form.Label>
-        <Form.Select disabled={!edit} {...register('partOf', { required: false })}>
-          <option value=""></option>
-          {organizations.map(org => {
-            return (
-              <option key={org.identifier} value={org.identifier}>
-                {org.name}
-              </option>
-            );
-          })}
-        </Form.Select>
+        <Controller
+          control={control}
+          name="partOf"
+          render={({ field: { onChange } }) => (
+            <Select
+              menuPosition="fixed"
+              isDisabled={!edit}
+              isClearable
+              {...register('partOf', { required: false })}
+              value={selectedSecurityGroups}
+              options={organizations.map(el => {
+                return {
+                  value: el.identifier,
+                  label: el.name
+                };
+              })}
+              onChange={selectedOption => {
+                setSelectedSecurityGroups(selectedOption);
+                onChange(selectedOption?.value);
+              }}
+            />
+          )}
+        />
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Switch disabled={!edit} {...register('active', { required: false })} label="Active" />
