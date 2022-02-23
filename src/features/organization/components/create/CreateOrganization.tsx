@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { createOrganization, getOrganizationListSummary } from '../../api';
 import { OrganizationModel } from '../../../organization/providers/types';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import { ErrorModel } from '../../../../api/providers';
+import Select, { SingleValue } from 'react-select';
 
 interface Props {
   show: boolean;
@@ -20,12 +21,19 @@ interface RegisterValues {
   active: boolean;
 }
 
+interface Option {
+  label: string;
+  value: string;
+}
+
 const CreateOrganization = ({ show, handleClose }: Props) => {
   const [organizations, setOrganizations] = useState<OrganizationModel[]>([]);
+  const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<SingleValue<Option>>();
   const dispatch = useAppDispatch();
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors }
   } = useForm<RegisterValues>();
 
@@ -84,16 +92,28 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Part of</Form.Label>
-        <Form.Select {...register('partOf', { required: false })}>
-          <option value=""></option>
-          {organizations.map(org => {
-            return (
-              <option key={org.identifier} value={org.identifier}>
-                {org.name}
-              </option>
-            );
-          })}
-        </Form.Select>
+        <Controller
+          control={control}
+          name="partOf"
+          render={({ field: { onChange } }) => (
+            <Select
+              menuPosition="fixed"
+              isClearable
+              {...register('partOf', { required: false })}
+              value={selectedSecurityGroups}
+              options={organizations.map(el => {
+                return {
+                  value: el.identifier,
+                  label: el.name
+                };
+              })}
+              onChange={selectedOption => {
+                setSelectedSecurityGroups(selectedOption);
+                onChange(selectedOption?.value);
+              }}
+            />
+          )}
+        />
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Switch {...register('active', { required: false })} defaultChecked label="Active" />
