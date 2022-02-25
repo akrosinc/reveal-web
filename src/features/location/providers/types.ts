@@ -18,6 +18,7 @@ export interface LocationModel {
   geometry:   Geometry;
   properties: Properties;
   children: LocationModel[];
+  active?: boolean;
 }
 
 export interface Geometry {
