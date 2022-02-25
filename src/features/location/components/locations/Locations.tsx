@@ -102,10 +102,10 @@ const Locations = () => {
             <span
               {...row.getToggleRowExpandedProps({
                 style: {
-                  // We can even use the row.depth property
+                  // Use the row.depth property
                   // and paddingLeft to indicate the depth
                   // of the row
-                  paddingLeft: `${row.depth * 2}rem`,
+                  paddingLeft: `${row.depth}rem`,
                   paddingTop: '15px',
                   paddingBottom: '15px',
                   paddingRight: '15px'
