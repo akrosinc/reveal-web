@@ -166,8 +166,8 @@ const Assign = () => {
       } else if (childEl.children.length) {
         findChildrenToSelect(id, childEl.children, selected);
       }
-    })
-  }
+    });
+  };
 
   const checkChildren = (parentLocation: LocationModel, checked: boolean) => {
     parentLocation.children.forEach(el => {
@@ -186,8 +186,8 @@ const Assign = () => {
             identifier: team.value,
             name: team.label
           };
-      });
-    }
+        });
+      }
       if (el.children.length) {
         selectChildren(el, selected);
       }
@@ -245,7 +245,14 @@ const Assign = () => {
         </Col>
       </Row>
       <hr className="my-3" />
-      <MapView data={geoLocation} assignment startingZoom={12} clearHandler={() => setGeoLocation(undefined)} moveend={() => setNotInMove(true)}>
+      <MapView
+        data={geoLocation}
+        assignment
+        startingZoom={12}
+        clearHandler={() => setGeoLocation(undefined)}
+        moveend={() => setNotInMove(true)}
+        reloadData={() => loadData()}
+      >
         <div className={classes.floatingLocationPickerAssign + ' bg-white p-2 rounded'}>
           <Button
             onClick={() => setOpen(!open)}
@@ -289,17 +296,7 @@ const Assign = () => {
                       checkHandler={checkHandler}
                       selectHandler={selectHandler}
                       teamTab={false}
-                      columns={
-                        activeTab === 'team-assignment'
-                          ? [
-                              ...columns,
-                              {
-                                Header: 'Assign teams',
-                                id: 'teams'
-                              }
-                            ]
-                          : columns
-                      }
+                      columns={columns}
                       clickHandler={(id: string, rowData: any) => {
                         if (rowData.active) {
                           getLocationById(id).then(res => {
@@ -331,11 +328,12 @@ const Assign = () => {
                           : columns
                       }
                       clickHandler={(id: string, rowData: any) => {
-                        if (rowData.active && notInMove) {                          
+                        if (rowData.active && notInMove) {
+                          dispatch(showLoader(true));
                           getLocationById(id).then(res => {
                             setNotInMove(false);
                             setGeoLocation(res);
-                          });
+                          }).finally(() => dispatch(showLoader(false)));
                         }
                       }}
                       sortHandler={() => console.log('sort')}

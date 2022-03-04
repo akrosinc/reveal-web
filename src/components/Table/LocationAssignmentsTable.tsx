@@ -72,7 +72,8 @@ const LocationAssignmentsTable = ({
       columns,
       data,
       getSubRows: (row: any) => mapRows(row),
-      autoResetExpanded: false
+      autoResetExpanded: false,
+      initialState: {hiddenColumns: [teamTab ? '' : 'teams']},
     },
     useExpanded // Use the useExpanded plugin hook
   );
@@ -101,7 +102,7 @@ const LocationAssignmentsTable = ({
                   ) : (
                     <FontAwesomeIcon className="ms-1" icon="sort-down" />
                   )
-                ) : column.id !== 'expander' && column.id !== 'checkbox' ? (
+                ) : column.id !== 'expander' && column.id !== 'checkbox' && column.id !== 'teams' ? (
                   <FontAwesomeIcon className="ms-1" icon="sort" />
                 ) : null}
               </th>
@@ -129,12 +130,11 @@ const LocationAssignmentsTable = ({
                       />
                     </td>
                   );
-                } else if (cell.column.id === 'teams') {
+                } else if (cell.column.id === 'teams' && rowData.active) {
                   return (
                     <td {...cell.getCellProps()}>
                       <Select
                         menuPosition="fixed"
-                        isDisabled={!rowData.active}
                         isMulti
                         options={organizationList}
                         value={
