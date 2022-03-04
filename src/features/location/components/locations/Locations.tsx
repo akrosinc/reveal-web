@@ -128,11 +128,15 @@ const Locations = () => {
   const clearHandler = () => {
     setCurrentLocation(undefined);
     setCurrentLocationChildList(undefined);
+    loadNew(undefined);
   }
 
+  //Functions to load child locations
   const loadNew = (data: any) => {
-    setCurrentLocationChildList(data.children !== undefined ? data.children : []);
-    setCurrentLocation(data);
+    if (data) {
+      setCurrentLocationChildList(data.children !== undefined ? data.children : []);
+      setCurrentLocation(data);
+    }
   }
 
   return (
@@ -151,7 +155,7 @@ const Locations = () => {
             : 'To inspect a location on the map select location from locations browser menu.'}
         </p>
       </Card>
-      <MapView data={currentLocation} locationChildList={currentLocationChildList ?? []} startingZoom={12} clearHandler={clearHandler} loadHandler={loadNew}>
+      <MapView data={currentLocation} startingZoom={12} assignment={false} clearHandler={clearHandler}>
         <div className={classes.floatingLocationPicker + ' bg-white p-2 rounded'}>
           <Button
             onClick={() => setOpen(!open)}

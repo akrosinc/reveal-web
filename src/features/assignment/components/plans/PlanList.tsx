@@ -5,8 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { PageableModel } from '../../../../api/providers';
 import Paginator from '../../../../components/Pagination';
 import { ASSIGNMENT_PAGE, PLAN_TABLE_COLUMNS } from '../../../../constants';
+import { useAppDispatch } from '../../../../store/hooks';
 import { getPlanList } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
+import { showLoader } from '../../../reducers/loader';
 
 const PlanList = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
@@ -14,6 +16,7 @@ const PlanList = () => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [activeSortField, setActiveSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
+  const dispatch = useAppDispatch();
 
   const paginationHandler = () => {
 
@@ -24,8 +27,9 @@ const PlanList = () => {
   }
 
   useEffect(() => {
-    getPlanList(10, 0, true, '', currentSortField, currentSortDirection).then(res => setPlanList(res));
-  }, [currentSortDirection, currentSortField]);
+    dispatch(showLoader(true));
+    getPlanList(10, 0, true, '', currentSortField, currentSortDirection).then(res => setPlanList(res)).finally(() => dispatch(showLoader(false)));
+  }, [currentSortDirection, currentSortField, dispatch]);
 
   return (
     <>

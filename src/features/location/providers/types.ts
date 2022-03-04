@@ -19,6 +19,12 @@ export interface LocationModel {
   properties: Properties;
   children: LocationModel[];
   active?: boolean;
+  teams: Organization[]
+}
+
+export interface Organization {
+  identifier: string;
+  name: string;
 }
 
 export interface Geometry {
