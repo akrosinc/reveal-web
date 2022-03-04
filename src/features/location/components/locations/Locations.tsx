@@ -126,9 +126,14 @@ const Locations = () => {
   );
 
   const clearHandler = () => {
-    setCurrentLocation(undefined);
-    setCurrentLocationChildList(undefined);
-    loadNew(undefined);
+    if (currentLocationChildList) {
+      loadNew(undefined);
+      setCurrentLocation(undefined);
+      setCurrentLocationChildList(undefined);
+    } else {
+      setCurrentLocation(undefined);
+      setCurrentLocationChildList(undefined);
+    }
   }
 
   //Functions to load child locations

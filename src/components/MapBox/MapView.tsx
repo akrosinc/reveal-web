@@ -18,9 +18,20 @@ interface Props {
   moveend?: () => void;
   children: JSX.Element;
   assignment: boolean;
+  reloadData?: () => void;
 }
 
-const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, children, assignment, moveend }: Props) => {
+const MapView = ({
+  latitude,
+  longitude,
+  startingZoom,
+  data,
+  clearHandler,
+  children,
+  assignment,
+  moveend,
+  reloadData
+}: Props) => {
   const mapContainer = useRef<any>(null);
   const map = useRef<Map>();
   const [lng, setLng] = useState(longitude ?? 28.283333);
@@ -121,7 +132,15 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
         </Button>
       </div>
       <div ref={mapContainer} className="mapbox-container" />
-      {show && locationData && <AssignModal closeHandler={() => setShow(false)} locationData={locationData} />}
+      {show && locationData && (
+        <AssignModal
+          closeHandler={() => {
+            setShow(false);
+            if (reloadData) reloadData();
+          }}
+          locationData={locationData}
+        />
+      )}
     </div>
   );
 };

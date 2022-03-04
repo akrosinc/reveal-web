@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Modal } from 'react-bootstrap';
+import { Button, Form, Modal, Table } from 'react-bootstrap';
 import { Properties } from '../../../../location/providers/types';
 import Select, { MultiValue, Options } from 'react-select';
 import { assignTeamsToLocation, getAssignedTeamsByPlanAndLocationId } from '../../../api';
@@ -47,12 +47,14 @@ const AssignModal = ({ locationData, closeHandler }: Props) => {
 
   useEffect(() => {
     getAssignedTeamsByPlanAndLocationId(planId ?? '', locationData[0]).then(res => {
-      setAssignedTeams(res.map(el => {
-        return {
-          label: el.name,
-          value: el.identifier
-        };
-      }));
+      setAssignedTeams(
+        res.map(el => {
+          return {
+            label: el.name,
+            value: el.identifier
+          };
+        })
+      );
     });
     getOrganizationListSummary().then(res =>
       setOrganizationList(
@@ -67,18 +69,38 @@ const AssignModal = ({ locationData, closeHandler }: Props) => {
   }, [locationData, planId]);
 
   return (
-    <Modal show centered>
-      <Modal.Header>Location: {locationData[0]}</Modal.Header>
+    <Modal show centered size='lg'>
+      <Modal.Header className='justify-content-center'>
+        <Modal.Title>{locationData[1].name}</Modal.Title>
+      </Modal.Header>
       <Modal.Body>
-        You have selected: {locationData[1].name}
-        <br />
-        Location type: {locationData[1].geographicLevel}
-        <br />
-        Status: {locationData[1].status}
-        <br />
+        <h5>Location info</h5>
+        <Table bordered responsive className='my-2'>
+          <thead className='border border-2'>
+            <tr>
+              <th>
+                Location name
+              </th>
+              <th>
+                Location type
+              </th>
+              <th>
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{locationData[1].name}</td>
+              <td>{locationData[1].geographicLevel}</td>
+              <td>{locationData[1].status}</td>
+            </tr>
+          </tbody>
+        </Table>
+        <p>Location identifier: {locationData[0]}</p>
         <Form>
           <Form.Group className="my-3">
-            <Form.Label>Assign teams</Form.Label>
+            <Form.Label><b>Assign teams</b></Form.Label>
             <Select
               isMulti
               isClearable
