@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
-import { Table } from 'react-bootstrap';
+import { Form, Table } from 'react-bootstrap';
 import { useTable, useExpanded } from 'react-table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3 } from '../../constants';
+import Select, { Options, MultiValue } from 'react-select';
+
+interface Option {
+  value: string;
+  label: string;
+}
 
 interface Props {
   columns: any;
@@ -10,9 +16,21 @@ interface Props {
   clickHandler: (id: string, el?: any) => void;
   sortHandler: (field: string, direction: boolean) => void;
   checkHandler: (id: string, checked: boolean) => void;
+  selectHandler: (id: string, selectedTeams: MultiValue<Option>) => void;
+  organizationList: Options<Option>;
+  teamTab: boolean;
 }
 
-const LocationAssignmentsTable = ({ columns, data, clickHandler, sortHandler, checkHandler }: Props) => {
+const LocationAssignmentsTable = ({
+  columns,
+  data,
+  clickHandler,
+  selectHandler,
+  sortHandler,
+  checkHandler,
+  organizationList,
+  teamTab
+}: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
 
@@ -35,6 +53,7 @@ const LocationAssignmentsTable = ({ columns, data, clickHandler, sortHandler, ch
           identifier: el.identifier,
           children: el.children,
           active: el.active,
+          teams: el.teams,
           properties: {
             name: el.properties.name,
             status: el.properties.status,
@@ -59,7 +78,7 @@ const LocationAssignmentsTable = ({ columns, data, clickHandler, sortHandler, ch
   );
 
   return (
-    <Table bordered responsive hover {...getTableProps()} className='mt-2'>
+    <Table bordered responsive hover {...getTableProps()} className="mt-2">
       <thead className="border border-2">
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
@@ -82,7 +101,7 @@ const LocationAssignmentsTable = ({ columns, data, clickHandler, sortHandler, ch
                   ) : (
                     <FontAwesomeIcon className="ms-1" icon="sort-down" />
                   )
-                ) : column.id !== 'expander' ? (
+                ) : column.id !== 'expander' && column.id !== 'checkbox' ? (
                   <FontAwesomeIcon className="ms-1" icon="sort" />
                 ) : null}
               </th>
@@ -100,18 +119,45 @@ const LocationAssignmentsTable = ({ columns, data, clickHandler, sortHandler, ch
                 let rowData = row.original as any;
                 if (cell.column.id === 'checkbox') {
                   return (
-                    <td className='text-center' key={(row.original as any).identifier}>
-                      <input type='checkbox' checked={rowData.active} style={{height: '1.1em', width: '1.1em'}} onChange={e => {
-                        checkHandler(rowData.identifier, e.target.checked);
-                      }} />
+                    <td {...cell.getCellProps()} className="text-center align-middle">
+                      <Form.Check
+                        disabled={teamTab}
+                        checked={rowData.active}
+                        onChange={e => {
+                          checkHandler(rowData.identifier, e.target.checked);
+                        }}
+                      />
+                    </td>
+                  );
+                } else if (cell.column.id === 'teams') {
+                  return (
+                    <td {...cell.getCellProps()}>
+                      <Select
+                        menuPosition="fixed"
+                        isDisabled={!rowData.active}
+                        isMulti
+                        options={organizationList}
+                        value={
+                          rowData.teams !== undefined
+                            ? rowData.teams.map((el: any) => {
+                                return {
+                                  value: el.identifier,
+                                  label: el.name
+                                };
+                              })
+                            : []
+                        }
+                        onChange={selected => selectHandler(rowData.identifier, selected)}
+                      />
                     </td>
                   );
                 } else {
                   return (
                     <td
+                      className="align-middle"
                       {...cell.getCellProps()}
                       onClick={() => {
-                        if (cell.column.id !== 'expander') {
+                        if (cell.column.id !== 'expander' && teamTab) {
                           clickHandler(rowData.identifier, rowData);
                         }
                       }}

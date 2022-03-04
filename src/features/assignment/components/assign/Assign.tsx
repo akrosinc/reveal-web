@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useEffect, useState } from 'react';
-import { Row, Col, Container, Collapse, Button } from 'react-bootstrap';
-import { Link, useParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Row, Col, Container, Collapse, Button, Tabs, Tab } from 'react-bootstrap';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import MapView from '../../../../components/MapBox/MapView';
 import { ASSIGNMENT_PAGE, LOCATION_TABLE_COLUMNS } from '../../../../constants';
 import { getPlanById } from '../../../plan/api';
@@ -12,18 +12,32 @@ import { showLoader } from '../../../reducers/loader';
 import LocationAssignmentsTable from '../../../../components/Table/LocationAssignmentsTable';
 import { ErrorModel, PageableModel } from '../../../../api/providers';
 import { LocationModel } from '../../../location/providers/types';
-import { assignLocationsToPlan, getLocationHierarchyByPlanId } from '../../api';
+import { assignLocationsToPlan, getAssignedLocationHierarcyCount, getLocationHierarchyByPlanId } from '../../api';
 import { toast } from 'react-toastify';
+import { getLocationById } from '../../../location/api';
+import { MultiValue, Options } from 'react-select';
+import { getOrganizationList } from '../../../organization/api';
+
+interface Option {
+  label: string;
+  value: string;
+}
 
 const Assign = () => {
   const [currentPlan, setCurrentPlan] = useState<PlanModel>();
   const [open, setOpen] = useState(false);
+  const [geoLocation, setGeoLocation] = useState<LocationModel>();
   const [locationHierarchy, setLocationHierarchy] = useState<PageableModel<LocationModel>>();
+  const [assignedLocations, setAssignedLocations] = useState(0);
+  const [activeTab, setActiveTab] = useState('location-assignment');
   const dispatch = useAppDispatch();
   let selectedLocationsIdentifiers: string[] = [];
-
   const { planId } = useParams();
-  useEffect(() => {
+  const [organizationsList, setOrganizationsList] = useState<Options<Option>>([]);
+  const navigate = useNavigate();
+  const [notInMove, setNotInMove] = useState(true);
+
+  const loadData = useCallback(() => {
     dispatch(showLoader(true));
     if (planId !== undefined) {
       getPlanById(planId)
@@ -32,10 +46,31 @@ const Assign = () => {
           getLocationHierarchyByPlanId(planId).then(res => {
             setLocationHierarchy(res);
           });
+          getAssignedLocationHierarcyCount(planId).then(res => {
+            setAssignedLocations(res.count);
+            setActiveTab(res.count ? 'team-assignment' : 'location-assignment');
+          });
+          getOrganizationList(50, 0).then(res => {
+            let a = res.content.map(el => {
+              return {
+                value: el.identifier,
+                label: el.name
+              };
+            });
+            setOrganizationsList(a);
+          });
+        })
+        .catch(err => {
+          toast.error('Plan does not exist, redirected to assign page.');
+          navigate('/assign');
         })
         .finally(() => dispatch(showLoader(false)));
     }
-  }, [planId, dispatch]);
+  }, [planId, dispatch, navigate]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const columns = React.useMemo(
     () => [
@@ -76,6 +111,37 @@ const Assign = () => {
     []
   );
 
+  const checkHandler = (id: string, checked: boolean) => {
+    let selectedHierarchy = { ...locationHierarchy } as PageableModel<LocationModel>;
+    selectedHierarchy.content?.forEach(location => {
+      if (location.identifier === id) {
+        location.active = checked;
+        checkChildren(location, checked);
+      } else if (location.children.length) {
+        findLocationToCheck(id, location.children, checked);
+      }
+    });
+    setLocationHierarchy(selectedHierarchy);
+  };
+
+  const selectHandler = (id: string, selected: MultiValue<Option>) => {
+    let selectedHierarchy = { ...locationHierarchy } as PageableModel<LocationModel>;
+    selectedHierarchy.content?.forEach(location => {
+      if (location.identifier === id) {
+        location.teams = selected.map(team => {
+          return {
+            identifier: team.value,
+            name: team.label
+          };
+        });
+        selectChildren(location, selected);
+      } else if (location.children.length) {
+        findChildrenToSelect(id, location.children, selected);
+      }
+    });
+    setLocationHierarchy(selectedHierarchy);
+  };
+
   const findLocationToCheck = (id: string, children: LocationModel[], checked: boolean) => {
     children.forEach(childEl => {
       if (childEl.identifier === id) {
@@ -87,6 +153,48 @@ const Assign = () => {
     });
   };
 
+  const findChildrenToSelect = (id: string, children: LocationModel[], selected: MultiValue<Option>) => {
+    children.forEach(childEl => {
+      if (childEl.identifier === id) {
+        childEl.teams = selected.map(team => {
+          return {
+            identifier: team.value,
+            name: team.label
+          };
+        });
+        selectChildren(childEl, selected);
+      } else if (childEl.children.length) {
+        findChildrenToSelect(id, childEl.children, selected);
+      }
+    })
+  }
+
+  const checkChildren = (parentLocation: LocationModel, checked: boolean) => {
+    parentLocation.children.forEach(el => {
+      el.active = checked;
+      if (el.children.length) {
+        checkChildren(el, checked);
+      }
+    });
+  };
+
+  const selectChildren = (parentLocation: LocationModel, selected: MultiValue<Option>) => {
+    parentLocation.children.forEach(el => {
+      if (el.active) {
+        el.teams = selected.map(team => {
+          return {
+            identifier: team.value,
+            name: team.label
+          };
+      });
+    }
+      if (el.children.length) {
+        selectChildren(el, selected);
+      }
+    });
+  };
+
+  //creates an array of selected location identifiers
   const filterChildren = (location: LocationModel) => {
     if (location.active) {
       selectedLocationsIdentifiers.push(location.identifier);
@@ -98,36 +206,29 @@ const Assign = () => {
     }
   };
 
-  const checkChildren = (parentLocation: LocationModel, checked: boolean) => {
-    parentLocation.children.forEach(el => {
-      el.active = checked;
-      if (el.children.length) {
-        checkChildren(el, checked);
-      }
-    })
-  }
-
   const saveHandler = () => {
     if (planId) {
       dispatch(showLoader(true));
       locationHierarchy?.content.forEach(location => {
         filterChildren(location);
       });
-      toast.promise(assignLocationsToPlan(planId, selectedLocationsIdentifiers), {
-        pending: 'Loading...',
-        success: 'Locations assigned to plan successfully',
-        error: {
-          render({ data }: { data: ErrorModel }) {
-            dispatch(showLoader(false));
-            return data.message !== undefined ? data.message : 'An error has occured!';
+      toast
+        .promise(assignLocationsToPlan(planId, selectedLocationsIdentifiers), {
+          pending: 'Loading...',
+          success: 'Locations assigned to plan successfully',
+          error: {
+            render({ data }: { data: ErrorModel }) {
+              dispatch(showLoader(false));
+              return data.message !== undefined ? data.message : 'An error has occured!';
+            }
           }
-        }
-      }).finally(() => {
-        console.log(selectedLocationsIdentifiers);
-        //empty array after sending
-        selectedLocationsIdentifiers.length = 0;
-        dispatch(showLoader(false));
-      });
+        })
+        .finally(() => {
+          //empty array after sending
+          selectedLocationsIdentifiers.length = 0;
+          dispatch(showLoader(false));
+          loadData();
+        });
     }
   };
 
@@ -144,13 +245,7 @@ const Assign = () => {
         </Col>
       </Row>
       <hr className="my-3" />
-      <MapView
-        data={undefined}
-        locationChildList={[]}
-        startingZoom={12}
-        clearHandler={() => console.log('works')}
-        loadHandler={() => console.log('load')}
-      >
+      <MapView data={geoLocation} assignment startingZoom={12} clearHandler={() => setGeoLocation(undefined)} moveend={() => setNotInMove(true)}>
         <div className={classes.floatingLocationPickerAssign + ' bg-white p-2 rounded'}>
           <Button
             onClick={() => setOpen(!open)}
@@ -160,7 +255,7 @@ const Assign = () => {
             variant="light"
             className="text-start bg-white"
           >
-            Select locations
+            {assignedLocations ? `Assign Teams | Assigned Locations: ${assignedLocations}` : 'Select Locations'}
             {open ? (
               <FontAwesomeIcon className="ms-2 mt-1 float-end" icon="chevron-up" />
             ) : (
@@ -169,28 +264,88 @@ const Assign = () => {
           </Button>
           <Collapse in={open}>
             <div id="expand-table" className="mt-2">
-              <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
-                <LocationAssignmentsTable
-                  checkHandler={(id: string, checked: boolean) => {
-                    let b = { ...locationHierarchy } as PageableModel<LocationModel>;
-                    b.content?.forEach(el => {
-                      if (el.identifier === id) {
-                        el.active = checked;
-                        checkChildren(el, checked);
-                      } else if (el.children.length) {
-                        findLocationToCheck(id, el.children, checked);
+              <hr />
+              <Tabs
+                activeKey={activeTab}
+                onSelect={tab => {
+                  if (tab && assignedLocations) {
+                    setActiveTab(tab);
+                  } else {
+                    if (tab === 'team-assignment') {
+                      toast.warning('Please select and save at least one location to be able to assign teams.');
+                    }
+                    setActiveTab('location-assignment');
+                  }
+                }}
+                id="management-tab"
+                className="mb-3"
+                mountOnEnter={true}
+                unmountOnExit={true}
+              >
+                <Tab eventKey="location-assignment" title="Assign locations">
+                  <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
+                    <LocationAssignmentsTable
+                      organizationList={organizationsList}
+                      checkHandler={checkHandler}
+                      selectHandler={selectHandler}
+                      teamTab={false}
+                      columns={
+                        activeTab === 'team-assignment'
+                          ? [
+                              ...columns,
+                              {
+                                Header: 'Assign teams',
+                                id: 'teams'
+                              }
+                            ]
+                          : columns
                       }
-                    });
-                    setLocationHierarchy(b);
-                  }}
-                  columns={columns}
-                  clickHandler={(id: string, rowData: any) => console.log(id, rowData)}
-                  sortHandler={() => console.log('sort')}
-                  data={locationHierarchy?.content ?? []}
-                />
-              </div>
-              <hr className="my-3" />
-              <Button className="float-end mb-2" onClick={saveHandler}>
+                      clickHandler={(id: string, rowData: any) => {
+                        if (rowData.active) {
+                          getLocationById(id).then(res => {
+                            setGeoLocation(res);
+                          });
+                        }
+                      }}
+                      sortHandler={() => console.log('sort')}
+                      data={locationHierarchy?.content ?? []}
+                    />
+                  </div>
+                </Tab>
+                <Tab eventKey="team-assignment" title="Assign teams">
+                  <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
+                    <LocationAssignmentsTable
+                      teamTab={true}
+                      organizationList={organizationsList}
+                      checkHandler={checkHandler}
+                      selectHandler={selectHandler}
+                      columns={
+                        assignedLocations
+                          ? [
+                              ...columns,
+                              {
+                                Header: 'Assign teams',
+                                id: 'teams'
+                              }
+                            ]
+                          : columns
+                      }
+                      clickHandler={(id: string, rowData: any) => {
+                        if (rowData.active && notInMove) {                          
+                          getLocationById(id).then(res => {
+                            setNotInMove(false);
+                            setGeoLocation(res);
+                          });
+                        }
+                      }}
+                      sortHandler={() => console.log('sort')}
+                      data={locationHierarchy?.content ?? []}
+                    />
+                  </div>
+                </Tab>
+              </Tabs>
+              <hr className="my-2" />
+              <Button className="float-end mb-1 w-25" onClick={saveHandler}>
                 Save
               </Button>
             </div>
