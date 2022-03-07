@@ -94,9 +94,25 @@ const Assign = () => {
       {
         // Build our expander column
         id: 'expander', // Make sure it has an ID
-        Header: ({ getToggleAllRowsExpandedProps }: { getToggleAllRowsExpandedProps: Function }) => (
-          <span {...getToggleAllRowsExpandedProps()} ref={expandAll}>
-            Toggle
+        Header: ({
+          getToggleAllRowsExpandedProps,
+          isAllRowsExpanded,
+          toggleAllRowsExpanded
+        }: {
+          getToggleAllRowsExpandedProps: Function;
+          isAllRowsExpanded: Function;
+          toggleAllRowsExpanded: Function;
+        }) => (
+          <span className='py-2 pe-2' {...getToggleAllRowsExpandedProps({
+            onClick: () => {
+              toggleAllRowsExpanded(!isAllRowsExpanded)
+            }
+          })} ref={expandAll}>
+            {isAllRowsExpanded ? (
+              <FontAwesomeIcon className="ms-1" icon="chevron-down" />
+            ) : (
+              <FontAwesomeIcon className="ms-1" icon="chevron-right" />
+            )}
           </span>
         ),
         Cell: ({ row }: { row: any }) =>
@@ -377,6 +393,7 @@ const Assign = () => {
                             .then(res => {
                               setNotInMove(false);
                               setGeoLocation(res);
+                              setOpen(false);
                             })
                             .finally(() => dispatch(showLoader(false)));
                         }
