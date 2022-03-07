@@ -4,7 +4,7 @@ import './index.css';
 import { Button } from 'react-bootstrap';
 import { createLocation, createLocationLabel } from '../../utils';
 import { MAPBOX_STYLE } from '../../constants';
-import AssignModal from '../../features/assignment/components/assign/assignModal/AssignModal';
+import AssignModal from '../../features/assignment/components/assign/assignModal';
 import { Properties } from '../../features/location/providers/types';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';

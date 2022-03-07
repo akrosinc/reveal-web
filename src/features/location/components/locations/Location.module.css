@@ -15,8 +15,8 @@
 
 .floatingLocationPickerAssign {
   box-shadow: 5px 5px 4px rgba(24, 24, 24, 0.5);
-  width: 50vw;
-  min-width: 50vw;
+  width: 65vw;
+  min-width: 40vw;
   max-width: 65vw;
   max-height: 70vh;
   resize: horizontal;
@@ -34,5 +34,15 @@
     min-width: 80vw;
     resize: none;
     overflow-x: hidden;
+  }
+
+  .floatingLocationPickerAssign {
+    box-shadow: 5px 5px 4px rgba(24, 24, 24, 0.5);
+    width: 80vw;
+    min-width: 40vw;
+    max-width: 80vw;
+    max-height: 70vh;
+    resize: none;
+    overflow-x: auto;
   }
 }

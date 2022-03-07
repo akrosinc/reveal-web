@@ -1,4 +1,4 @@
-import { AxiosResponse, CancelToken } from 'axios';
+import { AxiosResponse } from 'axios';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { USER } from '../../../constants';
@@ -22,11 +22,9 @@ export const getUserList = async (
   return data;
 };
 
-export const getUserById = async (id: string, cancelToken: CancelToken): Promise<UserModel> => {
+export const getUserById = async (id: string): Promise<UserModel> => {
   const data = await api
-    .get<UserModel>(USER + `/${id}`, {
-      cancelToken: cancelToken
-    })
+    .get<UserModel>(USER + `/${id}`)
     .then(response => response.data);
   return data;
 };

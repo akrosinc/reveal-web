@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container } from 'react-bootstrap';
-import PlanList from '../../assignment/components/plans/PlanList';
+import PlanList from '../../assignment/components/plans';
 
 const Assignment = () => {
   return (

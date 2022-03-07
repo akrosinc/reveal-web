@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl, { Map } from 'mapbox-gl';
 import './index.css';
 import { Button, Col, Container, Modal, Row } from 'react-bootstrap';
-import { buildingData } from './jsonMocks';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 const legend = [
@@ -49,8 +48,8 @@ const MapViewDetail = () => {
     }
   });
 
-  const loadBuildings = () => {
-    buildingData.forEach((jsonData, index) => {
+  const loadBuildings = (geoJsonData: any[]) => {
+    geoJsonData.forEach((jsonData, index) => {
       createBuilding(
         jsonData,
         'building.' + index,
@@ -170,7 +169,7 @@ const MapViewDetail = () => {
           <h4 className="text-light text-center pt-3">Intervention Demo</h4>
           <hr className="bg-light" />
           <div className="p-3">
-            <Button className="m-2 w-100" onClick={() => loadBuildings()}>
+            <Button className="m-2 w-100" onClick={() => loadBuildings([])}>
               Create building
             </Button>
             <Button

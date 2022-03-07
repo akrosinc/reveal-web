@@ -19,7 +19,8 @@ export interface LocationModel {
   properties: Properties;
   children: LocationModel[];
   active?: boolean;
-  teams: Organization[]
+  teams: Organization[];
+  overriden?: boolean;
 }
 
 export interface Organization {

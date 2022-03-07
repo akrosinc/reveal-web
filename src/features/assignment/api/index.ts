@@ -3,6 +3,7 @@ import { PageableModel } from "../../../api/providers";
 import { PLAN } from "../../../constants"
 import { LocationModel } from "../../location/providers/types";
 import { OrganizationModel } from "../../organization/providers/types";
+import { TeamAssignHierarchyRequest } from "../providers/types";
 
 export const getLocationHierarchyByPlanId = async (planId: string): Promise<PageableModel<LocationModel>> => {
     const data = await api.get<PageableModel<LocationModel>>(PLAN + `/${planId}/locationHierarchy`).then(response => response.data);
@@ -24,6 +25,11 @@ export const getAssignedLocationHierarcyCount = async (planId: string): Promise<
 
 export const assignTeamsToLocation = async (planId: string, locationId: string, teamIds: string[]): Promise<any> => {
     const data = await api.post(PLAN + `/${planId}/${locationId}/assignTeams`, {teams: teamIds}).then(response => response.data);
+    return data;
+}
+
+export const assignTeamsToLocationHierarchy = async (planId: string, locationTeam: TeamAssignHierarchyRequest): Promise<any> => {
+    const data = await api.post(PLAN + `/${planId}/assignLocationHierarchyTeams`, locationTeam).then(response => response.data);
     return data;
 }
 

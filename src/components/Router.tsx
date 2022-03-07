@@ -11,7 +11,7 @@ import ErrorPage from './pages/ErrorPage';
 import Location from '../features/pages/Location';
 import CreatePlan from '../features/plan/components/Plans/create';
 import Assignment from '../features/pages/AssignmentPage';
-import Assign from '../features/assignment/components/assign/Assign';
+import Assign from '../features/assignment/components/assign';
 
 export default function Router() {
   const { keycloak, initialized } = useKeycloak();

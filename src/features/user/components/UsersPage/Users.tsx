@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import UsersTable from '../../../../components/Table/UsersTable';
 import { UserModel } from '../../../user/providers/types';
-import { getUserList } from '../../api/';
+import { getUserById, getUserList } from '../../api/';
 import { useAppDispatch } from '../../../../store/hooks';
 import Paginator from '../../../../components/Pagination';
 import { DebounceInput } from 'react-debounce-input';
@@ -20,7 +20,7 @@ const Users = () => {
   const [userList, setUserList] = useState<PageableModel<UserModel>>();
   const [show, setShow] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [userId, setUserId] = useState('');
+  const [currentUser, setCurrentUser] = useState<UserModel>();
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
@@ -74,8 +74,14 @@ const Users = () => {
   };
 
   const openUserById = (id: string) => {
-    setUserId(id);
-    setShowEdit(true);
+    dispatch(showLoader(true));
+    getUserById(id)
+      .then(res => {
+        setCurrentUser(res);
+        setShowEdit(true);
+      })
+      .catch(err => toast.error(err.message ? err.message : 'There was an error loading this user.'))
+      .finally(() => dispatch(showLoader(false)));
   };
 
   const sortHanlder = (field: string, sortDirection: boolean) => {
@@ -90,7 +96,9 @@ const Users = () => {
 
   return (
     <>
-      <h2>{t('userPage.users')} ({userList?.totalElements ?? 0})</h2>
+      <h2>
+        {t('userPage.users')} ({userList?.totalElements ?? 0})
+      </h2>
       <Row className="my-4">
         <Col md={8} className="mb-2">
           <Button className="btn btn-primary float-end" onClick={() => handleShow()}>
@@ -119,10 +127,10 @@ const Users = () => {
         />
       ) : null}
       {show && <CreateUser show={show} handleClose={handleClose} />}
-      {showEdit && (
+      {showEdit && currentUser && (
         <ActionDialog
           closeHandler={handleClose}
-          element={<EditUser handleClose={handleClose} userId={userId} />}
+          element={<EditUser handleClose={handleClose} user={currentUser} />}
           title="User details"
         />
       )}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Form, Row, Col } from 'react-bootstrap';
-import { deleteUserById, getUserById, resetUserPassword, updateUser } from '../../../../user/api';
+import { deleteUserById, resetUserPassword, updateUser } from '../../../../user/api';
 import { EditUserModel, UserModel } from '../../../../user/providers/types';
 import { cancelTokenGenerator } from '../../../../../utils';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
@@ -14,7 +14,7 @@ import { ErrorModel } from '../../../../../api/providers';
 import { AxiosResponse, CancelToken } from 'axios';
 
 interface Props {
-  userId: string;
+  user: UserModel;
   handleClose: () => void;
 }
 
@@ -34,8 +34,7 @@ interface Options {
   label: string;
 }
 
-const EditUser = ({ userId, handleClose }: Props) => {
-  const [user, setUser] = useState<UserModel>();
+const EditUser = ({ user, handleClose }: Props) => {
   const [edit, setEdit] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
@@ -53,7 +52,6 @@ const EditUser = ({ userId, handleClose }: Props) => {
 
   const setStartValues = useCallback(
     (userDetails: UserModel) => {
-      setUser(userDetails);
       setValue('username', userDetails.username);
       setValue('firstname', userDetails.firstName);
       setValue('lastname', userDetails.lastName);
@@ -104,19 +102,9 @@ const EditUser = ({ userId, handleClose }: Props) => {
           })
         );
       });
-      getUserById(userId, cancelToken)
-        .then(res => {
-          setStartValues(res);
-        })
-        .catch((err: ErrorModel) => {
-          if (err.statusCode === 404) {
-            toast.error(err.message);
-          } else {
-            toast.error("Unexpected error.");
-          }
-        });
+      setStartValues(user);
     },
-    [userId, setStartValues]
+    [setStartValues, user]
   );
 
   useEffect(() => {
@@ -132,13 +120,13 @@ const EditUser = ({ userId, handleClose }: Props) => {
     setShowDialog(false);
     if (action) {
       dispatch(showLoader(true));
-      toast.promise(deleteUserById(userId), {
+      toast.promise(deleteUserById(user.identifier), {
         pending: 'Loading...',
         success: {
           render() {
             dispatch(showLoader(false));
             handleClose();
-            return `User with id ${userId} deleted successfully`;
+            return `User with id ${user.identifier} deleted successfully`;
           }
         },
         error: {
@@ -155,7 +143,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
     dispatch(showLoader(true));
     if (changePassword) {
       const passwordModel = {
-        identifier: userId,
+        identifier: user.identifier,
         password: formValues.password,
         tempPassword: formValues.isTemp
       };
@@ -181,7 +169,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
       });
     } else {
       let updatedUser: EditUserModel = {
-        identifier: userId,
+        identifier: user.identifier,
         email: formValues.email,
         firstName: formValues.firstname,
         lastName: formValues.lastname,
@@ -195,7 +183,7 @@ const EditUser = ({ userId, handleClose }: Props) => {
             render() {
               setEdit(false);
               handleClose();
-              return `User with id ${userId} updated successfully.`;
+              return `User with id ${user.identifier} updated successfully.`;
             }
           },
           error: {
