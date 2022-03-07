@@ -36,7 +36,7 @@ export const BULK_TABLE_COLUMNS = [
   { name: 'File name', sortValue: 'filename' },
   { name: 'Upload Date', sortValue: 'uploadedDatetime' },
   { name: 'Status', sortValue: 'status' },
-  { name: 'Uploaded By', sortValue: 'username'}
+  { name: 'Uploaded By', sortValue: 'username' }
 ];
 export const GEOGRAPHY_LEVEL_TABLE_COLUMNS = [
   { name: 'Name', sortValue: 'name' },
@@ -44,20 +44,25 @@ export const GEOGRAPHY_LEVEL_TABLE_COLUMNS = [
 ];
 
 export const LOCATION_HIERARCHY_TABLE_COLUMNS = [
-  { name: 'Name', sortValue: 'name'},
-  { name: 'Node Order', sortValue: 'nodeOrder'}
-]
+  { name: 'Name', sortValue: 'name' },
+  { name: 'Node Order', sortValue: 'nodeOrder' }
+];
 
 export const LOCATION_TABLE_COLUMNS = [
-  { Header: 'Location', accessor: 'properties.name'},
-  { Header: 'Geography Level', accessor: 'properties.geographicLevel'}
-]
+  { Header: 'Location', accessor: 'properties.name' },
+  { Header: 'Geography Level', accessor: 'properties.geographicLevel' },
+  { Header: 'Select', id: 'checkbox' },
+  { Header: 'Assign teams', id: 'teams' }
+];
 
 export const PLAN_TABLE_COLUMNS = [
-  { name: 'Title', sortValue: 'title'},
-  { name: 'Status', sortValue: 'status'},
-  { name: 'Intervention Type', sortValue: 'interventionType'},
-  { name: 'Location Hierarchy', sortValue: 'locationHierarchy'},
-  { name: 'Start Date', sortValue: 'effectivePeriodStart'},
-  { name: 'End Date', sortValue: 'effectivePeriodEnd'},
-]
+  { name: 'Title', sortValue: 'title' },
+  { name: 'Status', sortValue: 'status' },
+  { name: 'Intervention Type', sortValue: 'interventionType' },
+  { name: 'Location Hierarchy', sortValue: 'locationHierarchy' },
+  { name: 'Start Date', sortValue: 'effectivePeriodStart' },
+  { name: 'End Date', sortValue: 'effectivePeriodEnd' }
+];
+
+export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';
+export const LOCATION_TEAM_ASSIGNMENT_TAB = 'team-assignment';
