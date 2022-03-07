@@ -13,6 +13,16 @@
   overflow-x: auto;
 }
 
+.floatingLocationPickerAssign {
+  box-shadow: 5px 5px 4px rgba(24, 24, 24, 0.5);
+  width: 50vw;
+  min-width: 50vw;
+  max-width: 65vw;
+  max-height: 70vh;
+  resize: horizontal;
+  overflow-x: auto;
+}
+
 
 @media screen and (max-width: 768px) {
   .layoutHeight {

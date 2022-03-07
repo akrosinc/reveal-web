@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Pie, Doughnut } from 'react-chartjs-2';
 import { Chart, registerables } from 'chart.js';
 import { Col, Row } from 'react-bootstrap';
-import { getOrganizationCount } from '../organization/api';
+import { getOrganizationCount, getOrganizationList } from '../organization/api';
 import { getUserList } from '../user/api';
-import { getPlanCount } from '../plan/api';
+import { getPlanCount, getPlanList } from '../plan/api';
 import { useAppDispatch } from '../../store/hooks';
 import { showLoader } from '../reducers/loader';
 Chart.register(...registerables);
@@ -16,9 +16,15 @@ const Dashboard = () => {
 
   useEffect(() => {
     dispatch(showLoader(true));
-    Promise.all([getOrganizationCount(), getUserList(5, 0), getPlanCount()]).then(
-      async ([organizationCount, userCount, planCount]) => {
-        if (userCount.totalElements !== 0 || organizationCount.count !== 0 || planCount.count !== 0) {
+    Promise.all([
+      getOrganizationCount(),
+      getUserList(5, 0),
+      getPlanCount(),
+      getOrganizationList(50, 0),
+      getPlanList(50, 0, true)
+    ])
+      .then(async ([organizationCount, userCount, planCount, orgList, planList]) => {
+        if (userCount.totalElements > 0 || organizationCount.count > 0 || planCount.count > 0) {
           setData({
             labels: ['Users', 'Organizations', 'Plans'],
             datasets: [
@@ -31,18 +37,26 @@ const Dashboard = () => {
             ]
           });
         }
-        setDougData({
-          labels: ['Active Plans', 'Active Organizations'],
-          datasets: [
-            {
-              label: '# of active',
-              data: [2, 3],
-              backgroundColor: ['#198754', '#34568B']
-            }
-          ]
-        });
-      }
-    ).catch(err => console.log(err)).finally(() => dispatch(showLoader(false)));
+        let activePlansCount = planList.content.filter(el => el.status === 'ACTIVE').length;
+        let activeOrganizationsCount = orgList.content.filter(el => el.active).length;
+        if (activePlansCount > 0 || activeOrganizationsCount > 0) {
+          setDougData({
+            labels: ['Active Plans', 'Active Organizations'],
+            datasets: [
+              {
+                label: '# of active',
+                data: [
+                  activePlansCount,
+                  activeOrganizationsCount
+                ],
+                backgroundColor: ['#198754', '#34568B']
+              }
+            ]
+          });
+        }
+      })
+      .catch(err => console.log(err))
+      .finally(() => dispatch(showLoader(false)));
   }, [dispatch]);
 
   return (
@@ -59,10 +73,12 @@ const Dashboard = () => {
                 maintainAspectRatio: false
               }}
             />
-          ) : <p className='lead mt-5'>No data to display.</p>}
+          ) : (
+            <p className="lead mt-5">No data to display.</p>
+          )}
         </Col>
         <Col md={6}>
-          {dougData !== undefined && dougData.datasets[0].data.length && (
+          {dougData !== undefined && dougData.datasets[0].data.length ? (
             <Doughnut
               data={dougData}
               height="450px"
@@ -74,6 +90,8 @@ const Dashboard = () => {
                 cutout: 120
               }}
             />
+          ) : (
+            <p className="lead mt-5">No data to display.</p>
           )}
         </Col>
       </Row>

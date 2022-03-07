@@ -42,15 +42,27 @@ export const createLocation = (map: mapboxgl.Map, data: any): void => {
       }
     });
     map.addLayer({
-        id: data.identifier + 'Fill',
-        type: 'fill',
-        source: data.identifier,
-        layout: {},
-        paint: {
-          'fill-color': data.properties.geographicLevel === 'country' ? 'yellow' : 'blue',
-          'fill-opacity': 0.5
-        }
-      });
+      id: data.identifier + 'Fill',
+      type: 'fill',
+      source: data.identifier,
+      layout: {},
+      paint: {
+        'fill-color': data.properties.geographicLevel === 'country' ? 'yellow' : 'blue',
+        'fill-opacity': 0.5
+      }
+    });
+    //set center label
+    let centerLabel = getPolygonCenter(data);
+    map.fitBounds(
+      centerLabel.bounds,
+      {
+        padding: 20
+      },
+      {
+        data: data,
+        center: centerLabel.center
+      }
+    );
   }
 };
 

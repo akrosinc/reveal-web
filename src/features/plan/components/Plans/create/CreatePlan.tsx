@@ -157,7 +157,12 @@ const CreatePlan = () => {
 
   const deleteGoal = (goalId: string) => {
     ConfirmDialogService(({ giveAnswer }) => (
-      <ConfirmDialog closeHandler={giveAnswer} backdrop message={"Are you sure you want to delete goal with identifier: " + goalId + "?"} title="Delete Goal" />
+      <ConfirmDialog
+        closeHandler={giveAnswer}
+        backdrop
+        message={'Are you sure you want to delete goal with identifier: ' + goalId + '?'}
+        title="Delete Goal"
+      />
     )).then(res => {
       if (res) {
         if (id) {
@@ -189,13 +194,23 @@ const CreatePlan = () => {
     }
   };
 
+  const populateNameHandler = (e: any) => {
+    setValue('name', e.target.value.replaceAll(" ", '-').toLowerCase());
+  }
+
   return (
-    <Container fluid className="my-4">
-      <Link to={PLANS} className="btn btn-primary mb-4 px-4">
-        <FontAwesomeIcon size="lg" icon="arrow-left" />
-      </Link>
-      <h2>{id !== undefined ? 'Plan details' : 'Create Plan'}</h2>
-      <hr />
+    <Container fluid>
+      <Row className='mt-3 align-items-center'>
+        <Col md={3}>
+          <Link to={PLANS} className="btn btn-primary">
+            <FontAwesomeIcon icon="arrow-left" className='me-2' /> Plans
+          </Link>
+        </Col>
+        <Col md={6} className="text-center">
+          <h2 className='m-0'>{id !== undefined ? 'Plan details' : 'Create Plan'}</h2>
+        </Col>
+      </Row>
+      <hr className='my-3' />
       <Row>
         <Col md={8} className="mx-auto">
           <Form>
@@ -239,6 +254,7 @@ const CreatePlan = () => {
                       }
                     })}
                     type="name"
+                    readOnly={true}
                     placeholder="Enter plan name"
                   />
                   {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
@@ -256,6 +272,7 @@ const CreatePlan = () => {
                     })}
                     type="text"
                     placeholder="Enter plan title"
+                    onChange={populateNameHandler}
                   />
                   {errors.title && <Form.Label className="text-danger">{errors.title.message}</Form.Label>}
                 </Form.Group>
@@ -392,7 +409,7 @@ const CreatePlan = () => {
             </Tabs>
             {id !== undefined && activeTab === 'plan-details' && (
               <Button
-              disabled={!isDirty}
+                disabled={!isDirty}
                 onClick={() => {
                   handleSubmit(updatePlanHandler)();
                 }}

@@ -20,7 +20,7 @@ const Management = () => {
     <Container fluid className="my-4 px-2">
       <Tabs
         defaultActiveKey={checkTab()}
-        id="uncontrolled-tab-example"
+        id="management-tab"
         className="mb-3"
         mountOnEnter={true}
         unmountOnExit={true}

@@ -102,10 +102,10 @@ const Locations = () => {
             <span
               {...row.getToggleRowExpandedProps({
                 style: {
-                  // We can even use the row.depth property
+                  // Use the row.depth property
                   // and paddingLeft to indicate the depth
                   // of the row
-                  paddingLeft: `${row.depth * 2}rem`,
+                  paddingLeft: `${row.depth}rem`,
                   paddingTop: '15px',
                   paddingBottom: '15px',
                   paddingRight: '15px'
@@ -126,13 +126,22 @@ const Locations = () => {
   );
 
   const clearHandler = () => {
-    setCurrentLocation(undefined);
-    setCurrentLocationChildList(undefined);
+    if (currentLocationChildList) {
+      loadNew(undefined);
+      setCurrentLocation(undefined);
+      setCurrentLocationChildList(undefined);
+    } else {
+      setCurrentLocation(undefined);
+      setCurrentLocationChildList(undefined);
+    }
   }
 
+  //Functions to load child locations
   const loadNew = (data: any) => {
-    setCurrentLocationChildList(data.children !== undefined ? data.children : []);
-    setCurrentLocation(data);
+    if (data) {
+      setCurrentLocationChildList(data.children !== undefined ? data.children : []);
+      setCurrentLocation(data);
+    }
   }
 
   return (
@@ -151,7 +160,7 @@ const Locations = () => {
             : 'To inspect a location on the map select location from locations browser menu.'}
         </p>
       </Card>
-      <MapView data={currentLocation} locationChildList={currentLocationChildList ?? []} startingZoom={12} clearHandler={clearHandler} loadHandler={loadNew}>
+      <MapView data={currentLocation} startingZoom={12} assignment={false} clearHandler={clearHandler}>
         <div className={classes.floatingLocationPicker + ' bg-white p-2 rounded'}>
           <Button
             onClick={() => setOpen(!open)}
