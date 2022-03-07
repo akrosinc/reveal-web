@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Row, Col, Container, Collapse, Button, Tabs, Tab } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import MapView from '../../../../components/MapBox/MapView';
-import { ASSIGNMENT_PAGE, LOCATION_TABLE_COLUMNS } from '../../../../constants';
+import { ASSIGNMENT_PAGE, LOCATION_ASSIGNMENT_TAB, LOCATION_TABLE_COLUMNS, LOCATION_TEAM_ASSIGNMENT_TAB } from '../../../../constants';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
 import classes from '../../../location/components/locations/Location.module.css';
@@ -29,9 +29,10 @@ const Assign = () => {
   const [geoLocation, setGeoLocation] = useState<LocationModel>();
   const [locationHierarchy, setLocationHierarchy] = useState<PageableModel<LocationModel>>();
   const [assignedLocations, setAssignedLocations] = useState(0);
-  const [activeTab, setActiveTab] = useState('location-assignment');
+  const [activeTab, setActiveTab] = useState(LOCATION_ASSIGNMENT_TAB);
   const dispatch = useAppDispatch();
-  let selectedLocationsIdentifiers: string[] = [];
+  const selectedLocationsIdentifiers: string[] = [];
+  const selectedLocationsTeams: LocationModel[] = []; 
   const { planId } = useParams();
   const [organizationsList, setOrganizationsList] = useState<Options<Option>>([]);
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ const Assign = () => {
           });
           getAssignedLocationHierarcyCount(planId).then(res => {
             setAssignedLocations(res.count);
-            setActiveTab(res.count ? 'team-assignment' : 'location-assignment');
+            setActiveTab(res.count ? LOCATION_TEAM_ASSIGNMENT_TAB : LOCATION_ASSIGNMENT_TAB);
           });
           getOrganizationList(50, 0).then(res => {
             let a = res.content.map(el => {
@@ -103,10 +104,6 @@ const Assign = () => {
           ) : null
       },
       ...LOCATION_TABLE_COLUMNS,
-      {
-        Header: 'Select',
-        id: 'checkbox'
-      }
     ],
     []
   );
@@ -198,6 +195,7 @@ const Assign = () => {
   const filterChildren = (location: LocationModel) => {
     if (location.active) {
       selectedLocationsIdentifiers.push(location.identifier);
+      selectedLocationsTeams.push(location);
     }
     if (location.children.length) {
       location.children.forEach(childLocation => {
@@ -212,7 +210,8 @@ const Assign = () => {
       locationHierarchy?.content.forEach(location => {
         filterChildren(location);
       });
-      toast
+      if (activeTab === LOCATION_ASSIGNMENT_TAB) {
+        toast
         .promise(assignLocationsToPlan(planId, selectedLocationsIdentifiers), {
           pending: 'Loading...',
           success: 'Locations assigned to plan successfully',
@@ -226,9 +225,14 @@ const Assign = () => {
         .finally(() => {
           //empty array after sending
           selectedLocationsIdentifiers.length = 0;
+          selectedLocationsTeams.length = 0;
           dispatch(showLoader(false));
           loadData();
         });
+      } else {
+        // assign teams to selected locations
+        dispatch(showLoader(false));
+      }
     }
   };
 
@@ -278,18 +282,16 @@ const Assign = () => {
                   if (tab && assignedLocations) {
                     setActiveTab(tab);
                   } else {
-                    if (tab === 'team-assignment') {
+                    if (tab === LOCATION_TEAM_ASSIGNMENT_TAB) {
                       toast.warning('Please select and save at least one location to be able to assign teams.');
                     }
-                    setActiveTab('location-assignment');
+                    setActiveTab(LOCATION_ASSIGNMENT_TAB);
                   }
                 }}
                 id="management-tab"
                 className="mb-3"
-                mountOnEnter={true}
-                unmountOnExit={true}
               >
-                <Tab eventKey="location-assignment" title="Assign locations">
+                <Tab eventKey={LOCATION_ASSIGNMENT_TAB} title="Assign locations">
                   <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
                     <LocationAssignmentsTable
                       organizationList={organizationsList}
@@ -309,24 +311,14 @@ const Assign = () => {
                     />
                   </div>
                 </Tab>
-                <Tab eventKey="team-assignment" title="Assign teams">
+                <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title="Assign teams">
                   <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
                     <LocationAssignmentsTable
                       teamTab={true}
                       organizationList={organizationsList}
                       checkHandler={checkHandler}
                       selectHandler={selectHandler}
-                      columns={
-                        assignedLocations
-                          ? [
-                              ...columns,
-                              {
-                                Header: 'Assign teams',
-                                id: 'teams'
-                              }
-                            ]
-                          : columns
-                      }
+                      columns={columns}
                       clickHandler={(id: string, rowData: any) => {
                         if (rowData.active && notInMove) {
                           dispatch(showLoader(true));
