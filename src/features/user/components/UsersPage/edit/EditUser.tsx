@@ -227,6 +227,7 @@ const EditUser = ({ user, handleClose }: Props) => {
           <Form.Group className="mb-3">
             <Form.Label>Change password</Form.Label>
             <Form.Control
+              id="new-password-input"
               type="password"
               placeholder="Enter new password"
               {...register('password', { required: 'Password must containt at least 5 characters', minLength: 5 })}
@@ -245,6 +246,7 @@ const EditUser = ({ user, handleClose }: Props) => {
               <Form.Group className="mb-3">
                 <Form.Label>First name</Form.Label>
                 <Form.Control
+                  id="first-name-input"
                   readOnly={!edit}
                   type="text"
                   placeholder="Enter first name"
@@ -264,6 +266,7 @@ const EditUser = ({ user, handleClose }: Props) => {
               <Form.Group className="mb-3">
                 <Form.Label>Last name</Form.Label>
                 <Form.Control
+                  id="last-name-input"
                   readOnly={!edit}
                   type="text"
                   placeholder="Enter last name"
@@ -283,6 +286,7 @@ const EditUser = ({ user, handleClose }: Props) => {
           <Form.Group className="mb-3">
             <Form.Label>Email address</Form.Label>
             <Form.Control
+              id="email-input"
               readOnly={!edit}
               type="email"
               placeholder="Enter email"
@@ -300,6 +304,7 @@ const EditUser = ({ user, handleClose }: Props) => {
           <Form.Group className="mb-3">
             <Form.Label>Security groups</Form.Label>
             <Select
+              id="security-groups-select"
               {...register('securityGroups', { required: false })}
               isDisabled={!edit}
               isMulti
@@ -312,6 +317,7 @@ const EditUser = ({ user, handleClose }: Props) => {
           <Form.Group className="mb-3">
             <Form.Label>Organization</Form.Label>
             <Select
+              id="organizations-select"
               {...register('organizations', { required: false })}
               isDisabled={!edit}
               isMulti
@@ -325,13 +331,25 @@ const EditUser = ({ user, handleClose }: Props) => {
       <hr />
       {edit ? (
         <>
-          <Button className="float-start" onClick={() => setChangePassword(!changePassword)} hidden={changePassword}>
+          <Button
+            id="change-password-button"
+            className="float-start"
+            onClick={() => setChangePassword(!changePassword)}
+            hidden={changePassword}
+          >
             Change password
           </Button>
-          <Button className="float-end" variant="primary" disabled={!isDirty} onClick={handleSubmit(submitHandler)}>
+          <Button
+            id="save-button"
+            className="float-end"
+            variant="primary"
+            disabled={!isDirty}
+            onClick={handleSubmit(submitHandler)}
+          >
             Save
           </Button>
           <Button
+            id="discard-button"
             className="float-end me-2 btn-secondary"
             onClick={() => {
               setEdit(!edit);
@@ -343,13 +361,18 @@ const EditUser = ({ user, handleClose }: Props) => {
         </>
       ) : (
         <>
-          <Button className="float-end" variant="primary" onClick={() => setEdit(!edit)}>
+          <Button id="edit-button" className="float-end" variant="primary" onClick={() => setEdit(!edit)}>
             Edit
           </Button>
-          <Button className="float-end me-2" variant="primary" onClick={() => setShowDialog(!showDialog)}>
+          <Button
+            id="delete-button"
+            className="float-end me-2"
+            variant="primary"
+            onClick={() => setShowDialog(!showDialog)}
+          >
             Delete
           </Button>
-          <Button className="float-start" variant="secondary" onClick={handleClose}>
+          <Button id="close-button" className="float-start" variant="secondary" onClick={handleClose}>
             Close
           </Button>
         </>

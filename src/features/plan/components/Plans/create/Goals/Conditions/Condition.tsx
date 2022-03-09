@@ -60,6 +60,7 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Entity</Form.Label>
             <Form.Select
+              id="condition-entity-select"
               {...register('entity', {
                 required: 'Entity title must not be empty.',
                 minLength: 1
@@ -75,6 +76,7 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Entity Properties</Form.Label>
             <Form.Select
+              id="entity-properties-select"
               placeholder="Enter entity Properties"
               {...register('entityProperties', {
                 required: 'Entity properties must not be empty.',
@@ -95,6 +97,7 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Operator</Form.Label>
             <Form.Select
+              id="operator-select"
               placeholder="Enter operator ( <, <=, >, >=, = )"
               {...register('operator', {
                 required: 'Operator field must be selected.',
@@ -114,6 +117,7 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Filter value</Form.Label>
             <Form.Control
+              id="filter-value-input"
               type="number"
               placeholder="Enter filter value"
               {...register('filterValue', {
@@ -123,13 +127,14 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
             />
             {errors.filterValue && <Form.Label className="text-danger">{errors.filterValue.message}</Form.Label>}
           </Form.Group>
-          <Accordion className="mt-4">
+          <Accordion id="target-cards" className="mt-4">
             <Accordion.Item eventKey="0">
               <Accordion.Header>Target</Accordion.Header>
               <Accordion.Body>
                 <Form.Group className="mb-2">
                   <Form.Label>Description</Form.Label>
                   <Form.Control
+                    id="target-description-input"
                     placeholder="Enter target description"
                     type="text"
                     {...register('description', {
@@ -142,6 +147,7 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
                 <Form.Group className="mb-2">
                   <Form.Label>Priority</Form.Label>
                   <Form.Select
+                    id="target-priority-input"
                     {...register('priority', {
                       required: 'Description must be selected.',
                       minLength: 1
@@ -187,6 +193,7 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
                 <Form.Group className="mb-2">
                   <Form.Label>Metric value</Form.Label>
                   <Form.Control
+                    id="target-metric-value-input"
                     placeholder="Enter metric value"
                     type="number"
                     {...register('metricValue', {
@@ -204,6 +211,7 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
       </Modal.Body>
       <Modal.Footer>
         <Button
+          id="condition-discard-button"
           variant="secondary"
           onClick={() => {
             reset();
@@ -212,7 +220,9 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
         >
           Discard
         </Button>
-        <Button onClick={handleSubmit(submitHandler)}>Submit</Button>
+        <Button id="condition-save-button" onClick={handleSubmit(submitHandler)}>
+          Submit
+        </Button>
       </Modal.Footer>
     </Modal>
   );

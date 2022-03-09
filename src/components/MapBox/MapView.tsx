@@ -124,6 +124,7 @@ const MapView = ({
           Lat: {lat} Lng: {lng} Zoom: {zoom}
         </p>
         <Button
+          id="clear-map-button"
           className="float-end"
           style={{ boxShadow: '4px 4px 3px rgba(24, 24, 24, 0.8)' }}
           onClick={() => deleteMapData()}
@@ -134,9 +135,9 @@ const MapView = ({
       <div ref={mapContainer} className="mapbox-container" />
       {show && locationData && (
         <AssignModal
-          closeHandler={() => {
+          closeHandler={(action: boolean) => {
             setShow(false);
-            if (reloadData) reloadData();
+            if (reloadData && action) reloadData();
           }}
           locationData={locationData}
         />

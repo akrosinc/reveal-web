@@ -195,27 +195,28 @@ const CreatePlan = () => {
   };
 
   const populateNameHandler = (e: any) => {
-    setValue('name', e.target.value.replaceAll(" ", '-').toLowerCase());
-  }
+    setValue('name', e.target.value.replaceAll(' ', '-').toLowerCase());
+  };
 
   return (
     <Container fluid>
-      <Row className='mt-3 align-items-center'>
+      <Row className="mt-3 align-items-center">
         <Col md={3}>
-          <Link to={PLANS} className="btn btn-primary">
-            <FontAwesomeIcon icon="arrow-left" className='me-2' /> Plans
+          <Link id="back-button" to={PLANS} className="btn btn-primary">
+            <FontAwesomeIcon icon="arrow-left" className="me-2" /> Plans
           </Link>
         </Col>
         <Col md={6} className="text-center">
-          <h2 className='m-0'>{id !== undefined ? 'Plan details' : 'Create Plan'}</h2>
+          <h2 className="m-0">{id !== undefined ? 'Plan details' : 'Create Plan'}</h2>
         </Col>
       </Row>
-      <hr className='my-3' />
+      <hr className="my-3" />
       <Row>
         <Col md={8} className="mx-auto">
           <Form>
             {activeTab === 'create-goals' && (
               <Button
+                id="add-goal-button"
                 className="float-end"
                 style={{ marginLeft: '-45px' }}
                 onClick={() => {
@@ -226,6 +227,7 @@ const CreatePlan = () => {
               </Button>
             )}
             <Tabs
+              id="plans"
               className="mb-3"
               activeKey={activeTab}
               onSelect={tabName => {
@@ -246,6 +248,7 @@ const CreatePlan = () => {
                 <Form.Group className="mb-2">
                   <Form.Label>Plan name</Form.Label>
                   <Form.Control
+                    id="plan-name-input"
                     {...register('name', {
                       required: 'Plan name must not be empty',
                       pattern: {
@@ -262,6 +265,7 @@ const CreatePlan = () => {
                 <Form.Group className="mb-2">
                   <Form.Label>Plan title</Form.Label>
                   <Form.Control
+                    id="plan-title-input"
                     {...register('title', {
                       required: 'Plan title must not be empty.',
                       minLength: 1,
@@ -286,6 +290,7 @@ const CreatePlan = () => {
                         rules={{ required: 'Start date must be selected!' }}
                         render={({ field: { onChange, value } }) => (
                           <DatePicker
+                            id="start-date-picker"
                             placeholderText="Select date"
                             onChange={e => {
                               resetField('effectivePeriod.end');
@@ -318,6 +323,7 @@ const CreatePlan = () => {
                         }}
                         render={({ field: { onChange, value } }) => (
                           <DatePicker
+                            id="end-date-picker"
                             placeholderText="Select date"
                             onChange={onChange}
                             selected={value}
@@ -348,6 +354,7 @@ const CreatePlan = () => {
                     rules={{ required: 'Please selecet location hierarchy.', minLength: 1 }}
                     render={({ field }) => (
                       <Select
+                        id="hierarchy-select"
                         menuPosition="fixed"
                         options={hierarchyList}
                         value={selectedHierarchy}
@@ -370,6 +377,7 @@ const CreatePlan = () => {
                     name="interventionType"
                     render={({ field }) => (
                       <Select
+                        id="intervetion-type-select"
                         menuPosition="fixed"
                         options={interventionTypeList}
                         value={selectedInterventionType}
@@ -386,7 +394,7 @@ const CreatePlan = () => {
                 </Form.Group>
               </Tab>
               <Tab eventKey="create-goals" title="Goals" style={{ minHeight: '406px' }}>
-                <Accordion defaultActiveKey="0" flush>
+                <Accordion id="plan-card" defaultActiveKey="0" flush>
                   {goalList.map(el => {
                     return (
                       <Item
@@ -409,6 +417,7 @@ const CreatePlan = () => {
             </Tabs>
             {id !== undefined && activeTab === 'plan-details' && (
               <Button
+                id="update-details-button"
                 disabled={!isDirty}
                 onClick={() => {
                   handleSubmit(updatePlanHandler)();
@@ -420,6 +429,7 @@ const CreatePlan = () => {
             )}
             {id === undefined && (
               <Button
+                id="create-plan-button"
                 onClick={() => {
                   handleSubmit(createPlanHandler)();
                 }}

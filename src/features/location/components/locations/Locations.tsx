@@ -134,7 +134,7 @@ const Locations = () => {
       setCurrentLocation(undefined);
       setCurrentLocationChildList(undefined);
     }
-  }
+  };
 
   //Functions to load child locations
   const loadNew = (data: any) => {
@@ -142,7 +142,7 @@ const Locations = () => {
       setCurrentLocationChildList(data.children !== undefined ? data.children : []);
       setCurrentLocation(data);
     }
-  }
+  };
 
   return (
     <>
@@ -163,6 +163,7 @@ const Locations = () => {
       <MapView data={currentLocation} startingZoom={12} assignment={false} clearHandler={clearHandler}>
         <div className={classes.floatingLocationPicker + ' bg-white p-2 rounded'}>
           <Button
+            id="dropdown-trigger-button"
             onClick={() => setOpen(!open)}
             aria-controls="expand-table"
             aria-expanded={open}
@@ -182,6 +183,7 @@ const Locations = () => {
               {locationList?.content !== undefined && locationList.totalElements > 0 ? (
                 <>
                   <Select
+                    id="hierarchy-select"
                     className="mb-2"
                     placeholder="Select Location Hierarcy"
                     menuPosition="fixed"
@@ -196,6 +198,7 @@ const Locations = () => {
                     }}
                   />
                   <DebounceInput
+                    id="search-input"
                     className="form-control mb-2"
                     placeholder={t('userPage.search')}
                     debounceTimeout={800}
@@ -210,7 +213,7 @@ const Locations = () => {
                         setCurrentLocationChildList(col.children);
                         getLocationById(identifier)
                           .then(res => {
-                            setCurrentLocation(res);                            
+                            setCurrentLocation(res);
                           })
                           .catch(err => toast.error('Error loading geoJSON data'))
                           .finally(() => dispatch(showLoader(false)));

@@ -11,7 +11,7 @@ import { getOrganizationListSummary } from '../../../../organization/api';
 
 interface Props {
   locationData: [string, Properties];
-  closeHandler: () => void;
+  closeHandler: (action: boolean) => void;
 }
 
 const AssignModal = ({ locationData, closeHandler }: Props) => {
@@ -34,7 +34,7 @@ const AssignModal = ({ locationData, closeHandler }: Props) => {
             pending: 'Loading...',
             success: {
               render() {
-                closeHandler();
+                closeHandler(true);
                 return 'Teams assigned successfully.';
               }
             },
@@ -69,24 +69,18 @@ const AssignModal = ({ locationData, closeHandler }: Props) => {
   }, [locationData, planId]);
 
   return (
-    <Modal show centered size='lg'>
-      <Modal.Header className='justify-content-center'>
+    <Modal show centered size="lg">
+      <Modal.Header className="justify-content-center">
         <Modal.Title>{locationData[1].name}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <h5>Location info</h5>
-        <Table bordered responsive className='my-2'>
-          <thead className='border border-2'>
+        <Table bordered responsive className="my-2">
+          <thead className="border border-2">
             <tr>
-              <th>
-                Location name
-              </th>
-              <th>
-                Location type
-              </th>
-              <th>
-                Status
-              </th>
+              <th>Location name</th>
+              <th>Location type</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -100,8 +94,11 @@ const AssignModal = ({ locationData, closeHandler }: Props) => {
         <p>Location identifier: {locationData[0]}</p>
         <Form>
           <Form.Group className="my-3">
-            <Form.Label><b>Assign teams</b></Form.Label>
+            <Form.Label>
+              <b>Assign teams</b>
+            </Form.Label>
             <Select
+              id="team-assign-select"
               isMulti
               isClearable
               menuPosition="fixed"
@@ -113,10 +110,12 @@ const AssignModal = ({ locationData, closeHandler }: Props) => {
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={closeHandler}>
+        <Button id="close-assign-modal-button" variant="secondary" onClick={() => closeHandler(false)}>
           Close
         </Button>
-        <Button onClick={() => assignTeamsHandler()}>Save</Button>
+        <Button id="save-assign-modal-button" onClick={() => assignTeamsHandler()}>
+          Save
+        </Button>
       </Modal.Footer>
     </Modal>
   );

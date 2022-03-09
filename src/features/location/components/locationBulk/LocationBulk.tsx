@@ -77,7 +77,7 @@ const LocationBulk = () => {
   const paginationHandler = (size: number, page: number) => {
     if (openDetails) {
       dispatch(showLoader(true));
-      getLocationBulkListById(size, page, selectedBulkFile?.identifier ?? "")
+      getLocationBulkListById(size, page, selectedBulkFile?.identifier ?? '')
         .then(res => {
           setSelectedBulkLocationList(res);
         })
@@ -97,7 +97,7 @@ const LocationBulk = () => {
           </h2>
         </Col>
         <Col>
-          <Button className="float-end" onClick={() => setOpenUpload(true)}>
+          <Button id="import-locations-button" className="float-end" onClick={() => setOpenUpload(true)}>
             {t('userImportPage.bulkImport')}
           </Button>
         </Col>
@@ -110,6 +110,7 @@ const LocationBulk = () => {
             <tr>
               {BULK_TABLE_COLUMNS.map((el, index) => (
                 <th
+                  id={el.name + '-sort'}
                   key={index}
                   onClick={() => {
                     setSortDirection(!sortDirection);

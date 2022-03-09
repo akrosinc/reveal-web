@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Table } from 'react-bootstrap';
-import { useTable, useExpanded } from 'react-table';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useTable, useExpanded, Column } from 'react-table';
 import { ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3 } from '../../constants';
 import Select, { Options, MultiValue } from 'react-select';
 
@@ -11,10 +10,9 @@ interface Option {
 }
 
 interface Props {
-  columns: any;
+  columns: Column[];
   data: any;
   clickHandler: (id: string, el?: any) => void;
-  sortHandler: (field: string, direction: boolean) => void;
   checkHandler: (id: string, checked: boolean) => void;
   selectHandler: (id: string, selectedTeams: MultiValue<Option>) => void;
   organizationList: Options<Option>;
@@ -26,14 +24,10 @@ const LocationAssignmentsTable = ({
   data,
   clickHandler,
   selectHandler,
-  sortHandler,
   checkHandler,
   organizationList,
   teamTab
 }: Props) => {
-  const [sortDirection, setSortDirection] = useState(false);
-  const [activeSortField, setActiveSortField] = useState('');
-
   const getColorLevel = (depth: number) => {
     if (depth === 0) {
       return '';
@@ -73,7 +67,7 @@ const LocationAssignmentsTable = ({
       data,
       getSubRows: (row: any) => mapRows(row),
       autoResetExpanded: false,
-      initialState: {hiddenColumns: [teamTab ? '' : 'teams']},
+      initialState: { hiddenColumns: [teamTab ? 'checkbox' : 'teams'] }
     },
     useExpanded // Use the useExpanded plugin hook
   );
@@ -84,27 +78,8 @@ const LocationAssignmentsTable = ({
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
-              <th
-                style={{ width: column.id === 'expander' ? '37px' : 'auto' }}
-                onClick={() => {
-                  if (column.id !== 'expander') {
-                    setSortDirection(!sortDirection);
-                    setActiveSortField(column.Header?.toString() ?? '');
-                    sortHandler(column.id, sortDirection);
-                  }
-                }}
-                {...column.getHeaderProps()}
-              >
+              <th style={{ width: column.id === 'expander' ? '37px' : 'auto' }} {...column.getHeaderProps()}>
                 {column.render('Header')}
-                {activeSortField === column.render('Header') ? (
-                  sortDirection ? (
-                    <FontAwesomeIcon className="ms-1" icon="sort-up" />
-                  ) : (
-                    <FontAwesomeIcon className="ms-1" icon="sort-down" />
-                  )
-                ) : column.id !== 'expander' && column.id !== 'checkbox' && column.id !== 'teams' ? (
-                  <FontAwesomeIcon className="ms-1" icon="sort" />
-                ) : null}
               </th>
             ))}
           </tr>
@@ -122,6 +97,7 @@ const LocationAssignmentsTable = ({
                   return (
                     <td {...cell.getCellProps()} className="text-center align-middle">
                       <Form.Check
+                        id={rowData.identifier + '-checkbox'}
                         disabled={teamTab}
                         checked={rowData.active}
                         onChange={e => {
@@ -134,6 +110,7 @@ const LocationAssignmentsTable = ({
                   return (
                     <td {...cell.getCellProps()}>
                       <Select
+                        id={rowData.identifier + '-select'}
                         menuPosition="fixed"
                         isMulti
                         options={organizationList}
@@ -154,6 +131,7 @@ const LocationAssignmentsTable = ({
                 } else {
                   return (
                     <td
+                      id={rowData.identifier + '-row-click'}
                       className="align-middle"
                       {...cell.getCellProps()}
                       onClick={() => {

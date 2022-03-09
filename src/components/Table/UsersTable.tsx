@@ -25,6 +25,7 @@ const UsersTable = ({ rows, clickHandler, sortHandler }: Props) => {
           {USER_TABLE_COLUMNS.map((el, index) => {
             return (
               <th
+                id={el.name + '-sort'}
                 style={{ cursor: el.name !== 'Organization' ? 'pointer' : 'default' }}
                 key={index}
                 onClick={() => {
@@ -55,6 +56,7 @@ const UsersTable = ({ rows, clickHandler, sortHandler }: Props) => {
           ? rows.map((user, index) => {
               return (
                 <tr
+                  id={user.identifier + 'click-handler'}
                   key={index}
                   onClick={() => {
                     if (clickHandler !== undefined) {

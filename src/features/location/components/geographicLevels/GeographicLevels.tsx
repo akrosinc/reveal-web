@@ -31,7 +31,7 @@ const GeographicLevels = () => {
     setCurrentSortField(field);
     setCurrentSortDirection(sortDirection);
     if (geoLevelList !== undefined) {
-      getGeographicLevelList(geoLevelList.pageable.pageSize, 0, "", field, sortDirection).then(res => {
+      getGeographicLevelList(geoLevelList.pageable.pageSize, 0, '', field, sortDirection).then(res => {
         setGeoLevelList(res);
         dispatch(showLoader(false));
       });
@@ -52,13 +52,19 @@ const GeographicLevels = () => {
       setSelectedGeoLocation(data);
       setOpenEdit(true);
       dispatch(showLoader(false));
-    })
-  }
+    });
+  };
 
   const closeHandler = () => {
     setOpenCreate(false);
     setOpenEdit(false);
-    getGeographicLevelList(geoLevelList?.pageable.pageSize ?? PAGINATION_DEFAULT_SIZE, geoLevelList?.pageable.pageNumber ?? 0, "", currentSortField, currentSortDirection)
+    getGeographicLevelList(
+      geoLevelList?.pageable.pageSize ?? PAGINATION_DEFAULT_SIZE,
+      geoLevelList?.pageable.pageNumber ?? 0,
+      '',
+      currentSortField,
+      currentSortDirection
+    )
       .then(data => {
         setGeoLevelList(data);
       })
@@ -80,10 +86,12 @@ const GeographicLevels = () => {
     <>
       <Row>
         <Col>
-          <h2 className="m-0">{t('locationsPage.geographicLevels')} ({geoLevelList?.totalElements ?? 0})</h2>
+          <h2 className="m-0">
+            {t('locationsPage.geographicLevels')} ({geoLevelList?.totalElements ?? 0})
+          </h2>
         </Col>
         <Col>
-          <Button className="float-end" onClick={() => setOpenCreate(true)}>
+          <Button id="create-button" className="float-end" onClick={() => setOpenCreate(true)}>
             {t('buttons.create')}
           </Button>
         </Col>
@@ -97,6 +105,7 @@ const GeographicLevels = () => {
                 {GEOGRAPHY_LEVEL_TABLE_COLUMNS.map((el, index) => {
                   return (
                     <th
+                      id={el.name + '-sort'}
                       style={{ cursor: 'pointer' }}
                       key={index}
                       onClick={() => {

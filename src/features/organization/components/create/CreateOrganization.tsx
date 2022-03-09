@@ -68,6 +68,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
       <Form.Group className="my-4">
         <Form.Label>Organization name</Form.Label>
         <Form.Control
+          id='organization-name-input'
           {...register('name', {
             required: 'Organization name must not be empty.',
             minLength: 1,
@@ -82,7 +83,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Type</Form.Label>
-        <Form.Select {...register('type', { required: 'Organization type must be selected.' })}>
+        <Form.Select id='type-select' {...register('type', { required: 'Organization type must be selected.' })}>
           <option value=""></option>
           <option value="CG">Community group</option>
           <option value="TEAM">Team</option>
@@ -97,6 +98,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
           name="partOf"
           render={({ field: { onChange } }) => (
             <Select
+              id='part-of-select'
               menuPosition="fixed"
               isClearable
               {...register('partOf', { required: false })}
@@ -116,13 +118,13 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
         />
       </Form.Group>
       <Form.Group className="my-4">
-        <Form.Switch {...register('active', { required: false })} defaultChecked label="Active" />
+        <Form.Switch id='active-switch' {...register('active', { required: false })} defaultChecked label="Active" />
       </Form.Group>
       <hr />
-      <Button variant="primary" className="float-end" onClick={handleSubmit(submitHandler)}>
+      <Button id='save-button' variant="primary" className="float-end" onClick={handleSubmit(submitHandler)}>
         Save
       </Button>
-      <Button variant="secondary" className="float-end me-2" onClick={() => handleClose(false)}>
+      <Button id='close-button' variant="secondary" className="float-end me-2" onClick={() => handleClose(false)}>
         Close
       </Button>
     </Form>

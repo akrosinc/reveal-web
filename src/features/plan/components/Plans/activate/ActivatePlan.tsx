@@ -25,8 +25,8 @@ const activatePlanHandler = () => {
       </Modal.Header>
       <Modal.Body>Are you sure you want to active plan with identifier:<br/>{planId} ?</Modal.Body>
       <Modal.Footer>
-        <Button variant='secondary' onClick={closeHandler}>Cancel</Button>
-        <Button onClick={() => activatePlanHandler()}>Submit</Button>
+        <Button id='cancel-activate-button' variant='secondary' onClick={closeHandler}>Cancel</Button>
+        <Button id='activate-button' onClick={() => activatePlanHandler()}>Submit</Button>
       </Modal.Footer>
     </Modal>
   );

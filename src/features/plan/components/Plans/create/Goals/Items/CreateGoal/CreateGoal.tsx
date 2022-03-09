@@ -3,7 +3,7 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { Goal, Priority } from '../../../../../../providers/types';
-import { createGoal, updateGoal } from '../../../../../../api'
+import { createGoal, updateGoal } from '../../../../../../api';
 import { useAppDispatch } from '../../../../../../../../store/hooks';
 import { showLoader } from '../../../../../../../reducers/loader';
 
@@ -24,11 +24,13 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
   const {
     register,
     handleSubmit,
-    formState: { errors },
-  } = useForm<goalForm>({defaultValues: {
-    description: currentGoal?.description,
-    priority: currentGoal?.priority
-  }});
+    formState: { errors }
+  } = useForm<goalForm>({
+    defaultValues: {
+      description: currentGoal?.description,
+      priority: currentGoal?.priority
+    }
+  });
   const dispatch = useAppDispatch();
 
   const submitHandler = (form: goalForm) => {
@@ -75,30 +77,31 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
           description: form.description,
           identifier: String(goalList.length + 1),
           priority: form.priority
-        }
+        };
         goalList.push(newGoal);
         closeHandler();
       }
     }
-  }
+  };
 
   return (
     <Modal show={show} centered backdrop="static" onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>{currentGoal ? 'Edit Goal': 'Create Goal'}</Modal.Title>
+        <Modal.Title>{currentGoal ? 'Edit Goal' : 'Create Goal'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
           <Form.Group className="mb-2">
             <Form.Label>Description</Form.Label>
             <Form.Control
+              id='goal-description-input'
               placeholder="Enter plan description"
               type="text"
               {...register('description', {
                 required: 'Description must not be empty.',
                 minLength: {
-                    value: 1,
-                    message: 'Description must contain at least 1 charater.'
+                  value: 1,
+                  message: 'Description must contain at least 1 charater.'
                 }
               })}
             />
@@ -107,8 +110,9 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
           <Form.Group className="mb-2">
             <Form.Label>Priority</Form.Label>
             <Form.Select
+              id="goal-priority-select"
               {...register('priority', {
-                required: 'Please select plan priority.',
+                required: 'Please select plan priority.'
               })}
             >
               <option></option>
@@ -121,8 +125,12 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant='secondary' onClick={closeHandler}>Cancel</Button>
-        <Button onClick={handleSubmit(submitHandler)}>Submit</Button>
+        <Button id="cancel-goal-button" variant="secondary" onClick={closeHandler}>
+          Cancel
+        </Button>
+        <Button id="submit-goal-button" onClick={handleSubmit(submitHandler)}>
+          Submit
+        </Button>
       </Modal.Footer>
     </Modal>
   );

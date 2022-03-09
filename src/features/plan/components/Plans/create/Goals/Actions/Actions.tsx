@@ -16,7 +16,7 @@ interface Props {
 }
 
 const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
-  const [formList, setFormList] = useState<{identifier: string, name: string}[]>();
+  const [formList, setFormList] = useState<{ identifier: string; name: string }[]>();
 
   const {
     register,
@@ -32,14 +32,20 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
       description: selectedAction?.description,
       identifier: selectedAction?.identifier,
       title: selectedAction?.title,
-      timingPeriod: selectedAction !== undefined ? {start: Moment(selectedAction.timingPeriod.start).toDate(), end: Moment(selectedAction.timingPeriod.end).toDate()} : planPeriod
+      timingPeriod:
+        selectedAction !== undefined
+          ? {
+              start: Moment(selectedAction.timingPeriod.start).toDate(),
+              end: Moment(selectedAction.timingPeriod.end).toDate()
+            }
+          : planPeriod
     }
   });
 
   useEffect(() => {
     getformList().then(res => {
       setFormList(res);
-      setValue('formIdentifier', selectedAction?.formIdentifier ?? "");
+      setValue('formIdentifier', selectedAction?.formIdentifier ?? '');
     });
   }, [setValue, selectedAction]);
 
@@ -61,6 +67,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Title</Form.Label>
             <Form.Control
+              id="action-title-input"
               type="text"
               placeholder="Enter action title"
               {...register('title', {
@@ -73,6 +80,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Description</Form.Label>
             <Form.Control
+              id="action-description-input"
               type="text"
               placeholder="Enter description title"
               {...register('description', {
@@ -92,6 +100,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
                   rules={{ required: 'Start date must be selected!' }}
                   render={({ field: { onChange, value } }) => (
                     <DatePicker
+                      id="action-start-date-picker"
                       placeholderText="Select date"
                       onChange={e => {
                         resetField('timingPeriod.end');
@@ -124,6 +133,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
                   }}
                   render={({ field: { onChange, value } }) => (
                     <DatePicker
+                      id="action-end-date-picker"
                       placeholderText="Select date"
                       onChange={onChange}
                       selected={value}
@@ -147,6 +157,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Form</Form.Label>
             <Form.Select
+              id="action-form-select"
               placeholder="Choose form"
               {...register('formIdentifier', {
                 required: 'Action form must be selected.',
@@ -154,7 +165,13 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
               })}
             >
               <option></option>
-              {formList !== undefined ? formList.map(el => <option key={el.identifier} value={el.identifier}>{el.name}</option>) : null}
+              {formList !== undefined
+                ? formList.map(el => (
+                    <option key={el.identifier} value={el.identifier}>
+                      {el.name}
+                    </option>
+                  ))
+                : null}
             </Form.Select>
             {errors.formIdentifier && <Form.Label className="text-danger">{errors.formIdentifier.message}</Form.Label>}
           </Form.Group>
@@ -162,8 +179,9 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
       </Modal.Body>
       <Modal.Footer>
         <Button
+          id="action-discard-button"
           variant="secondary"
-          className='me-auto'
+          className="me-auto"
           onClick={() => {
             closeHandler();
           }}
@@ -171,7 +189,9 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
           Discard
         </Button>
         {selectedAction && <Button onClick={() => closeHandler(selectedAction, true)}>Delete</Button>}
-        <Button disabled={!isDirty} onClick={handleSubmit(submitHandler)}>{selectedAction ? 'Save Changes' : 'Create Action'}</Button>
+        <Button id="action-save-button" disabled={!isDirty} onClick={handleSubmit(submitHandler)}>
+          {selectedAction ? 'Save Changes' : 'Create Action'}
+        </Button>
       </Modal.Footer>
     </Modal>
   );

@@ -65,7 +65,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
     },
     useExpanded // Use the useExpanded plugin hook
   );
-  
+
   return (
     <Table bordered responsive hover {...getTableProps()}>
       <thead className="border border-2">
@@ -73,6 +73,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
               <th
+                id={column.id + '-sort'}
                 style={{ width: column.id === 'expander' ? '37px' : 'auto' }}
                 onClick={() => {
                   if (column.id !== 'expander') {
@@ -103,10 +104,11 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
           prepareRow(row);
           return (
             //row.depth is not existing in react table types for some reason, casting to any type solves the issue
-            <tr {...row.getRowProps()} style={{ backgroundColor: getColorLevel((row as any).depth)}}>
+            <tr {...row.getRowProps()} style={{ backgroundColor: getColorLevel((row as any).depth) }}>
               {row.cells.map(cell => {
                 return (
                   <td
+                    id={cell.column.id + 'click-handler'}
                     {...cell.getCellProps()}
                     onClick={() => {
                       if (cell.column.id !== 'expander') {

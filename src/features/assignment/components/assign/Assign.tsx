@@ -6,7 +6,7 @@ import MapView from '../../../../components/MapBox/MapView';
 import {
   ASSIGNMENT_PAGE,
   LOCATION_ASSIGNMENT_TAB,
-  LOCATION_TABLE_COLUMNS,
+  LOCATION_ASSIGN_TABLE_COLUMNS,
   LOCATION_TEAM_ASSIGNMENT_TAB
 } from '../../../../constants';
 import { getPlanById } from '../../../plan/api';
@@ -16,7 +16,7 @@ import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import LocationAssignmentsTable from '../../../../components/Table/LocationAssignmentsTable';
 import { ErrorModel, PageableModel } from '../../../../api/providers';
-import { LocationModel, Organization } from '../../../location/providers/types';
+import { LocationModel } from '../../../location/providers/types';
 import {
   assignLocationsToPlan,
   assignTeamsToLocationHierarchy,
@@ -27,6 +27,7 @@ import { toast } from 'react-toastify';
 import { getLocationById } from '../../../location/api';
 import { MultiValue, Options } from 'react-select';
 import { getOrganizationListSummary } from '../../../organization/api';
+import { Column } from 'react-table';
 
 interface Option {
   label: string;
@@ -89,7 +90,11 @@ const Assign = () => {
     loadData();
   }, [loadData]);
 
-  const columns = React.useMemo(
+  const tableData = React.useMemo<LocationModel[]>(() => {
+    return locationHierarchy ? locationHierarchy.content : [];
+  }, [locationHierarchy]);
+
+  const columns = React.useMemo<Column[]>(
     () => [
       {
         // Build our expander column
@@ -103,11 +108,15 @@ const Assign = () => {
           isAllRowsExpanded: Function;
           toggleAllRowsExpanded: Function;
         }) => (
-          <span className='py-2 pe-2' {...getToggleAllRowsExpandedProps({
-            onClick: () => {
-              toggleAllRowsExpanded(!isAllRowsExpanded)
-            }
-          })} ref={expandAll}>
+          <span
+            className="py-2 pe-2"
+            {...getToggleAllRowsExpandedProps({
+              onClick: () => {
+                toggleAllRowsExpanded(!isAllRowsExpanded);
+              }
+            })}
+            ref={expandAll}
+          >
             {isAllRowsExpanded ? (
               <FontAwesomeIcon className="ms-1" icon="chevron-down" />
             ) : (
@@ -140,7 +149,7 @@ const Assign = () => {
             </span>
           ) : null
       },
-      ...LOCATION_TABLE_COLUMNS
+      ...LOCATION_ASSIGN_TABLE_COLUMNS
     ],
     []
   );
@@ -217,17 +226,11 @@ const Assign = () => {
   const selectChildren = (parentLocation: LocationModel, selected: MultiValue<Option>) => {
     parentLocation.children.forEach(el => {
       if (el.active && !el.overriden) {
-        selected.forEach(selectedTeam => {
-          let isFound = el.teams.some(currentTeams => {
-            return currentTeams.identifier === selectedTeam.value ? true : false;
-          });
-          if (!isFound) {
-            let team: Organization = {
-              identifier: selectedTeam.value,
-              name: selectedTeam.label
-            };
-            el.teams.push(team);
-          }
+        el.teams = selected.map(team => {
+          return {
+            identifier: team.value,
+            name: team.label
+          };
         });
       }
       if (el.children.length) {
@@ -304,7 +307,7 @@ const Assign = () => {
     <Container fluid className="my-4">
       <Row className="mt-3 align-items-center">
         <Col md={3}>
-          <Link to={ASSIGNMENT_PAGE} className="btn btn-primary mb-2">
+          <Link id="assign-back-button" to={ASSIGNMENT_PAGE} className="btn btn-primary mb-2">
             <FontAwesomeIcon size="lg" icon="arrow-left" className="me-2" /> Assign Plans
           </Link>
         </Col>
@@ -323,6 +326,7 @@ const Assign = () => {
       >
         <div className={classes.floatingLocationPickerAssign + ' bg-white p-2 rounded'}>
           <Button
+            id="expand-button"
             onClick={() => {
               setOpen(!open);
               expandAll.current?.click();
@@ -344,6 +348,7 @@ const Assign = () => {
             <div id="expand-table" className="mt-2">
               <hr />
               <Tabs
+                id="assignments"
                 activeKey={activeTab}
                 onSelect={tab => {
                   if (tab && assignedLocations) {
@@ -355,7 +360,6 @@ const Assign = () => {
                     setActiveTab(LOCATION_ASSIGNMENT_TAB);
                   }
                 }}
-                id="management-tab"
                 className="mb-3"
               >
                 <Tab eventKey={LOCATION_ASSIGNMENT_TAB} title="Assign locations">
@@ -373,8 +377,7 @@ const Assign = () => {
                           });
                         }
                       }}
-                      sortHandler={() => console.log('sort')}
-                      data={locationHierarchy?.content ?? []}
+                      data={tableData}
                     />
                   </div>
                 </Tab>
@@ -398,14 +401,13 @@ const Assign = () => {
                             .finally(() => dispatch(showLoader(false)));
                         }
                       }}
-                      sortHandler={() => console.log('sort')}
-                      data={locationHierarchy?.content ?? []}
+                      data={tableData}
                     />
                   </div>
                 </Tab>
               </Tabs>
               <hr className="my-2" />
-              <Button className="float-end mb-1 w-25" onClick={saveHandler}>
+              <Button id="save-assignments-button" className="float-end mb-1 w-25" onClick={saveHandler}>
                 Save
               </Button>
             </div>

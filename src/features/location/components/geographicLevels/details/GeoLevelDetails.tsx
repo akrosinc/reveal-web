@@ -107,6 +107,7 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
       <Form.Group className="mb-2">
         <Form.Label>Name</Form.Label>
         <Form.Control
+          id="name-input"
           {...register('name', {
             required: 'Geographic Level name must not be empty.',
             minLength: 1,
@@ -124,6 +125,7 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
       <Form.Group className="mb-2">
         <Form.Label>Title</Form.Label>
         <Form.Control
+          id="title-input"
           {...register('title', {
             required: 'Geographic Level title must not be empty.',
             minLength: 1,
@@ -143,22 +145,33 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
         {edit ? (
           <>
             <Button
+              id="discard-button"
               variant="secondary"
               className="float-start"
               onClick={() => (edit ? setEdit(false) : closeHandler())}
             >
               Discard
             </Button>
-            <Button variant="primary" className="float-end ms-2 py-2" onClick={handleSubmit(submitHandler)}>
-            <FontAwesomeIcon className="my-0 mx-1" icon="save" />
+            <Button
+              id="save-button"
+              variant="primary"
+              className="float-end ms-2 py-2"
+              onClick={handleSubmit(submitHandler)}
+            >
+              <FontAwesomeIcon className="my-0 mx-1" icon="save" />
             </Button>
           </>
         ) : (
-          <Button variant="primary" className="float-end ms-2 py-2" onClick={() => setEdit(true)}>
+          <Button id="edit-button" variant="primary" className="float-end ms-2 py-2" onClick={() => setEdit(true)}>
             <FontAwesomeIcon className="m-0 ms-1" icon="edit" />
           </Button>
         )}
-        <Button variant="secondary" className="float-end py-2" onClick={() => setShowConfirmDialog(true)}>
+        <Button
+          id="delete-button"
+          variant="secondary"
+          className="float-end py-2"
+          onClick={() => setShowConfirmDialog(true)}
+        >
           <FontAwesomeIcon className="my-0 mx-1" icon="trash" />
         </Button>
       </div>

@@ -18,17 +18,15 @@ const PlanList = () => {
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const dispatch = useAppDispatch();
 
-  const paginationHandler = () => {
+  const paginationHandler = () => {};
 
-  }
-
-  const sortHandler = (sortValue: string, direction: boolean) => {
-
-  }
+  const sortHandler = (sortValue: string, direction: boolean) => {};
 
   useEffect(() => {
     dispatch(showLoader(true));
-    getPlanList(10, 0, true, '', currentSortField, currentSortDirection).then(res => setPlanList(res)).finally(() => dispatch(showLoader(false)));
+    getPlanList(10, 0, true, '', currentSortField, currentSortDirection)
+      .then(res => setPlanList(res))
+      .finally(() => dispatch(showLoader(false)));
   }, [currentSortDirection, currentSortField, dispatch]);
 
   return (
@@ -40,6 +38,7 @@ const PlanList = () => {
               <tr>
                 {PLAN_TABLE_COLUMNS.map(el => (
                   <th
+                    id={el.name + '-sort'}
                     key={el.name}
                     onClick={() => {
                       setActiveSortField(el.name);
@@ -65,6 +64,7 @@ const PlanList = () => {
             <tbody>
               {planList.content.map(el => (
                 <tr
+                  id={el.identifier + 'table-row-button'}
                   key={el.identifier}
                   onClick={() => {
                     navigate(ASSIGNMENT_PAGE + '/' + el.identifier);

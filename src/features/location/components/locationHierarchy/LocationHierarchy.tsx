@@ -114,7 +114,7 @@ const LocationHierarchy = () => {
           </h2>
         </Col>
         <Col>
-          <Button className="float-end" onClick={createHandler}>
+          <Button id="create-button" className="float-end" onClick={createHandler}>
             {t('buttons.create')}
           </Button>
         </Col>
@@ -138,11 +138,11 @@ const LocationHierarchy = () => {
               {locationHierarchy.content.map(el => {
                 return (
                   <tr key={el.identifier}>
+                    <td>{el.name}</td>
                     <td>
-                      {el.name}
-                     
-                    </td>
-                    <td>{el.nodeOrder.toString()} <Button
+                      {el.nodeOrder.toString()}{' '}
+                      <Button
+                        id="delete-button"
                         variant="secondary"
                         onClick={() => {
                           if (el.identifier) {
@@ -153,8 +153,8 @@ const LocationHierarchy = () => {
                         className="float-end"
                       >
                         <FontAwesomeIcon className="m-0" icon="trash" />
-                      </Button></td>
-                                        
+                      </Button>
+                    </td>
                   </tr>
                 );
               })}

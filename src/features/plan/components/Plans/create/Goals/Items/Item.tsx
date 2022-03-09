@@ -35,7 +35,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
   }, [goal]);
 
   return (
-    <Accordion.Item eventKey={goal.identifier} className="p-2">
+    <Accordion.Item id={goal.identifier + '-goal'} eventKey={goal.identifier} className="p-2">
       <Accordion.Header>Goal - {goal.description}</Accordion.Header>
       <Accordion.Body>
         <Row>
@@ -44,22 +44,24 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
           </Col>
           <Col>
             <Button
+              id="edit-goal-button"
               variant="primary"
               className="float-end ms-2"
               onClick={() => {
                 editGoalHandler(goal);
               }}
             >
-              <FontAwesomeIcon className='ms-1' icon="edit" />
+              <FontAwesomeIcon className="ms-1" icon="edit" />
             </Button>
             <Button
+              id="delete-goal-button"
               variant="primary"
               className="float-end"
               onClick={() => {
                 deleteHandler(goal.identifier);
               }}
             >
-              <FontAwesomeIcon className='mx-1' icon="trash" />
+              <FontAwesomeIcon className="mx-1" icon="trash" />
             </Button>
           </Col>
         </Row>
@@ -72,7 +74,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
             <h2>Actions</h2>
           </Col>
           <Col>
-            <Button className="float-end" onClick={() => setShow(true)}>
+            <Button id="create-action-button" className="float-end" onClick={() => setShow(true)}>
               Create
             </Button>
           </Col>
@@ -102,6 +104,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                 <td>{el.formIdentifier}</td>
                 <td className="text-center">
                   <Button
+                    id="edit-action-button"
                     onClick={() => {
                       setSelectedAction(el);
                       setSelectedIndex(index);
@@ -121,7 +124,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
             selectedAction={selectedAction}
             closeHandler={(action?: Action, isDelete?: boolean) => {
               if (action !== undefined) {
-                action.type = action.identifier ? 'UPDATE' : 'CREATE'; 
+                action.type = action.identifier ? 'UPDATE' : 'CREATE';
                 //check if its new plan or update of an existing plan
                 if (planId) {
                   dispatch(showLoader(true));

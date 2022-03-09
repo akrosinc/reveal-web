@@ -50,7 +50,7 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
         />
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={closeHandler}>
+        <Button id='close-button' variant="secondary" onClick={closeHandler}>
           Close
         </Button>
       </Modal.Footer>

@@ -1,12 +1,18 @@
 // APP TEXT
 export const APP_TITLE = 'Reveal';
 export const FOOTER_TEXT = `${new Date().getFullYear()} Reveal`;
+
 // PAGES TITLE
 export const PAGE_TITLE_HOME = 'Home';
 export const PAGE_TITLE_PLANS = 'Plans';
 export const PAGE_TITLE_ASSIGN = 'Assign';
 export const PAGE_TITLE_MONITOR = 'Monitor';
 export const PAGE_TITLE_ADMIN = 'Admin';
+
+// KEYCLOAK
+export const KEYCLOAK_URL = 'https://sso-ops.akros.online/auth/';
+export const KEYCLOAK_REALM = 'reveal';
+export const KEYCLOAK_CLIENT_ID = 'reveal-web';
 
 //Table depth colors
 export const ROW_DEPTH_COLOR_1 = '#F5F5F5';
@@ -49,6 +55,11 @@ export const LOCATION_HIERARCHY_TABLE_COLUMNS = [
 ];
 
 export const LOCATION_TABLE_COLUMNS = [
+  { Header: 'Location', accessor: 'properties.name' },
+  { Header: 'Geography Level', accessor: 'properties.geographicLevel' }
+];
+
+export const LOCATION_ASSIGN_TABLE_COLUMNS = [
   { Header: 'Location', accessor: 'properties.name' },
   { Header: 'Geography Level', accessor: 'properties.geographicLevel' },
   { Header: 'Select', id: 'checkbox' },

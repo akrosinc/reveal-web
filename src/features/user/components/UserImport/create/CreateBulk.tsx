@@ -43,7 +43,7 @@ const CreateBulk = ({ handleClose }: Props) => {
           }
         },
         error: {
-          render({ data }: {data: ErrorModel }) {
+          render({ data }: { data: ErrorModel }) {
             dispatch(showLoader(false));
             setError(
               'bulk',
@@ -79,7 +79,7 @@ const CreateBulk = ({ handleClose }: Props) => {
     <Form onSubmit={handleSubmit(submitHandler)}>
       <Form.Group className="mb-3">
         <Form.Label>Please provide a csv file</Form.Label>
-        <Form.Control {...register('bulk', { required: true })} type="file" accept=".csv" />
+        <Form.Control id="csv-input" {...register('bulk', { required: true })} type="file" accept=".csv" />
         {errors.bulk && <Form.Label className="text-danger mt-1">Invalid file type.</Form.Label>}
       </Form.Group>
       <p>
@@ -90,15 +90,20 @@ const CreateBulk = ({ handleClose }: Props) => {
       </p>
       <p>
         You can download security groups from{' '}
-        <Button variant="link" className="pb-1 p-0" onClick={() => downloadSecurityGroups()}>
+        <Button
+          id="download-security-groups-button"
+          variant="link"
+          className="pb-1 p-0"
+          onClick={() => downloadSecurityGroups()}
+        >
           here
         </Button>
       </p>
       <hr style={{ margin: '12px -16px' }} />
-      <Button variant="primary" className="float-end" type="submit">
+      <Button id="submit-button" variant="primary" className="float-end" type="submit">
         Submit
       </Button>
-      <Button variant="secondary" className="float-end me-2" onClick={handleClose}>
+      <Button id="close-button" variant="secondary" className="float-end me-2" onClick={handleClose}>
         Close
       </Button>
     </Form>

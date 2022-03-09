@@ -101,12 +101,13 @@ const Users = () => {
       </h2>
       <Row className="my-4">
         <Col md={8} className="mb-2">
-          <Button className="btn btn-primary float-end" onClick={() => handleShow()}>
+          <Button id="create-user-button" className="btn btn-primary float-end" onClick={() => handleShow()}>
             {t('buttons.create')}
           </Button>
         </Col>
         <Col sm={12} md={4} className="order-md-first">
           <DebounceInput
+            id="search-user-input"
             className="form-control"
             placeholder={t('userPage.search')}
             debounceTimeout={800}

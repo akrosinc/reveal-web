@@ -76,6 +76,7 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) =>
       <Form.Group>
         <Form.Label>Hierarchy name</Form.Label>
         <Form.Control
+          id="name-input"
           {...register('name', {
             required: 'Hierarchy name must not be empty.'
           })}
@@ -98,14 +99,20 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) =>
       </Form.Group>
       <Form.Group className="mt-2">
         <Form.Label>Geography Levels</Form.Label>
-        <Select menuPosition="fixed" isMulti options={geographyLevelList} onChange={selectHandler} />
+        <Select
+          id="hierarchy-select"
+          menuPosition="fixed"
+          isMulti
+          options={geographyLevelList}
+          onChange={selectHandler}
+        />
       </Form.Group>
       <hr style={{ margin: '15px -15px' }} />
       <div className="mt-3">
-        <Button variant="primary" className="float-end ms-2" onClick={handleSubmit(submitHandler)}>
+        <Button id="create-button" variant="primary" className="float-end ms-2" onClick={handleSubmit(submitHandler)}>
           Create
         </Button>
-        <Button variant="secondary" className="float-end" onClick={closeHandler}>
+        <Button id="close-button" variant="secondary" className="float-end" onClick={closeHandler}>
           Close
         </Button>
       </div>

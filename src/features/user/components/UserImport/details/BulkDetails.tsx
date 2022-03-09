@@ -52,7 +52,7 @@ const BulkDetails = ({ userList, bulkFile, handleClose, paginationHandler }: Pro
         ) : null}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button id='close-button' variant="secondary" onClick={handleClose}>
           Close
         </Button>
       </Modal.Footer>

@@ -54,9 +54,9 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
   useEffect(() => {
     let selectedOrganization = organizations.filter(el => el.identifier === organization.partOf);
     if (selectedOrganization.length) {
-      setSelectedSecurityGroups({label: selectedOrganization[0].name, value: selectedOrganization[0].identifier});
+      setSelectedSecurityGroups({ label: selectedOrganization[0].name, value: selectedOrganization[0].identifier });
     }
-  }, [setSelectedSecurityGroups, organization, organizations])
+  }, [setSelectedSecurityGroups, organization, organizations]);
 
   const updateHandler = (formData: OrganizationModel) => {
     dispatch(showLoader(true));
@@ -120,6 +120,7 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
       <Form.Group className="mb-3">
         <Form.Label>Organization name</Form.Label>
         <Form.Control
+          id='organization-name-input'
           readOnly={!edit}
           type="text"
           placeholder="Enter organization name"
@@ -136,7 +137,7 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Type</Form.Label>
-        <Form.Select disabled={!edit} {...register('type', { required: 'Organization type must be selected.' })}>
+        <Form.Select id='type-select' disabled={!edit} {...register('type', { required: 'Organization type must be selected.' })}>
           <option value=""></option>
           <option value="CG">Community group</option>
           <option value="TEAM">Team</option>
@@ -151,6 +152,7 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
           name="partOf"
           render={({ field: { onChange } }) => (
             <Select
+              id="part-of-select"
               menuPosition="fixed"
               isDisabled={!edit}
               isClearable
@@ -171,27 +173,37 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
         />
       </Form.Group>
       <Form.Group className="my-4">
-        <Form.Switch disabled={!edit} {...register('active', { required: false })} label="Active" />
+        <Form.Switch
+          id="active-organization-switch"
+          disabled={!edit}
+          {...register('active', { required: false })}
+          label="Active"
+        />
       </Form.Group>
       <hr />
       {edit ? (
         <>
-          <Button className="float-end" variant="primary" onClick={handleSubmit(updateHandler)}>
+          <Button id="save-button" className="float-end" variant="primary" onClick={handleSubmit(updateHandler)}>
             Save
           </Button>
-          <Button className="float-end me-2 btn-secondary" onClick={() => setEdit(!edit)}>
+          <Button id="discard-button" className="float-end me-2 btn-secondary" onClick={() => setEdit(!edit)}>
             Discard changes
           </Button>
         </>
       ) : (
         <>
-          <Button className="float-end" variant="primary" onClick={() => setEdit(!edit)}>
+          <Button id="edit-button" className="float-end" variant="primary" onClick={() => setEdit(!edit)}>
             Edit
           </Button>
-          <Button className="float-end me-2" variant="primary" onClick={() => setShowConfirmDialog(!showConfirmDialog)}>
+          <Button
+            id="delete-button"
+            className="float-end me-2"
+            variant="primary"
+            onClick={() => setShowConfirmDialog(!showConfirmDialog)}
+          >
             Delete
           </Button>
-          <Button className="float-start" variant="secondary" onClick={() => handleClose(false)}>
+          <Button id="close-button" className="float-start" variant="secondary" onClick={() => handleClose(false)}>
             Close
           </Button>
         </>

@@ -58,7 +58,7 @@ const Plans = () => {
 
   const closeHandler = () => {
     setShowActivate(false);
-  }
+  };
 
   return (
     <>
@@ -66,12 +66,13 @@ const Plans = () => {
         Plans ({planList?.totalElements ?? 0})
         <Row className="my-4">
           <Col md={8} className="mb-2">
-            <Link to={PLANS + '/create'} className="btn btn-primary float-end">
+            <Link id="create-button" to={PLANS + '/create'} className="btn btn-primary float-end">
               Create
             </Link>
           </Col>
           <Col sm={12} md={4} className="order-md-first">
             <DebounceInput
+              id="search-plans-input"
               className="form-control"
               placeholder="Search (minimum 3 charaters)"
               debounceTimeout={800}

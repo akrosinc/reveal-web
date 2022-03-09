@@ -150,11 +150,13 @@ const Organization = () => {
     getOrganizationById(id)
       .then(res => {
         setSelectedOrganization(res);
-        getOrganizationListSummary().then(res => {
-          setOrganizationDropdown(res.content.filter(el => el.identifier !== id));
-          setShowDetails(true);
-          dispatch(showLoader(false))
-        }).catch(_ => toast.error('An error has occured while loading organization.'));
+        getOrganizationListSummary()
+          .then(res => {
+            setOrganizationDropdown(res.content.filter(el => el.identifier !== id));
+            setShowDetails(true);
+            dispatch(showLoader(false));
+          })
+          .catch(_ => toast.error('An error has occured while loading organization.'));
       })
       .catch(_ => toast.error('An error has occured while loading organization.'));
   };
@@ -174,12 +176,13 @@ const Organization = () => {
       </h2>
       <Row className="my-4">
         <Col md={8} className="mb-2">
-          <Button className="btn btn-primary float-end" onClick={handleShow}>
+          <Button id='organization-create-button' className="btn btn-primary float-end" onClick={handleShow}>
             {t('buttons.create')}
           </Button>
         </Col>
         <Col sm={12} md={4} className="order-md-first">
           <DebounceInput
+            id='search-organizatins-input'
             className="form-control"
             placeholder={t('organizationPage.search') + ' (min 3 charaters)'}
             debounceTimeout={800}

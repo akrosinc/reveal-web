@@ -64,6 +64,7 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
       <Form.Group className="mb-2">
         <Form.Label>Name</Form.Label>
         <Form.Control
+          id="name-input"
           {...register('name', {
             required: 'Geographic Level name must not be empty.',
             minLength: 1,
@@ -81,6 +82,7 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
       <Form.Group className="mb-2">
         <Form.Label>Title</Form.Label>
         <Form.Control
+          id="title-input"
           {...register('title', {
             required: 'Geographic Level title must not be empty.',
             minLength: 1,
@@ -96,10 +98,10 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
       </Form.Group>
       <hr style={{ margin: '15px -15px' }} />
       <div className="mt-3">
-        <Button variant="primary" className="float-end ms-2" onClick={handleSubmit(submitHandler)}>
+        <Button id="create-button" variant="primary" className="float-end ms-2" onClick={handleSubmit(submitHandler)}>
           Create
         </Button>
-        <Button variant="secondary" className="float-end" onClick={closeHandler}>
+        <Button id="close-button" variant="secondary" className="float-end" onClick={closeHandler}>
           Close
         </Button>
       </div>

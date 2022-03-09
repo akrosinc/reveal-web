@@ -135,6 +135,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Username</Form.Label>
             <Form.Control
+              id="username-input"
               {...register('username', {
                 required: 'Username must not be empty',
                 pattern: {
@@ -152,6 +153,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
               <Form.Group className="mb-2">
                 <Form.Label>First name</Form.Label>
                 <Form.Control
+                  id="first-name-input"
                   {...register('firstname', {
                     required: 'First name must not be empty.',
                     minLength: 1,
@@ -170,6 +172,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
               <Form.Group className="mb-2">
                 <Form.Label>Last name</Form.Label>
                 <Form.Control
+                  id="last-name-input"
                   {...register('lastname', {
                     required: 'Last name must not be empty.',
                     minLength: 1,
@@ -187,7 +190,11 @@ const CreateUser = ({ show, handleClose }: Props) => {
           </Row>
           <Form.Group className="mb-2">
             <Form.Label>Password</Form.Label>
-            <Form.Control {...register('password', { required: true, minLength: 5 })} type="password" />
+            <Form.Control
+              id="password-input"
+              {...register('password', { required: true, minLength: 5 })}
+              type="password"
+            />
             {errors.password && (
               <Form.Label className="text-danger">Password must not be empty and at least 5 chars long.</Form.Label>
             )}
@@ -196,6 +203,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Email</Form.Label>
             <Form.Control
+              id="email-input"
               {...register('email', {
                 required: false,
                 pattern: {
@@ -212,6 +220,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Security groups</Form.Label>
             <Select
+              id="security-groups-select"
               menuPosition="fixed"
               isMulti
               value={selectedSecurityGroups}
@@ -223,6 +232,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Organization</Form.Label>
             <Select
+              id="organizations-select"
               menuPosition="fixed"
               isMulti
               value={selectedOrganizations}
@@ -233,10 +243,10 @@ const CreateUser = ({ show, handleClose }: Props) => {
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button id="close-button" variant="secondary" onClick={handleClose}>
           Close
         </Button>
-        <Button variant="primary" onClick={handleSubmit(submitHandler)}>
+        <Button id="submit-button" variant="primary" onClick={handleSubmit(submitHandler)}>
           Submit
         </Button>
       </Modal.Footer>

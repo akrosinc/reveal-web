@@ -86,10 +86,12 @@ const UserImport = () => {
     <>
       <Row className="mt-2">
         <Col>
-          <h2 className="m-0">{t('userImportPage.importedFiles')} ({bulkList?.totalElements ?? 0})</h2>
+          <h2 className="m-0">
+            {t('userImportPage.importedFiles')} ({bulkList?.totalElements ?? 0})
+          </h2>
         </Col>
         <Col>
-          <Button className="float-end" onClick={() => setOpenCreate(true)}>
+          <Button id="import-button" className="float-end" onClick={() => setOpenCreate(true)}>
             {t('userImportPage.bulkImport')}
           </Button>
         </Col>
@@ -102,6 +104,7 @@ const UserImport = () => {
             <tr>
               {BULK_TABLE_COLUMNS.map((el, index) => (
                 <th
+                  id={el.name + '-sort'}
                   key={index}
                   onClick={() => {
                     setSortDirection(!sortDirection);
