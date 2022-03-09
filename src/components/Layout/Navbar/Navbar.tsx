@@ -25,7 +25,7 @@ export default function NavbarComponent() {
   const loadFlag = () => {
     let currentLanguage = LOCALES.filter(el => el.name === i18n.language);
     return <span className={currentLanguage[0].flag}></span>;
-  }
+  };
 
   return (
     <Navbar collapseOnSelect expand="lg">
@@ -41,7 +41,7 @@ export default function NavbarComponent() {
                 if (el.dropdown !== undefined && el.dropdown.length > 0) {
                   return (
                     <AuthorizedElement key={index} roles={el.roles}>
-                      <NavDropdown title={t('topNav.' + el.pageTitle)} id="collasible-nav-dropdown">
+                      <NavDropdown title={t('topNav.' + el.pageTitle)} id={el.pageTitle + '-navbar-button'}>
                         {el.dropdown.map((child, childIndex) => {
                           return (
                             <AuthorizedElement key={index + '.' + childIndex} roles={child.roles}>
@@ -57,7 +57,7 @@ export default function NavbarComponent() {
                 } else {
                   return (
                     <AuthorizedElement key={index} roles={el.roles}>
-                      <Link to={el.route} className="nav-link">
+                      <Link id={el.pageTitle + '-navbar-button'} to={el.route} className="nav-link">
                         {t('topNav.' + el.pageTitle)}
                       </Link>
                     </AuthorizedElement>
@@ -72,10 +72,11 @@ export default function NavbarComponent() {
                 <BsPerson />
                 <NavDropdown
                   title={user !== null ? user.preferred_username : 'User Profile'}
-                  id="collasible-nav-dropdown"
+                  id="logout-nav-dropdown"
                   align="end"
                 >
                   <NavDropdown.Item
+                    id="logout-button"
                     className="text-center"
                     onClick={() => {
                       keycloak.logout();
@@ -88,16 +89,25 @@ export default function NavbarComponent() {
             </Nav>
           ) : (
             <Nav>
-              <Nav.Link className="btn btn-success text-white mw-100" onClick={() => keycloak.login()}>
+              <Nav.Link
+                id="login-button"
+                className="btn btn-success text-white mw-100"
+                onClick={() => keycloak.login()}
+              >
                 {t('topNav.logIn')}
               </Nav.Link>
             </Nav>
           )}
           <Nav className="ms-1">
-            <NavDropdown title={loadFlag()} align="end">
+            <NavDropdown id="language-dropdown" title={loadFlag()} align="end">
               {LOCALES.map(locale => (
-                <NavDropdown.Item key={locale.name} className="text-center" onClick={() => changeLaguagePrefferences(locale)}>
-                  <span className={locale.flag + " me-2"}></span>
+                <NavDropdown.Item
+                  id={locale.name + '-button'}
+                  key={locale.name}
+                  className="text-center"
+                  onClick={() => changeLaguagePrefferences(locale)}
+                >
+                  <span className={locale.flag + ' me-2'}></span>
                   {locale.name.toUpperCase()}
                 </NavDropdown.Item>
               ))}
