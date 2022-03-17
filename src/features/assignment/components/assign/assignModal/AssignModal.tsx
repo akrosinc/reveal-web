@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Form, Modal, Table } from 'react-bootstrap';
 import { Properties } from '../../../../location/providers/types';
 import Select, { MultiValue, Options } from 'react-select';
@@ -45,10 +45,21 @@ const AssignModal = ({ locationData, closeHandler }: Props) => {
     }
   };
 
-  useEffect(() => {
-    getAssignedTeamsByPlanAndLocationId(planId ?? '', locationData[0]).then(res => {
+  const loadData = () => {
+    Promise.all([
+      getAssignedTeamsByPlanAndLocationId(planId ?? '', locationData[0]),
+      getOrganizationListSummary()
+    ]).then(async ([assignedTeams, teamList]) => {
       setAssignedTeams(
-        res.map(el => {
+        assignedTeams.map(el => {
+          return {
+            label: el.name,
+            value: el.identifier
+          };
+        })
+      );
+      setOrganizationList(
+        teamList.content.map(el => {
           return {
             label: el.name,
             value: el.identifier
@@ -56,20 +67,10 @@ const AssignModal = ({ locationData, closeHandler }: Props) => {
         })
       );
     });
-    getOrganizationListSummary().then(res =>
-      setOrganizationList(
-        res.content.map(el => {
-          return {
-            label: el.name,
-            value: el.identifier
-          };
-        })
-      )
-    );
-  }, [locationData, planId]);
+  };
 
   return (
-    <Modal show centered size="lg">
+    <Modal backdrop="static" show centered size="lg" onShow={() => loadData()}>
       <Modal.Header className="justify-content-center">
         <Modal.Title>{locationData[1].name}</Modal.Title>
       </Modal.Header>

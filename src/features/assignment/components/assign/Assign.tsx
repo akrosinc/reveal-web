@@ -1,8 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Row, Col, Container, Collapse, Button, Tabs, Tab } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import MapView from '../../../../components/MapBox/MapView';
 import {
   ASSIGNMENT_PAGE,
   LOCATION_ASSIGNMENT_TAB,
@@ -11,7 +10,6 @@ import {
 } from '../../../../constants';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
-import classes from '../../../location/components/locations/Location.module.css';
 import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import LocationAssignmentsTable from '../../../../components/Table/LocationAssignmentsTable';
@@ -28,6 +26,7 @@ import { getLocationById } from '../../../location/api';
 import { MultiValue, Options } from 'react-select';
 import { getOrganizationListSummary } from '../../../organization/api';
 import { Column } from 'react-table';
+import MapViewAssignments from '../../../../components/MapBox/MapViewAssignments';
 
 interface Option {
   label: string;
@@ -48,7 +47,6 @@ const Assign = () => {
   const [organizationsList, setOrganizationsList] = useState<Options<Option>>([]);
   const navigate = useNavigate();
   const [notInMove, setNotInMove] = useState(true);
-  const expandAll = useRef<HTMLSpanElement>();
 
   const loadData = useCallback(() => {
     dispatch(showLoader(true));
@@ -115,7 +113,6 @@ const Assign = () => {
                 toggleAllRowsExpanded(!isAllRowsExpanded);
               }
             })}
-            ref={expandAll}
           >
             {isAllRowsExpanded ? (
               <FontAwesomeIcon className="ms-1" icon="chevron-down" />
@@ -316,7 +313,90 @@ const Assign = () => {
         </Col>
       </Row>
       <hr className="my-3" />
-      <MapView
+      <div className="my-3">
+        <Button
+          id="expand-button"
+          onClick={() => {
+            setOpen(!open);
+          }}
+          aria-controls="expand-table"
+          aria-expanded={open}
+          style={{ width: '100%', border: 'none' }}
+          variant="light"
+          className="text-start bg-white"
+        >
+          {assignedLocations ? `Assign Teams | Assigned Locations: ${assignedLocations}` : 'Select Locations'}
+          {open ? (
+            <FontAwesomeIcon className="ms-2 mt-1 float-end" icon="chevron-up" />
+          ) : (
+            <FontAwesomeIcon className="ms-2 mt-1 float-end" icon="chevron-down" />
+          )}
+        </Button>
+        <Collapse in={open}>
+          <div id="expand-table" className="mt-2">
+            <hr />
+            <Tabs
+              id="assignments"
+              activeKey={activeTab}
+              onSelect={tab => {
+                if (tab && assignedLocations) {
+                  setActiveTab(tab);
+                } else {
+                  if (tab === LOCATION_TEAM_ASSIGNMENT_TAB) {
+                    toast.warning('Please select and save at least one location to be able to assign teams.');
+                  }
+                  setActiveTab(LOCATION_ASSIGNMENT_TAB);
+                }
+              }}
+              className="mb-3"
+            >
+              <Tab eventKey={LOCATION_ASSIGNMENT_TAB} title="Assign locations">
+                <div>
+                  <LocationAssignmentsTable
+                    organizationList={organizationsList}
+                    checkHandler={checkHandler}
+                    selectHandler={selectHandler}
+                    teamTab={false}
+                    columns={columns}
+                    data={tableData}
+                  />
+                </div>
+              </Tab>
+              <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title="Assign teams">
+                <div>
+                  <LocationAssignmentsTable
+                    teamTab={true}
+                    organizationList={organizationsList}
+                    checkHandler={checkHandler}
+                    selectHandler={selectHandler}
+                    columns={columns}
+                    clickHandler={(id: string, rowData: any) => {
+                      if (rowData.active && notInMove && id !== geoLocation?.identifier) {
+                        dispatch(showLoader(true));
+                        getLocationById(id)
+                          .then(res => {
+                            setNotInMove(false);
+                            setGeoLocation(res);
+                            setOpen(false);
+                          })
+                          .finally(() => dispatch(showLoader(false)));
+                      }
+                    }}
+                    data={tableData}
+                  />
+                </div>
+              </Tab>
+            </Tabs>
+            <hr className="my-2" />
+            <div className="text-end">
+              <Button id="save-assignments-button" className="my-2 w-25" onClick={saveHandler}>
+                Save
+              </Button>
+            </div>
+          </div>
+        </Collapse>
+      </div>
+      <MapViewAssignments
         data={geoLocation}
         assignment
         startingZoom={12}
@@ -324,96 +404,8 @@ const Assign = () => {
         moveend={() => setNotInMove(true)}
         reloadData={() => loadData()}
       >
-        <div className={classes.floatingLocationPickerAssign + ' bg-white p-2 rounded'}>
-          <Button
-            id="expand-button"
-            onClick={() => {
-              setOpen(!open);
-              expandAll.current?.click();
-            }}
-            aria-controls="expand-table"
-            aria-expanded={open}
-            style={{ width: '100%', border: 'none' }}
-            variant="light"
-            className="text-start bg-white"
-          >
-            {assignedLocations ? `Assign Teams | Assigned Locations: ${assignedLocations}` : 'Select Locations'}
-            {open ? (
-              <FontAwesomeIcon className="ms-2 mt-1 float-end" icon="chevron-up" />
-            ) : (
-              <FontAwesomeIcon className="ms-2 mt-1 float-end" icon="chevron-down" />
-            )}
-          </Button>
-          <Collapse in={open}>
-            <div id="expand-table" className="mt-2">
-              <hr />
-              <Tabs
-                id="assignments"
-                activeKey={activeTab}
-                onSelect={tab => {
-                  if (tab && assignedLocations) {
-                    setActiveTab(tab);
-                  } else {
-                    if (tab === LOCATION_TEAM_ASSIGNMENT_TAB) {
-                      toast.warning('Please select and save at least one location to be able to assign teams.');
-                    }
-                    setActiveTab(LOCATION_ASSIGNMENT_TAB);
-                  }
-                }}
-                className="mb-3"
-              >
-                <Tab eventKey={LOCATION_ASSIGNMENT_TAB} title="Assign locations">
-                  <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
-                    <LocationAssignmentsTable
-                      organizationList={organizationsList}
-                      checkHandler={checkHandler}
-                      selectHandler={selectHandler}
-                      teamTab={false}
-                      columns={columns}
-                      clickHandler={(id: string, rowData: any) => {
-                        if (rowData.active) {
-                          getLocationById(id).then(res => {
-                            setGeoLocation(res);
-                          });
-                        }
-                      }}
-                      data={tableData}
-                    />
-                  </div>
-                </Tab>
-                <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title="Assign teams">
-                  <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
-                    <LocationAssignmentsTable
-                      teamTab={true}
-                      organizationList={organizationsList}
-                      checkHandler={checkHandler}
-                      selectHandler={selectHandler}
-                      columns={columns}
-                      clickHandler={(id: string, rowData: any) => {
-                        if (rowData.active && notInMove && id !== geoLocation?.identifier) {
-                          dispatch(showLoader(true));
-                          getLocationById(id)
-                            .then(res => {
-                              setNotInMove(false);
-                              setGeoLocation(res);
-                              setOpen(false);
-                            })
-                            .finally(() => dispatch(showLoader(false)));
-                        }
-                      }}
-                      data={tableData}
-                    />
-                  </div>
-                </Tab>
-              </Tabs>
-              <hr className="my-2" />
-              <Button id="save-assignments-button" className="float-end mb-1 w-25" onClick={saveHandler}>
-                Save
-              </Button>
-            </div>
-          </Collapse>
-        </div>
-      </MapView>
+        <div></div>
+      </MapViewAssignments>
     </Container>
   );
 };

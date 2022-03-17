@@ -3,6 +3,7 @@ import { Table } from 'react-bootstrap';
 import { useTable, useExpanded } from 'react-table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3 } from '../../constants';
+import FormCheckInput from 'react-bootstrap/esm/FormCheckInput';
 
 interface Props {
   columns: any;
@@ -106,7 +107,20 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
             //row.depth is not existing in react table types for some reason, casting to any type solves the issue
             <tr {...row.getRowProps()} style={{ backgroundColor: getColorLevel((row as any).depth) }}>
               {row.cells.map(cell => {
-                return (
+                return cell.column.id === 'active' ? (
+                  <td
+                    id={cell.column.id + 'click-handler'}
+                    {...cell.getCellProps()}
+                    onClick={() => {
+                      if (cell.column.id !== 'expander') {
+                        let col = row.original as any;
+                        clickHandler(col.identifier, col);
+                      }
+                    }}
+                  >
+                    {cell.value === 'true' ? <FormCheckInput disabled checked /> : <FormCheckInput disabled />}
+                  </td>
+                ) : (
                   <td
                     id={cell.column.id + 'click-handler'}
                     {...cell.getCellProps()}
