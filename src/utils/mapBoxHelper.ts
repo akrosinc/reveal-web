@@ -1,5 +1,5 @@
 import { center, Feature, Point, Properties } from '@turf/turf';
-import mapboxgl, { Map } from 'mapbox-gl';
+import mapboxgl, { LngLatBounds, Map } from 'mapbox-gl';
 import { toast } from 'react-toastify';
 import { getChildLocation } from '../features/assignment/api';
 
@@ -27,25 +27,27 @@ export const getPolygonCenter = (data: any) => {
 };
 
 export const createLocation = (map: mapboxgl.Map, data: any, zoom: number, locationHierarchy: string): void => {
-  if (map.getSource(data.identifier) === undefined) {
+  if (map.getSource(data.identifier) === undefined && map.getSource(data.properties.id + 'children') === undefined) {
+    //save property id
+    data.properties.id = data.identifier;
     map.addSource(data.identifier, {
       type: 'geojson',
       data: data,
-      tolerance: 3.0
+      tolerance: 1.5
     });
 
     map.addLayer({
-      id: data.identifier + 'Outline',
+      id: data.identifier + '-outline',
       type: 'line',
       source: data.identifier,
       layout: {},
       paint: {
-        'line-color': data.properties.status === 'active' ? 'teal' : 'gray',
-        'line-width': 6
+        'line-color': 'gray',
+        'line-width': 4
       }
     });
     map.addLayer({
-      id: data.identifier + 'Fill',
+      id: data.identifier + '-fill',
       type: 'fill',
       source: data.identifier,
       layout: {},
@@ -66,7 +68,7 @@ export const createLocation = (map: mapboxgl.Map, data: any, zoom: number, locat
 
     let timer: NodeJS.Timeout;
 
-    map.on('mouseover', data.identifier + 'Fill', e => {
+    map.on('mouseover', data.identifier + '-fill', e => {
       if (!popup.isOpen()) {
         timer = setTimeout(() => {
           popup.setLngLat(e.lngLat);
@@ -76,7 +78,7 @@ export const createLocation = (map: mapboxgl.Map, data: any, zoom: number, locat
       }
     });
 
-    map.on('mouseleave', data.identifier + 'Fill', e => {
+    map.on('mouseleave', data.identifier + '-fill', e => {
       popup.remove();
       clearTimeout(timer);
     });
@@ -94,7 +96,13 @@ export const createLocation = (map: mapboxgl.Map, data: any, zoom: number, locat
   }
 };
 
-export const createChild = (map: Map, data: any, zoom: number, locationHierarchy: string) => {
+export const createChild = (
+  map: Map,
+  data: any,
+  zoom: number,
+  locationHierarchy: string,
+  openHandler: (data: any) => void
+) => {
   if (map.getSource(data.identifier) === undefined) {
     map.addSource(data.identifier, {
       type: 'geojson',
@@ -107,7 +115,7 @@ export const createChild = (map: Map, data: any, zoom: number, locationHierarchy
       source: data.identifier,
       layout: {},
       paint: {
-        'fill-color': map.getZoom() >= 12 ? 'yellow' : 'red',
+        'fill-color': map.getZoom() >= 12 ? 'yellow' : 'gray',
         'fill-opacity': 0.2
       }
     });
@@ -118,15 +126,15 @@ export const createChild = (map: Map, data: any, zoom: number, locationHierarchy
       source: data.identifier,
       layout: {},
       paint: {
-        'line-color': map.getZoom() >= 12 ? 'yellow' : 'red',
-        'line-width': 6
+        'line-color': map.getZoom() >= 12 ? 'yellow' : 'gray',
+        'line-width': 3
       }
     });
 
     if (data.features && data.features.length > 1) {
       //set center label
-     const group = new mapboxgl.LngLatBounds();
-     const featureSet: Feature<Point, Properties>[] = [];
+      const group = new LngLatBounds();
+      const featureSet: Feature<Point, Properties>[] = [];
       data.features.forEach((element: any) => {
         //create label for each of the locations
         //create a group of locations so we can fit them all in viewport
@@ -139,15 +147,14 @@ export const createChild = (map: Map, data: any, zoom: number, locationHierarchy
       });
       map.fitBounds(group, {
         easing: e => {
+          //this is an event which is fired at the end of the fit bounds
           if (e === 1) {
-            //this is an event which is fired at the end of the fit bounds
-            //we will need it later
-            createLocationLabelTest(map, featureSet, data.identifier)
+            createLocationLabelTest(map, featureSet, data.identifier);
             console.log('zoom: ' + map.getZoom());
           }
           return e;
         },
-        zoom: map.getZoom() + 1
+        zoom: map.getZoom() + 0.5
       });
     } else {
       const centerLabel = getPolygonCenter(data.features[0]);
@@ -167,15 +174,65 @@ export const createChild = (map: Map, data: any, zoom: number, locationHierarchy
       const feature = e.features !== undefined ? e.features[0] : undefined;
       if (feature) {
         if (feature.properties) {
-          loadChildren(map, feature.properties.id, zoom, locationHierarchy);
+          loadChildren(map, feature.properties.id, zoom, locationHierarchy, openHandler);
         }
       }
     });
+    contextMenuHandler(map, data.identifier, openHandler, locationHierarchy);
   }
 };
 
+export const contextMenuHandler = (map: Map, identifier: string, openHandler: (data: any) => void, locationHierarchy?: string) => {
+  // When a click event occurs on a feature in the places layer, open a popup at the
+  // location of the feature, with description HTML from its properties.
+  map.on('contextmenu', identifier + '-fill', e => {
+    // Copy coordinates array.
+    const feature = e.features !== undefined ? e.features[0] : (undefined as any);
+
+    const test = () => {
+      openHandler(feature);
+    };
+
+    const loadChildrenHandler = () => {
+      loadChildren(map, feature.properties.id, map.getZoom(), locationHierarchy ?? '', openHandler);
+    }
+
+    if (feature) {
+      let buttonId = identifier + '-button';
+      let loadChildButtonId = identifier + '-child-button';
+      let detailsButtonId = identifier + '-details-button';
+      let colorPickerId = identifier + '-color-picker';
+      new mapboxgl.Popup({ closeButton: true, focusAfterOpen: true, closeOnMove: true })
+        .setLngLat(e.lngLat)
+        .setHTML(
+          `
+            <h4 class='bg-success text-center'>Action menu</h4>
+            <div class='m-0 p-0 text-center'>
+          <p>
+          <label>Property name: </label>
+          ${feature.properties.name}
+          <br />
+          </p>
+          <button class='btn btn-primary w-75 mb-2' id='${buttonId}'>Assign teams</button>
+          <button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
+          <button class='btn btn-primary w-75 mb-2' id='${detailsButtonId}'>Property details</button>
+          <label style='vertical-align: super' class='me-1'>Change layer color:</label>
+          <input id='${colorPickerId}' class='mb-3' type='color' />
+          </div>`
+        )
+        .addTo(map);
+        document.getElementById(buttonId)?.addEventListener('click', test);
+        document.getElementById(loadChildButtonId)?.addEventListener('click', loadChildrenHandler);
+        document.getElementById(detailsButtonId)?.addEventListener('click', test);
+        document.getElementById(colorPickerId)?.addEventListener('change', e => {
+          let hexColor = (e.target as any).value as string;
+          map.setPaintProperty(identifier + '-fill', 'fill-color', hexColor);
+        });
+    }
+  });
+};
+
 export const createLocationLabelTest = (map: Map, featureSet: Feature<Point, Properties>[], identifier: string) => {
-  console.log(map.getZoom());
   map.addSource(identifier + '-label', {
     type: 'geojson',
     data: {
@@ -198,9 +255,15 @@ export const createLocationLabelTest = (map: Map, featureSet: Feature<Point, Pro
       'text-color': 'white'
     }
   });
-}
+};
 
-export const loadChildren = (map: Map, id: string, zoom: number, locationHierarchy: string) => {
+export const loadChildren = (
+  map: Map,
+  id: string,
+  zoom: number,
+  locationHierarchy: string,
+  openHandler: (data: any) => void
+) => {
   getChildLocation(id, locationHierarchy).then(res => {
     res.map(el => {
       const properties = {
@@ -216,20 +279,20 @@ export const loadChildren = (map: Map, id: string, zoom: number, locationHierarc
         type: 'FeatureCollection',
         features: res
       };
-      createChild(map, featureSet, zoom, locationHierarchy);
+      createChild(map, featureSet, zoom, locationHierarchy, openHandler);
     } else {
       toast.info('This location has no child locations.');
     }
   });
 };
 
-export const createLocationLabel = (map: mapboxgl.Map, data: any, center: Feature<Point, Properties>) => {
+export const createLocationLabel = (map: Map, data: any, center: Feature<Point, Properties>) => {
   if (map.getSource(data.identifier + 'Label') === undefined) {
     map.addSource(data.identifier + 'Label', {
       type: 'geojson',
       data: center
     });
-  
+
     map.addLayer({
       id: data.identifier + 'Label',
       minzoom: map.getZoom() - 1.0,

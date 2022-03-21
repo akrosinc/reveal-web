@@ -75,6 +75,7 @@ const AssignModal = ({ locationData, closeHandler }: Props) => {
         <Modal.Title>{locationData[1].name}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+      <p>Identifier: {locationData[0]}</p>
         <h5>Location info</h5>
         <Table bordered responsive className="my-2">
           <thead className="border border-2">
@@ -92,7 +93,6 @@ const AssignModal = ({ locationData, closeHandler }: Props) => {
             </tr>
           </tbody>
         </Table>
-        <p>Location identifier: {locationData[0]}</p>
         <Form>
           <Form.Group className="my-3">
             <Form.Label>

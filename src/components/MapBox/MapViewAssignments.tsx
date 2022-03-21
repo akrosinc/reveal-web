@@ -2,11 +2,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl, { Map } from 'mapbox-gl';
 import './index.css';
 import { Button } from 'react-bootstrap';
-import { createLocation, createLocationLabel, loadChildren } from '../../utils';
+import { contextMenuHandler, createLocation, createLocationLabel, loadChildren } from '../../utils';
 import { MAPBOX_STYLE } from '../../constants';
 import { useParams } from 'react-router-dom';
 import { getPlanById } from '../../features/plan/api';
 import { PlanModel } from '../../features/plan/providers/types';
+import AssignModal from '../../features/assignment/components/assign/assignModal';
+import { Properties } from '../../features/location/providers/types';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
@@ -40,6 +42,8 @@ const MapViewAssignments = ({
   const [zoom, setZoom] = useState(startingZoom);
   const { planId } = useParams();
   const [currentPlan, setCurrentPlan] = useState<PlanModel>();
+  const [showModal, setShowModal] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<[string, Properties]>();
 
   useEffect(() => {
     // initialize map only once
@@ -62,7 +66,7 @@ const MapViewAssignments = ({
             enableHighAccuracy: true
           },
           trackUserLocation: true,
-          showUserHeading: true
+          showUserHeading: false
         }),
         'bottom-right'
       );
@@ -80,12 +84,23 @@ const MapViewAssignments = ({
           mapInstance.on('moveend', e => {
             if (e.data) {
               createLocationLabel(mapInstance, e.data, e.center);
-              mapInstance.on('dblclick', e.data.identifier + 'Fill', e => {
-                const a = e.features;
-                if (a) {
-                  loadChildren(mapInstance, a[0].source, mapInstance.getZoom(), plan.locationHierarchy.identifier);
+              const openHandler = (selectedLocation: any) => {
+                setCurrentLocation([selectedLocation.properties.id, selectedLocation.properties]);
+                setShowModal(true);
+              };
+              mapInstance.on('dblclick', e.data.identifier + '-fill', e => {
+                const selectedLocation = e.features;
+                if (selectedLocation) {
+                  loadChildren(
+                    mapInstance,
+                    selectedLocation[0].source,
+                    mapInstance.getZoom(),
+                    plan.locationHierarchy.identifier,
+                    openHandler
+                  );
                 }
               });
+              contextMenuHandler(mapInstance, e.data.identifier, openHandler, plan.locationHierarchy.identifier);
               if (moveend) {
                 moveend();
               }
@@ -96,7 +111,6 @@ const MapViewAssignments = ({
   }, [lat, lng, zoom, moveend, planId, currentPlan]);
 
   useEffect(() => {
-    console.log(data);
     const currentMap = map.current;
     if (currentMap && data && currentPlan) {
       createLocation(currentMap, data, currentMap.getZoom(), currentPlan.locationHierarchy.identifier);
@@ -136,6 +150,9 @@ const MapViewAssignments = ({
         </Button>
       </div>
       <div ref={mapContainer} className="mapbox-container" />
+      {showModal && currentLocation && (
+        <AssignModal closeHandler={() => setShowModal(false)} locationData={currentLocation} />
+      )}
     </div>
   );
 };
