@@ -150,7 +150,6 @@ export const createChild = (
           //this is an event which is fired at the end of the fit bounds
           if (e === 1) {
             createLocationLabelTest(map, featureSet, data.identifier);
-            console.log('zoom: ' + map.getZoom());
           }
           return e;
         },
@@ -160,10 +159,8 @@ export const createChild = (
       const centerLabel = getPolygonCenter(data.features[0]);
       map.fitBounds(centerLabel.bounds, {
         easing: e => {
-          console.log(e);
           if (e === 1) {
             createLocationLabel(map, data.features[0], centerLabel.center);
-            console.log('zoom: ' + map.getZoom());
           }
           return e;
         }
@@ -179,55 +176,76 @@ export const createChild = (
       }
     });
     contextMenuHandler(map, data.identifier, openHandler, locationHierarchy);
+    selectHandler(map, data.identifier);
   }
 };
 
-export const contextMenuHandler = (map: Map, identifier: string, openHandler: (data: any) => void, locationHierarchy?: string) => {
+export const contextMenuHandler = (
+  map: Map,
+  identifier: string,
+  openHandler: (data: any) => void,
+  locationHierarchy?: string
+) => {
   // When a click event occurs on a feature in the places layer, open a popup at the
   // location of the feature, with description HTML from its properties.
   map.on('contextmenu', identifier + '-fill', e => {
     // Copy coordinates array.
     const feature = e.features !== undefined ? e.features[0] : (undefined as any);
 
-    const test = () => {
-      openHandler(feature);
-    };
-
     const loadChildrenHandler = () => {
       loadChildren(map, feature.properties.id, map.getZoom(), locationHierarchy ?? '', openHandler);
-    }
+    };
 
     if (feature) {
-      let buttonId = identifier + '-button';
-      let loadChildButtonId = identifier + '-child-button';
-      let detailsButtonId = identifier + '-details-button';
-      let colorPickerId = identifier + '-color-picker';
+      const buttonId = identifier + '-button';
+      const loadChildButtonId = identifier + '-child-button';
+      const detailsButtonId = identifier + '-details-button';
+      const colorPickerId = identifier + '-color-picker';
       new mapboxgl.Popup({ closeButton: true, focusAfterOpen: true, closeOnMove: true })
         .setLngLat(e.lngLat)
         .setHTML(
-          `
-            <h4 class='bg-success text-center'>Action menu</h4>
+          `<h4 class='bg-success text-center'>Action menu</h4>
             <div class='m-0 p-0 text-center'>
-          <p>
-          <label>Property name: </label>
-          ${feature.properties.name}
-          <br />
-          </p>
-          <button class='btn btn-primary w-75 mb-2' id='${buttonId}'>Assign teams</button>
-          <button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
-          <button class='btn btn-primary w-75 mb-2' id='${detailsButtonId}'>Property details</button>
-          <label style='vertical-align: super' class='me-1'>Change layer color:</label>
-          <input id='${colorPickerId}' class='mb-3' type='color' />
-          </div>`
+              <p>
+                <label>Property name: </label>
+                  ${feature.properties.name}
+                  <br />
+              </p>
+              <button class='btn btn-primary w-75 mb-2' id='${buttonId}'>Assign teams</button>
+              <button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
+              <button class='btn btn-primary w-75 mb-2' id='${detailsButtonId}'>Property details</button>
+              <label style='vertical-align: super' class='me-1'>Change layer color:</label>
+              <input id='${colorPickerId}' class='mb-3' type='color' />
+            </div>`
         )
         .addTo(map);
-        document.getElementById(buttonId)?.addEventListener('click', test);
-        document.getElementById(loadChildButtonId)?.addEventListener('click', loadChildrenHandler);
-        document.getElementById(detailsButtonId)?.addEventListener('click', test);
-        document.getElementById(colorPickerId)?.addEventListener('change', e => {
-          let hexColor = (e.target as any).value as string;
-          map.setPaintProperty(identifier + '-fill', 'fill-color', hexColor);
-        });
+      document.getElementById(buttonId)?.addEventListener('click', () => openHandler(feature));
+      document.getElementById(loadChildButtonId)?.addEventListener('click', loadChildrenHandler);
+      document.getElementById(detailsButtonId)?.addEventListener('click', () => openHandler(feature));
+      document.getElementById(colorPickerId)?.addEventListener('change', e => {
+        let hexColor = (e.target as any).value as string;
+        map.setPaintProperty(identifier + '-fill', 'fill-color', hexColor);
+      });
+    }
+  });
+};
+
+export const selectHandler = (map: Map, identifier: string) => {
+  map.on('click', identifier + '-fill', e => {
+    // Copy coordinates array.
+    const feature = e.features !== undefined ? e.features[0] : undefined;
+
+    if (feature) {
+      map.addLayer({
+        id: identifier + '-highlighted',
+        type: 'fill',
+        source: identifier,
+        paint: {
+          'fill-outline-color': '#484896',
+          'fill-color': '#6e599f',
+          'fill-opacity': 0.75
+        }
+      });
     }
   });
 };

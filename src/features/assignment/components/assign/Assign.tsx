@@ -164,18 +164,17 @@ const Assign = () => {
     setLocationHierarchy(selectedHierarchy);
   };
 
-  const selectHandler = (id: string, selected: MultiValue<Option>) => {
+  const selectHandler = (id: string, selected: MultiValue<Option>, unselectAll?: boolean) => {
     let selectedHierarchy = { ...locationHierarchy } as PageableModel<LocationModel>;
     selectedHierarchy.content?.forEach(location => {
       if (location.identifier === id) {
-        location.overriden = true;
         location.teams = selected.map(team => {
           return {
             identifier: team.value,
             name: team.label
           };
         });
-        selectChildren(location, selected);
+        selectChildren(location, selected, unselectAll);
       } else if (location.children.length) {
         findChildrenToSelect(id, location.children, selected);
       }
@@ -197,7 +196,6 @@ const Assign = () => {
   const findChildrenToSelect = (id: string, children: LocationModel[], selected: MultiValue<Option>) => {
     children.forEach(childEl => {
       if (childEl.identifier === id) {
-        childEl.overriden = true;
         childEl.teams = selected.map(team => {
           return {
             identifier: team.value,
@@ -220,18 +218,32 @@ const Assign = () => {
     });
   };
 
-  const selectChildren = (parentLocation: LocationModel, selected: MultiValue<Option>) => {
+  const selectChildren = (parentLocation: LocationModel, selected: MultiValue<Option>, unselectAll?: boolean) => {
     parentLocation.children.forEach(el => {
-      if (el.active && !el.overriden) {
-        el.teams = selected.map(team => {
-          return {
-            identifier: team.value,
-            name: team.label
-          };
-        });
+      if (el.active) {
+        if (unselectAll) {
+          el.teams = [];
+        } else {
+          selected.forEach(team => {
+            el.teams.forEach((element, index) => {
+              if (team.value === element.identifier) {
+                el.teams.splice(index, 1);
+              }
+            });
+          });
+          el.teams = [
+            ...el.teams,
+            ...selected.map(t => {
+              return {
+                identifier: t.value,
+                name: t.label
+              };
+            })
+          ];
+        }
       }
       if (el.children.length) {
-        selectChildren(el, selected);
+        selectChildren(el, selected, unselectAll);
       }
     });
   };
@@ -364,6 +376,15 @@ const Assign = () => {
               </Tab>
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title="Assign teams">
                 <div>
+                  <div className="w-100 text-end">
+                    <Button
+                      onClick={() => {
+                        selectHandler(locationHierarchy!.content[0].identifier, [], true);
+                      }}
+                    >
+                      Unselect all
+                    </Button>
+                  </div>
                   <LocationAssignmentsTable
                     teamTab={true}
                     organizationList={organizationsList}

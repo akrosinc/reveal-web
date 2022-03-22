@@ -53,7 +53,8 @@ const MapViewAssignments = ({
         container: mapContainer.current,
         style: MAPBOX_STYLE,
         center: [lng, lat],
-        zoom: zoom
+        zoom: zoom,
+        doubleClickZoom: false
       });
       mapInstance.on('move', e => {
         setLng(Math.round(mapInstance.getCenter().lng * 100) / 100);
@@ -68,13 +69,13 @@ const MapViewAssignments = ({
           trackUserLocation: true,
           showUserHeading: false
         }),
-        'bottom-right'
+        'bottom-left'
       );
       mapInstance.addControl(
         new mapboxgl.NavigationControl({
           showCompass: false
         }),
-        'bottom-right'
+        'bottom-left'
       );
       map.current = mapInstance;
       //load locations plan
