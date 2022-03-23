@@ -70,6 +70,14 @@ const Assign = () => {
                 };
               });
               setOrganizationsList(orgList);
+              if (hierarchy.content.length) {
+                //load parent location on component load
+                getLocationById(hierarchy.content[0].identifier).then(res => {
+                  setNotInMove(false);
+                  setGeoLocation(res);
+                  setOpen(false);
+                });
+              }
             })
             .catch(err => toast.error('Something went wrong...' + err.toString()))
             .finally(() => {
@@ -419,7 +427,6 @@ const Assign = () => {
       </div>
       <MapViewAssignments
         data={geoLocation}
-        assignment
         startingZoom={12}
         clearHandler={() => setGeoLocation(undefined)}
         moveend={() => setNotInMove(true)}

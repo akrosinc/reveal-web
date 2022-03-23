@@ -2,7 +2,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl, { Map } from 'mapbox-gl';
 import './index.css';
 import { Button } from 'react-bootstrap';
-import { contextMenuHandler, createLocation, createLocationLabel, loadChildren } from '../../utils';
+import {
+  contextMenuHandler,
+  createLocation,
+  createLocationLabel,
+  doubleClickHandler,
+  selectHandler
+} from '../../utils';
 import { MAPBOX_STYLE } from '../../constants';
 import { useParams } from 'react-router-dom';
 import { getPlanById } from '../../features/plan/api';
@@ -20,8 +26,7 @@ interface Props {
   clearHandler: () => void;
   moveend?: () => void;
   children: JSX.Element;
-  assignment: boolean;
-  reloadData?: () => void;
+  reloadData: () => void;
 }
 
 const MapViewAssignments = ({
@@ -31,7 +36,6 @@ const MapViewAssignments = ({
   data,
   clearHandler,
   children,
-  assignment,
   moveend,
   reloadData
 }: Props) => {
@@ -83,25 +87,20 @@ const MapViewAssignments = ({
         getPlanById(planId).then(plan => {
           setCurrentPlan(plan);
           mapInstance.on('moveend', e => {
+            //when first location is loaded it sends data trough event,
+            //set location label and set map click event listeners
             if (e.data) {
               createLocationLabel(mapInstance, e.data, e.center);
               const openHandler = (selectedLocation: any) => {
                 setCurrentLocation([selectedLocation.properties.id, selectedLocation.properties]);
                 setShowModal(true);
               };
-              mapInstance.on('dblclick', e.data.identifier + '-fill', e => {
-                const selectedLocation = e.features;
-                if (selectedLocation) {
-                  loadChildren(
-                    mapInstance,
-                    selectedLocation[0].source,
-                    mapInstance.getZoom(),
-                    plan.locationHierarchy.identifier,
-                    openHandler
-                  );
-                }
-              });
+              //set double click listener
+              doubleClickHandler(mapInstance, e.data.identifier, plan.locationHierarchy.identifier);
+              //set right clik listener
               contextMenuHandler(mapInstance, e.data.identifier, openHandler, plan.locationHierarchy.identifier);
+              //set ctrl + left click listener
+              selectHandler(mapInstance);
               if (moveend) {
                 moveend();
               }
@@ -152,7 +151,15 @@ const MapViewAssignments = ({
       </div>
       <div ref={mapContainer} className="mapbox-container" />
       {showModal && currentLocation && (
-        <AssignModal closeHandler={() => setShowModal(false)} locationData={currentLocation} />
+        <AssignModal
+          closeHandler={(action: boolean) => {
+            if (action) {
+              reloadData();
+            }
+            setShowModal(false);
+          }}
+          locationData={currentLocation}
+        />
       )}
     </div>
   );

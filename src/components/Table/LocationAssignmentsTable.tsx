@@ -42,20 +42,22 @@ const LocationAssignmentsTable = ({
 
   const mapRows = (row: any): object[] => {
     if (row.children !== undefined) {
-      return row.children.filter((el: any) => el.properties.geographicLevel !== 'structure').map((el: any) => {
-        return {
-          identifier: el.identifier,
-          children: el.children,
-          active: el.active,
-          teams: el.teams,
-          properties: {
-            name: el.properties.name,
-            status: el.properties.status,
-            externalId: el.properties.externalId,
-            geographicLevel: el.properties.geographicLevel
-          }
-        };
-      });
+      return row.children
+        .filter((el: any) => el.properties.geographicLevel !== 'structure')
+        .map((el: any) => {
+          return {
+            identifier: el.identifier,
+            children: el.children,
+            active: el.active,
+            teams: el.teams,
+            properties: {
+              name: el.properties.name,
+              status: el.properties.status,
+              externalId: el.properties.externalId,
+              geographicLevel: el.properties.geographicLevel
+            }
+          };
+        });
     } else {
       return [];
     }
@@ -126,6 +128,19 @@ const LocationAssignmentsTable = ({
                         }
                         onChange={selected => selectHandler(rowData.identifier, selected)}
                       />
+                    </td>
+                  );
+                } else if (cell.column.id === 'location') {
+                  return (
+                    <td
+                      {...cell.getCellProps()}
+                      onClick={() => {
+                        if (cell.column.id !== 'expander' && teamTab && clickHandler) {
+                          clickHandler(rowData.identifier, rowData);
+                        }
+                      }}
+                    >
+                      {cell.render('Cell')} ({rowData.children.length})
                     </td>
                   );
                 } else {

@@ -1,5 +1,5 @@
 import { center, Feature, Point, Properties } from '@turf/turf';
-import mapboxgl, { LngLatBounds, Map } from 'mapbox-gl';
+import mapboxgl, { LngLatBounds, Map, Popup } from 'mapbox-gl';
 import { toast } from 'react-toastify';
 import { getChildLocation } from '../features/assignment/api';
 
@@ -57,31 +57,10 @@ export const createLocation = (map: mapboxgl.Map, data: any, zoom: number, locat
       }
     });
 
+    hoverHandler(map, data.identifier);
+
     //set center label
     let centerLabel = getPolygonCenter(data);
-
-    let popup = new mapboxgl.Popup().setHTML(
-      `<h4 class='bg-success text-light text-center'>Actions</h4><div class='p-2'><small>Available commands:<br />
-      Right click - context menu <br/> Double Click - load children<br />
-      Left Click - Assign Teams</small></div>`
-    );
-
-    let timer: NodeJS.Timeout;
-
-    map.on('mouseover', data.identifier + '-fill', e => {
-      if (!popup.isOpen()) {
-        timer = setTimeout(() => {
-          popup.setLngLat(e.lngLat);
-          popup.addTo(map);
-          popup.setOffset(100);
-        }, 2000);
-      }
-    });
-
-    map.on('mouseleave', data.identifier + '-fill', e => {
-      popup.remove();
-      clearTimeout(timer);
-    });
 
     map.fitBounds(
       centerLabel.bounds,
@@ -96,12 +75,34 @@ export const createLocation = (map: mapboxgl.Map, data: any, zoom: number, locat
   }
 };
 
+export const hoverHandler = (map: Map, identifier: string) => {
+  let popup = new Popup().setHTML(
+    `<h4 class='bg-success text-light text-center'>Actions</h4><div class='p-2'><small>Available commands:<br />
+    Right click - context menu <br/> Double Click - load children<br />
+    Ctrl + Left Click - Select location</small></div>`
+  );
+
+  let timer: NodeJS.Timeout;
+
+  map.on('mouseover', identifier + '-fill', e => {
+    if (!popup.isOpen()) {
+      timer = setTimeout(() => {
+        popup.setLngLat(e.lngLat);
+        popup.addTo(map);
+        popup.setOffset(100);
+      }, 1200);
+    }
+  });
+
+  map.on('mouseleave', identifier + '-fill', e => {
+    popup.remove();
+    clearTimeout(timer);
+  });
+}
+
 export const createChild = (
   map: Map,
-  data: any,
-  zoom: number,
-  locationHierarchy: string,
-  openHandler: (data: any) => void
+  data: any
 ) => {
   if (map.getSource(data.identifier) === undefined) {
     map.addSource(data.identifier, {
@@ -109,6 +110,7 @@ export const createChild = (
       data: data,
       tolerance: 1.5
     });
+    
     map.addLayer({
       id: data.identifier + '-fill',
       type: 'fill',
@@ -149,7 +151,7 @@ export const createChild = (
         easing: e => {
           //this is an event which is fired at the end of the fit bounds
           if (e === 1) {
-            createLocationLabelTest(map, featureSet, data.identifier);
+            createChildLocationLabel(map, featureSet, data.identifier);
           }
           return e;
         },
@@ -166,19 +168,26 @@ export const createChild = (
         }
       });
     }
-
-    map.on('dblclick', data.identifier + '-fill', e => {
-      const feature = e.features !== undefined ? e.features[0] : undefined;
-      if (feature) {
-        if (feature.properties) {
-          loadChildren(map, feature.properties.id, zoom, locationHierarchy, openHandler);
-        }
-      }
-    });
-    contextMenuHandler(map, data.identifier, openHandler, locationHierarchy);
-    selectHandler(map, data.identifier);
   }
 };
+
+export const doubleClickHandler = (map: Map, identifier: string, locationHierarchy: string) => {
+  map.on('dblclick', identifier + '-fill', e => {
+    if (!e.originalEvent.ctrlKey) {
+      const features = map.queryRenderedFeatures(e.point);
+      if (features.length) {
+        const feature = features[0];
+        if (feature) {
+          if (feature.properties && feature.properties.id) {
+            loadChildren(map, feature.properties.id, locationHierarchy);
+          }
+        }
+      }
+    }
+  });
+}
+
+let popup: Popup;
 
 export const contextMenuHandler = (
   map: Map,
@@ -189,74 +198,86 @@ export const contextMenuHandler = (
   // When a click event occurs on a feature in the places layer, open a popup at the
   // location of the feature, with description HTML from its properties.
   map.on('contextmenu', identifier + '-fill', e => {
-    // Copy coordinates array.
-    const feature = e.features !== undefined ? e.features[0] : (undefined as any);
+    //get layer from event point
+    const features = map.queryRenderedFeatures(e.point);
 
-    const loadChildrenHandler = () => {
-      loadChildren(map, feature.properties.id, map.getZoom(), locationHierarchy ?? '', openHandler);
-    };
-
-    if (feature) {
-      const buttonId = identifier + '-button';
-      const loadChildButtonId = identifier + '-child-button';
-      const detailsButtonId = identifier + '-details-button';
-      const colorPickerId = identifier + '-color-picker';
-      new mapboxgl.Popup({ closeButton: true, focusAfterOpen: true, closeOnMove: true })
-        .setLngLat(e.lngLat)
-        .setHTML(
-          `<h4 class='bg-success text-center'>Action menu</h4>
-            <div class='m-0 p-0 text-center'>
-              <p>
-                <label>Property name: </label>
-                  ${feature.properties.name}
-                  <br />
-              </p>
-              <button class='btn btn-primary w-75 mb-2' id='${buttonId}'>Assign teams</button>
-              <button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
-              <button class='btn btn-primary w-75 mb-2' id='${detailsButtonId}'>Property details</button>
-              <label style='vertical-align: super' class='me-1'>Change layer color:</label>
-              <input id='${colorPickerId}' class='mb-3' type='color' />
-            </div>`
-        )
-        .addTo(map);
-      document.getElementById(buttonId)?.addEventListener('click', () => openHandler(feature));
-      document.getElementById(loadChildButtonId)?.addEventListener('click', loadChildrenHandler);
-      document.getElementById(detailsButtonId)?.addEventListener('click', () => openHandler(feature));
-      document.getElementById(colorPickerId)?.addEventListener('change', e => {
-        let hexColor = (e.target as any).value as string;
-        map.setPaintProperty(identifier + '-fill', 'fill-color', hexColor);
-      });
+    if (features.length) {
+      //remove previouse popup if exist
+      if (popup !== undefined) {
+        popup.remove();
+      }
+      const feature = features[0];
+      if (feature) {
+        const buttonId = identifier + '-button';
+        const loadChildButtonId = identifier + '-child-button';
+        const detailsButtonId = identifier + '-details-button';
+        const colorPickerId = identifier + '-color-picker';
+        popup = new Popup({ focusAfterOpen: true, closeOnMove: true })
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<h4 class='bg-success text-center'>Action menu</h4>
+              <div class='m-0 p-0 text-center'>
+                <p>
+                  <label>Property name: </label>
+                    ${(feature.properties as any).name}
+                    <br />
+                </p>
+                <button class='btn btn-primary w-75 mb-2' id='${buttonId}'>Assign teams</button>
+                <button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
+                <button class='btn btn-primary w-75 mb-2' id='${detailsButtonId}'>Property details</button>
+                <label style='vertical-align: super' class='me-1'>Change layer color:</label>
+                <input id='${colorPickerId}' class='mb-3' type='color' />
+              </div>`
+          )
+          .addTo(map);
+        document.getElementById(buttonId)?.addEventListener('click', () => openHandler(feature));
+        document
+          .getElementById(loadChildButtonId)
+          ?.addEventListener('click', () =>
+            loadChildren(map, (feature.properties as any).id, locationHierarchy ?? '')
+          );
+        document.getElementById(detailsButtonId)?.addEventListener('click', () => openHandler(feature));
+        document.getElementById(colorPickerId)?.addEventListener('change', e => {
+          let hexColor = (e.target as any).value as string;
+          map.setPaintProperty(identifier + '-fill', 'fill-color', hexColor);
+        });
+      }
     }
   });
 };
 
-export const selectHandler = (map: Map, identifier: string) => {
-  map.on('click', identifier + '-fill', e => {
-    // Copy coordinates array.
-    const feature = e.features !== undefined ? e.features[0] : undefined;
-
-    if (feature) {
-      map.addLayer({
-        id: identifier + '-highlighted',
-        type: 'fill',
-        source: identifier,
-        paint: {
-          'fill-outline-color': '#484896',
-          'fill-color': '#6e599f',
-          'fill-opacity': 0.75
+export const selectHandler = (map: Map) => {
+  map.on('click', e => {
+    if (e.originalEvent.ctrlKey) {
+      let f = map.queryRenderedFeatures(e.point);
+      if (f.length) {
+        if (map.getLayer((f[0].properties as any).id + '-highlighted')) {
+          map.removeLayer((f[0].properties as any).id + '-highlighted');
+        } else {
+          map.addLayer({
+            id: (f[0].properties as any).id + '-highlighted',
+            type: 'fill',
+            source: f[0].source,
+            paint: {
+              'fill-outline-color': '#484896',
+              'fill-color': '#6e599f',
+              'fill-opacity': 0.75
+            }
+          });
         }
-      });
+      }
     }
   });
 };
 
-export const createLocationLabelTest = (map: Map, featureSet: Feature<Point, Properties>[], identifier: string) => {
+export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Properties>[], identifier: string) => {
   map.addSource(identifier + '-label', {
     type: 'geojson',
     data: {
       type: 'FeatureCollection',
       features: featureSet
-    }
+    },
+    tolerance: 1.5
   });
 
   map.addLayer({
@@ -278,9 +299,7 @@ export const createLocationLabelTest = (map: Map, featureSet: Feature<Point, Pro
 export const loadChildren = (
   map: Map,
   id: string,
-  zoom: number,
-  locationHierarchy: string,
-  openHandler: (data: any) => void
+  locationHierarchy: string
 ) => {
   getChildLocation(id, locationHierarchy).then(res => {
     res.map(el => {
@@ -297,7 +316,7 @@ export const loadChildren = (
         type: 'FeatureCollection',
         features: res
       };
-      createChild(map, featureSet, zoom, locationHierarchy, openHandler);
+      createChild(map, featureSet);
     } else {
       toast.info('This location has no child locations.');
     }
@@ -308,7 +327,8 @@ export const createLocationLabel = (map: Map, data: any, center: Feature<Point, 
   if (map.getSource(data.identifier + 'Label') === undefined) {
     map.addSource(data.identifier + 'Label', {
       type: 'geojson',
-      data: center
+      data: center,
+      tolerance: 1.5
     });
 
     map.addLayer({
