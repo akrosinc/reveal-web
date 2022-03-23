@@ -9,6 +9,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import keycloak from './keycloak';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { KeycloakInitOptions } from 'keycloak-js';
 
 const eventLogger = (event: unknown, error: unknown) => {
   //we can capture all keycloak events here
@@ -20,9 +21,14 @@ const tokenLogger = (tokens: any) => {
   //console.log("onToken", tokens);
 };
 
+const initOptions: KeycloakInitOptions = {
+  pkceMethod: 'S256',
+  checkLoginIframe: false
+}
+
 ReactDOM.render(
   <React.StrictMode>
-    <ReactKeycloakProvider authClient={keycloak} onEvent={eventLogger} onTokens={tokenLogger}>
+    <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions} onEvent={eventLogger} onTokens={tokenLogger}>
       <Provider store={store}>
         <BrowserRouter>
           <App />

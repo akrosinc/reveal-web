@@ -4,8 +4,6 @@ import './index.css';
 import { Button } from 'react-bootstrap';
 import { createLocation, createLocationLabel } from '../../utils';
 import { MAPBOX_STYLE } from '../../constants';
-import AssignModal from '../../features/assignment/components/assign/assignModal';
-import { Properties } from '../../features/location/providers/types';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
@@ -17,8 +15,6 @@ interface Props {
   clearHandler: () => void;
   moveend?: () => void;
   children: JSX.Element;
-  assignment: boolean;
-  reloadData?: () => void;
 }
 
 const MapView = ({
@@ -28,17 +24,13 @@ const MapView = ({
   data,
   clearHandler,
   children,
-  assignment,
-  moveend,
-  reloadData
+  moveend
 }: Props) => {
   const mapContainer = useRef<any>(null);
   const map = useRef<Map>();
   const [lng, setLng] = useState(longitude ?? 28.283333);
   const [lat, setLat] = useState(latitude ?? -15.416667);
   const [zoom, setZoom] = useState(startingZoom);
-  const [show, setShow] = useState(false);
-  const [locationData, setLocationData] = useState<[string, Properties]>();
   const [currentLocation, setCurrentLocation] = useState<string>();
 
   useEffect(() => {
@@ -76,28 +68,11 @@ const MapView = ({
       }
     } else {
       if (data !== undefined && map.current.getSource(data.identifier) === undefined) {
-        if (currentLocation && assignment) {
-          map.current.removeLayer(currentLocation + 'Outline');
-          map.current.removeLayer(currentLocation + 'Fill');
-          map.current.removeLayer(currentLocation + 'Label');
-          if (map.current.getSource(currentLocation + 'Label')) {
-            map.current.removeSource(currentLocation + 'Label');
-          }
-          map.current.removeSource(currentLocation);
-        }
         setCurrentLocation(data.identifier);
-        createLocation(map.current, data);
-        if (assignment) {
-          // When a click event occurs on a feature in the states layer,
-          // open a popup at the location of the click, with description
-          map.current.on('click', data.identifier + 'Fill', e => {
-            setShow(true);
-            setLocationData([data.identifier, data.properties]);
-          });
-        }
+        createLocation(map.current, data, map.current.getZoom(), '');
       }
     }
-  }, [setCurrentLocation, data, lng, lat, zoom, currentLocation, assignment, moveend]);
+  }, [setCurrentLocation, data, lng, lat, zoom, currentLocation, moveend]);
 
   useEffect(() => {
     return () => {
@@ -133,15 +108,6 @@ const MapView = ({
         </Button>
       </div>
       <div ref={mapContainer} className="mapbox-container" />
-      {show && locationData && (
-        <AssignModal
-          closeHandler={(action: boolean) => {
-            setShow(false);
-            if (reloadData && action) reloadData();
-          }}
-          locationData={locationData}
-        />
-      )}
     </div>
   );
 };

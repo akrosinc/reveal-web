@@ -160,7 +160,7 @@ const Locations = () => {
             : 'To inspect a location on the map select location from locations browser menu.'}
         </p>
       </Card>
-      <MapView data={currentLocation} startingZoom={12} assignment={false} clearHandler={clearHandler}>
+      <MapView data={currentLocation} startingZoom={12} clearHandler={clearHandler}>
         <div className={classes.floatingLocationPicker + ' bg-white p-2 rounded'}>
           <Button
             id="dropdown-trigger-button"

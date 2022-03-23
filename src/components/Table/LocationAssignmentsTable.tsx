@@ -12,7 +12,7 @@ interface Option {
 interface Props {
   columns: Column[];
   data: any;
-  clickHandler: (id: string, el?: any) => void;
+  clickHandler?: (id: string, el?: any) => void;
   checkHandler: (id: string, checked: boolean) => void;
   selectHandler: (id: string, selectedTeams: MultiValue<Option>) => void;
   organizationList: Options<Option>;
@@ -42,20 +42,22 @@ const LocationAssignmentsTable = ({
 
   const mapRows = (row: any): object[] => {
     if (row.children !== undefined) {
-      return row.children.map((el: any) => {
-        return {
-          identifier: el.identifier,
-          children: el.children,
-          active: el.active,
-          teams: el.teams,
-          properties: {
-            name: el.properties.name,
-            status: el.properties.status,
-            externalId: el.properties.externalId,
-            geographicLevel: el.properties.geographicLevel
-          }
-        };
-      });
+      return row.children
+        .filter((el: any) => el.properties.geographicLevel !== 'structure')
+        .map((el: any) => {
+          return {
+            identifier: el.identifier,
+            children: el.children,
+            active: el.active,
+            teams: el.teams,
+            properties: {
+              name: el.properties.name,
+              status: el.properties.status,
+              externalId: el.properties.externalId,
+              geographicLevel: el.properties.geographicLevel
+            }
+          };
+        });
     } else {
       return [];
     }
@@ -128,6 +130,19 @@ const LocationAssignmentsTable = ({
                       />
                     </td>
                   );
+                } else if (cell.column.id === 'location') {
+                  return (
+                    <td
+                      {...cell.getCellProps()}
+                      onClick={() => {
+                        if (cell.column.id !== 'expander' && teamTab && clickHandler) {
+                          clickHandler(rowData.identifier, rowData);
+                        }
+                      }}
+                    >
+                      {cell.render('Cell')} ({rowData.children.length})
+                    </td>
+                  );
                 } else {
                   return (
                     <td
@@ -135,7 +150,7 @@ const LocationAssignmentsTable = ({
                       className="align-middle"
                       {...cell.getCellProps()}
                       onClick={() => {
-                        if (cell.column.id !== 'expander' && teamTab) {
+                        if (cell.column.id !== 'expander' && teamTab && clickHandler) {
                           clickHandler(rowData.identifier, rowData);
                         }
                       }}

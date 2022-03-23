@@ -60,7 +60,7 @@ export const LOCATION_TABLE_COLUMNS = [
 ];
 
 export const LOCATION_ASSIGN_TABLE_COLUMNS = [
-  { Header: 'Location', accessor: 'properties.name' },
+  { Header: 'Location', accessor: 'properties.name', id: 'location' },
   { Header: 'Geography Level', accessor: 'properties.geographicLevel' },
   { Header: 'Select', id: 'checkbox' },
   { Header: 'Assign teams', id: 'teams' }

@@ -1,6 +1,6 @@
 import api from "../../../api/axios"
 import { PageableModel } from "../../../api/providers";
-import { PLAN } from "../../../constants"
+import { LOCATION, PLAN } from "../../../constants"
 import { LocationModel } from "../../location/providers/types";
 import { OrganizationModel } from "../../organization/providers/types";
 import { TeamAssignHierarchyRequest } from "../providers/types";
@@ -35,5 +35,10 @@ export const assignTeamsToLocationHierarchy = async (planId: string, locationTea
 
 export const getAssignedTeamsByPlanAndLocationId = async (planId: string, locationId: string): Promise<OrganizationModel[]> => {
     const data = await api.get<OrganizationModel[]>(PLAN + `/${planId}/${locationId}/teams`).then(response => response.data);
+    return data;
+}
+
+export const getChildLocation = async (locationId: string, locationHierarchyId: string): Promise<LocationModel[]> => {
+    const data = await api.get<LocationModel[]>(LOCATION + `/${locationId}/children/${locationHierarchyId}`).then(response => response.data);
     return data;
 }
