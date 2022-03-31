@@ -1,7 +1,48 @@
 import { center, Feature, Point, Properties } from '@turf/turf';
-import mapboxgl, { LngLatBounds, Map, Popup } from 'mapbox-gl';
+import { LngLatBounds, Map, Popup, GeolocateControl, NavigationControl } from 'mapbox-gl';
 import { toast } from 'react-toastify';
+import { MAPBOX_STYLE } from '../constants';
 import { getChildLocation } from '../features/assignment/api';
+
+interface LocationProperties {
+  id: string;
+  name: string;
+  isSelected: boolean;
+  isAssigned: boolean;
+}
+
+//init mapbox instance
+export const initMap = (
+  container: any,
+  center: [number, number],
+  zoom: number,
+  position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
+): Map => {
+  const mapboxInstance = new Map({
+    container: container.current,
+    style: MAPBOX_STYLE,
+    center: center,
+    zoom: zoom,
+    doubleClickZoom: false
+  });
+  mapboxInstance.addControl(
+    new GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true
+      },
+      trackUserLocation: true,
+      showUserHeading: false
+    }),
+    position
+  );
+  mapboxInstance.addControl(
+    new NavigationControl({
+      showCompass: false
+    }),
+    position
+  );
+  return mapboxInstance;
+};
 
 export const getPolygonCenter = (data: any) => {
   let centerLabel = center(data);
@@ -14,7 +55,7 @@ export const getPolygonCenter = (data: any) => {
   }
 
   // Create a 'LngLatBounds' with both corners at the first coordinate.
-  const bounds = new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]);
+  const bounds = new LngLatBounds(coordinates[0], coordinates[0]);
 
   // Extend the 'LngLatBounds' to include every coordinate in the bounds result.
   for (const coord of coordinates) {
@@ -26,8 +67,12 @@ export const getPolygonCenter = (data: any) => {
   };
 };
 
-export const createLocation = (map: mapboxgl.Map, data: any, zoom: number, locationHierarchy: string): void => {
-  if (map.getSource(data.identifier) === undefined && map.getSource(data.properties.id + 'children') === undefined) {
+export const createLocation = (map: Map, data: any, zoom: number, locationHierarchy: string): void => {
+  if (
+    map.getSource(data.identifier) === undefined &&
+    map.getSource(data.properties.id + 'children') === undefined &&
+    map.getLayer(data.properties.id + '-fill') === undefined
+  ) {
     //save property id
     data.properties.id = data.identifier;
     map.addSource(data.identifier, {
@@ -94,23 +139,20 @@ export const hoverHandler = (map: Map, identifier: string) => {
     }
   });
 
-  map.on('mouseleave', identifier + '-fill', e => {
+  map.on('mouseleave', identifier + '-fill', _ => {
     popup.remove();
     clearTimeout(timer);
   });
-}
+};
 
-export const createChild = (
-  map: Map,
-  data: any
-) => {
+export const createChild = (map: Map, data: any) => {
   if (map.getSource(data.identifier) === undefined) {
     map.addSource(data.identifier, {
       type: 'geojson',
       data: data,
       tolerance: 1.5
     });
-    
+
     map.addLayer({
       id: data.identifier + '-fill',
       type: 'fill',
@@ -185,7 +227,7 @@ export const doubleClickHandler = (map: Map, identifier: string, locationHierarc
       }
     }
   });
-}
+};
 
 let popup: Popup;
 
@@ -207,63 +249,82 @@ export const contextMenuHandler = (
         popup.remove();
       }
       const feature = features[0];
-      if (feature) {
-        const buttonId = identifier + '-button';
-        const loadChildButtonId = identifier + '-child-button';
-        const detailsButtonId = identifier + '-details-button';
-        const colorPickerId = identifier + '-color-picker';
-        popup = new Popup({ focusAfterOpen: true, closeOnMove: true })
-          .setLngLat(e.lngLat)
-          .setHTML(
-            `<h4 class='bg-success text-center'>Action menu</h4>
+      if (feature && feature.properties && feature.properties.id) {
+        if (feature.layer.id.includes('-highlighted')) {
+          popup = new Popup({ focusAfterOpen: true, closeOnMove: true })
+            .setLngLat(e.lngLat)
+            .setHTML(
+              `<h4 class='bg-success text-center'>Action menu</h4>
               <div class='m-0 p-0 text-center'>
-                <p>
-                  <label>Property name: </label>
-                    ${(feature.properties as any).name}
-                    <br />
-                </p>
-                <button class='btn btn-primary w-75 mb-2' id='${buttonId}'>Assign teams</button>
-                <button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
-                <button class='btn btn-primary w-75 mb-2' id='${detailsButtonId}'>Property details</button>
-                <label style='vertical-align: super' class='me-1'>Change layer color:</label>
-                <input id='${colorPickerId}' class='mb-3' type='color' />
+                <h3>Multi select works</h3>
               </div>`
-          )
-          .addTo(map);
-        document.getElementById(buttonId)?.addEventListener('click', () => openHandler(feature));
-        document
-          .getElementById(loadChildButtonId)
-          ?.addEventListener('click', () =>
-            loadChildren(map, (feature.properties as any).id, locationHierarchy ?? '')
-          );
-        document.getElementById(detailsButtonId)?.addEventListener('click', () => openHandler(feature));
-        document.getElementById(colorPickerId)?.addEventListener('change', e => {
-          let hexColor = (e.target as any).value as string;
-          map.setPaintProperty(identifier + '-fill', 'fill-color', hexColor);
-        });
+            )
+            .addTo(map);
+        } else {
+          const buttonId = identifier + '-button';
+          const loadChildButtonId = identifier + '-child-button';
+          const detailsButtonId = identifier + '-details-button';
+          const colorPickerId = identifier + '-color-picker';
+          popup = new Popup({ focusAfterOpen: true, closeOnMove: true })
+            .setLngLat(e.lngLat)
+            .setHTML(
+              `<h4 class='bg-success text-center'>Action menu</h4>
+                <div class='m-0 p-0 text-center'>
+                  <p>
+                    <label>Property name: </label>
+                      ${(feature.properties as any).name}
+                      <br />
+                  </p>
+                  <button class='btn btn-primary w-75 mb-2' id='${buttonId}'>Assign teams</button>
+                  <button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
+                  <button class='btn btn-primary w-75 mb-2' id='${detailsButtonId}'>Property details</button>
+                  <label style='vertical-align: super' class='me-1'>Change layer color:</label>
+                  <input id='${colorPickerId}' class='mb-3' type='color' />
+                </div>`
+            )
+            .addTo(map);
+          document.getElementById(buttonId)?.addEventListener('click', () => openHandler(feature));
+          document
+            .getElementById(loadChildButtonId)
+            ?.addEventListener('click', () =>
+              loadChildren(map, (feature.properties as any).id, locationHierarchy ?? '')
+            );
+          document.getElementById(detailsButtonId)?.addEventListener('click', () => openHandler(feature));
+          document.getElementById(colorPickerId)?.addEventListener('change', e => {
+            let hexColor = (e.target as any).value as string;
+            map.setPaintProperty(identifier + '-fill', 'fill-color', hexColor);
+          });
+        }
       }
     }
   });
 };
 
-export const selectHandler = (map: Map) => {
+export const selectHandler = (map: Map, selectedLocations: string[]) => {
   map.on('click', e => {
     if (e.originalEvent.ctrlKey) {
-      let f = map.queryRenderedFeatures(e.point);
-      if (f.length) {
-        if (map.getLayer((f[0].properties as any).id + '-highlighted')) {
-          map.removeLayer((f[0].properties as any).id + '-highlighted');
-        } else {
-          map.addLayer({
-            id: (f[0].properties as any).id + '-highlighted',
-            type: 'fill',
-            source: f[0].source,
-            paint: {
-              'fill-outline-color': '#484896',
-              'fill-color': '#6e599f',
-              'fill-opacity': 0.75
-            }
-          });
+      let features = map.queryRenderedFeatures(e.point);
+      if (features.length) {
+        const selectedLocation = features[0].properties as LocationProperties;
+        if (selectedLocation && selectedLocation.id) {
+          if (map.getLayer(selectedLocation.id + '-highlighted')) {
+            selectedLocations = selectedLocations.filter(el => el !== selectedLocation.id);
+            map.removeLayer(selectedLocation.id + '-highlighted');
+          } else {
+            selectedLocations.push(selectedLocation.id);
+            map.addLayer({
+              id: selectedLocation.id + '-highlighted',
+              type: 'fill',
+              source: features[0].source,
+              paint: {
+                'fill-outline-color': '#484896',
+                'fill-color': '#6e599f',
+                'fill-opacity': 0.75
+              },
+              filter: ['in', 'id', selectedLocation.id]
+            });
+          }
+          console.log(selectedLocations);
         }
       }
     }
@@ -296,11 +357,7 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
   });
 };
 
-export const loadChildren = (
-  map: Map,
-  id: string,
-  locationHierarchy: string
-) => {
+export const loadChildren = (map: Map, id: string, locationHierarchy: string) => {
   getChildLocation(id, locationHierarchy).then(res => {
     res.map(el => {
       const properties = {

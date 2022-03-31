@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Pie, Doughnut } from 'react-chartjs-2';
-import { Chart, registerables } from 'chart.js';
 import { Col, Row } from 'react-bootstrap';
 import { getOrganizationCount, getOrganizationList } from '../organization/api';
 import { getUserList } from '../user/api';
 import { getPlanCount, getPlanList } from '../plan/api';
 import { useAppDispatch } from '../../store/hooks';
 import { showLoader } from '../reducers/loader';
-Chart.register(...registerables);
+import 'chart.js/auto';
 
 const Dashboard = () => {
   const [data, setData] = useState<any>();

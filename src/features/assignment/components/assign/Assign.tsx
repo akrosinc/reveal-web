@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Row, Col, Container, Collapse, Button, Tabs, Tab } from 'react-bootstrap';
+import { Row, Col, Container, Button, Tabs, Tab } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ASSIGNMENT_PAGE,
@@ -47,6 +47,7 @@ const Assign = () => {
   const [organizationsList, setOrganizationsList] = useState<Options<Option>>([]);
   const navigate = useNavigate();
   const [notInMove, setNotInMove] = useState(true);
+  const [tableHeight, setTableHeight] = useState(0);
 
   const loadData = useCallback(() => {
     dispatch(showLoader(true));
@@ -76,6 +77,7 @@ const Assign = () => {
                   setNotInMove(false);
                   setGeoLocation(res);
                   setOpen(false);
+                  setTableHeight((document.getElementsByClassName('mapboxgl-canvas')[0] as any).height);
                 });
               }
             })
@@ -329,30 +331,20 @@ const Assign = () => {
           </Link>
         </Col>
         <Col md={6} className="text-center">
-          <h4 className="m-0">Plan Assignments - {currentPlan?.name}</h4>
+          <h4 className="m-0">
+            {activeTab === LOCATION_ASSIGNMENT_TAB ? 'Assign Locations' : 'Assign Teams'}
+            <br />
+            {currentPlan?.title}
+          </h4>
         </Col>
       </Row>
       <hr className="my-3" />
-      <div className="my-3">
-        <Button
-          id="expand-button"
-          onClick={() => {
-            setOpen(!open);
-          }}
-          aria-controls="expand-table"
-          aria-expanded={open}
-          style={{ width: '100%', border: 'none' }}
-          variant="light"
-          className="text-start bg-white"
+      <Row>
+        <Col
+          md={4}
+          style={{ display: open ? 'none' : '', maxHeight: tableHeight > 0 ? tableHeight : 'auto', overflow: 'auto' }}
         >
           {assignedLocations ? `Assign Teams | Assigned Locations: ${assignedLocations}` : 'Select Locations'}
-          {open ? (
-            <FontAwesomeIcon className="ms-2 mt-1 float-end" icon="chevron-up" />
-          ) : (
-            <FontAwesomeIcon className="ms-2 mt-1 float-end" icon="chevron-down" />
-          )}
-        </Button>
-        <Collapse in={open}>
           <div id="expand-table" className="mt-2">
             <hr />
             <Tabs
@@ -383,37 +375,26 @@ const Assign = () => {
                 </div>
               </Tab>
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title="Assign teams">
-                <div>
-                  <div className="w-100 text-end">
-                    <Button
-                      onClick={() => {
-                        selectHandler(locationHierarchy!.content[0].identifier, [], true);
-                      }}
-                    >
-                      Unselect all
-                    </Button>
-                  </div>
-                  <LocationAssignmentsTable
-                    teamTab={true}
-                    organizationList={organizationsList}
-                    checkHandler={checkHandler}
-                    selectHandler={selectHandler}
-                    columns={columns}
-                    clickHandler={(id: string, rowData: any) => {
-                      if (rowData.active && notInMove && id !== geoLocation?.identifier) {
-                        dispatch(showLoader(true));
-                        getLocationById(id)
-                          .then(res => {
-                            setNotInMove(false);
-                            setGeoLocation(res);
-                            setOpen(false);
-                          })
-                          .finally(() => dispatch(showLoader(false)));
-                      }
-                    }}
-                    data={tableData}
-                  />
-                </div>
+                <LocationAssignmentsTable
+                  teamTab={true}
+                  organizationList={organizationsList}
+                  checkHandler={checkHandler}
+                  selectHandler={selectHandler}
+                  columns={columns}
+                  clickHandler={(id: string, rowData: any) => {
+                    if (rowData.active && notInMove && id !== geoLocation?.identifier) {
+                      dispatch(showLoader(true));
+                      getLocationById(id)
+                        .then(res => {
+                          setNotInMove(false);
+                          setGeoLocation(res);
+                          setOpen(false);
+                        })
+                        .finally(() => dispatch(showLoader(false)));
+                    }
+                  }}
+                  data={tableData}
+                />
               </Tab>
             </Tabs>
             <hr className="my-2" />
@@ -423,17 +404,19 @@ const Assign = () => {
               </Button>
             </div>
           </div>
-        </Collapse>
-      </div>
-      <MapViewAssignments
-        data={geoLocation}
-        startingZoom={12}
-        clearHandler={() => setGeoLocation(undefined)}
-        moveend={() => setNotInMove(true)}
-        reloadData={() => loadData()}
-      >
-        <div></div>
-      </MapViewAssignments>
+        </Col>
+        <Col md={open ? 12 : 8}>
+          <MapViewAssignments
+            collapse={() => setOpen(!open)}
+            rerender={open}
+            data={geoLocation}
+            startingZoom={10}
+            clearHandler={() => setGeoLocation(undefined)}
+            moveend={() => setNotInMove(true)}
+            reloadData={() => loadData()}
+          />
+        </Col>
+      </Row>
     </Container>
   );
 };
