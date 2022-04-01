@@ -97,8 +97,8 @@ export const createLocation = (map: Map, data: any, zoom: number, locationHierar
       source: data.identifier,
       layout: {},
       paint: {
-        'fill-color': data.properties.status === 'active' ? 'green' : 'red',
-        'fill-opacity': 0.2
+        'fill-color': ['match', ['get', 'geographicLevel'], 'structure', 'yellow', ['match', ['get', 'numberOfTeams'], 0, 'red', 'green']],
+        'fill-opacity': 0.4
       }
     });
 
@@ -355,7 +355,7 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
   map.addLayer({
     id: identifier + '-label',
     type: 'symbol',
-    minzoom: map.getZoom() + 1.5,
+    minzoom: map.getZoom(),
     source: identifier + '-label',
     layout: {
       'text-field': ['get', 'name'],

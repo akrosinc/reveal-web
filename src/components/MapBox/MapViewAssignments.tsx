@@ -70,8 +70,7 @@ const MapViewAssignments = ({
       });
       //load locations plan
       if (planId) {
-        getPlanById(planId).then(plan => {
-          setCurrentPlan(plan);
+        if (currentPlan !== undefined) {
           mapInstance.on('moveend', e => {
             //when first location is loaded it sends data trough event,
             //set location label and set map click event listeners
@@ -82,9 +81,9 @@ const MapViewAssignments = ({
                 setShowModal(true);
               };
               //set double click listener
-              doubleClickHandler(mapInstance, e.data.identifier, plan.identifier);
+              doubleClickHandler(mapInstance, e.data.identifier, currentPlan.identifier);
               //set right clik listener
-              contextMenuHandler(mapInstance, e.data.identifier, openHandler, plan.identifier);
+              contextMenuHandler(mapInstance, e.data.identifier, openHandler, currentPlan.identifier);
               //set ctrl + left click listener
               selectHandler(mapInstance, selectedLocations, (locations: string[]) => setSelectedLocations(locations));
               if (moveend) {
@@ -92,7 +91,31 @@ const MapViewAssignments = ({
               }
             }
           });
-        });
+        } else {
+          getPlanById(planId).then(plan => {
+            setCurrentPlan(plan);
+            mapInstance.on('moveend', e => {
+              //when first location is loaded it sends data trough event,
+              //set location label and set map click event listeners
+              if (e.data) {
+                createLocationLabel(mapInstance, e.data, e.center);
+                const openHandler = (selectedLocation: any) => {
+                  setCurrentLocation([selectedLocation.properties.id, selectedLocation.properties]);
+                  setShowModal(true);
+                };
+                //set double click listener
+                doubleClickHandler(mapInstance, e.data.identifier, plan.identifier);
+                //set right clik listener
+                contextMenuHandler(mapInstance, e.data.identifier, openHandler, plan.identifier);
+                //set ctrl + left click listener
+                selectHandler(mapInstance, selectedLocations, (locations: string[]) => setSelectedLocations(locations));
+                if (moveend) {
+                  moveend();
+                }
+              }
+            });
+          });
+        }
       }
       map.current = mapInstance;
     }
@@ -100,7 +123,7 @@ const MapViewAssignments = ({
 
   useEffect(() => {
     const currentMap = map.current;
-    if (currentMap && data && currentPlan) {
+    if (currentMap && currentMap.isStyleLoaded() && data && currentPlan) {
       createLocation(currentMap, data, currentMap.getZoom(), currentPlan.locationHierarchy.identifier);
     }
   }, [data, currentPlan]);

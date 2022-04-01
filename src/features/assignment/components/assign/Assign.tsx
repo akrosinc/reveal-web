@@ -22,7 +22,7 @@ import {
   getLocationHierarchyByPlanId
 } from '../../api';
 import { toast } from 'react-toastify';
-import { getLocationById } from '../../../location/api';
+import { getLocationByIdAndPlanId } from '../../../location/api';
 import { MultiValue, Options } from 'react-select';
 import { getOrganizationListSummary } from '../../../organization/api';
 import { Column } from 'react-table';
@@ -35,7 +35,7 @@ interface Option {
 
 const Assign = () => {
   const [currentPlan, setCurrentPlan] = useState<PlanModel>();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [geoLocation, setGeoLocation] = useState<LocationModel>();
   const [locationHierarchy, setLocationHierarchy] = useState<PageableModel<LocationModel>>();
   const [assignedLocations, setAssignedLocations] = useState(0);
@@ -71,12 +71,11 @@ const Assign = () => {
                 };
               });
               setOrganizationsList(orgList);
-              if (hierarchy.content.length && geoLocation === undefined) {
+              if (hierarchy.content.length) {
                 //load parent location on component load
-                getLocationById(hierarchy.content[0].identifier).then(res => {
+                getLocationByIdAndPlanId(hierarchy.content[0].identifier, planId).then(res => {
                   setNotInMove(false);
                   setGeoLocation(res);
-                  setOpen(false);
                   setTableHeight((document.getElementsByClassName('mapboxgl-canvas')[0] as any).height);
                 });
               }
@@ -92,7 +91,7 @@ const Assign = () => {
           navigate('/assign');
         });
     }
-  }, [planId, dispatch, navigate, geoLocation]);
+  }, [planId, dispatch, navigate]);
 
   useEffect(() => {
     loadData();
@@ -382,13 +381,12 @@ const Assign = () => {
                   selectHandler={selectHandler}
                   columns={columns}
                   clickHandler={(id: string, rowData: any) => {
-                    if (rowData.active && notInMove && id !== (geoLocation?.identifier ?? '')) {
+                    if (rowData.active && notInMove && id !== (geoLocation?.identifier ?? '') && planId) {
                       dispatch(showLoader(true));
-                      getLocationById(id)
+                      getLocationByIdAndPlanId(id, planId)
                         .then(res => {
                           setNotInMove(false);
                           setGeoLocation(res);
-                          setOpen(false);
                         })
                         .finally(() => dispatch(showLoader(false)));
                     }
@@ -411,7 +409,18 @@ const Assign = () => {
             rerender={open}
             data={geoLocation}
             startingZoom={10}
-            clearHandler={() => setGeoLocation(undefined)}
+            clearHandler={() => {
+              if(locationHierarchy && locationHierarchy.content.length && planId) {
+                dispatch(showLoader(true));
+                getLocationByIdAndPlanId(locationHierarchy.content[0].identifier, planId).then(res => {
+                  setNotInMove(false);
+                  setTimeout(() => {
+                    setGeoLocation(res);
+                    dispatch(showLoader(false));
+                  }, 1000);
+                });
+              }
+            }}
             moveend={() => setNotInMove(true)}
             reloadData={() => loadData()}
           />
