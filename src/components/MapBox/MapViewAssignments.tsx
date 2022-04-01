@@ -7,9 +7,9 @@ import {
   createLocation,
   createLocationLabel,
   doubleClickHandler,
+  initMap,
   selectHandler
 } from '../../utils';
-import { MAPBOX_STYLE } from '../../constants';
 import { useParams } from 'react-router-dom';
 import { getPlanById } from '../../features/plan/api';
 import { PlanModel } from '../../features/plan/providers/types';
@@ -23,9 +23,10 @@ interface Props {
   longitude?: number;
   startingZoom: number;
   data: any;
+  rerender: boolean;
+  collapse: () => void;
   clearHandler: () => void;
   moveend?: () => void;
-  children: JSX.Element;
   reloadData: () => void;
 }
 
@@ -34,8 +35,9 @@ const MapViewAssignments = ({
   longitude,
   startingZoom,
   data,
+  rerender,
+  collapse,
   clearHandler,
-  children,
   moveend,
   reloadData
 }: Props) => {
@@ -48,44 +50,27 @@ const MapViewAssignments = ({
   const [currentPlan, setCurrentPlan] = useState<PlanModel>();
   const [showModal, setShowModal] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<[string, Properties]>();
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (map && map.current) {
+      map.current?.resize();
+    }
+  }, [rerender]);
 
   useEffect(() => {
     // initialize map only once
     // set listeners
     if (map.current === undefined) {
-      const mapInstance = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: MAPBOX_STYLE,
-        center: [lng, lat],
-        zoom: zoom,
-        doubleClickZoom: false
-      });
-      mapInstance.on('move', e => {
+      const mapInstance = initMap(mapContainer, [lng, lat], zoom, 'bottom-left');
+      mapInstance.on('move', _ => {
         setLng(Math.round(mapInstance.getCenter().lng * 100) / 100);
         setLat(Math.round(mapInstance.getCenter().lat * 100) / 100);
         setZoom(Math.round(mapInstance.getZoom() * 100) / 100);
       });
-      mapInstance.addControl(
-        new mapboxgl.GeolocateControl({
-          positionOptions: {
-            enableHighAccuracy: true
-          },
-          trackUserLocation: true,
-          showUserHeading: false
-        }),
-        'bottom-left'
-      );
-      mapInstance.addControl(
-        new mapboxgl.NavigationControl({
-          showCompass: false
-        }),
-        'bottom-left'
-      );
-      map.current = mapInstance;
       //load locations plan
-      if (planId)
-        getPlanById(planId).then(plan => {
-          setCurrentPlan(plan);
+      if (planId) {
+        if (currentPlan !== undefined) {
           mapInstance.on('moveend', e => {
             //when first location is loaded it sends data trough event,
             //set location label and set map click event listeners
@@ -96,23 +81,49 @@ const MapViewAssignments = ({
                 setShowModal(true);
               };
               //set double click listener
-              doubleClickHandler(mapInstance, e.data.identifier, plan.locationHierarchy.identifier);
+              doubleClickHandler(mapInstance, e.data.identifier, currentPlan.identifier);
               //set right clik listener
-              contextMenuHandler(mapInstance, e.data.identifier, openHandler, plan.locationHierarchy.identifier);
+              contextMenuHandler(mapInstance, e.data.identifier, openHandler, currentPlan.identifier);
               //set ctrl + left click listener
-              selectHandler(mapInstance);
+              selectHandler(mapInstance, selectedLocations, (locations: string[]) => setSelectedLocations(locations));
               if (moveend) {
                 moveend();
               }
             }
           });
-        });
+        } else {
+          getPlanById(planId).then(plan => {
+            setCurrentPlan(plan);
+            mapInstance.on('moveend', e => {
+              //when first location is loaded it sends data trough event,
+              //set location label and set map click event listeners
+              if (e.data) {
+                createLocationLabel(mapInstance, e.data, e.center);
+                const openHandler = (selectedLocation: any) => {
+                  setCurrentLocation([selectedLocation.properties.id, selectedLocation.properties]);
+                  setShowModal(true);
+                };
+                //set double click listener
+                doubleClickHandler(mapInstance, e.data.identifier, plan.identifier);
+                //set right clik listener
+                contextMenuHandler(mapInstance, e.data.identifier, openHandler, plan.identifier);
+                //set ctrl + left click listener
+                selectHandler(mapInstance, selectedLocations, (locations: string[]) => setSelectedLocations(locations));
+                if (moveend) {
+                  moveend();
+                }
+              }
+            });
+          });
+        }
+      }
+      map.current = mapInstance;
     }
-  }, [lat, lng, zoom, moveend, planId, currentPlan]);
+  }, [lat, lng, zoom, moveend, planId, currentPlan, selectedLocations]);
 
   useEffect(() => {
     const currentMap = map.current;
-    if (currentMap && data && currentPlan) {
+    if (currentMap && currentMap.isStyleLoaded() && data && currentPlan) {
       createLocation(currentMap, data, currentMap.getZoom(), currentPlan.locationHierarchy.identifier);
     }
   }, [data, currentPlan]);
@@ -127,6 +138,7 @@ const MapViewAssignments = ({
 
   const deleteMapData = () => {
     if (data) {
+      selectedLocations.length = 0;
       clearHandler();
       map.current?.remove();
       map.current = undefined;
@@ -135,7 +147,9 @@ const MapViewAssignments = ({
 
   return (
     <div className="flex-grow-1" style={{ position: 'relative' }}>
-      <div className="sidebar">{children}</div>
+      <div className="sidebar">
+        <Button onClick={collapse}>{rerender ? 'Show Menu' : 'Hide Menu'}</Button>
+      </div>
       <div className="clearButton">
         <p className="small m-0 p-0 text-white rounded mb-1">
           Lat: {lat} Lng: {lng} Zoom: {zoom}
@@ -158,6 +172,7 @@ const MapViewAssignments = ({
             }
             setShowModal(false);
           }}
+          selectedLocations={selectedLocations}
           locationData={currentLocation}
         />
       )}

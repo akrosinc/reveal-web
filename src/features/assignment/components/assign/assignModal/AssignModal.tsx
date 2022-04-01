@@ -12,9 +12,10 @@ import { getOrganizationListSummary } from '../../../../organization/api';
 interface Props {
   locationData: [string, Properties];
   closeHandler: (action: boolean) => void;
+  selectedLocations: string[];
 }
 
-const AssignModal = ({ locationData, closeHandler }: Props) => {
+const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) => {
   const { planId } = useParams();
   const dispatch = useAppDispatch();
   const [assignedTeams, setAssignedTeams] = useState<MultiValue<{ label: string; value: string }>>();
@@ -75,24 +76,32 @@ const AssignModal = ({ locationData, closeHandler }: Props) => {
         <Modal.Title>{locationData[1].name}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-      <p>Identifier: {locationData[0]}</p>
-        <h5>Location info</h5>
-        <Table bordered responsive className="my-2">
-          <thead className="border border-2">
-            <tr>
-              <th>Location name</th>
-              <th>Location type</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{locationData[1].name}</td>
-              <td>{locationData[1].geographicLevel}</td>
-              <td>{locationData[1].status}</td>
-            </tr>
-          </tbody>
-        </Table>
+        {selectedLocations.length ? (
+          <p>
+            You have selected {selectedLocations.length} location(s). Here you can assign teams for selected locations.
+          </p>
+        ) : (
+          <>
+            <p>Identifier: {locationData[0]}</p>
+            <h5>Location info</h5>
+            <Table bordered responsive className="my-2">
+              <thead className="border border-2">
+                <tr>
+                  <th>Location name</th>
+                  <th>Location type</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{locationData[1].name}</td>
+                  <td>{locationData[1].geographicLevel}</td>
+                  <td>{locationData[1].status}</td>
+                </tr>
+              </tbody>
+            </Table>
+          </>
+        )}
         <Form>
           <Form.Group className="my-3">
             <Form.Label>

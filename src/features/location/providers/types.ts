@@ -1,4 +1,4 @@
-import { BulkStatus } from "../../user/providers/types";
+import { BulkStatus } from '../../user/providers/types';
 
 export interface GeographicLevel {
   identifier: string;
@@ -14,8 +14,8 @@ export interface LocationHierarchyModel {
 
 export interface LocationModel {
   identifier: string;
-  type:       string;
-  geometry:   Geometry;
+  type: string;
+  geometry: Geometry;
   properties: Properties;
   children: LocationModel[];
   active?: boolean;
@@ -28,14 +28,15 @@ export interface Organization {
 }
 
 export interface Geometry {
-  type:        string;
+  type: string;
   coordinates: Array<Array<Array<number[]>>>;
 }
 
 export interface Properties {
-  name:            string;
-  status:          string;
-  externalId:      string;
+  id: string;
+  name: string;
+  status: string;
+  externalId: string;
   geographicLevel: string;
 }
 

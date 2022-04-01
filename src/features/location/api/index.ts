@@ -116,6 +116,11 @@ export const getLocationById = async (id: string): Promise<LocationModel> => {
   return data;
 };
 
+export const getLocationByIdAndPlanId = async (id: string, planId: string): Promise<LocationModel> => {
+  const data = await api.get<LocationModel>(LOCATION + `/${id}/${planId}`).then(response => response.data);
+  return data;
+};
+
 export const getLocationBulkList = async (
   size: number,
   page: number,

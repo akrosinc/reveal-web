@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Table } from 'react-bootstrap';
+import { Table, FormCheck } from 'react-bootstrap';
 import { useTable, useExpanded } from 'react-table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3 } from '../../constants';
-import FormCheckInput from 'react-bootstrap/esm/FormCheckInput';
 
 interface Props {
   columns: any;
@@ -118,7 +117,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
                       }
                     }}
                   >
-                    {cell.value === 'true' ? <FormCheckInput disabled checked /> : <FormCheckInput disabled />}
+                    {cell.value === 'true' ? <FormCheck disabled checked value='true' /> : <FormCheck disabled value='false'/>}
                   </td>
                 ) : (
                   <td

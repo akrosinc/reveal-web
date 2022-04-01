@@ -42,22 +42,20 @@ const LocationAssignmentsTable = ({
 
   const mapRows = (row: any): object[] => {
     if (row.children !== undefined) {
-      return row.children
-        .filter((el: any) => el.properties.geographicLevel !== 'structure')
-        .map((el: any) => {
-          return {
-            identifier: el.identifier,
-            children: el.children,
-            active: el.active,
-            teams: el.teams,
-            properties: {
-              name: el.properties.name,
-              status: el.properties.status,
-              externalId: el.properties.externalId,
-              geographicLevel: el.properties.geographicLevel
-            }
-          };
-        });
+      return row.children.map((el: any) => {
+        return {
+          identifier: el.identifier,
+          children: el.children,
+          active: el.active,
+          teams: el.teams,
+          properties: {
+            name: el.properties.name,
+            status: el.properties.status,
+            externalId: el.properties.externalId,
+            geographicLevel: el.properties.geographicLevel
+          }
+        };
+      });
     } else {
       return [];
     }
@@ -75,7 +73,7 @@ const LocationAssignmentsTable = ({
   );
 
   return (
-    <Table bordered responsive hover {...getTableProps()} className="mt-2">
+    <Table bordered responsive hover {...getTableProps()} className="mt-2 bg-white">
       <thead className="border border-2">
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
@@ -110,7 +108,7 @@ const LocationAssignmentsTable = ({
                   );
                 } else if (cell.column.id === 'teams' && rowData.active) {
                   return (
-                    <td {...cell.getCellProps()}>
+                    <td {...cell.getCellProps()} style={{minWidth: '250px'}}>
                       <Select
                         id={rowData.identifier + '-select'}
                         menuPosition="fixed"

@@ -38,7 +38,7 @@ export const getAssignedTeamsByPlanAndLocationId = async (planId: string, locati
     return data;
 }
 
-export const getChildLocation = async (locationId: string, locationHierarchyId: string): Promise<LocationModel[]> => {
-    const data = await api.get<LocationModel[]>(LOCATION + `/${locationId}/children/${locationHierarchyId}`).then(response => response.data);
+export const getChildLocation = async (locationId: string, planId: string): Promise<LocationModel[]> => {
+    const data = await api.get<LocationModel[]>(LOCATION + `/${locationId}/children/${planId}`).then(response => response.data);
     return data;
 }
