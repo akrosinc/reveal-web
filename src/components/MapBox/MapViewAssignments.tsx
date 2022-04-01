@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl, { Map } from 'mapbox-gl';
 import './index.css';
 import { Button } from 'react-bootstrap';
@@ -50,7 +50,7 @@ const MapViewAssignments = ({
   const [currentPlan, setCurrentPlan] = useState<PlanModel>();
   const [showModal, setShowModal] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<[string, Properties]>();
-  const selectedLocations: string[] = useMemo(() => [], []);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
   useEffect(() => {
     if (map && map.current) {
@@ -82,11 +82,11 @@ const MapViewAssignments = ({
                 setShowModal(true);
               };
               //set double click listener
-              doubleClickHandler(mapInstance, e.data.identifier, plan.locationHierarchy.identifier);
+              doubleClickHandler(mapInstance, e.data.identifier, plan.identifier);
               //set right clik listener
-              contextMenuHandler(mapInstance, e.data.identifier, openHandler, plan.locationHierarchy.identifier);
+              contextMenuHandler(mapInstance, e.data.identifier, openHandler, plan.identifier);
               //set ctrl + left click listener
-              selectHandler(mapInstance, selectedLocations);
+              selectHandler(mapInstance, selectedLocations, (locations: string[]) => setSelectedLocations(locations));
               if (moveend) {
                 moveend();
               }
@@ -149,6 +149,7 @@ const MapViewAssignments = ({
             }
             setShowModal(false);
           }}
+          selectedLocations={selectedLocations}
           locationData={currentLocation}
         />
       )}

@@ -71,7 +71,7 @@ const Assign = () => {
                 };
               });
               setOrganizationsList(orgList);
-              if (hierarchy.content.length) {
+              if (hierarchy.content.length && geoLocation === undefined) {
                 //load parent location on component load
                 getLocationById(hierarchy.content[0].identifier).then(res => {
                   setNotInMove(false);
@@ -92,7 +92,7 @@ const Assign = () => {
           navigate('/assign');
         });
     }
-  }, [planId, dispatch, navigate]);
+  }, [planId, dispatch, navigate, geoLocation]);
 
   useEffect(() => {
     loadData();
@@ -382,7 +382,7 @@ const Assign = () => {
                   selectHandler={selectHandler}
                   columns={columns}
                   clickHandler={(id: string, rowData: any) => {
-                    if (rowData.active && notInMove && id !== geoLocation?.identifier) {
+                    if (rowData.active && notInMove && id !== (geoLocation?.identifier ?? '')) {
                       dispatch(showLoader(true));
                       getLocationById(id)
                         .then(res => {

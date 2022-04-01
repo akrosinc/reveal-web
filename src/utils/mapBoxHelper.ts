@@ -7,8 +7,8 @@ import { getChildLocation } from '../features/assignment/api';
 interface LocationProperties {
   id: string;
   name: string;
-  isSelected: boolean;
-  isAssigned: boolean;
+  assigned: boolean;
+  numberOfTeams: number;
 }
 
 //init mapbox instance
@@ -87,8 +87,8 @@ export const createLocation = (map: Map, data: any, zoom: number, locationHierar
       source: data.identifier,
       layout: {},
       paint: {
-        'line-color': 'gray',
-        'line-width': 4
+        'line-color': 'black',
+        'line-width': 3
       }
     });
     map.addLayer({
@@ -159,9 +159,21 @@ export const createChild = (map: Map, data: any) => {
       source: data.identifier,
       layout: {},
       paint: {
-        'fill-color': map.getZoom() >= 12 ? 'yellow' : 'gray',
-        'fill-opacity': 0.2
+        'fill-color': ['match', ['get', 'geographicLevel'], 'structure', 'yellow', ['match', ['get', 'numberOfTeams'], 0, 'red', 'green']],
+        'fill-opacity': 0.4
       }
+    });
+
+    map.addLayer({
+      id: data.identifier + '-fill-disable',
+      type: 'fill',
+      source: data.identifier,
+      layout: {},
+      paint: {
+        'fill-color': 'grey',
+        'fill-opacity': 0.8
+      },
+      filter: ['in', 'assigned', false]
     });
 
     map.addLayer({
@@ -170,8 +182,8 @@ export const createChild = (map: Map, data: any) => {
       source: data.identifier,
       layout: {},
       paint: {
-        'line-color': map.getZoom() >= 12 ? 'yellow' : 'gray',
-        'line-width': 3
+        'line-color': 'black',
+        'line-width': 2.5
       }
     });
 
@@ -213,7 +225,7 @@ export const createChild = (map: Map, data: any) => {
   }
 };
 
-export const doubleClickHandler = (map: Map, identifier: string, locationHierarchy: string) => {
+export const doubleClickHandler = (map: Map, identifier: string, planId: string) => {
   map.on('dblclick', identifier + '-fill', e => {
     if (!e.originalEvent.ctrlKey) {
       const features = map.queryRenderedFeatures(e.point);
@@ -221,7 +233,7 @@ export const doubleClickHandler = (map: Map, identifier: string, locationHierarc
         const feature = features[0];
         if (feature) {
           if (feature.properties && feature.properties.id) {
-            loadChildren(map, feature.properties.id, locationHierarchy);
+            loadChildren(map, feature.properties.id, planId);
           }
         }
       }
@@ -231,12 +243,7 @@ export const doubleClickHandler = (map: Map, identifier: string, locationHierarc
 
 let popup: Popup;
 
-export const contextMenuHandler = (
-  map: Map,
-  identifier: string,
-  openHandler: (data: any) => void,
-  locationHierarchy?: string
-) => {
+export const contextMenuHandler = (map: Map, identifier: string, openHandler: (data: any) => void, planId: string) => {
   // When a click event occurs on a feature in the places layer, open a popup at the
   // location of the feature, with description HTML from its properties.
   map.on('contextmenu', identifier + '-fill', e => {
@@ -250,18 +257,19 @@ export const contextMenuHandler = (
       }
       const feature = features[0];
       if (feature && feature.properties && feature.properties.id) {
+        const buttonId = identifier + '-button';
         if (feature.layer.id.includes('-highlighted')) {
           popup = new Popup({ focusAfterOpen: true, closeOnMove: true })
             .setLngLat(e.lngLat)
             .setHTML(
               `<h4 class='bg-success text-center'>Action menu</h4>
               <div class='m-0 p-0 text-center'>
-                <h3>Multi select works</h3>
+              <p>You have selected multiple locations.</p>
+              <button class='btn btn-primary mx-2 mt-2 mb-4' style='min-width: 200px' id='${buttonId}'>Assign teams</button>
               </div>`
             )
             .addTo(map);
         } else {
-          const buttonId = identifier + '-button';
           const loadChildButtonId = identifier + '-child-button';
           const detailsButtonId = identifier + '-details-button';
           const colorPickerId = identifier + '-color-picker';
@@ -283,24 +291,26 @@ export const contextMenuHandler = (
                 </div>`
             )
             .addTo(map);
-          document.getElementById(buttonId)?.addEventListener('click', () => openHandler(feature));
           document
             .getElementById(loadChildButtonId)
-            ?.addEventListener('click', () =>
-              loadChildren(map, (feature.properties as any).id, locationHierarchy ?? '')
-            );
+            ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId));
           document.getElementById(detailsButtonId)?.addEventListener('click', () => openHandler(feature));
           document.getElementById(colorPickerId)?.addEventListener('change', e => {
             let hexColor = (e.target as any).value as string;
-            map.setPaintProperty(identifier + '-fill', 'fill-color', hexColor);
+            map.setPaintProperty((feature.properties as any).id + '-fill', 'fill-color', hexColor);
           });
         }
+        document.getElementById(buttonId)?.addEventListener('click', () => openHandler(feature));
       }
     }
   });
 };
 
-export const selectHandler = (map: Map, selectedLocations: string[]) => {
+export const selectHandler = (
+  map: Map,
+  selectedLocations: string[],
+  setSelectedLocations: (locations: string[]) => void
+) => {
   map.on('click', e => {
     if (e.originalEvent.ctrlKey) {
       let features = map.queryRenderedFeatures(e.point);
@@ -309,9 +319,11 @@ export const selectHandler = (map: Map, selectedLocations: string[]) => {
         if (selectedLocation && selectedLocation.id) {
           if (map.getLayer(selectedLocation.id + '-highlighted')) {
             selectedLocations = selectedLocations.filter(el => el !== selectedLocation.id);
+            setSelectedLocations(selectedLocations);
             map.removeLayer(selectedLocation.id + '-highlighted');
           } else {
             selectedLocations.push(selectedLocation.id);
+            setSelectedLocations(selectedLocations);
             map.addLayer({
               id: selectedLocation.id + '-highlighted',
               type: 'fill',
@@ -324,7 +336,6 @@ export const selectHandler = (map: Map, selectedLocations: string[]) => {
               filter: ['in', 'id', selectedLocation.id]
             });
           }
-          console.log(selectedLocations);
         }
       }
     }
@@ -357,8 +368,8 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
   });
 };
 
-export const loadChildren = (map: Map, id: string, locationHierarchy: string) => {
-  getChildLocation(id, locationHierarchy).then(res => {
+export const loadChildren = (map: Map, id: string, planId: string) => {
+  getChildLocation(id, planId).then(res => {
     res.map(el => {
       const properties = {
         ...el.properties,
