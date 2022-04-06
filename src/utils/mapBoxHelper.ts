@@ -130,20 +130,22 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
       'label-layer'
     );
 
-    map.addLayer(
-      {
-        id: data.identifier + '-fill-disable',
-        type: 'fill',
-        source: data.identifier,
-        layout: {},
-        paint: {
-          'fill-color': 'grey',
-          'fill-opacity': 0.8
+    if (data.properties.numberOfTeams !== undefined) {
+      map.addLayer(
+        {
+          id: data.identifier + '-fill-disable',
+          type: 'fill',
+          source: data.identifier,
+          layout: {},
+          paint: {
+            'fill-color': 'grey',
+            'fill-opacity': 0.8
+          },
+          filter: ['in', 'assigned', false]
         },
-        filter: ['in', 'assigned', false]
-      },
-      'label-layer'
-    );
+        'label-layer'
+      );
+    }
 
     //set center label
     let centerLabel = getPolygonCenter(data);
