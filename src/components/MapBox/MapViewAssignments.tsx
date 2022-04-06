@@ -92,7 +92,9 @@ const MapViewAssignments = ({
                 map.current.removeLayer(selectedLocation.properties.parentIdentifier + 'children-fill-disable');
                 map.current.removeSource(selectedLocation.properties.parentIdentifier + 'children');
                 map.current.removeLayer(selectedLocation.properties.parentIdentifier + 'children-label');
-                map.current.removeSource(selectedLocation.properties.parentIdentifier + 'children-label');
+                if(map.current.getSource(selectedLocation.properties.parentIdentifier + 'children-label')) {
+                  map.current.removeSource(selectedLocation.properties.parentIdentifier + 'children-label');
+                }                
                 loadChildren(map!.current!, selectedLocation.properties.parentIdentifier, planId);
               }
             });

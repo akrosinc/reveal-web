@@ -48,6 +48,7 @@ const Assign = () => {
   const navigate = useNavigate();
   const [notInMove, setNotInMove] = useState(true);
   const [tableHeight, setTableHeight] = useState(0);
+  const [isEdited, setIsEdited] = useState(false);
 
   const loadData = useCallback(() => {
     dispatch(showLoader(true));
@@ -137,6 +138,7 @@ const Assign = () => {
   );
 
   const checkHandler = (id: string, checked: boolean) => {
+    setIsEdited(true);
     let selectedHierarchy = { ...locationHierarchy } as PageableModel<LocationModel>;
     selectedHierarchy.content?.forEach(location => {
       if (location.identifier === id) {
@@ -268,6 +270,11 @@ const Assign = () => {
             //empty array after sending
             selectedLocationsIdentifiers.length = 0;
             selectedLocationsTeams.length = 0;
+            setIsEdited(false);
+            getAssignedLocationHierarcyCount(planId).then(res => {
+              setAssignedLocations(res.count);
+              setActiveTab(res.count ? LOCATION_TEAM_ASSIGNMENT_TAB : LOCATION_ASSIGNMENT_TAB);
+            })
             dispatch(showLoader(false));
           });
       } else {
@@ -328,11 +335,11 @@ const Assign = () => {
               id="assignments"
               activeKey={activeTab}
               onSelect={tab => {
-                if (tab && assignedLocations) {
+                if (tab && assignedLocations && !isEdited) {
                   setActiveTab(tab);
                 } else {
                   if (tab === LOCATION_TEAM_ASSIGNMENT_TAB) {
-                    toast.warning('Please select and save at least one location to be able to assign teams.');
+                    toast.warning('Please select and save your changes, at least one location needs to be able selected to assign teams.');
                   }
                   setActiveTab(LOCATION_ASSIGNMENT_TAB);
                 }
