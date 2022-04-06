@@ -274,7 +274,7 @@ const Assign = () => {
             getAssignedLocationHierarcyCount(planId).then(res => {
               setAssignedLocations(res.count);
               setActiveTab(res.count ? LOCATION_TEAM_ASSIGNMENT_TAB : LOCATION_ASSIGNMENT_TAB);
-            })
+            });
             dispatch(showLoader(false));
           });
       } else {
@@ -339,7 +339,9 @@ const Assign = () => {
                   setActiveTab(tab);
                 } else {
                   if (tab === LOCATION_TEAM_ASSIGNMENT_TAB) {
-                    toast.warning('Please select and save your changes, at least one location needs to be able selected to assign teams.');
+                    toast.warning(
+                      'Please select and save your changes, at least one location needs to be able selected to assign teams.'
+                    );
                   }
                   setActiveTab(LOCATION_ASSIGNMENT_TAB);
                 }
@@ -359,16 +361,16 @@ const Assign = () => {
                 </div>
               </Tab>
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title="Assign teams">
-              <div className="w-100 text-end">
-                    <Button
-                      className='btn-secondary'
-                      onClick={() => {
-                        selectHandler(locationHierarchy!.content[0].identifier, [], true);
-                      }}
-                    >
-                      Deselect All
-                    </Button>
-                  </div>
+                <div className="w-100 text-end">
+                  <Button
+                    className="btn-secondary"
+                    onClick={() => {
+                      selectHandler(locationHierarchy!.content[0].identifier, [], true);
+                    }}
+                  >
+                    Deselect All
+                  </Button>
+                </div>
                 <LocationAssignmentsTable
                   teamTab={true}
                   organizationList={organizationsList}

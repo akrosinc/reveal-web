@@ -15,14 +15,7 @@ interface Props {
   children: JSX.Element;
 }
 
-const MapView = ({
-  latitude,
-  longitude,
-  startingZoom,
-  data,
-  clearHandler,
-  children,
-}: Props) => {
+const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, children }: Props) => {
   const mapContainer = useRef<any>(null);
   const map = useRef<Map>();
   const [lng, setLng] = useState(longitude ?? 28.283333);

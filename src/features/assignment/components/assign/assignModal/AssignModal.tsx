@@ -102,7 +102,7 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
               </thead>
               <tbody>
                 <tr>
-                  <td style={{width: '150px'}}>{locationData[0]}</td>
+                  <td style={{ width: '150px' }}>{locationData[0]}</td>
                   <td>{locationData[1].name}</td>
                   <td>{locationData[1].geographicLevel}</td>
                   <td>{locationData[1].status}</td>

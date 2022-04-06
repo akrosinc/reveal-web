@@ -1,4 +1,10 @@
-import { GeographicLevel, LocationBulkModel, LocationHierarchyModel, LocationModel, LocationBulkDetailsModel } from '../providers/types';
+import {
+  GeographicLevel,
+  LocationBulkModel,
+  LocationHierarchyModel,
+  LocationModel,
+  LocationBulkDetailsModel
+} from '../providers/types';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { GEOGRAPHIC_LEVEL, LOCATION, LOCATION_HIERARCHY } from '../../../constants';
