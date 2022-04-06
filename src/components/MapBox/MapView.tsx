@@ -2,8 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl, { Map } from 'mapbox-gl';
 import './index.css';
 import { Button } from 'react-bootstrap';
-import { createLocation, createLocationLabel } from '../../utils';
-import { MAPBOX_STYLE } from '../../constants';
+import { createLocation, createLocationLabel, initMap } from '../../utils';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
@@ -13,7 +12,6 @@ interface Props {
   startingZoom: number;
   data: any;
   clearHandler: () => void;
-  moveend?: () => void;
   children: JSX.Element;
 }
 
@@ -24,7 +22,6 @@ const MapView = ({
   data,
   clearHandler,
   children,
-  moveend
 }: Props) => {
   const mapContainer = useRef<any>(null);
   const map = useRef<Map>();
@@ -36,12 +33,7 @@ const MapView = ({
   useEffect(() => {
     // initialize map only once
     if (map.current === undefined) {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: MAPBOX_STYLE,
-        center: [lng, lat],
-        zoom: zoom
-      });
+      map.current = initMap(mapContainer, [lng, lat], zoom, 'bottom-left');
       //set listeners
       if (map !== undefined && map.current !== undefined) {
         map.current.on('move', e => {
@@ -54,9 +46,6 @@ const MapView = ({
         map.current.on('moveend', e => {
           if (e.data !== undefined && map.current !== undefined) {
             createLocationLabel(map.current, e.data, e.center);
-            if (moveend) {
-              moveend();
-            }
           }
         });
         map.current.on('load', e => {
@@ -69,10 +58,10 @@ const MapView = ({
     } else {
       if (data !== undefined && map.current.getSource(data.identifier) === undefined) {
         setCurrentLocation(data.identifier);
-        createLocation(map.current, data, map.current.getZoom(), '');
+        createLocation(map.current, data, () => undefined);
       }
     }
-  }, [setCurrentLocation, data, lng, lat, zoom, currentLocation, moveend]);
+  }, [setCurrentLocation, data, lng, lat, zoom, currentLocation]);
 
   useEffect(() => {
     return () => {

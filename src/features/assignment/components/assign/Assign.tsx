@@ -35,7 +35,7 @@ interface Option {
 
 const Assign = () => {
   const [currentPlan, setCurrentPlan] = useState<PlanModel>();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [geoLocation, setGeoLocation] = useState<LocationModel>();
   const [locationHierarchy, setLocationHierarchy] = useState<PageableModel<LocationModel>>();
   const [assignedLocations, setAssignedLocations] = useState(0);
@@ -106,30 +106,6 @@ const Assign = () => {
       {
         // Build our expander column
         id: 'expander', // Make sure it has an ID
-        Header: ({
-          getToggleAllRowsExpandedProps,
-          isAllRowsExpanded,
-          toggleAllRowsExpanded
-        }: {
-          getToggleAllRowsExpandedProps: Function;
-          isAllRowsExpanded: Function;
-          toggleAllRowsExpanded: Function;
-        }) => (
-          <span
-            className="py-2 pe-2"
-            {...getToggleAllRowsExpandedProps({
-              onClick: () => {
-                toggleAllRowsExpanded(!isAllRowsExpanded);
-              }
-            })}
-          >
-            {isAllRowsExpanded ? (
-              <FontAwesomeIcon className="ms-1" icon="chevron-down" />
-            ) : (
-              <FontAwesomeIcon className="ms-1" icon="chevron-right" />
-            )}
-          </span>
-        ),
         Cell: ({ row }: { row: any }) =>
           // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
           // to build the toggle for expanding a row
@@ -293,7 +269,6 @@ const Assign = () => {
             selectedLocationsIdentifiers.length = 0;
             selectedLocationsTeams.length = 0;
             dispatch(showLoader(false));
-            loadData();
           });
       } else {
         // assign teams to selected locations
@@ -315,11 +290,14 @@ const Assign = () => {
             selectedLocationsIdentifiers.length = 0;
             selectedLocationsTeams.length = 0;
             dispatch(showLoader(false));
-            loadData();
           });
       }
     }
   };
+
+  const notMoving = useCallback(() => {
+    setNotInMove(true);
+  }, []);
 
   return (
     <Container fluid className="my-4">
@@ -374,6 +352,16 @@ const Assign = () => {
                 </div>
               </Tab>
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title="Assign teams">
+              <div className="w-100 text-end">
+                    <Button
+                      className='btn-secondary'
+                      onClick={() => {
+                        selectHandler(locationHierarchy!.content[0].identifier, [], true);
+                      }}
+                    >
+                      Deselect All
+                    </Button>
+                  </div>
                 <LocationAssignmentsTable
                   teamTab={true}
                   organizationList={organizationsList}
@@ -410,18 +398,20 @@ const Assign = () => {
             data={geoLocation}
             startingZoom={10}
             clearHandler={() => {
-              if(locationHierarchy && locationHierarchy.content.length && planId) {
+              if (locationHierarchy && locationHierarchy.content.length && planId) {
                 dispatch(showLoader(true));
                 getLocationByIdAndPlanId(locationHierarchy.content[0].identifier, planId).then(res => {
                   setNotInMove(false);
+                  //timeout is need to let mapbox finish loading styles otherwise it breaks
+                  //there should be a way to avoid this
                   setTimeout(() => {
                     setGeoLocation(res);
                     dispatch(showLoader(false));
-                  }, 1000);
+                  }, 1500);
                 });
               }
             }}
-            moveend={() => setNotInMove(true)}
+            moveend={notMoving}
             reloadData={() => loadData()}
           />
         </Col>

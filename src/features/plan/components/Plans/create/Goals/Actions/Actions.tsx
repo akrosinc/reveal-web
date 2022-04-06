@@ -3,7 +3,7 @@ import { Button, Form, Modal, Row, Col } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
 import { Action } from '../../../../../providers/types';
 import DatePicker from 'react-datepicker';
-import { getformList } from '../../../../../api';
+import { getActionTitles, getformList } from '../../../../../api';
 import Moment from 'moment';
 
 interface Props {
@@ -17,6 +17,12 @@ interface Props {
 
 const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
   const [formList, setFormList] = useState<{ identifier: string; name: string }[]>();
+  const [actionTitles, setActionTitles] = useState<string[]>([]);
+
+  useEffect(() => {
+    getActionTitles().then(res => setActionTitles(res));
+  }, []);
+  
 
   const {
     register,
@@ -66,15 +72,17 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
         <Form>
           <Form.Group className="mb-2">
             <Form.Label>Title</Form.Label>
-            <Form.Control
+            <Form.Select
               id="action-title-input"
-              type="text"
               placeholder="Enter action title"
               {...register('title', {
-                required: 'Action title must not be empty.',
+                required: 'Action title must be selected.',
                 minLength: 1
               })}
-            />
+            >
+              <option></option>
+              {actionTitles.map(el => <option value={el}>{el}</option>)}
+            </Form.Select>
             {errors.title && <Form.Label className="text-danger">{errors.title.message}</Form.Label>}
           </Form.Group>
           <Form.Group className="mb-2">

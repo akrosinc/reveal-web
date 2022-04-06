@@ -18,6 +18,11 @@ export const assignLocationsToPlan = async (planId: string, assignedLocations: s
     return data;
 }
 
+export const assignLocationToPlan = async (planId: string, assignedLocation: string): Promise<any> => {
+    const data = await api.post<PageableModel<LocationModel>>(PLAN + `/${planId}/assignLocation/${assignedLocation}`).then(response => response.data);
+    return data;
+}
+
 export const getAssignedLocationHierarcyCount = async (planId: string): Promise<{count: number}> => {
     const data = await api.get<{count: number}>(PLAN + `/${planId}/locationHierarchy?_summary=COUNT`).then(response => response.data);
     return data;
