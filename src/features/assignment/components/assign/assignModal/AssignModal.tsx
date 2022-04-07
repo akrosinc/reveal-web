@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { Button, Form, Modal, Table } from 'react-bootstrap';
 import { Properties } from '../../../../location/providers/types';
 import Select, { MultiValue, Options } from 'react-select';
-import { assignTeamsToLocation, getAssignedTeamsByPlanAndLocationId } from '../../../api';
+import {
+  assignTeamsToLocation,
+  assignTeamsToMultiplePlanLocations,
+  getAssignedTeamsByPlanAndLocationId
+} from '../../../api';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../../../../store/hooks';
@@ -11,7 +15,7 @@ import { getOrganizationListSummary } from '../../../../organization/api';
 
 interface Props {
   locationData: [string, Properties];
-  closeHandler: (action: boolean) => void;
+  closeHandler: (action: boolean, teamCount: number) => void;
   selectedLocations: string[];
 }
 
@@ -24,9 +28,20 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
   const assignTeamsHandler = () => {
     if (planId) {
       if (selectedLocations.length) {
-        //we need backend to support multiselect assignemnt with overriding of existing team assigned
-        closeHandler(false);
-        toast.success('Locations assigned successfully.');
+        dispatch(showLoader(true));
+        assignTeamsToMultiplePlanLocations(
+          planId,
+          selectedLocations,
+          assignedTeams !== undefined ? assignedTeams.map(el => el.value) : []
+        )
+          .then(_ => {
+            toast.success('Locations assigned successfully.');
+          })
+          .catch(err => toast.error(err.toString()))
+          .finally(() => {
+            dispatch(showLoader(false));
+            closeHandler(true, assignedTeams ? assignedTeams.length : 0);
+          });
       } else {
         dispatch(showLoader(true));
         toast
@@ -40,14 +55,16 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
               pending: 'Loading...',
               success: {
                 render() {
-                  closeHandler(true);
                   return 'Teams assigned successfully.';
                 }
               },
               error: 'There was an error assigning teams'
             }
           )
-          .finally(() => dispatch(showLoader(false)));
+          .finally(() => {
+            dispatch(showLoader(false));
+            closeHandler(true, 0);
+          });
       }
     }
   };
@@ -58,12 +75,14 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
       getOrganizationListSummary()
     ]).then(async ([assignedTeams, teamList]) => {
       setAssignedTeams(
-        assignedTeams.map(el => {
-          return {
-            label: el.name,
-            value: el.identifier
-          };
-        })
+        selectedLocations.length
+          ? []
+          : assignedTeams.map(el => {
+              return {
+                label: el.name,
+                value: el.identifier
+              };
+            })
       );
       setOrganizationList(
         teamList.content.map(el => {
@@ -132,7 +151,7 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button id="close-assign-modal-button" variant="secondary" onClick={() => closeHandler(false)}>
+        <Button id="close-assign-modal-button" variant="secondary" onClick={() => closeHandler(false, 0)}>
           Close
         </Button>
         <Button id="save-assign-modal-button" onClick={() => assignTeamsHandler()}>
