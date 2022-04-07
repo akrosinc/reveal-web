@@ -75,7 +75,14 @@ const Locations = () => {
             sortField,
             sortDirection
           )
-            .then(res => setLocationList(res))
+            .then(res => {
+              setLocationList(res);
+              if (res.content.length) {
+                getLocationById(res.content[0].identifier).then(res => {
+                  setCurrentLocation(res);
+                })
+              }              
+            })
             .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
             .finally(() => dispatch(showLoader(false)));
         } else {
@@ -133,6 +140,15 @@ const Locations = () => {
     } else {
       setCurrentLocation(undefined);
       setCurrentLocationChildList(undefined);
+      if (locationList && locationList.content.length) {
+        getLocationById(locationList.content[0].identifier).then(res => {
+          dispatch(showLoader(true));
+          setTimeout(() => {
+            setCurrentLocation(res);
+            dispatch(showLoader(false));
+          }, 1500);
+        })
+      }
     }
   };
 

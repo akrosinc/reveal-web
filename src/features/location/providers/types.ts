@@ -34,6 +34,9 @@ export interface Geometry {
 
 export interface Properties {
   id: string;
+  parentIdentifier: string;
+  assigned: boolean;
+  numberOfTeams: number;
   name: string;
   status: string;
   externalId: string;

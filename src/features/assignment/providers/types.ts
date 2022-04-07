@@ -1,8 +1,8 @@
 export interface TeamAssignModel {
-    locationId: string;
-    teams: string[];
+  locationId: string;
+  teams: string[];
 }
 
 export interface TeamAssignHierarchyRequest {
-    hierarchy: TeamAssignModel[];
+  hierarchy: TeamAssignModel[];
 }

@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: none
+    branches: []
 
 jobs:
 
@@ -27,9 +27,9 @@ jobs:
       with:
         cmd: build # will run `yarn build` command
 
-    # - uses: borales/actions-yarn@v2.3.0
-    #   with:
-    #     cmd: test # will run `yarn test` command
+    - uses: borales/actions-yarn@v2.3.0
+      with:
+        cmd: test # will run `yarn test` command
 
   container:
 

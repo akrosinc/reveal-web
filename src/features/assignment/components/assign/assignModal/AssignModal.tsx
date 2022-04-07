@@ -23,26 +23,32 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
 
   const assignTeamsHandler = () => {
     if (planId) {
-      dispatch(showLoader(true));
-      toast
-        .promise(
-          assignTeamsToLocation(
-            planId,
-            locationData[0],
-            assignedTeams !== undefined ? assignedTeams.map(el => el.value) : []
-          ),
-          {
-            pending: 'Loading...',
-            success: {
-              render() {
-                closeHandler(true);
-                return 'Teams assigned successfully.';
-              }
-            },
-            error: 'There was an error assigning teams'
-          }
-        )
-        .finally(() => dispatch(showLoader(false)));
+      if (selectedLocations.length) {
+        //we need backend to support multiselect assignemnt with overriding of existing team assigned
+        closeHandler(false);
+        toast.success('Locations assigned successfully.');
+      } else {
+        dispatch(showLoader(true));
+        toast
+          .promise(
+            assignTeamsToLocation(
+              planId,
+              locationData[0],
+              assignedTeams !== undefined ? assignedTeams.map(el => el.value) : []
+            ),
+            {
+              pending: 'Loading...',
+              success: {
+                render() {
+                  closeHandler(true);
+                  return 'Teams assigned successfully.';
+                }
+              },
+              error: 'There was an error assigning teams'
+            }
+          )
+          .finally(() => dispatch(showLoader(false)));
+      }
     }
   };
 
@@ -82,30 +88,36 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
           </p>
         ) : (
           <>
-            <p>Identifier: {locationData[0]}</p>
-            <h5>Location info</h5>
+            <h4>Location info</h4>
             <Table bordered responsive className="my-2">
               <thead className="border border-2">
                 <tr>
+                  <th>Identifier</th>
                   <th>Location name</th>
                   <th>Location type</th>
                   <th>Status</th>
+                  <th>Assigned teams</th>
+                  <th>Assigned</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
+                  <td style={{ width: '150px' }}>{locationData[0]}</td>
                   <td>{locationData[1].name}</td>
                   <td>{locationData[1].geographicLevel}</td>
                   <td>{locationData[1].status}</td>
+                  <td>{locationData[1].numberOfTeams}</td>
+                  <td>{locationData[1].assigned.toString()}</td>
                 </tr>
               </tbody>
             </Table>
           </>
         )}
+        <hr />
         <Form>
           <Form.Group className="my-3">
             <Form.Label>
-              <b>Assign teams</b>
+              <h5>Assign teams</h5>
             </Form.Label>
             <Select
               id="team-assign-select"

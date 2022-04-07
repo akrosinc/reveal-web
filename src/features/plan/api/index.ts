@@ -27,6 +27,11 @@ export const getPlanById = async (id: string): Promise<PlanModel> => {
   return data;
 };
 
+export const getActionTitles = async (): Promise<string[]> => {
+  const data = await api.get<string[]>('action/actionTitles').then(response => response.data);
+  return data;
+};
+
 export const getPlanCount = async (): Promise<{ count: number }> => {
   const data = await api.get<{ count: number }>(PLAN + '?_summary=COUNT').then(response => response.data);
   return data;
