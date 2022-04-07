@@ -3,8 +3,6 @@ name: Reveal Web test, build and deploy
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: []
 
 jobs:
 

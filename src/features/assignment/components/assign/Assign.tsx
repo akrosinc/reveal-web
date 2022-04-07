@@ -75,18 +75,19 @@ const Assign = () => {
               if (hierarchy.content.length) {
                 //load parent location on component load
                 getLocationByIdAndPlanId(hierarchy.content[0].identifier, planId).then(res => {
-                  setNotInMove(false);
-                  setGeoLocation(res);
-                  setTableHeight((document.getElementsByClassName('mapboxgl-canvas')[0] as any).height);
+                  //give map 1000ms to initialize to avoid no location shown on frist load
+                  setTimeout(() => {
+                    setNotInMove(false);
+                    setGeoLocation(res);
+                    setTableHeight((document.getElementsByClassName('mapboxgl-canvas')[0] as any).height);
+                    dispatch(showLoader(false));
+                  }, 1000);
                 });
               }
             })
-            .catch(err => toast.error('Something went wrong...' + err.toString()))
-            .finally(() => {
-              dispatch(showLoader(false));
-            });
+            .catch(err => toast.error('Something went wrong...' + err.toString()));
         })
-        .catch(err => {
+        .catch(_ => {
           toast.error('Plan does not exist, redirected to assign page.');
           dispatch(showLoader(false));
           navigate('/assign');
@@ -276,6 +277,8 @@ const Assign = () => {
               setActiveTab(res.count ? LOCATION_TEAM_ASSIGNMENT_TAB : LOCATION_ASSIGNMENT_TAB);
             });
             dispatch(showLoader(false));
+            //clear map after changes on grid
+            document.getElementById('clear-map-button')?.click();
           });
       } else {
         // assign teams to selected locations
@@ -297,6 +300,8 @@ const Assign = () => {
             selectedLocationsIdentifiers.length = 0;
             selectedLocationsTeams.length = 0;
             dispatch(showLoader(false));
+            //clear map after changes on grid
+            document.getElementById('clear-map-button')?.click();
           });
       }
     }

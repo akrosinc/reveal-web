@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import mapboxgl, { Map } from 'mapbox-gl';
+import mapboxgl, { Layer, Map } from 'mapbox-gl';
 import './index.css';
 import { Button } from 'react-bootstrap';
 import {
@@ -17,7 +17,6 @@ import { getPlanById } from '../../features/plan/api';
 import { PlanModel } from '../../features/plan/providers/types';
 import AssignModal from '../../features/assignment/components/assign/assignModal';
 import { Properties } from '../../features/location/providers/types';
-import { toast } from 'react-toastify';
 import { getLocationByIdAndPlanId } from '../../features/location/api';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
@@ -96,6 +95,7 @@ const MapViewAssignments = ({
                   map.current.removeSource(selectedLocation.properties.parentIdentifier + 'children-label');
                 }
                 loadChildren(map!.current!, selectedLocation.properties.parentIdentifier, planId);
+                reloadData();
               }
             });
           } else {
@@ -135,7 +135,7 @@ const MapViewAssignments = ({
       }
       map.current = mapInstance;
     }
-  }, [lat, lng, zoom, planId, currentPlan, selectedLocations]);
+  }, [lat, lng, zoom, planId, currentPlan, selectedLocations, reloadData]);
 
   useEffect(() => {
     initializeMap();
@@ -145,7 +145,6 @@ const MapViewAssignments = ({
     const currentMap = map.current;
     if (currentMap && currentMap.isStyleLoaded() && data && currentPlan) {
       if (isLocationAlreadyLoaded(currentMap, data.properties.name)) {
-        toast.warning('This location is already loaded.');
         moveend();
       } else {
         createLocation(currentMap, data, moveend);
@@ -195,34 +194,72 @@ const MapViewAssignments = ({
       <div ref={mapContainer} className="mapbox-container" />
       {showModal && currentLocation && (
         <AssignModal
-          closeHandler={(action: boolean) => {
+          closeHandler={(action: boolean, teamCount: number) => {
             if (action && map.current && moveend && planId) {
-              getLocationByIdAndPlanId(currentLocation[0], planId).then(res => {
-                if (map.current?.getSource(currentLocation[0])) {
-                  map.current.removeLayer(currentLocation[0] + '-fill');
-                  map.current.removeLayer(currentLocation[0] + '-outline');
-                  map.current.removeLayer(currentLocation[0] + '-fill-disable');
-                  map.current.removeSource(currentLocation[0]);
-                  createLocation(map!.current!, res, moveend);
-                }
-                if (map.current?.getSource(currentLocation[1].parentIdentifier + 'children')) {
-                  //if there is a change to a location loaded by child endpoint we should load again all children by parent location to show changes made
-                  map.current.removeLayer(currentLocation[1].parentIdentifier + 'children-fill');
-                  map.current.removeLayer(currentLocation[1].parentIdentifier + 'children-border');
-                  map.current.removeLayer(currentLocation[1].parentIdentifier + 'children-fill-disable');
-                  map.current.removeSource(currentLocation[1].parentIdentifier + 'children');
-                  map.current.removeLayer(currentLocation[1].parentIdentifier + 'children-label');
-                  if (map.current.getSource(currentLocation[1].parentIdentifier + 'children-label')) {
-                    map.current.removeSource(currentLocation[1].parentIdentifier + 'children-label');
+              if (selectedLocations.length) {
+                selectedLocations.reverse().forEach(el => {
+                  if (map.current?.getLayer(el + '-highlighted')) {
+                    let sourceName = (map.current?.getLayer(el + '-highlighted') as Layer).source;
+                    map.current?.removeLayer(sourceName + '-fill');
+                    if (sourceName?.toString().includes('children')) {
+                      map.current?.removeLayer(sourceName + '-border');
+                    } else {
+                      map.current?.removeLayer(sourceName + '-outline');
+                    }
+                    map.current?.removeLayer(el + '-highlighted');
+                    map.current.addLayer(
+                      {
+                        id: sourceName + '-fill',
+                        source: sourceName,
+                        type: 'fill',
+                        paint: {
+                          'fill-color': teamCount > 0 ? 'green' : 'red',
+                          'fill-opacity': 0.3
+                        }
+                      },
+                      'label-layer'
+                    );
+                    map.current.addLayer(
+                      {
+                        id: sourceName + '-border',
+                        source: sourceName,
+                        type: 'line',
+                        paint: {
+                          'line-color': 'black',
+                          'line-width': 3
+                        }
+                      },
+                      'label-layer'
+                    );
                   }
-                  loadChildren(map!.current!, currentLocation[1].parentIdentifier, planId);
-                }
-              });
+                });
+                setSelectedLocations([]);
+              } else {
+                getLocationByIdAndPlanId(currentLocation[0], planId).then(res => {
+                  if (map.current?.getSource(currentLocation[0])) {
+                    map.current.removeLayer(currentLocation[0] + '-fill');
+                    map.current.removeLayer(currentLocation[0] + '-outline');
+                    map.current.removeLayer(currentLocation[0] + '-fill-disable');
+                    map.current.removeSource(currentLocation[0]);
+                    createLocation(map!.current!, res, moveend);
+                  }
+                  if (map.current?.getSource(currentLocation[1].parentIdentifier + 'children')) {
+                    //if there is a change to a location loaded by child endpoint we should load again all children by parent location to show changes made
+                    map.current.removeLayer(currentLocation[1].parentIdentifier + 'children-fill');
+                    map.current.removeLayer(currentLocation[1].parentIdentifier + 'children-border');
+                    map.current.removeLayer(currentLocation[1].parentIdentifier + 'children-fill-disable');
+                    map.current.removeSource(currentLocation[1].parentIdentifier + 'children');
+                    map.current.removeLayer(currentLocation[1].parentIdentifier + 'children-label');
+                    if (map.current.getSource(currentLocation[1].parentIdentifier + 'children-label')) {
+                      map.current.removeSource(currentLocation[1].parentIdentifier + 'children-label');
+                    }
+                    loadChildren(map!.current!, currentLocation[1].parentIdentifier, planId);
+                  }
+                });
+              }
+              reloadData();
             }
             setShowModal(false);
-            selectedLocations.forEach(el => {
-              map.current?.removeLayer(el + '-highlighted');
-            });
           }}
           selectedLocations={selectedLocations}
           locationData={currentLocation}
