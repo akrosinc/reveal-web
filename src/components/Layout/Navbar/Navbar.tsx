@@ -41,11 +41,11 @@ export default function NavbarComponent() {
                 if (el.dropdown !== undefined && el.dropdown.length > 0) {
                   return (
                     <AuthorizedElement key={index} roles={el.roles}>
-                      <NavDropdown title={t('topNav.' + el.pageTitle)} id={el.pageTitle + '-navbar-button'}>
+                      <NavDropdown align={'end'} title={t('topNav.' + el.pageTitle)} id={el.pageTitle + '-navbar-button'}>
                         {el.dropdown.map((child, childIndex) => {
                           return (
                             <AuthorizedElement key={index + '.' + childIndex} roles={child.roles}>
-                              <NavDropdown.Item as={Link} role="button" to={child.route}>
+                              <NavDropdown.Item as={Link} role="button" to={child.route} className='text-center' >
                                 {t('topNav.' + child.pageTitle)}
                               </NavDropdown.Item>
                             </AuthorizedElement>

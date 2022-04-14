@@ -8,12 +8,24 @@ export const MAIN_MENU = [
   },
   {
     pageTitle: 'Plan Management',
-    route: PLANS,
+    route: '/plan',
     roles: ['plan_view'],
+    dropdown: [
+      {
+        pageTitle: 'Plans',
+        route: PLANS,
+        roles: ['manage-users']
+      },
+      {
+        pageTitle: 'Assign',
+        route: ASSIGNMENT_PAGE,
+        roles: ['plan_view']
+      }
+    ]
   },
   {
-    pageTitle: 'Assign',
-    route: ASSIGNMENT_PAGE,
+    pageTitle: 'Reporting',
+    route: HOME_PAGE,
     roles: []
   },
   {

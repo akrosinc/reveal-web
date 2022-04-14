@@ -23,7 +23,8 @@ import {
   faEdit,
   faSave,
   faArrowLeft,
-  faPlus
+  faPlus,
+  faInfoCircle
 } from '@fortawesome/free-solid-svg-icons';
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
@@ -38,7 +39,8 @@ library.add(
   faEdit,
   faSave,
   faArrowLeft,
-  faPlus
+  faPlus,
+  faInfoCircle
 );
 
 function App() {
