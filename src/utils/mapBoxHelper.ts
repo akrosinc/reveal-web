@@ -104,6 +104,7 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
     //save property id
     data.properties.id = data.identifier;
     map.addSource(data.identifier, {
+      promoteId: 'id',
       type: 'geojson',
       data: data,
       tolerance: 1

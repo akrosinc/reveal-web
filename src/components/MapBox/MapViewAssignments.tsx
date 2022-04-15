@@ -80,6 +80,8 @@ const MapViewAssignments = ({
       if (planId) {
         const openHandler = (selectedLocation: any, assign: boolean) => {
           // if location assign button is clicked call assignemnt else open team assignment modal
+          //LOKACIJE UCITANE RUCNO/CREATE LOCATION NE DOBIJAJU ID
+          //RESITI TO I ONDA CE OVA LOGIKA ISPOD RADITI ODLICNO, DODATI SAMO SETPAINTPROPERTY FEATURE I TO JE TO SUTRA
           if (assign) {
             getLocationByIdAndPlanId(selectedLocation.properties.id, planId).then(res => {
               if (map.current?.getSource(selectedLocation.properties.id)) {
@@ -96,9 +98,19 @@ const MapViewAssignments = ({
               }
               if (map.current?.getSource(selectedLocation.properties.parentIdentifier + 'children')) {
                 //if there is a change to a location loaded by child endpoint we should load again all children by parent location to show changes made
+                map.current.removeLayer(selectedLocation.properties.parentIdentifier + 'children-fill');
+                map.current.removeLayer(selectedLocation.properties.parentIdentifier + 'children-border');
                 map.current.removeLayer(selectedLocation.properties.parentIdentifier + 'children-fill-disable');
-                reloadData();
+                map.current.removeSource(selectedLocation.properties.parentIdentifier + 'children');
+                if (map.current.getLayer(selectedLocation.properties.parentIdentifier + 'children-label')) {
+                  map.current.removeLayer(selectedLocation.properties.parentIdentifier + 'children-label');
+                }
+                if (map.current.getSource(selectedLocation.properties.parentIdentifier + 'children-label')) {
+                  map.current.removeSource(selectedLocation.properties.parentIdentifier + 'children-label');
+                }
+                loadChildren(map!.current!, selectedLocation.properties.parentIdentifier, planId);
               }
+              reloadData();
             });
           } else {
             setCurrentLocation([selectedLocation.properties.id, selectedLocation.properties]);
@@ -173,6 +185,7 @@ const MapViewAssignments = ({
     }
   };
 
+  //tooltip popover component
   const popover = (
     <Popover id="popover-basic">
       <Popover.Header as="h3" className="text-center">
@@ -193,7 +206,7 @@ const MapViewAssignments = ({
     </Popover>
   );
 
-  //This function is used to rerender map on incoming changes directly without adding or removing existing layers
+  // Function used to rerender map on incoming changes directly without adding or removing existing layers
   const closeModalHandler = (action: boolean, teamCount: number) => {
     if (action && map.current && moveend && planId) {
       //check for multi select feature
@@ -287,6 +300,7 @@ const MapViewAssignments = ({
           });
         }
       }
+      //reload grid view data
       reloadData();
     }
     setShowModal(false);
