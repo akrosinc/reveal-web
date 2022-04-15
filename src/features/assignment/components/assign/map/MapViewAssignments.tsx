@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import mapboxgl, { Layer, Map } from 'mapbox-gl';
-import './index.css';
-import { Button, OverlayTrigger, Popover } from 'react-bootstrap';
+import '../../../../../components/MapBox/index.css';
+import { Button } from 'react-bootstrap';
 import {
   contextMenuHandler,
   createLocation,
@@ -11,15 +11,15 @@ import {
   isLocationAlreadyLoaded,
   loadChildren,
   selectHandler
-} from '../../utils';
+} from '../../../../../utils';
 import { useParams } from 'react-router-dom';
-import { getPlanById } from '../../features/plan/api';
-import { PlanModel } from '../../features/plan/providers/types';
-import AssignModal from '../../features/assignment/components/assign/assignModal';
-import { Properties } from '../../features/location/providers/types';
-import { getLocationByIdAndPlanId } from '../../features/location/api';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED } from '../../constants';
+import { getPlanById } from '../../../../plan/api';
+import { PlanModel } from '../../../../plan/providers/types';
+import AssignModal from '../assignModal';
+import { Properties } from '../../../../location/providers/types';
+import { getLocationByIdAndPlanId } from '../../../../location/api';
+import { MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED, MAP_LEGEND_COLORS, MAP_LEGEND_TEXT } from '../../../../../constants';
+import PopoverComponent from '../../../../../components/Popover';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
@@ -56,8 +56,6 @@ const MapViewAssignments = ({
   const [showModal, setShowModal] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<[string, Properties]>();
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const legend = ['Teams assigned', 'Location is assigned but no teams', 'Unassigned location', 'Selected'];
-  const legendColors = ['green', 'red', 'gray', '#6e599f'];
 
   //resize map on hide/show menu action
   useEffect(() => {
@@ -65,6 +63,17 @@ const MapViewAssignments = ({
       map.current?.resize();
     }
   }, [rerender]);
+
+  const test = (e: any) => {
+    if (map.current) {
+      map.current.queryRenderedFeatures().forEach(el => {
+        if (el.layer.id)
+          if (map!.current!.getLayer(el.layer.id) && el.layer.id.includes('-fill')) {
+            map!.current!.setPaintProperty(el.layer.id, 'fill-opacity', e / 100);
+          }
+      });
+    }
+  };
 
   // initialize map only once
   // set listeners
@@ -79,9 +88,7 @@ const MapViewAssignments = ({
       //load locations plan
       if (planId) {
         const openHandler = (selectedLocation: any, assign: boolean) => {
-          // if location assign button is clicked call assignemnt else open team assignment modal
-          //LOKACIJE UCITANE RUCNO/CREATE LOCATION NE DOBIJAJU ID
-          //RESITI TO I ONDA CE OVA LOGIKA ISPOD RADITI ODLICNO, DODATI SAMO SETPAINTPROPERTY FEATURE I TO JE TO SUTRA
+          // if location assign button is clicked call assignment else open team assignment modal
           if (assign) {
             getLocationByIdAndPlanId(selectedLocation.properties.id, planId).then(res => {
               if (map.current?.getSource(selectedLocation.properties.id)) {
@@ -184,27 +191,6 @@ const MapViewAssignments = ({
       initializeMap();
     }
   };
-
-  //tooltip popover component
-  const popover = (
-    <Popover id="popover-basic">
-      <Popover.Header as="h3" className="text-center">
-        Map Legend
-      </Popover.Header>
-      <Popover.Body>
-        <ul style={{ listStyle: 'none' }}>
-          {legend.map((el, index) => {
-            return (
-              <li key={index}>
-                <span className="sidebar-legend" style={{ backgroundColor: legendColors[index] }} />
-                {el}
-              </li>
-            );
-          })}
-        </ul>
-      </Popover.Body>
-    </Popover>
-  );
 
   // Function used to rerender map on incoming changes directly without adding or removing existing layers
   const closeModalHandler = (action: boolean, teamCount: number) => {
@@ -312,11 +298,23 @@ const MapViewAssignments = ({
         <Button className="me-2" style={{ boxShadow: '4px 4px 3px rgba(24, 24, 24, 0.8)' }} onClick={collapse}>
           {rerender ? 'Show Menu' : 'Hide Menu'}
         </Button>
-        <OverlayTrigger trigger="click" placement="bottom" overlay={popover} rootClose={true}>
-          <Button style={{ boxShadow: '4px 4px 3px rgba(24, 24, 24, 0.8)' }}>
-            <FontAwesomeIcon icon="info-circle" className="text-white mt-1" />
-          </Button>
-        </OverlayTrigger>
+        <PopoverComponent title="Map Legend">
+          <ul style={{ listStyle: 'none' }}>
+            {MAP_LEGEND_TEXT.map((el, index) => {
+              return (
+                <li key={index}>
+                  <span className="sidebar-legend" style={{ backgroundColor: MAP_LEGEND_COLORS[index] }} />
+                  {el}
+                </li>
+              );
+            })}
+          </ul>
+        </PopoverComponent>
+        <div className='mt-2'>
+        <label id='range-input-label' className='text-white'>Layer opacity</label>
+        <br />
+        <input id='range-input' defaultValue={85} type="range" onChange={e => test(e.target.value)} />
+        </div>
       </div>
       <div className="clearButton">
         <p className="small m-0 p-0 text-white rounded mb-1">

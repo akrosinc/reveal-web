@@ -85,3 +85,6 @@ export const MAP_COLOR_SELECTED = '#6e599f'
 
 export const MAP_LEGEND_TEXT = ['Teams Assigned', 'Location is assigned but no teams', 'Unassigned Location', 'Selected Location'];
 export const MAP_LEGEND_COLORS = [MAP_COLOR_TEAM_ASSIGNED, MAP_COLOR_NO_TEAMS, MAP_COLOR_UNASSIGNED, MAP_COLOR_SELECTED];
+
+export const MAP_DEFAULT_FILL_OPACITY = 0.85;
+export const MAP_DEFAULT_DISABLED_FILL_OPACITY = 0.85;

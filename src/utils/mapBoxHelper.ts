@@ -1,8 +1,17 @@
 import { center, Feature, Point, Properties, Polygon, MultiPolygon, bbox } from '@turf/turf';
 import { LngLatBounds, Map, Popup, GeolocateControl, NavigationControl } from 'mapbox-gl';
 import { toast } from 'react-toastify';
-import { MAPBOX_STYLE } from '../constants';
+import {
+  MAPBOX_STYLE,
+  MAP_COLOR_NO_TEAMS,
+  MAP_COLOR_SELECTED,
+  MAP_COLOR_TEAM_ASSIGNED,
+  MAP_COLOR_UNASSIGNED,
+  MAP_DEFAULT_DISABLED_FILL_OPACITY,
+  MAP_DEFAULT_FILL_OPACITY
+} from '../constants';
 import { assignLocationToPlan, getChildLocation } from '../features/assignment/api';
+import { getLocationByIdAndPlanId } from '../features/location/api';
 
 interface LocationProperties {
   id: string;
@@ -41,6 +50,7 @@ export const initMap = (
     }),
     position
   );
+  mapboxInstance.setMinZoom(1.5);
   //initialize an empty top layer for all labels
   //this layer is used to prevent labels getting behind fill and border layers on loading of locations
   mapboxInstance.on('load', () => {
@@ -135,9 +145,9 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
             ['get', 'geographicLevel'],
             'structure',
             'yellow',
-            ['match', ['get', 'numberOfTeams'], 0, '#A7171A', '#5DBB63']
+            ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED]
           ],
-          'fill-opacity': 0.6
+          'fill-opacity': MAP_DEFAULT_FILL_OPACITY
         }
       },
       'label-layer'
@@ -151,8 +161,8 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
           source: data.identifier,
           layout: {},
           paint: {
-            'fill-color': '#656565',
-            'fill-opacity': 0.8
+            'fill-color': MAP_COLOR_UNASSIGNED,
+            'fill-opacity': MAP_DEFAULT_DISABLED_FILL_OPACITY
           },
           filter: ['in', 'assigned', false]
         },
@@ -174,7 +184,8 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
           }
           return e;
         },
-        padding: 20
+        padding: 20,
+        duration: 1000
       },
       {
         //send data event only if its 1st location to be loaded to initialize event handlers;
@@ -187,6 +198,7 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
   }
 };
 
+// hover handler with timeout to simulate hovering effect
 export const hoverHandler = (map: Map, identifier: string) => {
   let popup = new Popup().setHTML(
     `<h4 class='bg-success text-light text-center'>Actions</h4><div class='p-2'><small>Available commands:<br />
@@ -241,14 +253,8 @@ export const createChild = (map: Map, data: any) => {
         source: data.identifier,
         layout: {},
         paint: {
-          'fill-color': [
-            'match',
-            ['get', 'geographicLevel'],
-            'structure',
-            'yellow',
-            ['match', ['get', 'numberOfTeams'], 0, '#A7171A', '#5DBB63']
-          ],
-          'fill-opacity': 0.6
+          'fill-color': ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED],
+          'fill-opacity': MAP_DEFAULT_FILL_OPACITY
         }
       },
       'label-layer'
@@ -261,8 +267,8 @@ export const createChild = (map: Map, data: any) => {
         source: data.identifier,
         layout: {},
         paint: {
-          'fill-color': 'grey',
-          'fill-opacity': 0.8
+          'fill-color': MAP_COLOR_UNASSIGNED,
+          'fill-opacity': MAP_DEFAULT_DISABLED_FILL_OPACITY
         },
         filter: ['in', 'assigned', false]
       },
@@ -367,6 +373,7 @@ export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: bo
         } else {
           const loadChildButtonId = feature.properties.id + '-child-button';
           const assignButtonId = feature.properties.id + '-assign';
+          const parentButtonId = feature.properties.id + '-parent';
           const start = `<h4 class='bg-success text-center'>Action menu</h4>
           <div class='m-0 p-0 text-center'>
             <p>
@@ -375,9 +382,11 @@ export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: bo
                 <br />
             </p>`;
           const end = `<button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
+          <button class='btn btn-primary w-75 mb-2' id='${parentButtonId}' style='${
+            (feature.properties as any).parentIdentifier ? 'display: ""' : 'display: none'
+          }'>Parent details</button>
           <button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Actions and Details</button>
           </div>`;
-          console.log(feature);
           const displayHTML =
             start +
             ((feature.properties as LocationProperties).assigned || feature.state.assigned
@@ -390,6 +399,12 @@ export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: bo
           document
             .getElementById(loadChildButtonId)
             ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId));
+          document.getElementById(parentButtonId)?.addEventListener('click', () => {
+            getLocationByIdAndPlanId((feature.properties as any).parentIdentifier, planId).then(res => {
+              res.properties.id = res.identifier;
+              openHandler(res, false);
+            });
+          });
           document.getElementById(assignButtonId)?.addEventListener('click', () => {
             assignLocationToPlan(planId, (feature.properties as any).id).then(res => {
               openHandler(feature, true);
@@ -428,8 +443,8 @@ export const selectHandler = (
               source: features[0].source,
               paint: {
                 'fill-outline-color': '#484896',
-                'fill-color': '#6e599f',
-                'fill-opacity': 0.75
+                'fill-color': MAP_COLOR_SELECTED,
+                'fill-opacity': MAP_DEFAULT_FILL_OPACITY
               },
               filter: ['in', 'id', selectedLocation.id]
             });
