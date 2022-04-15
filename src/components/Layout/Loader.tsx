@@ -4,7 +4,7 @@ import { CSSProperties } from 'react-transition-group/node_modules/@types/react'
 import { useAppSelector } from '../../store/hooks';
 
 const loaderBackdrop: CSSProperties = {
-  backgroundColor: 'rgba(0, 0, 0, 0.1)',
+  backgroundColor: 'rgba(0, 0, 0, 0.25)',
   position: 'absolute',
   left: '0',
   top: '0',

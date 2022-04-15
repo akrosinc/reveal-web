@@ -484,6 +484,9 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
 };
 
 export const loadChildren = (map: Map, id: string, planId: string) => {
+  toast.loading('Loading locations...', {
+    autoClose: false
+  });
   getChildLocation(id, planId).then(res => {
     res.map(el => {
       const properties = {
@@ -500,6 +503,7 @@ export const loadChildren = (map: Map, id: string, planId: string) => {
         features: res
       };
       createChild(map, featureSet);
+      toast.dismiss();
     } else {
       toast.info('This location has no child locations.');
     }

@@ -18,15 +18,18 @@ import { PlanModel } from '../../../../plan/providers/types';
 import AssignModal from '../assignModal';
 import { Properties } from '../../../../location/providers/types';
 import { getLocationByIdAndPlanId } from '../../../../location/api';
-import { MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED, MAP_LEGEND_COLORS, MAP_LEGEND_TEXT } from '../../../../../constants';
+import {
+  MAP_COLOR_NO_TEAMS,
+  MAP_COLOR_TEAM_ASSIGNED,
+  MAP_DEFAULT_FILL_OPACITY,
+  MAP_LEGEND_COLORS,
+  MAP_LEGEND_TEXT
+} from '../../../../../constants';
 import PopoverComponent from '../../../../../components/Popover';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
 interface Props {
-  latitude?: number;
-  longitude?: number;
-  startingZoom: number;
   data: any;
   rerender: boolean;
   collapse: () => void;
@@ -36,9 +39,6 @@ interface Props {
 }
 
 const MapViewAssignments = ({
-  latitude,
-  longitude,
-  startingZoom,
   data,
   rerender,
   collapse,
@@ -48,9 +48,9 @@ const MapViewAssignments = ({
 }: Props) => {
   const mapContainer = useRef<any>(null);
   const map = useRef<Map>();
-  const [lng, setLng] = useState(longitude ?? 28.283333);
-  const [lat, setLat] = useState(latitude ?? -15.416667);
-  const [zoom, setZoom] = useState(startingZoom);
+  const [lng, setLng] = useState(28.283333);
+  const [lat, setLat] = useState(-15.416667);
+  const [zoom, setZoom] = useState(4);
   const { planId } = useParams();
   const [currentPlan, setCurrentPlan] = useState<PlanModel>();
   const [showModal, setShowModal] = useState(false);
@@ -64,12 +64,12 @@ const MapViewAssignments = ({
     }
   }, [rerender]);
 
-  const test = (e: any) => {
+  const opacityRangeHandler = (inputValue: string) => {
     if (map.current) {
       map.current.queryRenderedFeatures().forEach(el => {
         if (el.layer.id)
           if (map!.current!.getLayer(el.layer.id) && el.layer.id.includes('-fill')) {
-            map!.current!.setPaintProperty(el.layer.id, 'fill-opacity', e / 100);
+            map!.current!.setPaintProperty(el.layer.id, 'fill-opacity', Number(inputValue) / 100);
           }
       });
     }
@@ -310,10 +310,17 @@ const MapViewAssignments = ({
             })}
           </ul>
         </PopoverComponent>
-        <div className='mt-2'>
-        <label id='range-input-label' className='text-white'>Layer opacity</label>
-        <br />
-        <input id='range-input' defaultValue={85} type="range" onChange={e => test(e.target.value)} />
+        <div className="mt-2">
+          <label id="range-input-label" className="text-white">
+            Layer opacity
+          </label>
+          <br />
+          <input
+            id="range-input"
+            defaultValue={MAP_DEFAULT_FILL_OPACITY * 100}
+            type="range"
+            onChange={e => opacityRangeHandler(e.target.value)}
+          />
         </div>
       </div>
       <div className="clearButton">
