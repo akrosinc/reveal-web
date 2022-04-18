@@ -487,27 +487,28 @@ export const loadChildren = (map: Map, id: string, planId: string) => {
   toast.loading('Loading locations...', {
     autoClose: false
   });
-  getChildLocation(id, planId).then(res => {
-    res.map(el => {
-      const properties = {
-        ...el.properties,
-        id: el.identifier
-      };
-      el.properties = properties;
-      return el;
-    });
-    if (res.length) {
-      let featureSet = {
-        identifier: id + 'children',
-        type: 'FeatureCollection',
-        features: res
-      };
-      createChild(map, featureSet);
-      toast.dismiss();
-    } else {
-      toast.info('This location has no child locations.');
-    }
-  });
+  getChildLocation(id, planId)
+    .then(res => {
+      res.map(el => {
+        const properties = {
+          ...el.properties,
+          id: el.identifier
+        };
+        el.properties = properties;
+        return el;
+      });
+      if (res.length) {
+        let featureSet = {
+          identifier: id + 'children',
+          type: 'FeatureCollection',
+          features: res
+        };
+        createChild(map, featureSet);
+      } else {
+        toast.info('This location has no child locations.');
+      }
+    })
+    .finally(() => toast.dismiss());
 };
 
 export const createLocationLabel = (map: Map, data: any, center: Feature<Point, Properties>) => {

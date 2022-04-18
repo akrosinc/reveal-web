@@ -31,30 +31,29 @@ const UploadLocation = ({ handleClose }: Props) => {
       dispatch(showLoader(true));
       const formData = new FormData();
       formData.append('file', json);
-      toast.promise(uploadLocationJSON(formData), {
-        pending: 'JSON file is uploading...',
-        success: {
-          render({ data }: { data: { identifier: string } }) {
-            reset();
-            dispatch(showLoader(false));
-            handleClose();
-            return `JSON file uploaded successfully, you can track location creation progress in location import section with identifier ${data.identifier}`;
-          }
-        },
-        error: {
-          render({ data }: { data: ErrorModel }) {
-            dispatch(showLoader(false));
-            setError(
-              'bulk',
-              { message: data.message },
-              {
-                shouldFocus: true
-              }
-            );
-            return data.message;
-          }
-        }
-      });
+      let uploadToast = toast.info('JSON file is uploading...', { progress: 0 });
+      uploadLocationJSON(formData, uploadToast.toString())
+        .then(res => {
+          reset();
+          handleClose();
+          toast.success(
+            `JSON file uploaded successfully, you can track location creation progress in location import section with identifier ${res.identifier}`
+          );
+        })
+        .catch((err: ErrorModel) => {
+          setError(
+            'bulk',
+            { message: err.message },
+            {
+              shouldFocus: true
+            }
+          );
+          toast.error(err.message !== undefined ? err.message : err.fieldValidationErrors.toString());
+        })
+        .finally(() => {
+          toast.done(uploadToast.toString());
+          dispatch(showLoader(false));
+        });
     } else {
       setError('bulk', { message: 'Unexpected file type, please try again.' });
     }
