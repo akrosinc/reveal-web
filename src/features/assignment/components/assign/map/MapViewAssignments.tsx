@@ -26,6 +26,8 @@ import {
   MAP_LEGEND_TEXT
 } from '../../../../../constants';
 import PopoverComponent from '../../../../../components/Popover';
+import { useAppDispatch } from '../../../../../store/hooks';
+import { showLoader } from '../../../../reducers/loader';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
@@ -38,14 +40,7 @@ interface Props {
   reloadData: () => void;
 }
 
-const MapViewAssignments = ({
-  data,
-  rerender,
-  collapse,
-  clearHandler,
-  moveend,
-  reloadData
-}: Props) => {
+const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, reloadData }: Props) => {
   const mapContainer = useRef<any>(null);
   const map = useRef<Map>();
   const [lng, setLng] = useState(28.283333);
@@ -56,6 +51,7 @@ const MapViewAssignments = ({
   const [showModal, setShowModal] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<[string, Properties]>();
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const dispatch = useAppDispatch();
 
   //resize map on hide/show menu action
   useEffect(() => {
@@ -74,6 +70,13 @@ const MapViewAssignments = ({
       });
     }
   };
+
+  const loaderHandler = useCallback(
+    (show: boolean) => {
+      dispatch(showLoader(show));
+    },
+    [dispatch]
+  );
 
   // initialize map only once
   // set listeners
@@ -115,7 +118,7 @@ const MapViewAssignments = ({
                 if (map.current.getSource(selectedLocation.properties.parentIdentifier + 'children-label')) {
                   map.current.removeSource(selectedLocation.properties.parentIdentifier + 'children-label');
                 }
-                loadChildren(map!.current!, selectedLocation.properties.parentIdentifier, planId);
+                loadChildren(map!.current!, selectedLocation.properties.parentIdentifier, planId, loaderHandler);
               }
               reloadData();
             });
@@ -126,9 +129,9 @@ const MapViewAssignments = ({
         };
         const setHandlers = (plan: PlanModel, locationIdentifer: string) => {
           //set double click listener
-          doubleClickHandler(mapInstance, plan.identifier);
+          doubleClickHandler(mapInstance, plan.identifier, loaderHandler);
           //set right clik listener
-          contextMenuHandler(mapInstance, openHandler, plan.identifier);
+          contextMenuHandler(mapInstance, openHandler, plan.identifier, loaderHandler);
           //set ctrl + left click listener
           selectHandler(mapInstance, selectedLocations, (locations: string[]) => setSelectedLocations(locations));
           //set hover handler
@@ -156,7 +159,7 @@ const MapViewAssignments = ({
       }
       map.current = mapInstance;
     }
-  }, [lat, lng, zoom, planId, currentPlan, selectedLocations, reloadData]);
+  }, [lat, lng, zoom, planId, currentPlan, selectedLocations, reloadData, loaderHandler]);
 
   useEffect(() => {
     initializeMap();

@@ -326,7 +326,7 @@ export const createChild = (map: Map, data: any) => {
   }
 };
 
-export const doubleClickHandler = (map: Map, planId: string) => {
+export const doubleClickHandler = (map: Map, planId: string, loader: (show: boolean) => void) => {
   map.on('dblclick', e => {
     if (!e.originalEvent.ctrlKey) {
       const features = map.queryRenderedFeatures(e.point);
@@ -334,7 +334,7 @@ export const doubleClickHandler = (map: Map, planId: string) => {
         const feature = features[0];
         if (feature) {
           if (feature.properties && feature.properties.id && feature.properties.assigned) {
-            loadChildren(map, feature.properties.id, planId);
+            loadChildren(map, feature.properties.id, planId, loader);
           }
         }
       }
@@ -344,7 +344,7 @@ export const doubleClickHandler = (map: Map, planId: string) => {
 
 let popup: Popup;
 
-export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: boolean) => void, planId: string) => {
+export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: boolean) => void, planId: string, loader: (show: boolean) => void) => {
   // When a click event occurs on a feature in the places layer, open a popup at the
   // location of the feature, with description HTML from its properties.
   map.on('contextmenu', e => {
@@ -398,7 +398,7 @@ export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: bo
             .addTo(map);
           document
             .getElementById(loadChildButtonId)
-            ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId));
+            ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId, loader));
           document.getElementById(parentButtonId)?.addEventListener('click', () => {
             getLocationByIdAndPlanId((feature.properties as any).parentIdentifier, planId).then(res => {
               res.properties.id = res.identifier;
@@ -483,10 +483,11 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
   }
 };
 
-export const loadChildren = (map: Map, id: string, planId: string) => {
+export const loadChildren = (map: Map, id: string, planId: string, loader: (show: boolean) => void) => {
   toast.loading('Loading locations...', {
     autoClose: false
   });
+  loader(true);
   getChildLocation(id, planId)
     .then(res => {
       res.map(el => {
@@ -508,7 +509,10 @@ export const loadChildren = (map: Map, id: string, planId: string) => {
         toast.info('This location has no child locations.');
       }
     })
-    .finally(() => toast.dismiss());
+    .finally(() => {
+      toast.dismiss();
+      loader(false);
+    });
 };
 
 export const createLocationLabel = (map: Map, data: any, center: Feature<Point, Properties>) => {
