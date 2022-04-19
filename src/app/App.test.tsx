@@ -28,14 +28,3 @@ test('is public page rendered', () => {
   const renderResult = render(<PublicPage />);
   expect(renderResult).toBeTruthy();
 });
-
-test('expect login button to be present', () => {
-  const renderResult = render(
-    <ReactKeycloakProvider authClient={keycloak}>
-      <Provider store={store}>
-        <App />
-      </Provider>
-    </ReactKeycloakProvider>
-  );
-  expect(renderResult.container.querySelector('#login-button')).toBeTruthy();
-});
