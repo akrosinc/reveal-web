@@ -8,6 +8,7 @@ import {
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { GEOGRAPHIC_LEVEL, LOCATION, LOCATION_HIERARCHY } from '../../../constants';
+import { toast } from 'react-toastify';
 
 export const getGeographicLevelList = async (
   size: number,
@@ -154,7 +155,14 @@ export const getLocationBulkListById = async (
   return data;
 };
 
-export const uploadLocationJSON = async (json: FormData): Promise<{ identifier: string }> => {
-  const data = await api.post<{ identifier: string }>(LOCATION + '/bulk', json).then(response => response.data);
+export const uploadLocationJSON = async (json: FormData, toastId: string): Promise<{ identifier: string }> => {
+  const data = await api
+    .post<{ identifier: string }>(LOCATION + '/bulk', json, {
+      onUploadProgress: p => {
+        const progress = p.loaded / p.total;
+        toast.update(toastId, { progress, render: 'JSON file is uploading... ' + Math.round(progress * 100) + '%' });
+      }
+    })
+    .then(response => response.data);
   return data;
 };

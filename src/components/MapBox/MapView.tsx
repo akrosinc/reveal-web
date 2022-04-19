@@ -51,7 +51,7 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
     } else {
       if (data !== undefined && map.current.getSource(data.identifier) === undefined) {
         setCurrentLocation(data.identifier);
-        createLocation(map.current, data, () => undefined);
+        createLocation(map.current, data, () => undefined, 0.8);
       }
     }
   }, [setCurrentLocation, data, lng, lat, zoom, currentLocation]);

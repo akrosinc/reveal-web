@@ -26,7 +26,7 @@ import { getLocationByIdAndPlanId } from '../../../location/api';
 import { MultiValue, Options } from 'react-select';
 import { getOrganizationListSummary } from '../../../organization/api';
 import { Column } from 'react-table';
-import MapViewAssignments from '../../../../components/MapBox/MapViewAssignments';
+import MapViewAssignments from './map';
 
 interface Option {
   label: string;
@@ -118,17 +118,14 @@ const Assign = () => {
                   // We can even use the row.depth property
                   // and paddingLeft to indicate the depth
                   // of the row
-                  paddingLeft: `${row.depth * 0.8}rem`,
-                  paddingTop: '15px',
-                  paddingBottom: '15px',
-                  paddingRight: '15px'
+                  padding: '0.4em'
                 }
               })}
             >
               {row.isExpanded ? (
                 <FontAwesomeIcon className="ms-1" icon="chevron-down" />
               ) : (
-                <FontAwesomeIcon className="ms-1" icon="chevron-right" />
+                <FontAwesomeIcon className={row.depth > 0 ? 'ms-2' : 'ms-1'} icon="chevron-right" />
               )}
             </span>
           ) : null
@@ -410,7 +407,6 @@ const Assign = () => {
             collapse={() => setOpen(!open)}
             rerender={open}
             data={geoLocation}
-            startingZoom={10}
             clearHandler={() => {
               if (locationHierarchy && locationHierarchy.content.length && planId) {
                 dispatch(showLoader(true));

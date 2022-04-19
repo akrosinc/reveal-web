@@ -1,8 +1,17 @@
-import { center, Feature, Point, Properties, Polygon, MultiPolygon } from '@turf/turf';
+import { center, Feature, Point, Properties, Polygon, MultiPolygon, bbox } from '@turf/turf';
 import { LngLatBounds, Map, Popup, GeolocateControl, NavigationControl } from 'mapbox-gl';
 import { toast } from 'react-toastify';
-import { MAPBOX_STYLE } from '../constants';
+import {
+  MAPBOX_STYLE,
+  MAP_COLOR_NO_TEAMS,
+  MAP_COLOR_SELECTED,
+  MAP_COLOR_TEAM_ASSIGNED,
+  MAP_COLOR_UNASSIGNED,
+  MAP_DEFAULT_DISABLED_FILL_OPACITY,
+  MAP_DEFAULT_FILL_OPACITY
+} from '../constants';
 import { assignLocationToPlan, getChildLocation } from '../features/assignment/api';
+import { getLocationByIdAndPlanId } from '../features/location/api';
 
 interface LocationProperties {
   id: string;
@@ -41,6 +50,7 @@ export const initMap = (
     }),
     position
   );
+  mapboxInstance.setMinZoom(1.5);
   //initialize an empty top layer for all labels
   //this layer is used to prevent labels getting behind fill and border layers on loading of locations
   mapboxInstance.on('load', () => {
@@ -70,6 +80,18 @@ export const getPolygonCenter = (data: any) => {
     coordinates = data.geometry.coordinates[0];
   }
 
+  // check if its a multy polygon, if it is append all polygons to bounds
+  if (data.geometry.coordinates.length > 1) {
+    data.geometry.coordinates.forEach((el: any[]) => {
+      // prevent bad geojson error
+      if (typeof el[0] === 'number') {
+        coordinates = [...coordinates, ...el];
+      } else {
+        coordinates = [...coordinates, ...el[0]];
+      }
+    });
+  }
+
   // Create a 'LngLatBounds' with both corners at the first coordinate.
   const bounds = new LngLatBounds(coordinates[0], coordinates[0]);
 
@@ -83,7 +105,7 @@ export const getPolygonCenter = (data: any) => {
   };
 };
 
-export const createLocation = (map: Map, data: any, moveend: () => void): void => {
+export const createLocation = (map: Map, data: any, moveend: () => void, opacity: number): void => {
   if (
     map.getSource(data.identifier) === undefined &&
     map.getSource(data.properties.id + 'children') === undefined &&
@@ -92,6 +114,7 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
     //save property id
     data.properties.id = data.identifier;
     map.addSource(data.identifier, {
+      promoteId: 'id',
       type: 'geojson',
       data: data,
       tolerance: 1
@@ -122,9 +145,9 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
             ['get', 'geographicLevel'],
             'structure',
             'yellow',
-            ['match', ['get', 'numberOfTeams'], 0, 'red', 'green']
+            ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED]
           ],
-          'fill-opacity': 0.3
+          'fill-opacity': opacity
         }
       },
       'label-layer'
@@ -138,8 +161,8 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
           source: data.identifier,
           layout: {},
           paint: {
-            'fill-color': 'grey',
-            'fill-opacity': 0.8
+            'fill-color': MAP_COLOR_UNASSIGNED,
+            'fill-opacity': MAP_DEFAULT_DISABLED_FILL_OPACITY
           },
           filter: ['in', 'assigned', false]
         },
@@ -161,7 +184,8 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
           }
           return e;
         },
-        padding: 20
+        padding: 20,
+        duration: 1000
       },
       {
         //send data event only if its 1st location to be loaded to initialize event handlers;
@@ -174,6 +198,7 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
   }
 };
 
+// hover handler with timeout to simulate hovering effect
 export const hoverHandler = (map: Map, identifier: string) => {
   let popup = new Popup().setHTML(
     `<h4 class='bg-success text-light text-center'>Actions</h4><div class='p-2'><small>Available commands:<br />
@@ -199,7 +224,7 @@ export const hoverHandler = (map: Map, identifier: string) => {
   });
 };
 
-export const createChild = (map: Map, data: any) => {
+export const createChild = (map: Map, data: any, opacity: number) => {
   let layerList = new Set(
     map
       .queryRenderedFeatures()
@@ -209,11 +234,14 @@ export const createChild = (map: Map, data: any) => {
   data.features.forEach((el: any, index: number) => {
     if (layerList.has((el.properties as any).name)) {
       data.features.splice(index, 1);
+    } else {
+      el.id = el.identifier;
     }
   });
   if (map.getSource(data.identifier) === undefined && data.features.length) {
     map.addSource(data.identifier, {
       type: 'geojson',
+      promoteId: 'id',
       data: data,
       tolerance: 1
     });
@@ -225,14 +253,8 @@ export const createChild = (map: Map, data: any) => {
         source: data.identifier,
         layout: {},
         paint: {
-          'fill-color': [
-            'match',
-            ['get', 'geographicLevel'],
-            'structure',
-            'yellow',
-            ['match', ['get', 'numberOfTeams'], 0, 'red', 'green']
-          ],
-          'fill-opacity': 0.3
+          'fill-color': ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED],
+          'fill-opacity': opacity
         }
       },
       'label-layer'
@@ -245,8 +267,8 @@ export const createChild = (map: Map, data: any) => {
         source: data.identifier,
         layout: {},
         paint: {
-          'fill-color': 'grey',
-          'fill-opacity': 0.8
+          'fill-color': MAP_COLOR_UNASSIGNED,
+          'fill-opacity': MAP_DEFAULT_DISABLED_FILL_OPACITY
         },
         filter: ['in', 'assigned', false]
       },
@@ -268,9 +290,8 @@ export const createChild = (map: Map, data: any) => {
     );
 
     if (data.features && data.features.length > 1) {
-      //set center label
-      const group = new LngLatBounds();
       const featureSet: Feature<Point, Properties>[] = [];
+      const bounds = bbox(data) as any;
       data.features.forEach((element: Feature<Polygon | MultiPolygon, LocationProperties>) => {
         //create label for each of the locations
         //create a group of locations so we can fit them all in viewport
@@ -279,16 +300,8 @@ export const createChild = (map: Map, data: any) => {
           name: element.properties.name
         };
         featureSet.push(centerLabel.center);
-        if (element.geometry.type === 'Polygon') {
-          const startCoords = element.geometry.coordinates[0][0] as [number, number];
-          group.extend([startCoords, startCoords]);
-        }
-        if (element.geometry.type === 'MultiPolygon') {
-          const startCoords = element.geometry.coordinates[0][0][0] as [number, number];
-          group.extend([startCoords, startCoords]);
-        }
       });
-      map.fitBounds(group, {
+      map.fitBounds(bounds, {
         easing: e => {
           //this is an event which is fired at the end of the fit bounds
           if (e === 1) {
@@ -296,7 +309,7 @@ export const createChild = (map: Map, data: any) => {
           }
           return e;
         },
-        zoom: map.getZoom() + 0.5
+        duration: 600
       });
     } else {
       const centerLabel = getPolygonCenter(data.features[0]);
@@ -306,13 +319,14 @@ export const createChild = (map: Map, data: any) => {
             createLocationLabel(map, data.features[0], centerLabel.center);
           }
           return e;
-        }
+        },
+        duration: 600
       });
     }
   }
 };
 
-export const doubleClickHandler = (map: Map, planId: string) => {
+export const doubleClickHandler = (map: Map, planId: string, loader: (show: boolean) => void, opacity: number) => {
   map.on('dblclick', e => {
     if (!e.originalEvent.ctrlKey) {
       const features = map.queryRenderedFeatures(e.point);
@@ -320,7 +334,7 @@ export const doubleClickHandler = (map: Map, planId: string) => {
         const feature = features[0];
         if (feature) {
           if (feature.properties && feature.properties.id && feature.properties.assigned) {
-            loadChildren(map, feature.properties.id, planId);
+            loadChildren(map, feature.properties.id, planId, loader, opacity);
           }
         }
       }
@@ -330,7 +344,7 @@ export const doubleClickHandler = (map: Map, planId: string) => {
 
 let popup: Popup;
 
-export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: boolean) => void, planId: string) => {
+export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: boolean) => void, planId: string, loader: (show: boolean) => void, opacity: number) => {
   // When a click event occurs on a feature in the places layer, open a popup at the
   // location of the feature, with description HTML from its properties.
   map.on('contextmenu', e => {
@@ -359,7 +373,7 @@ export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: bo
         } else {
           const loadChildButtonId = feature.properties.id + '-child-button';
           const assignButtonId = feature.properties.id + '-assign';
-          const colorPickerId = feature.properties.id + '-color-picker';
+          const parentButtonId = feature.properties.id + '-parent';
           const start = `<h4 class='bg-success text-center'>Action menu</h4>
           <div class='m-0 p-0 text-center'>
             <p>
@@ -368,11 +382,14 @@ export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: bo
                 <br />
             </p>`;
           const end = `<button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
+          <button class='btn btn-primary w-75 mb-2' id='${parentButtonId}' style='${
+            (feature.properties as any).parentIdentifier ? 'display: ""' : 'display: none'
+          }'>Parent details</button>
           <button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Actions and Details</button>
           </div>`;
           const displayHTML =
             start +
-            ((feature.properties as LocationProperties).assigned
+            ((feature.properties as LocationProperties).assigned || feature.state.assigned
               ? end
               : `<button class='btn btn-primary w-75 mb-3' id='${assignButtonId}'>Assign location</button></div>`);
           popup = new Popup({ focusAfterOpen: true, closeOnMove: true })
@@ -381,17 +398,19 @@ export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: bo
             .addTo(map);
           document
             .getElementById(loadChildButtonId)
-            ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId));
+            ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId, loader, opacity));
+          document.getElementById(parentButtonId)?.addEventListener('click', () => {
+            getLocationByIdAndPlanId((feature.properties as any).parentIdentifier, planId).then(res => {
+              res.properties.id = res.identifier;
+              openHandler(res, false);
+            });
+          });
           document.getElementById(assignButtonId)?.addEventListener('click', () => {
             assignLocationToPlan(planId, (feature.properties as any).id).then(res => {
               openHandler(feature, true);
               toast.success('Location assigned successfully.');
             });
             popup.remove();
-          });
-          document.getElementById(colorPickerId)?.addEventListener('change', e => {
-            let hexColor = (e.target as any).value as string;
-            map.setPaintProperty((feature.properties as any).id + '-fill', 'fill-color', hexColor);
           });
         }
         document.getElementById(buttonId)?.addEventListener('click', () => openHandler(feature, false));
@@ -424,8 +443,8 @@ export const selectHandler = (
               source: features[0].source,
               paint: {
                 'fill-outline-color': '#484896',
-                'fill-color': '#6e599f',
-                'fill-opacity': 0.75
+                'fill-color': MAP_COLOR_SELECTED,
+                'fill-opacity': MAP_DEFAULT_FILL_OPACITY
               },
               filter: ['in', 'id', selectedLocation.id]
             });
@@ -464,27 +483,36 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
   }
 };
 
-export const loadChildren = (map: Map, id: string, planId: string) => {
-  getChildLocation(id, planId).then(res => {
-    res.map(el => {
-      const properties = {
-        ...el.properties,
-        id: el.identifier
-      };
-      el.properties = properties;
-      return el;
-    });
-    if (res.length) {
-      let featureSet = {
-        identifier: id + 'children',
-        type: 'FeatureCollection',
-        features: res
-      };
-      createChild(map, featureSet);
-    } else {
-      toast.info('This location has no child locations.');
-    }
+export const loadChildren = (map: Map, id: string, planId: string, loader: (show: boolean) => void, opacity: number) => {
+  const loadingToast = toast.loading('Loading locations...', {
+    autoClose: false
   });
+  loader(true);
+  getChildLocation(id, planId)
+    .then(res => {
+      res.map(el => {
+        const properties = {
+          ...el.properties,
+          id: el.identifier
+        };
+        el.properties = properties;
+        return el;
+      });
+      if (res.length) {
+        let featureSet = {
+          identifier: id + 'children',
+          type: 'FeatureCollection',
+          features: res
+        };
+        createChild(map, featureSet, opacity);
+      } else {
+        toast.info('This location has no child locations.');
+      }
+    })
+    .finally(() => {
+      toast.dismiss(loadingToast.toString());
+      loader(false);
+    });
 };
 
 export const createLocationLabel = (map: Map, data: any, center: Feature<Point, Properties>) => {

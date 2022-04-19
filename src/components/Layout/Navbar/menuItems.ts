@@ -1,4 +1,4 @@
-import { HOME_PAGE, PLANS, MANAGEMENT, LOCATION_PAGE, ASSIGNMENT_PAGE } from '../../../constants';
+import { HOME_PAGE, PLANS, MANAGEMENT, LOCATION_PAGE, ASSIGNMENT_PAGE, REPORTING_PAGE } from '../../../constants';
 
 export const MAIN_MENU = [
   {
@@ -8,12 +8,24 @@ export const MAIN_MENU = [
   },
   {
     pageTitle: 'Plan Management',
-    route: PLANS,
+    route: '/plan',
     roles: ['plan_view'],
+    dropdown: [
+      {
+        pageTitle: 'Plans',
+        route: PLANS,
+        roles: ['manage-users']
+      },
+      {
+        pageTitle: 'Assign',
+        route: ASSIGNMENT_PAGE,
+        roles: ['plan_view']
+      }
+    ]
   },
   {
-    pageTitle: 'Assign',
-    route: ASSIGNMENT_PAGE,
+    pageTitle: 'Reporting',
+    route: REPORTING_PAGE,
     roles: []
   },
   {

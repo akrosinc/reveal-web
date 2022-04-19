@@ -77,3 +77,14 @@ export const PLAN_TABLE_COLUMNS = [
 
 export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';
 export const LOCATION_TEAM_ASSIGNMENT_TAB = 'team-assignment';
+
+export const MAP_COLOR_NO_TEAMS = '#A7171A';
+export const MAP_COLOR_TEAM_ASSIGNED = '#5DBB63';
+export const MAP_COLOR_UNASSIGNED = '#656565';
+export const MAP_COLOR_SELECTED = '#6e599f'
+
+export const MAP_LEGEND_TEXT = ['Teams Assigned', 'Location is assigned but no teams', 'Unassigned Location', 'Selected Location'];
+export const MAP_LEGEND_COLORS = [MAP_COLOR_TEAM_ASSIGNED, MAP_COLOR_NO_TEAMS, MAP_COLOR_UNASSIGNED, MAP_COLOR_SELECTED];
+
+export const MAP_DEFAULT_FILL_OPACITY = 0.85;
+export const MAP_DEFAULT_DISABLED_FILL_OPACITY = 0.85;

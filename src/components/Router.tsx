@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router';
 import { Navigate } from 'react-router-dom';
-import { ASSIGNMENT_PAGE, HOME_PAGE, LOCATION_PAGE, MANAGEMENT, PLANS, ROLE_MANAGE_USER } from '../constants/';
+import { ASSIGNMENT_PAGE, HOME_PAGE, LOCATION_PAGE, MANAGEMENT, PLANS, REPORTING_PAGE, ROLE_MANAGE_USER } from '../constants/';
 import Home from '../features/pages/HomePage/Home';
 import Plan from '../features/pages/Plan';
 import Management from '../features/pages/Management';
@@ -12,6 +12,7 @@ import Location from '../features/pages/Location';
 import CreatePlan from '../features/plan/components/Plans/create';
 import Assignment from '../features/pages/AssignmentPage';
 import Assign from '../features/assignment/components/assign';
+import Reporting from '../features/pages/Reporting';
 
 export default function Router() {
   const { keycloak, initialized } = useKeycloak();
@@ -75,6 +76,11 @@ export default function Router() {
               </AuthGuard>
             }
           />
+          <Route path={REPORTING_PAGE} element={
+            <AuthGuard roles={[]}>
+              <Reporting />
+            </AuthGuard>
+          }></Route>
         </Routes>
       );
     } else {

@@ -108,7 +108,7 @@ const LocationAssignmentsTable = ({
                   );
                 } else if (cell.column.id === 'teams' && rowData.active) {
                   return (
-                    <td {...cell.getCellProps()} style={{minWidth: '250px'}}>
+                    <td {...cell.getCellProps()} style={{ minWidth: '250px' }}>
                       <Select
                         id={rowData.identifier + '-select'}
                         menuPosition="fixed"
@@ -131,6 +131,7 @@ const LocationAssignmentsTable = ({
                 } else if (cell.column.id === 'location') {
                   return (
                     <td
+                      className="align-middle"
                       {...cell.getCellProps()}
                       onClick={() => {
                         if (cell.column.id !== 'expander' && teamTab && clickHandler) {
