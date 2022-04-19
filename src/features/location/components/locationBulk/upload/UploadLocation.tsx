@@ -31,7 +31,7 @@ const UploadLocation = ({ handleClose }: Props) => {
       dispatch(showLoader(true));
       const formData = new FormData();
       formData.append('file', json);
-      let uploadToast = toast.info('JSON file is uploading...', { progress: 0 });
+      const uploadToast = toast.info('JSON file is uploading...', { progress: 0 });
       uploadLocationJSON(formData, uploadToast.toString())
         .then(res => {
           reset();

@@ -105,7 +105,7 @@ export const getPolygonCenter = (data: any) => {
   };
 };
 
-export const createLocation = (map: Map, data: any, moveend: () => void): void => {
+export const createLocation = (map: Map, data: any, moveend: () => void, opacity: number): void => {
   if (
     map.getSource(data.identifier) === undefined &&
     map.getSource(data.properties.id + 'children') === undefined &&
@@ -147,7 +147,7 @@ export const createLocation = (map: Map, data: any, moveend: () => void): void =
             'yellow',
             ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED]
           ],
-          'fill-opacity': MAP_DEFAULT_FILL_OPACITY
+          'fill-opacity': opacity
         }
       },
       'label-layer'
@@ -224,7 +224,7 @@ export const hoverHandler = (map: Map, identifier: string) => {
   });
 };
 
-export const createChild = (map: Map, data: any) => {
+export const createChild = (map: Map, data: any, opacity: number) => {
   let layerList = new Set(
     map
       .queryRenderedFeatures()
@@ -254,7 +254,7 @@ export const createChild = (map: Map, data: any) => {
         layout: {},
         paint: {
           'fill-color': ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED],
-          'fill-opacity': MAP_DEFAULT_FILL_OPACITY
+          'fill-opacity': opacity
         }
       },
       'label-layer'
@@ -326,7 +326,7 @@ export const createChild = (map: Map, data: any) => {
   }
 };
 
-export const doubleClickHandler = (map: Map, planId: string, loader: (show: boolean) => void) => {
+export const doubleClickHandler = (map: Map, planId: string, loader: (show: boolean) => void, opacity: number) => {
   map.on('dblclick', e => {
     if (!e.originalEvent.ctrlKey) {
       const features = map.queryRenderedFeatures(e.point);
@@ -334,7 +334,7 @@ export const doubleClickHandler = (map: Map, planId: string, loader: (show: bool
         const feature = features[0];
         if (feature) {
           if (feature.properties && feature.properties.id && feature.properties.assigned) {
-            loadChildren(map, feature.properties.id, planId, loader);
+            loadChildren(map, feature.properties.id, planId, loader, opacity);
           }
         }
       }
@@ -344,7 +344,7 @@ export const doubleClickHandler = (map: Map, planId: string, loader: (show: bool
 
 let popup: Popup;
 
-export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: boolean) => void, planId: string, loader: (show: boolean) => void) => {
+export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: boolean) => void, planId: string, loader: (show: boolean) => void, opacity: number) => {
   // When a click event occurs on a feature in the places layer, open a popup at the
   // location of the feature, with description HTML from its properties.
   map.on('contextmenu', e => {
@@ -398,7 +398,7 @@ export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: bo
             .addTo(map);
           document
             .getElementById(loadChildButtonId)
-            ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId, loader));
+            ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId, loader, opacity));
           document.getElementById(parentButtonId)?.addEventListener('click', () => {
             getLocationByIdAndPlanId((feature.properties as any).parentIdentifier, planId).then(res => {
               res.properties.id = res.identifier;
@@ -483,8 +483,8 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
   }
 };
 
-export const loadChildren = (map: Map, id: string, planId: string, loader: (show: boolean) => void) => {
-  toast.loading('Loading locations...', {
+export const loadChildren = (map: Map, id: string, planId: string, loader: (show: boolean) => void, opacity: number) => {
+  const loadingToast = toast.loading('Loading locations...', {
     autoClose: false
   });
   loader(true);
@@ -504,13 +504,13 @@ export const loadChildren = (map: Map, id: string, planId: string, loader: (show
           type: 'FeatureCollection',
           features: res
         };
-        createChild(map, featureSet);
+        createChild(map, featureSet, opacity);
       } else {
         toast.info('This location has no child locations.');
       }
     })
     .finally(() => {
-      toast.dismiss();
+      toast.dismiss(loadingToast.toString());
       loader(false);
     });
 };

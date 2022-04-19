@@ -52,6 +52,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
   const [currentLocation, setCurrentLocation] = useState<[string, Properties]>();
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const dispatch = useAppDispatch();
+  const [opacity, setOpacity] = useState(MAP_DEFAULT_FILL_OPACITY);
 
   //resize map on hide/show menu action
   useEffect(() => {
@@ -66,6 +67,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
         if (el.layer.id)
           if (map!.current!.getLayer(el.layer.id) && el.layer.id.includes('-fill')) {
             map!.current!.setPaintProperty(el.layer.id, 'fill-opacity', Number(inputValue) / 100);
+            setOpacity(Number(inputValue) / 100);
           }
       });
     }
@@ -118,7 +120,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
                 if (map.current.getSource(selectedLocation.properties.parentIdentifier + 'children-label')) {
                   map.current.removeSource(selectedLocation.properties.parentIdentifier + 'children-label');
                 }
-                loadChildren(map!.current!, selectedLocation.properties.parentIdentifier, planId, loaderHandler);
+                loadChildren(map!.current!, selectedLocation.properties.parentIdentifier, planId, loaderHandler, opacity);
               }
               reloadData();
             });
@@ -129,9 +131,9 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
         };
         const setHandlers = (plan: PlanModel, locationIdentifer: string) => {
           //set double click listener
-          doubleClickHandler(mapInstance, plan.identifier, loaderHandler);
+          doubleClickHandler(mapInstance, plan.identifier, loaderHandler, opacity);
           //set right clik listener
-          contextMenuHandler(mapInstance, openHandler, plan.identifier, loaderHandler);
+          contextMenuHandler(mapInstance, openHandler, plan.identifier, loaderHandler, opacity);
           //set ctrl + left click listener
           selectHandler(mapInstance, selectedLocations, (locations: string[]) => setSelectedLocations(locations));
           //set hover handler
@@ -159,7 +161,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
       }
       map.current = mapInstance;
     }
-  }, [lat, lng, zoom, planId, currentPlan, selectedLocations, reloadData, loaderHandler]);
+  }, [lat, lng, zoom, planId, currentPlan, selectedLocations, reloadData, loaderHandler, opacity]);
 
   useEffect(() => {
     initializeMap();
@@ -171,10 +173,10 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
       if (isLocationAlreadyLoaded(currentMap, data.properties.name)) {
         moveend();
       } else {
-        createLocation(currentMap, data, moveend);
+        createLocation(currentMap, data, moveend, opacity);
       }
     }
-  }, [data, currentPlan, moveend]);
+  }, [data, currentPlan, moveend, opacity]);
 
   useEffect(() => {
     return () => {
@@ -320,7 +322,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
           <br />
           <input
             id="range-input"
-            defaultValue={MAP_DEFAULT_FILL_OPACITY * 100}
+            defaultValue={opacity * 100}
             type="range"
             onChange={e => opacityRangeHandler(e.target.value)}
           />

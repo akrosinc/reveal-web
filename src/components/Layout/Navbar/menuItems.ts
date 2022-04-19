@@ -1,4 +1,4 @@
-import { HOME_PAGE, PLANS, MANAGEMENT, LOCATION_PAGE, ASSIGNMENT_PAGE } from '../../../constants';
+import { HOME_PAGE, PLANS, MANAGEMENT, LOCATION_PAGE, ASSIGNMENT_PAGE, REPORTING_PAGE } from '../../../constants';
 
 export const MAIN_MENU = [
   {
@@ -25,7 +25,7 @@ export const MAIN_MENU = [
   },
   {
     pageTitle: 'Reporting',
-    route: HOME_PAGE,
+    route: REPORTING_PAGE,
     roles: []
   },
   {
