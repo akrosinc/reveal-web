@@ -189,6 +189,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
   //delete all map data and initialize new instance
   const deleteMapData = () => {
     if (data) {
+      setOpacity(MAP_DEFAULT_FILL_OPACITY);
       selectedLocations.length = 0;
       clearHandler();
       map.current?.remove();
@@ -322,7 +323,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
           <br />
           <input
             id="range-input"
-            defaultValue={opacity * 100}
+            value={opacity * 100}
             type="range"
             onChange={e => opacityRangeHandler(e.target.value)}
           />

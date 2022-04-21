@@ -16,7 +16,7 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
   return (
     <Modal show centered scrollable size="lg">
       <Modal.Header>
-        <Modal.Title>{locationBulkFile.filename}</Modal.Title>
+        <Modal.Title>{locationBulkFile.filename}({locationList.totalElements})</Modal.Title>
         <div>
           <p className="mb-0 ms-2 text-end">Upload date: {formatDate(locationBulkFile.uploadDatetime)}</p>
           <p className="mb-0 ms-2 text-end">Uploaded by: {locationBulkFile.uploadedBy}</p>

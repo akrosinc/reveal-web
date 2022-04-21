@@ -309,6 +309,7 @@ export const createChild = (map: Map, data: any, opacity: number) => {
           }
           return e;
         },
+        padding: 20,
         duration: 600
       });
     } else {
@@ -320,6 +321,7 @@ export const createChild = (map: Map, data: any, opacity: number) => {
           }
           return e;
         },
+        padding: 20,
         duration: 600
       });
     }
