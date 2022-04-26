@@ -103,6 +103,35 @@ const Assign = () => {
     return locationHierarchy ? locationHierarchy.content : [];
   }, [locationHierarchy]);
 
+  const showAssignedOnly = (locations: LocationModel[]) => {
+    //creates a clone of location object to remove any references
+    const loc = JSON.parse(JSON.stringify(locations)) as LocationModel[];
+    loc.forEach((el, index) => {
+      if (!el.active) {
+        loc.splice(index, 1);
+      } else {
+        if (el.children.length) {
+          removeNotAssigned(el.children);
+        }
+      }
+    });
+    return loc;
+  };
+
+  const removeNotAssigned = (locations: LocationModel[]) => {
+    let indexes: number[] = [];
+    locations.forEach((el, index) => {
+      if (!el.active) {
+        indexes.push(index);
+      } else {
+        if (el.children.length) {
+          removeNotAssigned(el.children);
+        }
+      }
+    });
+    indexes.reverse().forEach(i => locations.splice(i, 1));
+  };
+
   const columns = React.useMemo<Column[]>(
     () => [
       {
@@ -147,6 +176,29 @@ const Assign = () => {
       }
     });
     setLocationHierarchy(selectedHierarchy);
+  };
+
+  const selectParent = (location: LocationModel) => {
+    locationHierarchy?.content.forEach(el => {
+      if (el.identifier === location.properties.parentIdentifier) {
+        el.active = true;
+      } else {
+        if (el.children.length) {
+          test(el.children, location.properties.parentIdentifier);
+        }
+      }
+    });
+  };
+
+  const test = (locations: LocationModel[], identifier: string) => {
+    locations.forEach(el => {
+      if (el.identifier === identifier) {
+        el.active = true;
+        selectParent(el);
+      } else if (el.children.length) {
+        test(el.children, identifier);
+      }
+    });
   };
 
   const selectHandler = (id: string, selected: MultiValue<Option>, unselectAll?: boolean) => {
@@ -195,6 +247,9 @@ const Assign = () => {
   };
 
   const checkChildren = (parentLocation: LocationModel, checked: boolean) => {
+    if (checked) {
+      selectParent(parentLocation);
+    }
     parentLocation.children.forEach(el => {
       el.active = checked;
       if (el.children.length) {
@@ -330,7 +385,12 @@ const Assign = () => {
           md={4}
           style={{ display: open ? 'none' : '', maxHeight: tableHeight > 0 ? tableHeight : 'auto', overflow: 'auto' }}
         >
-          {assignedLocations ? `Assign Teams | Assigned Locations: ${assignedLocations}` : 'Select Locations'}
+          <div className='d-flex justify-content-between my-2'>
+          <span className='mt-2'>{assignedLocations ? `Assign Teams | Assigned Locations: ${assignedLocations}` : 'Select Locations'}</span>
+          <Button id="save-assignments-button" className='w-25' onClick={saveHandler}>
+            Save
+          </Button>
+          </div>
           <div id="expand-table" className="mt-2">
             <hr />
             <Tabs
@@ -390,16 +450,10 @@ const Assign = () => {
                         .finally(() => dispatch(showLoader(false)));
                     }
                   }}
-                  data={tableData}
+                  data={showAssignedOnly(tableData)}
                 />
               </Tab>
             </Tabs>
-            <hr className="my-2" />
-            <div className="text-end">
-              <Button id="save-assignments-button" className="my-2 w-25" onClick={saveHandler}>
-                Save
-              </Button>
-            </div>
           </div>
         </Col>
         <Col md={open ? 12 : 8}>

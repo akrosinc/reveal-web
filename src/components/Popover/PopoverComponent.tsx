@@ -9,7 +9,7 @@ interface Props {
 
 const PopoverComponent = ({ title, children }: Props) => {
   const popover = (
-    <Popover id="popover-basic">
+    <Popover id="popover-basic" style={{maxWidth: '285px'}}>
       <Popover.Header as="h3" className="text-center">
         {title}
       </Popover.Header>

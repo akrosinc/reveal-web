@@ -335,7 +335,7 @@ export const doubleClickHandler = (map: Map, planId: string, loader: (show: bool
       if (features.length) {
         const feature = features[0];
         if (feature) {
-          if (feature.properties && feature.properties.id && feature.properties.assigned) {
+          if (feature.properties && feature.properties.id && (feature.properties.assigned || feature.state.assigned)) {
             loadChildren(map, feature.properties.id, planId, loader, opacity);
           }
         }

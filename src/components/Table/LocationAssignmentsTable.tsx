@@ -139,7 +139,7 @@ const LocationAssignmentsTable = ({
                         }
                       }}
                     >
-                      {cell.render('Cell')} {rowData.children.length > 0 ? `(${rowData.children.lengh})` : ''}
+                      {cell.render('Cell')} {rowData.children.length > 0 ? `(${rowData.children.length})` : ""}
                     </td>
                   );
                 } else {
