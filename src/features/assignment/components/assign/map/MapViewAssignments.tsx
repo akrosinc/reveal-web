@@ -108,7 +108,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
                     }
                   });
               }
-              if (map.current?.getSource(selectedLocation.properties.parentIdentifier + 'children')) {                
+              if (map.current?.getSource(selectedLocation.properties.parentIdentifier + 'children')) {
                 map.current
                   .queryRenderedFeatures(undefined, { filter: ['==', ['get', 'id'], res.identifier] })
                   .forEach(el => {
@@ -118,18 +118,17 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
                       });
                     }
                   });
-                  map.current.setPaintProperty(selectedLocation.properties.parentIdentifier + 'children-fill-disable', 'fill-color', [
+                map.current.setPaintProperty(
+                  selectedLocation.properties.parentIdentifier + 'children-fill-disable',
+                  'fill-color',
+                  [
                     'match',
                     ['get', 'id'],
                     res.identifier,
                     'transparent',
-                    [
-                      'case',
-                      ['!=', ['feature-state', 'assigned'], null],
-                      'transparent',
-                      MAP_COLOR_UNASSIGNED
-                    ]
-                  ]);
+                    ['case', ['!=', ['feature-state', 'assigned'], null], 'transparent', MAP_COLOR_UNASSIGNED]
+                  ]
+                );
               }
               reloadData();
             });
@@ -265,7 +264,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
                   'match',
                   ['get', 'id'],
                   res.identifier,
-                  res.properties.numberOfTeams > 0 ? 'green' : 'red',
+                  res.properties.numberOfTeams > 0 ? MAP_COLOR_TEAM_ASSIGNED : MAP_COLOR_NO_TEAMS,
                   [
                     'case',
                     ['!=', ['feature-state', 'numberOfTeams'], null],

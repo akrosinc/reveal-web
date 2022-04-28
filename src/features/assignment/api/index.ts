@@ -32,12 +32,14 @@ export const assignLocationToPlan = async (planId: string, assignedLocation: str
 export const assignTeamsToMultiplePlanLocations = async (
   planId: string,
   assignedLocationIds: string[],
-  teamIds: string[]
+  teamIds: string[],
+  assignChildren: boolean
 ): Promise<any> => {
   const data = await api
     .post<PageableModel<LocationModel>>(PLAN + `/${planId}/multipleTeamAssign`, {
       locations: assignedLocationIds,
-      teams: teamIds
+      teams: teamIds,
+      assignChildren: assignChildren
     })
     .then(response => response.data);
   return data;
@@ -50,9 +52,14 @@ export const getAssignedLocationHierarcyCount = async (planId: string): Promise<
   return data;
 };
 
-export const assignTeamsToLocation = async (planId: string, locationId: string, teamIds: string[]): Promise<any> => {
+export const assignTeamsToLocation = async (
+  planId: string,
+  locationId: string,
+  teamIds: string[],
+  assignChildren: boolean
+): Promise<any> => {
   const data = await api
-    .post(PLAN + `/${planId}/${locationId}/assignTeams`, { teams: teamIds })
+    .post(PLAN + `/${planId}/${locationId}/assignTeams`, { teams: teamIds, assignChildren: assignChildren })
     .then(response => response.data);
   return data;
 };

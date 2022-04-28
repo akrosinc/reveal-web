@@ -24,6 +24,7 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
   const dispatch = useAppDispatch();
   const [assignedTeams, setAssignedTeams] = useState<MultiValue<{ label: string; value: string }>>();
   const [organizationList, setOrganizationList] = useState<Options<{ label: string; value: string }>>();
+  const [assignChildren, setAssignChildren] = useState(false);
 
   const assignTeamsHandler = () => {
     if (planId) {
@@ -32,7 +33,8 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
         assignTeamsToMultiplePlanLocations(
           planId,
           selectedLocations,
-          assignedTeams !== undefined ? assignedTeams.map(el => el.value) : []
+          assignedTeams !== undefined ? assignedTeams.map(el => el.value) : [],
+          assignChildren
         )
           .then(_ => {
             toast.success('Locations assigned successfully.');
@@ -49,7 +51,8 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
             assignTeamsToLocation(
               planId,
               locationData[0],
-              assignedTeams !== undefined ? assignedTeams.map(el => el.value) : []
+              assignedTeams !== undefined ? assignedTeams.map(el => el.value) : [],
+              assignChildren
             ),
             {
               pending: 'Loading...',
@@ -133,11 +136,12 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
           </>
         )}
         <hr />
+        <h5>Assign teams</h5>
         <Form>
+          <Form.Group className="mt-3">
+            <Form.Check label="Assign lower levels" onChange={e => setAssignChildren(Boolean(e.target.value))} />
+          </Form.Group>
           <Form.Group className="my-3">
-            <Form.Label>
-              <h5>Assign teams</h5>
-            </Form.Label>
             <Select
               id="team-assign-select"
               isMulti
