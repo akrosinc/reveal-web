@@ -9,7 +9,6 @@ import {
   hoverHandler,
   initMap,
   isLocationAlreadyLoaded,
-  loadChildren,
   selectHandler
 } from '../../../../../utils';
 import { useParams } from 'react-router-dom';
@@ -21,6 +20,7 @@ import { getLocationByIdAndPlanId } from '../../../../location/api';
 import {
   MAP_COLOR_NO_TEAMS,
   MAP_COLOR_TEAM_ASSIGNED,
+  MAP_COLOR_UNASSIGNED,
   MAP_DEFAULT_FILL_OPACITY,
   MAP_LEGEND_COLORS,
   MAP_LEGEND_TEXT
@@ -109,18 +109,26 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
                   });
               }
               if (map.current?.getSource(selectedLocation.properties.parentIdentifier + 'children')) {
-                //if there is a change to a location loaded by child endpoint we should load again all children by parent location to show changes made
-                map.current.removeLayer(selectedLocation.properties.parentIdentifier + 'children-fill');
-                map.current.removeLayer(selectedLocation.properties.parentIdentifier + 'children-border');
-                map.current.removeLayer(selectedLocation.properties.parentIdentifier + 'children-fill-disable');
-                map.current.removeSource(selectedLocation.properties.parentIdentifier + 'children');
-                if (map.current.getLayer(selectedLocation.properties.parentIdentifier + 'children-label')) {
-                  map.current.removeLayer(selectedLocation.properties.parentIdentifier + 'children-label');
-                }
-                if (map.current.getSource(selectedLocation.properties.parentIdentifier + 'children-label')) {
-                  map.current.removeSource(selectedLocation.properties.parentIdentifier + 'children-label');
-                }
-                loadChildren(map!.current!, selectedLocation.properties.parentIdentifier, planId, loaderHandler, opacity);
+                map.current
+                  .queryRenderedFeatures(undefined, { filter: ['==', ['get', 'id'], res.identifier] })
+                  .forEach(el => {
+                    if (el.id) {
+                      map!.current!.setFeatureState(el, {
+                        assigned: true
+                      });
+                    }
+                  });
+                map.current.setPaintProperty(
+                  selectedLocation.properties.parentIdentifier + 'children-fill-disable',
+                  'fill-color',
+                  [
+                    'match',
+                    ['get', 'id'],
+                    res.identifier,
+                    'transparent',
+                    ['case', ['!=', ['feature-state', 'assigned'], null], 'transparent', MAP_COLOR_UNASSIGNED]
+                  ]
+                );
               }
               reloadData();
             });
@@ -189,6 +197,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
   //delete all map data and initialize new instance
   const deleteMapData = () => {
     if (data) {
+      setOpacity(MAP_DEFAULT_FILL_OPACITY);
       selectedLocations.length = 0;
       clearHandler();
       map.current?.remove();
@@ -255,7 +264,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
                   'match',
                   ['get', 'id'],
                   res.identifier,
-                  res.properties.numberOfTeams > 0 ? 'green' : 'red',
+                  res.properties.numberOfTeams > 0 ? MAP_COLOR_TEAM_ASSIGNED : MAP_COLOR_NO_TEAMS,
                   [
                     'case',
                     ['!=', ['feature-state', 'numberOfTeams'], null],
@@ -322,7 +331,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
           <br />
           <input
             id="range-input"
-            defaultValue={opacity * 100}
+            value={opacity * 100}
             type="range"
             onChange={e => opacityRangeHandler(e.target.value)}
           />
