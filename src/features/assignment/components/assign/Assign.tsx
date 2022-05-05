@@ -181,25 +181,38 @@ const Assign = () => {
     setLocationHierarchy(selectedHierarchy);
   };
 
-  const selectParent = (location: LocationModel) => {
+  const selectParent = (location: LocationModel, selected: boolean) => {
     locationHierarchy?.content.forEach(el => {
       if (el.identifier === location.properties.parentIdentifier) {
-        el.active = true;
+        if (selected) {
+          el.active = selected;
+        } else {
+          if (!el.children.some(el => el.active)) {
+            el.active = selected;
+          }
+        }
       } else {
         if (el.children.length) {
-          findParent(el.children, location.properties.parentIdentifier);
+          findParent(el.children, location.properties.parentIdentifier, selected);
         }
       }
     });
   };
 
-  const findParent = (locations: LocationModel[], identifier: string) => {
+  const findParent = (locations: LocationModel[], identifier: string, selected: boolean) => {
     locations.forEach(el => {
       if (el.identifier === identifier) {
-        el.active = true;
-        selectParent(el);
+        if (selected) {
+          el.active = selected;
+          selectParent(el, selected);
+        } else {
+          if (!el.children.some(el => el.active)) {
+            el.active = selected;
+            selectParent(el, selected);
+          }
+        }
       } else if (el.children.length) {
-        findParent(el.children, identifier);
+        findParent(el.children, identifier, selected);
       }
     });
   };
@@ -227,6 +240,7 @@ const Assign = () => {
       if (childEl.identifier === id) {
         childEl.active = checked;
         checkChildren(childEl, checked);
+        selectParent(childEl, checked);
       } else if (childEl.children.length) {
         findLocationToCheck(id, childEl.children, checked);
       }
@@ -250,9 +264,6 @@ const Assign = () => {
   };
 
   const checkChildren = (parentLocation: LocationModel, checked: boolean) => {
-    if (checked) {
-      selectParent(parentLocation);
-    }
     parentLocation.children.forEach(el => {
       el.active = checked;
       if (el.children.length) {

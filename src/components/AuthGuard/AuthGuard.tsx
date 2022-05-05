@@ -1,6 +1,6 @@
 //import { useAppSelector } from '../store/hooks';
 import { useKeycloak } from '@react-keycloak/web';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 interface Props {
   children: JSX.Element;
@@ -10,7 +10,6 @@ interface Props {
 //We will use auth guard to protect routes based on user role
 
 const AuthGuard = ({ children, roles }: Props) => {
-  let location = useLocation();
 
   const { keycloak } = useKeycloak();
 
@@ -29,7 +28,7 @@ const AuthGuard = ({ children, roles }: Props) => {
     return false;
   };
 
-  return isAutherized(roles) ? children : <Navigate to="/" state={{ from: location }} />;
+  return isAutherized(roles) ? children : <Navigate to="/" />;
 };
 
 export default AuthGuard;

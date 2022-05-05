@@ -111,6 +111,7 @@ export const createLocation = (map: Map, data: any, moveend: () => void, opacity
     map.getSource(data.properties.id + 'children') === undefined &&
     map.getLayer(data.properties.id + '-fill') === undefined
   ) {
+    disableMapInteractions(map, true);
     //save property id
     data.properties.id = data.identifier;
     map.addSource(data.identifier, {
@@ -181,6 +182,7 @@ export const createLocation = (map: Map, data: any, moveend: () => void, opacity
           if (e === 1) {
             createLocationLabel(map, data, centerLabel.center);
             moveend();
+            disableMapInteractions(map, false);
           }
           return e;
         },
@@ -306,6 +308,7 @@ export const createChild = (map: Map, data: any, opacity: number) => {
           //this is an event which is fired at the end of the fit bounds
           if (e === 1) {
             createChildLocationLabel(map, featureSet, data.identifier);
+            disableMapInteractions(map, false);
           }
           return e;
         },
@@ -318,6 +321,7 @@ export const createChild = (map: Map, data: any, opacity: number) => {
         easing: e => {
           if (e === 1) {
             createLocationLabel(map, data.features[0], centerLabel.center);
+            disableMapInteractions(map, false);
           }
           return e;
         },
@@ -346,7 +350,13 @@ export const doubleClickHandler = (map: Map, planId: string, loader: (show: bool
 
 let popup: Popup;
 
-export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: boolean) => void, planId: string, loader: (show: boolean) => void, opacity: number) => {
+export const contextMenuHandler = (
+  map: Map,
+  openHandler: (data: any, assign: boolean) => void,
+  planId: string,
+  loader: (show: boolean) => void,
+  opacity: number
+) => {
   // When a click event occurs on a feature in the places layer, open a popup at the
   // location of the feature, with description HTML from its properties.
   map.on('contextmenu', e => {
@@ -400,7 +410,9 @@ export const contextMenuHandler = (map: Map, openHandler: (data: any, assign: bo
             .addTo(map);
           document
             .getElementById(loadChildButtonId)
-            ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId, loader, opacity));
+            ?.addEventListener('click', () =>
+              loadChildren(map, (feature.properties as any).id, planId, loader, opacity)
+            );
           document.getElementById(parentButtonId)?.addEventListener('click', () => {
             getLocationByIdAndPlanId((feature.properties as any).parentIdentifier, planId).then(res => {
               res.properties.id = res.identifier;
@@ -485,11 +497,18 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
   }
 };
 
-export const loadChildren = (map: Map, id: string, planId: string, loader: (show: boolean) => void, opacity: number) => {
+export const loadChildren = (
+  map: Map,
+  id: string,
+  planId: string,
+  loader: (show: boolean) => void,
+  opacity: number
+) => {
   const loadingToast = toast.loading('Loading locations...', {
     autoClose: false
   });
   loader(true);
+  disableMapInteractions(map, true);
   getChildLocation(id, planId)
     .then(res => {
       res.map(el => {
@@ -550,4 +569,25 @@ export const isLocationAlreadyLoaded = (map: Map, propertyName: any): boolean =>
     }
   });
   return exists;
+};
+
+// disable map interaction so users can't pan, zoom, etc
+export const disableMapInteractions = (map: Map, disable: boolean) => {
+  if (disable) {
+    map.boxZoom.disable();
+    map.scrollZoom.disable();
+    map.dragPan.disable();
+    map.dragRotate.disable();
+    map.keyboard.disable();
+    map.doubleClickZoom.disable();
+    map.touchZoomRotate.disable();
+  } else {
+    map.boxZoom.enable();
+    map.scrollZoom.enable();
+    map.dragPan.enable();
+    map.dragRotate.enable();
+    map.keyboard.enable();
+    map.doubleClickZoom.enable();
+    map.touchZoomRotate.enable();
+  }
 };
