@@ -329,6 +329,8 @@ export const createChild = (map: Map, data: any, opacity: number) => {
         duration: 600
       });
     }
+  } else {
+    disableMapInteractions(map, false);
   }
 };
 

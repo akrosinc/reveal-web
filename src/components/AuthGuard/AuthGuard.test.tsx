@@ -5,6 +5,12 @@ jest.mock('@react-keycloak/web', () => ({
   useKeycloak: useKeycloak
 }));
 
+jest.mock('react-router-dom', () => ({
+  useNavigate: () => {
+    return <div></div>
+  }
+}));
+
 test('should not return a div', () => {
   const renderResult = render(
     <AuthGuard roles={[]}>
