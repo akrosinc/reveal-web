@@ -156,7 +156,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
                   id="first-name-input"
                   {...register('firstname', {
                     required: 'First name must not be empty.',
-                    minLength: 1,
+                    minLength: {message: 'First name must be at least 2 chars long.', value: 2 },
                     pattern: {
                       value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
                       message: "First name can't start with empty space."
@@ -174,8 +174,8 @@ const CreateUser = ({ show, handleClose }: Props) => {
                 <Form.Control
                   id="last-name-input"
                   {...register('lastname', {
-                    required: 'Last name must not be empty.',
-                    minLength: 1,
+                    required: 'Last name must not be empty.',                    
+                    minLength: {message: 'Last name must be at least 2 chars long.', value: 2 },
                     pattern: {
                       value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
                       message: "Last name can't start with empty space."

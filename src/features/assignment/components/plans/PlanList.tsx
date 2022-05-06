@@ -1,10 +1,10 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Table } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { PageableModel } from '../../../../api/providers';
 import Paginator from '../../../../components/Pagination';
-import { ASSIGNMENT_PAGE, PLAN_TABLE_COLUMNS } from '../../../../constants';
+import { ASSIGNMENT_PAGE, PAGINATION_DEFAULT_SIZE, PLAN_TABLE_COLUMNS } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
 import { getPlanList } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
@@ -18,16 +18,28 @@ const PlanList = () => {
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const dispatch = useAppDispatch();
 
-  const paginationHandler = () => {};
+  const paginationHandler = (size: number, page: number) => {
+    loadData(size, page);
+  };
 
-  const sortHandler = (sortValue: string, direction: boolean) => {};
+  const sortHandler = (sortValue: string, direction: boolean) => {
+    setCurrentSortDirection(direction);
+    setCurrentSortField(sortValue);
+  };
+
+  const loadData = useCallback(
+    (size: number, page: number) => {
+      dispatch(showLoader(true));
+      getPlanList(size, page, true, '', currentSortField, currentSortDirection)
+        .then(res => setPlanList(res))
+        .finally(() => dispatch(showLoader(false)));
+    },
+    [currentSortDirection, currentSortField, dispatch]
+  );
 
   useEffect(() => {
-    dispatch(showLoader(true));
-    getPlanList(10, 0, true, '', currentSortField, currentSortDirection)
-      .then(res => setPlanList(res))
-      .finally(() => dispatch(showLoader(false)));
-  }, [currentSortDirection, currentSortField, dispatch]);
+    loadData(PAGINATION_DEFAULT_SIZE, 0);
+  }, [loadData]);
 
   return (
     <>

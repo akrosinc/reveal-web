@@ -1,6 +1,14 @@
 import { Route, Routes } from 'react-router';
 import { Navigate } from 'react-router-dom';
-import { ASSIGNMENT_PAGE, HOME_PAGE, LOCATION_PAGE, MANAGEMENT, PLANS, REPORTING_PAGE, ROLE_MANAGE_USER } from '../constants/';
+import {
+  ASSIGNMENT_PAGE,
+  HOME_PAGE,
+  LOCATION_PAGE,
+  MANAGEMENT,
+  PLANS,
+  REPORTING_PAGE,
+  ROLE_MANAGE_USER
+} from '../constants/';
 import Home from '../features/pages/HomePage/Home';
 import Plan from '../features/pages/Plan';
 import Management from '../features/pages/Management';
@@ -76,11 +84,14 @@ export default function Router() {
               </AuthGuard>
             }
           />
-          <Route path={REPORTING_PAGE} element={
-            <AuthGuard roles={[]}>
-              <Reporting />
-            </AuthGuard>
-          }></Route>
+          <Route
+            path={REPORTING_PAGE}
+            element={
+              <AuthGuard roles={[]}>
+                <Reporting />
+              </AuthGuard>
+            }
+          ></Route>
         </Routes>
       );
     } else {
