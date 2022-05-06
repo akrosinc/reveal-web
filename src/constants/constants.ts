@@ -75,6 +75,17 @@ export const PLAN_TABLE_COLUMNS = [
   { name: 'End Date', sortValue: 'effectivePeriodEnd' }
 ];
 
+export const REPORTS_TABLE_COLUMNS = [
+  { Header: 'Location name', accessor: 'properties.name', id: 'location' },
+  { Header: 'Geography Level', accessor: 'properties.geographicLevel' },
+  { Header: 'Child Locations', id: 'checkbox' },
+  { Header: 'Assigned teams', id: 'teams' },
+  { Header: 'Coverage Percent', id: 'coverage_percent' },
+  { Header: 'Visited', accessor: 'visited' },
+  { Header: 'Active', id: 'active' },
+  { Header: 'Details', id: 'details' }
+];
+
 export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';
 export const LOCATION_TEAM_ASSIGNMENT_TAB = 'team-assignment';
 
