@@ -7,4 +7,4 @@ export const GEOGRAPHIC_LEVEL = 'geographicLevel';
 export const LOCATION_HIERARCHY = 'locationHierarchy';
 export const LOCATION = 'location';
 export const PLAN = 'plan';
-export const REPORTS = 'reports';
+export const REPORTS = 'dashboard';

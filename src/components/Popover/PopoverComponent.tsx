@@ -17,7 +17,7 @@ const PopoverComponent = ({ title, children }: Props) => {
     </Popover>
   );
   return (
-    <OverlayTrigger trigger="click" placement="bottom" overlay={popover} rootClose={true}>
+    <OverlayTrigger trigger="click" placement="right-start" overlay={popover} rootClose={true}>
       <Button style={{ boxShadow: '4px 4px 3px rgba(24, 24, 24, 0.8)' }}>
         <FontAwesomeIcon icon="info-circle" className="text-white mt-1" />
       </Button>

@@ -81,7 +81,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
               })}
             >
               <option></option>
-              {actionTitles.map(el => <option value={el}>{el}</option>)}
+              {actionTitles.map((el, index) => <option key={index} value={el}>{el}</option>)}
             </Form.Select>
             {errors.title && <Form.Label className="text-danger">{errors.title.message}</Form.Label>}
           </Form.Group>

@@ -135,32 +135,38 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
             </Table>
           </>
         )}
-        <hr />
-        <h5>Assign teams</h5>
-        <Form>
-          <Form.Group className="mt-3">
-            <Form.Check label="Assign lower levels" onChange={e => setAssignChildren(Boolean(e.target.value))} />
-          </Form.Group>
-          <Form.Group className="my-3">
-            <Select
-              id="team-assign-select"
-              isMulti
-              isClearable
-              menuPosition="fixed"
-              value={assignedTeams}
-              options={organizationList}
-              onChange={newValue => setAssignedTeams(newValue)}
-            />
-          </Form.Group>
-        </Form>
+        {locationData[1].geographicLevel !== 'structure' && (
+          <>
+            <hr />
+            <h5>Assign teams</h5>
+            <Form>
+              <Form.Group className="mt-3">
+                <Form.Check label="Assign lower levels" onChange={e => setAssignChildren(Boolean(e.target.value))} />
+              </Form.Group>
+              <Form.Group className="my-3">
+                <Select
+                  id="team-assign-select"
+                  isMulti
+                  isClearable
+                  menuPosition="fixed"
+                  value={assignedTeams}
+                  options={organizationList}
+                  onChange={newValue => setAssignedTeams(newValue)}
+                />
+              </Form.Group>
+            </Form>
+          </>
+        )}
       </Modal.Body>
       <Modal.Footer>
         <Button id="close-assign-modal-button" variant="secondary" onClick={() => closeHandler(false, 0)}>
           Close
         </Button>
-        <Button id="save-assign-modal-button" onClick={() => assignTeamsHandler()}>
-          Save
-        </Button>
+        {locationData[1].geographicLevel !== 'structure' && (
+          <Button id="save-assign-modal-button" onClick={() => assignTeamsHandler()}>
+            Save
+          </Button>
+        )}
       </Modal.Footer>
     </Modal>
   );

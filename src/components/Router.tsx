@@ -21,6 +21,7 @@ import CreatePlan from '../features/plan/components/Plans/create';
 import Assignment from '../features/pages/AssignmentPage';
 import Assign from '../features/assignment/components/assign';
 import Reporting from '../features/pages/Reporting';
+import Report from '../features/reporting/components/report';
 
 export default function Router() {
   const { keycloak, initialized } = useKeycloak();
@@ -91,7 +92,15 @@ export default function Router() {
                 <Reporting />
               </AuthGuard>
             }
-          ></Route>
+           />
+           <Route
+            path={REPORTING_PAGE + '/:planId'}
+            element={
+              <AuthGuard roles={[]}>
+                <Report />
+              </AuthGuard>
+            }
+           />
         </Routes>
       );
     } else {

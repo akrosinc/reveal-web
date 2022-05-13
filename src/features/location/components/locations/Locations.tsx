@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useMemo } from 'react';
 import { Button, Collapse, Card } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import MapView from '../../../../components/MapBox/MapView';
@@ -49,6 +49,13 @@ const Locations = () => {
     }
   };
 
+  const data = useMemo(() => {
+    if (locationList) {
+      return locationList.content;
+    }
+    return [];
+  }, [locationList]);
+
   const paginationHandler = (size: number, page: number) => {
     loadData(size, page, currentSearchInput, '', false);
   };
@@ -80,8 +87,8 @@ const Locations = () => {
               if (res.content.length) {
                 getLocationById(res.content[0].identifier).then(res => {
                   setCurrentLocation(res);
-                })
-              }              
+                });
+              }
             })
             .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
             .finally(() => dispatch(showLoader(false)));
@@ -147,7 +154,7 @@ const Locations = () => {
             setCurrentLocation(res);
             dispatch(showLoader(false));
           }, 1500);
-        })
+        });
       }
     }
   };
@@ -234,7 +241,7 @@ const Locations = () => {
                           .catch(err => toast.error('Error loading geoJSON data'))
                           .finally(() => dispatch(showLoader(false)));
                       }}
-                      data={locationList.content}
+                      data={data}
                       sortHandler={sortHandler}
                     />
                   </div>

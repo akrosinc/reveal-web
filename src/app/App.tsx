@@ -5,7 +5,6 @@ import Router from '../components/Router';
 import { useKeycloak } from '@react-keycloak/web';
 import { useEffect } from 'react';
 import { useAppDispatch } from '../store/hooks';
-import { login } from '../features/reducers/user';
 import { Container } from 'react-bootstrap';
 import { toast, ToastContainer } from 'react-toastify';
 import Loader from '../components/Layout/Loader';
@@ -24,7 +23,8 @@ import {
   faSave,
   faArrowLeft,
   faPlus,
-  faInfoCircle
+  faInfoCircle,
+  faAlignLeft
 } from '@fortawesome/free-solid-svg-icons';
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
@@ -40,7 +40,8 @@ library.add(
   faSave,
   faArrowLeft,
   faPlus,
-  faInfoCircle
+  faInfoCircle,
+  faAlignLeft
 );
 
 function App() {
@@ -51,14 +52,8 @@ function App() {
     // if keycloak is initialized store user in state
     if (initialized) {
       dispatch(showLoader(false));
-      keycloak.loadUserInfo().then(res => {
-        let userDetails: any = {
-          ...res,
-          roles: keycloak.realmAccess,
-          realmAccess: keycloak.resourceAccess
-        };
-        dispatch(login(userDetails));
-        toast.success('Welcome back ' + userDetails.preferred_username);
+      keycloak.loadUserProfile().then(res => {
+        toast.success('Welcome back ' + res.username);
       });
     } else {
       dispatch(showLoader(true));
