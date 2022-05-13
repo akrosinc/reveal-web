@@ -1,5 +1,5 @@
 import { center, Feature, Point, Properties, Polygon, MultiPolygon, bbox } from '@turf/turf';
-import { LngLatBounds, Map, Popup, GeolocateControl, NavigationControl } from 'mapbox-gl';
+import { LngLatBounds, Map, Popup, GeolocateControl, NavigationControl, LngLatBoundsLike } from 'mapbox-gl';
 import { toast } from 'react-toastify';
 import {
   MAPBOX_STYLE,
@@ -226,6 +226,70 @@ export const hoverHandler = (map: Map, identifier: string) => {
   });
 };
 
+export const loadLocationSet = (map: Map, data: any) => {
+  if (map.getSource(data.identifier) === undefined && data.features.length) {
+    map.addSource(data.identifier, {
+      type: 'geojson',
+      promoteId: 'id',
+      data: data,
+      tolerance: 1
+    });
+
+    map.addLayer(
+      {
+        id: data.identifier + '-border',
+        type: 'line',
+        source: data.identifier,
+        layout: {},
+        paint: {
+          'line-color': 'black',
+          'line-width': 4
+        }
+      },
+      'label-layer'
+    );
+
+    if (data.features && data.features.length > 1) {
+      const featureSet: Feature<Point, Properties>[] = [];
+      const bounds = bbox(data) as any;
+      data.features.forEach((element: Feature<Polygon | MultiPolygon, LocationProperties>) => {
+        //create label for each of the locations
+        //create a group of locations so we can fit them all in viewport
+        const centerLabel = getPolygonCenter(element);
+        centerLabel.center.properties = {
+          name: element.properties.name
+        };
+        featureSet.push(centerLabel.center);
+      });
+      map.fitBounds(bounds, {
+        easing: e => {
+          //this is an event which is fired at the end of the fit bounds
+          if (e === 1) {
+            createChildLocationLabel(map, featureSet, data.identifier);
+            disableMapInteractions(map, false);
+          }
+          return e;
+        },
+        padding: 20,
+        duration: 600
+      });
+    } else {
+      const centerLabel = getPolygonCenter(data.features[0]);
+      map.fitBounds(centerLabel.bounds, {
+        easing: e => {
+          if (e === 1) {
+            createLocationLabel(map, data.features[0], centerLabel.center);
+            disableMapInteractions(map, false);
+          }
+          return e;
+        },
+        padding: 20,
+        duration: 600
+      });
+    }
+  }
+};
+
 export const createChild = (map: Map, data: any, opacity: number) => {
   let layerList = new Set(
     map
@@ -255,7 +319,13 @@ export const createChild = (map: Map, data: any, opacity: number) => {
         source: data.identifier,
         layout: {},
         paint: {
-          'fill-color': ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED],
+          'fill-color': [
+            'match',
+            ['get', 'geographicLevel'],
+            'structure',
+            'yellow',
+            ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED]
+          ],
           'fill-opacity': opacity
         }
       },
@@ -272,7 +342,12 @@ export const createChild = (map: Map, data: any, opacity: number) => {
           'fill-color': MAP_COLOR_UNASSIGNED,
           'fill-opacity': MAP_DEFAULT_DISABLED_FILL_OPACITY
         },
-        filter: ['in', 'assigned', false]
+        filter: [
+          'case',
+          ['==', ['get', 'geographicLevel'], 'structure'],
+          false,
+          ['case', ['boolean', ['get', 'assigned']], false, true]
+        ]
       },
       'label-layer'
     );
@@ -293,7 +368,7 @@ export const createChild = (map: Map, data: any, opacity: number) => {
 
     if (data.features && data.features.length > 1) {
       const featureSet: Feature<Point, Properties>[] = [];
-      const bounds = bbox(data) as any;
+      const bounds = bbox(data) as LngLatBoundsLike;
       data.features.forEach((element: Feature<Polygon | MultiPolygon, LocationProperties>) => {
         //create label for each of the locations
         //create a group of locations so we can fit them all in viewport
@@ -405,6 +480,8 @@ export const contextMenuHandler = (
             start +
             ((feature.properties as LocationProperties).assigned || feature.state.assigned
               ? end
+              : feature.properties.geographicLevel === 'structure'
+              ? `<button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Structure Details</button>`
               : `<button class='btn btn-primary w-75 mb-3' id='${assignButtonId}'>Assign location</button></div>`);
           popup = new Popup({ focusAfterOpen: true, closeOnMove: true })
             .setLngLat(e.lngLat)
@@ -445,7 +522,7 @@ export const selectHandler = (
       let features = map.queryRenderedFeatures(e.point);
       if (features.length) {
         const selectedLocation = features[0].properties as LocationProperties;
-        if (selectedLocation && selectedLocation.id && selectedLocation.assigned) {
+        if (selectedLocation && selectedLocation.id && (selectedLocation.assigned || features[0].state.assigned)) {
           if (map.getLayer(selectedLocation.id + '-highlighted')) {
             selectedLocations = selectedLocations.filter(el => el !== selectedLocation.id);
             setSelectedLocations(selectedLocations);
@@ -564,13 +641,9 @@ export const createLocationLabel = (map: Map, data: any, center: Feature<Point, 
 };
 
 export const isLocationAlreadyLoaded = (map: Map, propertyName: any): boolean => {
-  let exists = false;
-  map.queryRenderedFeatures().forEach(el => {
-    if ((el.properties as any).name === propertyName) {
-      exists = true;
-    }
+  return map.queryRenderedFeatures().some(el => {
+    return (el.properties as any).name === propertyName;
   });
-  return exists;
 };
 
 // disable map interaction so users can't pan, zoom, etc

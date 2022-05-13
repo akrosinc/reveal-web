@@ -1,7 +1,6 @@
 import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import logo from '../../../assets/logos/reveal-logo.png';
 import { BsPerson } from 'react-icons/bs';
-import { useAppSelector } from '../../../store/hooks';
 import { Link } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
 import { MAIN_MENU } from './menuItems';
@@ -11,12 +10,22 @@ import { useTranslation } from 'react-i18next';
 import { setToBrowser } from '../../../utils';
 import './index.css';
 import 'flag-icons/css/flag-icons.css';
+import { KeycloakProfile } from 'keycloak-js';
+import { useEffect, useState } from 'react';
 
 export default function NavbarComponent() {
   const { t } = useTranslation();
-  const { keycloak } = useKeycloak();
+  const { keycloak, initialized } = useKeycloak();
+  const [user, setUser] = useState<KeycloakProfile>();
 
-  let user = useAppSelector(state => state.user.value);
+  useEffect(() => {
+    if (initialized) {
+      keycloak.loadUserProfile().then(res => {
+        setUser(res);
+      });
+    }
+  }, [keycloak, initialized]);
+
   const changeLaguagePrefferences = (lang: any) => {
     i18n.changeLanguage(lang.name);
     setToBrowser('locale', lang.name);
@@ -41,11 +50,15 @@ export default function NavbarComponent() {
                 if (el.dropdown !== undefined && el.dropdown.length > 0) {
                   return (
                     <AuthorizedElement key={index} roles={el.roles}>
-                      <NavDropdown align={'end'} title={t('topNav.' + el.pageTitle)} id={el.pageTitle + '-navbar-button'}>
+                      <NavDropdown
+                        align={'end'}
+                        title={t('topNav.' + el.pageTitle)}
+                        id={el.pageTitle + '-navbar-button'}
+                      >
                         {el.dropdown.map((child, childIndex) => {
                           return (
                             <AuthorizedElement key={index + '.' + childIndex} roles={child.roles}>
-                              <NavDropdown.Item as={Link} role="button" to={child.route} className='text-center' >
+                              <NavDropdown.Item as={Link} role="button" to={child.route} className="text-center">
                                 {t('topNav.' + child.pageTitle)}
                               </NavDropdown.Item>
                             </AuthorizedElement>
@@ -66,12 +79,12 @@ export default function NavbarComponent() {
               })}
             </Nav>
           ) : null}
-          {keycloak.authenticated ? (
+          {initialized && user ? (
             <Nav>
               <div className="d-flex align-items-center">
                 <BsPerson />
                 <NavDropdown
-                  title={user !== null ? user.preferred_username : 'User Profile'}
+                  title={user.username}
                   id="logout-nav-dropdown"
                   align="end"
                 >
