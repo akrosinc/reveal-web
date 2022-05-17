@@ -52,7 +52,8 @@ const LocationAssignmentsTable = ({
             name: el.properties.name,
             status: el.properties.status,
             externalId: el.properties.externalId,
-            geographicLevel: el.properties.geographicLevel
+            geographicLevel: el.properties.geographicLevel,
+            childrenNumber: el.properties.childrenNumber
           }
         };
       });
@@ -139,7 +140,7 @@ const LocationAssignmentsTable = ({
                         }
                       }}
                     >
-                      {cell.render('Cell')} {rowData.children.length > 0 ? `(${rowData.children.length})` : ""}
+                      {cell.render('Cell')} ({rowData.properties.childrenNumber})
                     </td>
                   );
                 } else {

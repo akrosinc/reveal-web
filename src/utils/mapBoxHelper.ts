@@ -18,6 +18,8 @@ interface LocationProperties {
   name: string;
   assigned: boolean;
   numberOfTeams: number;
+  childrenNumber: number;
+  geographicLevel: string;
 }
 
 //init mapbox instance
@@ -249,44 +251,30 @@ export const loadLocationSet = (map: Map, data: any) => {
       'label-layer'
     );
 
-    if (data.features && data.features.length > 1) {
-      const featureSet: Feature<Point, Properties>[] = [];
-      const bounds = bbox(data) as any;
-      data.features.forEach((element: Feature<Polygon | MultiPolygon, LocationProperties>) => {
-        //create label for each of the locations
-        //create a group of locations so we can fit them all in viewport
-        const centerLabel = getPolygonCenter(element);
-        centerLabel.center.properties = {
-          name: element.properties.name
-        };
-        featureSet.push(centerLabel.center);
-      });
-      map.fitBounds(bounds, {
-        easing: e => {
-          //this is an event which is fired at the end of the fit bounds
-          if (e === 1) {
-            createChildLocationLabel(map, featureSet, data.identifier);
-            disableMapInteractions(map, false);
-          }
-          return e;
-        },
-        padding: 20,
-        duration: 600
-      });
-    } else {
-      const centerLabel = getPolygonCenter(data.features[0]);
-      map.fitBounds(centerLabel.bounds, {
-        easing: e => {
-          if (e === 1) {
-            createLocationLabel(map, data.features[0], centerLabel.center);
-            disableMapInteractions(map, false);
-          }
-          return e;
-        },
-        padding: 20,
-        duration: 600
-      });
-    }
+    const featureSet: Feature<Point, Properties>[] = [];
+    const bounds = bbox(data) as any;
+    data.features.forEach((element: Feature<Polygon | MultiPolygon, LocationProperties>) => {
+      //create label for each of the locations
+      //create a group of locations so we can fit them all in viewport
+      const centerLabel = getPolygonCenter(element);
+      centerLabel.center.properties = {
+        name: element.properties.name,
+        childrenNumber: element.properties.childrenNumber
+      };
+      featureSet.push(centerLabel.center);
+    });
+    map.fitBounds(bounds, {
+      easing: e => {
+        //this is an event which is fired at the end of the fit bounds
+        if (e === 1) {
+          createChildLocationLabel(map, featureSet, data.identifier);
+          disableMapInteractions(map, false);
+        }
+        return e;
+      },
+      padding: 20,
+      duration: 600
+    });
   }
 };
 
@@ -366,44 +354,31 @@ export const createChild = (map: Map, data: any, opacity: number) => {
       'label-layer'
     );
 
-    if (data.features && data.features.length > 1) {
-      const featureSet: Feature<Point, Properties>[] = [];
-      const bounds = bbox(data) as LngLatBoundsLike;
-      data.features.forEach((element: Feature<Polygon | MultiPolygon, LocationProperties>) => {
-        //create label for each of the locations
-        //create a group of locations so we can fit them all in viewport
-        const centerLabel = getPolygonCenter(element);
-        centerLabel.center.properties = {
-          name: element.properties.name
-        };
-        featureSet.push(centerLabel.center);
-      });
-      map.fitBounds(bounds, {
-        easing: e => {
-          //this is an event which is fired at the end of the fit bounds
-          if (e === 1) {
-            createChildLocationLabel(map, featureSet, data.identifier);
-            disableMapInteractions(map, false);
-          }
-          return e;
-        },
-        padding: 20,
-        duration: 600
-      });
-    } else {
-      const centerLabel = getPolygonCenter(data.features[0]);
-      map.fitBounds(centerLabel.bounds, {
-        easing: e => {
-          if (e === 1) {
-            createLocationLabel(map, data.features[0], centerLabel.center);
-            disableMapInteractions(map, false);
-          }
-          return e;
-        },
-        padding: 20,
-        duration: 600
-      });
-    }
+    const featureSet: Feature<Point, Properties>[] = [];
+    const bounds = bbox(data) as LngLatBoundsLike;
+    data.features.forEach((element: Feature<Polygon | MultiPolygon, LocationProperties>) => {
+      //create label for each of the locations
+      //create a group of locations so we can fit them all in viewport
+      const centerLabel = getPolygonCenter(element);
+      centerLabel.center.properties = {
+        name: element.properties.name,
+        childrenNumber: element.properties.childrenNumber,
+        geographicLevel: element.properties.geographicLevel
+      };
+      featureSet.push(centerLabel.center);
+    });
+    map.fitBounds(bounds, {
+      easing: e => {
+        //this is an event which is fired at the end of the fit bounds
+        if (e === 1) {
+          createChildLocationLabel(map, featureSet, data.identifier);
+          disableMapInteractions(map, false);
+        }
+        return e;
+      },
+      padding: 20,
+      duration: 600
+    });
   } else {
     disableMapInteractions(map, false);
   }
@@ -562,10 +537,16 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
     map.addLayer({
       id: identifier + '-label',
       type: 'symbol',
-      minzoom: map.getZoom(),
+      minzoom: map.getZoom() - 1.0,
       source: identifier + '-label',
       layout: {
-        'text-field': ['get', 'name'],
+        'text-field': [
+          'match',
+          ['get', 'geographicLevel'],
+          'structure',
+          ['get', 'name'],
+          ['concat', ['get', 'name'], ' (', ['get', 'childrenNumber'], ')']
+        ],
         'text-font': ['Open Sans Bold', 'Open Sans Semibold'],
         'text-anchor': 'bottom'
       },
@@ -629,7 +610,7 @@ export const createLocationLabel = (map: Map, data: any, center: Feature<Point, 
       type: 'symbol',
       source: data.identifier + 'Label',
       layout: {
-        'text-field': data.properties.name,
+        'text-field': data.properties.name + (data.properties.geographicLevel === 'structure' ? '' : ' (' +  data.properties.childrenNumber + ')'),
         'text-font': ['Open Sans Bold', 'Open Sans Semibold'],
         'text-anchor': 'bottom'
       },

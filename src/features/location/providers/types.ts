@@ -36,6 +36,7 @@ export interface Properties {
   id: string;
   parentIdentifier: string;
   assigned: boolean;
+  childrenNumber: number;
   numberOfTeams: number;
   name: string;
   status: string;
