@@ -17,6 +17,7 @@ export interface ReportResponse {
 export interface RowData {
   locationIdentifier: string;
   locationName: string;
+  childrenNumber: number;
   columnDataMap: { [x: string]: FoundCoverage };
 }
 

@@ -69,6 +69,11 @@ export const getLocationHierarchyList = async (
   return data;
 };
 
+export const getHierarchyById = async (id: string): Promise<LocationHierarchyModel> => {
+  const data = await api.get<LocationHierarchyModel>(LOCATION_HIERARCHY + `/${id}`).then(response => response.data);
+  return data;
+};
+
 export const createLocationHierarchy = async (formData: { nodeOrder: string[] }): Promise<LocationHierarchyModel> => {
   const data = await api.post<LocationHierarchyModel>(LOCATION_HIERARCHY, formData).then(response => response.data);
   return data;
