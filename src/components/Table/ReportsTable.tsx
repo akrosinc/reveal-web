@@ -45,7 +45,7 @@ const ReportsTable = ({ columns, data, clickHandler }: Props) => {
             >
               {row.cells.map(cell => {
                 if (cell.column.id === 'locationName') {
-                  return <td {...cell.getCellProps()}>{cell.render('Cell')}()</td>;
+                  return <td {...cell.getCellProps()}>{cell.render('Cell')}({rowData.childrenNumber})</td>;
                 } else {
                   let cellName = cell.column.Header?.toString();
                   if (cellName) {
