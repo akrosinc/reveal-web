@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Col, Container, Row } from 'react-bootstrap';
+import { Button, Col, Collapse, Container, Row, Table } from 'react-bootstrap';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Column } from 'react-table';
 import { toast } from 'react-toastify';
@@ -8,7 +8,7 @@ import MapViewDetail from './mapView/MapViewDetail';
 import ReportsTable from '../../../../components/Table/ReportsTable';
 import { REPORTING_PAGE } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
-import { getLocationById } from '../../../location/api';
+import { getHierarchyById, getLocationById } from '../../../location/api';
 import { LocationModel } from '../../../location/providers/types';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
@@ -26,11 +26,16 @@ const Report = () => {
   const locationArr: LocationModel[] = [];
   const [featureSet, setFeatureSet] = useState({});
   const [plan, setPlan] = useState<PlanModel>();
+  const [hierarchyLength, setHierarchyLength] = useState(0);
+  const [showMap, setShowMap] = useState(true);
 
   const loadData = useCallback(() => {
     dispatch(showLoader(true));
     if (planId && location.state?.reportType) {
-      getPlanById(planId).then(res => setPlan(res));
+      getPlanById(planId).then(res => {
+        setPlan(res);
+        getHierarchyById(res.locationHierarchy.identifier).then(res => setHierarchyLength(res.nodeOrder.length));
+      });
       getReportByPlanId({
         getChildren: false,
         parentLocationIdentifier: null,
@@ -80,7 +85,7 @@ const Report = () => {
   }, [loadData]);
 
   const loadChildHandler = (id: string, locationName: string) => {
-    if (planId) {
+    if (planId && path.length < hierarchyLength - 1) {
       dispatch(showLoader(true));
       if (!path.some(el => el.locationIdentifier === id)) {
         setPath([...path, { locationIdentifier: id, locationName: locationName }]);
@@ -181,8 +186,43 @@ const Report = () => {
         <ReportsTable clickHandler={loadChildHandler} columns={columns} data={data} />
       </div>
       <Row className="my-3">
-        <Col md={12}>
-          <MapViewDetail locations={featureSet} />
+        <Col md={showMap ? 10 : 4}>
+          <Collapse in={showMap}>
+            <div id="expand-table">
+              <MapViewDetail locations={featureSet} />
+            </div>
+          </Collapse>
+        </Col>
+        <Col md={showMap ? 2 : 4} className="text-center">
+          <Button
+            className="w-50 mt-2"
+            onClick={() => setShowMap(!showMap)}
+            aria-controls="expand-table"
+            aria-expanded={showMap}
+          >
+            {showMap ? 'Hide Map' : 'Show Map'}
+          </Button>
+          <Table className="mt-3 text-center">
+            <tbody>
+              <tr className="bg-light">
+                <td>Gray</td>
+                <td>{'< 20%'}</td>
+              </tr>
+              <tr className="bg-danger">
+                <td>Red</td>
+                <td>{'20% - 70%'}</td>
+              </tr>
+              <tr className="bg-warning">
+                <td>Yellow</td>
+                <td>{'70% > < 90% '}</td>
+              </tr>
+              <tr className="bg-success">
+                <td>Green</td>
+                <td>{'90% - 100%'}</td>
+              </tr>
+            </tbody>
+          </Table>
+          <p className="my-2">Conditional formatting rules</p>
         </Col>
       </Row>
     </Container>

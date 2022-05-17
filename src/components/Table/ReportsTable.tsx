@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table } from 'react-bootstrap';
+import { OverlayTrigger, Table, Tooltip } from 'react-bootstrap';
 import { Column, useExpanded, useTable } from 'react-table';
 import { RowData } from '../../features/reporting/providers/types';
 
@@ -33,28 +33,63 @@ const ReportsTable = ({ columns, data, clickHandler }: Props) => {
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-      {rows.map((row, i) => {
-            prepareRow(row)
-            let rowData = row.original as RowData;
-            return (
-              <tr {...row.getRowProps()} onClick={() => {
+        {rows.map((row, i) => {
+          prepareRow(row);
+          let rowData = row.original as RowData;
+          return (
+            <tr
+              {...row.getRowProps()}
+              onClick={() => {
                 clickHandler(rowData.locationIdentifier, rowData.locationName);
-              }}>
-                {row.cells.map(cell => {
-                  if (cell.column.id !== 'locationName') {
-                    let cellName = cell.column.Header?.toString();
-                    if (cellName) {                   
-                    return <td {...cell.getCellProps()}>{rowData.columnDataMap[cellName].value}{rowData.columnDataMap[cellName].isPercentage ? '%' : ''}</td>
-                    } else {
-                      return null
+              }}
+            >
+              {row.cells.map(cell => {
+                if (cell.column.id === 'locationName') {
+                  return <td {...cell.getCellProps()}>{cell.render('Cell')}()</td>;
+                } else {
+                  let cellName = cell.column.Header?.toString();
+                  if (cellName) {
+                    let percentage = 0;
+                    let color = '';
+                    if (rowData.columnDataMap[cellName].isPercentage) {
+                      //check if its already a percent number or should be calculated
+                      percentage = Math.round(
+                        rowData.columnDataMap[cellName].value * (rowData.columnDataMap[cellName].value > 1 ? 1 : 100)
+                      );
+                      if (percentage >= 90) {
+                        color = 'bg-success';
+                      }
+                      if (percentage > 70 && percentage < 90) {
+                        color = 'bg-warning';
+                      }
+                      if (percentage <= 70 && percentage >= 20) {
+                        color = 'bg-danger';
+                      }
+                      if (percentage < 20) {
+                        color = 'bg-light';
+                      }
                     }
+                    return rowData.columnDataMap[cellName].isPercentage ? (
+                      <OverlayTrigger
+                        {...cell.getCellProps()}
+                        placement="top"
+                        overlay={<Tooltip id="button-tooltip">{rowData.columnDataMap[cellName].meta}</Tooltip>}
+                      >
+                        <td className={color}>{percentage}%</td>
+                      </OverlayTrigger>
+                    ) : (
+                      <td className={color} {...cell.getCellProps()}>
+                        {rowData.columnDataMap[cellName].value}
+                      </td>
+                    );
                   } else {
-                    return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                    return null;
                   }
-                })}
-              </tr>
-            )
-          })}
+                }
+              })}
+            </tr>
+          );
+        })}
       </tbody>
     </Table>
   );
