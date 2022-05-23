@@ -1,27 +1,15 @@
 import { Route, Routes } from 'react-router';
 import { Navigate } from 'react-router-dom';
-import {
-  ASSIGNMENT_PAGE,
-  HOME_PAGE,
-  LOCATION_PAGE,
-  MANAGEMENT,
-  PLANS,
-  REPORTING_PAGE,
-  ROLE_MANAGE_USER
-} from '../constants/';
+import { ASSIGNMENT_PAGE, HOME_PAGE, LOCATION_PAGE, MANAGEMENT, PLANS, REPORTING_PAGE } from '../constants/';
 import Home from '../features/pages/HomePage/Home';
 import Plan from '../features/pages/Plan';
 import Management from '../features/pages/Management';
 import { useKeycloak } from '@react-keycloak/web';
-import AuthGuard from './AuthGuard';
 import PublicPage from './pages/PublicPage';
 import ErrorPage from './pages/ErrorPage';
 import Location from '../features/pages/Location';
-import CreatePlan from '../features/plan/components/Plans/create';
 import Assignment from '../features/pages/AssignmentPage';
-import Assign from '../features/assignment/components/assign';
 import Reporting from '../features/pages/Reporting';
-import Report from '../features/reporting/components/report';
 
 export default function Router() {
   const { keycloak, initialized } = useKeycloak();
@@ -32,75 +20,15 @@ export default function Router() {
         <Routes>
           <Route path="*" element={<ErrorPage />} />
           <Route path={HOME_PAGE} element={<Home />} />
-          <Route path={PLANS} element={<Plan />} />
-          <Route path={PLANS + '/create'} element={<CreatePlan />} />
-          <Route path={PLANS + '/:id'} element={<CreatePlan />} />
-          <Route
-            path={MANAGEMENT}
-            element={
-              <AuthGuard roles={[ROLE_MANAGE_USER]}>
-                <Management />
-              </AuthGuard>
-            }
-          >
-            <Route
-              path=":tab"
-              element={
-                <AuthGuard roles={[ROLE_MANAGE_USER]}>
-                  <Management />
-                </AuthGuard>
-              }
-            />
+          <Route path={PLANS + '/*'} element={<Plan />} />
+          <Route path={MANAGEMENT + '/*'} element={<Management />}>
+            <Route path=":tab" element={<Management />} />
           </Route>
-          <Route
-            path={LOCATION_PAGE}
-            element={
-              <AuthGuard roles={[]}>
-                <Location />
-              </AuthGuard>
-            }
-          >
-            <Route
-              path=":tab"
-              element={
-                <AuthGuard roles={[]}>
-                  <Location />
-                </AuthGuard>
-              }
-            />
+          <Route path={LOCATION_PAGE + '/*'} element={<Location />}>
+            <Route path=":tab" element={<Location />} />
           </Route>
-          <Route
-            path={ASSIGNMENT_PAGE}
-            element={
-              <AuthGuard roles={[]}>
-                <Assignment />
-              </AuthGuard>
-            }
-          />
-          <Route
-            path={ASSIGNMENT_PAGE + '/:planId'}
-            element={
-              <AuthGuard roles={[]}>
-                <Assign />
-              </AuthGuard>
-            }
-          />
-          <Route
-            path={REPORTING_PAGE}
-            element={
-              <AuthGuard roles={[]}>
-                <Reporting />
-              </AuthGuard>
-            }
-           />
-           <Route
-            path={REPORTING_PAGE + '/:planId'}
-            element={
-              <AuthGuard roles={[]}>
-                <Report />
-              </AuthGuard>
-            }
-           />
+          <Route path={ASSIGNMENT_PAGE + '/*'} element={<Assignment />} />
+          <Route path={REPORTING_PAGE + '/*'} element={<Reporting />} />
         </Routes>
       );
     } else {

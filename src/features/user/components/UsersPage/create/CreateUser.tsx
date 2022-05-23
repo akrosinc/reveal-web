@@ -9,8 +9,7 @@ import { useAppDispatch } from '../../../../../store/hooks';
 import { showLoader } from '../../../../reducers/loader';
 import { toast } from 'react-toastify';
 import { ErrorModel } from '../../../../../api/providers';
-import { cancelTokenGenerator } from '../../../../../utils';
-import { CancelToken } from 'axios';
+import { REGEX_EMAIL_VALIDATION, REGEX_USERNAME_VALIDATION } from '../../../../../constants';
 
 interface RegisterValues {
   username: string;
@@ -46,8 +45,8 @@ const CreateUser = ({ show, handleClose }: Props) => {
   const [groups, setGroups] = useState<Options[]>();
   const [organizations, setOrganizations] = useState<Options[]>([]);
 
-  const getData = useCallback((cancelToken: CancelToken) => {
-    getSecurityGroups(cancelToken).then(res => {
+  const getData = useCallback(() => {
+    getSecurityGroups().then(res => {
       setGroups(
         res.map(el => {
           return {
@@ -70,12 +69,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
   }, []);
 
   useEffect(() => {
-    const source = cancelTokenGenerator();
-    getData(source.token);
-    return () => {
-      //Slow networks can cause a memory leak, cancel a request if its not done if modal is closed
-      source.cancel('Preventing memory leak - canceling pending promises.');
-    };
+    getData();
   }, [getData]);
 
   const selectHandler = (selectedOption: MultiValue<{ value: string; label: string }>) => {
@@ -139,7 +133,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
               {...register('username', {
                 required: 'Username must not be empty',
                 pattern: {
-                  value: new RegExp('^[a-z]+([._]?[a-z]+)*$'),
+                  value: REGEX_USERNAME_VALIDATION,
                   message: 'Username containts unsupported characters.'
                 }
               })}
@@ -156,7 +150,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
                   id="first-name-input"
                   {...register('firstname', {
                     required: 'First name must not be empty.',
-                    minLength: {message: 'First name must be at least 2 chars long.', value: 2 },
+                    minLength: { message: 'First name must be at least 2 chars long.', value: 2 },
                     pattern: {
                       value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
                       message: "First name can't start with empty space."
@@ -174,8 +168,8 @@ const CreateUser = ({ show, handleClose }: Props) => {
                 <Form.Control
                   id="last-name-input"
                   {...register('lastname', {
-                    required: 'Last name must not be empty.',                    
-                    minLength: {message: 'Last name must be at least 2 chars long.', value: 2 },
+                    required: 'Last name must not be empty.',
+                    minLength: { message: 'Last name must be at least 2 chars long.', value: 2 },
                     pattern: {
                       value: new RegExp('^[^\\s]+[-a-zA-Z\\s]+([-a-zA-Z]+)*$'),
                       message: "Last name can't start with empty space."
@@ -207,7 +201,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
               {...register('email', {
                 required: false,
                 pattern: {
-                  value: new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$'),
+                  value: REGEX_EMAIL_VALIDATION,
                   message: 'Please enter a valid email address'
                 }
               })}

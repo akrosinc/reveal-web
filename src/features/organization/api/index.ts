@@ -67,11 +67,9 @@ export const deleteOrganizationById = async (id: string): Promise<OrganizationMo
   return data;
 };
 
-export const getSecurityGroups = async (cancelToken?: CancelToken): Promise<Groups[]> => {
+export const getSecurityGroups = async (): Promise<Groups[]> => {
   const data = await api
-    .get<Groups[]>(KEYCLOAK_SECURITY_GROUPS, {
-      cancelToken: cancelToken
-    })
+    .get<Groups[]>(KEYCLOAK_SECURITY_GROUPS)
     .then(response => response.data);
   return data;
 };

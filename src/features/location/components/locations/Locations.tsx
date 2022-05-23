@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useState, useMemo } from 'react';
 import { Button, Collapse, Card } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import MapView from '../../../../components/MapBox/MapView';
+import MapView from './map/MapView';
 import { DebounceInput } from 'react-debounce-input';
 import { useAppDispatch } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';

@@ -75,9 +75,13 @@ const CreatePlan = () => {
           setSelectedHierarchy({ value: res.locationHierarchy.identifier, label: res.locationHierarchy.name });
           setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
         })
+        .catch(err => {
+          toast.error(err.message ? err.message : 'Plan does not exist.');
+          navigate(PLANS);
+        })
         .finally(() => dispatch(showLoader(false)));
     },
-    [dispatch, setValue]
+    [dispatch, setValue, navigate]
   );
 
   useEffect(() => {
@@ -245,7 +249,7 @@ const CreatePlan = () => {
               }}
             >
               <Tab eventKey="plan-details" title="Details">
-                <Form.Group className="mb-2">
+                <Form.Group className="mb-2" style={{display: 'none'}}>
                   <Form.Label>Plan name</Form.Label>
                   <Form.Control
                     id="plan-name-input"

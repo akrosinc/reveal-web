@@ -37,3 +37,12 @@ export const LOCATION_VIEW = 'location_view';
 export const LOCATION_CREATE = 'location_create';
 export const LOCATION_UPDATE = 'location_update';
 export const LOCATION_DELETE = 'location_delete';
+
+//PLAN
+export const PLAN_VIEW = 'plan_view';
+export const PLAN_CREATE = 'plan_create';
+export const PLAN_UPDATE = 'plan_update';
+export const PLAN_DELETE = 'plan_delete';
+
+//REPORTS
+export const REPORT_VIEW = 'report_view';

@@ -1,10 +1,14 @@
-export interface Report {}
-
 export interface TableReportRequest {
   planIdentifier: string;
   reportTypeEnum: string;
   parentLocationIdentifier: string | null;
   getChildren: boolean;
+}
+
+export interface MapDataReportRequest {
+  planIdentifier: string;
+  reportTypeEnum: string;
+  parentLocationIdentifier: string | null;
 }
 
 export interface ReportResponse {

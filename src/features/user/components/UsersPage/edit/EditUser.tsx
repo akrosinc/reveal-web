@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, Form, Row, Col } from 'react-bootstrap';
 import { deleteUserById, resetUserPassword, updateUser } from '../../../../user/api';
 import { EditUserModel, UserModel } from '../../../../user/providers/types';
-import { cancelTokenGenerator } from '../../../../../utils';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
 import { showLoader } from '../../../../reducers/loader';
 import { useAppDispatch } from '../../../../../store/hooks';
@@ -11,7 +10,8 @@ import Select, { MultiValue } from 'react-select';
 import { getOrganizationListSummary, getSecurityGroups } from '../../../../organization/api';
 import { toast } from 'react-toastify';
 import { ErrorModel } from '../../../../../api/providers';
-import { AxiosResponse, CancelToken } from 'axios';
+import { AxiosResponse } from 'axios';
+import { REGEX_EMAIL_VALIDATION } from '../../../../../constants';
 
 interface Props {
   user: UserModel;
@@ -79,8 +79,8 @@ const EditUser = ({ user, handleClose }: Props) => {
   );
 
   const getData = useCallback(
-    (cancelToken: CancelToken) => {
-      getSecurityGroups(cancelToken)
+    () => {
+      getSecurityGroups()
         .then(res => {
           setGroups(
             res.map(el => {
@@ -108,12 +108,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   );
 
   useEffect(() => {
-    const source = cancelTokenGenerator();
-    getData(source.token);
-    return () => {
-      //Slow networks can cause a memory leak, cancel a request if its not done if modal is closed
-      source.cancel('Preventing memory leak - canceling pending promises.');
-    };
+    getData();
   }, [getData]);
 
   const deleteHandler = (action: boolean) => {
@@ -230,7 +225,10 @@ const EditUser = ({ user, handleClose }: Props) => {
               id="new-password-input"
               type="password"
               placeholder="Enter new password"
-              {...register('password', { required: 'Password must containt at least 5 characters', minLength: 5 })}
+              {...register('password', {
+                required: 'Password can not be empty',
+                minLength: { value: 5, message: 'Password must be at least 5 characters long' }
+              })}
             />
             {errors.password && <Form.Label className="text-danger">{errors.password.message}</Form.Label>}
           </Form.Group>
@@ -294,7 +292,7 @@ const EditUser = ({ user, handleClose }: Props) => {
               {...register('email', {
                 required: false,
                 pattern: {
-                  value: new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$'),
+                  value: REGEX_EMAIL_VALIDATION,
                   message: 'Please enter a valid email address'
                 }
               })}

@@ -1,65 +1,92 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Collapse, Container, Row, Table } from 'react-bootstrap';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Column } from 'react-table';
 import { toast } from 'react-toastify';
 import MapViewDetail from './mapView/MapViewDetail';
 import ReportsTable from '../../../../components/Table/ReportsTable';
 import { REPORTING_PAGE } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
-import { getHierarchyById, getLocationById } from '../../../location/api';
-import { LocationModel } from '../../../location/providers/types';
+import { getHierarchyById } from '../../../location/api';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
 import { showLoader } from '../../../reducers/loader';
-import { getReportByPlanId } from '../../api';
+import { getMapReportData, getReportByPlanId } from '../../api';
+import { Feature, FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
+import { LocationProperties } from '../../../../utils';
+import { useRef } from 'react';
+import { FoundCoverage } from '../../providers/types';
+import ReportModal from './reportModal';
 
 const Report = () => {
   const [cols, setCols] = useState<Column[]>([]);
   const [data, setData] = useState<any[]>([]);
   const dispatch = useAppDispatch();
-  const { planId } = useParams();
-  const location = useLocation();
+  const { planId, reportType } = useParams();
   const navigate = useNavigate();
-  const [path, setPath] = useState<{ locationName: string; locationIdentifier: string }[]>([]);
-  const locationArr: LocationModel[] = [];
-  const [featureSet, setFeatureSet] = useState({});
+  const [path, setPath] = useState<
+    {
+      locationName: string;
+      locationIdentifier: string;
+      location: FeatureCollection<Polygon | MultiPolygon, LocationProperties>;
+    }[]
+  >([]);
   const [plan, setPlan] = useState<PlanModel>();
   const [hierarchyLength, setHierarchyLength] = useState(0);
   const [showMap, setShowMap] = useState(true);
+  const [featureSet, setFeatureSet] =
+    useState<[location: FeatureCollection<Polygon | MultiPolygon, LocationProperties>, parentId: string]>();
+  const [showModal, setShowModal] = useState(false);
+  const [currentFeature, setCurrentFeature] = useState<Feature<Polygon | MultiPolygon, LocationProperties>>();
+
+  //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
+  const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, LocationProperties>) => {
+    loadChildHandler(feature.id as string, feature.properties.name);
+  };
+  const handleDobuleClickRef = useRef(doubleClickHandler);
+  handleDobuleClickRef.current = doubleClickHandler;
+
+  //Dynamic function to map columns depending on server response
+  const mapColumns = (rowColumns: { [x: string]: FoundCoverage }): Column[] => {
+    return Object.keys(rowColumns).map(el => {
+      return {
+        Header: el,
+        accessor: (row: any) => {
+          return row.columnDataMap[el].value;
+        }
+      };
+    });
+  };
+
+  const openModalHandler = (show: boolean, feature?: Feature<Polygon | MultiPolygon, LocationProperties>) => {
+    setShowModal(show);
+    if (feature) setCurrentFeature(feature);
+  };
 
   const loadData = useCallback(() => {
     dispatch(showLoader(true));
-    if (planId && location.state?.reportType) {
-      getPlanById(planId).then(res => {
-        setPlan(res);
-        getHierarchyById(res.locationHierarchy.identifier).then(res => setHierarchyLength(res.nodeOrder.length));
-      });
-      getReportByPlanId({
-        getChildren: false,
-        parentLocationIdentifier: null,
-        reportTypeEnum: location.state.reportType,
-        planIdentifier: planId
-      })
-        .then(res => {
-          setCols(
-            Object.keys(res.rowData[0].columnDataMap).map(el => {
-              return {
-                Header: el,
-                accessor: (row: any) => {
-                  return row.columnDataMap[el].value;
-                }
-              };
-            })
-          );
-          setData(res.rowData);
-          getLocationById(res.rowData[0].locationIdentifier).then(res => {
-            setFeatureSet({
-              identifier: 'main',
-              type: 'FeatureCollection',
-              features: [res]
-            });
+    if (planId && reportType) {
+      Promise.all([
+        getPlanById(planId),
+        getReportByPlanId({
+          getChildren: false,
+          parentLocationIdentifier: null,
+          reportTypeEnum: reportType,
+          planIdentifier: planId
+        })
+      ])
+        .then(async ([plan, report]) => {
+          setPlan(plan);
+          getHierarchyById(plan.locationHierarchy.identifier).then(res => setHierarchyLength(res.nodeOrder.length));
+          setCols(mapColumns(report.rowData[0].columnDataMap));
+          setData(report.rowData);
+          getMapReportData({
+            parentLocationIdentifier: null,
+            reportTypeEnum: reportType,
+            planIdentifier: planId
+          }).then(res => {
+            setFeatureSet([res, 'main']);
           });
         })
         .catch(err => {
@@ -73,7 +100,7 @@ const Report = () => {
       dispatch(showLoader(false));
       navigate(-1);
     }
-  }, [dispatch, planId, navigate, location]);
+  }, [dispatch, planId, navigate, reportType]);
 
   const columns = React.useMemo<Column[]>(
     () => [{ Header: 'Location name', accessor: 'locationName' }, ...cols],
@@ -85,30 +112,50 @@ const Report = () => {
   }, [loadData]);
 
   const loadChildHandler = (id: string, locationName: string) => {
-    if (planId && path.length < hierarchyLength - 1) {
+    if (planId && reportType && path.length < hierarchyLength - 1) {
       dispatch(showLoader(true));
-      if (!path.some(el => el.locationIdentifier === id)) {
-        setPath([...path, { locationIdentifier: id, locationName: locationName }]);
-      }
       getReportByPlanId({
         getChildren: true,
         parentLocationIdentifier: id,
-        reportTypeEnum: location.state.reportType,
+        reportTypeEnum: reportType,
         planIdentifier: planId
       })
         .then(res => {
           setData(res.rowData);
-          res.rowData.forEach((el, index) => {
-            getLocationById(el.locationIdentifier).then(loc => {
-              locationArr.push(loc);
-              if (index === res.rowData.length - 1) {
-                setFeatureSet({
-                  identifier: res.parentLocationIdentifier,
-                  type: 'FeatureCollection',
-                  features: locationArr
-                });
-              }
-            });
+          getMapReportData({
+            parentLocationIdentifier: id,
+            planIdentifier: planId,
+            reportTypeEnum: reportType
+          }).then(res => {
+            setFeatureSet([res, id]);
+            if (!path.some(el => el.locationIdentifier === id)) {
+              setPath([...path, { locationIdentifier: id, locationName: locationName, location: res }]);
+            }
+          });
+        })
+        .finally(() => dispatch(showLoader(false)));
+    }
+  };
+
+  const clearMap = () => {
+    if (planId && reportType) {
+      dispatch(showLoader(true));
+      path.splice(0, path.length);
+      setPath(path);
+      getReportByPlanId({
+        getChildren: false,
+        parentLocationIdentifier: null,
+        reportTypeEnum: reportType,
+        planIdentifier: planId
+      })
+        .then(res => {
+          setData(res.rowData);
+          getMapReportData({
+            parentLocationIdentifier: null,
+            reportTypeEnum: reportType,
+            planIdentifier: planId
+          }).then(res => {
+            setFeatureSet([res, 'main']);
           });
         })
         .finally(() => dispatch(showLoader(false)));
@@ -130,27 +177,7 @@ const Report = () => {
       <hr />
       <p className="bg-light p-3 link-primary">
         <FontAwesomeIcon icon="align-left" className="me-3" />
-        <span
-          className="me-1"
-          style={{ cursor: 'pointer' }}
-          onClick={() => {
-            if (planId) {
-              dispatch(showLoader(true));
-              path.splice(0, path.length);
-              setPath(path);
-              getReportByPlanId({
-                getChildren: false,
-                parentLocationIdentifier: null,
-                reportTypeEnum: location.state.reportType,
-                planIdentifier: planId
-              })
-                .then(res => {
-                  setData(res.rowData);
-                })
-                .finally(() => dispatch(showLoader(false)));
-            }
-          }}
-        >
+        <span className="me-1" style={{ cursor: 'pointer' }} onClick={() => clearMap()}>
           {plan?.title} /
         </span>
         {path.map((el, index) => {
@@ -159,18 +186,21 @@ const Report = () => {
               style={{ cursor: 'pointer' }}
               key={el.locationIdentifier}
               onClick={() => {
-                if (planId) {
+                if (planId && reportType) {
                   dispatch(showLoader(true));
                   path.splice(index + 1, path.length - index);
                   setPath(path);
                   getReportByPlanId({
                     getChildren: true,
                     parentLocationIdentifier: el.locationIdentifier,
-                    reportTypeEnum: location.state.reportType,
+                    reportTypeEnum: reportType,
                     planIdentifier: planId
                   })
                     .then(res => {
                       setData(res.rowData);
+                      //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
+                      //its enough to spread the object so rerender will be triggered
+                      setFeatureSet([{ ...path[index > 0 ? index - 1 : index].location }, el.locationIdentifier]);
                     })
                     .finally(() => dispatch(showLoader(false)));
                 }
@@ -189,13 +219,20 @@ const Report = () => {
         <Col md={showMap ? 10 : 4}>
           <Collapse in={showMap}>
             <div id="expand-table">
-              <MapViewDetail locations={featureSet} />
+              <MapViewDetail
+                showModal={openModalHandler}
+                doubleClickEvent={(feature: Feature<Polygon | MultiPolygon, LocationProperties>) =>
+                  handleDobuleClickRef.current(feature)
+                }
+                featureSet={featureSet}
+                clearMap={clearMap}
+              />
             </div>
           </Collapse>
         </Col>
         <Col md={showMap ? 2 : 4} className="text-center">
           <Button
-            className="w-50 mt-2"
+            className="w-75 mt-2"
             onClick={() => setShowMap(!showMap)}
             aria-controls="expand-table"
             aria-expanded={showMap}
@@ -205,8 +242,12 @@ const Report = () => {
           <Table className="mt-3 text-center">
             <tbody>
               <tr className="bg-light">
+                <td>Light Gray</td>
+                <td>{'0%'}</td>
+              </tr>
+              <tr className="bg-secondary">
                 <td>Gray</td>
-                <td>{'< 20%'}</td>
+                <td>{'1% > < 20%'}</td>
               </tr>
               <tr className="bg-danger">
                 <td>Red</td>
@@ -225,6 +266,7 @@ const Report = () => {
           <p className="my-2">Conditional formatting rules</p>
         </Col>
       </Row>
+      {showModal && currentFeature && <ReportModal showModal={openModalHandler} feature={currentFeature} />}
     </Container>
   );
 };
