@@ -46,3 +46,9 @@ export const PLAN_DELETE = 'plan_delete';
 
 //REPORTS
 export const REPORT_VIEW = 'report_view';
+
+//ASSIGN
+export const ASSIGNMENT_VIEW = 'assignment_view';
+export const ASSIGNMENT_CREATE = 'assignment_create';
+export const ASSIGNMENT_UPDATE = 'assignment_update';
+export const ASSIGNMENT_DELETE = 'assignment_delete';

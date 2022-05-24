@@ -2,6 +2,7 @@ import React from 'react';
 import { Container } from 'react-bootstrap';
 import { Route, Routes } from 'react-router-dom';
 import AuthGuard from '../../../components/AuthGuard';
+import { ASSIGNMENT_VIEW } from '../../../constants';
 import Assign from '../../assignment/components/assign';
 import PlanList from '../../assignment/components/plans';
 
@@ -14,7 +15,7 @@ const Assignment = () => {
         <Route
           path="/"
           element={
-            <AuthGuard roles={[]}>
+            <AuthGuard roles={[ASSIGNMENT_VIEW]}>
               <PlanList />
             </AuthGuard>
           }
@@ -22,7 +23,7 @@ const Assignment = () => {
         <Route
           path="/:planId"
           element={
-            <AuthGuard roles={[]}>
+            <AuthGuard roles={[ASSIGNMENT_VIEW]}>
               <Assign />
             </AuthGuard>
           }
