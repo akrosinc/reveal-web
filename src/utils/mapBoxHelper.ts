@@ -1,5 +1,6 @@
 import { center, Feature, Point, Properties, Polygon, MultiPolygon, bbox } from '@turf/turf';
 import { LngLatBounds, Map, Popup, GeolocateControl, NavigationControl, LngLatBoundsLike } from 'mapbox-gl';
+import { MutableRefObject } from 'react';
 import { toast } from 'react-toastify';
 import {
   MAPBOX_STYLE,
@@ -13,18 +14,23 @@ import {
 import { assignLocationToPlan, getChildLocation } from '../features/assignment/api';
 import { getLocationByIdAndPlanId } from '../features/location/api';
 
-interface LocationProperties {
+export interface LocationProperties {
   id: string;
   name: string;
   assigned: boolean;
   numberOfTeams: number;
   childrenNumber: number;
   geographicLevel: string;
+  columnDataMap: string;
+  distCoveragePercent: number;
 }
+
+let timer: NodeJS.Timeout;
+let popup: Popup;
 
 //init mapbox instance
 export const initMap = (
-  container: any,
+  container: MutableRefObject<any>,
   center: [number, number],
   zoom: number,
   position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
@@ -210,8 +216,6 @@ export const hoverHandler = (map: Map, identifier: string) => {
     Ctrl + Left Click - Select location</small></div>`
   );
 
-  let timer: NodeJS.Timeout;
-
   map.on('mouseover', identifier + '-fill', e => {
     if (!popup.isOpen()) {
       timer = setTimeout(() => {
@@ -226,56 +230,6 @@ export const hoverHandler = (map: Map, identifier: string) => {
     popup.remove();
     clearTimeout(timer);
   });
-};
-
-export const loadLocationSet = (map: Map, data: any) => {
-  if (map.getSource(data.identifier) === undefined && data.features.length) {
-    map.addSource(data.identifier, {
-      type: 'geojson',
-      promoteId: 'id',
-      data: data,
-      tolerance: 1
-    });
-
-    map.addLayer(
-      {
-        id: data.identifier + '-border',
-        type: 'line',
-        source: data.identifier,
-        layout: {},
-        paint: {
-          'line-color': 'black',
-          'line-width': 4
-        }
-      },
-      'label-layer'
-    );
-
-    const featureSet: Feature<Point, Properties>[] = [];
-    const bounds = bbox(data) as any;
-    data.features.forEach((element: Feature<Polygon | MultiPolygon, LocationProperties>) => {
-      //create label for each of the locations
-      //create a group of locations so we can fit them all in viewport
-      const centerLabel = getPolygonCenter(element);
-      centerLabel.center.properties = {
-        name: element.properties.name,
-        childrenNumber: element.properties.childrenNumber
-      };
-      featureSet.push(centerLabel.center);
-    });
-    map.fitBounds(bounds, {
-      easing: e => {
-        //this is an event which is fired at the end of the fit bounds
-        if (e === 1) {
-          createChildLocationLabel(map, featureSet, data.identifier);
-          disableMapInteractions(map, false);
-        }
-        return e;
-      },
-      padding: 20,
-      duration: 600
-    });
-  }
 };
 
 export const createChild = (map: Map, data: any, opacity: number) => {
@@ -399,8 +353,6 @@ export const doubleClickHandler = (map: Map, planId: string, loader: (show: bool
     }
   });
 };
-
-let popup: Popup;
 
 export const contextMenuHandler = (
   map: Map,
@@ -610,7 +562,9 @@ export const createLocationLabel = (map: Map, data: any, center: Feature<Point, 
       type: 'symbol',
       source: data.identifier + 'Label',
       layout: {
-        'text-field': data.properties.name + (data.properties.geographicLevel === 'structure' ? '' : ' (' +  data.properties.childrenNumber + ')'),
+        'text-field':
+          data.properties.name +
+          (data.properties.geographicLevel === 'structure' ? '' : ' (' + data.properties.childrenNumber + ')'),
         'text-font': ['Open Sans Bold', 'Open Sans Semibold'],
         'text-anchor': 'bottom'
       },

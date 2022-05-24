@@ -1,8 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
-import mapboxgl, { Map } from 'mapbox-gl';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import mapboxgl, { Map, Popup } from 'mapbox-gl';
 import { Button, Container } from 'react-bootstrap';
-import { initMap, loadLocationSet } from '../../../../../utils';
+import { createChildLocationLabel, getPolygonCenter, initMap, LocationProperties } from '../../../../../utils';
 import PopoverComponent from '../../../../../components/Popover';
+import { bbox, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
+import { useAppDispatch } from '../../../../../store/hooks';
+import { showLoader } from '../../../../reducers/loader';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 const legend = [
@@ -19,27 +22,166 @@ const legend = [
 const legendColors = ['green', 'orange', 'darkorange', 'orange', 'teal', 'gray', 'black', 'yellow', 'gray'];
 
 interface Props {
-  locations: any;
+  featureSet: [location: FeatureCollection<Polygon | MultiPolygon, LocationProperties>, parentId: string] | undefined;
+  clearMap: () => void;
+  doubleClickEvent: (feature: Feature<Polygon | MultiPolygon, LocationProperties>) => void;
+  showModal: (show: boolean, feature?: Feature<Polygon | MultiPolygon, LocationProperties>) => void;
 }
 
-const MapViewDetail = ({ locations }: Props) => {
+const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Props) => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(20);
   const [lat, setLat] = useState(10);
   const [zoom, setZoom] = useState(4);
-  const [render, rerender] = useState(false);
+  const dispatch = useAppDispatch();
+  let popup = useRef<Popup>();
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
     map.current = initMap(mapContainer, [lng, lat], zoom, 'bottom-left');
+    const mapInstance = map.current;
+    //add event handlers
+    mapInstance.on('dblclick', e => {
+      if (!e.originalEvent.ctrlKey) {
+        const features = mapInstance.queryRenderedFeatures(e.point);
+        if (features.length) {
+          const feature = features[0];
+          if (feature && feature.layer.type !== 'symbol') {
+            doubleClickEvent(feature as any);
+          }
+        }
+      }
+    });
+    mapInstance.on('contextmenu', e => {
+      const features = mapInstance.queryRenderedFeatures(e.point);
+      if (features.length) {
+        //convert to location properties feature
+        const feature = features[0] as any as Feature<Polygon | MultiPolygon, LocationProperties>;
+        if (feature) {
+          popup.current?.remove();
+          popup.current = new Popup({ focusAfterOpen: true, closeOnMove: true })
+            .setLngLat(e.lngLat)
+            .setHTML(
+              `<h4 class='bg-success text-center'>Action menu</h4>
+              <div class='m-0 p-0 text-center'>
+              <p>Property name: ${feature.properties?.name}</p>
+              <button class='btn btn-primary mb-2' id='report-detail-button'>Details</button>
+              </div>`
+            )
+            .addTo(mapInstance);
+
+          document.getElementById('report-detail-button')?.addEventListener('click', () => {
+            showModal(true, feature);
+          });
+        }
+      }
+    });
   });
 
+  const loadLocationSet = useCallback(
+    (
+      map: Map,
+      data: FeatureCollection<Polygon | MultiPolygon, LocationProperties>,
+      parentLocationIdentifier: string
+    ) => {
+      if (map.getSource(parentLocationIdentifier) === undefined && data.features.length) {
+        dispatch(showLoader(true));
+        map.addSource(parentLocationIdentifier, {
+          type: 'geojson',
+          promoteId: 'id',
+          data: data,
+          tolerance: 1
+        });
+
+        map.addLayer(
+          {
+            id: parentLocationIdentifier + '-fill',
+            type: 'fill',
+            source: parentLocationIdentifier,
+            layout: {},
+            paint: {
+              'fill-color': [
+                'match',
+                ['get', 'geographicLevel'],
+                'structure',
+                'yellow',
+                [
+                  'case',
+                  ['==', ['get', 'distCoveragePercent'], 0],
+                  '#f8f9fa',
+                  ['<', ['get', 'distCoveragePercent'], 0.2],
+                  '#6c757d',
+                  ['<', ['get', 'distCoveragePercent'], 0.7],
+                  '#dc3545',
+                  ['<', ['get', 'distCoveragePercent'], 0.9],
+                  '#ffc107',
+                  ['>=', ['get', 'distCoveragePercent'], 0.9],
+                  '#28a745',
+                  'transparent'
+                ]
+              ],
+              'fill-opacity': ['match', ['get', 'geographicLevel'], 'structure', 0.8, 0.2]
+            }
+          },
+          'label-layer'
+        );
+
+        map.addLayer(
+          {
+            id: parentLocationIdentifier + '-border',
+            type: 'line',
+            source: parentLocationIdentifier,
+            layout: {},
+            paint: {
+              'line-color': 'black',
+              'line-width': 4
+            }
+          },
+          'label-layer'
+        );
+
+        const featureSet: Feature<Point, Properties>[] = [];
+        const bounds = bbox(data) as any;
+        data.features.forEach((element: Feature<Polygon | MultiPolygon, LocationProperties>) => {
+          //create label for each of the locations
+          //create a group of locations so we can fit them all in viewport
+          const centerLabel = getPolygonCenter(element);
+          centerLabel.center.properties = {
+            name: element.properties.name,
+            childrenNumber: element.properties.childrenNumber,
+            geographicLevel: element.properties.geographicLevel,
+            distCoveragePercent: element.properties.distCoveragePercent
+          };
+          featureSet.push(centerLabel.center);
+        });
+        map.fitBounds(bounds, {
+          easing: e => {
+            //this is an event which is fired at the end of the fit bounds
+            if (e === 1) {
+              createChildLocationLabel(map, featureSet, parentLocationIdentifier);
+              dispatch(showLoader(false));
+            }
+            return e;
+          },
+          padding: 20,
+          duration: 600
+        });
+      }
+      //fit to bounds if that location already exist
+      else if (data.features.length) {
+        map.fitBounds(bbox(data) as any);
+      }
+    },
+    [dispatch]
+  );
+
   useEffect(() => {
-    if (map.current && Object.keys(locations).length) {
-      loadLocationSet(map.current, locations);
+    if (map.current && featureSet) {
+      //check if its clear map event otherwise just fit to bounds
+      loadLocationSet(map.current, featureSet[0], featureSet[1]);
     }
-  }, [locations]);
+  }, [featureSet, loadLocationSet]);
 
   useEffect(() => {
     return () => {
@@ -64,7 +206,7 @@ const MapViewDetail = ({ locations }: Props) => {
   return (
     <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
       <div className="sidebar text-light">
-        <PopoverComponent title="Map Legend">
+        <PopoverComponent title="Structure Map Legend">
           <ul style={{ listStyle: 'none' }}>
             {legend.map((el, index) => {
               return (
@@ -92,7 +234,7 @@ const MapViewDetail = ({ locations }: Props) => {
               setZoom(4);
               setLat(10);
               setLng(20);
-              rerender(!render);
+              clearMap();
             }
           }}
         >

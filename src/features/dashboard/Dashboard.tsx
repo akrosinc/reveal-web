@@ -7,6 +7,9 @@ import { getPlanCount, getPlanList } from '../plan/api';
 import { useAppDispatch } from '../../store/hooks';
 import { showLoader } from '../reducers/loader';
 import 'chart.js/auto';
+import { toast } from 'react-toastify';
+import AuthorizedElement from '../../components/AuthorizedElement';
+import { PLAN_VIEW, USER_VIEW } from '../../constants';
 
 const Dashboard = () => {
   const [data, setData] = useState<any>();
@@ -44,23 +47,21 @@ const Dashboard = () => {
             datasets: [
               {
                 label: '# of active',
-                data: [
-                  activePlansCount,
-                  activeOrganizationsCount
-                ],
+                data: [activePlansCount, activeOrganizationsCount],
                 backgroundColor: ['#198754', '#34568B']
               }
             ]
           });
         }
       })
-      .catch(err => console.log(err))
+      .catch(err => toast.error(err.message ? err.message : err.toString()))
       .finally(() => dispatch(showLoader(false)));
   }, [dispatch]);
 
   return (
     <>
       <h4 className="my-4">Dashboard</h4>
+      <AuthorizedElement roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}>
       <Row>
         <Col md={6}>
           {data !== undefined && data.datasets[0].data.length ? (
@@ -94,6 +95,7 @@ const Dashboard = () => {
           )}
         </Col>
       </Row>
+      </AuthorizedElement>
     </>
   );
 };

@@ -1,12 +1,13 @@
 import React from 'react';
 import { Container, Tab, Tabs } from 'react-bootstrap';
-import { LOCATION_PAGE } from '../../../constants';
+import { GEOGRAPHIC_LEVEL_VIEW, LOCATION_PAGE, LOCATION_VIEW } from '../../../constants';
 import { useNavigate, useParams } from 'react-router-dom';
 import GeographicLevels from '../../location/components/geographicLevels';
 import LocationHierarchy from '../../location/components/locationHierarchy';
 import Locations from '../../location/components/locations';
 import LocationBulk from '../../location/components/locationBulk';
 import { useTranslation } from 'react-i18next';
+import AuthGuard from '../../../components/AuthGuard';
 
 const Location = () => {
   let { tab } = useParams();
@@ -21,7 +22,7 @@ const Location = () => {
     <Container fluid className="my-4 px-2">
       <Tabs
         defaultActiveKey={checkTab()}
-        id="uncontrolled-tab-example"
+        id="location-tabs"
         className="mb-3"
         mountOnEnter={true}
         unmountOnExit={true}
@@ -30,16 +31,24 @@ const Location = () => {
         }}
       >
         <Tab eventKey="geographic-levels" title={t('locationsPage.geographicLevels')}>
-          <GeographicLevels />
+          <AuthGuard roles={[GEOGRAPHIC_LEVEL_VIEW]}>
+            <GeographicLevels />
+          </AuthGuard>
         </Tab>
         <Tab eventKey="locations-bulk" title={t('locationsPage.locationsBulk')}>
-          <LocationBulk />
+          <AuthGuard roles={[LOCATION_VIEW]}>
+            <LocationBulk />
+          </AuthGuard>
         </Tab>
         <Tab eventKey="location-hierarchy" title={t('locationsPage.locationHierarchy')}>
-          <LocationHierarchy />
+          <AuthGuard roles={[LOCATION_VIEW]}>
+            <LocationHierarchy />
+          </AuthGuard>
         </Tab>
         <Tab eventKey="locations" title={t('locationsPage.locations')}>
-          <Locations />
+          <AuthGuard roles={[LOCATION_VIEW]}>
+            <Locations />
+          </AuthGuard>
         </Tab>
       </Tabs>
     </Container>

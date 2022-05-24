@@ -14,6 +14,7 @@ import { getLocationBulkListById, getLocationBulkList } from '../../api';
 import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import LocationBulkDetails from './details';
+import { BulkStatus } from '../../../user/providers/types';
 
 const LocationBulk = () => {
   const [openUpload, setOpenUpload] = useState(false);
@@ -27,6 +28,7 @@ const LocationBulk = () => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
   const dispatch = useAppDispatch();
+  const [interval, setSelectedInterval] = useState<NodeJS.Timeout>();
 
   const loadData = useCallback(
     (page: number, size: number, field?: string, sortDirection?: boolean) => {
@@ -60,19 +62,40 @@ const LocationBulk = () => {
         setSelectedBulkFile(selectedBulk);
         setSelectedBulkLocationList(res);
         setOpenDetails(true);
+        if (selectedBulk.status === BulkStatus.PROCESSING) {
+          setSelectedInterval(
+            setInterval(() => {
+              getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier).then(res => {
+                setSelectedBulkLocationList(res);
+              });
+            }, 5000)
+          );
+        }
       })
-      .catch(err => toast.error('Error loading bulk details'))
+      .catch(err => toast.error(err.message ? err.message : 'Error loading bulk details'))
       .finally(() => dispatch(showLoader(false)));
   };
 
   const closeHandler = () => {
     setOpenUpload(false);
     setOpenDetails(false);
+    if (interval) {
+      clearInterval(interval);
+    }
     loadData(
       locationBulkList?.pageable.pageSize ?? PAGINATION_DEFAULT_SIZE,
       locationBulkList?.pageable.pageNumber ?? 0
     );
   };
+
+  //Clear interval after component unmount
+  useEffect(() => {
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [interval]);
 
   const paginationHandler = (size: number, page: number) => {
     if (openDetails) {

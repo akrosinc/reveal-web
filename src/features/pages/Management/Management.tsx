@@ -1,7 +1,8 @@
 import { Container, Tab, Tabs } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-import { MANAGEMENT } from '../../../constants';
+import AuthGuard from '../../../components/AuthGuard';
+import { MANAGEMENT, ORGANIZATION_VIEW, ROLE_MANAGE_USER } from '../../../constants';
 import Organization from '../../organization/components';
 import UserImport from '../../user/components/UserImport/UserImport';
 import Users from '../../user/components/UsersPage';
@@ -29,13 +30,19 @@ const Management = () => {
         }}
       >
         <Tab eventKey="organization" title={t('managementPage.organization')}>
-          <Organization />
+          <AuthGuard roles={[ORGANIZATION_VIEW]}>
+            <Organization />
+          </AuthGuard>
         </Tab>
         <Tab eventKey="user" title={t('managementPage.user')}>
-          <Users />
+          <AuthGuard roles={[ROLE_MANAGE_USER]}>
+            <Users />
+          </AuthGuard>
         </Tab>
         <Tab eventKey="user-import" title={t('managementPage.userImport')}>
-          <UserImport />
+          <AuthGuard roles={[ROLE_MANAGE_USER]}>
+            <UserImport />
+          </AuthGuard>
         </Tab>
       </Tabs>
     </Container>

@@ -95,6 +95,10 @@ const Assign = () => {
           dispatch(showLoader(false));
           navigate('/assign');
         });
+    } else {
+      dispatch(showLoader(false));
+      toast.error('Plan does not exist.');
+      navigate(ASSIGNMENT_PAGE);
     }
   }, [planId, dispatch, navigate]);
 

@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl, { Map } from 'mapbox-gl';
-import './index.css';
 import { Button } from 'react-bootstrap';
-import { createLocation, createLocationLabel, initMap } from '../../utils';
+import { createLocation, createLocationLabel, initMap } from '../../../../../utils';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 

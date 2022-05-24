@@ -11,24 +11,14 @@ import keycloak from './keycloak';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { KeycloakInitOptions } from 'keycloak-js';
 
-const eventLogger = (event: unknown, error: unknown) => {
-  //we can capture all keycloak events here
-  //console.log("onKeycloakEvent", event, error);
-};
-
-const tokenLogger = (tokens: any) => {
-  // we can capture token events here
-  //console.log("onToken", tokens);
-};
-
 const initOptions: KeycloakInitOptions = {
   pkceMethod: 'S256',
   checkLoginIframe: false
-}
+};
 
 ReactDOM.render(
   <React.StrictMode>
-    <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions} onEvent={eventLogger} onTokens={tokenLogger}>
+    <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions}>
       <Provider store={store}>
         <BrowserRouter>
           <App />

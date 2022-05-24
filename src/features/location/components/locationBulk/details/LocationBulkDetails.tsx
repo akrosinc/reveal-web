@@ -4,6 +4,7 @@ import { LocationBulkModel, LocationBulkDetailsModel } from '../../../providers/
 import { formatDate } from '../../../../../utils';
 import { PageableModel } from '../../../../../api/providers';
 import Paginator from '../../../../../components/Pagination';
+import { BulkStatus } from '../../../../user/providers/types';
 
 interface Props {
   closeHandler: () => void;
@@ -16,7 +17,12 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
   return (
     <Modal show centered scrollable size="lg">
       <Modal.Header>
-        <Modal.Title>{locationBulkFile.filename}({locationList.totalElements})</Modal.Title>
+        <Modal.Title style={{ wordBreak: 'break-word' }}>
+          {locationBulkFile.filename}({locationList.totalElements})<br />
+          <small>
+            Bulk Status: {locationBulkFile.status === BulkStatus.PROCESSING ? ' - Processing...' : 'Complete'}
+          </small>
+        </Modal.Title>
         <div>
           <p className="mb-0 ms-2 text-end">Upload date: {formatDate(locationBulkFile.uploadDatetime)}</p>
           <p className="mb-0 ms-2 text-end">Uploaded by: {locationBulkFile.uploadedBy}</p>
@@ -50,7 +56,7 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
         />
       </Modal.Body>
       <Modal.Footer>
-        <Button id='close-button' variant="secondary" onClick={closeHandler}>
+        <Button id="close-button" variant="secondary" onClick={closeHandler}>
           Close
         </Button>
       </Modal.Footer>

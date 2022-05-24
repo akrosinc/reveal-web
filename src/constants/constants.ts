@@ -22,6 +22,8 @@ export const ROW_DEPTH_COLOR_3 = '#DCDCDC';
 //REGEX
 export const REGEX_NAME_VALIDATION = new RegExp('^[^-\\s][a-z0-9_.-]*$');
 export const REGEX_TITLE_VALIDATION = new RegExp('^[^-\\s][a-zA-Z0-9.__\\s-]*$');
+export const REGEX_USERNAME_VALIDATION = new RegExp('^[a-z]+([._]?[a-z]+)*$');
+export const REGEX_EMAIL_VALIDATION = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
 
 export const PAGINATION_DEFAULT_SIZE = 10;
 
@@ -95,6 +97,10 @@ export const MAP_LEGEND_COLORS = [
   MAP_COLOR_UNASSIGNED,
   MAP_COLOR_SELECTED
 ];
+
+export const REPORT_TABLE_PERCENTAGE_HIGH = 90;
+export const REPORT_TABLE_PERCENTAGE_MEDIUM = 70;
+export const REPORT_TABLE_PERCENTAGE_LOW = 20;
 
 export const MAP_DEFAULT_FILL_OPACITY = 0.85;
 export const MAP_DEFAULT_DISABLED_FILL_OPACITY = 0.85;
