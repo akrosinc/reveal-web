@@ -16,12 +16,12 @@ import { getMapReportData, getReportByPlanId } from '../../api';
 import { Feature, FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
 import { LocationProperties } from '../../../../utils';
 import { useRef } from 'react';
-import { FoundCoverage } from '../../providers/types';
+import { FoundCoverage, RowData } from '../../providers/types';
 import ReportModal from './reportModal';
 
 const Report = () => {
   const [cols, setCols] = useState<Column[]>([]);
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<RowData[]>([]);
   const dispatch = useAppDispatch();
   const { planId, reportType } = useParams();
   const navigate = useNavigate();
@@ -39,6 +39,7 @@ const Report = () => {
     useState<[location: FeatureCollection<Polygon | MultiPolygon, LocationProperties>, parentId: string]>();
   const [showModal, setShowModal] = useState(false);
   const [currentFeature, setCurrentFeature] = useState<Feature<Polygon | MultiPolygon, LocationProperties>>();
+  const [currentSortDirection, setCurrentSortDirection] = useState(false);
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, LocationProperties>) => {
@@ -57,6 +58,27 @@ const Report = () => {
         }
       };
     });
+  };
+
+  const sortDataHandler = (sortDirection: boolean) => {
+    if (data) {
+      setCurrentSortDirection(sortDirection);
+      setData([
+        ...data.sort((a: RowData, b: RowData) => {
+          let rowDataA = a.columnDataMap['Distribution Coverage']?.value;
+          let rowDataB = b.columnDataMap['Distribution Coverage']?.value;
+          if (rowDataA && rowDataB) {
+            if (sortDirection) {
+              return rowDataB - rowDataA;
+            } else {
+              return rowDataA - rowDataB;
+            }
+          } else {
+            return 0;
+          }
+        })
+      ]);
+    }
   };
 
   const openModalHandler = (show: boolean, feature?: Feature<Polygon | MultiPolygon, LocationProperties>) => {
@@ -80,7 +102,22 @@ const Report = () => {
           setPlan(plan);
           getHierarchyById(plan.locationHierarchy.identifier).then(res => setHierarchyLength(res.nodeOrder.length));
           setCols(mapColumns(report.rowData[0].columnDataMap));
-          setData(report.rowData);
+          // default sort by Distribution Coverage if possible
+          if (report.rowData[0].columnDataMap['Distribution Coverage']) {
+            setData(
+              report.rowData.sort((a, b) => {
+                let rowDataA = a.columnDataMap['Distribution Coverage'].value;
+                let rowDataB = b.columnDataMap['Distribution Coverage'].value;
+                if (rowDataA && rowDataB) {
+                  return rowDataA - rowDataB;
+                } else {
+                  return 0;
+                }
+              })
+            );
+          } else {
+            setData(report.rowData);
+          }
           getMapReportData({
             parentLocationIdentifier: null,
             reportTypeEnum: reportType,
@@ -121,7 +158,25 @@ const Report = () => {
         planIdentifier: planId
       })
         .then(res => {
-          setData(res.rowData);
+          if (res.rowData[0].columnDataMap['Distribution Coverage']) {
+            setData(
+              res.rowData.sort((a, b) => {
+                let rowDataA = a.columnDataMap['Distribution Coverage']?.value;
+                let rowDataB = b.columnDataMap['Distribution Coverage']?.value;
+                if (rowDataA && rowDataB) {
+                  if (currentSortDirection) {
+                    return rowDataB - rowDataA;
+                  } else {
+                    return rowDataA - rowDataB;
+                  }
+                } else {
+                  return 0;
+                }
+              })
+            );
+          } else {
+            setData(res.rowData);
+          }
           getMapReportData({
             parentLocationIdentifier: id,
             planIdentifier: planId,
@@ -213,7 +268,7 @@ const Report = () => {
         })}
       </p>
       <div style={{ maxHeight: '400px', overflow: 'auto' }}>
-        <ReportsTable clickHandler={loadChildHandler} columns={columns} data={data} />
+        <ReportsTable clickHandler={loadChildHandler} sortHandler={sortDataHandler} columns={columns} data={data} />
       </div>
       <Row className="my-3">
         <Col md={showMap ? 10 : 4}>

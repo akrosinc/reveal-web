@@ -206,7 +206,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
   return (
     <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
       <div className="sidebar text-light">
-        <PopoverComponent title="Map Legend">
+        <PopoverComponent title="Structure Map Legend">
           <ul style={{ listStyle: 'none' }}>
             {legend.map((el, index) => {
               return (

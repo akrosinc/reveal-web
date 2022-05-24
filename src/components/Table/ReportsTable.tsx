@@ -1,16 +1,23 @@
-import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useState } from 'react';
 import { OverlayTrigger, Table, Tooltip } from 'react-bootstrap';
 import { Column, useTable } from 'react-table';
-import { REPORT_TABLE_PERCENTAGE_HIGH, REPORT_TABLE_PERCENTAGE_LOW, REPORT_TABLE_PERCENTAGE_MEDIUM } from '../../constants';
+import {
+  REPORT_TABLE_PERCENTAGE_HIGH,
+  REPORT_TABLE_PERCENTAGE_LOW,
+  REPORT_TABLE_PERCENTAGE_MEDIUM
+} from '../../constants';
 import { RowData } from '../../features/reporting/providers/types';
 
 interface Props {
   columns: Column[];
-  data: any;
+  data: any[];
   clickHandler: (locationId: string, locationName: string) => void;
+  sortHandler: (sortDirection: boolean) => void;
 }
 
-const ReportsTable = ({ columns, data, clickHandler }: Props) => {
+const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
+  const [sortDirection, setCurrentSortDirection] = useState(false);
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
     columns,
     data
@@ -20,11 +27,28 @@ const ReportsTable = ({ columns, data, clickHandler }: Props) => {
       <thead className="border border-2">
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
-            {headerGroup.headers.map(column => (
-              <th {...column.getHeaderProps()}>
-                {column.render('Header')}
-              </th>
-            ))}
+            {headerGroup.headers.map(column => {
+              if (column.Header?.toString() === 'Distribution Coverage') {
+                return (
+                  <th
+                    onClick={() => {
+                      sortHandler(!sortDirection);
+                      setCurrentSortDirection(!sortDirection);
+                    }}
+                    {...column.getHeaderProps()}
+                  >
+                    {column.render('Header')}
+                    {sortDirection ? (
+                      <FontAwesomeIcon className="ms-2" size="lg" icon="sort-up" />
+                    ) : (
+                      <FontAwesomeIcon className="ms-2" size="lg" icon="sort-down" />
+                    )}
+                  </th>
+                );
+              } else {
+                return <th {...column.getHeaderProps()}>{column.render('Header')}</th>;
+              }
+            })}
           </tr>
         ))}
       </thead>
@@ -43,7 +67,8 @@ const ReportsTable = ({ columns, data, clickHandler }: Props) => {
                 if (cell.column.id === 'locationName') {
                   return (
                     <td {...cell.getCellProps()}>
-                      {cell.render('Cell')}{rowData.childrenNumber ? `(${rowData.childrenNumber})` : ''}
+                      {cell.render('Cell')}
+                      {rowData.childrenNumber ? `(${rowData.childrenNumber})` : ''}
                     </td>
                   );
                 } else {

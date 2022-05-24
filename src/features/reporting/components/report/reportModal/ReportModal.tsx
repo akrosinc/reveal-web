@@ -1,6 +1,6 @@
 import { Feature, MultiPolygon, Polygon } from '@turf/turf';
 import React, { useMemo, useState } from 'react';
-import { Modal, OverlayTrigger, Table, Tooltip } from 'react-bootstrap';
+import { Button, Modal, OverlayTrigger, Table, Tooltip } from 'react-bootstrap';
 import {
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
@@ -21,8 +21,8 @@ const ReportModal = ({ showModal, feature }: Props) => {
     //Map columns depending on server response
     //we need to parse the object because mapbox only stores string and numeric property values
     if (feature.properties.columnDataMap) {
-        const parsed = JSON.parse(feature.properties.columnDataMap);
-        return Object.keys(parsed);
+      const parsed = JSON.parse(feature.properties.columnDataMap);
+      return Object.keys(parsed);
     }
     return [];
   }, [feature.properties.columnDataMap]);
@@ -59,16 +59,33 @@ const ReportModal = ({ showModal, feature }: Props) => {
       show
       centered
       size="xl"
-      keyboard={false}
       onShow={() => setTableData(JSON.parse(feature.properties.columnDataMap) as { [key: string]: FoundCoverage })}
-      onHide={() => showModal(false)}
     >
-      <Modal.Header closeButton className="justify-content-center">
-        <Modal.Title>{'Report details (' + feature.properties.name + ')'}</Modal.Title>
+      <Modal.Header className="justify-content-center">
+        <Modal.Title>Report details ({feature.properties.name})</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Table responsive>
-          <thead>
+        <h4>Location info</h4>
+        <Table bordered responsive className="my-2">
+          <thead className="border border-2">
+            <tr>
+              <th>Identifier</th>
+              <th>Location name</th>
+              <th>Location type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{feature.properties.id}</td>
+              <td>{feature.properties.name}</td>
+              <td>{feature.properties.geographicLevel}</td>
+            </tr>
+          </tbody>
+        </Table>
+        <hr />
+        <h4>Location data</h4>
+        <Table responsive bordered className="my-2">
+          <thead className="border border-2">
             <tr>
               {columns.map((el, index) => (
                 <th key={index}>{el}</th>
@@ -90,6 +107,11 @@ const ReportModal = ({ showModal, feature }: Props) => {
           </tbody>
         </Table>
       </Modal.Body>
+      <Modal.Footer>
+        <Button id="close-button" variant="secondary" onClick={() => showModal(false)}>
+          Close
+        </Button>
+      </Modal.Footer>
     </Modal>
   );
 };

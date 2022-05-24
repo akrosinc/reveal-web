@@ -7,6 +7,7 @@ import { getPlanCount, getPlanList } from '../plan/api';
 import { useAppDispatch } from '../../store/hooks';
 import { showLoader } from '../reducers/loader';
 import 'chart.js/auto';
+import { toast } from 'react-toastify';
 
 const Dashboard = () => {
   const [data, setData] = useState<any>();
@@ -44,17 +45,14 @@ const Dashboard = () => {
             datasets: [
               {
                 label: '# of active',
-                data: [
-                  activePlansCount,
-                  activeOrganizationsCount
-                ],
+                data: [activePlansCount, activeOrganizationsCount],
                 backgroundColor: ['#198754', '#34568B']
               }
             ]
           });
         }
       })
-      .catch(err => console.log(err))
+      .catch(err => toast.error(err.message ? err.message : err.toString()))
       .finally(() => dispatch(showLoader(false)));
   }, [dispatch]);
 
