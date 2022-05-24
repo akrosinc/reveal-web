@@ -35,6 +35,7 @@ const Report = () => {
   const [plan, setPlan] = useState<PlanModel>();
   const [hierarchyLength, setHierarchyLength] = useState(0);
   const [showMap, setShowMap] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
   const [featureSet, setFeatureSet] =
     useState<[location: FeatureCollection<Polygon | MultiPolygon, LocationProperties>, parentId: string]>();
   const [showModal, setShowModal] = useState(false);
@@ -158,7 +159,7 @@ const Report = () => {
         planIdentifier: planId
       })
         .then(res => {
-          if (res.rowData[0].columnDataMap['Distribution Coverage']) {
+          if (res.rowData.length && res.rowData[0].columnDataMap['Distribution Coverage']) {
             setData(
               res.rowData.sort((a, b) => {
                 let rowDataA = a.columnDataMap['Distribution Coverage']?.value;
@@ -230,46 +231,62 @@ const Report = () => {
         </Col>
       </Row>
       <hr />
-      <p className="bg-light p-3 link-primary">
-        <FontAwesomeIcon icon="align-left" className="me-3" />
-        <span className="me-1" style={{ cursor: 'pointer' }} onClick={() => clearMap()}>
-          {plan?.title} /
-        </span>
-        {path.map((el, index) => {
-          return (
-            <span
-              style={{ cursor: 'pointer' }}
-              key={el.locationIdentifier}
-              onClick={() => {
-                if (planId && reportType) {
-                  dispatch(showLoader(true));
-                  path.splice(index + 1, path.length - index);
-                  setPath(path);
-                  getReportByPlanId({
-                    getChildren: true,
-                    parentLocationIdentifier: el.locationIdentifier,
-                    reportTypeEnum: reportType,
-                    planIdentifier: planId
-                  })
-                    .then(res => {
-                      setData(res.rowData);
-                      //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
-                      //its enough to spread the object so rerender will be triggered
-                      setFeatureSet([{ ...path[index > 0 ? index - 1 : index].location }, el.locationIdentifier]);
-                    })
-                    .finally(() => dispatch(showLoader(false)));
-                }
-              }}
-            >
-              {index !== 0 ? ' / ' : ''}
-              {el.locationName}
+      <Row className="bg-light m-0 p-0 rounded">
+        <Col xs sm md={10} className="mt-auto">
+          <p className="link-primary">
+            <FontAwesomeIcon icon="align-left" className="me-3" />
+            <span className="me-1" style={{ cursor: 'pointer' }} onClick={() => clearMap()}>
+              {plan?.title} /
             </span>
-          );
-        })}
-      </p>
-      <div style={{ maxHeight: '400px', overflow: 'auto' }}>
-        <ReportsTable clickHandler={loadChildHandler} sortHandler={sortDataHandler} columns={columns} data={data} />
-      </div>
+            {path.map((el, index) => {
+              return (
+                <span
+                  style={{ cursor: 'pointer' }}
+                  key={el.locationIdentifier}
+                  onClick={() => {
+                    if (planId && reportType) {
+                      dispatch(showLoader(true));
+                      path.splice(index + 1, path.length - index);
+                      setPath(path);
+                      getReportByPlanId({
+                        getChildren: true,
+                        parentLocationIdentifier: el.locationIdentifier,
+                        reportTypeEnum: reportType,
+                        planIdentifier: planId
+                      })
+                        .then(res => {
+                          setData(res.rowData);
+                          //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
+                          //its enough to spread the object so rerender will be triggered
+                          setFeatureSet([{ ...path[index > 0 ? index - 1 : index].location }, el.locationIdentifier]);
+                        })
+                        .finally(() => dispatch(showLoader(false)));
+                    }
+                  }}
+                >
+                  {index !== 0 ? ' / ' : ''}
+                  {el.locationName}
+                </span>
+              );
+            })}
+          </p>
+        </Col>
+        <Col className="text-end p-2" xs sm md={2}>
+          <Button onClick={() => setShowGrid(!showGrid)}>
+            {showGrid ? <FontAwesomeIcon icon="chevron-up" /> : <FontAwesomeIcon icon="chevron-down" />}
+          </Button>
+        </Col>
+      </Row>
+      {showGrid && (
+        <div
+          style={{
+            maxHeight: '50vh',
+            overflow: 'auto',
+          }}
+        >
+          <ReportsTable clickHandler={loadChildHandler} sortHandler={sortDataHandler} columns={columns} data={data} />
+        </div>
+      )}
       <Row className="my-3">
         <Col md={showMap ? 10 : 4}>
           <Collapse in={showMap}>
