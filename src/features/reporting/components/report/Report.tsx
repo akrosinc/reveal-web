@@ -83,8 +83,8 @@ const Report = () => {
   };
 
   const openModalHandler = (show: boolean, feature?: Feature<Polygon | MultiPolygon, LocationProperties>) => {
-    setShowModal(show);
     if (feature) setCurrentFeature(feature);
+    setShowModal(show);
   };
 
   const loadData = useCallback(() => {
