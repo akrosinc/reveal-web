@@ -56,15 +56,12 @@ ul {
   padding-left: 0 !important;
 }
 
-/* Marker tweaks */
-.mapboxgl-popup-close-button {
-  display: none;
-}
-
 .mapboxgl-popup-content {
-  font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', sans-serif;
+  font: 'BRFirma', 'Helvetica Neue', sans-serif;
   padding: 0 !important;
   width: 100%;
+  font-weight: 300;
+  font-size: medium;
 }
 
 .mapboxgl-popup-content h4 {

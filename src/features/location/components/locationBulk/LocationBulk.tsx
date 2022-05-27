@@ -62,7 +62,7 @@ const LocationBulk = () => {
         setSelectedBulkFile(selectedBulk);
         setSelectedBulkLocationList(res);
         setOpenDetails(true);
-        if (selectedBulk.status === BulkStatus.PROCESSING) {
+        if (selectedBulk.status !== BulkStatus.COMPLETE) {
           setSelectedInterval(
             setInterval(() => {
               getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier).then(res => {

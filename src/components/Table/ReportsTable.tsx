@@ -12,7 +12,7 @@ import { RowData } from '../../features/reporting/providers/types';
 interface Props {
   columns: Column[];
   data: any[];
-  clickHandler: (locationId: string, locationName: string) => void;
+  clickHandler: (locationId: string, locationName: string, childrenNumber: number) => void;
   sortHandler: (sortDirection: boolean) => void;
 }
 
@@ -60,7 +60,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
             <tr
               {...row.getRowProps()}
               onClick={() => {
-                clickHandler(rowData.locationIdentifier, rowData.locationName);
+                clickHandler(rowData.locationIdentifier, rowData.locationName, rowData.childrenNumber);
               }}
             >
               {row.cells.map(cell => {
@@ -74,13 +74,11 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
                 } else {
                   let cellName = cell.column.Header?.toString();
                   if (cellName) {
-                    let percentage = 0;
                     let color = '';
                     if (rowData.columnDataMap[cellName].isPercentage) {
+                      let percentage = rowData.columnDataMap[cellName].value;
+                      percentage = Number(percentage.toFixed(percentage > 1 ? 2 : 3));
                       //check if its already a round number or should be rounded
-                      percentage = Math.round(
-                        rowData.columnDataMap[cellName].value * (rowData.columnDataMap[cellName].value > 1 ? 1 : 100)
-                      );
                       if (percentage >= REPORT_TABLE_PERCENTAGE_HIGH) {
                         color = 'bg-success';
                       }
@@ -90,7 +88,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
                       if (percentage <= REPORT_TABLE_PERCENTAGE_MEDIUM && percentage >= REPORT_TABLE_PERCENTAGE_LOW) {
                         color = 'bg-danger';
                       }
-                      if (percentage < REPORT_TABLE_PERCENTAGE_LOW) {
+                      if (percentage < REPORT_TABLE_PERCENTAGE_LOW && percentage > 0) {
                         color = 'bg-secondary';
                       }
                       if (percentage === 0) {

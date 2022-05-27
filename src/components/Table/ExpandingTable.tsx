@@ -7,7 +7,7 @@ import { ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3 } from '../../c
 interface Props {
   columns: any;
   data: any;
-  clickHandler: (id: string, el?: any) => void;
+  clickHandler: (id: string) => void;
   sortHandler: (field: string, direction: boolean) => void;
 }
 
@@ -113,7 +113,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
                     onClick={() => {
                       if (cell.column.id !== 'expander') {
                         let col = row.original as any;
-                        clickHandler(col.identifier, col);
+                        clickHandler(col.identifier);
                       }
                     }}
                   >
@@ -126,7 +126,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
                     onClick={() => {
                       if (cell.column.id !== 'expander') {
                         let col = row.original as any;
-                        clickHandler(col.identifier, col);
+                        clickHandler(col.identifier);
                       }
                     }}
                   >

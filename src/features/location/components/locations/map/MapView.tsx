@@ -49,8 +49,16 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
       }
     } else {
       if (data !== undefined && map.current.getSource(data.identifier) === undefined) {
+        const currentMap = map.current;
         setCurrentLocation(data.identifier);
-        createLocation(map.current, data, () => undefined, 0.8);
+        //check if map is loaded completly
+        if (currentMap.getLayer('label-layer')) {
+          createLocation(currentMap, data, () => undefined, 0.8);
+        } else {
+          currentMap.once('load', () => {
+            createLocation(currentMap, data, () => undefined, 0.8);
+          });
+        }
       }
     }
   }, [setCurrentLocation, data, lng, lat, zoom, currentLocation]);
@@ -66,9 +74,9 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
   const deleteMapData = () => {
     if (data) {
       setCurrentLocation(undefined);
-      clearHandler();
       map.current?.remove();
       map.current = undefined;
+      clearHandler();
     }
   };
 

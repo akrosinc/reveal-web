@@ -19,9 +19,9 @@ export default function NavbarComponent() {
   const [user, setUser] = useState<KeycloakProfile>();
 
   useEffect(() => {
-    if (initialized) {
-      keycloak.loadUserProfile().then(res => {
-        setUser(res);
+    if (initialized && keycloak.authenticated) {
+      keycloak.loadUserProfile().then(userProfile => {
+        setUser(userProfile);
       });
     }
   }, [keycloak, initialized]);

@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const loaderSlice = createSlice({
-  name: 'notificationMessage',
+  name: 'loader',
   initialState: { value: false },
   reducers: {
     showLoader: (state, action) => {

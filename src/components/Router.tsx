@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router';
 import { Navigate } from 'react-router-dom';
 import { ASSIGNMENT_PAGE, HOME_PAGE, LOCATION_PAGE, MANAGEMENT, PLANS, REPORTING_PAGE } from '../constants/';
-import Home from '../features/pages/HomePage/Home';
+import Home from '../features/pages/HomePage';
 import Plan from '../features/pages/Plan';
 import Management from '../features/pages/Management';
 import { useKeycloak } from '@react-keycloak/web';

@@ -2,10 +2,10 @@ import React from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { Goal, Priority } from '../../../../../../providers/types';
-import { createGoal, updateGoal } from '../../../../../../api';
-import { useAppDispatch } from '../../../../../../../../store/hooks';
-import { showLoader } from '../../../../../../../reducers/loader';
+import { Goal, Priority } from '../../../../providers/types';
+import { createGoal, updateGoal } from '../../../../api';
+import { useAppDispatch } from '../../../../../../store/hooks';
+import { showLoader } from '../../../../../reducers/loader';
 
 interface Props {
   show: boolean;

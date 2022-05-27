@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Modal, Table, Accordion } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
-import { ConditionModel } from '../../../../../providers/types';
+import { ConditionModel } from '../../../../providers/types';
 
 interface Props {
   show: boolean;

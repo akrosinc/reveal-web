@@ -1,9 +1,9 @@
 <p align="center" >
-<img src='./public/reveal-logo.png' width='240px' />
+<img src='./public/reveal-logo.png' width='140px' />
 </p> 
-<h1 align="center">
-Reveal web client official repository
-</h1>
+<h2 align="center">
+Official repository
+</h2>
 
 ### Frontend application for Reveal platform
 

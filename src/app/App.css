@@ -13,4 +13,5 @@ td,
 th {
   padding: 15px 10px !important;
   cursor: pointer;
+  user-select: none;
 }

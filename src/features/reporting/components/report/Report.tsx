@@ -8,7 +8,6 @@ import MapViewDetail from './mapView/MapViewDetail';
 import ReportsTable from '../../../../components/Table/ReportsTable';
 import { REPORTING_PAGE } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
-import { getHierarchyById } from '../../../location/api';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
 import { showLoader } from '../../../reducers/loader';
@@ -33,7 +32,6 @@ const Report = () => {
     }[]
   >([]);
   const [plan, setPlan] = useState<PlanModel>();
-  const [hierarchyLength, setHierarchyLength] = useState(0);
   const [showMap, setShowMap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [featureSet, setFeatureSet] =
@@ -44,7 +42,7 @@ const Report = () => {
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, LocationProperties>) => {
-    loadChildHandler(feature.id as string, feature.properties.name);
+    loadChildHandler(feature.id as string, feature.properties.name, feature.properties.childrenNumber);
   };
   const handleDobuleClickRef = useRef(doubleClickHandler);
   handleDobuleClickRef.current = doubleClickHandler;
@@ -101,7 +99,6 @@ const Report = () => {
       ])
         .then(async ([plan, report]) => {
           setPlan(plan);
-          getHierarchyById(plan.locationHierarchy.identifier).then(res => setHierarchyLength(res.nodeOrder.length));
           setCols(mapColumns(report.rowData[0].columnDataMap));
           // default sort by Distribution Coverage if possible
           if (report.rowData[0].columnDataMap['Distribution Coverage']) {
@@ -149,8 +146,8 @@ const Report = () => {
     loadData();
   }, [loadData]);
 
-  const loadChildHandler = (id: string, locationName: string) => {
-    if (planId && reportType && path.length < hierarchyLength - 1) {
+  const loadChildHandler = (id: string, locationName: string, childrenNumber: number) => {
+    if (planId && reportType && childrenNumber) {
       dispatch(showLoader(true));
       getReportByPlanId({
         getChildren: true,
@@ -159,37 +156,43 @@ const Report = () => {
         planIdentifier: planId
       })
         .then(res => {
-          if (res.rowData.length && res.rowData[0].columnDataMap['Distribution Coverage']) {
-            setData(
-              res.rowData.sort((a, b) => {
-                let rowDataA = a.columnDataMap['Distribution Coverage']?.value;
-                let rowDataB = b.columnDataMap['Distribution Coverage']?.value;
-                if (rowDataA && rowDataB) {
-                  if (currentSortDirection) {
-                    return rowDataB - rowDataA;
+          if (res.rowData.length) {
+            if (res.rowData[0].columnDataMap['Distribution Coverage']) {
+              setData(
+                res.rowData.sort((a, b) => {
+                  let rowDataA = a.columnDataMap['Distribution Coverage']?.value;
+                  let rowDataB = b.columnDataMap['Distribution Coverage']?.value;
+                  if (rowDataA && rowDataB) {
+                    if (currentSortDirection) {
+                      return rowDataB - rowDataA;
+                    } else {
+                      return rowDataA - rowDataB;
+                    }
                   } else {
-                    return rowDataA - rowDataB;
+                    return 0;
                   }
-                } else {
-                  return 0;
-                }
-              })
-            );
-          } else {
-            setData(res.rowData);
-          }
-          getMapReportData({
-            parentLocationIdentifier: id,
-            planIdentifier: planId,
-            reportTypeEnum: reportType
-          }).then(res => {
-            setFeatureSet([res, id]);
-            if (!path.some(el => el.locationIdentifier === id)) {
-              setPath([...path, { locationIdentifier: id, locationName: locationName, location: res }]);
+                })
+              );
+            } else {
+              setData(res.rowData);
             }
-          });
+            getMapReportData({
+              parentLocationIdentifier: id,
+              planIdentifier: planId,
+              reportTypeEnum: reportType
+            }).then(res => {
+              setFeatureSet([res, id]);
+              if (!path.some(el => el.locationIdentifier === id)) {
+                setPath([...path, { locationIdentifier: id, locationName: locationName, location: res }]);
+              }
+            });
+          } else {
+            toast.info(`${locationName} has no child locations.`);
+          }
         })
         .finally(() => dispatch(showLoader(false)));
+    } else {
+      toast.info(`${locationName} has no child locations.`);
     }
   };
 
@@ -281,7 +284,7 @@ const Report = () => {
         <div
           style={{
             maxHeight: '50vh',
-            overflow: 'auto',
+            overflow: 'auto'
           }}
         >
           <ReportsTable clickHandler={loadChildHandler} sortHandler={sortDataHandler} columns={columns} data={data} />
