@@ -76,15 +76,13 @@ const Assign = () => {
                 //load parent location on component load
                 getLocationByIdAndPlanId(hierarchy.content[0].identifier, planId).then(res => {
                   //give map 1000ms to initialize to avoid no location shown on frist load
-                  setTimeout(() => {
-                    setNotInMove(false);
-                    setGeoLocation(res);
-                    setTableHeight(
-                      (document.getElementsByClassName('mapboxgl-canvas')[0] as any).height -
-                        (document.getElementById('title-div')?.clientHeight ?? 0)
-                    );
-                    dispatch(showLoader(false));
-                  }, 1000);
+                  setNotInMove(false);
+                  setGeoLocation(res);
+                  setTableHeight(
+                    (document.getElementsByClassName('mapboxgl-canvas')[0] as any).height -
+                      (document.getElementById('title-div')?.clientHeight ?? 0)
+                  );
+                  dispatch(showLoader(false));
                 });
               }
             })
@@ -282,23 +280,6 @@ const Assign = () => {
         if (unselectAll) {
           el.teams = [];
         } else {
-          // TODO: This should be added if team selection needs to be refactored connected with deselect all button
-          // selected.forEach(team => {
-          //   el.teams.forEach((element, index) => {
-          //     if (team.value === element.identifier) {
-          //       el.teams.splice(index, 1);
-          //     }
-          //   });
-          // });
-          // el.teams = [
-          //   ...el.teams,
-          //   ...selected.map(t => {
-          //     return {
-          //       identifier: t.value,
-          //       name: t.label
-          //     };
-          //   })
-          // ];
           el.teams = [
             ...selected.map(t => {
               return {
@@ -449,17 +430,6 @@ const Assign = () => {
                 </div>
               </Tab>
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title="Assign teams">
-                {/* This should be added if team selection needs to be refactored 
-                <div className="w-100 text-end">
-                  <Button
-                    className="btn-secondary mt-2"
-                    onClick={() => {
-                      selectHandler(locationHierarchy!.content[0].identifier, [], true);
-                    }}
-                  >
-                    Deselect All
-                  </Button>
-                </div> */}
                 <LocationAssignmentsTable
                   teamTab={true}
                   organizationList={organizationsList}
@@ -493,12 +463,8 @@ const Assign = () => {
                 dispatch(showLoader(true));
                 getLocationByIdAndPlanId(locationHierarchy.content[0].identifier, planId).then(res => {
                   setNotInMove(false);
-                  //timeout is needed to let mapbox finish loading styles otherwise it breaks
-                  //there should be a way to avoid this
-                  setTimeout(() => {
-                    setGeoLocation(res);
-                    dispatch(showLoader(false));
-                  }, 1500);
+                  setGeoLocation(res);
+                  dispatch(showLoader(false));
                 });
               }
             }}

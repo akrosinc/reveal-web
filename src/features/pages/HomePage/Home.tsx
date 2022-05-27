@@ -3,7 +3,17 @@ import Container from 'react-bootstrap/Container';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AuthorizedElement from '../../../components/AuthorizedElement';
-import { MANAGEMENT, PLANS, LOCATION_PAGE, ASSIGNMENT_PAGE, REPORTING_PAGE, PLAN_VIEW, LOCATION_VIEW, ASSIGNMENT_VIEW } from '../../../constants';
+import {
+  MANAGEMENT,
+  PLANS,
+  LOCATION_PAGE,
+  ASSIGNMENT_PAGE,
+  REPORTING_PAGE,
+  PLAN_VIEW,
+  LOCATION_VIEW,
+  ASSIGNMENT_VIEW,
+  REPORT_VIEW
+} from '../../../constants';
 import { Col, Row } from 'react-bootstrap';
 import Dashboard from '../../dashboard';
 
@@ -14,8 +24,10 @@ function Home() {
     <Container fluid className="text-center my-4">
       <h2>{t('homePage.welcomeMessage')}</h2>
       <Dashboard />
-      <p className="mt-5 lead">{t('homePage.description')}</p>
-      <hr className='w-75 mx-auto' />
+      <p className="mt-5 lead" style={{ userSelect: 'none' }}>
+        {t('homePage.description')}
+      </p>
+      <hr className="w-75 mx-auto" />
       <Row className="justify-content-center">
         <Col md={3}>
           <AuthorizedElement roles={['manage-users']}>
@@ -48,7 +60,7 @@ function Home() {
           </AuthorizedElement>
         </Col>
         <Col md={3}>
-          <AuthorizedElement roles={['manage-users']}>
+          <AuthorizedElement roles={[REPORT_VIEW]}>
             <Link id="report-button" to={REPORTING_PAGE} className="m-2 w-100 btn btn-success">
               Reports
             </Link>

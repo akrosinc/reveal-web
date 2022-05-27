@@ -210,7 +210,7 @@ export const createLocation = (map: Map, data: any, moveend: () => void, opacity
 
 // hover handler with timeout to simulate hovering effect
 export const hoverHandler = (map: Map, identifier: string) => {
-  let popup = new Popup().setHTML(
+  let popup = new Popup({closeButton: false}).setHTML(
     `<h4 class='bg-success text-light text-center'>Actions</h4><div class='p-2'><small>Available commands:<br />
     Right click - context menu <br/> Double Click - load children<br />
     Ctrl + Left Click - Select location</small></div>`
@@ -376,7 +376,7 @@ export const contextMenuHandler = (
       if (feature && feature.properties && feature.properties.id) {
         const buttonId = feature.properties.id + '-button';
         if (feature.layer.id.includes('-highlighted')) {
-          popup = new Popup({ focusAfterOpen: true, closeOnMove: true })
+          popup = new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: false })
             .setLngLat(e.lngLat)
             .setHTML(
               `<h4 class='bg-success text-center'>Action menu</h4>
@@ -410,7 +410,7 @@ export const contextMenuHandler = (
               : feature.properties.geographicLevel === 'structure'
               ? `<button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Structure Details</button>`
               : `<button class='btn btn-primary w-75 mb-3' id='${assignButtonId}'>Assign location</button></div>`);
-          popup = new Popup({ focusAfterOpen: true, closeOnMove: true })
+          popup = new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: false })
             .setLngLat(e.lngLat)
             .setHTML(displayHTML)
             .addTo(map);

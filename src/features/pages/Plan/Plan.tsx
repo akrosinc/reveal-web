@@ -3,8 +3,8 @@ import { Container } from 'react-bootstrap';
 import { Route, Routes } from 'react-router-dom';
 import AuthGuard from '../../../components/AuthGuard';
 import { PLAN_CREATE, PLAN_UPDATE, PLAN_VIEW } from '../../../constants';
-import CreatePlan from '../../plan/components/Plans/create';
-import Plans from '../../plan/components/Plans/Plans';
+import CreatePlan from '../../plan/components/create';
+import Plans from '../../plan/components';
 
 const Plan = () => {
   return (

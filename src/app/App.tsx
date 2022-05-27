@@ -52,9 +52,11 @@ function App() {
     // if keycloak is initialized store user in state
     if (initialized) {
       dispatch(showLoader(false));
-      keycloak.loadUserProfile().then(res => {
-        toast.success('Welcome back ' + res.username);
-      });
+      if (keycloak.authenticated) {
+        keycloak.loadUserProfile().then(res => {
+          toast.success('Welcome back ' + res.username);
+        });
+      }
     } else {
       dispatch(showLoader(true));
     }

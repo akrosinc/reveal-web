@@ -27,7 +27,6 @@ const Locations = () => {
   const [open, setOpen] = useState(false);
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [currentLocation, setCurrentLocation] = useState<LocationModel>();
-  const [currentLocationChildList, setCurrentLocationChildList] = useState<LocationModel[]>();
   const [locationList, setLocationList] = useState<PageableModel<LocationModel>>();
   const [locationHierarchyList, setLocationHierarchyList] = useState<Options[]>();
   const [selectedLocationHierarchy, setSelectedLocationHierarchy] = useState<Options>();
@@ -139,31 +138,26 @@ const Locations = () => {
     []
   );
 
-  const clearHandler = () => {
-    if (currentLocationChildList) {
-      loadNew(undefined);
-      setCurrentLocation(undefined);
-      setCurrentLocationChildList(undefined);
-    } else {
-      setCurrentLocation(undefined);
-      setCurrentLocationChildList(undefined);
-      if (locationList && locationList.content.length) {
-        getLocationById(locationList.content[0].identifier).then(res => {
-          dispatch(showLoader(true));
-          setTimeout(() => {
-            setCurrentLocation(res);
-            dispatch(showLoader(false));
-          }, 1500);
-        });
-      }
-    }
+  const loadLocationHandler = (locationId: string) => {
+    //close expanding table
+    setOpen(!open);
+    dispatch(showLoader(true));
+    getLocationById(locationId)
+      .then(res => {
+        setCurrentLocation(res);
+      })
+      .catch(err => toast.error(err.message ? err.message : 'Error loading GeoJSON data'))
+      .finally(() => dispatch(showLoader(false)));
   };
 
-  //Functions to load child locations
-  const loadNew = (data: any) => {
-    if (data) {
-      setCurrentLocationChildList(data.children !== undefined ? data.children : []);
-      setCurrentLocation(data);
+  const clearHandler = () => {
+    setCurrentLocation(undefined);
+    if (locationList && locationList.content.length) {
+      getLocationById(locationList.content[0].identifier).then(res => {
+        dispatch(showLoader(true));
+        setCurrentLocation(res);
+        dispatch(showLoader(false));
+      });
     }
   };
 
@@ -230,17 +224,7 @@ const Locations = () => {
                   <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
                     <ExpandingTable
                       columns={columns}
-                      clickHandler={(identifier: string, col?: any) => {
-                        setOpen(!open);
-                        dispatch(showLoader(true));
-                        setCurrentLocationChildList(col.children);
-                        getLocationById(identifier)
-                          .then(res => {
-                            setCurrentLocation(res);
-                          })
-                          .catch(err => toast.error('Error loading geoJSON data'))
-                          .finally(() => dispatch(showLoader(false)));
-                      }}
+                      clickHandler={loadLocationHandler}
                       data={data}
                       sortHandler={sortHandler}
                     />

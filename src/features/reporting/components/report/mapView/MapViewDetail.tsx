@@ -35,7 +35,8 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
   const [lat, setLat] = useState(10);
   const [zoom, setZoom] = useState(4);
   const dispatch = useAppDispatch();
-  let popup = useRef<Popup>();
+  let contextMenuPopup = useRef<Popup>(new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: false }));
+  let hoverPopup = useRef<Popup>(new Popup({ closeOnClick: false, closeButton: false, offset: 20 }));
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
@@ -59,8 +60,9 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
         //convert to location properties feature
         const feature = features[0] as any as Feature<Polygon | MultiPolygon, LocationProperties>;
         if (feature) {
-          popup.current?.remove();
-          popup.current = new Popup({ focusAfterOpen: true, closeOnMove: true })
+          contextMenuPopup.current.remove();
+          hoverPopup.current.remove();
+          contextMenuPopup.current
             .setLngLat(e.lngLat)
             .setHTML(
               `<h4 class='bg-success text-center'>Action menu</h4>
@@ -85,6 +87,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
       data: FeatureCollection<Polygon | MultiPolygon, LocationProperties>,
       parentLocationIdentifier: string
     ) => {
+      //check if its clear map event otherwise just fit to bounds
       if (map.getSource(parentLocationIdentifier) === undefined && data.features.length) {
         dispatch(showLoader(true));
         map.addSource(parentLocationIdentifier, {
@@ -141,6 +144,31 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
           'label-layer'
         );
 
+        map.on('mouseover', parentLocationIdentifier + '-label', e => {
+          const feature = map.queryRenderedFeatures(e.point)[0];
+          const properties = feature.properties;
+          if (properties && !hoverPopup.current.isOpen() && !contextMenuPopup.current.isOpen()) {
+            map.getCanvas().style.cursor = 'pointer';
+            hoverPopup.current
+              .setLngLat(e.lngLat)
+              .setHTML(
+                `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
+              <h6 class='my-2'>Distribution coverage: ${
+                properties['distCoveragePercent'] !== undefined
+                  ? Number(Number(properties['distCoveragePercent']).toFixed(3)) + '%'
+                  : 'No data'
+              }</h6>
+              </div>`
+              )
+              .addTo(map);
+          }
+        });
+
+        map.on('mouseleave', parentLocationIdentifier + '-label', () => {
+          map.getCanvas().style.cursor = '';
+          hoverPopup.current.remove();
+        });
+
         const featureSet: Feature<Point, Properties>[] = [];
         const bounds = bbox(data) as any;
         data.features.forEach((element: Feature<Polygon | MultiPolygon, LocationProperties>) => {
@@ -178,8 +206,15 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
 
   useEffect(() => {
     if (map.current && featureSet) {
-      //check if its clear map event otherwise just fit to bounds
-      loadLocationSet(map.current, featureSet[0], featureSet[1]);
+      const mapInstance = map.current;
+      //check if map is loaded completly
+      if (mapInstance.getLayer('label-layer')) {
+        loadLocationSet(mapInstance, featureSet[0], featureSet[1]);
+      } else {
+        mapInstance.once('load', () => {
+          loadLocationSet(mapInstance, featureSet[0], featureSet[1]);
+        });
+      }
     }
   }, [featureSet, loadLocationSet]);
 

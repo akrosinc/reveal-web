@@ -177,14 +177,21 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
 
   useEffect(() => {
     const currentMap = map.current;
-    if (currentMap && currentMap.isStyleLoaded() && data && currentPlan) {
+    if (currentMap && data) {
       if (isLocationAlreadyLoaded(currentMap, data.properties.name)) {
         moveend();
       } else {
-        createLocation(currentMap, data, moveend, opacity);
+        //check if map is loaded completly
+        if (currentMap.getLayer('label-layer')) {
+          createLocation(currentMap, data, moveend, opacity);
+        } else {
+          currentMap.once('load', () => {
+            createLocation(currentMap, data, moveend, opacity);
+          });
+        }
       }
     }
-  }, [data, currentPlan, moveend, opacity]);
+  }, [data, moveend, opacity]);
 
   useEffect(() => {
     return () => {
@@ -199,10 +206,14 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
     if (data) {
       setOpacity(MAP_DEFAULT_FILL_OPACITY);
       selectedLocations.length = 0;
-      clearHandler();
       map.current?.remove();
       map.current = undefined;
+      //init new map
       initializeMap();
+      //clear handler on map load
+      map!.current!.once('load', () => {
+        clearHandler();
+      });
     }
   };
 

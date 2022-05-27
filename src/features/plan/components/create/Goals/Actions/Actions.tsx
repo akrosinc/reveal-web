@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Modal, Row, Col } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
-import { Action } from '../../../../../providers/types';
+import { Action } from '../../../../providers/types';
 import DatePicker from 'react-datepicker';
-import { getActionTitles, getformList } from '../../../../../api';
+import { getActionTitles, getformList } from '../../../../api';
 import Moment from 'moment';
 
 interface Props {

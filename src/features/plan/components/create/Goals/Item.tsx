@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Accordion, Form, Row, Col, Button, Table } from 'react-bootstrap';
-import Actions from '../Actions';
-import Condition from '../Conditions';
+import Actions from './Actions';
+import Condition from './Conditions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Action, ConditionModel, Goal } from '../../../../../providers/types';
-import { createAction, deleteAction, updateAction } from '../../../../../api';
+import { Action, ConditionModel, Goal } from '../../../providers/types';
+import { createAction, deleteAction, updateAction } from '../../../api';
 import { toast } from 'react-toastify';
-import { showLoader } from '../../../../../../reducers/loader';
-import { useAppDispatch } from '../../../../../../../store/hooks';
+import { showLoader } from '../../../../reducers/loader';
+import { useAppDispatch } from '../../../../../store/hooks';
 
 interface Props {
   goal: Goal;

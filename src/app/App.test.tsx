@@ -7,11 +7,6 @@ import { ReactKeycloakProvider } from '@react-keycloak/web';
 import keycloak from '../keycloak';
 import { PublicPage } from '../components/pages';
 
-//Mock mapbox gl
-jest.mock('mapbox-gl/dist/mapbox-gl', () => ({
-  Map: () => ({})
-}));
-
 test('renders start page', () => {
   const renderResult = render(
     <ReactKeycloakProvider authClient={keycloak}>

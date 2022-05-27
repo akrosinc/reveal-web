@@ -3,13 +3,13 @@ import { Button, Table, Row, Col } from 'react-bootstrap';
 import { DebounceInput } from 'react-debounce-input';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { PageableModel } from '../../../../api/providers';
-import Paginator from '../../../../components/Pagination';
-import { PAGINATION_DEFAULT_SIZE, PLANS, PLAN_TABLE_COLUMNS } from '../../../../constants';
-import { useAppDispatch } from '../../../../store/hooks';
-import { showLoader } from '../../../reducers/loader';
-import { getPlanList } from '../../api';
-import { PlanModel } from '../../providers/types';
+import { PageableModel } from '../../../api/providers';
+import Paginator from '../../../components/Pagination';
+import { PAGINATION_DEFAULT_SIZE, PLANS, PLAN_TABLE_COLUMNS } from '../../../constants';
+import { useAppDispatch } from '../../../store/hooks';
+import { showLoader } from '../../reducers/loader';
+import { getPlanList } from '../api';
+import { PlanModel } from '../providers/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ActivatePlan from './activate';
 
@@ -58,6 +58,7 @@ const Plans = () => {
 
   const closeHandler = () => {
     setShowActivate(false);
+    loadData(PAGINATION_DEFAULT_SIZE, 0, '', currentSortDirection, currentSortField);
   };
 
   return (

@@ -1,22 +1,22 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Col, Row, Container, Tab, Tabs, Form, Button, Accordion } from 'react-bootstrap';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { PLANS, REGEX_NAME_VALIDATION, REGEX_TITLE_VALIDATION } from '../../../../../constants';
-import { useAppDispatch } from '../../../../../store/hooks';
-import { getLocationHierarchyList } from '../../../../location/api';
-import { showLoader } from '../../../../reducers/loader';
-import { createPlan, deleteGoalById, getInterventionTypeList, getPlanById, updatePlanDetails } from '../../../api';
+import { useNavigate, useParams } from 'react-router-dom';
+import { PLANS, REGEX_NAME_VALIDATION, REGEX_TITLE_VALIDATION } from '../../../../constants';
+import { useAppDispatch } from '../../../../store/hooks';
+import { getLocationHierarchyList } from '../../../location/api';
+import { showLoader } from '../../../reducers/loader';
+import { createPlan, deleteGoalById, getInterventionTypeList, getPlanById, updatePlanDetails } from '../../api';
 import Moment from 'moment';
 import { useForm, Controller } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Select, { SingleValue } from 'react-select';
-import { Goal } from '../../../providers/types';
-import Item from './Goals/Items';
-import { ConfirmDialog, ConfirmDialogService } from '../../../../../components/Dialogs';
+import { Goal } from '../../providers/types';
+import Item from './Goals';
+import { ConfirmDialog, ConfirmDialogService } from '../../../../components/Dialogs';
 import { toast } from 'react-toastify';
-import CreateGoal from './Goals/Items/CreateGoal/CreateGoal';
+import CreateGoal from './Goals/CreateGoal/CreateGoal';
 
 interface Options {
   value: string;
@@ -58,7 +58,7 @@ const CreatePlan = () => {
     formState: { errors, isDirty },
     trigger,
     setValue,
-    getValues
+    getValues,
   } = useForm<RegisterValues>();
 
   const loadPlan = useCallback(
@@ -206,9 +206,30 @@ const CreatePlan = () => {
     <Container fluid>
       <Row className="mt-3 align-items-center">
         <Col md={3}>
-          <Link id="back-button" to={PLANS} className="btn btn-primary">
+          <Button
+            id="back-button"
+            onClick={() => {
+              if (isDirty) {
+                ConfirmDialogService(({ giveAnswer }) => (
+                  <ConfirmDialog
+                    closeHandler={giveAnswer}
+                    backdrop
+                    message={id ? 'You are about to discard all new changes made. Are you sure?' : 'Are you sure you want to discard plan creation?'}
+                    title="Discard Changes"
+                  />
+                )).then(res => {
+                  if (res) {
+                    navigate(PLANS);
+                  }
+                });
+              } else {
+                navigate(PLANS);
+              }
+            }}
+            className="btn btn-primary"
+          >
             <FontAwesomeIcon icon="arrow-left" className="me-2" /> Plans
-          </Link>
+          </Button>
         </Col>
         <Col md={6} className="text-center">
           <h2 className="m-0">{id !== undefined ? 'Plan details' : 'Create Plan'}</h2>
@@ -249,7 +270,7 @@ const CreatePlan = () => {
               }}
             >
               <Tab eventKey="plan-details" title="Details">
-                <Form.Group className="mb-2" style={{display: 'none'}}>
+                <Form.Group className="mb-2" style={{ display: 'none' }}>
                   <Form.Label>Plan name</Form.Label>
                   <Form.Control
                     id="plan-name-input"
