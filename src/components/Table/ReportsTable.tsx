@@ -7,7 +7,7 @@ import {
   REPORT_TABLE_PERCENTAGE_LOW,
   REPORT_TABLE_PERCENTAGE_MEDIUM
 } from '../../constants';
-import { RowData } from '../../features/reporting/providers/types';
+import { ReportLocationProperties } from '../../features/reporting/providers/types';
 
 interface Props {
   columns: Column[];
@@ -55,12 +55,12 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
       <tbody {...getTableBodyProps()}>
         {rows.map(row => {
           prepareRow(row);
-          let rowData = row.original as RowData;
+          let rowData = row.original as ReportLocationProperties;
           return (
             <tr
               {...row.getRowProps()}
               onClick={() => {
-                clickHandler(rowData.locationIdentifier, rowData.locationName, rowData.childrenNumber);
+                clickHandler(rowData.id, rowData.name, rowData.childrenNumber);
               }}
             >
               {row.cells.map(cell => {

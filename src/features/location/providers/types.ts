@@ -1,5 +1,3 @@
-import { BulkStatus } from '../../user/providers/types';
-
 export interface GeographicLevel {
   identifier: string;
   title: string;
@@ -48,12 +46,18 @@ export interface LocationBulkModel {
   identifier: string;
   filename: string;
   uploadDatetime: Date;
-  status: BulkStatus;
+  status: LocationBulkStatus;
   uploadedBy: string;
 }
 
 export interface LocationBulkDetailsModel {
   name: string;
-  status: BulkStatus;
+  status: LocationBulkStatus;
   message: string;
+}
+
+export enum LocationBulkStatus {
+  PROCESSING = 'PROCESSING',
+  COMPLETE = 'COMPLETE',
+  GENERATING_RELATIONSHIPS = 'GENERATING_RELATIONSHIPS'
 }

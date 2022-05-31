@@ -6,12 +6,11 @@ import {
   REPORT_TABLE_PERCENTAGE_LOW,
   REPORT_TABLE_PERCENTAGE_MEDIUM
 } from '../../../../../constants';
-import { LocationProperties } from '../../../../../utils';
-import { FoundCoverage } from '../../../providers/types';
+import { FoundCoverage, ReportLocationProperties } from '../../../providers/types';
 
 interface Props {
   showModal: (show: boolean) => void;
-  feature: Feature<Polygon | MultiPolygon, LocationProperties>;
+  feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>;
 }
 
 const ReportModal = ({ showModal, feature }: Props) => {
@@ -21,7 +20,7 @@ const ReportModal = ({ showModal, feature }: Props) => {
     //Map columns depending on server response
     //we need to parse the object because mapbox only stores string and numeric property values
     if (feature.properties.columnDataMap) {
-      const parsed = JSON.parse(feature.properties.columnDataMap);
+      const parsed = JSON.parse(String(feature.properties.columnDataMap));
       return Object.keys(parsed);
     }
     return [];
@@ -59,7 +58,7 @@ const ReportModal = ({ showModal, feature }: Props) => {
       show
       centered
       size="xl"
-      onShow={() => setTableData(JSON.parse(feature.properties.columnDataMap) as { [key: string]: FoundCoverage })}
+      onShow={() => setTableData(JSON.parse(String(feature.properties.columnDataMap)) as { [key: string]: FoundCoverage })}
     >
       <Modal.Header className="justify-content-center">
         <Modal.Title>Report details ({feature.properties.name})</Modal.Title>

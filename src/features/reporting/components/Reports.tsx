@@ -2,6 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Col, Form, Row, Table } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
 import { PAGINATION_DEFAULT_SIZE, PLAN_TABLE_COLUMNS, REPORTING_PAGE } from '../../../constants';
@@ -35,12 +36,16 @@ const Reports = () => {
   );
 
   useEffect(() => {
+    dispatch(showLoader(true));
     getReportTypes().then(res => {
       setReportTypes(res);
       setSelectedReportType(res.length ? res[0] : undefined);
       loadData(PAGINATION_DEFAULT_SIZE, 0, res[0]);
+    }).catch(err => {
+      dispatch(showLoader(false));
+      toast.error(err.message ? err.message : 'Unexpected error has occured');
     });
-  }, [loadData]);
+  }, [loadData, dispatch]);
 
   const paginationHandler = (size: number, page: number) => {
     if (selectedReportType) {

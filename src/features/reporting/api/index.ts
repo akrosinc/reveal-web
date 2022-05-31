@@ -2,31 +2,15 @@ import { FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { PLAN, REPORTS } from '../../../constants';
-import { LocationProperties } from '../../../utils';
 import { PlanModel } from '../../plan/providers/types';
-import { MapDataReportRequest, ReportResponse, TableReportRequest } from '../providers/types';
-
-export const getReportByPlanId = async (tableReportRequest: TableReportRequest): Promise<ReportResponse> => {
-  const data = await api
-    .get<ReportResponse>(
-      `${REPORTS}/row?planIdentifier=${tableReportRequest.planIdentifier}&reportTypeEnum=${
-        tableReportRequest.reportTypeEnum
-      }${
-        tableReportRequest.parentLocationIdentifier !== null
-          ? '&parentLocationIdentifier=' + tableReportRequest.parentLocationIdentifier
-          : ''
-      }&getChildren=${tableReportRequest.getChildren}`
-    )
-    .then(response => response.data);
-  return data;
-};
+import { MapDataReportRequest, ReportLocationProperties } from '../providers/types';
 
 export const getReportTypes = async (): Promise<string[]> => {
   const data = await api.get<string[]>(REPORTS + '/reportTypes').then(response => response.data);
   return data;
 };
 
-export const getMapReportData = async (mapData: MapDataReportRequest): Promise<FeatureCollection<Polygon | MultiPolygon, LocationProperties>> => {
+export const getMapReportData = async (mapData: MapDataReportRequest): Promise<FeatureCollection<Polygon | MultiPolygon, ReportLocationProperties>> => {
   const data = await api
     .get<any>(
       REPORTS +
