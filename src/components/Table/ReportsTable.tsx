@@ -98,7 +98,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
                         <OverlayTrigger
                           {...cell.getCellProps()}
                           placement="top"
-                          overlay={<Tooltip id="button-tooltip">{rowData.columnDataMap[cellName].meta}</Tooltip>}
+                          overlay={<Tooltip id="meta-tooltip">{rowData.columnDataMap[cellName].meta}</Tooltip>}
                         >
                           <td className={color}>{percentage}%</td>
                         </OverlayTrigger>

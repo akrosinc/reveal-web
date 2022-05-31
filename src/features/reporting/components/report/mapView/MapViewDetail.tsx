@@ -6,6 +6,7 @@ import PopoverComponent from '../../../../../components/Popover';
 import { bbox, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
 import { useAppDispatch } from '../../../../../store/hooks';
 import { showLoader } from '../../../../reducers/loader';
+import { MAP_DEFAULT_FILL_OPACITY } from '../../../../../constants';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 const legend = [
@@ -37,6 +38,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
   const dispatch = useAppDispatch();
   let contextMenuPopup = useRef<Popup>(new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: false }));
   let hoverPopup = useRef<Popup>(new Popup({ closeOnClick: false, closeButton: false, offset: 20 }));
+  const opacity = useRef(MAP_DEFAULT_FILL_OPACITY);
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
@@ -124,7 +126,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
                   'transparent'
                 ]
               ],
-              'fill-opacity': ['match', ['get', 'geographicLevel'], 'structure', 0.8, 0.2]
+              'fill-opacity': opacity.current
             }
           },
           'label-layer'
@@ -198,6 +200,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
       }
       //fit to bounds if that location already exist
       else if (data.features.length) {
+        dispatch(showLoader(false));
         map.fitBounds(bbox(data) as any);
       }
     },
@@ -238,6 +241,18 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
     }
   });
 
+  const opacityRangeHandler = (inputValue: string) => {
+    if (map.current) {
+      map.current.queryRenderedFeatures().forEach(el => {
+        if (el.layer.id)
+          if (map!.current!.getLayer(el.layer.id) && el.layer.id.includes('-fill')) {
+            map!.current!.setPaintProperty(el.layer.id, 'fill-opacity', Number(inputValue) / 100);
+            opacity.current = Number(inputValue) / 100;
+          }
+      });
+    }
+  };
+
   return (
     <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
       <div className="sidebar text-light">
@@ -253,6 +268,18 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
             })}
           </ul>
         </PopoverComponent>
+        <div className="mt-2">
+          <label id="range-input-label" className="text-white">
+            Layer opacity
+          </label>
+          <br />
+          <input
+            id="range-input"
+            defaultValue={opacity.current * 100}
+            type="range"
+            onChange={e => opacityRangeHandler(e.target.value)}
+          />
+        </div>
       </div>
       <div className="clearButton">
         <p className="small m-0 p-0 text-white rounded mb-1">

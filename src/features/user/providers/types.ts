@@ -43,8 +43,9 @@ export interface UserBulk {
 }
 
 export enum BulkStatus {
-  PROCESSING,
-  COMPLETE
+  PROCESSING = 'PROCESSING',
+  COMPLETE = 'COMPLETE',
+  GENERATIN_RELATIONSHIPS = 'GENERATIN_RELATIONSHIPS'
 }
 
 export interface BulkDetailsModel {

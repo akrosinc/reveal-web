@@ -18,19 +18,19 @@ import { useRef } from 'react';
 import { FoundCoverage, RowData } from '../../providers/types';
 import ReportModal from './reportModal';
 
+interface BreadcrumbModel {
+  locationName: string;
+  locationIdentifier: string;
+  location: FeatureCollection<Polygon | MultiPolygon, LocationProperties>;
+}
+
 const Report = () => {
   const [cols, setCols] = useState<Column[]>([]);
   const [data, setData] = useState<RowData[]>([]);
   const dispatch = useAppDispatch();
   const { planId, reportType } = useParams();
   const navigate = useNavigate();
-  const [path, setPath] = useState<
-    {
-      locationName: string;
-      locationIdentifier: string;
-      location: FeatureCollection<Polygon | MultiPolygon, LocationProperties>;
-    }[]
-  >([]);
+  const [path, setPath] = useState<BreadcrumbModel[]>([]);
   const [plan, setPlan] = useState<PlanModel>();
   const [showMap, setShowMap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
@@ -99,6 +99,7 @@ const Report = () => {
       ])
         .then(async ([plan, report]) => {
           setPlan(plan);
+          setData([]);
           setCols(mapColumns(report.rowData[0].columnDataMap));
           // default sort by Distribution Coverage if possible
           if (report.rowData[0].columnDataMap['Distribution Coverage']) {
@@ -122,14 +123,15 @@ const Report = () => {
             planIdentifier: planId
           }).then(res => {
             setFeatureSet([res, 'main']);
+            if (!res.features.length) {
+              dispatch(showLoader(false));
+            }
           });
         })
         .catch(err => {
+          dispatch(showLoader(false));
           toast.error(err.message !== undefined ? err.message : 'Unexpected error');
           navigate(-1);
-        })
-        .finally(() => {
-          dispatch(showLoader(false));
         });
     } else {
       dispatch(showLoader(false));
@@ -158,6 +160,7 @@ const Report = () => {
         .then(res => {
           if (res.rowData.length) {
             if (res.rowData[0].columnDataMap['Distribution Coverage']) {
+              setCols(mapColumns(res.rowData[0].columnDataMap));
               setData(
                 res.rowData.sort((a, b) => {
                   let rowDataA = a.columnDataMap['Distribution Coverage']?.value;
@@ -174,6 +177,9 @@ const Report = () => {
                 })
               );
             } else {
+              //first set data to empty array for new columns to render
+              setData([]);
+              setCols(mapColumns(res.rowData[0].columnDataMap));
               setData(res.rowData);
             }
             getMapReportData({
@@ -187,11 +193,16 @@ const Report = () => {
               }
             });
           } else {
+            dispatch(showLoader(false));
             toast.info(`${locationName} has no child locations.`);
           }
         })
-        .finally(() => dispatch(showLoader(false)));
+        .catch(err => {
+          dispatch(showLoader(false));
+          toast.error(err.message ? err.message : 'There was an error loading this location.');
+        });
     } else {
+      dispatch(showLoader(false));
       toast.info(`${locationName} has no child locations.`);
     }
   };
@@ -201,23 +212,38 @@ const Report = () => {
       dispatch(showLoader(true));
       path.splice(0, path.length);
       setPath(path);
+      loadData();
+    }
+  };
+
+  const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
+    if (planId && reportType) {
+      dispatch(showLoader(true));
+      path.splice(index + 1, path.length - index);
+      setPath(path);
       getReportByPlanId({
-        getChildren: false,
-        parentLocationIdentifier: null,
+        getChildren: true,
+        parentLocationIdentifier: el.locationIdentifier,
         reportTypeEnum: reportType,
         planIdentifier: planId
       })
         .then(res => {
+          setData([]);
+          if (res.rowData.length) {
+            setCols(mapColumns(res.rowData[0].columnDataMap));
+          }
           setData(res.rowData);
-          getMapReportData({
-            parentLocationIdentifier: null,
-            reportTypeEnum: reportType,
-            planIdentifier: planId
-          }).then(res => {
-            setFeatureSet([res, 'main']);
-          });
+          //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
+          //its enough to spread the object so rerender will be triggered
+          setFeatureSet([{ ...path[index > 0 ? index - 1 : index].location }, el.locationIdentifier]);
+          if (!res.rowData.length) {
+            dispatch(showLoader(false));
+          }
         })
-        .finally(() => dispatch(showLoader(false)));
+        .catch(err => {
+          dispatch(showLoader(false));
+          toast.error(err.message ? err.message : 'There was an error loading this location.');
+        });
     }
   };
 
@@ -246,26 +272,7 @@ const Report = () => {
                 <span
                   style={{ cursor: 'pointer' }}
                   key={el.locationIdentifier}
-                  onClick={() => {
-                    if (planId && reportType) {
-                      dispatch(showLoader(true));
-                      path.splice(index + 1, path.length - index);
-                      setPath(path);
-                      getReportByPlanId({
-                        getChildren: true,
-                        parentLocationIdentifier: el.locationIdentifier,
-                        reportTypeEnum: reportType,
-                        planIdentifier: planId
-                      })
-                        .then(res => {
-                          setData(res.rowData);
-                          //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
-                          //its enough to spread the object so rerender will be triggered
-                          setFeatureSet([{ ...path[index > 0 ? index - 1 : index].location }, el.locationIdentifier]);
-                        })
-                        .finally(() => dispatch(showLoader(false)));
-                    }
-                  }}
+                  onClick={() => breadCrumbClickHandler(el, index)}
                 >
                   {index !== 0 ? ' / ' : ''}
                   {el.locationName}
