@@ -1,28 +1,7 @@
-export interface TableReportRequest {
-  planIdentifier: string;
-  reportTypeEnum: string;
-  parentLocationIdentifier: string | null;
-  getChildren: boolean;
-}
-
 export interface MapDataReportRequest {
   planIdentifier: string;
   reportTypeEnum: string;
   parentLocationIdentifier: string | null;
-}
-
-export interface ReportResponse {
-  parentLocationIdentifier: string;
-  reportIdentifier: string;
-  planIdentifier: string;
-  rowData: RowData[];
-}
-
-export interface RowData {
-  locationIdentifier: string;
-  locationName: string;
-  childrenNumber: number;
-  columnDataMap: { [x: string]: FoundCoverage };
 }
 
 export interface FoundCoverage {
@@ -35,4 +14,31 @@ export enum ReportType {
   MDA_FULL_COVERAGE = 'MDA_FULL_COVERAGE',
   MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL = "MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL",
   IRS_FULL_COVERAGE = "IRS_FULL_COVERAGE"
+}
+
+export interface ReportLocationProperties {
+  id: string;
+  name: string;
+  assigned: boolean;
+  numberOfTeams: number;
+  childrenNumber: number;
+  geographicLevel: string;
+  columnDataMap: { [x: string]: FoundCoverage };
+  distCoveragePercent: number;
+  numberOfChildrenTreated: number;
+  numberOfChildrenEligible: number;
+}
+
+export enum IrsStructureStatus {
+  NOT_SPRAYED = "Not Sprayed",
+  SPRAYED = "Sprayed",
+  NOT_SPRAYABLE = "Not Sprayable",
+}
+
+export enum MdaStructureStatus {
+  NOT_VISITED = "Not Visited",
+  COMPLETE = "Complete",
+  NOT_ELIGIBLE = "Not Eligible",
+  SMC_COMPLETE = "SMC Complete",
+  SPAQ_COMPLETE = "SPAQ Complete",
 }

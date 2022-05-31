@@ -43,8 +43,8 @@ export interface UserBulk {
 }
 
 export enum BulkStatus {
-  PROCESSING,
-  COMPLETE
+  PROCESSING = 'PROCESSING',
+  COMPLETE = 'COMPLETE',
 }
 
 export interface BulkDetailsModel {

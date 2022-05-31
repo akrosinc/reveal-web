@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Row, Col, Button, Table } from 'react-bootstrap';
 import { PageableModel } from '../../../../api/providers';
 import { useTranslation } from 'react-i18next';
-import { LocationBulkModel, LocationBulkDetailsModel } from '../../providers/types';
+import { LocationBulkModel, LocationBulkDetailsModel, LocationBulkStatus } from '../../providers/types';
 import { ActionDialog } from '../../../../components/Dialogs';
 import UploadLocation from './upload';
 import Paginator from '../../../../components/Pagination';
@@ -14,7 +14,6 @@ import { getLocationBulkListById, getLocationBulkList } from '../../api';
 import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import LocationBulkDetails from './details';
-import { BulkStatus } from '../../../user/providers/types';
 
 const LocationBulk = () => {
   const [openUpload, setOpenUpload] = useState(false);
@@ -62,13 +61,13 @@ const LocationBulk = () => {
         setSelectedBulkFile(selectedBulk);
         setSelectedBulkLocationList(res);
         setOpenDetails(true);
-        if (selectedBulk.status !== BulkStatus.COMPLETE) {
+        if (selectedBulk.status !== LocationBulkStatus.COMPLETE) {
           setSelectedInterval(
             setInterval(() => {
               getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier).then(res => {
                 setSelectedBulkLocationList(res);
               });
-            }, 5000)
+            }, 10000)
           );
         }
       })

@@ -11,37 +11,36 @@ import { useAppDispatch } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
 import { showLoader } from '../../../reducers/loader';
-import { getMapReportData, getReportByPlanId } from '../../api';
+import { getMapReportData } from '../../api';
 import { Feature, FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
-import { LocationProperties } from '../../../../utils';
 import { useRef } from 'react';
-import { FoundCoverage, RowData } from '../../providers/types';
+import { FoundCoverage, ReportLocationProperties } from '../../providers/types';
 import ReportModal from './reportModal';
+
+interface BreadcrumbModel {
+  locationName: string;
+  locationIdentifier: string;
+  location: FeatureCollection<Polygon | MultiPolygon, ReportLocationProperties>;
+}
 
 const Report = () => {
   const [cols, setCols] = useState<Column[]>([]);
-  const [data, setData] = useState<RowData[]>([]);
+  const [data, setData] = useState<ReportLocationProperties[]>([]);
   const dispatch = useAppDispatch();
   const { planId, reportType } = useParams();
   const navigate = useNavigate();
-  const [path, setPath] = useState<
-    {
-      locationName: string;
-      locationIdentifier: string;
-      location: FeatureCollection<Polygon | MultiPolygon, LocationProperties>;
-    }[]
-  >([]);
+  const [path, setPath] = useState<BreadcrumbModel[]>([]);
   const [plan, setPlan] = useState<PlanModel>();
   const [showMap, setShowMap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [featureSet, setFeatureSet] =
-    useState<[location: FeatureCollection<Polygon | MultiPolygon, LocationProperties>, parentId: string]>();
+    useState<[location: FeatureCollection<Polygon | MultiPolygon, ReportLocationProperties>, parentId: string]>();
   const [showModal, setShowModal] = useState(false);
-  const [currentFeature, setCurrentFeature] = useState<Feature<Polygon | MultiPolygon, LocationProperties>>();
+  const [currentFeature, setCurrentFeature] = useState<Feature<Polygon | MultiPolygon, ReportLocationProperties>>();
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
-  const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, LocationProperties>) => {
+  const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
     loadChildHandler(feature.id as string, feature.properties.name, feature.properties.childrenNumber);
   };
   const handleDobuleClickRef = useRef(doubleClickHandler);
@@ -63,7 +62,7 @@ const Report = () => {
     if (data) {
       setCurrentSortDirection(sortDirection);
       setData([
-        ...data.sort((a: RowData, b: RowData) => {
+        ...data.sort((a, b) => {
           let rowDataA = a.columnDataMap['Distribution Coverage']?.value;
           let rowDataB = b.columnDataMap['Distribution Coverage']?.value;
           if (rowDataA && rowDataB) {
@@ -80,7 +79,7 @@ const Report = () => {
     }
   };
 
-  const openModalHandler = (show: boolean, feature?: Feature<Polygon | MultiPolygon, LocationProperties>) => {
+  const openModalHandler = (show: boolean, feature?: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
     if (feature) setCurrentFeature(feature);
     setShowModal(show);
   };
@@ -90,8 +89,7 @@ const Report = () => {
     if (planId && reportType) {
       Promise.all([
         getPlanById(planId),
-        getReportByPlanId({
-          getChildren: false,
+        getMapReportData({
           parentLocationIdentifier: null,
           reportTypeEnum: reportType,
           planIdentifier: planId
@@ -99,11 +97,13 @@ const Report = () => {
       ])
         .then(async ([plan, report]) => {
           setPlan(plan);
-          setCols(mapColumns(report.rowData[0].columnDataMap));
+          setData([]);
+          setCols(mapColumns(report.features[0].properties.columnDataMap));
           // default sort by Distribution Coverage if possible
-          if (report.rowData[0].columnDataMap['Distribution Coverage']) {
+          let mapData = report.features.map(el => el.properties);
+          if (mapData[0].columnDataMap['Distribution Coverage']) {
             setData(
-              report.rowData.sort((a, b) => {
+              mapData.sort((a, b) => {
                 let rowDataA = a.columnDataMap['Distribution Coverage'].value;
                 let rowDataB = b.columnDataMap['Distribution Coverage'].value;
                 if (rowDataA && rowDataB) {
@@ -114,22 +114,17 @@ const Report = () => {
               })
             );
           } else {
-            setData(report.rowData);
+            setData(mapData);
           }
-          getMapReportData({
-            parentLocationIdentifier: null,
-            reportTypeEnum: reportType,
-            planIdentifier: planId
-          }).then(res => {
-            setFeatureSet([res, 'main']);
-          });
+          setFeatureSet([report, 'main']);
+          if (!report.features.length) {
+            dispatch(showLoader(false));
+          }
         })
         .catch(err => {
+          dispatch(showLoader(false));
           toast.error(err.message !== undefined ? err.message : 'Unexpected error');
           navigate(-1);
-        })
-        .finally(() => {
-          dispatch(showLoader(false));
         });
     } else {
       dispatch(showLoader(false));
@@ -138,7 +133,7 @@ const Report = () => {
   }, [dispatch, planId, navigate, reportType]);
 
   const columns = React.useMemo<Column[]>(
-    () => [{ Header: 'Location name', accessor: 'locationName' }, ...cols],
+    () => [{ Header: 'Location name', accessor: 'name', id: 'locationName' }, ...cols],
     [cols]
   );
 
@@ -149,17 +144,18 @@ const Report = () => {
   const loadChildHandler = (id: string, locationName: string, childrenNumber: number) => {
     if (planId && reportType && childrenNumber) {
       dispatch(showLoader(true));
-      getReportByPlanId({
-        getChildren: true,
+      getMapReportData({
         parentLocationIdentifier: id,
         reportTypeEnum: reportType,
         planIdentifier: planId
       })
         .then(res => {
-          if (res.rowData.length) {
-            if (res.rowData[0].columnDataMap['Distribution Coverage']) {
+          let mapData = res.features.map(el => el.properties);
+          if (mapData.length) {
+            if (res.features[0].properties.columnDataMap['Distribution Coverage']) {
+              setCols(mapColumns(mapData[0].columnDataMap));
               setData(
-                res.rowData.sort((a, b) => {
+                mapData.sort((a, b) => {
                   let rowDataA = a.columnDataMap['Distribution Coverage']?.value;
                   let rowDataB = b.columnDataMap['Distribution Coverage']?.value;
                   if (rowDataA && rowDataB) {
@@ -174,24 +170,26 @@ const Report = () => {
                 })
               );
             } else {
-              setData(res.rowData);
+              //first set data to empty array for new columns to render
+              setData([]);
+              setCols(mapColumns(res.features[0].properties.columnDataMap));
+              setData(mapData);
             }
-            getMapReportData({
-              parentLocationIdentifier: id,
-              planIdentifier: planId,
-              reportTypeEnum: reportType
-            }).then(res => {
-              setFeatureSet([res, id]);
-              if (!path.some(el => el.locationIdentifier === id)) {
-                setPath([...path, { locationIdentifier: id, locationName: locationName, location: res }]);
-              }
-            });
+            setFeatureSet([res, id]);
+            if (!path.some(el => el.locationIdentifier === id)) {
+              setPath([...path, { locationIdentifier: id, locationName: locationName, location: res }]);
+            }
           } else {
+            dispatch(showLoader(false));
             toast.info(`${locationName} has no child locations.`);
           }
         })
-        .finally(() => dispatch(showLoader(false)));
+        .catch(err => {
+          dispatch(showLoader(false));
+          toast.error(err.message ? err.message : 'There was an error loading this location.');
+        });
     } else {
+      dispatch(showLoader(false));
       toast.info(`${locationName} has no child locations.`);
     }
   };
@@ -201,23 +199,37 @@ const Report = () => {
       dispatch(showLoader(true));
       path.splice(0, path.length);
       setPath(path);
-      getReportByPlanId({
-        getChildren: false,
-        parentLocationIdentifier: null,
+      loadData();
+    }
+  };
+
+  const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
+    if (planId && reportType) {
+      dispatch(showLoader(true));
+      path.splice(index + 1, path.length - index);
+      setPath(path);
+      getMapReportData({
+        parentLocationIdentifier: el.locationIdentifier,
         reportTypeEnum: reportType,
         planIdentifier: planId
       })
         .then(res => {
-          setData(res.rowData);
-          getMapReportData({
-            parentLocationIdentifier: null,
-            reportTypeEnum: reportType,
-            planIdentifier: planId
-          }).then(res => {
-            setFeatureSet([res, 'main']);
-          });
+          setData([]);
+          if (res.features.length) {
+            setCols(mapColumns(res.features[0].properties.columnDataMap));
+          }
+          setData(res.features.map(el => el.properties));
+          //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
+          //its enough to spread the object so rerender will be triggered
+          setFeatureSet([{ ...path[index > 0 ? index - 1 : index].location }, el.locationIdentifier]);
+          if (!res.features.length) {
+            dispatch(showLoader(false));
+          }
         })
-        .finally(() => dispatch(showLoader(false)));
+        .catch(err => {
+          dispatch(showLoader(false));
+          toast.error(err.message ? err.message : 'There was an error loading this location.');
+        });
     }
   };
 
@@ -246,26 +258,7 @@ const Report = () => {
                 <span
                   style={{ cursor: 'pointer' }}
                   key={el.locationIdentifier}
-                  onClick={() => {
-                    if (planId && reportType) {
-                      dispatch(showLoader(true));
-                      path.splice(index + 1, path.length - index);
-                      setPath(path);
-                      getReportByPlanId({
-                        getChildren: true,
-                        parentLocationIdentifier: el.locationIdentifier,
-                        reportTypeEnum: reportType,
-                        planIdentifier: planId
-                      })
-                        .then(res => {
-                          setData(res.rowData);
-                          //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
-                          //its enough to spread the object so rerender will be triggered
-                          setFeatureSet([{ ...path[index > 0 ? index - 1 : index].location }, el.locationIdentifier]);
-                        })
-                        .finally(() => dispatch(showLoader(false)));
-                    }
-                  }}
+                  onClick={() => breadCrumbClickHandler(el, index)}
                 >
                   {index !== 0 ? ' / ' : ''}
                   {el.locationName}
@@ -296,7 +289,7 @@ const Report = () => {
             <div id="expand-table">
               <MapViewDetail
                 showModal={openModalHandler}
-                doubleClickEvent={(feature: Feature<Polygon | MultiPolygon, LocationProperties>) =>
+                doubleClickEvent={(feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) =>
                   handleDobuleClickRef.current(feature)
                 }
                 featureSet={featureSet}
