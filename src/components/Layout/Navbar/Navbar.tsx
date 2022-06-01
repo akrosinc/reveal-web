@@ -45,7 +45,7 @@ export default function NavbarComponent() {
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav" className={keycloak.authenticated ? '' : 'justify-content-end'}>
           {keycloak.authenticated ? (
-            <Nav className="me-auto ms-md-4">
+            <Nav className="me-auto ms-md-2">
               {MAIN_MENU.map((el, index) => {
                 if (el.dropdown !== undefined && el.dropdown.length > 0) {
                   return (
@@ -82,7 +82,7 @@ export default function NavbarComponent() {
           ) : null}
           {initialized && user ? (
             <Nav className="d-inline">
-              <BsPerson size="1.25rem" className="mt-2 me-2 float-start" />
+              <BsPerson size="1.2rem" className="mt-2 me-2 float-start" />
               <NavDropdown title={user.username} id="logout-nav-dropdown" align="end" className="me-md-4">
                 <NavDropdown.Item
                   id="logout-button"

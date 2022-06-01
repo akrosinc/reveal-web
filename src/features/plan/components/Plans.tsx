@@ -66,11 +66,11 @@ const Plans = () => {
   return (
     <>
       <h2>
-        Plans ({planList?.totalElements ?? 0})
+        {t("planPage.title")} ({planList?.totalElements ?? 0})
         <Row className="my-4">
           <Col md={8} className="mb-2">
             <Link id="create-button" to={PLANS + '/create'} className="btn btn-primary float-end">
-              Create
+              {t("buttons.create")}
             </Link>
           </Col>
           <Col sm={12} md={4} className="order-md-first">

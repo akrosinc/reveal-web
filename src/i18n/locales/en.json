@@ -40,7 +40,9 @@
     "locationManagement": "Location Management",
     "assign": "Assign",
     "report": "Reports",
-    "save": "Save"
+    "save": "Save",
+    "submit": "Submit",
+    "cancel": "Cancel"
   },
   "managementPage": {
     "organization": "Organization",
@@ -89,8 +91,13 @@
   },
   "planPage": {
     "title": "Plans",
-    "planDetails": "Plan details",
+    "planDetails": "Plan Details",
+    "createPlan": "Create Plan",
     "details": "Details",
-    "goals": "Goals"
+    "goals": "Goals",
+    "planActivateMessage": "Plan activated successfully",
+    "planActivationError": "There was an error activating this plan.",
+    "planActivationBody": "Are you sure you want to active plan with identifier",
+    "planActivationTitle": "Activate plan"
   }
 }

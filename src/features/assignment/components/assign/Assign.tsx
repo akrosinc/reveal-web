@@ -382,9 +382,8 @@ const Assign = () => {
         </Col>
         <Col md={6} className="text-center">
           <h4 className="m-0">
-            {activeTab === LOCATION_ASSIGNMENT_TAB ? t('assignPage.titleLocations') : t('assignPage.titleTeams')}
-            <br />
-            {currentPlan?.title}
+            {activeTab === LOCATION_ASSIGNMENT_TAB ? t('assignPage.titleLocations') : t('assignPage.titleTeams')} (
+            {currentPlan?.title})
           </h4>
         </Col>
       </Row>

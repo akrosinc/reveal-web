@@ -121,8 +121,8 @@ export const MAP_DEFAULT_FILL_OPACITY = 0.85;
 export const MAP_DEFAULT_DISABLED_FILL_OPACITY = 0.85;
 
 
-export const COLOR_YELLOW = '#f7f71b';
-export const COLOR_LIGHT_GREEN = '#20c997';
+export const COLOR_YELLOW = '#ffff68';
+export const COLOR_LIGHT_GREEN = '#90ee90';
 export const COLOR_BOOTSTRAP_SUCCESS = '#198754';
 export const COLOR_BOOTSTRAP_DANGER = '#dc3545';
 export const COLOR_BOOTSTRAP_WARNING = '#ffc107';

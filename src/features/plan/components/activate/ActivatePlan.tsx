@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Modal } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { updatePlanStatus } from '../../api';
 
@@ -10,12 +11,14 @@ interface Props {
 }
 
 const ActivatePlan = ({ show, closeHandler, planId }: Props) => {
+  const { t } = useTranslation();
+
   const activatePlanHandler = () => {
     updatePlanStatus(planId)
       .then(_ => {
-        toast.success('Plan activated successfully');
+        toast.success(t('planPage.planActivateMessage'));
       })
-      .catch(err => toast.error(err.message ? err.message : 'There was an error activating this plan.'))
+      .catch(err => toast.error(err.message ? err.message : t('planPage.planActivationError')))
       .finally(() => {
         closeHandler();
       });
@@ -24,19 +27,19 @@ const ActivatePlan = ({ show, closeHandler, planId }: Props) => {
   return (
     <Modal show={show} centered backdrop="static" onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>Activate plan</Modal.Title>
+        <Modal.Title>{t("planPage.planActivationTitle")}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        Are you sure you want to active plan with identifier:
+        {t('planPage.planActivationBody')}:
         <br />
         {planId} ?
       </Modal.Body>
       <Modal.Footer>
         <Button id="cancel-activate-button" variant="secondary" onClick={closeHandler}>
-          Cancel
+        {t('buttons.cancel')}
         </Button>
         <Button id="activate-button" onClick={() => activatePlanHandler()}>
-          Submit
+          {t('buttons.submit')}
         </Button>
       </Modal.Footer>
     </Modal>
