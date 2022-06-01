@@ -60,7 +60,6 @@ const Dashboard = () => {
 
   return (
     <>
-      <h4 className="my-4">Dashboard</h4>
       <AuthorizedElement roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}>
       <Row>
         <Col md={6}>

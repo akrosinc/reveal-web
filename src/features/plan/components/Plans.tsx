@@ -12,6 +12,7 @@ import { getPlanList } from '../api';
 import { PlanModel } from '../providers/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ActivatePlan from './activate';
+import { useTranslation } from 'react-i18next';
 
 const Plans = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
@@ -23,6 +24,7 @@ const Plans = () => {
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [showActivate, setShowActivate] = useState(false);
   const [currentPlanId, setCurrentPlanId] = useState('');
+  const { t } = useTranslation();
 
   const loadData = useCallback(
     (size: number, page: number, search?: string, sortDirection?: boolean, sortField?: string) => {
@@ -152,7 +154,7 @@ const Plans = () => {
           />
         </>
       ) : (
-        <p className="text-center lead">No plans found.</p>
+        <p className="text-center lead">{t("general.noContent")}</p>
       )}
       <ActivatePlan show={showActivate} closeHandler={closeHandler} planId={currentPlanId} />
     </>

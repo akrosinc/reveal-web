@@ -37,23 +37,24 @@ export default function NavbarComponent() {
   };
 
   return (
-    <Navbar collapseOnSelect expand="lg">
-      <Container fluid className="px-4 pt-1">
-        <Navbar.Brand style={{ marginTop: '-10px' }}>
-          <img src={logo} alt="" />
+    <Navbar collapseOnSelect expand="md">
+      <Container fluid className="px-4 pt-2">
+        <Navbar.Brand>
+          <img src={logo} alt="Reveal Logo" className="d-inline-block align-top mb-2" />
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav" className={keycloak.authenticated ? '' : 'justify-content-end'}>
           {keycloak.authenticated ? (
-            <Nav className="me-auto">
+            <Nav className="me-auto ms-md-4">
               {MAIN_MENU.map((el, index) => {
                 if (el.dropdown !== undefined && el.dropdown.length > 0) {
                   return (
                     <AuthorizedElement key={index} roles={el.roles}>
                       <NavDropdown
-                        align={'end'}
+                        align="start"
                         title={t('topNav.' + el.pageTitle)}
                         id={el.pageTitle + '-navbar-button'}
+                        className="m-1"
                       >
                         {el.dropdown.map((child, childIndex) => {
                           return (
@@ -70,7 +71,7 @@ export default function NavbarComponent() {
                 } else {
                   return (
                     <AuthorizedElement key={index} roles={el.roles}>
-                      <Link id={el.pageTitle + '-navbar-button'} to={el.route} className="nav-link">
+                      <Link id={el.pageTitle + '-navbar-button'} to={el.route} className="nav-link m-1">
                         {t('topNav.' + el.pageTitle)}
                       </Link>
                     </AuthorizedElement>
@@ -80,31 +81,26 @@ export default function NavbarComponent() {
             </Nav>
           ) : null}
           {initialized && user ? (
-            <Nav>
-              <div className="d-flex align-items-center">
-                <BsPerson />
-                <NavDropdown
-                  title={user.username}
-                  id="logout-nav-dropdown"
-                  align="end"
+            <Nav className="d-inline">
+              <BsPerson size="1.25rem" className="mt-2 me-2 float-start" />
+              <NavDropdown title={user.username} id="logout-nav-dropdown" align="end" className="me-md-4">
+                <NavDropdown.Item
+                  id="logout-button"
+                  className="text-center"
+                  onClick={() => {
+                    keycloak.logout();
+                  }}
                 >
-                  <NavDropdown.Item
-                    id="logout-button"
-                    className="text-center"
-                    onClick={() => {
-                      keycloak.logout();
-                    }}
-                  >
-                    {t('topNav.logOut')}
-                  </NavDropdown.Item>
-                </NavDropdown>
-              </div>
+                  {t('topNav.logOut')}
+                </NavDropdown.Item>
+              </NavDropdown>
             </Nav>
           ) : (
             <Nav>
               <Nav.Link
                 id="login-button"
-                className="btn btn-success text-white mw-100"
+                style={{minWidth: '150px'}}
+                className="btn btn-success text-white my-3 me-md-3"
                 onClick={() => keycloak.login()}
               >
                 {t('topNav.logIn')}

@@ -1,6 +1,6 @@
 {
   "topNav": {
-    "logOut": "Log out",
+    "logOut": "Sign out",
     "logIn": "Login",
     "Home": "Home",
     "Plan": "Plan",
@@ -23,16 +23,24 @@
     "secondPartAbout": "THROUGH DIGITAL SQUARE AND IS FEATURED IN THE WORLD HEALTH ORGANIZATION’S",
     "about": "Reveal supports decision makers and intervention managers by guiding and tracking delivery of in-field activities with precision and holding field teams accountable for action. Reveal uses smart maps and technology appropriate for low-resource settings to monitor coverage of interventions as they happen. Modeled on the mSpray and DiSARM tool, Reveal helps to optimize available resources and ensure no one is missed in the process."
   },
+  "toast": {
+    "welcomeMessage": "Welcome back ",
+    "assignmentsWarningMessage": "Please select and save your changes, at least one location needs to be able selected to assign teams.",
+    "planErrorMessage": "Plan does not exist.",
+    "planErrorRedirectMessage": "Plan does not exist, redirected to previous page."
+  },
   "homePage": {
-    "welcomeMessage": "Welcome to Reveal",
-    "description": "Get started by selecting an intervention below"
+    "welcomeMessage": "Welcome to Reveal"
   },
   "buttons": {
     "management": "Management",
     "plans": "Plans",
     "create": "Create",
     "delete": "Delete",
-    "locationManagement": "Location Management"
+    "locationManagement": "Location Management",
+    "assign": "Assign",
+    "report": "Reports",
+    "save": "Save"
   },
   "managementPage": {
     "organization": "Organization",
@@ -68,5 +76,21 @@
     "locationHierarchy": "Location Hierarchy",
     "locations": "Location Inspector",
     "locationsBulk": "Location Import"
+  },
+  "assignPage": {
+    "title": "Assignments",
+    "subTitle": "Assign Plans",
+    "titleTeams": "Assign Teams",
+    "titleLocations": "Assign Locations",
+    "selectLocations": "Select Locations"
+  },
+  "general": {
+    "noContent": "No content."
+  },
+  "planPage": {
+    "title": "Plans",
+    "planDetails": "Plan details",
+    "details": "Details",
+    "goals": "Goals"
   }
 }

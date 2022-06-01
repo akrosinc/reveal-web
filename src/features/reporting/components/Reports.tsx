@@ -16,7 +16,6 @@ const Reports = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  //const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
   const [activeSortField, setActiveSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
@@ -24,9 +23,9 @@ const Reports = () => {
   const [selectedReportType, setSelectedReportType] = useState<string>();
 
   const loadData = useCallback(
-    (size: number, page: number, reportType: string, search?: string, sortDirection?: boolean, sortField?: string) => {
+    (size: number, page: number, reportType: string, sortDirection?: boolean, sortField?: string) => {
       dispatch(showLoader(true));
-      getPlanReports(size, page, reportType, false, search, sortField, sortDirection)
+      getPlanReports(size, page, reportType, false, '', sortField, sortDirection)
         .then(plans => {
           setPlanList(plans);
         })
@@ -49,7 +48,7 @@ const Reports = () => {
 
   const paginationHandler = (size: number, page: number) => {
     if (selectedReportType) {
-      loadData(size, page, selectedReportType, '', currentSortDirection, currentSortField);
+      loadData(size, page, selectedReportType, currentSortDirection, currentSortField);
     }
   };
 
@@ -57,13 +56,13 @@ const Reports = () => {
     setCurrentSortDirection(direction);
     setCurrentSortField(sortValue);
     if (selectedReportType) {
-      loadData(PAGINATION_DEFAULT_SIZE, 0, selectedReportType, '', direction, sortValue);
+      loadData(PAGINATION_DEFAULT_SIZE, 0, selectedReportType, direction, sortValue);
     }
   };
 
   const reportTypeSelectHandler = (e: ChangeEvent<HTMLSelectElement>) => {
     setSelectedReportType(e.target.value);
-    getPlanReports(PAGINATION_DEFAULT_SIZE, 0, e.target.value, false).then(res => setPlanList(res));
+    loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
 
   const setReportTypeNames = (reportName: string) => {
