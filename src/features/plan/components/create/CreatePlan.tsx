@@ -17,6 +17,7 @@ import Item from './Goals';
 import { ConfirmDialog, ConfirmDialogService } from '../../../../components/Dialogs';
 import { toast } from 'react-toastify';
 import CreateGoal from './Goals/CreateGoal/CreateGoal';
+import { useTranslation } from 'react-i18next';
 
 interface Options {
   value: string;
@@ -48,6 +49,7 @@ const CreatePlan = () => {
   const [currentGoal, setCurrentGoal] = useState<Goal>();
   const [currentFrom, setCurrentForm] = useState<any>();
   const { id } = useParams();
+  const { t } = useTranslation();
 
   const {
     register,
@@ -58,7 +60,7 @@ const CreatePlan = () => {
     formState: { errors, isDirty },
     trigger,
     setValue,
-    getValues,
+    getValues
   } = useForm<RegisterValues>();
 
   const loadPlan = useCallback(
@@ -214,7 +216,11 @@ const CreatePlan = () => {
                   <ConfirmDialog
                     closeHandler={giveAnswer}
                     backdrop
-                    message={id ? 'You are about to discard all new changes made. Are you sure?' : 'Are you sure you want to discard plan creation?'}
+                    message={
+                      id
+                        ? 'You are about to discard all new changes made. Are you sure?'
+                        : 'Are you sure you want to discard plan creation?'
+                    }
                     title="Discard Changes"
                   />
                 )).then(res => {
@@ -228,11 +234,11 @@ const CreatePlan = () => {
             }}
             className="btn btn-primary"
           >
-            <FontAwesomeIcon icon="arrow-left" className="me-2" /> Plans
+            <FontAwesomeIcon icon="arrow-left" className="me-2" /> {t('planPage.title')}
           </Button>
         </Col>
         <Col md={6} className="text-center">
-          <h2 className="m-0">{id !== undefined ? 'Plan details' : 'Create Plan'}</h2>
+          <h2 className="m-0">{id !== undefined ? t('planPage.planDetails') : t('planPage.createPlan')}</h2>
         </Col>
       </Row>
       <hr className="my-3" />

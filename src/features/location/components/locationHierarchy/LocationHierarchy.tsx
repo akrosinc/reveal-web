@@ -169,7 +169,7 @@ const LocationHierarchy = () => {
           />
         </>
       ) : (
-        <p className="text-center lead">No content found.</p>
+        <p className="text-center lead">{t("general.noContent")}</p>
       )}
 
       {showCreate && (

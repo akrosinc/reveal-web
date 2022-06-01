@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Table } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { PageableModel } from '../../../../api/providers';
 import Paginator from '../../../../components/Pagination';
@@ -17,6 +18,7 @@ const PlanList = () => {
   const [activeSortField, setActiveSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const paginationHandler = (size: number, page: number) => {
     loadData(size, page);
@@ -101,7 +103,7 @@ const PlanList = () => {
           />
         </>
       ) : (
-        <p>No content.</p>
+        <p>{t("general.noContent")}</p>
       )}
     </>
   );

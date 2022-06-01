@@ -27,6 +27,7 @@ import { MultiValue, Options } from 'react-select';
 import { getOrganizationListSummary } from '../../../organization/api';
 import { Column } from 'react-table';
 import MapViewAssignments from './map';
+import { useTranslation } from 'react-i18next';
 
 interface Option {
   label: string;
@@ -49,6 +50,7 @@ const Assign = () => {
   const [notInMove, setNotInMove] = useState(true);
   const [tableHeight, setTableHeight] = useState(0);
   const [isEdited, setIsEdited] = useState(false);
+  const { t } = useTranslation();
 
   const loadData = useCallback(() => {
     dispatch(showLoader(true));
@@ -75,7 +77,6 @@ const Assign = () => {
               if (hierarchy.content.length) {
                 //load parent location on component load
                 getLocationByIdAndPlanId(hierarchy.content[0].identifier, planId).then(res => {
-                  //give map 1000ms to initialize to avoid no location shown on frist load
                   setNotInMove(false);
                   setGeoLocation(res);
                   setTableHeight(
@@ -89,16 +90,16 @@ const Assign = () => {
             .catch(err => toast.error('Something went wrong...' + err.toString()));
         })
         .catch(_ => {
-          toast.error('Plan does not exist, redirected to assign page.');
+          toast.error(t('toast.planErrorRedirectMessage'));
           dispatch(showLoader(false));
           navigate('/assign');
         });
     } else {
       dispatch(showLoader(false));
-      toast.error('Plan does not exist.');
+      toast.error(t('toast.planErrorMessage'));
       navigate(ASSIGNMENT_PAGE);
     }
-  }, [planId, dispatch, navigate]);
+  }, [planId, dispatch, navigate, t]);
 
   useEffect(() => {
     loadData();
@@ -376,14 +377,13 @@ const Assign = () => {
       <Row className="mt-3 align-items-center">
         <Col md={3}>
           <Link id="assign-back-button" to={ASSIGNMENT_PAGE} className="btn btn-primary mb-2">
-            <FontAwesomeIcon size="lg" icon="arrow-left" className="me-2" /> Assign Plans
+            <FontAwesomeIcon size="lg" icon="arrow-left" className="me-2" /> {t('assignPage.subTitle')}
           </Link>
         </Col>
         <Col md={6} className="text-center">
           <h4 className="m-0">
-            {activeTab === LOCATION_ASSIGNMENT_TAB ? 'Assign Locations' : 'Assign Teams'}
-            <br />
-            {currentPlan?.title}
+            {activeTab === LOCATION_ASSIGNMENT_TAB ? t('assignPage.titleLocations') : t('assignPage.titleTeams')} (
+            {currentPlan?.title})
           </h4>
         </Col>
       </Row>
@@ -392,10 +392,12 @@ const Assign = () => {
         <Col md={4} style={{ display: open ? 'none' : '' }}>
           <div className="d-flex justify-content-between align-items-center" id="title-div">
             <span>
-              {assignedLocations ? `Assign Teams | Assigned Locations: ${assignedLocations}` : 'Select Locations'}
+              {assignedLocations
+                ? `${t('assignPage.titleLocations') + ' | ' + t('assignPage.titleTeams')}: ${assignedLocations}`
+                : t('assignPage.selectLocations')}
             </span>
             <Button id="save-assignments-button" className="w-25" onClick={saveHandler}>
-              Save
+              {t('buttons.save')}
             </Button>
           </div>
           <div id="expand-table" style={{ maxHeight: tableHeight > 0 ? tableHeight : 'auto', overflow: 'auto' }}>
@@ -408,16 +410,14 @@ const Assign = () => {
                   setActiveTab(tab);
                 } else {
                   if (tab === LOCATION_TEAM_ASSIGNMENT_TAB) {
-                    toast.warning(
-                      'Please select and save your changes, at least one location needs to be able selected to assign teams.'
-                    );
+                    toast.warning(t('toast.assignmentsWarningMessage'));
                   }
                   setActiveTab(LOCATION_ASSIGNMENT_TAB);
                 }
               }}
               className="mt-2"
             >
-              <Tab eventKey={LOCATION_ASSIGNMENT_TAB} title="Assign locations">
+              <Tab eventKey={LOCATION_ASSIGNMENT_TAB} title={t('assignPage.titleLocations')}>
                 <div>
                   <LocationAssignmentsTable
                     organizationList={organizationsList}
@@ -429,7 +429,7 @@ const Assign = () => {
                   />
                 </div>
               </Tab>
-              <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title="Assign teams">
+              <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title={t('assignPage.titleTeams')}>
                 <LocationAssignmentsTable
                   teamTab={true}
                   organizationList={organizationsList}

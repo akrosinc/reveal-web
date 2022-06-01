@@ -6,7 +6,7 @@ import { Column } from 'react-table';
 import { toast } from 'react-toastify';
 import MapViewDetail from './mapView/MapViewDetail';
 import ReportsTable from '../../../../components/Table/ReportsTable';
-import { REPORTING_PAGE } from '../../../../constants';
+import { REPORTING_PAGE, REPORT_TABLE_PERCENTAGE_HIGH, REPORT_TABLE_PERCENTAGE_LOW, REPORT_TABLE_PERCENTAGE_MEDIUM, REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
@@ -99,8 +99,9 @@ const Report = () => {
           setPlan(plan);
           setData([]);
           setCols(mapColumns(report.features[0].properties.columnDataMap));
-          // default sort by Distribution Coverage if possible
+          //map location data to show it in a table also
           let mapData = report.features.map(el => el.properties);
+          // default sort by Distribution Coverage if possible
           if (mapData[0].columnDataMap['Distribution Coverage']) {
             setData(
               mapData.sort((a, b) => {
@@ -300,34 +301,34 @@ const Report = () => {
         </Col>
         <Col md={showMap ? 2 : 4} className="text-center">
           <Button
-            className="w-75 mt-2"
+            className="w-75 my-2"
             onClick={() => setShowMap(!showMap)}
             aria-controls="expand-table"
             aria-expanded={showMap}
           >
             {showMap ? 'Hide Map' : 'Show Map'}
           </Button>
-          <Table className="mt-3 text-center">
+          <Table className="mt-4 text-center">
             <tbody>
-              <tr className="bg-light">
-                <td>Light Gray</td>
-                <td>{'0%'}</td>
-              </tr>
-              <tr className="bg-secondary">
-                <td>Gray</td>
-                <td>{'1% > < 20%'}</td>
-              </tr>
               <tr className="bg-danger">
-                <td>Red</td>
-                <td>{'20% - 70%'}</td>
+                <td className='py-4'>Red</td>
+                <td className='py-4'>{'0% - ' + REPORT_TABLE_PERCENTAGE_LOW + '%'}</td>
               </tr>
               <tr className="bg-warning">
-                <td>Yellow</td>
-                <td>{'70% > < 90% '}</td>
+                <td className='py-4'>Orange</td>
+                <td className='py-4'>{REPORT_TABLE_PERCENTAGE_LOW + '% - ' + REPORT_TABLE_PERCENTAGE_MEDIUM + '%'}</td>
+              </tr>
+              <tr className='bg-yellow'>
+                <td className='py-4'>Yellow</td>
+                <td className='py-4'>{REPORT_TABLE_PERCENTAGE_MEDIUM + '% - ' + REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH + '%'}</td>
               </tr>
               <tr className="bg-success">
-                <td>Green</td>
-                <td>{'90% - 100%'}</td>
+                <td className='py-4'>Green</td>
+                <td className='py-4'>{REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH + '% - ' + REPORT_TABLE_PERCENTAGE_HIGH + '%'}</td>
+              </tr>
+              <tr className='bg-light-green'>
+                <td className='py-4'>Light Green</td>
+                <td className='py-4'>{REPORT_TABLE_PERCENTAGE_HIGH + '% - 100%'}</td>
               </tr>
             </tbody>
           </Table>

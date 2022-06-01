@@ -7,6 +7,11 @@ import { bbox, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Propert
 import { useAppDispatch } from '../../../../../store/hooks';
 import { showLoader } from '../../../../reducers/loader';
 import {
+  COLOR_BOOTSTRAP_DANGER,
+  COLOR_BOOTSTRAP_SUCCESS,
+  COLOR_BOOTSTRAP_WARNING,
+  COLOR_LIGHT_GREEN,
+  COLOR_YELLOW,
   MAP_DEFAULT_FILL_OPACITY,
   MAP_STRUCTURE_LEGEND_COLORS,
   MDA_STRUCTURE_COLOR_COMPLETE,
@@ -16,7 +21,8 @@ import {
   MDA_STRUCTURE_COLOR_SPAQ_COMPLETE,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
-  REPORT_TABLE_PERCENTAGE_MEDIUM
+  REPORT_TABLE_PERCENTAGE_MEDIUM,
+  REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH
 } from '../../../../../constants';
 import { IrsStructureStatus, MdaStructureStatus, ReportLocationProperties, ReportType } from '../../../providers/types';
 import { useParams } from 'react-router-dom';
@@ -87,13 +93,16 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
     });
   });
 
+
+  // main function to load and draw locations to the map
+  // logic for displaying borders and fill colors
   const loadLocationSet = useCallback(
     (
       map: Map,
       data: FeatureCollection<Polygon | MultiPolygon, ReportLocationProperties>,
       parentLocationIdentifier: string
     ) => {
-      //check if its clear map event otherwise just fit to bounds
+      //check if its clear map event or new location otherwise just fit to bounds
       if (map.getSource(parentLocationIdentifier) === undefined && data.features.length) {
         dispatch(showLoader(true));
         map.addSource(parentLocationIdentifier, {
@@ -134,16 +143,16 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
                   'case',
                   ['==', ['get', 'distCoveragePercent'], null],
                   'black',
-                  ['==', ['get', 'distCoveragePercent'], 0],
-                  '#f8f9fa',
                   ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_LOW],
-                  '#6c757d',
+                  COLOR_BOOTSTRAP_DANGER,
                   ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_MEDIUM],
-                  '#dc3545',
+                  COLOR_BOOTSTRAP_WARNING,
+                  ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH],
+                  COLOR_YELLOW,
                   ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_HIGH],
-                  '#ffc107',
+                  COLOR_BOOTSTRAP_SUCCESS,
                   ['>=', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_HIGH],
-                  '#28a745',
+                  COLOR_LIGHT_GREEN,
                   'transparent'
                 ]
               ],
@@ -178,17 +187,17 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
                 `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
                 ${
                   properties.distCoveragePercent !== undefined
-                    ? `<h6 class='my-2'>Distribution coverage: ${properties.distCoveragePercent}%</h6>`
+                    ? `<small class='my-3'>Distribution coverage: ${properties.distCoveragePercent.toFixed(2)}%</small>`
                     : ''
                 }
                 ${
                   properties.numberOfChildrenTreated !== undefined
-                    ? `<h6 class='my-2'>Number Of Children Treated: ${properties.numberOfChildrenTreated}</h6>`
+                    ? `<small class='my-3'>Number Of Children Treated: ${properties.numberOfChildrenTreated}</small>`
                     : ''
                 }
               ${
                 properties.numberOfChildrenEligible !== undefined
-                  ? `<h6 class='my-2'>Number Of Children Eligible: ${properties.numberOfChildrenEligible}</h6>`
+                  ? `<small class='my-3'>Number Of Children Eligible: ${properties.numberOfChildrenEligible}</small>`
                   : ''
               }
               </div>`

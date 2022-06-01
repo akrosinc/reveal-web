@@ -22,10 +22,9 @@ function Home() {
 
   return (
     <Container fluid className="text-center my-4">
-      <h2>{t('homePage.welcomeMessage')}</h2>
+      <h2 className='my-5'>{t('homePage.welcomeMessage')}</h2>
       <Dashboard />
       <p className="mt-5 lead" style={{ userSelect: 'none' }}>
-        {t('homePage.description')}
       </p>
       <hr className="w-75 mx-auto" />
       <Row className="justify-content-center">
@@ -55,14 +54,14 @@ function Home() {
         <Col md={3}>
           <AuthorizedElement roles={[ASSIGNMENT_VIEW]}>
             <Link id="assign-button" to={ASSIGNMENT_PAGE} className="m-2 w-100 btn btn-success">
-              Assign
+            {t('buttons.assign')}
             </Link>
           </AuthorizedElement>
         </Col>
         <Col md={3}>
           <AuthorizedElement roles={[REPORT_VIEW]}>
             <Link id="report-button" to={REPORTING_PAGE} className="m-2 w-100 btn btn-success">
-              Reports
+            {t('buttons.report')}
             </Link>
           </AuthorizedElement>
         </Col>
