@@ -6,7 +6,7 @@ import { Column } from 'react-table';
 import { toast } from 'react-toastify';
 import MapViewDetail from './mapView/MapViewDetail';
 import ReportsTable from '../../../../components/Table/ReportsTable';
-import { REPORTING_PAGE, REPORT_TABLE_PERCENTAGE_HIGH, REPORT_TABLE_PERCENTAGE_LOW, REPORT_TABLE_PERCENTAGE_MEDIUM, REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH } from '../../../../constants';
+import { REPORTING_PAGE, REPORT_TABLE_PERCENTAGE_HIGH, REPORT_TABLE_PERCENTAGE_LOW, REPORT_TABLE_PERCENTAGE_MEDIUM } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
@@ -320,14 +320,10 @@ const Report = () => {
               </tr>
               <tr className='bg-yellow'>
                 <td className='py-4'>Yellow</td>
-                <td className='py-4'>{REPORT_TABLE_PERCENTAGE_MEDIUM + '% - ' + REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH + '%'}</td>
+                <td className='py-4'>{REPORT_TABLE_PERCENTAGE_MEDIUM + '% - ' + REPORT_TABLE_PERCENTAGE_HIGH + '%'}</td>
               </tr>
               <tr className="bg-success">
                 <td className='py-4'>Green</td>
-                <td className='py-4'>{REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH + '% - ' + REPORT_TABLE_PERCENTAGE_HIGH + '%'}</td>
-              </tr>
-              <tr className='bg-light-green'>
-                <td className='py-4'>Light Green</td>
                 <td className='py-4'>{REPORT_TABLE_PERCENTAGE_HIGH + '% - 100%'}</td>
               </tr>
             </tbody>

@@ -5,8 +5,7 @@ import { Column, useTable } from 'react-table';
 import {
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
-  REPORT_TABLE_PERCENTAGE_MEDIUM,
-  REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH
+  REPORT_TABLE_PERCENTAGE_MEDIUM
 } from '../../constants';
 import { ReportLocationProperties } from '../../features/reporting/providers/types';
 
@@ -81,12 +80,9 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
                       percentage = Number(percentage.toFixed(percentage > 1 ? 2 : 3));
                       //check if its already a round number or should be rounded
                       if (percentage >= REPORT_TABLE_PERCENTAGE_HIGH) {
-                        color = 'bg-light-green';
-                      }
-                      if (percentage >= REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH && percentage < REPORT_TABLE_PERCENTAGE_HIGH) {
                         color = 'bg-success';
                       }
-                      if (percentage >= REPORT_TABLE_PERCENTAGE_MEDIUM && percentage < REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH) {
+                      if (percentage >= REPORT_TABLE_PERCENTAGE_MEDIUM && percentage < REPORT_TABLE_PERCENTAGE_HIGH) {
                         color = 'bg-yellow';
                       }
                       if (percentage >= REPORT_TABLE_PERCENTAGE_LOW && percentage < REPORT_TABLE_PERCENTAGE_MEDIUM) {
