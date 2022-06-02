@@ -10,7 +10,6 @@ import {
   COLOR_BOOTSTRAP_DANGER,
   COLOR_BOOTSTRAP_SUCCESS,
   COLOR_BOOTSTRAP_WARNING,
-  COLOR_LIGHT_GREEN,
   COLOR_YELLOW,
   MAP_DEFAULT_FILL_OPACITY,
   MAP_STRUCTURE_LEGEND_COLORS,
@@ -21,8 +20,7 @@ import {
   MDA_STRUCTURE_COLOR_SPAQ_COMPLETE,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
-  REPORT_TABLE_PERCENTAGE_MEDIUM,
-  REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH
+  REPORT_TABLE_PERCENTAGE_MEDIUM
 } from '../../../../../constants';
 import { IrsStructureStatus, MdaStructureStatus, ReportLocationProperties, ReportType } from '../../../providers/types';
 import { useParams } from 'react-router-dom';
@@ -147,12 +145,10 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
                   COLOR_BOOTSTRAP_DANGER,
                   ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_MEDIUM],
                   COLOR_BOOTSTRAP_WARNING,
-                  ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_MEDIUM_HIGH],
-                  COLOR_YELLOW,
                   ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_HIGH],
-                  COLOR_BOOTSTRAP_SUCCESS,
+                  COLOR_YELLOW,
                   ['>=', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_HIGH],
-                  COLOR_LIGHT_GREEN,
+                  COLOR_BOOTSTRAP_SUCCESS,
                   'transparent'
                 ]
               ],
