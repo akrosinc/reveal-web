@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Col, Form, Row, Table } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
@@ -21,6 +22,7 @@ const Reports = () => {
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [reportTypes, setReportTypes] = useState<string[]>();
   const [selectedReportType, setSelectedReportType] = useState<string>();
+  const { t } = useTranslation();
 
   const loadData = useCallback(
     (size: number, page: number, reportType: string, sortDirection?: boolean, sortField?: string) => {
@@ -29,22 +31,25 @@ const Reports = () => {
         .then(plans => {
           setPlanList(plans);
         })
+        .catch(err => toast.error(err.message ? err.message : t('toast.unexpectedError')))
         .finally(() => dispatch(showLoader(false)));
     },
-    [dispatch]
+    [dispatch, t]
   );
 
   useEffect(() => {
     dispatch(showLoader(true));
-    getReportTypes().then(res => {
-      setReportTypes(res);
-      setSelectedReportType(res.length ? res[0] : undefined);
-      loadData(PAGINATION_DEFAULT_SIZE, 0, res[0]);
-    }).catch(err => {
-      dispatch(showLoader(false));
-      toast.error(err.message ? err.message : 'Unexpected error has occured');
-    });
-  }, [loadData, dispatch]);
+    getReportTypes()
+      .then(res => {
+        setReportTypes(res);
+        setSelectedReportType(res.length ? res[0] : undefined);
+        loadData(PAGINATION_DEFAULT_SIZE, 0, res[0]);
+      })
+      .catch(err => {
+        dispatch(showLoader(false));
+        toast.error(err.message ? err.message : t('toast.unexpectedError'));
+      });
+  }, [loadData, dispatch, t]);
 
   const paginationHandler = (size: number, page: number) => {
     if (selectedReportType) {
@@ -81,7 +86,7 @@ const Reports = () => {
       <Row>
         <Col md={5} lg={3}>
           <Form className="mb-4">
-            <Form.Label>Report Type:</Form.Label>
+            <Form.Label>{t('reportPage.reportType')}:</Form.Label>
             <Form.Select onChange={reportTypeSelectHandler}>
               {reportTypes?.map(res => (
                 <option key={res} value={res}>
@@ -101,14 +106,14 @@ const Reports = () => {
                   <th
                     key={el.name}
                     onClick={() => {
-                      setActiveSortField(el.name);
+                      setActiveSortField(t('reportPage.table.' + el.name));
                       setCurrentSortField(el.sortValue);
                       setCurrentSortDirection(!currentSortDirection);
                       sortHandler(el.sortValue, !currentSortDirection);
                     }}
                   >
-                    {el.name}{' '}
-                    {activeSortField === el.name ? (
+                    {t('reportPage.table.' + el.name)}{' '}
+                    {activeSortField === t('reportPage.table.' + el.name) ? (
                       currentSortDirection ? (
                         <FontAwesomeIcon icon="sort-down" />
                       ) : (

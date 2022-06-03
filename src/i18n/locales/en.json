@@ -26,8 +26,7 @@
   "toast": {
     "welcomeMessage": "Welcome back ",
     "unexpectedError": "Unexpected error has occured.",
-    "loading": "Loading...",
-    "assignmentsWarningMessage": "Please select and save your changes, at least one location needs to be able selected to assign teams."
+    "loading": "Loading..."
   },
   "homePage": {
     "welcomeMessage": "Welcome to Reveal"
@@ -42,7 +41,8 @@
     "report": "Reports",
     "save": "Save",
     "submit": "Submit",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "close": "Close"
   },
   "managementPage": {
     "organization": "Organization",
@@ -84,10 +84,19 @@
     "subTitle": "Assign Plans",
     "titleTeams": "Assign Teams",
     "titleLocations": "Assign Locations",
-    "selectLocations": "Select Locations"
+    "selectLocations": "Select Locations",
+    "assignmentsWarningMessage": "Please select and save your changes, at least one location needs to be able selected to assign teams.",
+    "assignTeamMessage": "Selected teams assigned successfully.",
+    "assignTeamErrorMessage": "There was an error assigning teams.",
+    "assignLocationMessage": "Locations assigned to plan successfully.",
+    "assignLocationErrorMessage": ""
   },
   "general": {
-    "noContent": "No content."
+    "noContent": "No content.",
+    "noDataFound": "No data found."
+  },
+  "confirmDialog" :{
+    "discardChanges": "Discard Changes"
   },
   "planPage": {
     "title": "Plans",
@@ -139,7 +148,33 @@
       "selectInterventionTypeError": "Please select intervention type."
     }
   },
-  "confirmDialog" :{
-    "discardChanges": "Discard Changes"
+  "reportPage": {
+    "title": "Reports",
+    "subtitle": "Report",
+    "search": "Search by Location Name",
+    "reportDetails": "Report details",
+    "locationInfo": "Location info",
+    "locationData": "Location data",
+    "formattingRules": "Conditional formatting rules",
+    "formattingRuleColors": {
+      "red": "Red",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "green": "Green"
+    },
+    "hideMap": "Hide map",
+    "showMap": "Show map",
+    "reportType": "Report Type",
+    "table": {
+      "Title": "Title",
+      "Status": "Status",
+      "Intervention Type": "Intervention Type",
+      "Location Hierarchy": "Location Hierarchy",
+      "Start Date": "Start Date",
+      "End Date":"End Date"
+    },
+    "locationName": "Location Name",
+    "locationType": "Location Type",
+    "identifier": "Identifier"
   }
 }

@@ -87,7 +87,7 @@ const Assign = () => {
                 });
               }
             })
-            .catch(err => toast.error('Something went wrong...' + err.toString()));
+            .catch(err => toast.error(err.message ? err.message : t('toast.unexpectedError')));
         })
         .catch(_ => {
           toast.error(t('planPage.planErrorRedirectMessage'));
@@ -319,12 +319,12 @@ const Assign = () => {
       if (activeTab === LOCATION_ASSIGNMENT_TAB) {
         toast
           .promise(assignLocationsToPlan(planId, selectedLocationsIdentifiers), {
-            pending: 'Loading...',
-            success: 'Locations assigned to plan successfully',
+            pending: t('toast.loading'),
+            success: t('assignPage.assignLocationMessage'),
             error: {
               render({ data }: { data: ErrorModel }) {
                 dispatch(showLoader(false));
-                return data.message !== undefined ? data.message : 'An error has occured!';
+                return data.message !== undefined ? data.message : t('assignPage.assignLocationErrorMessage');
               }
             }
           })
@@ -352,9 +352,9 @@ const Assign = () => {
         });
         toast
           .promise(assignTeamsToLocationHierarchy(planId, { hierarchy: locationTeamAssignment }), {
-            pending: 'Loading...',
-            success: 'Selected teams assigned successfully',
-            error: 'There was an error assigning teams.'
+            pending: t('toast.loading'),
+            success: t('assignPage.assignTeamMessage'),
+            error: t('assignPage.assignTeamErrorMessage')
           })
           .finally(() => {
             //empty array after sending
@@ -410,7 +410,7 @@ const Assign = () => {
                   setActiveTab(tab);
                 } else {
                   if (tab === LOCATION_TEAM_ASSIGNMENT_TAB) {
-                    toast.warning(t('toast.assignmentsWarningMessage'));
+                    toast.warning(t('assignPage.assignmentsWarningMessage'));
                   }
                   setActiveTab(LOCATION_ASSIGNMENT_TAB);
                 }

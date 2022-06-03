@@ -100,7 +100,7 @@ export default function NavbarComponent() {
               <Nav.Link
                 id="login-button"
                 style={{minWidth: '150px'}}
-                className="btn btn-success text-white my-3 me-md-3"
+                className="btn btn-success text-white my-3 my-md-0 me-md-3"
                 onClick={() => keycloak.login()}
               >
                 {t('topNav.logIn')}

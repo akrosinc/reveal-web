@@ -21,6 +21,7 @@ import { Feature, FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
 import { useRef } from 'react';
 import { FoundCoverage, ReportLocationProperties } from '../../providers/types';
 import ReportModal from './reportModal';
+import { useTranslation } from 'react-i18next';
 
 interface BreadcrumbModel {
   locationName: string;
@@ -44,6 +45,7 @@ const Report = () => {
   const [showModal, setShowModal] = useState(false);
   const [currentFeature, setCurrentFeature] = useState<Feature<Polygon | MultiPolygon, ReportLocationProperties>>();
   const searchInput = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation();
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
@@ -242,11 +244,13 @@ const Report = () => {
       <Row className="mt-3 align-items-center">
         <Col md={3}>
           <Link id="back-button" to={REPORTING_PAGE} className="btn btn-primary">
-            <FontAwesomeIcon icon="arrow-left" className="me-2" /> Reports
+            <FontAwesomeIcon icon="arrow-left" className="me-2" /> {t('reportPage.title')}
           </Link>
         </Col>
         <Col md={6} className="text-center">
-          <h2 className="m-0">Report ({plan?.title})</h2>
+          <h2 className="m-0">
+            {t('reportPage.subtitle')} ({plan?.title})
+          </h2>
         </Col>
       </Row>
       <hr />
@@ -292,7 +296,7 @@ const Report = () => {
                 <Form.Group>
                   <Form.Control
                     ref={searchInput}
-                    placeholder="Search by Location Name"
+                    placeholder={t('reportPage.search')}
                     type="text"
                     onChange={e => searchHandler(e.target.value)}
                   />
@@ -315,7 +319,7 @@ const Report = () => {
           </div>
         </>
       )}
-      {filterData.length === 0 && <p className="lead text-center">No data found.</p>}
+      {filterData.length === 0 && <p className="lead text-center">{t('general.noDataFound')}</p>}
       <Row className="my-3">
         <Col md={showMap ? 10 : 4}>
           <Collapse in={showMap}>
@@ -338,29 +342,29 @@ const Report = () => {
             aria-controls="expand-table"
             aria-expanded={showMap}
           >
-            {showMap ? 'Hide Map' : 'Show Map'}
+            {showMap ? t('reportPage.hideMap') : t('reportPage.showMap')}
           </Button>
           <Table className="mt-4 text-center">
             <tbody>
               <tr className="bg-danger">
-                <td className="py-4">Red</td>
+                <td className="py-4">{t('reportPage.formattingRuleColors.red')}</td>
                 <td className="py-4">{'0% - ' + REPORT_TABLE_PERCENTAGE_LOW + '%'}</td>
               </tr>
               <tr className="bg-warning">
-                <td className="py-4">Orange</td>
+                <td className="py-4">{t('reportPage.formattingRuleColors.orange')}</td>
                 <td className="py-4">{REPORT_TABLE_PERCENTAGE_LOW + '% - ' + REPORT_TABLE_PERCENTAGE_MEDIUM + '%'}</td>
               </tr>
               <tr className="bg-yellow">
-                <td className="py-4">Yellow</td>
+                <td className="py-4">{t('reportPage.formattingRuleColors.yellow')}</td>
                 <td className="py-4">{REPORT_TABLE_PERCENTAGE_MEDIUM + '% - ' + REPORT_TABLE_PERCENTAGE_HIGH + '%'}</td>
               </tr>
               <tr className="bg-success">
-                <td className="py-4">Green</td>
+                <td className="py-4">{t('reportPage.formattingRuleColors.green')}</td>
                 <td className="py-4">{REPORT_TABLE_PERCENTAGE_HIGH + '% - 100%'}</td>
               </tr>
             </tbody>
           </Table>
-          <p className="my-2">Conditional formatting rules</p>
+          <p className="my-2">{t('reportPage.formattingRules')}</p>
         </Col>
       </Row>
       {showModal && currentFeature && <ReportModal showModal={openModalHandler} feature={currentFeature} />}
