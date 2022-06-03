@@ -38,7 +38,7 @@ export default function NavbarComponent() {
 
   return (
     <Navbar collapseOnSelect expand="md">
-      <Container fluid className="px-4 pt-2">
+      <Container fluid className="px-4 pt-1">
         <Navbar.Brand>
           <img src={logo} alt="Reveal Logo" className="d-inline-block align-top mb-2" />
         </Navbar.Brand>

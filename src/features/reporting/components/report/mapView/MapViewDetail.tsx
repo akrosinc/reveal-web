@@ -91,7 +91,6 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
     });
   });
 
-
   // main function to load and draw locations to the map
   // logic for displaying borders and fill colors
   const loadLocationSet = useCallback(
