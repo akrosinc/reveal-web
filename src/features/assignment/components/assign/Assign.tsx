@@ -90,13 +90,13 @@ const Assign = () => {
             .catch(err => toast.error('Something went wrong...' + err.toString()));
         })
         .catch(_ => {
-          toast.error(t('toast.planErrorRedirectMessage'));
+          toast.error(t('planPage.planErrorRedirectMessage'));
           dispatch(showLoader(false));
           navigate('/assign');
         });
     } else {
       dispatch(showLoader(false));
-      toast.error(t('toast.planErrorMessage'));
+      toast.error(t('planPage.planErrorMessage'));
       navigate(ASSIGNMENT_PAGE);
     }
   }, [planId, dispatch, navigate, t]);
