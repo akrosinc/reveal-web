@@ -10,7 +10,8 @@ import {
   REPORTING_PAGE,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
-  REPORT_TABLE_PERCENTAGE_MEDIUM
+  REPORT_TABLE_PERCENTAGE_MEDIUM,
+  UNEXPECTED_ERROR_STRING
 } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
@@ -137,7 +138,7 @@ const Report = () => {
         })
         .catch(err => {
           dispatch(showLoader(false));
-          toast.error(err.message !== undefined ? err.message : 'Unexpected error');
+          toast.error(err.message !== undefined ? err.message : UNEXPECTED_ERROR_STRING);
           navigate(-1);
         });
     } else {

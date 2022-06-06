@@ -6,7 +6,8 @@ import {
   ASSIGNMENT_PAGE,
   LOCATION_ASSIGNMENT_TAB,
   LOCATION_ASSIGN_TABLE_COLUMNS,
-  LOCATION_TEAM_ASSIGNMENT_TAB
+  LOCATION_TEAM_ASSIGNMENT_TAB,
+  UNEXPECTED_ERROR_STRING
 } from '../../../../constants';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
@@ -87,19 +88,19 @@ const Assign = () => {
                 });
               }
             })
-            .catch(err => toast.error(err.message ? err.message : t('toast.unexpectedError')));
+            .catch(err => toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING));
         })
         .catch(_ => {
-          toast.error(t('planPage.planErrorRedirectMessage'));
+          toast.error("Plan does not exist, redirected to previous page.");
           dispatch(showLoader(false));
           navigate('/assign');
         });
     } else {
       dispatch(showLoader(false));
-      toast.error(t('planPage.planErrorMessage'));
+      toast.error("Plan does not exist, redirected to previous page.");
       navigate(ASSIGNMENT_PAGE);
     }
-  }, [planId, dispatch, navigate, t]);
+  }, [planId, dispatch, navigate]);
 
   useEffect(() => {
     loadData();

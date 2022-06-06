@@ -42,7 +42,8 @@
     "save": "Save",
     "submit": "Submit",
     "cancel": "Cancel",
-    "close": "Close"
+    "close": "Close",
+    "confirm": "Confirm"
   },
   "managementPage": {
     "organization": "Organization",

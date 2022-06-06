@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Col, Row, Container, Tab, Tabs, Form, Button, Accordion } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
-import { PLANS, REGEX_TITLE_VALIDATION } from '../../../../constants';
+import { PLANS, REGEX_TITLE_VALIDATION, UNEXPECTED_ERROR_STRING } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
 import { getLocationHierarchyList } from '../../../location/api';
 import { showLoader } from '../../../reducers/loader';
@@ -78,12 +78,12 @@ const CreatePlan = () => {
           setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
         })
         .catch(err => {
-          toast.error(err.message ? err.message : t('planPage.planErrorRedirectMessage'));
+          toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING);
           navigate(PLANS);
         })
         .finally(() => dispatch(showLoader(false)));
     },
-    [dispatch, setValue, navigate, t]
+    [dispatch, setValue, navigate]
   );
 
   useEffect(() => {

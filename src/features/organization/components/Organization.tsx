@@ -7,7 +7,7 @@ import Paginator from '../../../components/Pagination';
 import { useAppDispatch } from '../../../store/hooks';
 import { showLoader } from '../../reducers/loader';
 import CreateOrganization from './create';
-import { ORGANIZATION_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../constants';
+import { ORGANIZATION_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE, UNEXPECTED_ERROR_STRING } from '../../../constants';
 import { DebounceInput } from 'react-debounce-input';
 import { ActionDialog } from '../../../components/Dialogs/';
 import EditOrganization from './edit';
@@ -126,7 +126,7 @@ const Organization = () => {
               .catch(err => toast.error(err.toString()));
           }
         })
-        .catch((error: ErrorModel) => toast.error(error !== undefined ? error.message : 'Unexpected error!'))
+        .catch((error: ErrorModel) => toast.error(error !== undefined ? error.message : UNEXPECTED_ERROR_STRING))
         .finally(() => dispatch(showLoader(false)));
     },
     [dispatch]
