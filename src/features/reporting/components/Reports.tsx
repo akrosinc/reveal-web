@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
-import { PAGINATION_DEFAULT_SIZE, PLAN_TABLE_COLUMNS, REPORTING_PAGE } from '../../../constants';
+import { PAGINATION_DEFAULT_SIZE, PLAN_TABLE_COLUMNS, REPORTING_PAGE, UNEXPECTED_ERROR_STRING } from '../../../constants';
 import { useAppDispatch } from '../../../store/hooks';
 import { PlanModel } from '../../plan/providers/types';
 import { showLoader } from '../../reducers/loader';
@@ -31,10 +31,10 @@ const Reports = () => {
         .then(plans => {
           setPlanList(plans);
         })
-        .catch(err => toast.error(err.message ? err.message : t('toast.unexpectedError')))
+        .catch(err => toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING))
         .finally(() => dispatch(showLoader(false)));
     },
-    [dispatch, t]
+    [dispatch]
   );
 
   useEffect(() => {
@@ -47,9 +47,9 @@ const Reports = () => {
       })
       .catch(err => {
         dispatch(showLoader(false));
-        toast.error(err.message ? err.message : t('toast.unexpectedError'));
+        toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING);
       });
-  }, [loadData, dispatch, t]);
+  }, [loadData, dispatch]);
 
   const paginationHandler = (size: number, page: number) => {
     if (selectedReportType) {
