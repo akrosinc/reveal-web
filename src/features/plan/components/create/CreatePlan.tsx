@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Col, Row, Container, Tab, Tabs, Form, Button, Accordion } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
-import { PLANS, REGEX_NAME_VALIDATION, REGEX_TITLE_VALIDATION } from '../../../../constants';
+import { PLANS, REGEX_TITLE_VALIDATION, UNEXPECTED_ERROR_STRING } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
 import { getLocationHierarchyList } from '../../../location/api';
 import { showLoader } from '../../../reducers/loader';
@@ -78,7 +78,7 @@ const CreatePlan = () => {
           setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
         })
         .catch(err => {
-          toast.error(err.message ? err.message : 'Plan does not exist.');
+          toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING);
           navigate(PLANS);
         })
         .finally(() => dispatch(showLoader(false)));
@@ -147,9 +147,9 @@ const CreatePlan = () => {
       dispatch(showLoader(true));
       toast
         .promise(updatePlanDetails(form, id), {
-          pending: 'Loading...',
-          success: 'Plan updated successfully.',
-          error: 'There was an error updating plan details'
+          pending: t('toast.loading'),
+          success: t('planPage.planUpdatedMessage'),
+          error: t('planPage.planUpdateErrorMessage')
         })
         .finally(() => dispatch(showLoader(false)));
     }
@@ -166,8 +166,8 @@ const CreatePlan = () => {
       <ConfirmDialog
         closeHandler={giveAnswer}
         backdrop
-        message={'Are you sure you want to delete goal with identifier: ' + goalId + '?'}
-        title="Delete Goal"
+        message={t('planPage.deleteGoalMessage') + goalId + '?'}
+        title={t('planPage.deleteGoal')}
       />
     )).then(res => {
       if (res) {
@@ -193,7 +193,7 @@ const CreatePlan = () => {
         .then(_ => {
           navigate(PLANS);
         })
-        .catch(err => toast.error(err.message !== undefined ? err.message : 'Server Error occured!'))
+        .catch(err => toast.error(err.message !== undefined ? err.message : t('toast.unexpectedError')))
         .finally(() => dispatch(showLoader(false)));
     } else {
       setShowConfirmDialog(false);
@@ -216,12 +216,8 @@ const CreatePlan = () => {
                   <ConfirmDialog
                     closeHandler={giveAnswer}
                     backdrop
-                    message={
-                      id
-                        ? 'You are about to discard all new changes made. Are you sure?'
-                        : 'Are you sure you want to discard plan creation?'
-                    }
-                    title="Discard Changes"
+                    message={id ? t('planPage.planUpdateDiscardMessage') : t('planPage.planDiscardMessage')}
+                    title={t('confirmDialog.discardChanges')}
                   />
                 )).then(res => {
                   if (res) {
@@ -275,18 +271,12 @@ const CreatePlan = () => {
                 }
               }}
             >
-              <Tab eventKey="plan-details" title="Details">
+              <Tab eventKey="plan-details" title={t('planPage.details')}>
                 <Form.Group className="mb-2" style={{ display: 'none' }}>
                   <Form.Label>Plan name</Form.Label>
                   <Form.Control
                     id="plan-name-input"
-                    {...register('name', {
-                      required: 'Plan name must not be empty',
-                      pattern: {
-                        value: REGEX_NAME_VALIDATION,
-                        message: 'Plan name containts unsupported characters.'
-                      }
-                    })}
+                    {...register('name')}
                     type="name"
                     readOnly={true}
                     placeholder="Enter plan name"
@@ -294,15 +284,15 @@ const CreatePlan = () => {
                   {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
                 </Form.Group>
                 <Form.Group className="mb-2">
-                  <Form.Label>Plan title</Form.Label>
+                  <Form.Label>{t('planPage.planForm.title')}</Form.Label>
                   <Form.Control
                     id="plan-title-input"
                     {...register('title', {
-                      required: 'Plan title must not be empty.',
+                      required: t('planPage.planForm.titleError') as string,
                       minLength: 1,
                       pattern: {
                         value: REGEX_TITLE_VALIDATION,
-                        message: 'Plan title containts unsupported characters.'
+                        message: t('planPage.planForm.titleErrorRegex') as string
                       }
                     })}
                     type="text"
@@ -314,11 +304,11 @@ const CreatePlan = () => {
                 <Row>
                   <Col>
                     <Form.Group className="mb-2">
-                      <Form.Label>Start date</Form.Label>
+                      <Form.Label>{t('planPage.planForm.startDate')}</Form.Label>
                       <Controller
                         control={control}
                         name="effectivePeriod.start"
-                        rules={{ required: 'Start date must be selected!' }}
+                        rules={{ required: t('planPage.planForm.startDateError') as string }}
                         render={({ field: { onChange, value } }) => (
                           <DatePicker
                             id="start-date-picker"
@@ -345,12 +335,12 @@ const CreatePlan = () => {
                   </Col>
                   <Col>
                     <Form.Group className="mb-2">
-                      <Form.Label>End date</Form.Label>
+                      <Form.Label>{t('planPage.planForm.endDate')}</Form.Label>
                       <Controller
                         control={control}
                         name="effectivePeriod.end"
                         rules={{
-                          required: 'End date must be selected!'
+                          required: t('planPage.planForm.endDateError') as string
                         }}
                         render={({ field: { onChange, value } }) => (
                           <DatePicker
@@ -378,11 +368,11 @@ const CreatePlan = () => {
                   </Col>
                 </Row>
                 <Form.Group className="mb-2">
-                  <Form.Label>Select Hierarchy</Form.Label>
+                  <Form.Label>{t('planPage.planForm.selectHierarchy')}</Form.Label>
                   <Controller
                     control={control}
                     name="locationHierarchy"
-                    rules={{ required: 'Please selecet location hierarchy.', minLength: 1 }}
+                    rules={{ required: t('planPage.planForm.selectHierarchyError') as string, minLength: 1 }}
                     render={({ field }) => (
                       <Select
                         id="hierarchy-select"
@@ -401,10 +391,10 @@ const CreatePlan = () => {
                   )}
                 </Form.Group>
                 <Form.Group className="mb-4">
-                  <Form.Label>Select Intervention Type</Form.Label>
+                  <Form.Label>{t('planPage.planForm.selectInterventionType')}</Form.Label>
                   <Controller
                     control={control}
-                    rules={{ required: 'Please selecet intervention type.', minLength: 1 }}
+                    rules={{ required: t('planPage.planForm.selectInterventionTypeError') as string, minLength: 1 }}
                     name="interventionType"
                     render={({ field }) => (
                       <Select
@@ -424,7 +414,7 @@ const CreatePlan = () => {
                   )}
                 </Form.Group>
               </Tab>
-              <Tab eventKey="create-goals" title="Goals" style={{ minHeight: '406px' }}>
+              <Tab eventKey="create-goals" title={t('planPage.goals')} style={{ minHeight: '406px' }}>
                 <Accordion id="plan-card" defaultActiveKey="0" flush>
                   {goalList.map(el => {
                     return (
@@ -455,7 +445,7 @@ const CreatePlan = () => {
                 }}
                 className="float-end mt-2"
               >
-                Update details
+                {t('planPage.updateDetails')}
               </Button>
             )}
             {id === undefined && (
@@ -466,7 +456,7 @@ const CreatePlan = () => {
                 }}
                 className="float-end mt-2"
               >
-                Create plan
+                {t('planPage.createPlan')}
               </Button>
             )}
           </Form>
@@ -476,9 +466,8 @@ const CreatePlan = () => {
         <ConfirmDialog
           backdrop={false}
           closeHandler={closeHandler}
-          message="You are creating a plan without any goals set. 
-          Without a goal plan will be created as draft and you won't be able to activate it until you add at least one goal."
-          title="Create Plan"
+          message={t('planPage.noGoalMessage')}
+          title={t('planPage.createPlan')}
         />
       )}
       {showCreateGoal && (

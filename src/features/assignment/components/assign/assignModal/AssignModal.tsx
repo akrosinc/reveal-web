@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../../../../store/hooks';
 import { showLoader } from '../../../../reducers/loader';
 import { getOrganizationListSummary } from '../../../../organization/api';
+import { UNEXPECTED_ERROR_STRING } from '../../../../../constants';
 
 interface Props {
   locationData: [string, Properties];
@@ -39,7 +40,7 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
           .then(_ => {
             toast.success('Locations assigned successfully.');
           })
-          .catch(err => toast.error(err.toString()))
+          .catch(err => toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING))
           .finally(() => {
             dispatch(showLoader(false));
             closeHandler(true, assignedTeams ? assignedTeams.length : 0);

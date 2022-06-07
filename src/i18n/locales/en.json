@@ -25,9 +25,8 @@
   },
   "toast": {
     "welcomeMessage": "Welcome back ",
-    "assignmentsWarningMessage": "Please select and save your changes, at least one location needs to be able selected to assign teams.",
-    "planErrorMessage": "Plan does not exist.",
-    "planErrorRedirectMessage": "Plan does not exist, redirected to previous page."
+    "unexpectedError": "Unexpected error has occured.",
+    "loading": "Loading..."
   },
   "homePage": {
     "welcomeMessage": "Welcome to Reveal"
@@ -42,7 +41,9 @@
     "report": "Reports",
     "save": "Save",
     "submit": "Submit",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm"
   },
   "managementPage": {
     "organization": "Organization",
@@ -84,20 +85,97 @@
     "subTitle": "Assign Plans",
     "titleTeams": "Assign Teams",
     "titleLocations": "Assign Locations",
-    "selectLocations": "Select Locations"
+    "selectLocations": "Select Locations",
+    "assignmentsWarningMessage": "Please select and save your changes, at least one location needs to be able selected to assign teams.",
+    "assignTeamMessage": "Selected teams assigned successfully.",
+    "assignTeamErrorMessage": "There was an error assigning teams.",
+    "assignLocationMessage": "Locations assigned to plan successfully.",
+    "assignLocationErrorMessage": ""
   },
   "general": {
-    "noContent": "No content."
+    "noContent": "No content.",
+    "noDataFound": "No data found."
+  },
+  "confirmDialog" :{
+    "discardChanges": "Discard Changes"
   },
   "planPage": {
     "title": "Plans",
     "planDetails": "Plan Details",
+    "updateDetails": "Update Details",
     "createPlan": "Create Plan",
     "details": "Details",
     "goals": "Goals",
+    "goal": "Goal",
+    "priority": "Priority",
+    "actions": "Actions",
+    "conditions": "Conditions",
+    "form": "Form",
+    "dates": "Dates",
+    "deleteGoal": "Delete Goal",
+    "deleteGoalMessage": "Are you sure you want to delete goal with identifier: ",
+    "description": "Description",
+    "activate": "Activate",
+    "active": "Active",
     "planActivateMessage": "Plan activated successfully",
     "planActivationError": "There was an error activating this plan.",
     "planActivationBody": "Are you sure you want to active plan with identifier",
-    "planActivationTitle": "Activate plan"
+    "planActivationTitle": "Activate plan",
+    "Title": "Title",
+    "Status": "Status",
+    "Intervention Type": "Intervention Type",
+    "Location Hierarchy": "Location Hierarchy",
+    "Start Date": "Start Date",
+    "End Date": "End Date",
+    "searchField": "Search (minimum 3 charaters)",
+    "planErrorMessage": "Plan does not exist.",
+    "planErrorRedirectMessage": "Plan does not exist, redirected to previous page.",
+    "planUpdatedMessage": "Plan updated successfully.",
+    "planUpdateErrorMessage": "There was an error updating plan details",
+    "noGoalMessage": "You are creating a plan without any goals set. Without a goal plan will be created as draft and you won't be able to activate it until you add at least one goal.",
+    "planUpdateDiscardMessage": "You are about to discard all new changes made. Are you sure?",
+    "planDiscardMessage": "Are you sure you want to discard plan creation?",
+    "planForm": {
+      "title": "Plan title",
+      "titleError": "Plan title must not be empty.",
+      "titleErrorRegex": "Plan title containts unsupported characters.",
+      "startDate": "Start date",
+      "startDateError": "Start date must be selected.",
+      "endDate": "End date",
+      "endDateError": "End date must be selected.",
+      "selectHierarchy": "Select Hierarchy",
+      "selectHierarchyError": "Please select location hierarchy.", 
+      "selectInterventionType": "Select Intervention Type",
+      "selectInterventionTypeError": "Please select intervention type."
+    }
+  },
+  "reportPage": {
+    "title": "Reports",
+    "subtitle": "Report",
+    "search": "Search by Location Name",
+    "reportDetails": "Report details",
+    "locationInfo": "Location info",
+    "locationData": "Location data",
+    "formattingRules": "Conditional formatting rules",
+    "formattingRuleColors": {
+      "red": "Red",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "green": "Green"
+    },
+    "hideMap": "Hide map",
+    "showMap": "Show map",
+    "reportType": "Report Type",
+    "table": {
+      "Title": "Title",
+      "Status": "Status",
+      "Intervention Type": "Intervention Type",
+      "Location Hierarchy": "Location Hierarchy",
+      "Start Date": "Start Date",
+      "End Date":"End Date"
+    },
+    "locationName": "Location Name",
+    "locationType": "Location Type",
+    "identifier": "Identifier"
   }
 }

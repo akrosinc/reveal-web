@@ -10,10 +10,11 @@ import 'chart.js/auto';
 import { toast } from 'react-toastify';
 import AuthorizedElement from '../../components/AuthorizedElement';
 import { PLAN_VIEW, USER_VIEW } from '../../constants';
+import { ChartData } from 'chart.js/auto';
 
 const Dashboard = () => {
-  const [data, setData] = useState<any>();
-  const [dougData, setDougData] = useState<any>();
+  const [data, setData] = useState<ChartData<'pie'>>();
+  const [dougData, setDougData] = useState<ChartData<'doughnut'>>();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -61,7 +62,7 @@ const Dashboard = () => {
   return (
     <>
       <AuthorizedElement roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}>
-      <Row>
+      <Row style={{minHeight: "500px"}}>
         <Col md={6}>
           {data !== undefined && data.datasets[0].data.length ? (
             <Pie

@@ -77,7 +77,7 @@ const Plans = () => {
             <DebounceInput
               id="search-plans-input"
               className="form-control"
-              placeholder="Search (minimum 3 charaters)"
+              placeholder={t("planPage.searchField")}
               debounceTimeout={800}
               onChange={e => filterData(e)}
               disabled={planList?.totalElements === 0 && currentSearchInput === ''}
@@ -95,14 +95,14 @@ const Plans = () => {
                   <th
                     key={el.name}
                     onClick={() => {
-                      setActiveSortField(el.name);
+                      setActiveSortField(t('planPage.' + el.name));
                       setCurrentSortField(el.sortValue);
                       setCurrentSortDirection(!currentSortDirection);
                       sortHandler(el.sortValue, !currentSortDirection);
                     }}
                   >
-                    {el.name}{' '}
-                    {activeSortField === el.name ? (
+                    {t('planPage.' + el.name)}{' '}
+                    {activeSortField === t('planPage.' + el.name) ? (
                       currentSortDirection ? (
                         <FontAwesomeIcon icon="sort-down" />
                       ) : (
@@ -138,7 +138,7 @@ const Plans = () => {
                       }}
                       disabled={el.status !== 'DRAFT'}
                     >
-                      {el.status === 'DRAFT' ? 'Activate' : 'Active'}
+                      {el.status === 'DRAFT' ? t('planPage.activate') : t('planPage.active')}
                     </Button>
                   </td>
                 </tr>

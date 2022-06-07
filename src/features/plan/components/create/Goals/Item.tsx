@@ -8,6 +8,7 @@ import { createAction, deleteAction, updateAction } from '../../../api';
 import { toast } from 'react-toastify';
 import { showLoader } from '../../../../reducers/loader';
 import { useAppDispatch } from '../../../../../store/hooks';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   goal: Goal;
@@ -28,6 +29,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
   const [selectedAction, setSelectedAction] = useState<Action>();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   //rerender actions if goal data changes
   useEffect(() => {
@@ -36,11 +38,11 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
 
   return (
     <Accordion.Item id={goal.identifier + '-goal'} eventKey={goal.identifier} className="p-2">
-      <Accordion.Header>Goal - {goal.description}</Accordion.Header>
+      <Accordion.Header>{t('planPage.goal')} - {goal.description}</Accordion.Header>
       <Accordion.Body>
         <Row>
           <Col>
-            <Form.Label className="mt-3">Description</Form.Label>
+            <Form.Label className="mt-3">{t('planPage.description')}</Form.Label>
           </Col>
           <Col>
             <Button
@@ -66,26 +68,26 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
           </Col>
         </Row>
         <Form.Control type="text" readOnly={true} value={goal.description} />
-        <Form.Label className="mt-3">Priority</Form.Label>
+        <Form.Label className="mt-3">{t('planPage.priority')}</Form.Label>
         <Form.Control type="text" readOnly={true} value={goal.priority} />
         <hr />
         <Row className="my-2">
           <Col>
-            <h2>Actions</h2>
+            <h2>{t('planPage.actions')}</h2>
           </Col>
           <Col>
             <Button id="create-action-button" className="float-end" onClick={() => setShow(true)}>
-              Create
+            {t('buttons.create')}
             </Button>
           </Col>
         </Row>
         <Table bordered responsive hover>
           <thead className="border border-2">
             <tr>
-              <th>Description</th>
-              <th>Dates</th>
-              <th>Form</th>
-              <th>Conditions</th>
+              <th>{t('planPage.description')}</th>
+              <th>{t('planPage.dates')}</th>
+              <th>{t('planPage.form')}</th>
+              <th>{t('planPage.conditions')}</th>
             </tr>
           </thead>
           <tbody>

@@ -6,7 +6,8 @@ import {
   ASSIGNMENT_PAGE,
   LOCATION_ASSIGNMENT_TAB,
   LOCATION_ASSIGN_TABLE_COLUMNS,
-  LOCATION_TEAM_ASSIGNMENT_TAB
+  LOCATION_TEAM_ASSIGNMENT_TAB,
+  UNEXPECTED_ERROR_STRING
 } from '../../../../constants';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
@@ -87,19 +88,19 @@ const Assign = () => {
                 });
               }
             })
-            .catch(err => toast.error('Something went wrong...' + err.toString()));
+            .catch(err => toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING));
         })
         .catch(_ => {
-          toast.error(t('toast.planErrorRedirectMessage'));
+          toast.error("Plan does not exist, redirected to previous page.");
           dispatch(showLoader(false));
           navigate('/assign');
         });
     } else {
       dispatch(showLoader(false));
-      toast.error(t('toast.planErrorMessage'));
+      toast.error("Plan does not exist, redirected to previous page.");
       navigate(ASSIGNMENT_PAGE);
     }
-  }, [planId, dispatch, navigate, t]);
+  }, [planId, dispatch, navigate]);
 
   useEffect(() => {
     loadData();
@@ -319,12 +320,12 @@ const Assign = () => {
       if (activeTab === LOCATION_ASSIGNMENT_TAB) {
         toast
           .promise(assignLocationsToPlan(planId, selectedLocationsIdentifiers), {
-            pending: 'Loading...',
-            success: 'Locations assigned to plan successfully',
+            pending: t('toast.loading'),
+            success: t('assignPage.assignLocationMessage'),
             error: {
               render({ data }: { data: ErrorModel }) {
                 dispatch(showLoader(false));
-                return data.message !== undefined ? data.message : 'An error has occured!';
+                return data.message !== undefined ? data.message : t('assignPage.assignLocationErrorMessage');
               }
             }
           })
@@ -352,9 +353,9 @@ const Assign = () => {
         });
         toast
           .promise(assignTeamsToLocationHierarchy(planId, { hierarchy: locationTeamAssignment }), {
-            pending: 'Loading...',
-            success: 'Selected teams assigned successfully',
-            error: 'There was an error assigning teams.'
+            pending: t('toast.loading'),
+            success: t('assignPage.assignTeamMessage'),
+            error: t('assignPage.assignTeamErrorMessage')
           })
           .finally(() => {
             //empty array after sending
@@ -410,7 +411,7 @@ const Assign = () => {
                   setActiveTab(tab);
                 } else {
                   if (tab === LOCATION_TEAM_ASSIGNMENT_TAB) {
-                    toast.warning(t('toast.assignmentsWarningMessage'));
+                    toast.warning(t('assignPage.assignmentsWarningMessage'));
                   }
                   setActiveTab(LOCATION_ASSIGNMENT_TAB);
                 }

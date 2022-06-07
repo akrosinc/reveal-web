@@ -1,6 +1,7 @@
 import { Feature, MultiPolygon, Polygon } from '@turf/turf';
 import React, { useMemo, useState } from 'react';
 import { Button, Modal, OverlayTrigger, Table, Tooltip } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 import {
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
@@ -15,6 +16,7 @@ interface Props {
 
 const ReportModal = ({ showModal, feature }: Props) => {
   const [tableData, setTableData] = useState<{ [key: string]: FoundCoverage }>();
+  const { t } = useTranslation();
 
   const columns = useMemo<string[]>(() => {
     //Map columns depending on server response
@@ -58,19 +60,23 @@ const ReportModal = ({ showModal, feature }: Props) => {
       show
       centered
       size="xl"
-      onShow={() => setTableData(JSON.parse(String(feature.properties.columnDataMap)) as { [key: string]: FoundCoverage })}
+      onShow={() =>
+        setTableData(JSON.parse(String(feature.properties.columnDataMap)) as { [key: string]: FoundCoverage })
+      }
     >
       <Modal.Header className="justify-content-center">
-        <Modal.Title>Report details ({feature.properties.name})</Modal.Title>
+        <Modal.Title>
+          {t('reportPage.reportDetails')} ({feature.properties.name})
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <h4>Location info</h4>
+        <h4>{t('reportPage.locationInfo')}</h4>
         <Table bordered responsive className="my-2">
           <thead className="border border-2">
             <tr>
-              <th>Identifier</th>
-              <th>Location name</th>
-              <th>Location type</th>
+              <th>{t('reportPage.identifier')}</th>
+              <th>{t('reportPage.locationName')}</th>
+              <th>{t('reportPage.locationType')}</th>
             </tr>
           </thead>
           <tbody>
@@ -82,7 +88,7 @@ const ReportModal = ({ showModal, feature }: Props) => {
           </tbody>
         </Table>
         <hr />
-        <h4>Location data</h4>
+        <h4>{t('reportPage.locationData')}</h4>
         <Table responsive bordered className="my-2">
           <thead className="border border-2">
             <tr>
@@ -108,7 +114,7 @@ const ReportModal = ({ showModal, feature }: Props) => {
       </Modal.Body>
       <Modal.Footer>
         <Button id="close-button" variant="secondary" onClick={() => showModal(false)}>
-          Close
+          {t('buttons.close')}
         </Button>
       </Modal.Footer>
     </Modal>

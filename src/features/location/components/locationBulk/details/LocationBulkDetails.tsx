@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button, Modal, Table } from 'react-bootstrap';
-import { LocationBulkModel, LocationBulkDetailsModel } from '../../../providers/types';
+import { Button, Modal, Spinner, Table } from 'react-bootstrap';
+import { LocationBulkModel, LocationBulkDetailsModel, LocationBulkStatus } from '../../../providers/types';
 import { formatDate } from '../../../../../utils';
 import { PageableModel } from '../../../../../api/providers';
 import Paginator from '../../../../../components/Pagination';
@@ -20,6 +20,9 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
           {locationBulkFile.filename}({locationList.totalElements})<br />
           <small>
             Bulk Status: {locationBulkFile.status}
+            {locationBulkFile.status !== LocationBulkStatus.COMPLETE && (
+              <Spinner animation="grow" variant="success" style={{ marginBottom: '-4px', marginLeft: '0.5em' }} />
+            )}
           </small>
         </Modal.Title>
         <div>

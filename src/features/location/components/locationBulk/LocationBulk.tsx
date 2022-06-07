@@ -103,7 +103,7 @@ const LocationBulk = () => {
         .then(res => {
           setSelectedBulkLocationList(res);
         })
-        .catch(err => toast.error('Error loading bulk details'))
+        .catch(err => toast.error(err.message ? err.message : 'Error loading bulk details'))
         .finally(() => dispatch(showLoader(false)));
     } else {
       loadData(size, page, currentSortField, currentSortDirection);

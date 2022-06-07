@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Modal } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   title: string;
@@ -9,6 +10,8 @@ interface Props {
 }
 
 const ConfirmDialog = ({ title, message, closeHandler, backdrop }: Props) => {
+  const { t } = useTranslation();
+
   return (
     <Modal show={true} centered size="sm" backdrop={backdrop} style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
       <Modal.Header>
@@ -21,10 +24,10 @@ const ConfirmDialog = ({ title, message, closeHandler, backdrop }: Props) => {
 
       <Modal.Footer>
         <Button variant="secondary" onClick={() => closeHandler(false)}>
-          Cancel
+          {t('buttons.cancel')}
         </Button>
         <Button variant="primary" onClick={() => closeHandler(true)}>
-          Confirm
+        {t('buttons.confirm')}
         </Button>
       </Modal.Footer>
     </Modal>

@@ -13,11 +13,12 @@ interface Props {
   columns: Column[];
   data: any[];
   clickHandler: (locationId: string, locationName: string, childrenNumber: number) => void;
-  sortHandler: (sortDirection: boolean) => void;
+  sortHandler: (sortDirection: boolean, columnName: string) => void;
 }
 
 const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
   const [sortDirection, setCurrentSortDirection] = useState(false);
+  const [sortDirectionField, setCurrentSortDirectionField] = useState('');
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
     columns,
     data
@@ -28,20 +29,26 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => {
-              if (column.Header?.toString() === 'Distribution Coverage') {
+              const header = column.Header?.toString();
+              if (header) {
                 return (
                   <th
                     onClick={() => {
-                      sortHandler(!sortDirection);
+                      sortHandler(!sortDirection, header);
                       setCurrentSortDirection(!sortDirection);
+                      setCurrentSortDirectionField(header);
                     }}
                     {...column.getHeaderProps()}
                   >
                     {column.render('Header')}
-                    {sortDirection ? (
-                      <FontAwesomeIcon className="ms-2" size="lg" icon="sort-up" />
+                    {sortDirectionField === header ? (
+                      sortDirection ? (
+                        <FontAwesomeIcon className="ms-2" icon="sort-up" />
+                      ) : (
+                        <FontAwesomeIcon className="ms-2" icon="sort-down" />
+                      )
                     ) : (
-                      <FontAwesomeIcon className="ms-2" size="lg" icon="sort-down" />
+                      <FontAwesomeIcon className="ms-2" icon="sort" />
                     )}
                   </th>
                 );
