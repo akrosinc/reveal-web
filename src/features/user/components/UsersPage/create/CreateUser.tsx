@@ -5,7 +5,7 @@ import { createUser } from '../../../api';
 import { getAllOrganizations, getSecurityGroups } from '../../../../organization/api';
 import { useForm } from 'react-hook-form';
 import { CreateUserModel } from '../../../providers/types';
-import { useAppDispatch } from '../../../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../../store/hooks';
 import { showLoader } from '../../../../reducers/loader';
 import { toast } from 'react-toastify';
 import { ErrorModel } from '../../../../../api/providers';
@@ -44,6 +44,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
   } = useForm<RegisterValues>();
   const [groups, setGroups] = useState<Options[]>();
   const [organizations, setOrganizations] = useState<Options[]>([]);
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const getData = useCallback(() => {
     getSecurityGroups().then(res => {
@@ -120,7 +121,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} backdrop="static" keyboard={false} centered scrollable>
+    <Modal show={show} onHide={handleClose} backdrop="static" keyboard={false} centered scrollable contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header closeButton>
         <Modal.Title>Create user</Modal.Title>
       </Modal.Header>
@@ -214,6 +215,8 @@ const CreateUser = ({ show, handleClose }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Security groups</Form.Label>
             <Select
+              className="custom-react-select-container"
+              classNamePrefix="custom-react-select"
               id="security-groups-select"
               menuPosition="fixed"
               isMulti
@@ -226,6 +229,8 @@ const CreateUser = ({ show, handleClose }: Props) => {
           <Form.Group className="mb-2">
             <Form.Label>Organization</Form.Label>
             <Select
+              className="custom-react-select-container"
+              classNamePrefix="custom-react-select"
               id="organizations-select"
               menuPosition="fixed"
               isMulti

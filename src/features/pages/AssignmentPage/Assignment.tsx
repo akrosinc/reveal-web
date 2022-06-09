@@ -3,6 +3,7 @@ import { Container } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
 import AuthGuard from '../../../components/AuthGuard';
+import { ErrorPage } from '../../../components/pages';
 import { ASSIGNMENT_VIEW } from '../../../constants';
 import Assign from '../../assignment/components/assign';
 import PlanList from '../../assignment/components/plans';
@@ -23,13 +24,14 @@ const Assignment = () => {
           }
         />
         <Route
-          path="/:planId"
+          path="/planId/:planId"
           element={
             <AuthGuard roles={[ASSIGNMENT_VIEW]}>
               <Assign />
             </AuthGuard>
           }
         />
+        <Route path="*" element={<ErrorPage />} />
       </Routes>
     </Container>
   );

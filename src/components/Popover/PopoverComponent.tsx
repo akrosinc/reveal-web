@@ -1,5 +1,4 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React from 'react';
 import { Button, OverlayTrigger, Popover } from 'react-bootstrap';
 
 interface Props {
@@ -10,7 +9,7 @@ interface Props {
 const PopoverComponent = ({ title, children }: Props) => {
   const popover = (
     <Popover id="popover-basic" style={{maxWidth: '285px'}}>
-      <Popover.Header as="h3" className="text-center">
+      <Popover.Header as="h3" className="text-center text-dark">
         {title}
       </Popover.Header>
       <Popover.Body>{children}</Popover.Body>

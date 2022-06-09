@@ -13,7 +13,8 @@
     "IRS Reporting": "IRS Reporting",
     "SMC Reporting": "SMC Reporting",
     "Management": "User Management",
-    "Location": "Location Management"
+    "Location": "Location Management",
+    "Simulation": "Simulation"
   },
   "publicPage": {
     "supportedBy": "supported by",
@@ -152,7 +153,7 @@
   "reportPage": {
     "title": "Reports",
     "subtitle": "Report",
-    "search": "Search by Location Name",
+    "search": "Filter by Location Name",
     "reportDetails": "Report details",
     "locationInfo": "Location info",
     "locationData": "Location data",
@@ -177,5 +178,10 @@
     "locationName": "Location Name",
     "locationType": "Location Type",
     "identifier": "Identifier"
+  },
+  "simulationPage": {
+    "title": "Plan Simulation",
+    "country": "Country",
+    "entity": "Entity"
   }
 }

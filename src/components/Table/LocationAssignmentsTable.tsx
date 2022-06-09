@@ -3,6 +3,7 @@ import { Form, Table } from 'react-bootstrap';
 import { useTable, useExpanded, Column } from 'react-table';
 import { ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3 } from '../../constants';
 import Select, { Options, MultiValue } from 'react-select';
+import { useAppSelector } from '../../store/hooks';
 
 interface Option {
   value: string;
@@ -28,6 +29,7 @@ const LocationAssignmentsTable = ({
   organizationList,
   teamTab
 }: Props) => {
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
   const getColorLevel = (depth: number) => {
     if (depth === 0) {
       return '';
@@ -74,7 +76,7 @@ const LocationAssignmentsTable = ({
   );
 
   return (
-    <Table bordered responsive hover {...getTableProps()} className="mt-2 bg-white">
+    <Table bordered responsive hover {...getTableProps()} className="mt-2" variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="border border-2">
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
@@ -111,6 +113,8 @@ const LocationAssignmentsTable = ({
                   return (
                     <td {...cell.getCellProps()} style={{ minWidth: '250px' }}>
                       <Select
+                        className="custom-react-select-container"
+                        classNamePrefix="custom-react-select"
                         id={rowData.identifier + '-select'}
                         menuPosition="fixed"
                         isMulti

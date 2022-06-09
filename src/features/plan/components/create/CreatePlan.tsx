@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Col, Row, Container, Tab, Tabs, Form, Button, Accordion } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PLANS, REGEX_TITLE_VALIDATION, UNEXPECTED_ERROR_STRING } from '../../../../constants';
-import { useAppDispatch } from '../../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { getLocationHierarchyList } from '../../../location/api';
 import { showLoader } from '../../../reducers/loader';
 import { createPlan, deleteGoalById, getInterventionTypeList, getPlanById, updatePlanDetails } from '../../api';
@@ -50,6 +50,7 @@ const CreatePlan = () => {
   const [currentFrom, setCurrentForm] = useState<any>();
   const { id } = useParams();
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const {
     register,
@@ -168,6 +169,7 @@ const CreatePlan = () => {
         backdrop
         message={t('planPage.deleteGoalMessage') + goalId + '?'}
         title={t('planPage.deleteGoal')}
+        isDarkMode={isDarkMode}
       />
     )).then(res => {
       if (res) {
@@ -218,6 +220,7 @@ const CreatePlan = () => {
                     backdrop
                     message={id ? t('planPage.planUpdateDiscardMessage') : t('planPage.planDiscardMessage')}
                     title={t('confirmDialog.discardChanges')}
+                    isDarkMode={isDarkMode}
                   />
                 )).then(res => {
                   if (res) {
@@ -375,6 +378,8 @@ const CreatePlan = () => {
                     rules={{ required: t('planPage.planForm.selectHierarchyError') as string, minLength: 1 }}
                     render={({ field }) => (
                       <Select
+                        className="custom-react-select-container"
+                        classNamePrefix="custom-react-select"
                         id="hierarchy-select"
                         menuPosition="fixed"
                         options={hierarchyList}
@@ -398,6 +403,8 @@ const CreatePlan = () => {
                     name="interventionType"
                     render={({ field }) => (
                       <Select
+                        className="custom-react-select-container"
+                        classNamePrefix="custom-react-select"
                         id="intervetion-type-select"
                         menuPosition="fixed"
                         options={interventionTypeList}
@@ -468,6 +475,7 @@ const CreatePlan = () => {
           closeHandler={closeHandler}
           message={t('planPage.noGoalMessage')}
           title={t('planPage.createPlan')}
+          isDarkMode={isDarkMode}
         />
       )}
       {showCreateGoal && (

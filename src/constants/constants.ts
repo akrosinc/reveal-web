@@ -1,7 +1,7 @@
 // APP TEXT
 export const APP_TITLE = 'Reveal';
 export const FOOTER_TEXT = `${new Date().getFullYear()} Reveal`;
-export const UNEXPECTED_ERROR_STRING = "Unexpected error has occured.";
+export const UNEXPECTED_ERROR_STRING = 'Unexpected error has occured.';
 
 // PAGES TITLE
 export const PAGE_TITLE_HOME = 'Home';
@@ -28,7 +28,8 @@ export const REGEX_EMAIL_VALIDATION = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$
 
 export const PAGINATION_DEFAULT_SIZE = 10;
 
-export const MAPBOX_STYLE = 'mapbox://styles/mapbox/satellite-v9';
+export const MAPBOX_STYLE_SATELLITE = 'mapbox://styles/mapbox/satellite-v9';
+export const MAPBOX_STYLE_STREETS = 'mapbox://styles/mapbox/streets-v11';
 
 export const ORGANIZATION_TABLE_COLUMNS = [
   { Header: 'Name', accessor: 'name' },
@@ -36,20 +37,20 @@ export const ORGANIZATION_TABLE_COLUMNS = [
   { Header: 'Active', accessor: 'active' }
 ];
 export const USER_TABLE_COLUMNS = [
-  { name: 'Username', sortValue: 'username' },
-  { name: 'First Name', sortValue: 'firstName' },
-  { name: 'Last Name', sortValue: 'lastName' },
-  { name: 'Organization', sortValue: 'organization' }
+  { name: 'Username', sortValue: 'username', accessor: 'username' },
+  { name: 'First Name', sortValue: 'firstName', accessor: 'firstName' },
+  { name: 'Last Name', sortValue: 'lastName', accessor: 'lastName' },
+  { name: 'Organization', sortValue: undefined, accessor: 'organizations', key: 'name' }
 ];
 export const BULK_TABLE_COLUMNS = [
-  { name: 'File name', sortValue: 'filename' },
-  { name: 'Upload Date', sortValue: 'uploadedDatetime' },
-  { name: 'Status', sortValue: 'status' },
-  { name: 'Uploaded By', sortValue: 'username' }
+  { name: 'File name', sortValue: 'filename', accessor: 'filename' },
+  { name: 'Upload Date', sortValue: 'uploadedDatetime', accessor: 'uploadDatetime' },
+  { name: 'Status', sortValue: 'status', accessor: 'status' },
+  { name: 'Uploaded By', sortValue: 'username', accessor: 'uploadedBy' }
 ];
 export const GEOGRAPHY_LEVEL_TABLE_COLUMNS = [
-  { name: 'Name', sortValue: 'name' },
-  { name: 'Title', sortValue: 'title' }
+  { name: 'Name', sortValue: 'name', accessor: 'name' },
+  { name: 'Title', sortValue: 'title', accessor: 'title' }
 ];
 
 export const LOCATION_HIERARCHY_TABLE_COLUMNS = [
@@ -70,12 +71,12 @@ export const LOCATION_ASSIGN_TABLE_COLUMNS = [
 ];
 
 export const PLAN_TABLE_COLUMNS = [
-  { name: 'Title', sortValue: 'title' },
-  { name: 'Status', sortValue: 'status' },
-  { name: 'Intervention Type', sortValue: 'interventionType' },
-  { name: 'Location Hierarchy', sortValue: 'locationHierarchy' },
-  { name: 'Start Date', sortValue: 'effectivePeriodStart' },
-  { name: 'End Date', sortValue: 'effectivePeriodEnd' }
+  { name: 'Title', sortValue: 'title', accessor: 'title' },
+  { name: 'Status', sortValue: 'status', accessor: 'status' },
+  { name: 'Intervention Type', sortValue: 'interventionType', accessor: 'interventionType', key: 'name' },
+  { name: 'Location Hierarchy', sortValue: 'locationHierarchy', accessor: 'locationHierarchy', key: 'name' },
+  { name: 'Start Date', sortValue: 'effectivePeriodStart', accessor: 'effectivePeriod', key: 'start' },
+  { name: 'End Date', sortValue: 'effectivePeriodEnd', accessor: 'effectivePeriod', key: 'end' }
 ];
 
 export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';
@@ -99,10 +100,10 @@ export const MAP_LEGEND_COLORS = [
   MAP_COLOR_SELECTED
 ];
 
-export const MDA_STRUCTURE_COLOR_COMPLETE= '#A7171A';
+export const MDA_STRUCTURE_COLOR_COMPLETE = '#A7171A';
 export const MDA_STRUCTURE_COLOR_NOT_VISITED = '#5DBB63';
 export const MDA_STRUCTURE_COLOR_NOT_ELIGIBLE = '#656565';
-export const MDA_STRUCTURE_COLOR_SMC_COMPLETE_= '#6e599f';
+export const MDA_STRUCTURE_COLOR_SMC_COMPLETE_ = '#6e599f';
 export const MDA_STRUCTURE_COLOR_SPAQ_COMPLETE = '#ffc107';
 
 export const MAP_STRUCTURE_LEGEND_COLORS = [
@@ -111,7 +112,7 @@ export const MAP_STRUCTURE_LEGEND_COLORS = [
   MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
   MDA_STRUCTURE_COLOR_SMC_COMPLETE_,
   MDA_STRUCTURE_COLOR_SPAQ_COMPLETE
-]
+];
 
 export const REPORT_TABLE_PERCENTAGE_HIGH = 75;
 export const REPORT_TABLE_PERCENTAGE_MEDIUM = 50;
@@ -119,7 +120,6 @@ export const REPORT_TABLE_PERCENTAGE_LOW = 25;
 
 export const MAP_DEFAULT_FILL_OPACITY = 0.85;
 export const MAP_DEFAULT_DISABLED_FILL_OPACITY = 0.85;
-
 
 export const COLOR_YELLOW = '#ffff68';
 export const COLOR_BOOTSTRAP_SUCCESS = '#198754';

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Button, Table } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Row, Col, Button } from 'react-bootstrap';
 import { GEOGRAPHY_LEVEL_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import Paginator from '../../../../components/Pagination';
 import CreateGeoLevel from './create';
@@ -13,12 +12,11 @@ import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import GeoLevelDetails from './details/GeoLevelDetails';
 import { useTranslation } from 'react-i18next';
+import DefaultTable from '../../../../components/Table/DefaultTable';
 
 const GeographicLevels = () => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
-  const [sortDirection, setSortDirection] = useState(false);
-  const [activeSortField, setActiveSortField] = useState('');
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [selectedGeoLevel, setSelectedGeoLocation] = useState<GeographicLevel>();
@@ -99,47 +97,13 @@ const GeographicLevels = () => {
       <hr className="my-4" />
       {geoLevelList !== undefined && geoLevelList.totalElements > 0 ? (
         <>
-          <Table bordered responsive hover>
-            <thead className="border border-2">
-              <tr>
-                {GEOGRAPHY_LEVEL_TABLE_COLUMNS.map((el, index) => {
-                  return (
-                    <th
-                      id={el.name + '-sort'}
-                      style={{ cursor: 'pointer' }}
-                      key={index}
-                      onClick={() => {
-                        setSortDirection(!sortDirection);
-                        setActiveSortField(el.name);
-                        sortHandler(el.sortValue, sortDirection);
-                      }}
-                    >
-                      {el.name}
-                      {activeSortField === el.name ? (
-                        sortDirection ? (
-                          <FontAwesomeIcon className="ms-1" icon="sort-up" />
-                        ) : (
-                          <FontAwesomeIcon className="ms-1" icon="sort-down" />
-                        )
-                      ) : (
-                        <FontAwesomeIcon className="ms-1" icon="sort" />
-                      )}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {geoLevelList.content.map(el => {
-                return (
-                  <tr key={el.identifier} onClick={() => openDetails(el.identifier)}>
-                    <td>{el.name}</td>
-                    <td>{el.title}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
+          <DefaultTable
+            columns={GEOGRAPHY_LEVEL_TABLE_COLUMNS}
+            data={geoLevelList.content}
+            sortHandler={sortHandler}
+            clickAccessor="identifier"
+            clickHandler={(identifier: string) => openDetails(identifier)}
+          />
           <Paginator
             page={geoLevelList.pageable.pageNumber}
             paginationHandler={paginationHandler}

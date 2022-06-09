@@ -3,6 +3,7 @@ import { Container } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
 import AuthGuard from '../../../components/AuthGuard';
+import { ErrorPage } from '../../../components/pages';
 import { REPORT_VIEW } from '../../../constants';
 import Reports from '../../reporting/components';
 import Report from '../../reporting/components/report';
@@ -23,13 +24,14 @@ const Reporting = () => {
           }
         />
         <Route
-          path="/:planId/:reportType"
+          path="/planId/:planId/reportType/:reportType"
           element={
             <AuthGuard roles={[REPORT_VIEW]}>
               <Report />
             </AuthGuard>
           }
-        />
+        />        
+        <Route path="*" element={<ErrorPage />} />
       </Routes>
     </Container>
   );

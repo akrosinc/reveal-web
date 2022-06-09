@@ -3,7 +3,6 @@ import { LngLatBounds, Map, Popup, GeolocateControl, NavigationControl, LngLatBo
 import { MutableRefObject } from 'react';
 import { toast } from 'react-toastify';
 import {
-  MAPBOX_STYLE,
   MAP_COLOR_NO_TEAMS,
   MAP_COLOR_SELECTED,
   MAP_COLOR_TEAM_ASSIGNED,
@@ -33,11 +32,12 @@ export const initMap = (
   container: MutableRefObject<any>,
   center: [number, number],
   zoom: number,
-  position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
+  position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left',
+  style: string
 ): Map => {
   const mapboxInstance = new Map({
     container: container.current,
-    style: MAPBOX_STYLE,
+    style: style,
     center: center,
     zoom: zoom,
     doubleClickZoom: false

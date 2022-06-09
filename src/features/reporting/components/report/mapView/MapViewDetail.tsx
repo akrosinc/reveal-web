@@ -11,6 +11,7 @@ import {
   COLOR_BOOTSTRAP_SUCCESS,
   COLOR_BOOTSTRAP_WARNING,
   COLOR_YELLOW,
+  MAPBOX_STYLE_SATELLITE,
   MAP_DEFAULT_FILL_OPACITY,
   MAP_STRUCTURE_LEGEND_COLORS,
   MDA_STRUCTURE_COLOR_COMPLETE,
@@ -50,7 +51,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
-    map.current = initMap(mapContainer, [lng, lat], zoom, 'bottom-left');
+    map.current = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_SATELLITE);
     const mapInstance = map.current;
     //add event handlers
     mapInstance.on('dblclick', e => {

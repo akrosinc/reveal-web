@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Col, Row } from 'react-bootstrap';
+import { Button, Col, Row } from 'react-bootstrap';
 import { PageableModel } from '../../../../api/providers';
 import { ActionDialog } from '../../../../components/Dialogs';
 import Paginator from '../../../../components/Pagination';
 import { PAGINATION_DEFAULT_SIZE, BULK_TABLE_COLUMNS } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
-import { formatDate } from '../../../../utils';
 import { showLoader } from '../../../reducers/loader';
 import { getBulkById, getBulkList } from '../../api';
 import { BulkDetailsModel, UserBulk } from '../../providers/types';
 import CreateBulk from './create';
 import BulkDetails from './details';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useTranslation } from 'react-i18next';
+import DefaultTable from '../../../../components/Table/DefaultTable';
 
 const UserImport = () => {
   const [openCreate, setOpenCreate] = useState(false);
@@ -22,8 +21,6 @@ const UserImport = () => {
   const [selectedBulkFile, setSelectedBulkFile] = useState<UserBulk>();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
-  const [sortDirection, setSortDirection] = useState(false);
-  const [activeSortField, setActiveSortField] = useState('');
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -50,7 +47,7 @@ const UserImport = () => {
         dispatch(showLoader(false));
       });
     } else {
-      getBulkList(size, page).then(res => {
+      getBulkList(size, page, '', currentSortField, currentSortDirection).then(res => {
         setBulkList(res);
       });
     }
@@ -99,44 +96,12 @@ const UserImport = () => {
 
       <hr className="my-4" />
       {bulkList !== undefined && bulkList?.totalElements > 0 ? (
-        <Table bordered responsive hover>
-          <thead className="border border-2">
-            <tr>
-              {BULK_TABLE_COLUMNS.map((el, index) => (
-                <th
-                  id={el.name + '-sort'}
-                  key={index}
-                  onClick={() => {
-                    setSortDirection(!sortDirection);
-                    setActiveSortField(el.name);
-                    sortHandler(el.sortValue, sortDirection);
-                  }}
-                >
-                  {t('userImportPage.' + el.name)}
-                  {activeSortField === el.name ? (
-                    sortDirection ? (
-                      <FontAwesomeIcon className="ms-1" icon="sort-up" />
-                    ) : (
-                      <FontAwesomeIcon className="ms-1" icon="sort-down" />
-                    )
-                  ) : (
-                    <FontAwesomeIcon className="ms-1" icon="sort" />
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {bulkList?.content?.map(el => (
-              <tr onClick={() => openBulkById(el)} key={el.identifier}>
-                <td>{el.filename}</td>
-                <td>{formatDate(el.uploadDatetime)}</td>
-                <td>{el.status}</td>
-                <td>{el.uploadedBy}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <DefaultTable
+          columns={BULK_TABLE_COLUMNS}
+          data={bulkList.content}
+          sortHandler={sortHandler}
+          clickHandler={(el: UserBulk) => openBulkById(el)}
+        />
       ) : (
         <p className="text-center lead">No bulk files found.</p>
       )}

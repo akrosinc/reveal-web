@@ -200,8 +200,9 @@ const Locations = () => {
               {locationList?.content !== undefined && locationList.totalElements > 0 ? (
                 <>
                   <Select
+                    className="custom-react-select-container mb-2"
+                    classNamePrefix="custom-react-select"
                     id="hierarchy-select"
-                    className="mb-2"
                     placeholder="Select Location Hierarcy"
                     menuPosition="fixed"
                     defaultValue={

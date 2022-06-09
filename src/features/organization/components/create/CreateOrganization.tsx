@@ -98,6 +98,8 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
           name="partOf"
           render={({ field: { onChange } }) => (
             <Select
+              className="custom-react-select-container"
+              classNamePrefix="custom-react-select"
               id='part-of-select'
               menuPosition="fixed"
               isClearable

@@ -8,6 +8,7 @@ import {
   REPORT_TABLE_PERCENTAGE_MEDIUM
 } from '../../constants';
 import { ReportLocationProperties } from '../../features/reporting/providers/types';
+import { useAppSelector } from '../../store/hooks';
 
 interface Props {
   columns: Column[];
@@ -17,6 +18,7 @@ interface Props {
 }
 
 const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
   const [sortDirection, setCurrentSortDirection] = useState(false);
   const [sortDirectionField, setCurrentSortDirectionField] = useState('');
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
@@ -24,7 +26,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
     data
   });
   return (
-    <Table bordered responsive hover {...getTableProps()} className="mt-2 bg-white">
+    <Table bordered responsive hover {...getTableProps()} className="mt-2" variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="border border-2">
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>

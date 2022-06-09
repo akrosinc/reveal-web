@@ -4,6 +4,7 @@ import { LocationBulkModel, LocationBulkDetailsModel, LocationBulkStatus } from 
 import { formatDate } from '../../../../../utils';
 import { PageableModel } from '../../../../../api/providers';
 import Paginator from '../../../../../components/Pagination';
+import { useAppSelector } from '../../../../../store/hooks';
 
 interface Props {
   closeHandler: () => void;
@@ -13,8 +14,10 @@ interface Props {
 }
 
 const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, paginationHandler }: Props) => {
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
+
   return (
-    <Modal show centered scrollable size="lg">
+    <Modal show centered scrollable size="lg" contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header>
         <Modal.Title style={{ wordBreak: 'break-word' }}>
           {locationBulkFile.filename}({locationList.totalElements})<br />
@@ -31,7 +34,7 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
         </div>
       </Modal.Header>
       <Modal.Body>
-        <Table bordered responsive>
+        <Table bordered responsive variant={isDarkMode ? 'dark' : 'white'}>
           <thead className="border border-2">
             <tr>
               <th>Location Name</th>

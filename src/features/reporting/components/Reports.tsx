@@ -1,12 +1,17 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
-import { Col, Form, Row, Table } from 'react-bootstrap';
+import { Col, Form, Row } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
-import { PAGINATION_DEFAULT_SIZE, PLAN_TABLE_COLUMNS, REPORTING_PAGE, UNEXPECTED_ERROR_STRING } from '../../../constants';
+import DefaultTable from '../../../components/Table/DefaultTable';
+import {
+  PAGINATION_DEFAULT_SIZE,
+  PLAN_TABLE_COLUMNS,
+  REPORTING_PAGE,
+  UNEXPECTED_ERROR_STRING
+} from '../../../constants';
 import { useAppDispatch } from '../../../store/hooks';
 import { PlanModel } from '../../plan/providers/types';
 import { showLoader } from '../../reducers/loader';
@@ -18,7 +23,6 @@ const Reports = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [currentSortField, setCurrentSortField] = useState('');
-  const [activeSortField, setActiveSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [reportTypes, setReportTypes] = useState<string[]>();
   const [selectedReportType, setSelectedReportType] = useState<string>();
@@ -99,51 +103,13 @@ const Reports = () => {
       </Row>
       {planList !== undefined && planList.content.length > 0 ? (
         <>
-          <Table bordered responsive hover>
-            <thead className="border border-2">
-              <tr>
-                {PLAN_TABLE_COLUMNS.map(el => (
-                  <th
-                    key={el.name}
-                    onClick={() => {
-                      setActiveSortField(t('reportPage.table.' + el.name));
-                      setCurrentSortField(el.sortValue);
-                      setCurrentSortDirection(!currentSortDirection);
-                      sortHandler(el.sortValue, !currentSortDirection);
-                    }}
-                  >
-                    {t('reportPage.table.' + el.name)}{' '}
-                    {activeSortField === t('reportPage.table.' + el.name) ? (
-                      currentSortDirection ? (
-                        <FontAwesomeIcon icon="sort-down" />
-                      ) : (
-                        <FontAwesomeIcon icon="sort-up" />
-                      )
-                    ) : (
-                      <FontAwesomeIcon icon="sort" />
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {planList.content.map(el => (
-                <tr
-                  key={el.identifier}
-                  onClick={() => {
-                    navigate(REPORTING_PAGE + `/${el.identifier}/${selectedReportType}`);
-                  }}
-                >
-                  <td>{el.title}</td>
-                  <td>{el.status}</td>
-                  <td>{el.interventionType.name}</td>
-                  <td>{el.locationHierarchy.name}</td>
-                  <td>{el.effectivePeriod.start}</td>
-                  <td>{el.effectivePeriod.end}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <DefaultTable
+            columns={PLAN_TABLE_COLUMNS}
+            data={planList.content}
+            sortHandler={sortHandler}
+            clickHandler={(id: string) => navigate(REPORTING_PAGE + `/planId/${id}/reportType/${selectedReportType}`)}
+            clickAccessor="identifier"
+          />
           <Paginator
             page={planList.pageable.pageNumber}
             paginationHandler={paginationHandler}

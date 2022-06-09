@@ -18,6 +18,7 @@ import AssignModal from '../assignModal';
 import { Properties } from '../../../../location/providers/types';
 import { getLocationByIdAndPlanId } from '../../../../location/api';
 import {
+  MAPBOX_STYLE_SATELLITE,
   MAP_COLOR_NO_TEAMS,
   MAP_COLOR_TEAM_ASSIGNED,
   MAP_COLOR_UNASSIGNED,
@@ -84,7 +85,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
   // set listeners
   const initializeMap = useCallback(() => {
     if (map.current === undefined) {
-      const mapInstance = initMap(mapContainer, [lng, lat], zoom, 'bottom-left');
+      const mapInstance = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_SATELLITE);
       mapInstance.on('move', _ => {
         setLng(Math.round(mapInstance.getCenter().lng * 100) / 100);
         setLat(Math.round(mapInstance.getCenter().lat * 100) / 100);

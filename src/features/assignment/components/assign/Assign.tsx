@@ -93,7 +93,7 @@ const Assign = () => {
         .catch(_ => {
           toast.error("Plan does not exist, redirected to previous page.");
           dispatch(showLoader(false));
-          navigate('/assign');
+          navigate(ASSIGNMENT_PAGE);
         });
     } else {
       dispatch(showLoader(false));

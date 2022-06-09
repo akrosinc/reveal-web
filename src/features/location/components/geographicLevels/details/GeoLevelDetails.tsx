@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { ErrorModel } from '../../../../../api/providers';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
-import { useAppDispatch } from '../../../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../../store/hooks';
 import { showLoader } from '../../../../reducers/loader';
 import { deleteGeographicLevel, updateGeographicLevel } from '../../../api';
 import { GeographicLevel } from '../../../providers/types';
@@ -26,6 +26,7 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
   } = useForm<GeographicLevel>();
   const [edit, setEdit] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   useEffect(() => {
     setValue('identifier', data?.identifier ?? '');
@@ -181,6 +182,7 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
           closeHandler={deleteHandler}
           message="Are you sure? This Geographic level will be deleted."
           title="Delete Geographic Level"
+          isDarkMode={isDarkMode}
         />
       )}
     </Form>

@@ -1,5 +1,6 @@
-import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
+import { Button, Container, Nav, Navbar, NavDropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import logo from '../../../assets/logos/reveal-logo.png';
+import logoWhite from '../../../assets/logos/reveal-logo-white.png';
 import { BsPerson } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
@@ -7,16 +8,21 @@ import { MAIN_MENU } from './menuItems';
 import AuthorizedElement from '../../AuthorizedElement';
 import i18n, { LOCALES } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
-import { setToBrowser } from '../../../utils';
 import './index.css';
 import 'flag-icons/css/flag-icons.css';
 import { KeycloakProfile } from 'keycloak-js';
 import { useEffect, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { setToBrowser } from '../../../utils';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { setDarkMode } from '../../../features/reducers/darkMode';
 
 export default function NavbarComponent() {
   const { t } = useTranslation();
   const { keycloak, initialized } = useKeycloak();
   const [user, setUser] = useState<KeycloakProfile>();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (initialized && keycloak.authenticated) {
@@ -25,6 +31,14 @@ export default function NavbarComponent() {
       });
     }
   }, [keycloak, initialized]);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [isDarkMode])
 
   const changeLaguagePrefferences = (lang: any) => {
     i18n.changeLanguage(lang.name);
@@ -37,10 +51,10 @@ export default function NavbarComponent() {
   };
 
   return (
-    <Navbar collapseOnSelect expand="md">
+    <Navbar collapseOnSelect expand="md" variant={isDarkMode ? 'dark' : 'light'}>
       <Container fluid className="px-4 pt-1">
         <Navbar.Brand>
-          <img src={logo} alt="Reveal Logo" className="d-inline-block align-top mb-2" />
+          <img src={isDarkMode ? logoWhite : logo} alt="Reveal Logo" className="d-inline-block align-top mb-2" width='140px' />
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav" className={keycloak.authenticated ? '' : 'justify-content-end'}>
@@ -99,7 +113,7 @@ export default function NavbarComponent() {
             <Nav>
               <Nav.Link
                 id="login-button"
-                style={{minWidth: '150px'}}
+                style={{ minWidth: '150px' }}
                 className="btn btn-success text-white my-3 my-md-0 me-md-3"
                 onClick={() => keycloak.login()}
               >
@@ -108,6 +122,11 @@ export default function NavbarComponent() {
             </Nav>
           )}
           <Nav className="ms-1">
+            <OverlayTrigger placement='auto' overlay={<Tooltip>{isDarkMode ? 'Turn off dark mode' : 'Turn on dark mode'}</Tooltip>}>
+            <Button className='rounded-circle me-auto mx-md-2' onClick={() => dispatch(setDarkMode(!isDarkMode))}>
+              {isDarkMode ? <FontAwesomeIcon icon="sun"/> : <FontAwesomeIcon icon="moon"/>}
+            </Button>
+            </OverlayTrigger>
             <NavDropdown id="language-dropdown" title={loadFlag()} align="end">
               {LOCALES.map(locale => (
                 <NavDropdown.Item

@@ -6,7 +6,7 @@ import { ActionDialog, ConfirmDialog } from '../../../../components/Dialogs';
 import CreateLocationHierarchy from './create/CreateLocationHierarchy';
 import { ErrorModel, PageableModel } from '../../../../api/providers';
 import { LocationHierarchyModel } from '../../providers/types';
-import { useAppDispatch } from '../../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +26,7 @@ const LocationHierarchy = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedHierarchy, setSelectedHierarchy] = useState<LocationHierarchyModel>();
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   useEffect(() => {
     dispatch(showLoader(true));
@@ -122,7 +123,7 @@ const LocationHierarchy = () => {
       <hr className="my-4" />
       {locationHierarchy !== undefined && locationHierarchy.content.length > 0 ? (
         <>
-          <Table bordered responsive hover>
+          <Table bordered responsive hover variant={isDarkMode ? 'dark' : 'white'}>
             <thead className="border border-2">
               <tr>
                 {LOCATION_HIERARCHY_TABLE_COLUMNS.map((el, index) => {
@@ -187,6 +188,7 @@ const LocationHierarchy = () => {
           message={'Are you sure you want to permanently delete hierarchy: ' + selectedHierarchy?.nodeOrder.toString()}
           title="Delete hierarchy"
           backdrop
+          isDarkMode={isDarkMode}
         />
       )}
     </>

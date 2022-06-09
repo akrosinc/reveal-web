@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
 import { PAGINATION_DEFAULT_SIZE, PLANS, PLAN_TABLE_COLUMNS } from '../../../constants';
-import { useAppDispatch } from '../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { showLoader } from '../../reducers/loader';
 import { getPlanList } from '../api';
 import { PlanModel } from '../providers/types';
@@ -25,6 +25,7 @@ const Plans = () => {
   const [showActivate, setShowActivate] = useState(false);
   const [currentPlanId, setCurrentPlanId] = useState('');
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const loadData = useCallback(
     (size: number, page: number, search?: string, sortDirection?: boolean, sortField?: string) => {
@@ -66,18 +67,18 @@ const Plans = () => {
   return (
     <>
       <h2>
-        {t("planPage.title")} ({planList?.totalElements ?? 0})
+        {t('planPage.title')} ({planList?.totalElements ?? 0})
         <Row className="my-4">
           <Col md={8} className="mb-2">
             <Link id="create-button" to={PLANS + '/create'} className="btn btn-primary float-end">
-              {t("buttons.create")}
+              {t('buttons.create')}
             </Link>
           </Col>
           <Col sm={12} md={4} className="order-md-first">
             <DebounceInput
               id="search-plans-input"
               className="form-control"
-              placeholder={t("planPage.searchField")}
+              placeholder={t('planPage.searchField')}
               debounceTimeout={800}
               onChange={e => filterData(e)}
               disabled={planList?.totalElements === 0 && currentSearchInput === ''}
@@ -88,7 +89,7 @@ const Plans = () => {
       <hr className="mb-4" />
       {planList !== undefined && planList.content.length > 0 ? (
         <>
-          <Table bordered responsive hover>
+          <Table bordered responsive hover variant={isDarkMode ? 'dark' : 'white'}>
             <thead className="border border-2">
               <tr>
                 {PLAN_TABLE_COLUMNS.map(el => (
@@ -120,7 +121,7 @@ const Plans = () => {
                 <tr
                   key={el.identifier}
                   onClick={() => {
-                    navigate(PLANS + '/' + el.identifier);
+                    navigate(PLANS + '/planId/' + el.identifier);
                   }}
                 >
                   <td>{el.title}</td>
@@ -154,9 +155,9 @@ const Plans = () => {
           />
         </>
       ) : (
-        <p className="text-center lead">{t("general.noContent")}</p>
+        <p className="text-center lead">{t('general.noContent')}</p>
       )}
-      <ActivatePlan show={showActivate} closeHandler={closeHandler} planId={currentPlanId} />
+      {showActivate && <ActivatePlan closeHandler={closeHandler} planId={currentPlanId} />}
     </>
   );
 };

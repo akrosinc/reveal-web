@@ -100,6 +100,8 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) =>
       <Form.Group className="mt-2">
         <Form.Label>Geography Levels</Form.Label>
         <Select
+          className="custom-react-select-container"
+          classNamePrefix="custom-react-select"
           id="hierarchy-select"
           menuPosition="fixed"
           isMulti
