@@ -30,3 +30,11 @@
   background-color: rgb(40, 40, 40);
   color: rgba(255, 255, 255, 0.55);
 }
+
+.dark-transition {
+  -webkit-transition: 1000ms ease;
+  -moz-transition: 1000ms ease;
+  -ms-transition: 1000ms ease;
+  -o-transition: 1000ms ease;
+  transition: 1000ms ease;
+}

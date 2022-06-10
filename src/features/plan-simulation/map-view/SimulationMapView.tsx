@@ -7,9 +7,9 @@ import { initMap } from '../../../utils';
 const SimulationMapView = () => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
-  const [lng, setLng] = useState(20);
-  const [lat, setLat] = useState(10);
-  const [zoom, setZoom] = useState(4);
+  const [lng, setLng] = useState(28.33);
+  const [lat, setLat] = useState(-15.44);
+  const [zoom, setZoom] = useState(10);
 
   useEffect(() => {
     if (map.current) return; // initialize map only once

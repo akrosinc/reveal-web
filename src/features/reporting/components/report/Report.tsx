@@ -259,18 +259,23 @@ const Report = () => {
       <hr />
       <Row className={isDarkMode ? 'm-0 p-0 rounded bg-dark' : 'm-0 p-0 rounded bg-light'}>
         <Col xs sm md={10} className="mt-auto">
-          <p className="link-primary">
-            <FontAwesomeIcon icon="align-left" className="me-3" />
-            <span className="me-1" style={{ cursor: 'pointer' }} onClick={() => clearMap()}>
+          <p>
+            <FontAwesomeIcon
+              icon="align-left"
+              className={path.length ? 'me-3 link-primary pe-none' : 'me-3 link-disabled pe-none'}
+            />
+            <span
+              role="button"
+              className={path.length ? 'me-1 link-primary' : 'me-1 link-disabled pe-none'}
+              onClick={() => clearMap()}
+            >
               {plan?.title} /
             </span>
             {path.map((el, index) => {
               return (
                 <span
-                  style={{
-                    cursor: index === path.length - 1 ? 'default' : 'pointer',
-                    color: index === path.length - 1 ? 'gray' : ''
-                  }}
+                  role="button"
+                  className={index === path.length - 1 ? 'me-1 link-disabled pe-none' : 'me-1 link-primary'}
                   key={el.locationIdentifier}
                   onClick={() => {
                     if (index < path.length - 1) {

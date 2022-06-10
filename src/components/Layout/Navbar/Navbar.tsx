@@ -23,6 +23,7 @@ export default function NavbarComponent() {
   const [user, setUser] = useState<KeycloakProfile>();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
   const dispatch = useAppDispatch();
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (initialized && keycloak.authenticated) {
@@ -38,7 +39,7 @@ export default function NavbarComponent() {
     } else {
       document.body.classList.remove('dark-mode');
     }
-  }, [isDarkMode])
+  }, [isDarkMode]);
 
   const changeLaguagePrefferences = (lang: any) => {
     i18n.changeLanguage(lang.name);
@@ -51,12 +52,17 @@ export default function NavbarComponent() {
   };
 
   return (
-    <Navbar collapseOnSelect expand="md" variant={isDarkMode ? 'dark' : 'light'}>
+    <Navbar expanded={expanded} collapseOnSelect expand="md" variant={isDarkMode ? 'dark' : 'light'}>
       <Container fluid className="px-4 pt-1">
         <Navbar.Brand>
-          <img src={isDarkMode ? logoWhite : logo} alt="Reveal Logo" className="d-inline-block align-top mb-2" width='140px' />
+          <img
+            src={isDarkMode ? logoWhite : logo}
+            alt="Reveal Logo"
+            className="d-inline-block align-top mb-2"
+            width="140px"
+          />
         </Navbar.Brand>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" onClick={() => setExpanded(!expanded)} />
         <Navbar.Collapse id="responsive-navbar-nav" className={keycloak.authenticated ? '' : 'justify-content-end'}>
           {keycloak.authenticated ? (
             <Nav className="me-auto ms-md-2">
@@ -73,7 +79,13 @@ export default function NavbarComponent() {
                         {el.dropdown.map((child, childIndex) => {
                           return (
                             <AuthorizedElement key={index + '.' + childIndex} roles={child.roles}>
-                              <NavDropdown.Item as={Link} role="button" to={child.route} className="text-center">
+                              <NavDropdown.Item
+                                as={Link}
+                                role="button"
+                                to={child.route}
+                                className="text-center"
+                                onClick={() => setExpanded(false)}
+                              >
                                 {t('topNav.' + child.pageTitle)}
                               </NavDropdown.Item>
                             </AuthorizedElement>
@@ -85,7 +97,12 @@ export default function NavbarComponent() {
                 } else {
                   return (
                     <AuthorizedElement key={index} roles={el.roles}>
-                      <Link id={el.pageTitle + '-navbar-button'} to={el.route} className="nav-link m-1">
+                      <Link
+                        onClick={() => setExpanded(false)}
+                        id={el.pageTitle + '-navbar-button'}
+                        to={el.route}
+                        className="nav-link m-1"
+                      >
                         {t('topNav.' + el.pageTitle)}
                       </Link>
                     </AuthorizedElement>
@@ -122,10 +139,19 @@ export default function NavbarComponent() {
             </Nav>
           )}
           <Nav className="ms-1">
-            <OverlayTrigger placement='auto' overlay={<Tooltip>{isDarkMode ? 'Turn off dark mode' : 'Turn on dark mode'}</Tooltip>}>
-            <Button className='rounded-circle me-auto mx-md-2' onClick={() => dispatch(setDarkMode(!isDarkMode))}>
-              {isDarkMode ? <FontAwesomeIcon icon="sun"/> : <FontAwesomeIcon icon="moon"/>}
-            </Button>
+            <OverlayTrigger
+              placement="auto"
+              overlay={<Tooltip>{isDarkMode ? 'Turn off dark mode' : 'Turn on dark mode'}</Tooltip>}
+            >
+              <Button className="rounded-circle me-auto mx-md-2" onClick={() => {
+                dispatch(setDarkMode(!isDarkMode));
+                document.body.classList.add('dark-transition');
+                setTimeout(() => {
+                  document.body.classList.remove('dark-transition');
+                }, 1000);
+              }}>
+                {isDarkMode ? <FontAwesomeIcon icon="sun" /> : <FontAwesomeIcon icon="moon" />}
+              </Button>
             </OverlayTrigger>
             <NavDropdown id="language-dropdown" title={loadFlag()} align="end">
               {LOCALES.map(locale => (
@@ -133,7 +159,10 @@ export default function NavbarComponent() {
                   id={locale.name + '-button'}
                   key={locale.name}
                   className="text-center"
-                  onClick={() => changeLaguagePrefferences(locale)}
+                  onClick={() => {
+                    changeLaguagePrefferences(locale)
+                    setExpanded(false)
+                  }}
                 >
                   <span className={locale.flag + ' me-2'}></span>
                   {locale.name.toUpperCase()}

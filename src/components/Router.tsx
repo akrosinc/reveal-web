@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router';
 import { Navigate } from 'react-router-dom';
-import { ASSIGNMENT_PAGE, HOME_PAGE, LOCATION_PAGE, MANAGEMENT, PLANS, REPORTING_PAGE, SIMULATION_PAGE } from '../constants/';
+import { ASSIGNMENT_PAGE, HOME_PAGE, LOCATION_PAGE, MANAGEMENT, PLANS, REPORTING_PAGE, SIMULATION_PAGE, TAG_MANAGEMENT } from '../constants/';
 import Home from '../features/pages/HomePage';
 import Plan from '../features/pages/Plan';
 import Management from '../features/pages/Management';
@@ -11,6 +11,7 @@ import Location from '../features/pages/Location';
 import Assignment from '../features/pages/AssignmentPage';
 import Reporting from '../features/pages/Reporting';
 import PlanSimulation from '../features/pages/PlanSimulationPage';
+import TagManagement from '../features/pages/TagManagement';
 
 export default function Router() {
   const { keycloak, initialized } = useKeycloak();
@@ -31,6 +32,7 @@ export default function Router() {
           <Route path={ASSIGNMENT_PAGE + '/*'} element={<Assignment />} />
           <Route path={REPORTING_PAGE + '/*'} element={<Reporting />} />
           <Route path={SIMULATION_PAGE + '/*'} element={<PlanSimulation />} />
+          <Route path={TAG_MANAGEMENT + '/*'} element={<TagManagement />} />
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       );

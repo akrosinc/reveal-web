@@ -8,7 +8,8 @@ import {
   REPORT_VIEW,
   LOCATION_VIEW,
   PLAN_VIEW,
-  SIMULATION_PAGE
+  SIMULATION_PAGE,
+  TAG_MANAGEMENT
 } from '../../../constants';
 
 export const MAIN_MENU = [
@@ -58,6 +59,11 @@ export const MAIN_MENU = [
         pageTitle: 'Location',
         route: LOCATION_PAGE,
         roles: [LOCATION_VIEW]
+      },
+      {
+        pageTitle: 'TagManagement',
+        route: TAG_MANAGEMENT,
+        roles: []
       }
     ]
   }

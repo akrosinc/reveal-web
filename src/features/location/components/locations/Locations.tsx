@@ -84,13 +84,19 @@ const Locations = () => {
             .then(res => {
               setLocationList(res);
               if (res.content.length) {
-                getLocationById(res.content[0].identifier).then(res => {
-                  setCurrentLocation(res);
-                });
+                getLocationById(res.content[0].identifier)
+                  .then(res => {
+                    setCurrentLocation(res);
+                  })
+                  .finally(() => dispatch(showLoader(false)));
+              } else {
+                dispatch(showLoader(false));
               }
             })
-            .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
-            .finally(() => dispatch(showLoader(false)));
+            .catch(err => {
+              toast.error(err.message !== undefined ? err.message : err.toString());
+              dispatch(showLoader(false));
+            });
         } else {
           dispatch(showLoader(false));
         }

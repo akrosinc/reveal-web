@@ -4,6 +4,7 @@ import { Button, Col, Form, Row } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { ActionDialog } from '../../components/Dialogs';
 import SimulationMapView from './map-view';
+import SimulationModal from './popup-modal';
 
 const Simulation = () => {
   const { t } = useTranslation();
@@ -35,7 +36,7 @@ const Simulation = () => {
               </Button>
             </Col>
           </Row>
-          <div style={{ minHeight: '300px', position: 'relative' }} className="border rounded">
+          <div style={{ minHeight: '300px', position: 'relative' }} className="border rounded my-2">
             <p className="lead p-4">Conditions</p>
             <Button className="m-3" style={{ position: 'absolute', bottom: 0, right: 0 }}>
               Display
@@ -45,15 +46,20 @@ const Simulation = () => {
         <Col md={6}>
           <SimulationMapView />
         </Col>
-        {showModal && (
+      </Row>
+      {showModal && (
           <ActionDialog
             closeHandler={() => setShowModal(false)}
             title="Conditions modal"
-            element={<p>Stuff</p>}
-            footer={<><Button onClick={() => setShowModal(false)}>Close</Button><Button>Add</Button></>}
+            element={<SimulationModal />}
+            footer={
+              <>
+                <Button onClick={() => setShowModal(false)}>Close</Button>
+                <Button>Add</Button>
+              </>
+            }
           />
         )}
-      </Row>
     </>
   );
 };

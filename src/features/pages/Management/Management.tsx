@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Container, Tab, Tabs } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -13,14 +14,18 @@ const Management = () => {
   let { tab } = useParams();
   let navigate = useNavigate();
 
-  const checkTab = () => {
-    if (tab === 'organization' || tab === 'user' || tab === 'userBulk') return tab;
-  };
+  useEffect(() => {
+    if (tab === undefined) {
+      navigate(MANAGEMENT + '/organization');
+    } else if (tab !== 'organization' && tab !== 'user' && tab !=='user-import') {
+      navigate('/error');
+    }
+  }, [tab, navigate]);
 
   return (
     <Container fluid className="my-4 px-2">
       <Tabs
-        defaultActiveKey={checkTab()}
+        defaultActiveKey={tab}
         id="management-tab"
         className="mb-3"
         mountOnEnter={true}

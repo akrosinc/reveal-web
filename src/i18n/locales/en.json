@@ -14,7 +14,8 @@
     "SMC Reporting": "SMC Reporting",
     "Management": "User Management",
     "Location": "Location Management",
-    "Simulation": "Simulation"
+    "Simulation": "Simulation",
+    "TagManagement": "Tag Management"
   },
   "publicPage": {
     "supportedBy": "supported by",
