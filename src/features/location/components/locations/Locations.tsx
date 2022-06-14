@@ -1,9 +1,9 @@
-import React, { useEffect, useCallback, useState, useMemo } from 'react';
+import React, { useEffect, useCallback, useState, useMemo, ChangeEvent } from 'react';
 import { Button, Collapse, Card } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import MapView from './map';
 import { DebounceInput } from 'react-debounce-input';
-import { useAppDispatch } from '../../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { showLoader } from '../../../reducers/loader';
 import { LOCATION_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import Paginator from '../../../../components/Pagination';
@@ -15,6 +15,8 @@ import classes from './Location.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Select from 'react-select';
 import ExpandingTable from '../../../../components/Table/ExpandingTable';
+import SimpleBar from 'simplebar-react';
+import 'simplebar/dist/simplebar.min.css';
 
 interface Options {
   value: string;
@@ -30,8 +32,9 @@ const Locations = () => {
   const [locationList, setLocationList] = useState<PageableModel<LocationModel>>();
   const [locationHierarchyList, setLocationHierarchyList] = useState<Options[]>();
   const [selectedLocationHierarchy, setSelectedLocationHierarchy] = useState<Options>();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
-  const filterData = (e: any) => {
+  const filterData = (e: ChangeEvent<HTMLInputElement>) => {
     setCurrentSearchInput(e.target.value);
     loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
@@ -171,7 +174,7 @@ const Locations = () => {
     <>
       <h2 className="m-0 mb-4">{t('locationsPage.locations')}</h2>
       <hr className="my-4" />
-      <Card className="mb-2 p-2">
+      <Card className={isDarkMode ? 'mb-2 p-2 bg-dark' : 'mb-2 p-2'}>
         <p className="text-center m-0">
           {currentLocation !== undefined
             ? 'Location name: ' +
@@ -184,15 +187,15 @@ const Locations = () => {
         </p>
       </Card>
       <MapView data={currentLocation} startingZoom={12} clearHandler={clearHandler}>
-        <div className={classes.floatingLocationPicker + ' bg-white p-2 rounded'}>
+        <div className={classes.floatingLocationPicker + ' p-2 rounded' + (isDarkMode ? ' bg-dark' : ' bg-white')}>
           <Button
             id="dropdown-trigger-button"
             onClick={() => setOpen(!open)}
             aria-controls="expand-table"
             aria-expanded={open}
             style={{ width: '100%', border: 'none' }}
-            variant="light"
-            className="text-start bg-white"
+            className='text-start'
+            variant={isDarkMode ? 'dark' : 'light'}
           >
             Browse locations
             {open ? (
@@ -228,14 +231,14 @@ const Locations = () => {
                     debounceTimeout={800}
                     onChange={e => filterData(e)}
                   />
-                  <div style={{ height: '40vh', width: '100%', overflowY: 'auto' }}>
+                  <SimpleBar style={{minHeight: '40vh', maxHeight: '40vh'}}>
                     <ExpandingTable
                       columns={columns}
                       clickHandler={loadLocationHandler}
                       data={data}
                       sortHandler={sortHandler}
                     />
-                  </div>
+                  </SimpleBar>
                   <Paginator
                     totalElements={locationList.totalElements}
                     totalPages={locationList.totalPages}

@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Col, Row, Container, Tab, Tabs, Form, Button, Accordion } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PLANS, REGEX_TITLE_VALIDATION, UNEXPECTED_ERROR_STRING } from '../../../../constants';
@@ -18,6 +18,7 @@ import { ConfirmDialog, ConfirmDialogService } from '../../../../components/Dial
 import { toast } from 'react-toastify';
 import CreateGoal from './Goals/CreateGoal/CreateGoal';
 import { useTranslation } from 'react-i18next';
+import { toUtcString } from '../../../../utils';
 
 interface Options {
   value: string;
@@ -55,6 +56,7 @@ const CreatePlan = () => {
   const {
     register,
     handleSubmit,
+    reset,
     control,
     watch,
     resetField,
@@ -124,35 +126,59 @@ const CreatePlan = () => {
       });
   }, [dispatch, id, loadPlan]);
 
-  const createPlanHandler = (formData: any) => {
+  const createPlanHandler = (formData: RegisterValues) => {
     dispatch(showLoader(true));
-    let mStart = Moment(formData.effectivePeriod.start);
-    let mEnd = Moment(formData.effectivePeriod.end);
-    formData.effectivePeriod.start = Moment(mStart).utc().add(mStart.utcOffset(), 'm').format('yyyy-MM-DD');
-    formData.effectivePeriod.end = Moment(mEnd).utc().add(mEnd.utcOffset(), 'm').format('yyyy-MM-DD');
     if (goalList.length) {
-      formData.goals = goalList;
-      createPlan(formData).then(_ => {
+      createPlan({
+        ...formData,
+        effectivePeriod: {
+          start: toUtcString(formData.effectivePeriod.start),
+          end: toUtcString(formData.effectivePeriod.end)
+        },
+        goals: goalList
+      }).then(_ => {
         dispatch(showLoader(false));
         navigate(PLANS);
       });
     } else {
       dispatch(showLoader(false));
-      setCurrentForm(formData);
+      setCurrentForm({
+        ...formData,
+        effectivePeriod: {
+          start: toUtcString(formData.effectivePeriod.start),
+          end: toUtcString(formData.effectivePeriod.end)
+        }
+      });
       setShowConfirmDialog(true);
     }
   };
 
-  const updatePlanHandler = (form: any) => {
+  const updatePlanHandler = (form: RegisterValues) => {
     if (id !== undefined) {
       dispatch(showLoader(true));
       toast
-        .promise(updatePlanDetails(form, id), {
-          pending: t('toast.loading'),
-          success: t('planPage.planUpdatedMessage'),
-          error: t('planPage.planUpdateErrorMessage')
-        })
-        .finally(() => dispatch(showLoader(false)));
+        .promise(
+          updatePlanDetails(
+            {
+              ...form,
+              effectivePeriod: {
+                start: toUtcString(form.effectivePeriod.start),
+                end: toUtcString(form.effectivePeriod.end)
+              }
+            },
+            id
+          ),
+          {
+            pending: t('toast.loading'),
+            success: t('planPage.planUpdatedMessage'),
+            error: t('planPage.planUpdateErrorMessage')
+          }
+        )
+        .finally(() => {
+          //clear form dirty flag
+          reset(form);
+          dispatch(showLoader(false));
+        });
     }
   };
 
@@ -202,7 +228,7 @@ const CreatePlan = () => {
     }
   };
 
-  const populateNameHandler = (e: any) => {
+  const populateNameHandler = (e: ChangeEvent<HTMLInputElement>) => {
     setValue('name', e.target.value.replaceAll(' ', '-').toLowerCase());
   };
 

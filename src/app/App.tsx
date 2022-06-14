@@ -28,6 +28,8 @@ import {
   faSun,
   faMoon,
 } from '@fortawesome/free-solid-svg-icons';
+import SimpleBar from 'simplebar-react';
+import 'simplebar/dist/simplebar.min.css';
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
 library.add(
@@ -67,6 +69,7 @@ function App() {
   });
 
   return (
+    <SimpleBar style={{ maxHeight: '100vh' }}>
     <Container fluid style={{ minHeight: '100vh', position: 'relative' }}>
       <main>
         <NavbarComponent />
@@ -78,7 +81,7 @@ function App() {
       <ToastContainer position={toast.POSITION.BOTTOM_RIGHT} />
       <Loader />
     </Container>
-
+    </SimpleBar>
   );
 }
 

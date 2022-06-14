@@ -107,7 +107,8 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                 <td className="text-center">
                   <Button
                     id="edit-action-button"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedAction(el);
                       setSelectedIndex(index);
                       setShowCondition(true);

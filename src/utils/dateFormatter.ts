@@ -10,3 +10,9 @@ export const formatDate = (date?: Date) => {
     return null;
   }
 };
+
+// converts date object to plain UTC timezone string
+export const toUtcString = (date: Date) => {
+  let momentDate = Moment(date);
+  return Moment(date).utc().add(momentDate.utcOffset(), 'm').format('yyyy-MM-DD');
+}

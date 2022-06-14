@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { UserModel } from '../../../user/providers/types';
 import { getUserById, getUserList } from '../../api/';
@@ -64,7 +64,7 @@ const Users = () => {
     loadData(PAGINATION_DEFAULT_SIZE, 0);
   }, [loadData]);
 
-  const filterData = (e: any) => {
+  const filterData = (e: ChangeEvent<HTMLInputElement>) => {
     setCurrentSearchInput(e.target.value);
     loadData(userList?.pageable.pageSize ?? PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };

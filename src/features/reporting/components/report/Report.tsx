@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Button, Col, Collapse, Container, Form, Row, Table } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Column } from 'react-table';
@@ -98,7 +98,7 @@ const Report = () => {
     }
   };
 
-  const searchHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const searchHandler = (e: ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     if (input.length) {
       setFilterData(data.filter(el => el.name.toLowerCase().includes(input.toLowerCase())));
@@ -159,7 +159,7 @@ const Report = () => {
   }, [loadData]);
 
   const loadChildHandler = (id: string, locationName: string, childrenNumber: number) => {
-    if (planId && reportType && childrenNumber) {
+    if (planId && reportType) {
       dispatch(showLoader(true));
       getMapReportData({
         parentLocationIdentifier: id,
@@ -191,7 +191,7 @@ const Report = () => {
         });
     } else {
       dispatch(showLoader(false));
-      toast.info(`${locationName} has no child locations.`);
+      toast.info(`There was an error loading ${locationName}.`);
     }
   };
 
@@ -262,11 +262,11 @@ const Report = () => {
           <p>
             <FontAwesomeIcon
               icon="align-left"
-              className={path.length ? 'me-3 link-primary pe-none' : 'me-3 link-disabled pe-none'}
+              className={path.length ? 'me-3 link-primary pe-none' : 'me-3 text-secondary pe-none'}
             />
             <span
               role="button"
-              className={path.length ? 'me-1 link-primary' : 'me-1 link-disabled pe-none'}
+              className={path.length ? 'me-1 link-primary' : 'me-1 text-secondary pe-none'}
               onClick={() => clearMap()}
             >
               {plan?.title} /
@@ -275,7 +275,7 @@ const Report = () => {
               return (
                 <span
                   role="button"
-                  className={index === path.length - 1 ? 'me-1 link-disabled pe-none' : 'me-1 link-primary'}
+                  className={index === path.length - 1 ? 'me-1 text-secondary pe-none' : 'me-1 link-primary'}
                   key={el.locationIdentifier}
                   onClick={() => {
                     if (index < path.length - 1) {
@@ -303,7 +303,6 @@ const Report = () => {
               <Form>
                 <Form.Group>
                   <Form.Control
-                    className={isDarkMode ? 'bg-dark text-white' : ''}
                     ref={searchInput}
                     placeholder={t('reportPage.search')}
                     type="text"

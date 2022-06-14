@@ -5,6 +5,8 @@ import { formatDate } from '../../../../../utils';
 import { PageableModel } from '../../../../../api/providers';
 import Paginator from '../../../../../components/Pagination';
 import { useAppSelector } from '../../../../../store/hooks';
+import SimpleBar from 'simplebar-react';
+import 'simplebar/dist/simplebar.min.css';
 
 interface Props {
   closeHandler: () => void;
@@ -17,7 +19,7 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   return (
-    <Modal show centered scrollable size="lg" contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
+    <Modal show centered size="lg" contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header>
         <Modal.Title style={{ wordBreak: 'break-word' }}>
           {locationBulkFile.filename}({locationList.totalElements})<br />
@@ -34,24 +36,26 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
         </div>
       </Modal.Header>
       <Modal.Body>
-        <Table bordered responsive variant={isDarkMode ? 'dark' : 'white'}>
-          <thead className="border border-2">
-            <tr>
-              <th>Location Name</th>
-              <th>Message</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {locationList.content.map((el, index) => (
-              <tr key={index}>
-                <td>{el.name}</td>
-                <td>{el.message}</td>
-                <td>{el.status}</td>
+        <SimpleBar style={{ maxHeight: '65vh' }}>
+          <Table bordered responsive variant={isDarkMode ? 'dark' : 'white'}>
+            <thead className="border border-2">
+              <tr>
+                <th>Location Name</th>
+                <th>Message</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {locationList.content.map((el, index) => (
+                <tr key={index}>
+                  <td>{el.name}</td>
+                  <td>{el.message}</td>
+                  <td>{el.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </SimpleBar>
         <Paginator
           totalElements={locationList.totalElements}
           size={locationList.size}

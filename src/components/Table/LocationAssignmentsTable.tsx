@@ -76,7 +76,7 @@ const LocationAssignmentsTable = ({
   );
 
   return (
-    <Table bordered responsive hover {...getTableProps()} className="mt-2" variant={isDarkMode ? 'dark' : 'white'}>
+    <Table bordered hover {...getTableProps()} className="mt-2" variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="border border-2">
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>

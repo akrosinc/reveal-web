@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, ChangeEvent } from 'react';
 import { Col, Row, Button } from 'react-bootstrap';
 import { getOrganizationById, getOrganizationCount, getOrganizationList, getOrganizationListSummary } from '../api';
 import { OrganizationModel } from '../providers/types';
@@ -141,7 +141,7 @@ const Organization = () => {
     loadData(size, page);
   };
 
-  const filterData = (e: any) => {
+  const filterData = (e: ChangeEvent<HTMLInputElement>) => {
     setCurrentSearchInput(e.target.value);
     loadData(organizationList?.pageable.pageSize ?? PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
