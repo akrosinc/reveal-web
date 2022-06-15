@@ -3,3 +3,7 @@ export interface EntityList {
     name: string;
     type: 'Location' | 'Person';
 }
+
+export interface EntityTags {
+    
+}
