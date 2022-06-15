@@ -4,7 +4,7 @@ import { Route, Routes } from 'react-router-dom';
 import AuthGuard from '../../../components/AuthGuard';
 import { ErrorPage } from '../../../components/pages';
 import { PLAN_VIEW } from '../../../constants';
-import Simulation from '../../planSimulation';
+import Simulation from '../../planSimulation/components';
 
 const PlanSimulation = () => {
     const { t } = useTranslation();

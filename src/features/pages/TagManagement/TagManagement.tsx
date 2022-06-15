@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
 import AuthGuard from '../../../components/AuthGuard';
 import { ErrorPage } from '../../../components/pages';
-import Tagging from '../../tagging';
+import Tagging from '../../tagging/components';
 
 const TagManagement = () => {
   const { t } = useTranslation();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
-import DefaultTable from '../../components/Table/DefaultTable';
+import DefaultTable from '../../../components/Table/DefaultTable';
 
 const Tagging = () => {
   return (

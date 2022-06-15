@@ -1,8 +1,8 @@
 import { Map } from 'mapbox-gl';
 import React, { useEffect, useRef, useState } from 'react';
 import { Container } from 'react-bootstrap';
-import { MAPBOX_STYLE_STREETS } from '../../../constants';
-import { initMap } from '../../../utils';
+import { MAPBOX_STYLE_STREETS } from '../../../../constants';
+import { initMap } from '../../../../utils';
 
 const SimulationMapView = () => {
   const mapContainer = useRef<any>();

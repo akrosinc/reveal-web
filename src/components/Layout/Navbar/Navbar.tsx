@@ -34,11 +34,7 @@ export default function NavbarComponent() {
   }, [keycloak, initialized]);
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
+    document.body.classList.toggle('dark-mode', isDarkMode);
   }, [isDarkMode]);
 
   const changeLaguagePrefferences = (lang: any) => {
@@ -143,13 +139,16 @@ export default function NavbarComponent() {
               placement="auto"
               overlay={<Tooltip>{isDarkMode ? 'Turn off dark mode' : 'Turn on dark mode'}</Tooltip>}
             >
-              <Button className="rounded-circle me-auto mx-md-2" onClick={() => {
-                dispatch(setDarkMode(!isDarkMode));
-                document.body.classList.add('dark-transition');
-                setTimeout(() => {
-                  document.body.classList.remove('dark-transition');
-                }, 1000);
-              }}>
+              <Button
+                className="rounded-circle me-auto mx-md-2"
+                onClick={() => {
+                  dispatch(setDarkMode(!isDarkMode));
+                  document.body.classList.add('dark-transition');
+                  setTimeout(() => {
+                    document.body.classList.remove('dark-transition');
+                  }, 1000);
+                }}
+              >
                 {isDarkMode ? <FontAwesomeIcon icon="sun" /> : <FontAwesomeIcon icon="moon" />}
               </Button>
             </OverlayTrigger>
@@ -160,8 +159,8 @@ export default function NavbarComponent() {
                   key={locale.name}
                   className="text-center"
                   onClick={() => {
-                    changeLaguagePrefferences(locale)
-                    setExpanded(false)
+                    changeLaguagePrefferences(locale);
+                    setExpanded(false);
                   }}
                 >
                   <span className={locale.flag + ' me-2'}></span>

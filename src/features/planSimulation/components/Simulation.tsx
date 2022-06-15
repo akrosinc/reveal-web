@@ -2,10 +2,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 import { Button, Col, Form, Row } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { PageableModel } from '../../api/providers';
-import { ActionDialog } from '../../components/Dialogs';
-import { getLocationHierarchyList } from '../location/api';
-import { LocationHierarchyModel } from '../location/providers/types';
+import { PageableModel } from '../../../api/providers';
+import { ActionDialog } from '../../../components/Dialogs';
+import { getLocationHierarchyList } from '../../location/api';
+import { LocationHierarchyModel } from '../../location/providers/types';
 import SimulationMapView from './SimulationMapView';
 import SimulationModal from './SimulationModal';
 
@@ -83,9 +83,7 @@ const Simulation = () => {
               </Col>
             </Row>
           </Form>
-
           <p>Entity properties</p>
-
           <div style={{ minHeight: '300px', position: 'relative' }} className="border rounded my-2">
             <p className="lead p-4">Conditions</p>
             <Button className="m-3" style={{ position: 'absolute', bottom: 0, right: 0 }}>
