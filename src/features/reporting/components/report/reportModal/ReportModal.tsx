@@ -7,6 +7,7 @@ import {
   REPORT_TABLE_PERCENTAGE_LOW,
   REPORT_TABLE_PERCENTAGE_MEDIUM
 } from '../../../../../constants';
+import { useAppSelector } from '../../../../../store/hooks';
 import { FoundCoverage, ReportLocationProperties } from '../../../providers/types';
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
 const ReportModal = ({ showModal, feature }: Props) => {
   const [tableData, setTableData] = useState<{ [key: string]: FoundCoverage }>();
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const columns = useMemo<string[]>(() => {
     //Map columns depending on server response
@@ -31,21 +33,20 @@ const ReportModal = ({ showModal, feature }: Props) => {
   const generatePercentageRow = (colValue: FoundCoverage, index: number) => {
     //check if its already a round number or should be rounded
     let color = '';
-    let percentage = Math.round(colValue.value * (colValue.value > 1 ? 1 : 100));
+    let percentage = colValue.value;
+    percentage = Number(percentage.toFixed(percentage > 1 ? 2 : 3));
+    //check if its already a round number or should be rounded
     if (percentage >= REPORT_TABLE_PERCENTAGE_HIGH) {
       color = 'bg-success';
     }
-    if (percentage > REPORT_TABLE_PERCENTAGE_MEDIUM && percentage < REPORT_TABLE_PERCENTAGE_HIGH) {
+    if (percentage >= REPORT_TABLE_PERCENTAGE_MEDIUM && percentage < REPORT_TABLE_PERCENTAGE_HIGH) {
+      color = 'bg-yellow';
+    }
+    if (percentage >= REPORT_TABLE_PERCENTAGE_LOW && percentage < REPORT_TABLE_PERCENTAGE_MEDIUM) {
       color = 'bg-warning';
     }
-    if (percentage <= REPORT_TABLE_PERCENTAGE_MEDIUM && percentage >= REPORT_TABLE_PERCENTAGE_LOW) {
+    if (percentage >= 0 && percentage < REPORT_TABLE_PERCENTAGE_LOW) {
       color = 'bg-danger';
-    }
-    if (percentage < REPORT_TABLE_PERCENTAGE_LOW) {
-      color = 'bg-secondary';
-    }
-    if (percentage === 0) {
-      color = 'bg-light';
     }
     return (
       <OverlayTrigger key={index} placement="top" overlay={<Tooltip id="button-tooltip">{colValue.meta}</Tooltip>}>
@@ -63,6 +64,7 @@ const ReportModal = ({ showModal, feature }: Props) => {
       onShow={() =>
         setTableData(JSON.parse(String(feature.properties.columnDataMap)) as { [key: string]: FoundCoverage })
       }
+      contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}
     >
       <Modal.Header className="justify-content-center">
         <Modal.Title>
@@ -71,7 +73,7 @@ const ReportModal = ({ showModal, feature }: Props) => {
       </Modal.Header>
       <Modal.Body>
         <h4>{t('reportPage.locationInfo')}</h4>
-        <Table bordered responsive className="my-2">
+        <Table bordered responsive className="my-2" variant={isDarkMode ? 'dark' : 'white'}>
           <thead className="border border-2">
             <tr>
               <th>{t('reportPage.identifier')}</th>
@@ -89,7 +91,7 @@ const ReportModal = ({ showModal, feature }: Props) => {
         </Table>
         <hr />
         <h4>{t('reportPage.locationData')}</h4>
-        <Table responsive bordered className="my-2">
+        <Table responsive bordered className="my-2" variant={isDarkMode ? 'dark' : 'white'}>
           <thead className="border border-2">
             <tr>
               {columns.map((el, index) => (

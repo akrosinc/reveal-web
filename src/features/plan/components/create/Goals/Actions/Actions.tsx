@@ -5,6 +5,7 @@ import { Action } from '../../../../providers/types';
 import DatePicker from 'react-datepicker';
 import { getActionTitles, getformList } from '../../../../api';
 import Moment from 'moment';
+import { toUtcString } from '../../../../../../utils';
 
 interface Props {
   selectedAction?: Action;
@@ -56,10 +57,8 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
   }, [setValue, selectedAction]);
 
   const submitHandler = (formData: any) => {
-    let mStart = Moment(formData.timingPeriod.start);
-    let mEnd = Moment(formData.timingPeriod.end);
-    formData.timingPeriod.start = Moment(mStart).utc().add(mStart.utcOffset(), 'm').format('yyyy-MM-DD');
-    formData.timingPeriod.end = Moment(mEnd).utc().add(mEnd.utcOffset(), 'm').format('yyyy-MM-DD');
+    formData.timingPeriod.start = toUtcString(formData.timingPeriod.start);
+    formData.timingPeriod.end = toUtcString(formData.timingPeriod.end);
     closeHandler(formData);
   };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Container, Tab, Tabs } from 'react-bootstrap';
 import { GEOGRAPHIC_LEVEL_VIEW, LOCATION_PAGE, LOCATION_VIEW } from '../../../constants';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -14,14 +14,18 @@ const Location = () => {
   let navigate = useNavigate();
   const { t } = useTranslation();
 
-  const checkTab = () => {
-    if (tab === 'geographic-levels' || tab === 'location-hierarchy' || tab === 'locations' || tab === 'locations-bulk')
-      return tab;
-  };
+  useEffect(() => {
+    if (tab === undefined) {
+      navigate(LOCATION_PAGE + '/geographic-levels');
+    } else if (tab !== 'geographic-levels' && tab !== 'location-hierarchy' && tab !== 'locations' && tab !== 'locations-bulk') {
+      navigate('/error');
+    }
+  }, [tab, navigate]);
+
   return (
     <Container fluid className="my-4 px-2">
       <Tabs
-        defaultActiveKey={checkTab()}
+        defaultActiveKey={tab}
         id="location-tabs"
         className="mb-3"
         mountOnEnter={true}

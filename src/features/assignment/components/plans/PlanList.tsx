@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageableModel } from '../../../../api/providers';
 import Paginator from '../../../../components/Pagination';
 import { ASSIGNMENT_PAGE, PAGINATION_DEFAULT_SIZE, PLAN_TABLE_COLUMNS } from '../../../../constants';
-import { useAppDispatch } from '../../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { getPlanList } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
 import { showLoader } from '../../../reducers/loader';
@@ -19,6 +19,7 @@ const PlanList = () => {
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const paginationHandler = (size: number, page: number) => {
     loadData(size, page);
@@ -47,7 +48,7 @@ const PlanList = () => {
     <>
       {planList !== undefined && planList.content.length ? (
         <>
-          <Table bordered responsive hover>
+          <Table bordered responsive hover variant={isDarkMode ? 'dark' : 'white'}>
             <thead className="border border-2">
               <tr>
                 {PLAN_TABLE_COLUMNS.map(el => (
@@ -81,7 +82,7 @@ const PlanList = () => {
                   id={el.identifier + 'table-row-button'}
                   key={el.identifier}
                   onClick={() => {
-                    navigate(ASSIGNMENT_PAGE + '/' + el.identifier);
+                    navigate(ASSIGNMENT_PAGE + '/planId/' + el.identifier);
                   }}
                 >
                   <td>{el.title}</td>

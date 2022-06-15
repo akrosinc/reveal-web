@@ -1,10 +1,12 @@
 import React, { CSSProperties } from 'react';
 import { Col, Image, Row } from 'react-bootstrap';
 import logo from '../../assets/logos/Reveal_logo_400.png';
+import logoWhite from '../../assets/logos/reveal-logo-white.png';
 import devicesImage from '../../assets/images/reveal-devices.png';
 
 import Container from 'react-bootstrap/Container';
 import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '../../store/hooks';
 
 const imageTextStyle: CSSProperties = {
   display: 'flex',
@@ -16,12 +18,13 @@ const imageTextStyle: CSSProperties = {
 
 function PublicPage() {
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   return (
     <Container className="text-center my-5 py-3">
       <Row>
         <Col style={imageTextStyle} md={6}>
-          <Image src={logo} alt="Reveal logo" fluid />
+          <Image src={isDarkMode ? logoWhite : logo} alt="Reveal logo" fluid />
           <p className="lead">{t('publicPage.description')}</p>
         </Col>
         <Col md={6}>

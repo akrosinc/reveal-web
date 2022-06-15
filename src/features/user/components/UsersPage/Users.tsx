@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
-import UsersTable from '../../../../components/Table/UsersTable';
 import { UserModel } from '../../../user/providers/types';
 import { getUserById, getUserList } from '../../api/';
 import { useAppDispatch } from '../../../../store/hooks';
@@ -10,10 +9,11 @@ import CreateUser from './create/CreateUser';
 import EditUser from './edit/EditUser';
 import { ActionDialog } from '../../../../components/Dialogs';
 import { showLoader } from '../../../reducers/loader';
-import { PAGINATION_DEFAULT_SIZE } from '../../../../constants';
+import { PAGINATION_DEFAULT_SIZE, USER_TABLE_COLUMNS } from '../../../../constants';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
 import { useTranslation } from 'react-i18next';
+import DefaultTable from '../../../../components/Table/DefaultTable';
 
 const Users = () => {
   const dispatch = useAppDispatch();
@@ -64,7 +64,7 @@ const Users = () => {
     loadData(PAGINATION_DEFAULT_SIZE, 0);
   }, [loadData]);
 
-  const filterData = (e: any) => {
+  const filterData = (e: ChangeEvent<HTMLInputElement>) => {
     setCurrentSearchInput(e.target.value);
     loadData(userList?.pageable.pageSize ?? PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
@@ -117,15 +117,23 @@ const Users = () => {
         </Col>
       </Row>
       <hr className="my-4" />
-      <UsersTable rows={userList?.content ?? []} clickHandler={openUserById} sortHandler={sortHanlder} />
       {userList !== undefined && userList.content.length > 0 ? (
-        <Paginator
-          totalElements={userList.totalElements}
-          page={userList.pageable.pageNumber}
-          size={userList.size}
-          totalPages={userList.totalPages}
-          paginationHandler={paginationHandler}
-        />
+        <>
+          <DefaultTable
+            columns={USER_TABLE_COLUMNS}
+            data={userList.content}
+            clickHandler={openUserById}
+            sortHandler={sortHanlder}
+            clickAccessor="identifier"
+          />
+          <Paginator
+            totalElements={userList.totalElements}
+            page={userList.pageable.pageNumber}
+            size={userList.size}
+            totalPages={userList.totalPages}
+            paginationHandler={paginationHandler}
+          />
+        </>
       ) : null}
       {show && <CreateUser show={show} handleClose={handleClose} />}
       {showEdit && currentUser && (

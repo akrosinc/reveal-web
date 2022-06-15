@@ -1,7 +1,9 @@
 import React from 'react';
-import { Button, Modal, Table } from 'react-bootstrap';
+import { Button, Modal } from 'react-bootstrap';
 import { PageableModel } from '../../../../../api/providers';
 import Paginator from '../../../../../components/Pagination';
+import DefaultTable from '../../../../../components/Table/DefaultTable';
+import { useAppSelector } from '../../../../../store/hooks';
 import { formatDate } from '../../../../../utils';
 import { BulkDetailsModel, UserBulk } from '../../../providers/types';
 
@@ -13,34 +15,27 @@ interface Props {
 }
 
 const BulkDetails = ({ userList, bulkFile, handleClose, paginationHandler }: Props) => {
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
   return (
-    <Modal show={true} centered size="lg" scrollable>
+    <Modal show={true} centered size="lg" scrollable contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header>
-        <Modal.Title>{bulkFile?.filename}({userList.totalElements})</Modal.Title>
+        <Modal.Title>
+          {bulkFile?.filename}({userList.totalElements})
+        </Modal.Title>
         <div>
-        <p className="mb-0 ms-2 text-end">Upload date: {formatDate(bulkFile?.uploadDatetime)}</p>
-        <p className="mb-0 ms-2 text-end">Uploaded by: {bulkFile?.uploadedBy}</p>
+          <p className="mb-0 ms-2 text-end">Upload date: {formatDate(bulkFile?.uploadDatetime)}</p>
+          <p className="mb-0 ms-2 text-end">Uploaded by: {bulkFile?.uploadedBy}</p>
         </div>
       </Modal.Header>
       <Modal.Body>
-        <Table bordered responsive>
-          <thead className="border border-2">
-            <tr>
-              <th>Username</th>
-              <th>Message</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {userList.content.map((user, index) => (
-              <tr key={index}>
-                <td>{user.username}</td>
-                <td>{user.message}</td>
-                <td>{user.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <DefaultTable
+          columns={[
+            { name: 'Username', accessor: 'username' },
+            { name: 'Message', accessor: 'message' },
+            { name: 'Status', accessor: 'status' }
+          ]}
+          data={userList.content}
+        />
         {userList.content.length > 5 ? (
           <Paginator
             totalElements={userList.totalElements}
@@ -52,7 +47,7 @@ const BulkDetails = ({ userList, bulkFile, handleClose, paginationHandler }: Pro
         ) : null}
       </Modal.Body>
       <Modal.Footer>
-        <Button id='close-button' variant="secondary" onClick={handleClose}>
+        <Button id="close-button" variant="secondary" onClick={handleClose}>
           Close
         </Button>
       </Modal.Footer>

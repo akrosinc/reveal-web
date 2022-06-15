@@ -4,7 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { ErrorModel } from '../../../../api/providers';
 import { ConfirmDialog } from '../../../../components/Dialogs';
-import { useAppDispatch } from '../../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { deleteOrganizationById, updateOrganization } from '../../api';
 import { OrganizationModel } from '../../../organization/providers/types';
 import { showLoader } from '../../../reducers/loader';
@@ -35,6 +35,8 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<SingleValue<Option>>();
   const dispatch = useAppDispatch();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
+
   const {
     register,
     handleSubmit,
@@ -120,7 +122,7 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
       <Form.Group className="mb-3">
         <Form.Label>Organization name</Form.Label>
         <Form.Control
-          id='organization-name-input'
+          id="organization-name-input"
           readOnly={!edit}
           type="text"
           placeholder="Enter organization name"
@@ -137,7 +139,11 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Type</Form.Label>
-        <Form.Select id='type-select' disabled={!edit} {...register('type', { required: 'Organization type must be selected.' })}>
+        <Form.Select
+          id="type-select"
+          disabled={!edit}
+          {...register('type', { required: 'Organization type must be selected.' })}
+        >
           <option value=""></option>
           <option value="CG">Community group</option>
           <option value="TEAM">Team</option>
@@ -152,6 +158,8 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
           name="partOf"
           render={({ field: { onChange } }) => (
             <Select
+              className="custom-react-select-container"
+              classNamePrefix="custom-react-select"
               id="part-of-select"
               menuPosition="fixed"
               isDisabled={!edit}
@@ -214,6 +222,7 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
           closeHandler={deleteHandler}
           message="Are you sure? This organization will be deleted."
           title="Delete organization"
+          isDarkMode={isDarkMode}
         />
       )}
     </Form>

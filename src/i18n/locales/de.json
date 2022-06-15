@@ -13,7 +13,9 @@
     "IRS Reporting": "IRS Berichterstattung",
     "SMC Reporting": "SMC Berichterstellung",
     "Management": "Verwaltung",
-    "Location": "Standortverwaltung"
+    "Location": "Standortverwaltung",
+    "Simulation": "Simulation",
+    "TagManagement": "Tag Management"
   },
   "publicPage": {
     "supportedBy": "unterstützt von",
@@ -152,7 +154,7 @@
   "reportPage": {
     "title": "Reports",
     "subtitle": "Report",
-    "search": "Search by Location Name",
+    "search": "Filter by Location Name",
     "reportDetails": "Report details",
     "locationInfo": "Location info",
     "locationData": "Location data",
@@ -177,5 +179,8 @@
     "locationName": "Location Name",
     "locationType": "Location Type",
     "identifier": "Identifier"
+  },
+  "simulationPage": {
+    "title": "Plan Simulation"
   }
 }

@@ -1,9 +1,9 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Col, Row, Container, Tab, Tabs, Form, Button, Accordion } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PLANS, REGEX_TITLE_VALIDATION, UNEXPECTED_ERROR_STRING } from '../../../../constants';
-import { useAppDispatch } from '../../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { getLocationHierarchyList } from '../../../location/api';
 import { showLoader } from '../../../reducers/loader';
 import { createPlan, deleteGoalById, getInterventionTypeList, getPlanById, updatePlanDetails } from '../../api';
@@ -18,6 +18,7 @@ import { ConfirmDialog, ConfirmDialogService } from '../../../../components/Dial
 import { toast } from 'react-toastify';
 import CreateGoal from './Goals/CreateGoal/CreateGoal';
 import { useTranslation } from 'react-i18next';
+import { toUtcString } from '../../../../utils';
 
 interface Options {
   value: string;
@@ -50,10 +51,12 @@ const CreatePlan = () => {
   const [currentFrom, setCurrentForm] = useState<any>();
   const { id } = useParams();
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const {
     register,
     handleSubmit,
+    reset,
     control,
     watch,
     resetField,
@@ -123,35 +126,59 @@ const CreatePlan = () => {
       });
   }, [dispatch, id, loadPlan]);
 
-  const createPlanHandler = (formData: any) => {
+  const createPlanHandler = (formData: RegisterValues) => {
     dispatch(showLoader(true));
-    let mStart = Moment(formData.effectivePeriod.start);
-    let mEnd = Moment(formData.effectivePeriod.end);
-    formData.effectivePeriod.start = Moment(mStart).utc().add(mStart.utcOffset(), 'm').format('yyyy-MM-DD');
-    formData.effectivePeriod.end = Moment(mEnd).utc().add(mEnd.utcOffset(), 'm').format('yyyy-MM-DD');
     if (goalList.length) {
-      formData.goals = goalList;
-      createPlan(formData).then(_ => {
+      createPlan({
+        ...formData,
+        effectivePeriod: {
+          start: toUtcString(formData.effectivePeriod.start),
+          end: toUtcString(formData.effectivePeriod.end)
+        },
+        goals: goalList
+      }).then(_ => {
         dispatch(showLoader(false));
         navigate(PLANS);
       });
     } else {
       dispatch(showLoader(false));
-      setCurrentForm(formData);
+      setCurrentForm({
+        ...formData,
+        effectivePeriod: {
+          start: toUtcString(formData.effectivePeriod.start),
+          end: toUtcString(formData.effectivePeriod.end)
+        }
+      });
       setShowConfirmDialog(true);
     }
   };
 
-  const updatePlanHandler = (form: any) => {
+  const updatePlanHandler = (form: RegisterValues) => {
     if (id !== undefined) {
       dispatch(showLoader(true));
       toast
-        .promise(updatePlanDetails(form, id), {
-          pending: t('toast.loading'),
-          success: t('planPage.planUpdatedMessage'),
-          error: t('planPage.planUpdateErrorMessage')
-        })
-        .finally(() => dispatch(showLoader(false)));
+        .promise(
+          updatePlanDetails(
+            {
+              ...form,
+              effectivePeriod: {
+                start: toUtcString(form.effectivePeriod.start),
+                end: toUtcString(form.effectivePeriod.end)
+              }
+            },
+            id
+          ),
+          {
+            pending: t('toast.loading'),
+            success: t('planPage.planUpdatedMessage'),
+            error: t('planPage.planUpdateErrorMessage')
+          }
+        )
+        .finally(() => {
+          //clear form dirty flag
+          reset(form);
+          dispatch(showLoader(false));
+        });
     }
   };
 
@@ -168,6 +195,7 @@ const CreatePlan = () => {
         backdrop
         message={t('planPage.deleteGoalMessage') + goalId + '?'}
         title={t('planPage.deleteGoal')}
+        isDarkMode={isDarkMode}
       />
     )).then(res => {
       if (res) {
@@ -200,7 +228,7 @@ const CreatePlan = () => {
     }
   };
 
-  const populateNameHandler = (e: any) => {
+  const populateNameHandler = (e: ChangeEvent<HTMLInputElement>) => {
     setValue('name', e.target.value.replaceAll(' ', '-').toLowerCase());
   };
 
@@ -218,6 +246,7 @@ const CreatePlan = () => {
                     backdrop
                     message={id ? t('planPage.planUpdateDiscardMessage') : t('planPage.planDiscardMessage')}
                     title={t('confirmDialog.discardChanges')}
+                    isDarkMode={isDarkMode}
                   />
                 )).then(res => {
                   if (res) {
@@ -375,6 +404,8 @@ const CreatePlan = () => {
                     rules={{ required: t('planPage.planForm.selectHierarchyError') as string, minLength: 1 }}
                     render={({ field }) => (
                       <Select
+                        className="custom-react-select-container"
+                        classNamePrefix="custom-react-select"
                         id="hierarchy-select"
                         menuPosition="fixed"
                         options={hierarchyList}
@@ -398,6 +429,8 @@ const CreatePlan = () => {
                     name="interventionType"
                     render={({ field }) => (
                       <Select
+                        className="custom-react-select-container"
+                        classNamePrefix="custom-react-select"
                         id="intervetion-type-select"
                         menuPosition="fixed"
                         options={interventionTypeList}
@@ -468,6 +501,7 @@ const CreatePlan = () => {
           closeHandler={closeHandler}
           message={t('planPage.noGoalMessage')}
           title={t('planPage.createPlan')}
+          isDarkMode={isDarkMode}
         />
       )}
       {showCreateGoal && (

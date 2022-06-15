@@ -71,6 +71,7 @@ export interface PlanCreateModel {
   };
   locationHierarchy: string;
   interventionType: string;
+  goals?: Goal[];
 }
 
 export interface InterventionType {

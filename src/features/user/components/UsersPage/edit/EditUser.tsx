@@ -4,7 +4,7 @@ import { deleteUserById, resetUserPassword, updateUser } from '../../../../user/
 import { EditUserModel, UserModel } from '../../../../user/providers/types';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
 import { showLoader } from '../../../../reducers/loader';
-import { useAppDispatch } from '../../../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../../store/hooks';
 import { useForm } from 'react-hook-form';
 import Select, { MultiValue } from 'react-select';
 import { getOrganizationListSummary, getSecurityGroups } from '../../../../organization/api';
@@ -49,6 +49,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [groups, setGroups] = useState<Options[]>();
   const [organizations, setOrganizations] = useState<Options[]>([]);
   const dispatch = useAppDispatch();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const setStartValues = useCallback(
     (userDetails: UserModel) => {
@@ -302,6 +303,8 @@ const EditUser = ({ user, handleClose }: Props) => {
           <Form.Group className="mb-3">
             <Form.Label>Security groups</Form.Label>
             <Select
+              className="custom-react-select-container"
+              classNamePrefix="custom-react-select"
               id="security-groups-select"
               {...register('securityGroups', { required: false })}
               isDisabled={!edit}
@@ -315,6 +318,8 @@ const EditUser = ({ user, handleClose }: Props) => {
           <Form.Group className="mb-3">
             <Form.Label>Organization</Form.Label>
             <Select
+              className="custom-react-select-container"
+              classNamePrefix="custom-react-select"
               id="organizations-select"
               {...register('organizations', { required: false })}
               isDisabled={!edit}
@@ -381,6 +386,7 @@ const EditUser = ({ user, handleClose }: Props) => {
           message={'Are you sure you want to permanently delete the user ' + user?.username}
           title="Delete user"
           backdrop={true}
+          isDarkMode={isDarkMode}
         />
       )}
     </Form>

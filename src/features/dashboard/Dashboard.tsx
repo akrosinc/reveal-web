@@ -62,39 +62,39 @@ const Dashboard = () => {
   return (
     <>
       <AuthorizedElement roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}>
-      <Row style={{minHeight: "500px"}}>
-        <Col md={6}>
-          {data !== undefined && data.datasets[0].data.length ? (
-            <Pie
-              data={data}
-              height="450px"
-              width="450px"
-              options={{
-                maintainAspectRatio: false
-              }}
-            />
-          ) : (
-            <p className="lead mt-5">No data to display.</p>
-          )}
-        </Col>
-        <Col md={6}>
-          {dougData !== undefined && dougData.datasets[0].data.length ? (
-            <Doughnut
-              data={dougData}
-              height="450px"
-              width="450px"
-              options={{
-                maintainAspectRatio: false,
-                rotation: 270,
-                circumference: 180,
-                cutout: 120
-              }}
-            />
-          ) : (
-            <p className="lead mt-5">No data to display.</p>
-          )}
-        </Col>
-      </Row>
+        <Row style={{ minHeight: '500px' }}>
+          <Col md={6}>
+            {data !== undefined && data.datasets[0].data.length ? (
+              <Pie
+                data={data}
+                height="450px"
+                width="450px"
+                options={{
+                  maintainAspectRatio: false
+                }}
+              />
+            ) : (
+              <p className="lead mt-5">No data to display.</p>
+            )}
+          </Col>
+          <Col md={6}>
+            {dougData !== undefined && dougData.datasets[0].data.length ? (
+              <Doughnut
+                data={dougData}
+                height="450px"
+                width="450px"
+                options={{
+                  maintainAspectRatio: false,
+                  rotation: 270,
+                  circumference: 180,
+                  cutout: 120
+                }}
+              />
+            ) : (
+              <p className="lead mt-5">No data to display.</p>
+            )}
+          </Col>
+        </Row>
       </AuthorizedElement>
     </>
   );

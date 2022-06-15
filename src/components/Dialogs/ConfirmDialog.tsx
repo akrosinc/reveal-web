@@ -7,13 +7,14 @@ interface Props {
   message: string;
   closeHandler: (action: boolean) => void;
   backdrop: boolean;
+  isDarkMode: boolean;
 }
 
-const ConfirmDialog = ({ title, message, closeHandler, backdrop }: Props) => {
-  const { t } = useTranslation();
+const ConfirmDialog = ({ title, message, closeHandler, backdrop, isDarkMode }: Props) => {
+  const { t } = useTranslation();  
 
   return (
-    <Modal show={true} centered size="sm" backdrop={backdrop} style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
+    <Modal show={true} centered size="sm" backdrop={backdrop} style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }} contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header>
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>

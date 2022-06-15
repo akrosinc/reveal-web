@@ -9,7 +9,7 @@ import {
 } from '../../../api';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { useAppDispatch } from '../../../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../../store/hooks';
 import { showLoader } from '../../../../reducers/loader';
 import { getOrganizationListSummary } from '../../../../organization/api';
 import { UNEXPECTED_ERROR_STRING } from '../../../../../constants';
@@ -26,6 +26,7 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
   const [assignedTeams, setAssignedTeams] = useState<MultiValue<{ label: string; value: string }>>();
   const [organizationList, setOrganizationList] = useState<Options<{ label: string; value: string }>>();
   const [assignChildren, setAssignChildren] = useState(false);
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const assignTeamsHandler = () => {
     if (planId) {
@@ -100,7 +101,7 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
   };
 
   return (
-    <Modal backdrop="static" show centered size="lg" onShow={() => loadData()}>
+    <Modal backdrop="static" show centered size="lg" onShow={() => loadData()} contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header className="justify-content-center">
         <Modal.Title>{locationData[1].name}</Modal.Title>
       </Modal.Header>
@@ -112,7 +113,7 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
         ) : (
           <>
             <h4>Location info</h4>
-            <Table bordered responsive className="my-2">
+            <Table bordered responsive className="my-2" variant={isDarkMode ? 'dark' : 'white'}>
               <thead className="border border-2">
                 <tr>
                   <th>Identifier</th>
@@ -146,6 +147,8 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
               </Form.Group>
               <Form.Group className="my-3">
                 <Select
+                  className="custom-react-select-container"
+                  classNamePrefix="custom-react-select"
                   id="team-assign-select"
                   isMulti
                   isClearable

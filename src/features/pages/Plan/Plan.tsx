@@ -5,13 +5,14 @@ import AuthGuard from '../../../components/AuthGuard';
 import { PLAN_CREATE, PLAN_UPDATE, PLAN_VIEW } from '../../../constants';
 import CreatePlan from '../../plan/components/create';
 import Plans from '../../plan/components';
+import { ErrorPage } from '../../../components/pages';
 
 const Plan = () => {
   return (
     <Container fluid className="my-4 px-2">
       <Routes>
         <Route
-          path=""
+          path="/"
           element={
             <AuthGuard roles={[PLAN_VIEW]}>
               <Plans />
@@ -27,13 +28,14 @@ const Plan = () => {
           }
         />
         <Route
-          path=":id"
+          path="planId/:id"
           element={
             <AuthGuard roles={[PLAN_UPDATE]}>
               <CreatePlan />
             </AuthGuard>
           }
         />
+        <Route path="*" element={<ErrorPage />} />
       </Routes>
     </Container>
   );

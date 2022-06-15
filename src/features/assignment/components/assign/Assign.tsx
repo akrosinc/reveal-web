@@ -29,6 +29,8 @@ import { getOrganizationListSummary } from '../../../organization/api';
 import { Column } from 'react-table';
 import MapViewAssignments from './map';
 import { useTranslation } from 'react-i18next';
+import SimpleBar from 'simplebar-react';
+import 'simplebar/dist/simplebar.min.css';
 
 interface Option {
   label: string;
@@ -93,7 +95,7 @@ const Assign = () => {
         .catch(_ => {
           toast.error("Plan does not exist, redirected to previous page.");
           dispatch(showLoader(false));
-          navigate('/assign');
+          navigate(ASSIGNMENT_PAGE);
         });
     } else {
       dispatch(showLoader(false));
@@ -382,7 +384,7 @@ const Assign = () => {
           </Link>
         </Col>
         <Col md={6} className="text-center">
-          <h4 className="m-0">
+          <h4 className="mx-0 my-3 my-md-0">
             {activeTab === LOCATION_ASSIGNMENT_TAB ? t('assignPage.titleLocations') : t('assignPage.titleTeams')} (
             {currentPlan?.title})
           </h4>
@@ -401,7 +403,7 @@ const Assign = () => {
               {t('buttons.save')}
             </Button>
           </div>
-          <div id="expand-table" style={{ maxHeight: tableHeight > 0 ? tableHeight : 'auto', overflow: 'auto' }}>
+          <SimpleBar style={{ maxHeight: tableHeight > 0 ? tableHeight : 'auto'}}>
             <hr />
             <Tabs
               id="assignments"
@@ -452,7 +454,7 @@ const Assign = () => {
                 />
               </Tab>
             </Tabs>
-          </div>
+          </SimpleBar>
         </Col>
         <Col md={open ? 12 : 8}>
           <MapViewAssignments

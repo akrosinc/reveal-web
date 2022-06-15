@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl, { Map } from 'mapbox-gl';
 import { Button } from 'react-bootstrap';
 import { createLocation, createLocationLabel, initMap } from '../../../../../utils';
+import { MAPBOX_STYLE_SATELLITE } from '../../../../../constants';
 
 mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
@@ -25,7 +26,7 @@ const MapView = ({ latitude, longitude, startingZoom, data, clearHandler, childr
   useEffect(() => {
     // initialize map only once
     if (map.current === undefined) {
-      map.current = initMap(mapContainer, [lng, lat], zoom, 'bottom-left');
+      map.current = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_SATELLITE);
       //set listeners
       if (map !== undefined && map.current !== undefined) {
         map.current.on('move', e => {

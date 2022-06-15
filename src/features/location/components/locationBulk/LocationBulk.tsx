@@ -1,19 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Row, Col, Button, Table } from 'react-bootstrap';
+import { Row, Col, Button } from 'react-bootstrap';
 import { PageableModel } from '../../../../api/providers';
 import { useTranslation } from 'react-i18next';
 import { LocationBulkModel, LocationBulkDetailsModel, LocationBulkStatus } from '../../providers/types';
 import { ActionDialog } from '../../../../components/Dialogs';
 import UploadLocation from './upload';
 import Paginator from '../../../../components/Pagination';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { formatDate } from '../../../../utils';
 import { useAppDispatch } from '../../../../store/hooks';
 import { PAGINATION_DEFAULT_SIZE, BULK_TABLE_COLUMNS } from '../../../../constants';
 import { getLocationBulkListById, getLocationBulkList } from '../../api';
 import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import LocationBulkDetails from './details';
+import DefaultTable from '../../../../components/Table/DefaultTable';
 
 const LocationBulk = () => {
   const [openUpload, setOpenUpload] = useState(false);
@@ -24,8 +23,6 @@ const LocationBulk = () => {
   const [selectedBulkFile, setSelectedBulkFile] = useState<LocationBulkModel>();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
-  const [sortDirection, setSortDirection] = useState(false);
-  const [activeSortField, setActiveSortField] = useState('');
   const dispatch = useAppDispatch();
   const [interval, setSelectedInterval] = useState<NodeJS.Timeout>();
 
@@ -126,45 +123,14 @@ const LocationBulk = () => {
       </Row>
 
       <hr className="my-4" />
+
       {locationBulkList !== undefined && locationBulkList?.totalElements > 0 ? (
-        <Table bordered responsive hover>
-          <thead className="border border-2">
-            <tr>
-              {BULK_TABLE_COLUMNS.map((el, index) => (
-                <th
-                  id={el.name + '-sort'}
-                  key={index}
-                  onClick={() => {
-                    setSortDirection(!sortDirection);
-                    setActiveSortField(el.name);
-                    sortHandler(el.sortValue, sortDirection);
-                  }}
-                >
-                  {t('userImportPage.' + el.name)}
-                  {activeSortField === el.name ? (
-                    sortDirection ? (
-                      <FontAwesomeIcon className="ms-1" icon="sort-up" />
-                    ) : (
-                      <FontAwesomeIcon className="ms-1" icon="sort-down" />
-                    )
-                  ) : (
-                    <FontAwesomeIcon className="ms-1" icon="sort" />
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {locationBulkList?.content?.map(el => (
-              <tr onClick={() => openBulkById(el)} key={el.identifier}>
-                <td>{el.filename}</td>
-                <td>{formatDate(el.uploadDatetime)}</td>
-                <td>{el.status}</td>
-                <td>{el.uploadedBy}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <DefaultTable
+          columns={BULK_TABLE_COLUMNS}
+          data={locationBulkList?.content ?? []}
+          sortHandler={sortHandler}
+          clickHandler={(identifier: LocationBulkModel) => openBulkById(identifier)}
+        />
       ) : (
         <p className="text-center lead">No bulk files found.</p>
       )}

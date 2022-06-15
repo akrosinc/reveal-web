@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Button, Col, Collapse, Container, Form, Row, Table } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Column } from 'react-table';
@@ -13,7 +13,7 @@ import {
   REPORT_TABLE_PERCENTAGE_MEDIUM,
   UNEXPECTED_ERROR_STRING
 } from '../../../../constants';
-import { useAppDispatch } from '../../../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
 import { showLoader } from '../../../reducers/loader';
@@ -47,6 +47,7 @@ const Report = () => {
   const [currentFeature, setCurrentFeature] = useState<Feature<Polygon | MultiPolygon, ReportLocationProperties>>();
   const searchInput = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
@@ -97,7 +98,8 @@ const Report = () => {
     }
   };
 
-  const searchHandler = (input: string) => {
+  const searchHandler = (e: ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
     if (input.length) {
       setFilterData(data.filter(el => el.name.toLowerCase().includes(input.toLowerCase())));
     } else {
@@ -157,7 +159,7 @@ const Report = () => {
   }, [loadData]);
 
   const loadChildHandler = (id: string, locationName: string, childrenNumber: number) => {
-    if (planId && reportType && childrenNumber) {
+    if (planId && reportType) {
       dispatch(showLoader(true));
       getMapReportData({
         parentLocationIdentifier: id,
@@ -189,7 +191,7 @@ const Report = () => {
         });
     } else {
       dispatch(showLoader(false));
-      toast.info(`${locationName} has no child locations.`);
+      toast.info(`There was an error loading ${locationName}.`);
     }
   };
 
@@ -255,20 +257,25 @@ const Report = () => {
         </Col>
       </Row>
       <hr />
-      <Row className="bg-light m-0 p-0 rounded">
+      <Row className={isDarkMode ? 'm-0 p-0 rounded bg-dark' : 'm-0 p-0 rounded bg-light'}>
         <Col xs sm md={10} className="mt-auto">
-          <p className="link-primary">
-            <FontAwesomeIcon icon="align-left" className="me-3" />
-            <span className="me-1" style={{ cursor: 'pointer' }} onClick={() => clearMap()}>
+          <p>
+            <FontAwesomeIcon
+              icon="align-left"
+              className={path.length ? 'me-3 link-primary pe-none' : 'me-3 text-secondary pe-none'}
+            />
+            <span
+              role="button"
+              className={path.length ? 'me-1 link-primary' : 'me-1 text-secondary pe-none'}
+              onClick={() => clearMap()}
+            >
               {plan?.title} /
             </span>
             {path.map((el, index) => {
               return (
                 <span
-                  style={{
-                    cursor: index === path.length - 1 ? 'default' : 'pointer',
-                    color: index === path.length - 1 ? 'gray' : ''
-                  }}
+                  role="button"
+                  className={index === path.length - 1 ? 'me-1 text-secondary pe-none' : 'me-1 link-primary'}
                   key={el.locationIdentifier}
                   onClick={() => {
                     if (index < path.length - 1) {
@@ -299,7 +306,13 @@ const Report = () => {
                     ref={searchInput}
                     placeholder={t('reportPage.search')}
                     type="text"
-                    onChange={e => searchHandler(e.target.value)}
+                    onChange={searchHandler}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        return false;
+                      }
+                    }}
                   />
                 </Form.Group>
               </Form>

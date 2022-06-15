@@ -3,6 +3,7 @@ import { Table, FormCheck } from 'react-bootstrap';
 import { useTable, useExpanded } from 'react-table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3 } from '../../constants';
+import { useAppSelector } from '../../store/hooks';
 
 interface Props {
   columns: any;
@@ -14,6 +15,7 @@ interface Props {
 const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const getColorLevel = (depth: number) => {
     if (depth === 0) {
@@ -67,7 +69,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
   );
 
   return (
-    <Table bordered responsive hover {...getTableProps()}>
+    <Table bordered responsive hover {...getTableProps()} variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="border border-2">
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
