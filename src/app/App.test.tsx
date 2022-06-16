@@ -20,6 +20,10 @@ test('renders start page', () => {
 });
 
 test('is public page rendered', () => {
-  const renderResult = render(<PublicPage />);
+  const renderResult = render(
+    <Provider store={store}>
+      <PublicPage />
+    </Provider>
+  );
   expect(renderResult).toBeTruthy();
 });
