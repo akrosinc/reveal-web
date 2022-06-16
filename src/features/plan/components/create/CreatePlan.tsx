@@ -2,10 +2,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Col, Row, Container, Tab, Tabs, Form, Button, Accordion } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
-import { PLANS, REGEX_TITLE_VALIDATION, UNEXPECTED_ERROR_STRING } from '../../../../constants';
-import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
+import { PLANS, REGEX_TITLE_VALIDATION } from '../../../../constants';
+import { useAppSelector } from '../../../../store/hooks';
 import { getLocationHierarchyList } from '../../../location/api';
-import { showLoader } from '../../../reducers/loader';
 import { createPlan, deleteGoalById, getInterventionTypeList, getPlanById, updatePlanDetails } from '../../api';
 import Moment from 'moment';
 import { useForm, Controller } from 'react-hook-form';
@@ -19,6 +18,7 @@ import { toast } from 'react-toastify';
 import CreateGoal from './Goals/CreateGoal/CreateGoal';
 import { useTranslation } from 'react-i18next';
 import { toUtcString } from '../../../../utils';
+import { FieldValidationError } from '../../../../api/providers';
 
 interface Options {
   value: string;
@@ -40,7 +40,6 @@ const CreatePlan = () => {
   const [activeTab, setActiveTab] = useState('plan-details');
   const [hierarchyList, setHierarchyList] = useState<Options[]>([]);
   const [interventionTypeList, setInterventionTypeList] = useState<Options[]>([]);
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [selectedHierarchy, setSelectedHierarchy] = useState<SingleValue<Options>>();
   const [selectedInterventionType, setSelectedInterventionType] = useState<SingleValue<Options>>();
@@ -63,7 +62,8 @@ const CreatePlan = () => {
     formState: { errors, isDirty },
     trigger,
     setValue,
-    getValues
+    getValues,
+    setError
   } = useForm<RegisterValues>();
 
   const loadPlan = useCallback(
@@ -81,16 +81,14 @@ const CreatePlan = () => {
           setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
         })
         .catch(err => {
-          toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING);
+          toast.error(err);
           navigate(PLANS);
-        })
-        .finally(() => dispatch(showLoader(false)));
+        });
     },
-    [dispatch, setValue, navigate]
+    [setValue, navigate]
   );
 
   useEffect(() => {
-    dispatch(showLoader(true));
     Promise.all([getLocationHierarchyList(0, 0, true), getInterventionTypeList()])
       .then(async ([locationHierarchyList, interventionTypeList]) => {
         setHierarchyList(
@@ -112,22 +110,14 @@ const CreatePlan = () => {
         if (id) {
           // id exists show plan details
           loadPlan(id);
-        } else {
-          dispatch(showLoader(false));
         }
       })
       .catch(err => {
-        if (err.message) {
-          toast.error(err.message);
-        } else {
-          toast.error(err.toString());
-        }
-        dispatch(showLoader(false));
+        toast.error(err);
       });
-  }, [dispatch, id, loadPlan]);
+  }, [id, loadPlan]);
 
   const createPlanHandler = (formData: RegisterValues) => {
-    dispatch(showLoader(true));
     if (goalList.length) {
       createPlan({
         ...formData,
@@ -137,11 +127,9 @@ const CreatePlan = () => {
         },
         goals: goalList
       }).then(_ => {
-        dispatch(showLoader(false));
         navigate(PLANS);
       });
     } else {
-      dispatch(showLoader(false));
       setCurrentForm({
         ...formData,
         effectivePeriod: {
@@ -155,7 +143,6 @@ const CreatePlan = () => {
 
   const updatePlanHandler = (form: RegisterValues) => {
     if (id !== undefined) {
-      dispatch(showLoader(true));
       toast
         .promise(
           updatePlanDetails(
@@ -177,7 +164,6 @@ const CreatePlan = () => {
         .finally(() => {
           //clear form dirty flag
           reset(form);
-          dispatch(showLoader(false));
         });
     }
   };
@@ -201,10 +187,8 @@ const CreatePlan = () => {
       if (res) {
         if (id) {
           // we are in edit mode call api to delete goal
-          dispatch(showLoader(true));
           deleteGoalById(goalId, id).then(_ => {
             loadPlan(id);
-            dispatch(showLoader(false));
           });
         } else {
           let newArr = goalList.filter(el => el.identifier !== goalId);
@@ -216,13 +200,27 @@ const CreatePlan = () => {
 
   const closeHandler = (action: boolean) => {
     if (action) {
-      dispatch(showLoader(true));
       createPlan(currentFrom)
         .then(_ => {
           navigate(PLANS);
         })
-        .catch(err => toast.error(err.message !== undefined ? err.message : t('toast.unexpectedError')))
-        .finally(() => dispatch(showLoader(false)));
+        .catch(err => {
+          if (typeof err !== 'string') {
+            const fieldValidationErrors = err as FieldValidationError[];
+            toast.error(
+              'Field Validation Error: ' +
+                fieldValidationErrors
+                  .map(errField => {
+                    setError(errField.field as any, { message: errField.messageKey });
+                    return errField.field;
+                  })
+                  .toString().replace(',', ', ')
+            );
+          } else {
+            toast.error(err);
+          }
+          setShowConfirmDialog(false);
+        });
     } else {
       setShowConfirmDialog(false);
     }

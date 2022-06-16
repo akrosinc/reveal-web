@@ -6,8 +6,7 @@ import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
 import { PAGINATION_DEFAULT_SIZE, PLANS, PLAN_TABLE_COLUMNS } from '../../../constants';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { showLoader } from '../../reducers/loader';
+import { useAppSelector } from '../../../store/hooks';
 import { getPlanList } from '../api';
 import { PlanModel } from '../providers/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -16,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 
 const Plans = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
@@ -29,15 +27,13 @@ const Plans = () => {
 
   const loadData = useCallback(
     (size: number, page: number, search?: string, sortDirection?: boolean, sortField?: string) => {
-      dispatch(showLoader(true));
       getPlanList(size, page, false, search, sortField, sortDirection)
         .then(res => {
           setPlanList(res);
         })
-        .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
-        .finally(() => dispatch(showLoader(false)));
+        .catch(err => toast.error(err));
     },
-    [dispatch]
+    []
   );
 
   useEffect(() => {

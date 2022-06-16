@@ -10,13 +10,11 @@ import {
   REPORTING_PAGE,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
-  REPORT_TABLE_PERCENTAGE_MEDIUM,
-  UNEXPECTED_ERROR_STRING
+  REPORT_TABLE_PERCENTAGE_MEDIUM
 } from '../../../../constants';
-import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
+import { useAppSelector } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
-import { showLoader } from '../../../reducers/loader';
 import { getMapReportData } from '../../api';
 import { Feature, FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
 import { useRef } from 'react';
@@ -34,7 +32,6 @@ const Report = () => {
   const [cols, setCols] = useState<Column[]>([]);
   const [data, setData] = useState<ReportLocationProperties[]>([]);
   const [filterData, setFilterData] = useState<ReportLocationProperties[]>([]);
-  const dispatch = useAppDispatch();
   const { planId, reportType } = useParams();
   const navigate = useNavigate();
   const [path, setPath] = useState<BreadcrumbModel[]>([]);
@@ -113,7 +110,6 @@ const Report = () => {
   };
 
   const loadData = useCallback(() => {
-    dispatch(showLoader(true));
     if (planId && reportType) {
       Promise.all([
         getPlanById(planId),
@@ -135,19 +131,16 @@ const Report = () => {
             setFeatureSet([report, 'main']);
           } else {
             toast.error('There is no report data found.');
-            dispatch(showLoader(false));
           }
         })
         .catch(err => {
-          dispatch(showLoader(false));
-          toast.error(err.message !== undefined ? err.message : UNEXPECTED_ERROR_STRING);
+          toast.error(err);
           navigate(-1);
         });
     } else {
-      dispatch(showLoader(false));
       navigate(-1);
     }
-  }, [dispatch, planId, navigate, reportType]);
+  }, [planId, navigate, reportType]);
 
   const columns = React.useMemo<Column[]>(
     () => [{ Header: 'Location name', accessor: 'name', id: 'locationName' }, ...cols],
@@ -160,7 +153,6 @@ const Report = () => {
 
   const loadChildHandler = (id: string, locationName: string, childrenNumber: number) => {
     if (planId && reportType) {
-      dispatch(showLoader(true));
       getMapReportData({
         parentLocationIdentifier: id,
         reportTypeEnum: reportType,
@@ -181,16 +173,13 @@ const Report = () => {
               setPath([...path, { locationIdentifier: id, locationName: locationName, location: res }]);
             }
           } else {
-            dispatch(showLoader(false));
             toast.info(`${locationName} has no child locations.`);
           }
         })
         .catch(err => {
-          dispatch(showLoader(false));
-          toast.error(err.message ? err.message : 'There was an error loading this location.');
+          toast.error(err);
         });
     } else {
-      dispatch(showLoader(false));
       toast.info(`There was an error loading ${locationName}.`);
     }
   };
@@ -200,7 +189,7 @@ const Report = () => {
     if (planId && reportType) {
       //reset search input on new load
       if (searchInput.current) searchInput.current.value = '';
-      dispatch(showLoader(true));
+
       path.splice(0, path.length);
       setPath(path);
       loadData();
@@ -209,7 +198,6 @@ const Report = () => {
 
   const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
     if (planId && reportType) {
-      dispatch(showLoader(true));
       path.splice(index + 1, path.length - index);
       setPath(path);
       getMapReportData({
@@ -232,12 +220,10 @@ const Report = () => {
           //its enough to spread the object so rerender will be triggered
           setFeatureSet([{ ...path[index > 0 ? index - 1 : index].location }, el.locationIdentifier]);
           if (!res.features.length) {
-            dispatch(showLoader(false));
           }
         })
         .catch(err => {
-          dispatch(showLoader(false));
-          toast.error(err.message ? err.message : 'There was an error loading this location.');
+          toast.error(err);
         });
     }
   };

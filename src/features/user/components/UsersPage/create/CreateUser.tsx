@@ -5,11 +5,10 @@ import { createUser } from '../../../api';
 import { getAllOrganizations, getSecurityGroups } from '../../../../organization/api';
 import { useForm } from 'react-hook-form';
 import { CreateUserModel } from '../../../providers/types';
-import { useAppDispatch, useAppSelector } from '../../../../../store/hooks';
-import { showLoader } from '../../../../reducers/loader';
+import { useAppSelector } from '../../../../../store/hooks';
 import { toast } from 'react-toastify';
-import { ErrorModel } from '../../../../../api/providers';
 import { REGEX_EMAIL_VALIDATION, REGEX_USERNAME_VALIDATION } from '../../../../../constants';
+import { FieldValidationError } from '../../../../../api/providers';
 
 interface RegisterValues {
   username: string;
@@ -33,13 +32,13 @@ interface Props {
 }
 
 const CreateUser = ({ show, handleClose }: Props) => {
-  const dispatch = useAppDispatch();
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
   const {
     reset,
     register,
     handleSubmit,
+    setError,
     formState: { errors }
   } = useForm<RegisterValues>();
   const [groups, setGroups] = useState<Options[]>();
@@ -88,7 +87,6 @@ const CreateUser = ({ show, handleClose }: Props) => {
   };
 
   const submitHandler = (formValues: RegisterValues) => {
-    dispatch(showLoader(true));
     let newUser: CreateUserModel = {
       username: formValues.username,
       email: formValues.email === '' ? null : formValues.email,
@@ -102,19 +100,24 @@ const CreateUser = ({ show, handleClose }: Props) => {
     toast.promise(createUser(newUser), {
       pending: 'Loading...',
       success: {
-        render({ data }) {
+        render() {
           reset();
           setSelectedOrganizations([]);
           setSelectedSecurityGroups([]);
-          dispatch(showLoader(false));
           handleClose();
           return `User ${newUser.username} created successfully.`;
         }
       },
       error: {
-        render({ data }: { data: ErrorModel }) {
-          dispatch(showLoader(false));
-          return data.message !== undefined ? data.message : 'Error creating user, please try again.';
+        render({ data: err }: { data: any }) {
+          if (typeof err !== 'string') {
+            const fieldValidationErrors = err as FieldValidationError[];
+            return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
+              setError(errField.field as any, {message: errField.messageKey});
+              return errField.field;
+            }).toString();
+          }
+          return err;
         }
       }
     });

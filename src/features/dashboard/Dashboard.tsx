@@ -5,7 +5,6 @@ import { getOrganizationCount, getOrganizationList } from '../organization/api';
 import { getUserList } from '../user/api';
 import { getPlanCount, getPlanList } from '../plan/api';
 import { useAppDispatch } from '../../store/hooks';
-import { showLoader } from '../reducers/loader';
 import 'chart.js/auto';
 import { toast } from 'react-toastify';
 import AuthorizedElement from '../../components/AuthorizedElement';
@@ -18,7 +17,6 @@ const Dashboard = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(showLoader(true));
     Promise.all([
       getOrganizationCount(),
       getUserList(5, 0),
@@ -55,8 +53,7 @@ const Dashboard = () => {
           });
         }
       })
-      .catch(err => toast.error(err.message ? err.message : err.toString()))
-      .finally(() => dispatch(showLoader(false)));
+      .catch(err => toast.error(err));
   }, [dispatch]);
 
   return (

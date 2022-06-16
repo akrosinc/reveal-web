@@ -4,15 +4,13 @@ import { getOrganizationById, getOrganizationCount, getOrganizationList, getOrga
 import { OrganizationModel } from '../providers/types';
 import ExpandingTable from '../../../components/Table/ExpandingTable';
 import Paginator from '../../../components/Pagination';
-import { useAppDispatch } from '../../../store/hooks';
-import { showLoader } from '../../reducers/loader';
 import CreateOrganization from './create';
-import { ORGANIZATION_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE, UNEXPECTED_ERROR_STRING } from '../../../constants';
+import { ORGANIZATION_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../constants';
 import { DebounceInput } from 'react-debounce-input';
 import { ActionDialog } from '../../../components/Dialogs/';
 import EditOrganization from './edit';
 import { toast } from 'react-toastify';
-import { PageableModel, ErrorModel } from '../../../api/providers';
+import { PageableModel } from '../../../api/providers';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -99,16 +97,16 @@ const Organization = () => {
 
   const handleShow = () => setShow(true);
 
-  const dispatch = useAppDispatch();
-
   const loadData = useCallback(
     (size: number, page: number, searchData?: string, field?: string, sortDirection?: boolean) => {
-      dispatch(showLoader(true));
-      getOrganizationList(size, page, searchData !== undefined ? searchData : '', field, sortDirection)
-        .then(data => {
-          setOrganizationList(data);
+      Promise.all([
+        getOrganizationList(size, page, searchData !== undefined ? searchData : '', field, sortDirection),
+        getOrganizationCount()
+      ])
+        .then(async ([organizations, { count }]) => {
+          setOrganizationList(organizations);
           setData(
-            data.content.map(el => {
+            organizations.content.map(el => {
               return {
                 name: el.name,
                 identifier: el.identifier,
@@ -119,18 +117,15 @@ const Organization = () => {
             })
           );
           if (searchData !== undefined && searchData.length) {
-            setOrganizationCount(data.numberOfElements);
+            setOrganizationCount(organizations.numberOfElements);
             expandAll?.current?.click();
           } else {
-            getOrganizationCount()
-              .then(res => setOrganizationCount(res.count))
-              .catch(err => toast.error(err.toString()));
+            setOrganizationCount(count);
           }
         })
-        .catch((error: ErrorModel) => toast.error(error !== undefined ? error.message : UNEXPECTED_ERROR_STRING))
-        .finally(() => dispatch(showLoader(false)));
+        .catch(err => toast.error(err));
     },
-    [dispatch]
+    []
   );
 
   useEffect(() => {
@@ -147,7 +142,6 @@ const Organization = () => {
   };
 
   const openOrganizationById = (id: string) => {
-    dispatch(showLoader(true));
     getOrganizationById(id)
       .then(res => {
         setSelectedOrganization(res);
@@ -155,7 +149,6 @@ const Organization = () => {
           .then(res => {
             setOrganizationDropdown(res.content.filter(el => el.identifier !== id));
             setShowDetails(true);
-            dispatch(showLoader(false));
           })
           .catch(_ => toast.error('An error has occured while loading organization.'));
       })

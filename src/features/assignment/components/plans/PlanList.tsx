@@ -3,13 +3,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Table } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
 import Paginator from '../../../../components/Pagination';
 import { ASSIGNMENT_PAGE, PAGINATION_DEFAULT_SIZE, PLAN_TABLE_COLUMNS } from '../../../../constants';
-import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
+import { useAppSelector } from '../../../../store/hooks';
 import { getPlanList } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
-import { showLoader } from '../../../reducers/loader';
 
 const PlanList = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
@@ -17,7 +17,6 @@ const PlanList = () => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [activeSortField, setActiveSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
-  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
@@ -32,12 +31,10 @@ const PlanList = () => {
 
   const loadData = useCallback(
     (size: number, page: number) => {
-      dispatch(showLoader(true));
       getPlanList(size, page, true, '', currentSortField, currentSortDirection)
-        .then(res => setPlanList(res))
-        .finally(() => dispatch(showLoader(false)));
+        .then(res => setPlanList(res)).catch(err => toast.error(err));
     },
-    [currentSortDirection, currentSortField, dispatch]
+    [currentSortDirection, currentSortField]
   );
 
   useEffect(() => {

@@ -35,7 +35,7 @@ const SimulationMapView = () => {
           Lat: {lat} Lng: {lng} Zoom: {zoom}
         </p>
       </div>
-      <div ref={mapContainer} className="map-container" />
+      <div ref={mapContainer} style={{height: '550px', width: '100%'}} />
     </Container>
   );
 };

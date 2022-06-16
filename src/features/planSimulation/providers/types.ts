@@ -1,9 +1,14 @@
-export interface EntityList {
-    id: string;
-    name: string;
-    type: 'Location' | 'Person';
+export interface EntityTags {
+    identifier: string,
+    tag: string,
+    valueType: string,
+    lookupEntityType: LookupEntityType
 }
 
-export interface EntityTags {
+export interface LookupEntityType {
+    
+        identifier: string,
+        code: string,
+        tableName: string
     
 }

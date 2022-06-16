@@ -11,8 +11,6 @@ import {
 } from '../../../../constants';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
-import { useAppDispatch } from '../../../../store/hooks';
-import { showLoader } from '../../../reducers/loader';
 import LocationAssignmentsTable from '../../../../components/Table/LocationAssignmentsTable';
 import { ErrorModel, PageableModel } from '../../../../api/providers';
 import { LocationModel } from '../../../location/providers/types';
@@ -44,7 +42,6 @@ const Assign = () => {
   const [locationHierarchy, setLocationHierarchy] = useState<PageableModel<LocationModel>>();
   const [assignedLocations, setAssignedLocations] = useState(0);
   const [activeTab, setActiveTab] = useState(LOCATION_ASSIGNMENT_TAB);
-  const dispatch = useAppDispatch();
   const selectedLocationsIdentifiers: string[] = [];
   const selectedLocationsTeams: LocationModel[] = [];
   const { planId } = useParams();
@@ -56,7 +53,6 @@ const Assign = () => {
   const { t } = useTranslation();
 
   const loadData = useCallback(() => {
-    dispatch(showLoader(true));
     if (planId !== undefined) {
       getPlanById(planId)
         .then(res => {
@@ -86,23 +82,20 @@ const Assign = () => {
                     (document.getElementsByClassName('mapboxgl-canvas')[0] as any).height -
                       (document.getElementById('title-div')?.clientHeight ?? 0)
                   );
-                  dispatch(showLoader(false));
                 });
               }
             })
             .catch(err => toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING));
         })
         .catch(_ => {
-          toast.error("Plan does not exist, redirected to previous page.");
-          dispatch(showLoader(false));
+          toast.error('Plan does not exist, redirected to previous page.');
           navigate(ASSIGNMENT_PAGE);
         });
     } else {
-      dispatch(showLoader(false));
-      toast.error("Plan does not exist, redirected to previous page.");
+      toast.error('Plan does not exist, redirected to previous page.');
       navigate(ASSIGNMENT_PAGE);
     }
-  }, [planId, dispatch, navigate]);
+  }, [planId, navigate]);
 
   useEffect(() => {
     loadData();
@@ -315,7 +308,6 @@ const Assign = () => {
 
   const saveHandler = () => {
     if (planId) {
-      dispatch(showLoader(true));
       locationHierarchy?.content.forEach(location => {
         filterChildren(location);
       });
@@ -326,7 +318,6 @@ const Assign = () => {
             success: t('assignPage.assignLocationMessage'),
             error: {
               render({ data }: { data: ErrorModel }) {
-                dispatch(showLoader(false));
                 return data.message !== undefined ? data.message : t('assignPage.assignLocationErrorMessage');
               }
             }
@@ -340,13 +331,13 @@ const Assign = () => {
               setAssignedLocations(res.count);
               setActiveTab(res.count ? LOCATION_TEAM_ASSIGNMENT_TAB : LOCATION_ASSIGNMENT_TAB);
             });
-            dispatch(showLoader(false));
+
             //clear map after changes on grid
             document.getElementById('clear-map-button')?.click();
           });
       } else {
         // assign teams to selected locations
-        dispatch(showLoader(true));
+
         const locationTeamAssignment = selectedLocationsTeams.map(el => {
           return {
             locationId: el.identifier,
@@ -363,7 +354,7 @@ const Assign = () => {
             //empty array after sending
             selectedLocationsIdentifiers.length = 0;
             selectedLocationsTeams.length = 0;
-            dispatch(showLoader(false));
+
             //clear map after changes on grid
             document.getElementById('clear-map-button')?.click();
           });
@@ -403,7 +394,7 @@ const Assign = () => {
               {t('buttons.save')}
             </Button>
           </div>
-          <SimpleBar style={{ maxHeight: tableHeight > 0 ? tableHeight : 'auto'}}>
+          <SimpleBar style={{ maxHeight: tableHeight > 0 ? tableHeight : 'auto' }}>
             <hr />
             <Tabs
               id="assignments"
@@ -441,13 +432,11 @@ const Assign = () => {
                   columns={columns}
                   clickHandler={(id: string, rowData: any) => {
                     if (rowData.active && notInMove && id !== (geoLocation?.identifier ?? '') && planId) {
-                      dispatch(showLoader(true));
                       getLocationByIdAndPlanId(id, planId)
                         .then(res => {
                           setNotInMove(false);
                           setGeoLocation(res);
-                        })
-                        .finally(() => dispatch(showLoader(false)));
+                        }).catch(err => toast.error(err));
                     }
                   }}
                   data={showAssignedOnly(tableData)}
@@ -463,11 +452,9 @@ const Assign = () => {
             data={geoLocation}
             clearHandler={() => {
               if (locationHierarchy && locationHierarchy.content.length && planId) {
-                dispatch(showLoader(true));
                 getLocationByIdAndPlanId(locationHierarchy.content[0].identifier, planId).then(res => {
                   setNotInMove(false);
                   setGeoLocation(res);
-                  dispatch(showLoader(false));
                 });
               }
             }}

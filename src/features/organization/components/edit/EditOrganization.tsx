@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { ErrorModel } from '../../../../api/providers';
+import { ErrorModel, FieldValidationError } from '../../../../api/providers';
 import { ConfirmDialog } from '../../../../components/Dialogs';
-import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
+import { useAppSelector } from '../../../../store/hooks';
 import { deleteOrganizationById, updateOrganization } from '../../api';
 import { OrganizationModel } from '../../../organization/providers/types';
-import { showLoader } from '../../../reducers/loader';
 import Select, { SingleValue } from 'react-select';
 
 interface Props {
@@ -34,13 +33,13 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
   const [edit, setEdit] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<SingleValue<Option>>();
-  const dispatch = useAppDispatch();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const {
     register,
     handleSubmit,
     control,
+    setError,
     formState: { errors }
   } = useForm<OrganizationValues>({
     defaultValues: {
@@ -61,14 +60,12 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
   }, [setSelectedSecurityGroups, organization, organizations]);
 
   const updateHandler = (formData: OrganizationModel) => {
-    dispatch(showLoader(true));
     formData.identifier = organization.identifier;
     toast
       .promise(updateOrganization(formData), {
         pending: 'Loading...',
         success: {
           render({ data }) {
-            dispatch(showLoader(false));
             setEdit(false);
             handleClose(true);
             return `Organization with id ${organization.identifier} updated successfully.`;
@@ -79,25 +76,29 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
             return data !== undefined ? data.message : 'Something went wrong!';
           }
         }
-      })
-      .finally(() => dispatch(showLoader(false)));
+      });
   };
 
   const deleteHandler = (action: boolean) => {
     if (action) {
-      dispatch(showLoader(true));
       toast.promise(deleteOrganizationById(organization.identifier), {
         pending: 'Loading...',
         success: {
           render({ data }) {
-            dispatch(showLoader(false));
             handleClose(true);
             return `Organization with id: ${organization.identifier} deleted successfully.`;
           }
         },
         error: {
-          render({ data }: { data: ErrorModel }) {
-            return data.message;
+          render({ data: err }: { data: any }) {
+            if (typeof err !== 'string') {
+              const fieldValidationErrors = err as FieldValidationError[];
+              return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
+                setError(errField.field as any, {message: errField.messageKey});
+                return errField.field;
+              }).toString();
+            }
+            return err;
           }
         }
       });

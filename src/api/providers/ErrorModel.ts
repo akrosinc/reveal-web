@@ -1,11 +1,12 @@
 export interface ErrorModel {
-    fieldValidationErrors: fieldValidationError[];
+    fieldValidationErrors: FieldValidationError[];
     statusCode: number;
+    status: number;
     message: string;
     error: string;
 }
 
-interface fieldValidationError {
+export interface FieldValidationError {
   field: string;
   messageKey: string;
   rejectedValue: string;

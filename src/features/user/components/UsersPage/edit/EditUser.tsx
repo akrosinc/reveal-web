@@ -3,13 +3,12 @@ import { Button, Form, Row, Col } from 'react-bootstrap';
 import { deleteUserById, resetUserPassword, updateUser } from '../../../../user/api';
 import { EditUserModel, UserModel } from '../../../../user/providers/types';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
-import { showLoader } from '../../../../reducers/loader';
-import { useAppDispatch, useAppSelector } from '../../../../../store/hooks';
+import { useAppSelector } from '../../../../../store/hooks';
 import { useForm } from 'react-hook-form';
 import Select, { MultiValue } from 'react-select';
 import { getOrganizationListSummary, getSecurityGroups } from '../../../../organization/api';
 import { toast } from 'react-toastify';
-import { ErrorModel } from '../../../../../api/providers';
+import { FieldValidationError } from '../../../../../api/providers';
 import { AxiosResponse } from 'axios';
 import { REGEX_EMAIL_VALIDATION } from '../../../../../constants';
 
@@ -44,11 +43,11 @@ const EditUser = ({ user, handleClose }: Props) => {
     register,
     setValue,
     handleSubmit,
+    setError,
     formState: { errors, isDirty }
   } = useForm();
   const [groups, setGroups] = useState<Options[]>();
   const [organizations, setOrganizations] = useState<Options[]>([]);
-  const dispatch = useAppDispatch();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const setStartValues = useCallback(
@@ -79,34 +78,31 @@ const EditUser = ({ user, handleClose }: Props) => {
     [setValue]
   );
 
-  const getData = useCallback(
-    () => {
-      getSecurityGroups()
-        .then(res => {
-          setGroups(
-            res.map(el => {
-              return {
-                label: el.name,
-                value: el.name
-              };
-            })
-          );
-        })
-        .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()));
-      getOrganizationListSummary().then(res => {
-        setOrganizations(
-          res.content.map(org => {
+  const getData = useCallback(() => {
+    getSecurityGroups()
+      .then(res => {
+        setGroups(
+          res.map(el => {
             return {
-              label: org.name,
-              value: org.identifier
+              label: el.name,
+              value: el.name
             };
           })
         );
-      });
-      setStartValues(user);
-    },
-    [setStartValues, user]
-  );
+      })
+      .catch(err => toast.error(err));
+    getOrganizationListSummary().then(res => {
+      setOrganizations(
+        res.content.map(org => {
+          return {
+            label: org.name,
+            value: org.identifier
+          };
+        })
+      );
+    });
+    setStartValues(user);
+  }, [setStartValues, user]);
 
   useEffect(() => {
     getData();
@@ -115,20 +111,17 @@ const EditUser = ({ user, handleClose }: Props) => {
   const deleteHandler = (action: boolean) => {
     setShowDialog(false);
     if (action) {
-      dispatch(showLoader(true));
       toast.promise(deleteUserById(user.identifier), {
         pending: 'Loading...',
         success: {
           render() {
-            dispatch(showLoader(false));
             handleClose();
             return `User with id ${user.identifier} deleted successfully`;
           }
         },
         error: {
-          render({ data }: { data: ErrorModel }) {
-            dispatch(showLoader(false));
-            return data.message !== undefined ? data.message : data.error;
+          render({ data: err }: { data: string }) {
+            return err;
           }
         }
       });
@@ -136,7 +129,6 @@ const EditUser = ({ user, handleClose }: Props) => {
   };
 
   const submitHandler = (formValues: RegisterValues) => {
-    dispatch(showLoader(true));
     if (changePassword) {
       const passwordModel = {
         identifier: user.identifier,
@@ -151,15 +143,20 @@ const EditUser = ({ user, handleClose }: Props) => {
             if (response.status === 204) {
               setChangePassword(false);
               setEdit(false);
-              dispatch(showLoader(false));
               return 'Password updated successfully.';
             }
           }
         },
         error: {
-          render({ data }: { data: ErrorModel }) {
-            dispatch(showLoader(false));
-            return data !== undefined ? data.message : 'Something went wrong!';
+          render({ data: err }: { data: any }) {
+            if (typeof err !== 'string') {
+              const fieldValidationErrors = err as FieldValidationError[];
+              return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
+                setError(errField.field as any, {message: errField.messageKey});
+                return errField.field;
+              }).toString();
+            }
+            return err;
           }
         }
       });
@@ -183,12 +180,11 @@ const EditUser = ({ user, handleClose }: Props) => {
             }
           },
           error: {
-            render({ data }: { data: ErrorModel }) {
-              return data !== undefined ? data.message : 'Something went wrong!';
+            render({ data: err }: { data: string }) {
+              return err;
             }
           }
-        })
-        .finally(() => dispatch(showLoader(false)));
+        });
     }
   };
 

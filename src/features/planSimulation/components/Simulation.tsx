@@ -6,6 +6,8 @@ import { PageableModel } from '../../../api/providers';
 import { ActionDialog } from '../../../components/Dialogs';
 import { getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
+import { getEntityList } from '../api';
+import { LookupEntityType } from '../providers/types';
 import SimulationMapView from './SimulationMapView';
 import SimulationModal from './SimulationModal';
 
@@ -13,10 +15,12 @@ const Simulation = () => {
   const { t } = useTranslation();
   const [showModal, setShowModal] = useState(false);
   const [hierarchyList, setHierarchyList] = useState<PageableModel<LocationHierarchyModel>>();
+  const [entityList, setEntityList] = useState<LookupEntityType[]>([]);
   const [selectedEntity, setSelectedEntity] = useState<string>();
 
   useEffect(() => {
     getLocationHierarchyList(10, 0, true).then(res => setHierarchyList(res));
+    getEntityList().then(res => setEntityList(res));
   }, []);
 
   const openModalHandler = () => {
@@ -28,10 +32,10 @@ const Simulation = () => {
 
   return (
     <>
-      <Row>
+      <Row className='align-items-center'>
         <Col md={6}>
           <Form>
-            <Form.Group className="d-flex align-items-center my-3">
+            <Form.Group className="d-flex align-items-center mt-md-0 mt-3">
               <Form.Label>{t('simulationPage.hierarchy')}:</Form.Label>
               <Form.Select className="ms-4 w-50">
                 {hierarchyList?.content.map(el => (
@@ -44,31 +48,23 @@ const Simulation = () => {
               <Form.Select className="ms-4 w-50"></Form.Select>
             </Form.Group>
             <Row className="mt-4">
-              <Col md={10}>
-                <Form.Group className="mb-5">
+              <Col xs={10}>
+                <Form.Group className="mb-3">
                   <Form.Label className="pe-3">{t('simulationPage.entity')}:</Form.Label>
-                  <Form.Check
+                  {entityList.map(el => <Form.Check
+                    key={el.identifier}
                     inline
                     onChange={e => setSelectedEntity(e.target.value)}
                     type="radio"
-                    value="Person"
+                    value={el.identifier}
                     name="flexRadioDefault"
-                    id="radio-group1"
-                    label="Person"
-                  />
-                  <Form.Check
-                    inline
-                    onChange={e => setSelectedEntity(e.target.value)}
-                    type="radio"
-                    value="Location"
-                    name="flexRadioDefault"
-                    id="radio-group2"
-                    label="Location"
-                  />
+                    id="radio-group"
+                    label={el.code}
+                  />)}
                 </Form.Group>
               </Col>
-              <Col md={2}>
-                <Col
+              <Col xs={2}>
+                <div
                   className="text-end"
                   title={selectedEntity !== undefined ? undefined : 'Please select entity type first.'}
                 >
@@ -79,12 +75,12 @@ const Simulation = () => {
                   >
                     <FontAwesomeIcon icon="plus" />
                   </Button>
-                </Col>
+                </div>
               </Col>
             </Row>
           </Form>
           <p>Entity properties</p>
-          <div style={{ minHeight: '300px', position: 'relative' }} className="border rounded my-2">
+          <div style={{ minHeight: '300px', position: 'relative' }} className="border rounded mb-md-0 mb-3">
             <p className="lead p-4">Conditions</p>
             <Button className="m-3" style={{ position: 'absolute', bottom: 0, right: 0 }}>
               Display

@@ -9,10 +9,8 @@ import {
 } from '../../../api';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { useAppDispatch, useAppSelector } from '../../../../../store/hooks';
-import { showLoader } from '../../../../reducers/loader';
+import { useAppSelector } from '../../../../../store/hooks';
 import { getOrganizationListSummary } from '../../../../organization/api';
-import { UNEXPECTED_ERROR_STRING } from '../../../../../constants';
 
 interface Props {
   locationData: [string, Properties];
@@ -22,7 +20,6 @@ interface Props {
 
 const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) => {
   const { planId } = useParams();
-  const dispatch = useAppDispatch();
   const [assignedTeams, setAssignedTeams] = useState<MultiValue<{ label: string; value: string }>>();
   const [organizationList, setOrganizationList] = useState<Options<{ label: string; value: string }>>();
   const [assignChildren, setAssignChildren] = useState(false);
@@ -31,7 +28,6 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
   const assignTeamsHandler = () => {
     if (planId) {
       if (selectedLocations.length) {
-        dispatch(showLoader(true));
         assignTeamsToMultiplePlanLocations(
           planId,
           selectedLocations,
@@ -41,13 +37,11 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
           .then(_ => {
             toast.success('Locations assigned successfully.');
           })
-          .catch(err => toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING))
+          .catch(err => toast.error(err))
           .finally(() => {
-            dispatch(showLoader(false));
             closeHandler(true, assignedTeams ? assignedTeams.length : 0);
           });
       } else {
-        dispatch(showLoader(true));
         toast
           .promise(
             assignTeamsToLocation(
@@ -67,7 +61,6 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
             }
           )
           .finally(() => {
-            dispatch(showLoader(false));
             closeHandler(true, 0);
           });
       }

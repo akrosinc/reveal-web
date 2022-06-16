@@ -3,8 +3,7 @@ import { Button, Collapse, Card } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import MapView from './map';
 import { DebounceInput } from 'react-debounce-input';
-import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
-import { showLoader } from '../../../reducers/loader';
+import { useAppSelector } from '../../../../store/hooks';
 import { LOCATION_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import Paginator from '../../../../components/Pagination';
 import { getLocationById, getLocationHierarchyList, getLocationListByHierarchyId } from '../../api';
@@ -25,7 +24,6 @@ interface Options {
 
 const Locations = () => {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
   const [open, setOpen] = useState(false);
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [currentLocation, setCurrentLocation] = useState<LocationModel>();
@@ -64,7 +62,6 @@ const Locations = () => {
 
   const loadData = useCallback(
     (size: number, page: number, searchData?: string, sortField?: string, sortDirection?: boolean) => {
-      dispatch(showLoader(true));
       getLocationHierarchyList(0, 0, true).then(res => {
         setLocationHierarchyList(
           res.content.map(el => {
@@ -87,25 +84,19 @@ const Locations = () => {
             .then(res => {
               setLocationList(res);
               if (res.content.length) {
-                getLocationById(res.content[0].identifier)
-                  .then(res => {
-                    setCurrentLocation(res);
-                  })
-                  .finally(() => dispatch(showLoader(false)));
-              } else {
-                dispatch(showLoader(false));
+                getLocationById(res.content[0].identifier).then(res => {
+                  setCurrentLocation(res);
+                });
               }
             })
             .catch(err => {
-              toast.error(err.message !== undefined ? err.message : err.toString());
-              dispatch(showLoader(false));
+              toast.error(err);
             });
         } else {
-          dispatch(showLoader(false));
         }
       });
     },
-    [dispatch, selectedLocationHierarchy]
+    [selectedLocationHierarchy]
   );
 
   useEffect(() => {
@@ -150,23 +141,20 @@ const Locations = () => {
   const loadLocationHandler = (locationId: string) => {
     //close expanding table
     setOpen(!open);
-    dispatch(showLoader(true));
+
     getLocationById(locationId)
       .then(res => {
         setCurrentLocation(res);
       })
-      .catch(err => toast.error(err.message ? err.message : 'Error loading GeoJSON data'))
-      .finally(() => dispatch(showLoader(false)));
+      .catch(err => toast.error(err));
   };
 
   const clearHandler = () => {
     setCurrentLocation(undefined);
     if (locationList && locationList.content.length) {
       getLocationById(locationList.content[0].identifier).then(res => {
-        dispatch(showLoader(true));
         setCurrentLocation(res);
-        dispatch(showLoader(false));
-      });
+      }).catch(err => toast.error(err));
     }
   };
 
@@ -194,7 +182,7 @@ const Locations = () => {
             aria-controls="expand-table"
             aria-expanded={open}
             style={{ width: '100%', border: 'none' }}
-            className='text-start'
+            className="text-start"
             variant={isDarkMode ? 'dark' : 'light'}
           >
             Browse locations
@@ -231,7 +219,7 @@ const Locations = () => {
                     debounceTimeout={800}
                     onChange={e => filterData(e)}
                   />
-                  <SimpleBar style={{minHeight: '40vh', maxHeight: '40vh'}}>
+                  <SimpleBar style={{ minHeight: '40vh', maxHeight: '40vh' }}>
                     <ExpandingTable
                       columns={columns}
                       clickHandler={loadLocationHandler}

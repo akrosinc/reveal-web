@@ -6,8 +6,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Action, ConditionModel, Goal } from '../../../providers/types';
 import { createAction, deleteAction, updateAction } from '../../../api';
 import { toast } from 'react-toastify';
-import { showLoader } from '../../../../reducers/loader';
-import { useAppDispatch } from '../../../../../store/hooks';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -28,7 +26,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
   const [actionsList, setActionsList] = useState<Action[]>(goal.actions);
   const [selectedAction, setSelectedAction] = useState<Action>();
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
   //rerender actions if goal data changes
@@ -130,7 +127,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                 action.type = action.identifier ? 'UPDATE' : 'CREATE';
                 //check if its new plan or update of an existing plan
                 if (planId) {
-                  dispatch(showLoader(true));
                   if (isDelete) {
                     toast
                       .promise(deleteAction(action.identifier, planId, goal.identifier), {
@@ -139,7 +135,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                         error: 'There was an error deleting action.'
                       })
                       .finally(() => {
-                        dispatch(showLoader(false));
                         loadData();
                       });
                   } else {
@@ -152,7 +147,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                           error: 'There was an error updating action.'
                         })
                         .finally(() => {
-                          dispatch(showLoader(false));
                           loadData();
                         });
                     } else {
@@ -163,7 +157,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                           error: 'There was an error creating action.'
                         })
                         .finally(() => {
-                          dispatch(showLoader(false));
                           loadData();
                         });
                     }

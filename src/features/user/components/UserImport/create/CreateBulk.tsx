@@ -1,11 +1,9 @@
 import { Button, Form } from 'react-bootstrap';
 import { uploadUserCsv } from '../../../api';
 import { useForm } from 'react-hook-form';
-import { useAppDispatch } from '../../../../../store/hooks';
-import { showLoader } from '../../../../reducers/loader';
 import { getSecurityGroups } from '../../../../organization/api';
 import { toast } from 'react-toastify';
-import { ErrorModel } from '../../../../../api/providers';
+import { FieldValidationError } from '../../../../../api/providers';
 import { DOWNLOAD_USER_BULK_TEMPLATE } from '../../../../../constants';
 
 interface RegisterValues {
@@ -17,7 +15,6 @@ interface Props {
 }
 
 const CreateBulk = ({ handleClose }: Props) => {
-  const dispatch = useAppDispatch();
   const {
     reset,
     register,
@@ -28,8 +25,7 @@ const CreateBulk = ({ handleClose }: Props) => {
 
   const submitHandler = (formValues: RegisterValues) => {
     let csv: File = formValues.bulk[0];
-    if (csv !== undefined && csv.name.includes('.csv')) {
-      dispatch(showLoader(true));
+    if (csv !== undefined) {
       const formData = new FormData();
       formData.append('file', csv);
       toast.promise(uploadUserCsv(formData), {
@@ -37,22 +33,21 @@ const CreateBulk = ({ handleClose }: Props) => {
         success: {
           render({ data }: { data: { identifier: string } }) {
             reset();
-            dispatch(showLoader(false));
             handleClose();
             return `CSV file uploaded successfully, you can track user creation progress in bulk import section with identifier ${data.identifier}`;
           }
         },
         error: {
-          render({ data }: { data: ErrorModel }) {
-            dispatch(showLoader(false));
-            setError(
-              'bulk',
-              {},
-              {
-                shouldFocus: true
-              }
-            );
-            return data.message;
+          render({ data: err }: { data: any }) {
+            if (typeof err !== 'string') {
+              const fieldValidationErrors = err as FieldValidationError[];
+              return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
+                setError(errField.field as any, {message: errField.messageKey});
+                return errField.field;
+              }).toString();
+            }
+            setError('bulk', {});
+            return err;
           }
         }
       });
@@ -62,7 +57,6 @@ const CreateBulk = ({ handleClose }: Props) => {
   };
 
   const downloadSecurityGroups = () => {
-    dispatch(showLoader(true));
     getSecurityGroups().then(res => {
       let csvContent = 'data:text/csv;charset=utf-8,' + res.map(group => group.name);
       var encodedUri = encodeURI(csvContent);
@@ -70,7 +64,6 @@ const CreateBulk = ({ handleClose }: Props) => {
       link.setAttribute('href', encodedUri);
       link.setAttribute('download', 'security_groups.csv');
       document.body.appendChild(link);
-      dispatch(showLoader(false));
       link.click();
     });
   };

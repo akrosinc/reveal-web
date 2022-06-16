@@ -1,8 +1,8 @@
 import api from '../../../api/axios';
-import { EntityList, EntityTags } from '../providers/types';
+import { EntityTags, LookupEntityType } from '../providers/types';
 
-export const getPlanSimulationData = async (): Promise<EntityList[]> => {
-  const data = await api.get<EntityList[]>(`entityTag`).then(res => res.data);
+export const getEntityList = async (): Promise<LookupEntityType[]> => {
+  const data = await api.get<LookupEntityType[]>(`entityTag/entityType`).then(res => res.data);
   return data;
 };
 

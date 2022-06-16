@@ -2,13 +2,11 @@ import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { UserModel } from '../../../user/providers/types';
 import { getUserById, getUserList } from '../../api/';
-import { useAppDispatch } from '../../../../store/hooks';
 import Paginator from '../../../../components/Pagination';
 import { DebounceInput } from 'react-debounce-input';
 import CreateUser from './create/CreateUser';
 import EditUser from './edit/EditUser';
 import { ActionDialog } from '../../../../components/Dialogs';
-import { showLoader } from '../../../reducers/loader';
 import { PAGINATION_DEFAULT_SIZE, USER_TABLE_COLUMNS } from '../../../../constants';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
@@ -16,7 +14,6 @@ import { useTranslation } from 'react-i18next';
 import DefaultTable from '../../../../components/Table/DefaultTable';
 
 const Users = () => {
-  const dispatch = useAppDispatch();
   const [userList, setUserList] = useState<PageableModel<UserModel>>();
   const [show, setShow] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -45,19 +42,14 @@ const Users = () => {
 
   const loadData = useCallback(
     (size: number, page: number, searchData?: string) => {
-      dispatch(showLoader(true));
+      
       getUserList(size, page, searchData !== undefined ? searchData : '')
         .then(res => {
           setUserList(res);
         })
-        .catch(error => {
-          toast.error(error.message);
-        })
-        .finally(() => {
-          dispatch(showLoader(false));
-        });
+        .catch(error => toast.error(error));
     },
-    [dispatch]
+    []
   );
 
   useEffect(() => {
@@ -74,14 +66,12 @@ const Users = () => {
   };
 
   const openUserById = (id: string) => {
-    dispatch(showLoader(true));
     getUserById(id)
       .then(res => {
         setCurrentUser(res);
         setShowEdit(true);
       })
-      .catch(err => toast.error(err.message ? err.message : 'There was an error loading this user.'))
-      .finally(() => dispatch(showLoader(false)));
+      .catch(err => toast.error(err));
   };
 
   const sortHanlder = (field: string, sortDirection: boolean) => {

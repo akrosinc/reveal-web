@@ -2,9 +2,7 @@ import React from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { ErrorModel } from '../../../../../api/providers';
-import { useAppDispatch } from '../../../../../store/hooks';
-import { showLoader } from '../../../../reducers/loader';
+import { FieldValidationError } from '../../../../../api/providers';
 import { createGeographicLevel } from '../../../api';
 import { GeographicLevel } from '../../../providers/types';
 
@@ -18,7 +16,6 @@ interface FormValues {
 }
 
 const CreateGeoLevel = ({ closeHandler }: Props) => {
-  const dispatch = useAppDispatch();
   const {
     register,
     handleSubmit,
@@ -27,33 +24,24 @@ const CreateGeoLevel = ({ closeHandler }: Props) => {
   } = useForm<FormValues>();
 
   const submitHandler = (formValues: FormValues) => {
-    dispatch(showLoader(true));
     toast.promise(createGeographicLevel(formValues), {
       pending: 'Loading...',
       success: {
         render({ data }: { data: GeographicLevel }) {
-          dispatch(showLoader(false));
           closeHandler();
           return 'Geographic Location created successfully with id: ' + data.identifier;
         }
       },
       error: {
-        render({ data }: { data: ErrorModel }) {
-          dispatch(showLoader(false));
-          if (data.fieldValidationErrors) {
-            data.fieldValidationErrors.forEach((el: any) => {
-              if (el.field === 'name') {
-                setError('name', {
-                  message: el.messageKey
-                });
-              } else {
-                setError('title', {
-                  message: el.messageKey
-                });
-              }
-            });
+        render({ data: err }: { data: any }) {
+          if (typeof err !== 'string') {
+            const fieldValidationErrors = err as FieldValidationError[];
+            return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
+              setError(errField.field as any, {message: errField.messageKey});
+              return errField.field;
+            }).toString();
           }
-          return data.message !== undefined ? data.message : 'An error has occured!';
+          return err;
         }
       }
     });

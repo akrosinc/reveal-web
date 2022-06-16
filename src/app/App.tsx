@@ -26,10 +26,11 @@ import {
   faInfoCircle,
   faAlignLeft,
   faSun,
-  faMoon,
+  faMoon
 } from '@fortawesome/free-solid-svg-icons';
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
+import ErrorHandler from '../components/ErrorHandler';
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
 library.add(
@@ -60,7 +61,7 @@ function App() {
       dispatch(showLoader(false));
       if (keycloak.authenticated) {
         keycloak.loadUserProfile().then(res => {
-          toast.success('Welcome back '+ res.username);
+          toast.success('Welcome back ' + res.username);
         });
       }
     } else {
@@ -69,19 +70,23 @@ function App() {
   });
 
   return (
-    <SimpleBar style={{ maxHeight: '100vh' }}>
-    <Container fluid style={{ minHeight: '100vh', position: 'relative' }}>
-      <main>
-        <NavbarComponent />
-        <Router />
-      </main>
-      <Container fluid={true} className="footer-row-container">
-        <Footer />
-      </Container>
-      <ToastContainer position={toast.POSITION.BOTTOM_RIGHT} />
-      <Loader />
-    </Container>
-    </SimpleBar>
+    <ErrorHandler>
+      <>
+        <SimpleBar style={{ height: '100vh' }}>
+          <Container fluid>
+            <main>
+              <NavbarComponent />
+              <Router />
+            </main>
+            <Container fluid className="footer-row-container">
+              <Footer />
+            </Container>
+          </Container>
+        </SimpleBar>
+        <ToastContainer position={toast.POSITION.BOTTOM_RIGHT} />
+        <Loader />
+      </>
+    </ErrorHandler>
   );
 }
 
