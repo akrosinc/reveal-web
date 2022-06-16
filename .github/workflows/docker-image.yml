@@ -13,7 +13,7 @@ jobs:
     steps:
 
     - name: Checkout reveal-web
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: akrosinc/reveal-web
 
@@ -40,7 +40,7 @@ jobs:
       run: echo ${{ github.run_number }}
 
     - name: Checkout reveal-web
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: akrosinc/reveal-web
 
