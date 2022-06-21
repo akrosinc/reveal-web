@@ -6,9 +6,7 @@ export interface EntityTags {
 }
 
 export interface LookupEntityType {
-    
         identifier: string,
         code: string,
         tableName: string
-    
 }

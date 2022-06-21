@@ -93,7 +93,7 @@ const Reports = () => {
             columns={PLAN_TABLE_COLUMNS}
             data={planList.content}
             sortHandler={sortHandler}
-            clickHandler={(id: string) => navigate(REPORTING_PAGE + `/planId/${id}/reportType/${selectedReportType}`)}
+            clickHandler={(id: string) => navigate(REPORTING_PAGE + `/report/${id}/reportType/${selectedReportType}`)}
             clickAccessor="identifier"
           />
           <Paginator

@@ -28,28 +28,21 @@ const CreateBulk = ({ handleClose }: Props) => {
     if (csv !== undefined) {
       const formData = new FormData();
       formData.append('file', csv);
-      toast.promise(uploadUserCsv(formData), {
-        pending: 'CSV file is uploading...',
-        success: {
-          render({ data }: { data: { identifier: string } }) {
-            reset();
-            handleClose();
-            return `CSV file uploaded successfully, you can track user creation progress in bulk import section with identifier ${data.identifier}`;
-          }
-        },
-        error: {
-          render({ data: err }: { data: any }) {
-            if (typeof err !== 'string') {
-              const fieldValidationErrors = err as FieldValidationError[];
-              return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
-                setError(errField.field as any, {message: errField.messageKey});
-                return errField.field;
-              }).toString();
-            }
-            setError('bulk', {});
-            return err;
-          }
+      const uploadToast = toast.info('JSON file is uploading...', { progress: 0 });
+      uploadUserCsv(formData, uploadToast.toString()).then(res => {
+        reset();
+        handleClose();
+        return `CSV file uploaded successfully, you can track user creation progress in bulk import section with identifier ${res}`;
+      }).catch(err => {
+        if (typeof err !== 'string') {
+          const fieldValidationErrors = err as FieldValidationError[];
+          toast.error('Field Validation Error: ' + fieldValidationErrors.map(errField => {
+            setError(errField.field as any, {message: errField.messageKey});
+            return errField.field;
+          }).toString());
         }
+        setError('bulk', {});
+        toast.error(err);
       });
     } else {
       setError('bulk', {});

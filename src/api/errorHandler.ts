@@ -1,4 +1,4 @@
-import { SERVER_ERROR_STRING, UNEXPECTED_ERROR_STRING } from '../constants';
+import { SERVER_ERROR_STRING, UNAUTHORIZED_ERROR_STRING, UNEXPECTED_ERROR_STRING } from '../constants';
 import keycloak from '../keycloak';
 import { ErrorModel, FieldValidationError } from './providers';
 
@@ -8,7 +8,7 @@ export const errorHandler = (error: any): { message: string | FieldValidationErr
     const { error, fieldValidationErrors, message, statusCode, status } = response.data as ErrorModel;
     if (status === 401 || statusCode === 401) {
       keycloak.logout();
-      return { message: 'Unauthorized request, logging out...' };
+      return { message: UNAUTHORIZED_ERROR_STRING };
     }
     if (fieldValidationErrors) {
       let message = fieldValidationErrors;

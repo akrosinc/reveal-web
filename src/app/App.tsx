@@ -26,11 +26,14 @@ import {
   faInfoCircle,
   faAlignLeft,
   faSun,
-  faMoon
+  faMoon,
+  faSearch
 } from '@fortawesome/free-solid-svg-icons';
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
 import ErrorHandler from '../components/ErrorHandler';
+import api from '../api/axios';
+import { usePath } from '../hooks/usePath';
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
 library.add(
@@ -48,26 +51,39 @@ library.add(
   faInfoCircle,
   faAlignLeft,
   faSun,
-  faMoon
+  faMoon,
+  faSearch
 );
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
   const dispatch = useAppDispatch();
+  
+  // custom hook to listen and change document title on page navigation
+  usePath();
 
   useEffect(() => {
-    // if keycloak is initialized store user in state
+    // if keycloak is initialized show welcome message and
+    // create request interceptor to inject bearer token
     if (initialized) {
       dispatch(showLoader(false));
       if (keycloak.authenticated) {
         keycloak.loadUserProfile().then(res => {
           toast.success('Welcome back ' + res.username);
         });
+        api.interceptors.request.use(function (config) {
+          dispatch(showLoader(true));
+          // Inject Bearer token in every request
+          config.headers = {
+            Authorization: `Bearer ${keycloak.token}`
+          };
+          return config;
+        });
       }
     } else {
       dispatch(showLoader(true));
     }
-  });
+  }, [initialized, dispatch, keycloak]);
 
   return (
     <ErrorHandler>

@@ -1,4 +1,5 @@
 import { AxiosResponse } from 'axios';
+import { toast } from 'react-toastify';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { USER } from '../../../constants';
@@ -49,8 +50,14 @@ export const resetUserPassword = async (user: any): Promise<AxiosResponse> => {
   return data;
 };
 
-export const uploadUserCsv = async (csv: FormData): Promise<string> => {
-  const data = await api.post(USER + '/bulk', csv).then(response => response.data);
+export const uploadUserCsv = async (csv: FormData, toastId: string): Promise<string> => {
+  const data = await api.post(USER + '/bulk', csv, {
+    onUploadProgress: p => {
+      const progress = p.loaded / p.total;
+      toast.update(toastId, { progress, render: 'JSON file is uploading... ' + Math.round(progress * 100) + '%'});
+      toast.dismiss(toastId);
+    }
+  }).then(response => response.data);
   return data;
 };
 

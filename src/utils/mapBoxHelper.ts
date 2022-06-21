@@ -1,5 +1,5 @@
 import { center, Feature, Point, Properties, Polygon, MultiPolygon, bbox } from '@turf/turf';
-import { LngLatBounds, Map, Popup, GeolocateControl, NavigationControl, LngLatBoundsLike } from 'mapbox-gl';
+import { Map, Popup, GeolocateControl, NavigationControl, LngLatBoundsLike } from 'mapbox-gl';
 import { MutableRefObject } from 'react';
 import { toast } from 'react-toastify';
 import {
@@ -78,38 +78,10 @@ export const initMap = (
   return mapboxInstance;
 };
 
-export const getPolygonCenter = (data: any) => {
-  let centerLabel = center(data);
-
-  // Geographic coordinates of the LineString
-  let coordinates = data.geometry.coordinates[0][0];
-
-  if (typeof coordinates[0] === 'number') {
-    coordinates = data.geometry.coordinates[0];
-  }
-
-  // check if its a multy polygon, if it is append all polygons to bounds
-  if (data.geometry.coordinates.length > 1) {
-    data.geometry.coordinates.forEach((el: any[]) => {
-      // prevent bad geojson error
-      if (typeof el[0] === 'number') {
-        coordinates = [...coordinates, ...el];
-      } else {
-        coordinates = [...coordinates, ...el[0]];
-      }
-    });
-  }
-
-  // Create a 'LngLatBounds' with both corners at the first coordinate.
-  const bounds = new LngLatBounds(coordinates[0], coordinates[0]);
-
-  // Extend the 'LngLatBounds' to include every coordinate in the bounds result.
-  for (const coord of coordinates) {
-    bounds.extend(coord);
-  }
+export const getPolygonCenter = (data: Feature<Polygon | MultiPolygon>) => {
   return {
-    center: centerLabel,
-    bounds: bounds
+    center: center(data),
+    bounds: bbox(data) as LngLatBoundsLike
   };
 };
 
@@ -210,7 +182,7 @@ export const createLocation = (map: Map, data: any, moveend: () => void, opacity
 
 // hover handler with timeout to simulate hovering effect
 export const hoverHandler = (map: Map, identifier: string) => {
-  let popup = new Popup({closeButton: false}).setHTML(
+  let popup = new Popup({ closeButton: false }).setHTML(
     `<h4 class='bg-success text-light text-center'>Actions</h4><div class='p-2'><small>Available commands:<br />
     Right click - context menu <br/> Double Click - load children<br />
     Ctrl + Left Click - Select location</small></div>`

@@ -183,6 +183,8 @@
   "simulationPage": {
     "title": "Plan Simulation",
     "country": "Country",
-    "entity": "Entity"
+    "entity": "Entity",
+    "hierarchy": "Select Hierarchy",
+    "location": "Select Location"
   }
 }

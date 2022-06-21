@@ -3,6 +3,7 @@ export const APP_TITLE = 'Reveal';
 export const FOOTER_TEXT = `${new Date().getFullYear()} Reveal`;
 export const UNEXPECTED_ERROR_STRING = 'Unexpected error has occured.';
 export const SERVER_ERROR_STRING = 'Server is not responding.';
+export const UNAUTHORIZED_ERROR_STRING = 'Unauthorized request, logging out...';
 
 // PAGES TITLE
 export const PAGE_TITLE_HOME = 'Home';
