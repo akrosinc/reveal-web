@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Form } from 'react-bootstrap';
 import { getEntityTags } from '../../api';
-import { EntityTags } from '../../providers/types';
+import { EntityTag } from '../../providers/types';
 
 interface Props {
   selectedEntity: string;
-  selectedEntityCondition: (entityCondition: EntityTags | undefined) => void;
+  selectedEntityCondition: (entityCondition: EntityTag | undefined) => void;
 }
 
 const SimulationModal = ({ selectedEntity, selectedEntityCondition }: Props) => {
-  const [entityTags, setEntityTags] = useState<EntityTags[]>([]);
+  const [entityTags, setEntityTags] = useState<EntityTag[]>([]);
   useEffect(() => {
     getEntityTags(selectedEntity).then(res => setEntityTags(res));
   }, [selectedEntity]);

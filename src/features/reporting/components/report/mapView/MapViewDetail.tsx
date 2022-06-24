@@ -4,8 +4,6 @@ import { Button, Container } from 'react-bootstrap';
 import { createChildLocationLabel, getPolygonCenter, initMap } from '../../../../../utils';
 import PopoverComponent from '../../../../../components/Popover';
 import { bbox, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
-import { useAppDispatch } from '../../../../../store/hooks';
-import { showLoader } from '../../../../reducers/loader';
 import {
   COLOR_BOOTSTRAP_DANGER,
   COLOR_BOOTSTRAP_SUCCESS,
@@ -43,7 +41,6 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
   const [lng, setLng] = useState(20);
   const [lat, setLat] = useState(10);
   const [zoom, setZoom] = useState(4);
-  const dispatch = useAppDispatch();
   let contextMenuPopup = useRef<Popup>(new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: false }));
   let hoverPopup = useRef<Popup>(new Popup({ closeOnClick: false, closeButton: false, offset: 20 }));
   const opacity = useRef(MAP_DEFAULT_FILL_OPACITY);
@@ -102,7 +99,6 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
     ) => {
       //check if its clear map event or new location otherwise just fit to bounds
       if (map.getSource(parentLocationIdentifier) === undefined && data.features.length) {
-        dispatch(showLoader(true));
         map.addSource(parentLocationIdentifier, {
           type: 'geojson',
           promoteId: 'id',
@@ -191,11 +187,11 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
                     ? `<small class='my-3'>Number Of Children Treated: ${properties.numberOfChildrenTreated}</small>`
                     : ''
                 }
-              ${
-                properties.numberOfChildrenEligible !== undefined
-                  ? `<small class='my-3'>Number Of Children Eligible: ${properties.numberOfChildrenEligible}</small>`
-                  : ''
-              }
+                ${
+                  properties.numberOfChildrenEligible !== undefined
+                    ? `<small class='my-3'>Number Of Children Eligible: ${properties.numberOfChildrenEligible}</small>`
+                    : ''
+                }
               </div>`
               )
               .addTo(map);
@@ -221,7 +217,6 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
             //this is an event which is fired at the end of the fit bounds
             if (e === 1) {
               createChildLocationLabel(map, featureSet, parentLocationIdentifier);
-              dispatch(showLoader(false));
             }
             return e;
           },
@@ -231,11 +226,10 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
       }
       //fit to bounds if that location already exist
       else if (data.features.length) {
-        dispatch(showLoader(false));
         map.fitBounds(bbox(data) as any);
       }
     },
-    [dispatch]
+    []
   );
 
   useEffect(() => {

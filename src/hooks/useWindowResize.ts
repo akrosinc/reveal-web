@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 
+/**
+ * Custom Hook which monitors current window size and updated given element height
+ */
 export const useWindowResize = (element: any) => {
   const scrollHeight = element ? element.scrollHeight : 0;
   const [currentHeight, setCurrentHeight] = useState<number>(scrollHeight);
@@ -11,7 +14,7 @@ export const useWindowResize = (element: any) => {
 
     if (element) {
       window.addEventListener('resize', handleResize);
-      setCurrentHeight(element.scrollHeight);
+      if (element.scrollHeight > 0) setCurrentHeight(element.scrollHeight);
     }
 
     return () => window.removeEventListener('resize', handleResize);

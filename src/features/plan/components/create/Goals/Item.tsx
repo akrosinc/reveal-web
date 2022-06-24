@@ -35,7 +35,9 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
 
   return (
     <Accordion.Item id={goal.identifier + '-goal'} eventKey={goal.identifier} className="p-2">
-      <Accordion.Header>{t('planPage.goal')} - {goal.description}</Accordion.Header>
+      <Accordion.Header>
+        {t('planPage.goal')} - {goal.description}
+      </Accordion.Header>
       <Accordion.Body>
         <Row>
           <Col>
@@ -74,7 +76,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
           </Col>
           <Col>
             <Button id="create-action-button" className="float-end" onClick={() => setShow(true)}>
-            {t('buttons.create')}
+              {t('buttons.create')}
             </Button>
           </Col>
         </Row>
@@ -94,6 +96,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                 onClick={() => {
                   setShow(true);
                   setSelectedAction(el);
+                  setSelectedIndex(index);
                 }}
               >
                 <td>{el.title}</td>
@@ -104,7 +107,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                 <td className="text-center">
                   <Button
                     id="edit-action-button"
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       setSelectedAction(el);
                       setSelectedIndex(index);
@@ -162,8 +165,14 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                     }
                   }
                 } else {
-                  setActionsList([...actionsList, action]);
-                  goal.actions = [...actionsList, action];
+                  if (isDelete) {
+                    actionsList.splice(selectedIndex, 1);
+                    setActionsList([...actionsList]);
+                    goal.actions = [...actionsList];
+                  } else {
+                    setActionsList([...actionsList, action]);
+                    goal.actions = [...actionsList, action];
+                  }
                 }
               }
               setShow(false);

@@ -23,6 +23,7 @@ import { FieldValidationError } from '../../../../api/providers';
 interface Options {
   value: string;
   label: string;
+  nodeOrder?: string[];
 }
 
 interface RegisterValues {
@@ -34,12 +35,14 @@ interface RegisterValues {
   };
   locationHierarchy: string;
   interventionType: string;
+  hierarchyLevelTarget?: string;
 }
 
 const CreatePlan = () => {
   const [activeTab, setActiveTab] = useState('plan-details');
   const [hierarchyList, setHierarchyList] = useState<Options[]>([]);
   const [interventionTypeList, setInterventionTypeList] = useState<Options[]>([]);
+  const [targetType, setTargetType] = useState<SingleValue<Options>>();
   const navigate = useNavigate();
   const [selectedHierarchy, setSelectedHierarchy] = useState<SingleValue<Options>>();
   const [selectedInterventionType, setSelectedInterventionType] = useState<SingleValue<Options>>();
@@ -76,6 +79,8 @@ const CreatePlan = () => {
           setValue('title', res.title);
           setValue('locationHierarchy', res.locationHierarchy.identifier);
           setValue('interventionType', res.interventionType.identifier);
+          setValue('hierarchyLevelTarget', res.planTargetType);
+          setTargetType({ value: res.planTargetType, label: res.planTargetType });
           setGoalList(res.goals);
           setSelectedHierarchy({ value: res.locationHierarchy.identifier, label: res.locationHierarchy.name });
           setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
@@ -95,7 +100,8 @@ const CreatePlan = () => {
           locationHierarchyList.content.map<Options>(el => {
             return {
               label: el.name,
-              value: el.identifier ?? ''
+              value: el.identifier ?? '',
+              nodeOrder: el.nodeOrder
             };
           })
         );
@@ -214,7 +220,8 @@ const CreatePlan = () => {
                     setError(errField.field as any, { message: errField.messageKey });
                     return errField.field;
                   })
-                  .toString().replace(',', ', ')
+                  .toString()
+                  .replace(',', ', ')
             );
           } else {
             toast.error(err);
@@ -435,6 +442,9 @@ const CreatePlan = () => {
                         value={selectedInterventionType}
                         onChange={selected => {
                           setSelectedInterventionType(selected);
+                          if (id === undefined || id === null) {
+                            setValue('hierarchyLevelTarget', undefined);
+                          }
                           field.onChange(selected?.value);
                         }}
                       />
@@ -444,6 +454,42 @@ const CreatePlan = () => {
                     <Form.Label className="text-danger">{errors.interventionType.message}</Form.Label>
                   )}
                 </Form.Group>
+                {selectedInterventionType?.label.toLocaleLowerCase().includes('lite') && (
+                  <Form.Group className="mb-2">
+                    <Form.Label>{t('planPage.planForm.hierarchyLevelTarget')}</Form.Label>
+                    <Controller
+                      control={control}
+                      name="hierarchyLevelTarget"
+                      rules={{ required: t('planPage.planForm.hierarchyLevelTargetError') as string, minLength: 1 }}
+                      render={({ field }) => (
+                        <Select
+                          className="custom-react-select-container"
+                          classNamePrefix="custom-react-select"
+                          id="hierarchyLevelTarget"
+                          menuPosition="fixed"
+                          isDisabled={id !== undefined}
+                          options={
+                            selectedHierarchy?.nodeOrder
+                              ? selectedHierarchy.nodeOrder.map<Options>(el => {
+                                  return {
+                                    label: el,
+                                    value: el
+                                  };
+                                })
+                              : []
+                          }
+                          value={id !== undefined ? targetType : undefined}
+                          onChange={selected => {
+                            field.onChange(selected?.value);
+                          }}
+                        />
+                      )}
+                    />
+                    {errors.hierarchyLevelTarget && (
+                      <Form.Label className="text-danger">{errors.hierarchyLevelTarget.message}</Form.Label>
+                    )}
+                  </Form.Group>
+                )}
               </Tab>
               <Tab eventKey="create-goals" title={t('planPage.goals')} style={{ minHeight: '406px' }}>
                 <Accordion id="plan-card" defaultActiveKey="0" flush>

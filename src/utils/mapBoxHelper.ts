@@ -310,7 +310,7 @@ export const createChild = (map: Map, data: any, opacity: number) => {
   }
 };
 
-export const doubleClickHandler = (map: Map, planId: string, loader: (show: boolean) => void, opacity: number) => {
+export const doubleClickHandler = (map: Map, planId: string, opacity: number) => {
   map.on('dblclick', e => {
     if (!e.originalEvent.ctrlKey) {
       const features = map.queryRenderedFeatures(e.point);
@@ -318,7 +318,7 @@ export const doubleClickHandler = (map: Map, planId: string, loader: (show: bool
         const feature = features[0];
         if (feature) {
           if (feature.properties && feature.properties.id && (feature.properties.assigned || feature.state.assigned)) {
-            loadChildren(map, feature.properties.id, planId, loader, opacity);
+            loadChildren(map, feature.properties.id, planId, opacity);
           }
         }
       }
@@ -330,7 +330,6 @@ export const contextMenuHandler = (
   map: Map,
   openHandler: (data: any, assign: boolean) => void,
   planId: string,
-  loader: (show: boolean) => void,
   opacity: number
 ) => {
   // When a click event occurs on a feature in the places layer, open a popup at the
@@ -388,9 +387,7 @@ export const contextMenuHandler = (
             .addTo(map);
           document
             .getElementById(loadChildButtonId)
-            ?.addEventListener('click', () =>
-              loadChildren(map, (feature.properties as any).id, planId, loader, opacity)
-            );
+            ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId, opacity));
           document.getElementById(parentButtonId)?.addEventListener('click', () => {
             getLocationByIdAndPlanId((feature.properties as any).parentIdentifier, planId).then(res => {
               res.properties.id = res.identifier;
@@ -481,17 +478,10 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
   }
 };
 
-export const loadChildren = (
-  map: Map,
-  id: string,
-  planId: string,
-  loader: (show: boolean) => void,
-  opacity: number
-) => {
+export const loadChildren = (map: Map, id: string, planId: string, opacity: number) => {
   const loadingToast = toast.loading('Loading locations...', {
     autoClose: false
   });
-  loader(true);
   disableMapInteractions(map, true);
   getChildLocation(id, planId)
     .then(res => {
@@ -514,9 +504,12 @@ export const loadChildren = (
         toast.info('This location has no child locations.');
       }
     })
+    .catch(err => {
+      disableMapInteractions(map, false);
+      toast.error(err)
+    })
     .finally(() => {
       toast.dismiss(loadingToast.toString());
-      loader(false);
     });
 };
 

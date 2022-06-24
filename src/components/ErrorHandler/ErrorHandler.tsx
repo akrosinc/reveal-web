@@ -4,6 +4,12 @@ import { errorHandler } from '../../api/errorHandler';
 import { showLoader } from '../../features/reducers/loader';
 import { useAppDispatch } from '../../store/hooks';
 
+
+
+/**
+ * Wrapper Component listening to error responses
+ * responsible for closing loader and displaying error messages in toast
+ */
 const ErrorHandler = ({ children }: { children: JSX.Element}) => {
   const dispatch = useAppDispatch();
 

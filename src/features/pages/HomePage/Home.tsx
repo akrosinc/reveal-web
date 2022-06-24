@@ -24,8 +24,6 @@ function Home() {
     <Container fluid className="text-center my-4">
       <h2 className='my-5'>{t('homePage.welcomeMessage')}</h2>
       <Dashboard />
-      <p className="mt-5 lead" style={{ userSelect: 'none' }}>
-      </p>
       <hr className="w-75 mx-auto" />
       <Row className="justify-content-center">
         <Col md={3}>

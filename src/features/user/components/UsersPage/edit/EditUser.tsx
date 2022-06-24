@@ -180,7 +180,14 @@ const EditUser = ({ user, handleClose }: Props) => {
             }
           },
           error: {
-            render({ data: err }: { data: string }) {
+            render({ data: err }: { data: any }) {
+              if (typeof err !== 'string') {
+                const fieldValidationErrors = err as FieldValidationError[];
+                return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
+                  setError(errField.field as any, {message: errField.messageKey});
+                  return errField.field;
+                }).toString();
+              }
               return err;
             }
           }

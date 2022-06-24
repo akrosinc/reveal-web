@@ -7,6 +7,13 @@ import { ReactKeycloakProvider } from '@react-keycloak/web';
 import keycloak from '../keycloak';
 import { PublicPage } from '../components/pages';
 
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useLocation: () => ({
+    pathname: 'localhost:3000'
+  })
+}));
+
 test('renders start page', () => {
   const renderResult = render(
     <ReactKeycloakProvider authClient={keycloak}>

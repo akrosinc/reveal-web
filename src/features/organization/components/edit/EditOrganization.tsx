@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { ErrorModel, FieldValidationError } from '../../../../api/providers';
+import { FieldValidationError } from '../../../../api/providers';
 import { ConfirmDialog } from '../../../../components/Dialogs';
 import { useAppSelector } from '../../../../store/hooks';
 import { deleteOrganizationById, updateOrganization } from '../../api';
 import { OrganizationModel } from '../../../organization/providers/types';
 import Select, { SingleValue } from 'react-select';
+import { UNEXPECTED_ERROR_STRING } from '../../../../constants';
 
 interface Props {
   show: boolean;
@@ -72,8 +73,14 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
           }
         },
         error: {
-          render({ data }: { data: ErrorModel }) {
-            return data !== undefined ? data.message : 'Something went wrong!';
+          render({ data: err }: { data: string | FieldValidationError[] }) {            
+            if (typeof err !== 'string') {
+              return 'Field Validation Error: ' + err.map(errField => {
+                setError(errField.field as any, {message: errField.messageKey});
+                return errField.field;
+              }).toString();
+            }
+            return err;
           }
         }
       });
@@ -90,15 +97,8 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
           }
         },
         error: {
-          render({ data: err }: { data: any }) {
-            if (typeof err !== 'string') {
-              const fieldValidationErrors = err as FieldValidationError[];
-              return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
-                setError(errField.field as any, {message: errField.messageKey});
-                return errField.field;
-              }).toString();
-            }
-            return err;
+          render({ data: err }: { data: string }) {
+            return typeof err === 'string' ? err : UNEXPECTED_ERROR_STRING;
           }
         }
       });

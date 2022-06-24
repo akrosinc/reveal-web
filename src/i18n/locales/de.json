@@ -148,7 +148,9 @@
       "selectHierarchy": "Select Hierarchy",
       "selectHierarchyError": "Please select location hierarchy.", 
       "selectInterventionType": "Select Intervention Type",
-      "selectInterventionTypeError": "Please select intervention type."
+      "selectInterventionTypeError": "Please select intervention type.",
+      "hierarchyLevelTarget": "Hierarchy Level Target",
+      "hierarchyLevelTargetError": "Please select location hierarchy first and than pick target"
     }
   },
   "reportPage": {
@@ -181,6 +183,10 @@
     "identifier": "Identifier"
   },
   "simulationPage": {
-    "title": "Plan Simulation"
+    "title": "Plan Simulation",
+    "country": "Country",
+    "entity": "Entity",
+    "hierarchy": "Hierarchy",
+    "location": "Location"
   }
 }
