@@ -6,8 +6,7 @@ import {
   ASSIGNMENT_PAGE,
   LOCATION_ASSIGNMENT_TAB,
   LOCATION_ASSIGN_TABLE_COLUMNS,
-  LOCATION_TEAM_ASSIGNMENT_TAB,
-  UNEXPECTED_ERROR_STRING
+  LOCATION_TEAM_ASSIGNMENT_TAB
 } from '../../../../constants';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
@@ -85,7 +84,7 @@ const Assign = () => {
                 });
               }
             })
-            .catch(err => toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING));
+            .catch(err => toast.error(err));
         })
         .catch(_ => {
           toast.error('Plan does not exist, redirected to previous page.');
@@ -436,7 +435,8 @@ const Assign = () => {
                         .then(res => {
                           setNotInMove(false);
                           setGeoLocation(res);
-                        }).catch(err => toast.error(err));
+                        })
+                        .catch(err => toast.error(err));
                     }
                   }}
                   data={showAssignedOnly(tableData)}

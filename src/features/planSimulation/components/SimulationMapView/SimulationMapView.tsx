@@ -1,14 +1,15 @@
 import { Map } from 'mapbox-gl';
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Container } from 'react-bootstrap';
-import { MAPBOX_STYLE_STREETS } from '../../../../constants';
+import { MAPBOX_STYLE_SATELLITE, MAPBOX_STYLE_STREETS } from '../../../../constants';
 import { initMap } from '../../../../utils';
 
 interface Props {
   fullScreenHandler: () => void;
+  fullScreen: boolean;
 }
 
-const SimulationMapView = ({ fullScreenHandler }: Props) => {
+const SimulationMapView = ({ fullScreenHandler, fullScreen }: Props) => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(28.33);
@@ -32,24 +33,46 @@ const SimulationMapView = ({ fullScreenHandler }: Props) => {
       });
     }
   });
+
+  const setMapStyle = (style: string) => {
+    map.current?.setStyle(style);
+  };
+
   return (
     <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
       <div className="sidebar text-light">
+        <Button variant="info" className="me-2" onClick={() => setMapStyle(MAPBOX_STYLE_STREETS)}>
+          Streets
+        </Button>
+        <Button className="me-2" variant="success" onClick={() => setMapStyle(MAPBOX_STYLE_SATELLITE)}>
+          Satellite
+        </Button>
+        <Button
+          className="me-2"
+          variant="warning"
+          onClick={() => setMapStyle('mapbox://styles/mapbox/satellite-streets-v11')}
+        >
+          Satellite Streets
+        </Button>
+      </div>
+      <div className="clearButton">
+        <p className="small text-dark bg-white p-2 rounded">
+          Lat: {lat} Lng: {lng} Zoom: {zoom}
+        </p>
         <Button
           onClick={() => {
             fullScreenHandler();
             setTimeout(() => {
               map.current?.resize();
+              document.getElementById('mapContainer')?.scrollIntoView({ behavior: 'smooth' });
             }, 0);
           }}
+          className="mb-2 float-end"
         >
           Full Screen
         </Button>
-        <p className="small text-dark mt-2">
-          Lat: {lat} Lng: {lng} Zoom: {zoom}
-        </p>
       </div>
-      <div ref={mapContainer} style={{ height: '650px', width: '100%' }} />
+      <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '95vh' : '650px', width: '100%' }} />
     </Container>
   );
 };

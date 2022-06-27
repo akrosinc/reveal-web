@@ -13,7 +13,7 @@ import DefaultTable from '../../../components/Table/DefaultTable';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
-import { getEntityList } from '../api';
+import { filterData, getEntityList } from '../api';
 import { EntityTag, LookupEntityType } from '../providers/types';
 import FormField from './FormField/FormField';
 import MultiFormField from './FormField/MultiFormField';
@@ -122,6 +122,7 @@ const Simulation = () => {
       }
     });
     console.log(arr);
+    filterData(arr);
     setShowResult(true);
   };
 
@@ -285,6 +286,7 @@ const Simulation = () => {
             fullScreenHandler={() => {
               setMapFullScreen(!mapFullScreen);
             }}
+            fullScreen={mapFullScreen}
           />
         </Col>
       </Row>

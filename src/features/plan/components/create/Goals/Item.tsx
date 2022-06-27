@@ -7,6 +7,7 @@ import { Action, ConditionModel, Goal } from '../../../providers/types';
 import { createAction, deleteAction, updateAction } from '../../../api';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '../../../../../store/hooks';
 
 interface Props {
   goal: Goal;
@@ -27,6 +28,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
   const [selectedAction, setSelectedAction] = useState<Action>();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   //rerender actions if goal data changes
   useEffect(() => {
@@ -34,11 +36,11 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
   }, [goal]);
 
   return (
-    <Accordion.Item id={goal.identifier + '-goal'} eventKey={goal.identifier} className="p-2">
+    <Accordion.Item id={goal.identifier + '-goal'} eventKey={goal.identifier}>
       <Accordion.Header>
         {t('planPage.goal')} - {goal.description}
       </Accordion.Header>
-      <Accordion.Body>
+      <Accordion.Body className={isDarkMode ? 'bg-dark' : 'bg-white'}>
         <Row>
           <Col>
             <Form.Label className="mt-3">{t('planPage.description')}</Form.Label>
@@ -80,7 +82,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
             </Button>
           </Col>
         </Row>
-        <Table bordered responsive hover>
+        <Table bordered responsive hover variant={isDarkMode? 'dark' : 'light'}>
           <thead className="border border-2">
             <tr>
               <th>{t('planPage.description')}</th>

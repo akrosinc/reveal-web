@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { Goal, Priority } from '../../../../providers/types';
 import { createGoal, updateGoal } from '../../../../api';
+import { useAppSelector } from '../../../../../../store/hooks';
 
 interface Props {
   show: boolean;
@@ -19,6 +20,7 @@ interface goalForm {
 }
 
 const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props) => {
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
   const {
     register,
     handleSubmit,
@@ -74,7 +76,7 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
   };
 
   return (
-    <Modal show={show} centered backdrop="static" onHide={closeHandler}>
+    <Modal show={show} centered backdrop="static" onHide={closeHandler} contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header closeButton>
         <Modal.Title>{currentGoal ? 'Edit Goal' : 'Create Goal'}</Modal.Title>
       </Modal.Header>

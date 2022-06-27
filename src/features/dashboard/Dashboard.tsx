@@ -72,7 +72,7 @@ const Dashboard = () => {
       <>
       <Row className="mb-5 justify-content-center">
           {numbers.map((el, index) => (
-            <Col md={2} key={index}>
+            <Col md={3} xl={2} key={index}>
               <div className="p-4 my-2 border border-1 rounded">
                 <h4>{el.title}</h4>
                 <h4>{el.count}</h4>
@@ -81,7 +81,7 @@ const Dashboard = () => {
           ))}
         </Row>
         <Row style={{ minHeight: '500px' }} className="justify-content-center align-items-center">
-          <Col md={4} style={{height: '450px'}}>
+          <Col md={6} xl={4} style={{height: '400px'}}>
             {data !== undefined && data.datasets[0].data.length ? (
               <Pie
                 data={data}
@@ -93,12 +93,14 @@ const Dashboard = () => {
               <p className="lead mt-5">No data to display.</p>
             )}
           </Col>
-          <Col md={4} style={{height: '450px'}} className='mt-4 mt-md-0'>
+          <Col md={6} xl={4} style={{height: '450px'}} className='mt-4 mt-md-0'>
             {dougData !== undefined && dougData.datasets[0].data.length ? (
               <Doughnut
                 data={dougData}
                 options={{
-                  maintainAspectRatio: false
+                  maintainAspectRatio: false,
+                  circumference: 180,
+                  rotation: -90
                 }}
               />
             ) : (
