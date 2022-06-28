@@ -139,6 +139,7 @@ const Simulation = () => {
   const clearHandler = () => {
     setSelectedEntityConditionList([]);
     setShowResult(false);
+    setMapData(undefined);
     reset();
   };
 

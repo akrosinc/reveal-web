@@ -26,34 +26,39 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
 
   useEffect(() => {
     const mapInstance = map.current;
-    if (mapData && mapData.features.length && mapInstance) {
+    if (mapInstance) {
+      //delete old location
       if (mapInstance.getSource('main')) {
         mapInstance.removeLayer('main-border');
+        mapInstance.removeLayer('main-label');
         mapInstance.removeSource('main');
       }
-
-      mapInstance.addSource('main', {
-        type: 'geojson',
-        promoteId: 'id',
-        data: mapData,
-        tolerance: 1
-      });
-
-      mapInstance.addLayer(
-        {
-          id: 'main-border',
-          type: 'line',
-          source: 'main',
-          layout: {},
-          paint: {
-            'line-color': 'black',
-            'line-width': 4
-          }
-        },
-        'label-layer'
-      );
-
-      fitCollectionToBounds(mapInstance, mapData, 'main');
+      if (mapData && mapData.features.length) {
+        mapInstance.addSource('main', {
+          type: 'geojson',
+          promoteId: 'id',
+          data: mapData,
+          tolerance: 1
+        });
+        mapInstance.addLayer(
+          {
+            id: 'main-border',
+            type: 'line',
+            source: 'main',
+            layout: {},
+            paint: {
+              'line-color': 'black',
+              'line-width': 4
+            }
+          },
+          'label-layer'
+        );
+        fitCollectionToBounds(mapInstance, mapData, 'main');
+      } else {
+        mapInstance.flyTo({
+          zoom: 6
+        })
+      }
     }
   }, [mapData]);
 
@@ -83,9 +88,14 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
     const mapboxInstance = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', style);
     mapboxInstance.once('load', () => {
       getLocationById('ff0a2978-6fa4-4073-8f1c-d60569f9b7e6').then(res => {
-        createLocation(map.current!, res, () => {
-          console.log('callback');
-         }, 0.8);
+        createLocation(
+          map.current!,
+          res,
+          () => {
+            console.log('callback');
+          },
+          0.8
+        );
       });
     });
     setZoom(Number((zoom + Math.random()).toPrecision(2)));
