@@ -1,9 +1,9 @@
-import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf';
+import { bbox, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
 import { Map } from 'mapbox-gl';
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { MAPBOX_STYLE_SATELLITE, MAPBOX_STYLE_STREETS } from '../../../../constants';
-import { createLocation, initMap } from '../../../../utils';
+import { createChildLocationLabel, createLocation, getPolygonCenter, initMap } from '../../../../utils';
 import { getLocationById } from '../../../location/api';
 
 interface Props {
@@ -27,6 +27,8 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
   useEffect(() => {
     const mapInstance = map.current;
     if (mapData && mapInstance) {
+      mapInstance.removeLayer('main-border');
+      mapInstance.removeSource('main');
       mapInstance.addSource('main', {
         type: 'geojson',
         promoteId: 'id',
@@ -47,6 +49,27 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
         },
         'label-layer'
       );
+
+      const featureSet: Feature<Point, Properties>[] = [];
+        const bounds = bbox(mapData) as any;
+        mapData.features.forEach((element: Feature<Polygon | MultiPolygon, Properties>) => {
+          //create label for each of the locations
+          //create a group of locations so we can fit them all in viewport
+          const centerLabel = getPolygonCenter(element);
+          centerLabel.center.properties = { ...element.properties };
+          featureSet.push(centerLabel.center);
+        });
+        mapInstance.fitBounds(bounds, {
+          easing: e => {
+            //this is an event which is fired at the end of the fit bounds
+            if (e === 1) {
+              createChildLocationLabel(mapInstance, featureSet, 'main');
+            }
+            return e;
+          },
+          padding: 20,
+          duration: 600
+        });
     }
   }, [mapData])
 
