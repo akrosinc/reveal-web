@@ -32,6 +32,7 @@ export const PAGINATION_DEFAULT_SIZE = 10;
 
 export const MAPBOX_STYLE_SATELLITE = 'mapbox://styles/mapbox/satellite-v9';
 export const MAPBOX_STYLE_STREETS = 'mapbox://styles/mapbox/streets-v11';
+export const MAPBOX_STYLE_SATELLITE_STREETS = 'mapbox://styles/mapbox/satellite-streets-v11';
 
 export const ORGANIZATION_TABLE_COLUMNS = [
   { Header: 'Name', accessor: 'name' },

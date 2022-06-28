@@ -2,9 +2,8 @@ import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf
 import { Map } from 'mapbox-gl';
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Container } from 'react-bootstrap';
-import { MAPBOX_STYLE_SATELLITE, MAPBOX_STYLE_STREETS } from '../../../../constants';
-import { createLocation, fitCollectionToBounds, initMap } from '../../../../utils';
-import { getLocationById } from '../../../location/api';
+import { MAPBOX_STYLE_SATELLITE, MAPBOX_STYLE_SATELLITE_STREETS, MAPBOX_STYLE_STREETS } from '../../../../constants';
+import { fitCollectionToBounds, initMap } from '../../../../utils';
 
 interface Props {
   fullScreenHandler: () => void;
@@ -57,7 +56,7 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
       } else {
         mapInstance.flyTo({
           zoom: 6
-        })
+        });
       }
     }
   }, [mapData]);
@@ -86,38 +85,23 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
     map.current?.remove();
     map.current = undefined;
     const mapboxInstance = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', style);
-    mapboxInstance.once('load', () => {
-      getLocationById('ff0a2978-6fa4-4073-8f1c-d60569f9b7e6').then(res => {
-        createLocation(
-          map.current!,
-          res,
-          () => {
-            console.log('callback');
-          },
-          0.8
-        );
-      });
-    });
+    //set zoom to another value to trigger a rerender
     setZoom(Number((zoom + Math.random()).toPrecision(2)));
     map.current = mapboxInstance;
   };
 
   return (
     <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
-      <div className="sidebar text-light">
-        <Button variant="info" className="me-2" onClick={() => setMapStyle(MAPBOX_STYLE_STREETS)}>
-          Streets
-        </Button>
-        <Button className="me-2" variant="success" onClick={() => setMapStyle(MAPBOX_STYLE_SATELLITE)}>
-          Satellite
-        </Button>
-        <Button
-          className="me-2"
-          variant="warning"
-          onClick={() => setMapStyle('mapbox://styles/mapbox/satellite-streets-v11')}
-        >
-          Satellite Streets
-        </Button>
+      <div className="sidebar text-dark bg-light p-2 rounded">
+        <p className="lead mb-1">Layer style</p>
+        <label>Streets</label>
+        <input defaultChecked type="radio" id='styleSwitch' name='styleSwitch' className="ms-2" onChange={() => setMapStyle(MAPBOX_STYLE_STREETS)} />
+        <br />
+        <label>Satellite</label>
+        <input type="radio" id='styleSwitch' name='styleSwitch' className="ms-2" onChange={() => setMapStyle(MAPBOX_STYLE_SATELLITE)} />
+        <br />
+        <label>Satellite Streets</label>
+        <input type="radio" id='styleSwitch' name='styleSwitch' className="ms-2" onChange={() => setMapStyle(MAPBOX_STYLE_SATELLITE_STREETS)}/>
       </div>
       <div className="clearButton">
         <p className="small text-dark bg-white p-2 rounded">
