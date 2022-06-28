@@ -1,15 +1,15 @@
-import { bbox, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
+import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf';
 import { Map } from 'mapbox-gl';
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { MAPBOX_STYLE_SATELLITE, MAPBOX_STYLE_STREETS } from '../../../../constants';
-import { createChildLocationLabel, createLocation, getPolygonCenter, initMap } from '../../../../utils';
+import { createLocation, fitCollectionToBounds, initMap } from '../../../../utils';
 import { getLocationById } from '../../../location/api';
 
 interface Props {
   fullScreenHandler: () => void;
   fullScreen: boolean;
-  mapData?: FeatureCollection<Polygon | MultiPolygon, Properties>
+  mapData?: FeatureCollection<Polygon | MultiPolygon, Properties>;
 }
 
 const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) => {
@@ -26,9 +26,12 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
 
   useEffect(() => {
     const mapInstance = map.current;
-    if (mapData && mapInstance) {
-      mapInstance.removeLayer('main-border');
-      mapInstance.removeSource('main');
+    if (mapData && mapData.features.length && mapInstance) {
+      if (mapInstance.getSource('main')) {
+        mapInstance.removeLayer('main-border');
+        mapInstance.removeSource('main');
+      }
+
       mapInstance.addSource('main', {
         type: 'geojson',
         promoteId: 'id',
@@ -50,36 +53,17 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
         'label-layer'
       );
 
-      const featureSet: Feature<Point, Properties>[] = [];
-        const bounds = bbox(mapData) as any;
-        mapData.features.forEach((element: Feature<Polygon | MultiPolygon, Properties>) => {
-          //create label for each of the locations
-          //create a group of locations so we can fit them all in viewport
-          const centerLabel = getPolygonCenter(element);
-          centerLabel.center.properties = { ...element.properties };
-          featureSet.push(centerLabel.center);
-        });
-        mapInstance.fitBounds(bounds, {
-          easing: e => {
-            //this is an event which is fired at the end of the fit bounds
-            if (e === 1) {
-              createChildLocationLabel(mapInstance, featureSet, 'main');
-            }
-            return e;
-          },
-          padding: 20,
-          duration: 600
-        });
+      fitCollectionToBounds(mapInstance, mapData, 'main');
     }
-  }, [mapData])
+  }, [mapData]);
 
   useEffect(() => {
     if (map.current !== undefined && map !== undefined) {
       map.current.on('move', () => {
         if (map !== undefined && map.current !== undefined) {
-          setLng(Math.round(map.current.getCenter().lng * 100) / 100);
-          setLat(Math.round(map.current.getCenter().lat * 100) / 100);
-          setZoom(Math.round(map.current.getZoom() * 100) / 100);
+          setLng(Number(map.current.getCenter().lng.toPrecision(4)));
+          setLat(Number(map.current.getCenter().lat.toPrecision(4)));
+          setZoom(Number(map.current.getZoom().toPrecision(3)));
         }
       });
     }
@@ -99,9 +83,12 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
     const mapboxInstance = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', style);
     mapboxInstance.once('load', () => {
       getLocationById('ff0a2978-6fa4-4073-8f1c-d60569f9b7e6').then(res => {
-        createLocation(map.current!, res, () => undefined, 0.8);
+        createLocation(map.current!, res, () => {
+          console.log('callback');
+         }, 0.8);
       });
     });
+    setZoom(Number((zoom + Math.random()).toPrecision(2)));
     map.current = mapboxInstance;
   };
 

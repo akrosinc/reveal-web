@@ -1,4 +1,4 @@
-import { center, Feature, Point, Properties, Polygon, MultiPolygon, bbox } from '@turf/turf';
+import { center, Feature, Point, Properties, Polygon, MultiPolygon, bbox, FeatureCollection } from '@turf/turf';
 import { Map, Popup, GeolocateControl, NavigationControl, LngLatBoundsLike } from 'mapbox-gl';
 import { MutableRefObject } from 'react';
 import { toast } from 'react-toastify';
@@ -83,6 +83,29 @@ export const getPolygonCenter = (data: Feature<Polygon | MultiPolygon>) => {
     center: center(data),
     bounds: bbox(data) as LngLatBoundsLike
   };
+};
+
+export const fitCollectionToBounds = (mapInstance: Map, data: FeatureCollection<Polygon | MultiPolygon>, labelSource?: string) => {
+  const featureSet: Feature<Point, Properties>[] = [];
+  const bounds = bbox(data) as any;
+  data.features.forEach((element: Feature<Polygon | MultiPolygon, Properties>) => {
+    //create label for each of the locations
+    //create a group of locations so we can fit them all in viewport
+    const centerLabel = getPolygonCenter(element);
+    centerLabel.center.properties = { ...element.properties };
+    featureSet.push(centerLabel.center);
+  });
+  mapInstance.fitBounds(bounds, {
+    easing: e => {
+      //this is an event which is fired at the end of the fit bounds
+      if (e === 1 && labelSource) {
+        createChildLocationLabel(mapInstance, featureSet, labelSource);
+      }
+      return e;
+    },
+    padding: 20,
+    duration: 600
+  });
 };
 
 export const createLocation = (map: Map, data: any, moveend: () => void, opacity: number): void => {
@@ -506,7 +529,7 @@ export const loadChildren = (map: Map, id: string, planId: string, opacity: numb
     })
     .catch(err => {
       disableMapInteractions(map, false);
-      toast.error(err)
+      toast.error(err);
     })
     .finally(() => {
       toast.dismiss(loadingToast.toString());

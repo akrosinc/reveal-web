@@ -132,7 +132,7 @@ const Simulation = () => {
           name: el.properties !== null ? el.properties['name'] as string : ''
         }
       })])
-    });
+    }).catch(err => toast.error(err));
     setShowResult(true);
   };
 
