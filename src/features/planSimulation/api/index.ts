@@ -1,4 +1,4 @@
-import { FeatureCollection, Properties } from '@turf/turf';
+import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf';
 import api from '../../../api/axios';
 import { EntityTag, LookupEntityType } from '../providers/types';
 
@@ -12,7 +12,7 @@ export const getEntityTags = async (entityId: string): Promise<EntityTag[]> => {
   return data;
 };
 
-export const filterData = async (submitValue: any[]): Promise<FeatureCollection<Properties>> => {
-  const data = await api.post<FeatureCollection<Properties>>('entityTag/filter', submitValue).then(res => res.data);
+export const filterData = async (submitValue: any[]): Promise<FeatureCollection<Polygon | MultiPolygon, Properties>> => {
+  const data = await api.post<FeatureCollection<Polygon | MultiPolygon, Properties>>('entityTag/filter', submitValue).then(res => res.data);
   return data;
 }

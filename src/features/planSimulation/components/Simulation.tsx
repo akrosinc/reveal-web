@@ -1,4 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf';
 import { useRef } from 'react';
 import { useEffect, useState } from 'react';
 import { Button, Col, Form, Row } from 'react-bootstrap';
@@ -49,6 +50,8 @@ const Simulation = () => {
   const divRef = useRef<HTMLDivElement>(null);
   const divHeight = useWindowResize(divRef.current);
   const [mapFullScreen, setMapFullScreen] = useState(false);
+  const [mapData, setMapData] = useState<FeatureCollection<Polygon | MultiPolygon, Properties>>();
+  const [searchData, setSearchData] = useState<{identifier: string, name: string}[]>([]);
 
   useEffect(() => {
     Promise.all([getLocationHierarchyList(50, 0, true), getEntityList()])
@@ -121,8 +124,15 @@ const Simulation = () => {
         });
       }
     });
-    console.log(arr);
-    filterData(arr);
+    filterData(arr).then(res => {
+      setMapData(res);
+      setSearchData([...res.features.map(el => {
+        return {
+          identifier: (el as any).identifier as string,
+          name: el.properties !== null ? el.properties['name'] as string : ''
+        }
+      })])
+    });
     setShowResult(true);
   };
 
@@ -287,6 +297,7 @@ const Simulation = () => {
               setMapFullScreen(!mapFullScreen);
             }}
             fullScreen={mapFullScreen}
+            mapData={mapData}
           />
         </Col>
       </Row>
@@ -297,12 +308,9 @@ const Simulation = () => {
           <DefaultTable
             columns={[
               { name: 'ID', accessor: 'identifier' },
-              { name: 'Value', accessor: 'value' }
+              { name: 'Location Name', accessor: 'name' }
             ]}
-            data={[
-              { identifier: 'gds-1cvds-vdas-3-fdaksfkd-sxxz', value: 'resultValue' },
-              { identifier: 'as3-dascd-ds22-4-t43zxsa2-vdsa', value: 'resultValue' }
-            ]}
+            data={searchData}
           />
         </>
       )}

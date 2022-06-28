@@ -1,15 +1,18 @@
+import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf';
 import { Map } from 'mapbox-gl';
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { MAPBOX_STYLE_SATELLITE, MAPBOX_STYLE_STREETS } from '../../../../constants';
-import { initMap } from '../../../../utils';
+import { createLocation, initMap } from '../../../../utils';
+import { getLocationById } from '../../../location/api';
 
 interface Props {
   fullScreenHandler: () => void;
   fullScreen: boolean;
+  mapData?: FeatureCollection<Polygon | MultiPolygon, Properties>
 }
 
-const SimulationMapView = ({ fullScreenHandler, fullScreen }: Props) => {
+const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(28.33);
@@ -19,8 +22,33 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen }: Props) => {
   useEffect(() => {
     if (map.current) return; // initialize map only once
     map.current = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_STREETS);
-    mapContainer.current = map.current;
   });
+
+  useEffect(() => {
+    const mapInstance = map.current;
+    if (mapData && mapInstance) {
+      mapInstance.addSource('main', {
+        type: 'geojson',
+        promoteId: 'id',
+        data: mapData,
+        tolerance: 1
+      });
+
+      mapInstance.addLayer(
+        {
+          id: 'main-border',
+          type: 'line',
+          source: 'main',
+          layout: {},
+          paint: {
+            'line-color': 'black',
+            'line-width': 4
+          }
+        },
+        'label-layer'
+      );
+    }
+  }, [mapData])
 
   useEffect(() => {
     if (map.current !== undefined && map !== undefined) {
@@ -34,8 +62,24 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen }: Props) => {
     }
   });
 
+  useEffect(() => {
+    return () => {
+      //Clear map and all WebGLContext from browser memory
+      map.current?.remove();
+      map.current = undefined;
+    };
+  }, []);
+
   const setMapStyle = (style: string) => {
-    map.current?.setStyle(style);
+    map.current?.remove();
+    map.current = undefined;
+    const mapboxInstance = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', style);
+    mapboxInstance.once('load', () => {
+      getLocationById('ff0a2978-6fa4-4073-8f1c-d60569f9b7e6').then(res => {
+        createLocation(map.current!, res, () => undefined, 0.8);
+      });
+    });
+    map.current = mapboxInstance;
   };
 
   return (
