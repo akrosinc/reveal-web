@@ -475,7 +475,7 @@ const CreatePlan = () => {
                                     label: el,
                                     value: el
                                   };
-                                })
+                                }).filter(el => el.label !== 'structure')
                               : []
                           }
                           value={id !== undefined ? targetType : undefined}

@@ -241,10 +241,10 @@ const Simulation = () => {
             </div>
             <Form onSubmit={handleSubmit(submitHandler)}>
               <div
-                style={{ height: 643 - divHeight, position: 'relative', overflowX: 'hidden' }}
+                style={{ height: divHeight ? 643 - divHeight : 470, position: 'relative', overflowX: 'hidden' }}
                 className="border rounded mb-md-0 mb-3 mt-4"
               >
-                <SimpleBar style={{ maxHeight: 630 - divHeight }}>
+                <SimpleBar style={{ maxHeight: divHeight ? 630 - divHeight : 457 }}>
                   {selectedEntityConditionList.map((el, index) => {
                     return (
                       <Row className="mx-2 my-3" key={index}>
