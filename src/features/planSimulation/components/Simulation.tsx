@@ -14,12 +14,13 @@ import DefaultTable from '../../../components/Table/DefaultTable';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
-import { filterData, getEntityList } from '../api';
+import { filterData, getEntityList, getLocationList } from '../api';
 import { EntityTag, LookupEntityType } from '../providers/types';
 import FormField from './FormField/FormField';
 import MultiFormField from './FormField/MultiFormField';
 import SimulationMapView from './SimulationMapView';
 import SimulationModal from './SimulationModal';
+import Select, { SingleValue } from 'react-select';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -51,7 +52,11 @@ const Simulation = () => {
   const divHeight = useWindowResize(divRef.current);
   const [mapFullScreen, setMapFullScreen] = useState(false);
   const [mapData, setMapData] = useState<FeatureCollection<Polygon | MultiPolygon, Properties>>();
-  const [searchData, setSearchData] = useState<{identifier: string, name: string}[]>([]);
+  const [searchData, setSearchData] = useState<{ identifier: string; name: string }[]>([]);
+  const [nodeList, setNodeList] = useState<string[]>([]);
+  const [locationList, setLocationList] = useState<any[]>([]);
+  const [selectedHierarchy, setSelectedHierarchy] = useState<string>('');
+  const [selectedLocation, setSelectedLocation] = useState<SingleValue<{label: string, value: string}>>();
 
   useEffect(() => {
     Promise.all([getLocationHierarchyList(50, 0, true), getEntityList()])
@@ -124,15 +129,24 @@ const Simulation = () => {
         });
       }
     });
-    filterData(arr).then(res => {
-      setMapData(res);
-      setSearchData([...res.features.map(el => {
-        return {
-          identifier: (el as any).identifier as string,
-          name: el.properties !== null ? el.properties['name'] as string : ''
-        }
-      })])
-    }).catch(err => toast.error(err));
+    const requestData = {
+      hierarchyIdentifier: selectedHierarchy,
+      locationIdentifier: selectedLocation?.value,
+      entityFilters: arr
+    }
+    filterData(requestData)
+      .then(res => {
+        setMapData(res);
+        setSearchData([
+          ...res.features.map(el => {
+            return {
+              identifier: (el as any).identifier as string,
+              name: el.properties !== null ? (el.properties['name'] as string) : ''
+            };
+          })
+        ]);
+      })
+      .catch(err => toast.error(err));
     setShowResult(true);
   };
 
@@ -173,12 +187,24 @@ const Simulation = () => {
             <div ref={divRef}>
               <Form>
                 <Form.Group className="mt-md-0 mt-3">
-                  <Row className="align-items-stretch">
+                  <Row className="align-items-center">
                     <Col md={3} lg={2}>
                       <Form.Label>{t('simulationPage.hierarchy')}:</Form.Label>
                     </Col>
                     <Col>
-                      <Form.Select className="w-50">
+                      <Form.Select
+                        className="w-50"
+                        onChange={e => {
+                          const selectedHierarchy = hierarchyList?.content.find(el => el.identifier === e.target.value);
+                          if (selectedHierarchy) {
+                            setSelectedHierarchy(e.target.value);
+                            setNodeList(selectedHierarchy.nodeOrder.filter(el => el !== 'structure'));
+                          } else {
+                            setNodeList([]);
+                          }
+                        }}
+                      >
+                        <option value={''}>Select Hierarchy...</option>
                         {hierarchyList?.content.map(el => (
                           <option key={el.identifier} value={el.identifier}>
                             {el.name}
@@ -191,10 +217,50 @@ const Simulation = () => {
                 <Form.Group className="my-3">
                   <Row className="align-items-center">
                     <Col md={3} lg={2}>
+                      <Form.Label>{t('simulationPage.geographicLevel')}:</Form.Label>
+                    </Col>
+                    <Col>
+                      <Form.Select
+                        className="w-50"
+                        onChange={e => {
+                          if (e.target.value) {
+                            getLocationList(selectedHierarchy, e.target.value).then(res => {
+                              setLocationList(res);
+                            });
+                          } else {
+                            setLocationList([]);
+                          }
+                          setSelectedLocation(null);
+                        }}
+                      >
+                        <option value={''}>Select Geographic Level...</option>
+                        {nodeList.map(el => (
+                          <option key={el} value={el}>
+                            {el}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Col>
+                  </Row>
+                </Form.Group>
+                <Form.Group className="my-3">
+                  <Row className="align-items-center">
+                    <Col md={3} lg={2}>
                       <Form.Label>{t('simulationPage.location')}:</Form.Label>
                     </Col>
                     <Col>
-                      <Form.Select className="w-50"></Form.Select>
+                      <Select
+                        placeholder='Select Location...'
+                        className="custom-react-select-container w-50"
+                        classNamePrefix="custom-react-select"
+                        id="team-assign-select"
+                        isClearable
+                        value={selectedLocation}
+                        options={locationList.reduce((prev, current) => {
+                          return [...prev, { label: current.name, value: current.identifier }];
+                        }, [])}
+                        onChange={(newValue) => setSelectedLocation(newValue)}
+                      />
                     </Col>
                   </Row>
                 </Form.Group>

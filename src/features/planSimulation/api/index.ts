@@ -1,5 +1,6 @@
 import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf';
 import api from '../../../api/axios';
+import { LOCATION_HIERARCHY } from '../../../constants';
 import { EntityTag, LookupEntityType } from '../providers/types';
 
 export const getEntityList = async (): Promise<LookupEntityType[]> => {
@@ -12,7 +13,23 @@ export const getEntityTags = async (entityId: string): Promise<EntityTag[]> => {
   return data;
 };
 
-export const filterData = async (submitValue: any[]): Promise<FeatureCollection<Polygon | MultiPolygon, Properties>> => {
-  const data = await api.post<FeatureCollection<Polygon | MultiPolygon, Properties>>('entityTag/filter', submitValue).then(res => res.data);
+export const getLocationList = async (
+  HierarchyId: string,
+  geographicLevel: string
+): Promise<{ identifier: string; name: string }[]> => {
+  const data = await api
+    .get<{ identifier: string; name: string }[]>(LOCATION_HIERARCHY + `/${HierarchyId}/${geographicLevel}`)
+    .then(res => res.data);
   return data;
-}
+};
+
+export const filterData = async (requestData: {
+  hierarchyIdentifier: string | undefined;
+  locationIdentifier: string | undefined;
+  entityFilters: any[];
+}): Promise<FeatureCollection<Polygon | MultiPolygon, Properties>> => {
+  const data = await api
+    .post<FeatureCollection<Polygon | MultiPolygon, Properties>>('entityTag/filter', requestData)
+    .then(res => res.data);
+  return data;
+};

@@ -10,6 +10,9 @@ export const errorHandler = (error: any): { message: string | FieldValidationErr
       keycloak.logout();
       return { message: UNAUTHORIZED_ERROR_STRING };
     }
+    if (status === 403 || statusCode === 403) {
+      return { message: 'You have no permissions for this request.' }
+    }
     if (fieldValidationErrors) {
       let message = fieldValidationErrors;
       return { message };

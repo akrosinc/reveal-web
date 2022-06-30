@@ -187,6 +187,7 @@
     "country": "Country",
     "entity": "Entity",
     "hierarchy": "Hierarchy",
-    "location": "Location"
+    "location": "Location",
+    "geographicLevel": "Geographic Level"
   }
 }
