@@ -45,6 +45,7 @@ const Report = () => {
   const searchInput = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
+  const [defaultDisplayColumn, setDefaultDisplayColumn] = useState('');
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
@@ -121,6 +122,7 @@ const Report = () => {
       ])
         .then(async ([plan, report]) => {
           if (report.features.length) {
+            setDefaultDisplayColumn((report as any).defaultDisplayColumn);
             setPlan(plan);
             setFilterData([]);
             setCols(mapColumns(report.features[0].properties.columnDataMap));
@@ -325,6 +327,7 @@ const Report = () => {
           <Collapse in={showMap}>
             <div id="expand-table">
               <MapViewDetail
+                defaultColumn={defaultDisplayColumn}
                 showModal={openModalHandler}
                 doubleClickEvent={(feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) =>
                   handleDobuleClickRef.current(feature)

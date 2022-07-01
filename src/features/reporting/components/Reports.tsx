@@ -68,6 +68,12 @@ const Reports = () => {
         return 'MDA';
       case ReportType.MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL:
         return 'MDA Lite';
+      case ReportType.IRS_LITE_COVERAGE:
+        return 'IRS Lite';
+      case ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL:
+        return 'IRS Lite Operational Area';
+      default:
+        return reportName
     }
   };
 

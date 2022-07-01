@@ -5,8 +5,9 @@ import { ErrorModel, FieldValidationError } from './providers';
 export const errorHandler = (error: any): { message: string | FieldValidationError[]; status?: number } => {
   const { request, response } = error;
   if (response) {
-    const { error, fieldValidationErrors, message, statusCode, status } = response.data as ErrorModel;
-    if (status === 401 || statusCode === 401) {
+    const { error: errorMessage, fieldValidationErrors, message, statusCode, status } = response.data as ErrorModel;
+    if (status === 401 || statusCode === 401 || error.response.status === 401) {
+      keycloak.clearToken();
       keycloak.logout();
       return { message: UNAUTHORIZED_ERROR_STRING };
     }
@@ -19,9 +20,14 @@ export const errorHandler = (error: any): { message: string | FieldValidationErr
     } else if (message) {
       return { message };
     } else {
-      return { message: error };
+      return { message: errorMessage };
     }
   } else if (request) {
+    if (request.status === 401 || request.statusCode === 401 || request.code === 401 || error.request.status === 401) {
+      keycloak.clearToken();
+      keycloak.logout();
+      return { message: UNAUTHORIZED_ERROR_STRING };
+    }
     //request sent but no response received
     return {
       message: SERVER_ERROR_STRING,

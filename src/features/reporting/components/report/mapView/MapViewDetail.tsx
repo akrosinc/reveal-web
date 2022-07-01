@@ -15,7 +15,7 @@ import {
   MDA_STRUCTURE_COLOR_COMPLETE,
   MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
   MDA_STRUCTURE_COLOR_NOT_VISITED,
-  MDA_STRUCTURE_COLOR_SMC_COMPLETE_,
+  MDA_STRUCTURE_COLOR_SMC_COMPLETE,
   MDA_STRUCTURE_COLOR_SPAQ_COMPLETE,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
@@ -33,9 +33,10 @@ interface Props {
   clearMap: () => void;
   doubleClickEvent: (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => void;
   showModal: (show: boolean, feature?: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => void;
+  defaultColumn: string;
 }
 
-const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Props) => {
+const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defaultColumn }: Props) => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(20);
@@ -119,31 +120,31 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
                 'structure',
                 [
                   'case',
-                  ['==', ['get', 'locationBusinessStatus'], null],
-                  'black',
-                  ['==', ['get', 'locationBusinessStatus'], MdaStructureStatus.COMPLETE],
+                  ['==', ['get', defaultColumn], null],
+                  'gray',
+                  ['==', ['get', defaultColumn], MdaStructureStatus.COMPLETE],
                   MDA_STRUCTURE_COLOR_COMPLETE,
-                  ['==', ['get', 'locationBusinessStatus'], MdaStructureStatus.NOT_VISITED],
+                  ['==', ['get', defaultColumn], MdaStructureStatus.NOT_VISITED],
                   MDA_STRUCTURE_COLOR_NOT_VISITED,
-                  ['==', ['get', 'locationBusinessStatus'], MdaStructureStatus.NOT_ELIGIBLE],
+                  ['==', ['get', defaultColumn], MdaStructureStatus.NOT_ELIGIBLE],
                   MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
-                  ['==', ['get', 'locationBusinessStatus'], MdaStructureStatus.SMC_COMPLETE],
-                  MDA_STRUCTURE_COLOR_SMC_COMPLETE_,
-                  ['==', ['get', 'locationBusinessStatus'], MdaStructureStatus.SPAQ_COMPLETE],
+                  ['==', ['get', defaultColumn], MdaStructureStatus.SMC_COMPLETE],
+                  MDA_STRUCTURE_COLOR_SMC_COMPLETE,
+                  ['==', ['get', defaultColumn], MdaStructureStatus.SPAQ_COMPLETE],
                   MDA_STRUCTURE_COLOR_SPAQ_COMPLETE,
                   'transparent'
                 ],
                 [
                   'case',
-                  ['==', ['get', 'distCoveragePercent'], null],
-                  'black',
-                  ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_LOW],
+                  ['==', ['get', defaultColumn], null],
+                  'gray',
+                  ['<', ['get', defaultColumn], REPORT_TABLE_PERCENTAGE_LOW],
                   COLOR_BOOTSTRAP_DANGER,
-                  ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_MEDIUM],
+                  ['<', ['get', defaultColumn], REPORT_TABLE_PERCENTAGE_MEDIUM],
                   COLOR_BOOTSTRAP_WARNING,
-                  ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_HIGH],
+                  ['<', ['get', defaultColumn], REPORT_TABLE_PERCENTAGE_HIGH],
                   COLOR_YELLOW,
-                  ['>=', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_HIGH],
+                  ['>=', ['get', defaultColumn], REPORT_TABLE_PERCENTAGE_HIGH],
                   COLOR_BOOTSTRAP_SUCCESS,
                   'transparent'
                 ]
@@ -229,7 +230,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
         map.fitBounds(bbox(data) as any);
       }
     },
-    []
+    [defaultColumn]
   );
 
   useEffect(() => {
