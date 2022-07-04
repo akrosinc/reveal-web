@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import mapboxgl, { Map, Popup } from 'mapbox-gl';
+import { Map, Popup } from 'mapbox-gl';
 import { Button, Container } from 'react-bootstrap';
-import { createChildLocationLabel, getPolygonCenter, initMap } from '../../../../../utils';
+import { createChildLocationLabel, disableMapInteractions, getPolygonCenter, initMap } from '../../../../../utils';
 import PopoverComponent from '../../../../../components/Popover';
 import { bbox, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
 import {
@@ -11,7 +11,7 @@ import {
   COLOR_YELLOW,
   MAPBOX_STYLE_SATELLITE,
   MAP_DEFAULT_FILL_OPACITY,
-  MAP_STRUCTURE_LEGEND_COLORS,
+  MAP_MDA_STRUCTURE_LEGEND_COLORS,
   MDA_STRUCTURE_COLOR_COMPLETE,
   MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
   MDA_STRUCTURE_COLOR_NOT_VISITED,
@@ -23,8 +23,6 @@ import {
 } from '../../../../../constants';
 import { IrsStructureStatus, MdaStructureStatus, ReportLocationProperties, ReportType } from '../../../providers/types';
 import { useParams } from 'react-router-dom';
-
-mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
 interface Props {
   featureSet:
@@ -100,6 +98,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
     ) => {
       //check if its clear map event or new location otherwise just fit to bounds
       if (map.getSource(parentLocationIdentifier) === undefined && data.features.length) {
+        disableMapInteractions(map, true);
         map.addSource(parentLocationIdentifier, {
           type: 'geojson',
           promoteId: 'id',
@@ -120,35 +119,35 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
                 'structure',
                 [
                   'case',
-                  ['==', ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]], null],
+                  ['==', ['get', 'defaultColumnValue'], null],
                   'gray',
                   [
                     '==',
-                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    ['get', 'defaultColumnValue'],
                     MdaStructureStatus.COMPLETE
                   ],
                   MDA_STRUCTURE_COLOR_COMPLETE,
                   [
                     '==',
-                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    ['get', 'defaultColumnValue'],
                     MdaStructureStatus.NOT_VISITED
                   ],
                   MDA_STRUCTURE_COLOR_NOT_VISITED,
                   [
                     '==',
-                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    ['get', 'defaultColumnValue'],
                     MdaStructureStatus.NOT_ELIGIBLE
                   ],
                   MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
                   [
                     '==',
-                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    ['get', 'defaultColumnValue'],
                     MdaStructureStatus.SMC_COMPLETE
                   ],
                   MDA_STRUCTURE_COLOR_SMC_COMPLETE,
                   [
                     '==',
-                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    ['get', 'defaultColumnValue'],
                     MdaStructureStatus.SPAQ_COMPLETE
                   ],
                   MDA_STRUCTURE_COLOR_SPAQ_COMPLETE,
@@ -156,29 +155,29 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
                 ],
                 [
                   'case',
-                  ['==', ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]], null],
+                  ['==', ['get', 'defaultColumnValue'], null],
                   'gray',
                   [
                     '<',
-                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    ['get', 'defaultColumnValue'],
                     REPORT_TABLE_PERCENTAGE_LOW
                   ],
                   COLOR_BOOTSTRAP_DANGER,
                   [
                     '<',
-                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    ['get', 'defaultColumnValue'],
                     REPORT_TABLE_PERCENTAGE_MEDIUM
                   ],
                   COLOR_BOOTSTRAP_WARNING,
                   [
                     '<',
-                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    ['get', 'defaultColumnValue'],
                     REPORT_TABLE_PERCENTAGE_HIGH
                   ],
                   COLOR_YELLOW,
                   [
                     '>=',
-                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    ['get', 'defaultColumnValue'],
                     REPORT_TABLE_PERCENTAGE_HIGH
                   ],
                   COLOR_BOOTSTRAP_SUCCESS,
@@ -244,6 +243,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
             //this is an event which is fired at the end of the fit bounds
             if (e === 1) {
               createChildLocationLabel(map, featureSet, parentLocationIdentifier);
+              disableMapInteractions(map, false);
             }
             return e;
           },
@@ -317,7 +317,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
                     <li key={index}>
                       <span
                         className="sidebar-legend"
-                        style={{ backgroundColor: MAP_STRUCTURE_LEGEND_COLORS[index] }}
+                        style={{ backgroundColor: MAP_MDA_STRUCTURE_LEGEND_COLORS[index] }}
                       ></span>
                       {el}
                     </li>

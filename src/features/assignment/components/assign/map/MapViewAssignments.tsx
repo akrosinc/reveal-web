@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import mapboxgl, { Layer, Map } from 'mapbox-gl';
+import { Layer, Map } from 'mapbox-gl';
 import '../../../../../components/MapBox/index.css';
 import { Button } from 'react-bootstrap';
 import {
@@ -27,8 +27,6 @@ import {
   MAP_LEGEND_TEXT
 } from '../../../../../constants';
 import PopoverComponent from '../../../../../components/Popover';
-
-mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
 interface Props {
   data: any;

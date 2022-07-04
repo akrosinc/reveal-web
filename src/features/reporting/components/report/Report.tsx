@@ -122,8 +122,13 @@ const Report = () => {
       ])
         .then(async ([plan, report]) => {
           if (report.features.length) {
+            //check if there is a default column set
+            //casting to any because using custom geoJSON object
             if ((report as any).defaultDisplayColumn) {
               setDefaultDisplayColumn((report as any).defaultDisplayColumn);
+              report.features.forEach(el => {
+                el.properties = {...el.properties, defaultColumnValue: el.properties.columnDataMap[(report as any).defaultDisplayColumn].value} as any;
+              });
             } else {
               setDefaultDisplayColumn('');
             }
@@ -171,8 +176,13 @@ const Report = () => {
           if (tableData.length) {
             //first set data to empty array for new columns to render
             setFilterData([]);
+            //check if there is a default column set and add default column property            
+            //casting to any because using custom geoJSON object
             if ((res as any).defaultDisplayColumn) {
               setDefaultDisplayColumn((res as any).defaultDisplayColumn);
+              res.features.forEach(el => {
+                el.properties = {...el.properties, defaultColumnValue: el.properties.columnDataMap[(res as any).defaultDisplayColumn].value} as any;
+              });
             } else {
               setDefaultDisplayColumn('');
             }
@@ -200,7 +210,7 @@ const Report = () => {
     if (planId && reportType) {
       //reset search input on new load
       if (searchInput.current) searchInput.current.value = '';
-
+      setFeatureSet(undefined);
       path.splice(0, path.length);
       setPath(path);
       loadData();

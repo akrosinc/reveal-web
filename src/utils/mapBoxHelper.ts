@@ -1,5 +1,5 @@
 import { center, Feature, Point, Properties, Polygon, MultiPolygon, bbox, FeatureCollection } from '@turf/turf';
-import { Map, Popup, GeolocateControl, NavigationControl, LngLatBoundsLike } from 'mapbox-gl';
+import mapboxgl, { Map, Popup, GeolocateControl, NavigationControl, LngLatBoundsLike } from 'mapbox-gl';
 import { MutableRefObject } from 'react';
 import { toast } from 'react-toastify';
 import {
@@ -26,6 +26,9 @@ export interface LocationProperties {
 
 let timer: NodeJS.Timeout;
 let popup: Popup;
+
+//add access token to mapbox
+mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
 //init mapbox instance
 export const initMap = (
