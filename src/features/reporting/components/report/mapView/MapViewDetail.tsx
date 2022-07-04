@@ -120,31 +120,67 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
                 'structure',
                 [
                   'case',
-                  ['==', ['get', defaultColumn], null],
+                  ['==', ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]], null],
                   'gray',
-                  ['==', ['get', defaultColumn], MdaStructureStatus.COMPLETE],
+                  [
+                    '==',
+                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    MdaStructureStatus.COMPLETE
+                  ],
                   MDA_STRUCTURE_COLOR_COMPLETE,
-                  ['==', ['get', defaultColumn], MdaStructureStatus.NOT_VISITED],
+                  [
+                    '==',
+                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    MdaStructureStatus.NOT_VISITED
+                  ],
                   MDA_STRUCTURE_COLOR_NOT_VISITED,
-                  ['==', ['get', defaultColumn], MdaStructureStatus.NOT_ELIGIBLE],
+                  [
+                    '==',
+                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    MdaStructureStatus.NOT_ELIGIBLE
+                  ],
                   MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
-                  ['==', ['get', defaultColumn], MdaStructureStatus.SMC_COMPLETE],
+                  [
+                    '==',
+                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    MdaStructureStatus.SMC_COMPLETE
+                  ],
                   MDA_STRUCTURE_COLOR_SMC_COMPLETE,
-                  ['==', ['get', defaultColumn], MdaStructureStatus.SPAQ_COMPLETE],
+                  [
+                    '==',
+                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    MdaStructureStatus.SPAQ_COMPLETE
+                  ],
                   MDA_STRUCTURE_COLOR_SPAQ_COMPLETE,
                   'transparent'
                 ],
                 [
                   'case',
-                  ['==', ['get', defaultColumn], null],
+                  ['==', ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]], null],
                   'gray',
-                  ['<', ['get', defaultColumn], REPORT_TABLE_PERCENTAGE_LOW],
+                  [
+                    '<',
+                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    REPORT_TABLE_PERCENTAGE_LOW
+                  ],
                   COLOR_BOOTSTRAP_DANGER,
-                  ['<', ['get', defaultColumn], REPORT_TABLE_PERCENTAGE_MEDIUM],
+                  [
+                    '<',
+                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    REPORT_TABLE_PERCENTAGE_MEDIUM
+                  ],
                   COLOR_BOOTSTRAP_WARNING,
-                  ['<', ['get', defaultColumn], REPORT_TABLE_PERCENTAGE_HIGH],
+                  [
+                    '<',
+                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    REPORT_TABLE_PERCENTAGE_HIGH
+                  ],
                   COLOR_YELLOW,
-                  ['>=', ['get', defaultColumn], REPORT_TABLE_PERCENTAGE_HIGH],
+                  [
+                    '>=',
+                    ['get', 'value', ['object', ['get', defaultColumn, ['object', ['get', 'columnDataMap']]]]],
+                    REPORT_TABLE_PERCENTAGE_HIGH
+                  ],
                   COLOR_BOOTSTRAP_SUCCESS,
                   'transparent'
                 ]
@@ -171,31 +207,21 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
 
         map.on('mouseover', parentLocationIdentifier + '-label', e => {
           const feature = map.queryRenderedFeatures(e.point)[0];
-          const properties = feature.properties as ReportLocationProperties;
+          const properties = feature.properties;
           if (properties && !hoverPopup.current.isOpen() && !contextMenuPopup.current.isOpen()) {
+            properties['columnDataMap'] = JSON.parse(properties['columnDataMap']);
+            let htmlText = 'Data not parsed correctly.';
+            if (properties['columnDataMap'][defaultColumn]) {
+              htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
+              ${`<small class='my-3'>${defaultColumn}: ${
+                properties['columnDataMap'][defaultColumn].isPercentage
+                  ? properties['columnDataMap'][defaultColumn].value.toFixed(2) + '%'
+                  : properties['columnDataMap'][defaultColumn].value
+              }</small>`}
+            </div>`;
+            }
             map.getCanvas().style.cursor = 'pointer';
-            hoverPopup.current
-              .setLngLat(e.lngLat)
-              .setHTML(
-                `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
-                ${
-                  properties.distCoveragePercent !== undefined
-                    ? `<small class='my-3'>Distribution coverage: ${properties.distCoveragePercent.toFixed(2)}%</small>`
-                    : ''
-                }
-                ${
-                  properties.numberOfChildrenTreated !== undefined
-                    ? `<small class='my-3'>Number Of Children Treated: ${properties.numberOfChildrenTreated}</small>`
-                    : ''
-                }
-                ${
-                  properties.numberOfChildrenEligible !== undefined
-                    ? `<small class='my-3'>Number Of Children Eligible: ${properties.numberOfChildrenEligible}</small>`
-                    : ''
-                }
-              </div>`
-              )
-              .addTo(map);
+            hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(map);
           }
         });
 

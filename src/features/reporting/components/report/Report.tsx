@@ -122,7 +122,11 @@ const Report = () => {
       ])
         .then(async ([plan, report]) => {
           if (report.features.length) {
-            setDefaultDisplayColumn((report as any).defaultDisplayColumn);
+            if ((report as any).defaultDisplayColumn) {
+              setDefaultDisplayColumn((report as any).defaultDisplayColumn);
+            } else {
+              setDefaultDisplayColumn('');
+            }
             setPlan(plan);
             setFilterData([]);
             setCols(mapColumns(report.features[0].properties.columnDataMap));
@@ -167,6 +171,11 @@ const Report = () => {
           if (tableData.length) {
             //first set data to empty array for new columns to render
             setFilterData([]);
+            if ((res as any).defaultDisplayColumn) {
+              setDefaultDisplayColumn((res as any).defaultDisplayColumn);
+            } else {
+              setDefaultDisplayColumn('');
+            }
             setCols(mapColumns(res.features[0].properties.columnDataMap));
             setData(tableData);
             setFilterData(tableData);

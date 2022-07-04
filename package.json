@@ -28,7 +28,7 @@
     "flag-icons": "^6.0.0",
     "i18next": "^21.5.4",
     "keycloak-js": "^15.0.2",
-    "mapbox-gl": "^2.6.1",
+    "mapbox-gl": "^2.9.1",
     "moment": "^2.29.1",
     "react": "^17.0.2",
     "react-bootstrap": "^2.0.3",
