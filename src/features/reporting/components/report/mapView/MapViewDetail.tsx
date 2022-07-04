@@ -11,6 +11,7 @@ import {
   COLOR_YELLOW,
   MAPBOX_STYLE_SATELLITE,
   MAP_DEFAULT_FILL_OPACITY,
+  MAP_IRS_STRUCTURE_LEGEND_COLORS,
   MAP_MDA_STRUCTURE_LEGEND_COLORS,
   MDA_STRUCTURE_COLOR_COMPLETE,
   MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
@@ -121,35 +122,15 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
                   'case',
                   ['==', ['get', 'defaultColumnValue'], null],
                   'gray',
-                  [
-                    '==',
-                    ['get', 'defaultColumnValue'],
-                    MdaStructureStatus.COMPLETE
-                  ],
+                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.COMPLETE],
                   MDA_STRUCTURE_COLOR_COMPLETE,
-                  [
-                    '==',
-                    ['get', 'defaultColumnValue'],
-                    MdaStructureStatus.NOT_VISITED
-                  ],
+                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.NOT_VISITED],
                   MDA_STRUCTURE_COLOR_NOT_VISITED,
-                  [
-                    '==',
-                    ['get', 'defaultColumnValue'],
-                    MdaStructureStatus.NOT_ELIGIBLE
-                  ],
+                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.NOT_ELIGIBLE],
                   MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
-                  [
-                    '==',
-                    ['get', 'defaultColumnValue'],
-                    MdaStructureStatus.SMC_COMPLETE
-                  ],
+                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.SMC_COMPLETE],
                   MDA_STRUCTURE_COLOR_SMC_COMPLETE,
-                  [
-                    '==',
-                    ['get', 'defaultColumnValue'],
-                    MdaStructureStatus.SPAQ_COMPLETE
-                  ],
+                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.SPAQ_COMPLETE],
                   MDA_STRUCTURE_COLOR_SPAQ_COMPLETE,
                   'transparent'
                 ],
@@ -157,29 +138,13 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
                   'case',
                   ['==', ['get', 'defaultColumnValue'], null],
                   'gray',
-                  [
-                    '<',
-                    ['get', 'defaultColumnValue'],
-                    REPORT_TABLE_PERCENTAGE_LOW
-                  ],
+                  ['<', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_LOW],
                   COLOR_BOOTSTRAP_DANGER,
-                  [
-                    '<',
-                    ['get', 'defaultColumnValue'],
-                    REPORT_TABLE_PERCENTAGE_MEDIUM
-                  ],
+                  ['<', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_MEDIUM],
                   COLOR_BOOTSTRAP_WARNING,
-                  [
-                    '<',
-                    ['get', 'defaultColumnValue'],
-                    REPORT_TABLE_PERCENTAGE_HIGH
-                  ],
+                  ['<', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_HIGH],
                   COLOR_YELLOW,
-                  [
-                    '>=',
-                    ['get', 'defaultColumnValue'],
-                    REPORT_TABLE_PERCENTAGE_HIGH
-                  ],
+                  ['>=', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_HIGH],
                   COLOR_BOOTSTRAP_SUCCESS,
                   'transparent'
                 ]
@@ -322,7 +287,15 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
                       {el}
                     </li>
                   ))
-                : Object.keys(IrsStructureStatus).map((el, index) => <li key={index}>{el}</li>)}
+                : Object.keys(IrsStructureStatus).map((el, index) => (
+                    <li key={index}>
+                      <span
+                        className="sidebar-legend"
+                        style={{ backgroundColor: MAP_IRS_STRUCTURE_LEGEND_COLORS[index] }}
+                      ></span>
+                      {el}
+                    </li>
+                  ))}
             </ul>
           </PopoverComponent>
         )}
