@@ -12,3 +12,11 @@ export interface LookupEntityType {
   code: string;
   tableName: string;
 }
+
+export enum OperatorSignEnum {
+  EQUAL = 'EQ',
+  GRATER_THAN = 'GT',
+  GRATER_THAN_EQUAL = 'GTE',
+  LESS_THAN = 'LT',
+  LESS_THAN_EQUAL = 'LTE'
+}

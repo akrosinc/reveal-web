@@ -580,7 +580,6 @@ export const disableMapInteractions = (map: Map, disable: boolean) => {
     map.dragPan.disable();
     map.dragRotate.disable();
     map.keyboard.disable();
-    map.doubleClickZoom.disable();
     map.touchZoomRotate.disable();
   } else {
     map.boxZoom.enable();
@@ -588,7 +587,6 @@ export const disableMapInteractions = (map: Map, disable: boolean) => {
     map.dragPan.enable();
     map.dragRotate.enable();
     map.keyboard.enable();
-    map.doubleClickZoom.enable();
     map.touchZoomRotate.enable();
   }
 };

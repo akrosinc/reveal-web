@@ -1,7 +1,7 @@
 import React from 'react';
 import { Col, Row, Form } from 'react-bootstrap';
 import { UseFormRegister } from 'react-hook-form';
-import { EntityTag } from '../../providers/types';
+import { EntityTag, OperatorSignEnum } from '../../providers/types';
 
 interface Props {
   register: UseFormRegister<any>;
@@ -15,18 +15,18 @@ const FormField = ({ register, entityTag, index, errors, range }: Props) => {
   return (
     <Form.Group>
       <Row>
-      <Form.Label className="me-3">{entityTag.tag}</Form.Label>
-      {(entityTag.valueType === 'number' || entityTag.valueType === 'date') && !range && (
+        <Form.Label className="me-3">{entityTag.tag}</Form.Label>
+        {(entityTag.valueType === 'number' || entityTag.valueType === 'date') && !range && (
           <Col xs={6} md={3} className="align-self-end">
             <Form.Select
               {...register((entityTag.tag + index + 'sign') as any, { required: true })}
               name={entityTag.tag + index + 'sign'}
             >
-              <option value=">">{'>'}</option>
-              <option value=">=">{'>='}</option>
-              <option value="<">{'<'}</option>
-              <option value="<=">{'<='}</option>
-              <option value="=">{'='}</option>
+              <option value={OperatorSignEnum.GRATER_THAN}>{'>'}</option>
+              <option value={OperatorSignEnum.GRATER_THAN_EQUAL}>{'>='}</option>
+              <option value={OperatorSignEnum.LESS_THAN}>{'<'}</option>
+              <option value={OperatorSignEnum.LESS_THAN_EQUAL}>{'<='}</option>
+              <option value={OperatorSignEnum.EQUAL}>{'='}</option>
             </Form.Select>
           </Col>
         )}
