@@ -20,3 +20,14 @@ export enum OperatorSignEnum {
   LESS_THAN = 'LT',
   LESS_THAN_EQUAL = 'LTE'
 }
+
+export interface SearchLocationProperties {
+  identifier: string;
+  name: string;
+  persons: Person[];
+}
+
+export interface Person {
+  nameUse: string; 
+  nameFamily: string
+}

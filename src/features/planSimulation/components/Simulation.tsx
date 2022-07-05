@@ -15,12 +15,13 @@ import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
 import { filterData, getEntityList, getLocationList } from '../api';
-import { EntityTag, LookupEntityType } from '../providers/types';
+import { EntityTag, LookupEntityType, SearchLocationProperties } from '../providers/types';
 import FormField from './FormField/FormField';
 import MultiFormField from './FormField/MultiFormField';
 import SimulationMapView from './SimulationMapView';
 import SimulationModal from './SimulationModal';
 import Select, { SingleValue } from 'react-select';
+import PeopleDetailsModal from './PeopleDetailsModal';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -42,6 +43,7 @@ interface SearchValue {
 const Simulation = () => {
   const { t } = useTranslation();
   const [showModal, setShowModal] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [hierarchyList, setHierarchyList] = useState<PageableModel<LocationHierarchyModel>>();
   const [entityList, setEntityList] = useState<LookupEntityType[]>([]);
@@ -52,11 +54,12 @@ const Simulation = () => {
   const divHeight = useWindowResize(divRef.current);
   const [mapFullScreen, setMapFullScreen] = useState(false);
   const [mapData, setMapData] = useState<FeatureCollection<Polygon | MultiPolygon, Properties>>();
-  const [searchData, setSearchData] = useState<{ identifier: string; name: string }[]>([]);
+  const [searchData, setSearchData] = useState<SearchLocationProperties[]>([]);
   const [nodeList, setNodeList] = useState<string[]>([]);
   const [locationList, setLocationList] = useState<any[]>([]);
   const [selectedHierarchy, setSelectedHierarchy] = useState<string>('');
-  const [selectedLocation, setSelectedLocation] = useState<SingleValue<{label: string, value: string}>>();
+  const [selectedLocation, setSelectedLocation] = useState<SingleValue<{ label: string; value: string }>>();
+  const [selectedRow, setSelectedRow] = useState<SearchLocationProperties>();
 
   useEffect(() => {
     Promise.all([getLocationHierarchyList(50, 0, true), getEntityList()])
@@ -133,16 +136,21 @@ const Simulation = () => {
       hierarchyIdentifier: selectedHierarchy,
       locationIdentifier: selectedLocation?.value,
       entityFilters: arr
-    }
+    };
     filterData(requestData)
       .then(res => {
         setMapData(res);
         setSearchData([
-          ...res.features.map(el => {
-            return {
-              identifier: (el as any).identifier as string,
-              name: el.properties !== null ? (el.properties['name'] as string) : ''
-            };
+          ...res.features.flatMap(el => {
+            const props = el.properties;
+            if (props) {
+              return {
+                identifier: (el as any).identifier,
+                name: props['name'],
+                persons: props['persons'] ?? []
+              };
+            }
+            return [];
           })
         ]);
       })
@@ -250,7 +258,7 @@ const Simulation = () => {
                     </Col>
                     <Col>
                       <Select
-                        placeholder='Select Location...'
+                        placeholder="Select Location..."
                         className="custom-react-select-container w-50"
                         classNamePrefix="custom-react-select"
                         id="team-assign-select"
@@ -259,7 +267,7 @@ const Simulation = () => {
                         options={locationList.reduce((prev, current) => {
                           return [...prev, { label: current.name, value: current.identifier }];
                         }, [])}
-                        onChange={(newValue) => setSelectedLocation(newValue)}
+                        onChange={newValue => setSelectedLocation(newValue)}
                       />
                     </Col>
                   </Row>
@@ -276,7 +284,7 @@ const Simulation = () => {
                           type="radio"
                           value={el.identifier}
                           name="entityPicker"
-                          id="radio-group"
+                          id={'radio-' + el.identifier}
                           label={el.code}
                         />
                       ))}
@@ -358,7 +366,7 @@ const Simulation = () => {
             </Form>
           </Col>
         )}
-        <Col md={mapFullScreen ? 12 : 6}>
+        <Col md={mapFullScreen ? 12 : 6} id="mapRow" className={mapFullScreen ? 'pt-4' : ''}>
           <SimulationMapView
             fullScreenHandler={() => {
               setMapFullScreen(!mapFullScreen);
@@ -378,6 +386,11 @@ const Simulation = () => {
               { name: 'Location Name', accessor: 'name' }
             ]}
             data={searchData}
+            clickHandler={(row: SearchLocationProperties) => {
+              console.log(row);
+              setSelectedRow(row);
+              setShowDetails(true);
+            }}
           />
         </>
       )}
@@ -406,6 +419,14 @@ const Simulation = () => {
               </Button>
             </>
           }
+        />
+      )}
+      {showDetails && selectedRow && (
+        <ActionDialog
+          closeHandler={() => setShowDetails(false)}
+          title="Location Details"
+          element={<PeopleDetailsModal locationProps={selectedRow} />}
+          footer={<Button onClick={() => setShowDetails(false)}>Close</Button>}
         />
       )}
     </>

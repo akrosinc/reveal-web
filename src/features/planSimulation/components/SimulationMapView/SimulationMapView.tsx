@@ -122,7 +122,7 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
             fullScreenHandler();
             setTimeout(() => {
               map.current?.resize();
-              document.getElementById('mapContainer')?.scrollIntoView({ behavior: 'smooth' });
+              document.getElementById('mapRow')?.scrollIntoView({ behavior: 'smooth' });
             }, 0);
           }}
           className="mb-2 float-end"
