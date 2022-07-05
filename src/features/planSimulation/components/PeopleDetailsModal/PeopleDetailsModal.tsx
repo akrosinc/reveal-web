@@ -19,8 +19,8 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
           </tr>
         </thead>
         <tbody>
-          {locationProps.persons.map(el => (
-            <tr>
+          {locationProps.persons.map((el, index) => (
+            <tr key={index}>
               <td>{el.nameUse}</td>
               <td>{el.nameFamily}</td>
             </tr>

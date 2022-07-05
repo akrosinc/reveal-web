@@ -387,7 +387,6 @@ const Simulation = () => {
             ]}
             data={searchData}
             clickHandler={(row: SearchLocationProperties) => {
-              console.log(row);
               setSelectedRow(row);
               setShowDetails(true);
             }}

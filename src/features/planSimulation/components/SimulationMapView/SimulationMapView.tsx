@@ -1,9 +1,10 @@
 import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf';
-import { Map } from 'mapbox-gl';
+import { Map, Popup } from 'mapbox-gl';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
 import { MAPBOX_STYLE_SATELLITE, MAPBOX_STYLE_SATELLITE_STREETS, MAPBOX_STYLE_STREETS } from '../../../../constants';
 import { fitCollectionToBounds, initMap } from '../../../../utils';
+import { Person } from '../../providers/types';
 
 interface Props {
   fullScreenHandler: () => void;
@@ -17,6 +18,7 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
   const [lng, setLng] = useState(28.33);
   const [lat, setLat] = useState(-15.44);
   const [zoom, setZoom] = useState(10);
+  let hoverPopup = useRef<Popup>(new Popup({ closeOnClick: false, closeButton: false, offset: 20 }));
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
@@ -45,6 +47,21 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
           },
           'label-layer'
         );
+        mapInstance.on('mouseover', 'main-label', e => {
+          const feature = mapInstance.queryRenderedFeatures(e.point)[0];
+          const properties = feature.properties;
+          let htmlText = 'Data not parsed correctly.';
+          if (properties && properties['persons'] && !hoverPopup.current.isOpen()) {
+            const personList: Person[] = JSON.parse(properties['persons']);
+            htmlText = `<p>Persons found: ${personList.length}</p>`;
+          }
+          mapInstance.getCanvas().style.cursor = 'pointer';
+          hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(mapInstance);
+        });
+        mapInstance.on('mouseleave', 'main-label', () => {
+          mapInstance.getCanvas().style.cursor = '';
+          hoverPopup.current.remove();
+        });
         fitCollectionToBounds(mapInstance, mapData, 'main');
       } else {
         mapInstance.flyTo({
