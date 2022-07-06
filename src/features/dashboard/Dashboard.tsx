@@ -1,32 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import { Pie, Doughnut } from 'react-chartjs-2';
 import { Col, Row } from 'react-bootstrap';
 import { getOrganizationCount, getOrganizationList } from '../organization/api';
 import { getUserList } from '../user/api';
 import { getPlanCount, getPlanList } from '../plan/api';
 import { useAppDispatch } from '../../store/hooks';
-import { showLoader } from '../reducers/loader';
-import 'chart.js/auto';
 import { toast } from 'react-toastify';
 import AuthorizedElement from '../../components/AuthorizedElement';
 import { PLAN_VIEW, USER_VIEW } from '../../constants';
 import { ChartData } from 'chart.js/auto';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut, Pie } from 'react-chartjs-2';
+import { getPlanReports } from '../reporting/api';
+
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 const Dashboard = () => {
   const [data, setData] = useState<ChartData<'pie'>>();
   const [dougData, setDougData] = useState<ChartData<'doughnut'>>();
   const dispatch = useAppDispatch();
+  const [numbers, setNumber] = useState<{ title: string; count: number }[]>([]);
 
   useEffect(() => {
-    dispatch(showLoader(true));
     Promise.all([
       getOrganizationCount(),
       getUserList(5, 0),
       getPlanCount(),
       getOrganizationList(50, 0),
-      getPlanList(50, 0, true)
+      getPlanList(50, 0, true),
+      getPlanReports(5, 0, "", true)
     ])
-      .then(async ([organizationCount, userCount, planCount, orgList, planList]) => {
+      .then(async ([organizationCount, userCount, planCount, orgList, planList, reportList]) => {
+        setNumber([
+          { title: 'Users', count: userCount.totalElements },
+          { title: 'Organizations', count: organizationCount.count },
+          { title: 'Plans', count: planCount.count },
+          { title: 'Reports', count: reportList.totalElements }
+        ]);
         if (userCount.totalElements > 0 || organizationCount.count > 0 || planCount.count > 0) {
           setData({
             labels: ['Users', 'Organizations', 'Plans'],
@@ -55,20 +64,27 @@ const Dashboard = () => {
           });
         }
       })
-      .catch(err => toast.error(err.message ? err.message : err.toString()))
-      .finally(() => dispatch(showLoader(false)));
+      .catch(err => toast.error(err));
   }, [dispatch]);
 
   return (
-    <>
-      <AuthorizedElement roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}>
-        <Row style={{ minHeight: '500px' }}>
-          <Col md={6}>
+    <AuthorizedElement roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}>
+      <>
+      <Row className="mb-5 justify-content-center">
+          {numbers.map((el, index) => (
+            <Col md={3} xl={2} key={index}>
+              <div className="p-4 my-2 border border-1 rounded">
+                <h4>{el.title}</h4>
+                <h4>{el.count}</h4>
+              </div>
+            </Col>
+          ))}
+        </Row>
+        <Row style={{ minHeight: '500px' }} className="justify-content-center align-items-center">
+          <Col md={6} xl={4} style={{height: '400px'}}>
             {data !== undefined && data.datasets[0].data.length ? (
               <Pie
                 data={data}
-                height="450px"
-                width="450px"
                 options={{
                   maintainAspectRatio: false
                 }}
@@ -77,17 +93,14 @@ const Dashboard = () => {
               <p className="lead mt-5">No data to display.</p>
             )}
           </Col>
-          <Col md={6}>
+          <Col md={6} xl={4} style={{height: '450px'}} className='mt-4 mt-md-0'>
             {dougData !== undefined && dougData.datasets[0].data.length ? (
               <Doughnut
                 data={dougData}
-                height="450px"
-                width="450px"
                 options={{
                   maintainAspectRatio: false,
-                  rotation: 270,
                   circumference: 180,
-                  cutout: 120
+                  rotation: -90
                 }}
               />
             ) : (
@@ -95,8 +108,8 @@ const Dashboard = () => {
             )}
           </Col>
         </Row>
-      </AuthorizedElement>
-    </>
+      </>
+    </AuthorizedElement>
   );
 };
 

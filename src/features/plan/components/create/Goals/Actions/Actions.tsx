@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import { getActionTitles, getformList } from '../../../../api';
 import Moment from 'moment';
 import { toUtcString } from '../../../../../../utils';
+import { useAppSelector } from '../../../../../../store/hooks';
 
 interface Props {
   selectedAction?: Action;
@@ -19,7 +20,8 @@ interface Props {
 const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
   const [formList, setFormList] = useState<{ identifier: string; name: string }[]>();
   const [actionTitles, setActionTitles] = useState<string[]>([]);
-
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
+  
   useEffect(() => {
     getActionTitles().then(res => setActionTitles(res));
   }, []);
@@ -63,7 +65,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
   };
 
   return (
-    <Modal show={true} onHide={closeHandler} backdrop="static" keyboard={false} centered>
+    <Modal show={true} onHide={closeHandler} backdrop="static" keyboard={false} centered contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header closeButton>
         <Modal.Title>{selectedAction ? 'Edit Action' : 'Create Action'}</Modal.Title>
       </Modal.Header>

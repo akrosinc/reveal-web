@@ -2,6 +2,8 @@
 export const APP_TITLE = 'Reveal';
 export const FOOTER_TEXT = `${new Date().getFullYear()} Reveal`;
 export const UNEXPECTED_ERROR_STRING = 'Unexpected error has occured.';
+export const SERVER_ERROR_STRING = 'Server is not responding.';
+export const UNAUTHORIZED_ERROR_STRING = 'Unauthorized request, logging out...';
 
 // PAGES TITLE
 export const PAGE_TITLE_HOME = 'Home';
@@ -30,6 +32,7 @@ export const PAGINATION_DEFAULT_SIZE = 10;
 
 export const MAPBOX_STYLE_SATELLITE = 'mapbox://styles/mapbox/satellite-v9';
 export const MAPBOX_STYLE_STREETS = 'mapbox://styles/mapbox/streets-v11';
+export const MAPBOX_STYLE_SATELLITE_STREETS = 'mapbox://styles/mapbox/satellite-streets-v11';
 
 export const ORGANIZATION_TABLE_COLUMNS = [
   { Header: 'Name', accessor: 'name' },
@@ -103,15 +106,25 @@ export const MAP_LEGEND_COLORS = [
 export const MDA_STRUCTURE_COLOR_COMPLETE = '#A7171A';
 export const MDA_STRUCTURE_COLOR_NOT_VISITED = '#5DBB63';
 export const MDA_STRUCTURE_COLOR_NOT_ELIGIBLE = '#656565';
-export const MDA_STRUCTURE_COLOR_SMC_COMPLETE_ = '#6e599f';
+export const MDA_STRUCTURE_COLOR_SMC_COMPLETE = '#6e599f';
 export const MDA_STRUCTURE_COLOR_SPAQ_COMPLETE = '#ffc107';
 
-export const MAP_STRUCTURE_LEGEND_COLORS = [
+export const IRS_STRUCTURE_COLOR_NOT_SPRAYED = '#A7171A';
+export const IRS_STRUCTURE_COLOR_SPRAYED = '#5DBB63';
+export const IRS_STRUCTURE_COLOR_NOT_SPRAYABLE = '#656565';
+
+export const MAP_MDA_STRUCTURE_LEGEND_COLORS = [
   MDA_STRUCTURE_COLOR_COMPLETE,
   MDA_STRUCTURE_COLOR_NOT_VISITED,
   MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
-  MDA_STRUCTURE_COLOR_SMC_COMPLETE_,
+  MDA_STRUCTURE_COLOR_SMC_COMPLETE,
   MDA_STRUCTURE_COLOR_SPAQ_COMPLETE
+];
+
+export const MAP_IRS_STRUCTURE_LEGEND_COLORS = [
+  IRS_STRUCTURE_COLOR_NOT_SPRAYED,
+  IRS_STRUCTURE_COLOR_SPRAYED,
+  IRS_STRUCTURE_COLOR_NOT_SPRAYABLE
 ];
 
 export const REPORT_TABLE_PERCENTAGE_HIGH = 75;

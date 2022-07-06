@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import mapboxgl, { Layer, Map } from 'mapbox-gl';
+import { Layer, Map } from 'mapbox-gl';
 import '../../../../../components/MapBox/index.css';
 import { Button } from 'react-bootstrap';
 import {
@@ -27,10 +27,6 @@ import {
   MAP_LEGEND_TEXT
 } from '../../../../../constants';
 import PopoverComponent from '../../../../../components/Popover';
-import { useAppDispatch } from '../../../../../store/hooks';
-import { showLoader } from '../../../../reducers/loader';
-
-mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
 interface Props {
   data: any;
@@ -52,7 +48,6 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
   const [showModal, setShowModal] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<[string, Properties]>();
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const dispatch = useAppDispatch();
   const [opacity, setOpacity] = useState(MAP_DEFAULT_FILL_OPACITY);
 
   //resize map on hide/show menu action
@@ -73,13 +68,6 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
       });
     }
   };
-
-  const loaderHandler = useCallback(
-    (show: boolean) => {
-      dispatch(showLoader(show));
-    },
-    [dispatch]
-  );
 
   // initialize map only once
   // set listeners
@@ -140,9 +128,9 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
         };
         const setHandlers = (plan: PlanModel, locationIdentifer: string) => {
           //set double click listener
-          doubleClickHandler(mapInstance, plan.identifier, loaderHandler, opacity);
+          doubleClickHandler(mapInstance, plan.identifier, opacity);
           //set right clik listener
-          contextMenuHandler(mapInstance, openHandler, plan.identifier, loaderHandler, opacity);
+          contextMenuHandler(mapInstance, openHandler, plan.identifier, opacity);
           //set ctrl + left click listener
           selectHandler(mapInstance, selectedLocations, (locations: string[]) => setSelectedLocations(locations));
           //set hover handler
@@ -170,7 +158,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
       }
       map.current = mapInstance;
     }
-  }, [lat, lng, zoom, planId, currentPlan, selectedLocations, reloadData, loaderHandler, opacity]);
+  }, [lat, lng, zoom, planId, currentPlan, selectedLocations, reloadData, opacity]);
 
   useEffect(() => {
     initializeMap();
@@ -220,7 +208,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
 
   // Function used to rerender map on incoming changes directly without adding or removing existing layers
   const closeModalHandler = (action: boolean, teamCount: number) => {
-    if (action && map.current && moveend && planId) {
+    if (action && map.current && planId) {
       //check for multi select feature
       if (selectedLocations.length) {
         let uniqueSourceSet = new Set<string>();

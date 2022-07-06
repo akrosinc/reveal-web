@@ -30,6 +30,9 @@ export default function NavbarComponent() {
       keycloak.loadUserProfile().then(userProfile => {
         setUser(userProfile);
       });
+      keycloak.onAuthLogout = () => {
+        setUser(undefined);
+      }
     }
   }, [keycloak, initialized]);
 

@@ -34,12 +34,12 @@
     "welcomeMessage": "Welcome to Reveal"
   },
   "buttons": {
-    "management": "Management",
-    "plans": "Plans",
+    "management": "User Management",
+    "plans": "Plan Management",
     "create": "Create",
     "delete": "Delete",
     "locationManagement": "Location Management",
-    "assign": "Assign",
+    "assign": "Plan Assignment",
     "report": "Reports",
     "save": "Save",
     "submit": "Submit",
@@ -148,7 +148,9 @@
       "selectHierarchy": "Select Hierarchy",
       "selectHierarchyError": "Please select location hierarchy.", 
       "selectInterventionType": "Select Intervention Type",
-      "selectInterventionTypeError": "Please select intervention type."
+      "selectInterventionTypeError": "Please select intervention type.",
+      "hierarchyLevelTarget": "Hierarchy Level Target",
+      "hierarchyLevelTargetError": "Please select location hierarchy first and than pick target"
     }
   },
   "reportPage": {
@@ -183,6 +185,9 @@
   "simulationPage": {
     "title": "Plan Simulation",
     "country": "Country",
-    "entity": "Entity"
+    "entity": "Entity",
+    "hierarchy": "Hierarchy",
+    "location": "Location",
+    "geographicLevel": "Geographic Level"
   }
 }

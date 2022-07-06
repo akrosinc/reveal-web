@@ -6,9 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Action, ConditionModel, Goal } from '../../../providers/types';
 import { createAction, deleteAction, updateAction } from '../../../api';
 import { toast } from 'react-toastify';
-import { showLoader } from '../../../../reducers/loader';
-import { useAppDispatch } from '../../../../../store/hooks';
 import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '../../../../../store/hooks';
 
 interface Props {
   goal: Goal;
@@ -28,8 +27,8 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
   const [actionsList, setActionsList] = useState<Action[]>(goal.actions);
   const [selectedAction, setSelectedAction] = useState<Action>();
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   //rerender actions if goal data changes
   useEffect(() => {
@@ -37,9 +36,11 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
   }, [goal]);
 
   return (
-    <Accordion.Item id={goal.identifier + '-goal'} eventKey={goal.identifier} className="p-2">
-      <Accordion.Header>{t('planPage.goal')} - {goal.description}</Accordion.Header>
-      <Accordion.Body>
+    <Accordion.Item id={goal.identifier + '-goal'} eventKey={goal.identifier}>
+      <Accordion.Header>
+        {t('planPage.goal')} - {goal.description}
+      </Accordion.Header>
+      <Accordion.Body className={isDarkMode ? 'bg-dark' : 'bg-white'}>
         <Row>
           <Col>
             <Form.Label className="mt-3">{t('planPage.description')}</Form.Label>
@@ -77,11 +78,11 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
           </Col>
           <Col>
             <Button id="create-action-button" className="float-end" onClick={() => setShow(true)}>
-            {t('buttons.create')}
+              {t('buttons.create')}
             </Button>
           </Col>
         </Row>
-        <Table bordered responsive hover>
+        <Table bordered responsive hover variant={isDarkMode? 'dark' : 'light'}>
           <thead className="border border-2">
             <tr>
               <th>{t('planPage.description')}</th>
@@ -97,6 +98,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                 onClick={() => {
                   setShow(true);
                   setSelectedAction(el);
+                  setSelectedIndex(index);
                 }}
               >
                 <td>{el.title}</td>
@@ -107,7 +109,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                 <td className="text-center">
                   <Button
                     id="edit-action-button"
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       setSelectedAction(el);
                       setSelectedIndex(index);
@@ -130,7 +132,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                 action.type = action.identifier ? 'UPDATE' : 'CREATE';
                 //check if its new plan or update of an existing plan
                 if (planId) {
-                  dispatch(showLoader(true));
                   if (isDelete) {
                     toast
                       .promise(deleteAction(action.identifier, planId, goal.identifier), {
@@ -139,7 +140,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                         error: 'There was an error deleting action.'
                       })
                       .finally(() => {
-                        dispatch(showLoader(false));
                         loadData();
                       });
                   } else {
@@ -152,7 +152,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                           error: 'There was an error updating action.'
                         })
                         .finally(() => {
-                          dispatch(showLoader(false));
                           loadData();
                         });
                     } else {
@@ -163,14 +162,19 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                           error: 'There was an error creating action.'
                         })
                         .finally(() => {
-                          dispatch(showLoader(false));
                           loadData();
                         });
                     }
                   }
                 } else {
-                  setActionsList([...actionsList, action]);
-                  goal.actions = [...actionsList, action];
+                  if (isDelete) {
+                    actionsList.splice(selectedIndex, 1);
+                    setActionsList([...actionsList]);
+                    goal.actions = [...actionsList];
+                  } else {
+                    setActionsList([...actionsList, action]);
+                    goal.actions = [...actionsList, action];
+                  }
                 }
               }
               setShow(false);

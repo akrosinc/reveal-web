@@ -1,12 +1,35 @@
+import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf';
 import api from '../../../api/axios';
-import { EntityList, EntityTags } from '../providers/types';
+import { LOCATION_HIERARCHY } from '../../../constants';
+import { EntityTag, LookupEntityType } from '../providers/types';
 
-export const getPlanSimulationData = async (): Promise<EntityList[]> => {
-  const data = await api.get<EntityList[]>(`entityTag`).then(res => res.data);
+export const getEntityList = async (): Promise<LookupEntityType[]> => {
+  const data = await api.get<LookupEntityType[]>(`entityTag/entityType`).then(res => res.data);
   return data;
 };
 
-export const getEntityTags = async (entityId: string): Promise<EntityTags[]> => {
-  const data = await api.get<EntityTags[]>(`entityTag/${entityId}`).then(res => res.data);
+export const getEntityTags = async (entityId: string): Promise<EntityTag[]> => {
+  const data = await api.get<EntityTag[]>(`entityTag/${entityId}`).then(res => res.data);
+  return data;
+};
+
+export const getLocationList = async (
+  HierarchyId: string,
+  geographicLevel: string
+): Promise<{ identifier: string; name: string }[]> => {
+  const data = await api
+    .get<{ identifier: string; name: string }[]>(LOCATION_HIERARCHY + `/${HierarchyId}/${geographicLevel}`)
+    .then(res => res.data);
+  return data;
+};
+
+export const filterData = async (requestData: {
+  hierarchyIdentifier: string | undefined;
+  locationIdentifier: string | undefined;
+  entityFilters: any[];
+}): Promise<FeatureCollection<Polygon | MultiPolygon, Properties>> => {
+  const data = await api
+    .post<FeatureCollection<Polygon | MultiPolygon, Properties>>('entityTag/filter', requestData)
+    .then(res => res.data);
   return data;
 };

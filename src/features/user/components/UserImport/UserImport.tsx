@@ -4,8 +4,6 @@ import { PageableModel } from '../../../../api/providers';
 import { ActionDialog } from '../../../../components/Dialogs';
 import Paginator from '../../../../components/Pagination';
 import { PAGINATION_DEFAULT_SIZE, BULK_TABLE_COLUMNS } from '../../../../constants';
-import { useAppDispatch } from '../../../../store/hooks';
-import { showLoader } from '../../../reducers/loader';
 import { getBulkById, getBulkList } from '../../api';
 import { BulkDetailsModel, UserBulk } from '../../providers/types';
 import CreateBulk from './create';
@@ -21,7 +19,6 @@ const UserImport = () => {
   const [selectedBulkFile, setSelectedBulkFile] = useState<UserBulk>();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
-  const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
   const closeHandler = () => {
@@ -40,11 +37,9 @@ const UserImport = () => {
 
   const paginationHandler = (size: number, page: number) => {
     if (openDetails && selectedBulkFile !== undefined) {
-      dispatch(showLoader(true));
       getBulkById(size, page, selectedBulkFile.identifier).then(res => {
         setSelectedBulk(res);
         setSelectedBulkFile(selectedBulkFile);
-        dispatch(showLoader(false));
       });
     } else {
       getBulkList(size, page, '', currentSortField, currentSortDirection).then(res => {
@@ -54,12 +49,10 @@ const UserImport = () => {
   };
 
   const openBulkById = (selectedFile: UserBulk) => {
-    dispatch(showLoader(true));
     getBulkById(PAGINATION_DEFAULT_SIZE, 0, selectedFile.identifier).then(res => {
       setSelectedBulk(res);
       setSelectedBulkFile(selectedFile);
       setOpenDetails(true);
-      dispatch(showLoader(false));
     });
   };
 

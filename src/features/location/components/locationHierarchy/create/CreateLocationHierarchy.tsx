@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { useAppDispatch } from '../../../../../store/hooks';
-import { showLoader } from '../../../../reducers/loader';
 import Select, { MultiValue } from 'react-select';
 import { createLocationHierarchy } from '../../../api';
 import { LocationHierarchyModel } from '../../../providers/types';
-import { ErrorModel } from '../../../../../api/providers';
+import { FieldValidationError } from '../../../../../api/providers';
 
 interface Props {
   closeHandler: () => void;
@@ -20,7 +18,6 @@ interface Options {
 }
 
 const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) => {
-  const dispatch = useAppDispatch();
   const {
     register,
     handleSubmit,
@@ -42,29 +39,24 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) =>
         name: formData.name,
         nodeOrder: locationHierarchy
       };
-      dispatch(showLoader(true));
       toast.promise(createLocationHierarchy(newHierarchy), {
         pending: 'Loading...',
         success: {
           render({ data }: { data: LocationHierarchyModel }) {
             closeHandler();
-            dispatch(showLoader(false));
             return 'Successfully created location hierarchy with id: ' + data.identifier;
           }
         },
         error: {
-          render({ data }: { data: ErrorModel }) {
-            dispatch(showLoader(false));
-            if (data.fieldValidationErrors) {
-              data.fieldValidationErrors.forEach(el => {
-                if (el.field === 'nodeOrder') {
-                  setError('nodeOrder', {
-                    message: el.messageKey
-                  });
-                }
-              });
+          render({ data: err }: { data: any }) {
+            if (typeof err !== 'string') {
+              const fieldValidationErrors = err as FieldValidationError[];
+              return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
+                setError(errField.field as any, {message: errField.messageKey});
+                return errField.field;
+              }).toString();
             }
-            return data.message !== undefined ? data.message : 'An error has occured!';
+            return err;
           }
         }
       });

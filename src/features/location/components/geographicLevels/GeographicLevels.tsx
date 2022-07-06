@@ -8,7 +8,6 @@ import { getGeographicLevelById, getGeographicLevelList } from '../../api';
 import { GeographicLevel } from '../../providers/types';
 import { PageableModel } from '../../../../api/providers';
 import { useAppDispatch } from '../../../../store/hooks';
-import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import GeoLevelDetails from './details/GeoLevelDetails';
 import { useTranslation } from 'react-i18next';
@@ -25,31 +24,25 @@ const GeographicLevels = () => {
   const { t } = useTranslation();
 
   const sortHandler = (field: string, sortDirection: boolean) => {
-    dispatch(showLoader(true));
     setCurrentSortField(field);
     setCurrentSortDirection(sortDirection);
     if (geoLevelList !== undefined) {
       getGeographicLevelList(geoLevelList.pageable.pageSize, 0, '', field, sortDirection).then(res => {
         setGeoLevelList(res);
-        dispatch(showLoader(false));
       });
     }
   };
 
   const paginationHandler = (size: number, page: number) => {
-    dispatch(showLoader(true));
     getGeographicLevelList(size, page).then(res => {
       setGeoLevelList(res);
-      dispatch(showLoader(false));
     });
   };
 
   const openDetails = (identifier: string) => {
-    dispatch(showLoader(true));
     getGeographicLevelById(identifier).then(data => {
       setSelectedGeoLocation(data);
       setOpenEdit(true);
-      dispatch(showLoader(false));
     });
   };
 
@@ -66,18 +59,15 @@ const GeographicLevels = () => {
       .then(data => {
         setGeoLevelList(data);
       })
-      .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
-      .finally(() => dispatch(showLoader(false)));
+      .catch(err => toast.error(err));
   };
 
   useEffect(() => {
-    dispatch(showLoader(true));
     getGeographicLevelList(PAGINATION_DEFAULT_SIZE, 0)
       .then(res => {
         setGeoLevelList(res);
       })
-      .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
-      .finally(() => dispatch(showLoader(false)));
+      .catch(err => toast.error(err));
   }, [dispatch]);
 
   return (

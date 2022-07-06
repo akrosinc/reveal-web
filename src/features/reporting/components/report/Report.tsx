@@ -10,13 +10,11 @@ import {
   REPORTING_PAGE,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
-  REPORT_TABLE_PERCENTAGE_MEDIUM,
-  UNEXPECTED_ERROR_STRING
+  REPORT_TABLE_PERCENTAGE_MEDIUM
 } from '../../../../constants';
-import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
+import { useAppSelector } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
-import { showLoader } from '../../../reducers/loader';
 import { getMapReportData } from '../../api';
 import { Feature, FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
 import { useRef } from 'react';
@@ -34,7 +32,6 @@ const Report = () => {
   const [cols, setCols] = useState<Column[]>([]);
   const [data, setData] = useState<ReportLocationProperties[]>([]);
   const [filterData, setFilterData] = useState<ReportLocationProperties[]>([]);
-  const dispatch = useAppDispatch();
   const { planId, reportType } = useParams();
   const navigate = useNavigate();
   const [path, setPath] = useState<BreadcrumbModel[]>([]);
@@ -48,6 +45,7 @@ const Report = () => {
   const searchInput = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
+  const [defaultDisplayColumn, setDefaultDisplayColumn] = useState('');
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
@@ -113,7 +111,6 @@ const Report = () => {
   };
 
   const loadData = useCallback(() => {
-    dispatch(showLoader(true));
     if (planId && reportType) {
       Promise.all([
         getPlanById(planId),
@@ -125,6 +122,16 @@ const Report = () => {
       ])
         .then(async ([plan, report]) => {
           if (report.features.length) {
+            //check if there is a default column set
+            //casting to any because using custom geoJSON object
+            if ((report as any).defaultDisplayColumn) {
+              setDefaultDisplayColumn((report as any).defaultDisplayColumn);
+              report.features.forEach(el => {
+                el.properties = {...el.properties, defaultColumnValue: el.properties.columnDataMap[(report as any).defaultDisplayColumn].value} as any;
+              });
+            } else {
+              setDefaultDisplayColumn('');
+            }
             setPlan(plan);
             setFilterData([]);
             setCols(mapColumns(report.features[0].properties.columnDataMap));
@@ -135,19 +142,16 @@ const Report = () => {
             setFeatureSet([report, 'main']);
           } else {
             toast.error('There is no report data found.');
-            dispatch(showLoader(false));
           }
         })
         .catch(err => {
-          dispatch(showLoader(false));
-          toast.error(err.message !== undefined ? err.message : UNEXPECTED_ERROR_STRING);
+          toast.error(err);
           navigate(-1);
         });
     } else {
-      dispatch(showLoader(false));
       navigate(-1);
     }
-  }, [dispatch, planId, navigate, reportType]);
+  }, [planId, navigate, reportType]);
 
   const columns = React.useMemo<Column[]>(
     () => [{ Header: 'Location name', accessor: 'name', id: 'locationName' }, ...cols],
@@ -160,7 +164,6 @@ const Report = () => {
 
   const loadChildHandler = (id: string, locationName: string, childrenNumber: number) => {
     if (planId && reportType) {
-      dispatch(showLoader(true));
       getMapReportData({
         parentLocationIdentifier: id,
         reportTypeEnum: reportType,
@@ -173,6 +176,16 @@ const Report = () => {
           if (tableData.length) {
             //first set data to empty array for new columns to render
             setFilterData([]);
+            //check if there is a default column set and add default column property            
+            //casting to any because using custom geoJSON object
+            if ((res as any).defaultDisplayColumn) {
+              setDefaultDisplayColumn((res as any).defaultDisplayColumn);
+              res.features.forEach(el => {
+                el.properties = {...el.properties, defaultColumnValue: el.properties.columnDataMap[(res as any).defaultDisplayColumn].value} as any;
+              });
+            } else {
+              setDefaultDisplayColumn('');
+            }
             setCols(mapColumns(res.features[0].properties.columnDataMap));
             setData(tableData);
             setFilterData(tableData);
@@ -181,16 +194,13 @@ const Report = () => {
               setPath([...path, { locationIdentifier: id, locationName: locationName, location: res }]);
             }
           } else {
-            dispatch(showLoader(false));
             toast.info(`${locationName} has no child locations.`);
           }
         })
         .catch(err => {
-          dispatch(showLoader(false));
-          toast.error(err.message ? err.message : 'There was an error loading this location.');
+          toast.error(err);
         });
     } else {
-      dispatch(showLoader(false));
       toast.info(`There was an error loading ${locationName}.`);
     }
   };
@@ -200,7 +210,7 @@ const Report = () => {
     if (planId && reportType) {
       //reset search input on new load
       if (searchInput.current) searchInput.current.value = '';
-      dispatch(showLoader(true));
+      setFeatureSet(undefined);
       path.splice(0, path.length);
       setPath(path);
       loadData();
@@ -209,7 +219,6 @@ const Report = () => {
 
   const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
     if (planId && reportType) {
-      dispatch(showLoader(true));
       path.splice(index + 1, path.length - index);
       setPath(path);
       getMapReportData({
@@ -232,12 +241,10 @@ const Report = () => {
           //its enough to spread the object so rerender will be triggered
           setFeatureSet([{ ...path[index > 0 ? index - 1 : index].location }, el.locationIdentifier]);
           if (!res.features.length) {
-            dispatch(showLoader(false));
           }
         })
         .catch(err => {
-          dispatch(showLoader(false));
-          toast.error(err.message ? err.message : 'There was an error loading this location.');
+          toast.error(err);
         });
     }
   };
@@ -339,6 +346,7 @@ const Report = () => {
           <Collapse in={showMap}>
             <div id="expand-table">
               <MapViewDetail
+                defaultColumn={defaultDisplayColumn}
                 showModal={openModalHandler}
                 doubleClickEvent={(feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) =>
                   handleDobuleClickRef.current(feature)

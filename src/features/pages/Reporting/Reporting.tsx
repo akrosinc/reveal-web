@@ -24,7 +24,7 @@ const Reporting = () => {
           }
         />
         <Route
-          path="/planId/:planId/reportType/:reportType"
+          path="/report/:planId/reportType/:reportType"
           element={
             <AuthGuard roles={[REPORT_VIEW]}>
               <Report />

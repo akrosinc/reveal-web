@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import mapboxgl, { Map } from 'mapbox-gl';
+import { Map } from 'mapbox-gl';
 import { Button } from 'react-bootstrap';
 import { createLocation, createLocationLabel, initMap } from '../../../../../utils';
 import { MAPBOX_STYLE_SATELLITE } from '../../../../../constants';
-
-mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
 interface Props {
   latitude?: number;

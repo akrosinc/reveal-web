@@ -18,7 +18,7 @@ const ActivatePlan = ({ closeHandler, planId }: Props) => {
       .then(_ => {
         toast.success(t('planPage.planActivateMessage'));
       })
-      .catch(err => toast.error(err.message ? err.message : t('planPage.planActivationError')))
+      .catch(err => toast.error(err))
       .finally(() => {
         closeHandler();
       });

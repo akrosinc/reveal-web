@@ -1,9 +1,6 @@
 import { Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
-import { useAppDispatch } from '../../../../../store/hooks';
-import { showLoader } from '../../../../reducers/loader';
 import { toast } from 'react-toastify';
-import { ErrorModel } from '../../../../../api/providers';
 import { DOWNLOAD_LOCATION_BULK_TEMPLATE } from '../../../../../constants';
 import { uploadLocationJSON } from '../../../api';
 
@@ -16,7 +13,6 @@ interface Props {
 }
 
 const UploadLocation = ({ handleClose }: Props) => {
-  const dispatch = useAppDispatch();
   const {
     reset,
     register,
@@ -28,7 +24,6 @@ const UploadLocation = ({ handleClose }: Props) => {
   const submitHandler = (formValues: RegisterValues) => {
     let json: File = formValues.bulk[0];
     if (json !== undefined && json.name.includes('.json')) {
-      dispatch(showLoader(true));
       const formData = new FormData();
       formData.append('file', json);
       const uploadToast = toast.info('JSON file is uploading...', { progress: 0 });
@@ -40,19 +35,18 @@ const UploadLocation = ({ handleClose }: Props) => {
             `JSON file uploaded successfully, you can track location creation progress in location import section with identifier ${res.identifier}`
           );
         })
-        .catch((err: ErrorModel) => {
+        .catch((err: string) => {
           setError(
             'bulk',
-            { message: err.message },
+            { message: err },
             {
               shouldFocus: true
             }
           );
-          toast.error(err.message !== undefined ? err.message : err.fieldValidationErrors.toString());
+          toast.error(err);
         })
         .finally(() => {
           toast.done(uploadToast.toString());
-          dispatch(showLoader(false));
         });
     } else {
       setError('bulk', { message: 'Unexpected file type, please try again.' });

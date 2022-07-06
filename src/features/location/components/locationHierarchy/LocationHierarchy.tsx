@@ -4,10 +4,9 @@ import { LOCATION_HIERARCHY_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../..
 import { deleteLocationHierarchy, getGeographicLevelList, getLocationHierarchyList } from '../../api';
 import { ActionDialog, ConfirmDialog } from '../../../../components/Dialogs';
 import CreateLocationHierarchy from './create/CreateLocationHierarchy';
-import { ErrorModel, PageableModel } from '../../../../api/providers';
+import { PageableModel } from '../../../../api/providers';
 import { LocationHierarchyModel } from '../../providers/types';
-import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
-import { showLoader } from '../../../reducers/loader';
+import { useAppSelector } from '../../../../store/hooks';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import Paginator from '../../../../components/Pagination';
@@ -22,27 +21,20 @@ const LocationHierarchy = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [geographyLevelList, setGeographyLevelList] = useState<Options[]>();
   const [locationHierarchy, setLocationHierarchy] = useState<PageableModel<LocationHierarchyModel>>();
-  const dispatch = useAppDispatch();
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedHierarchy, setSelectedHierarchy] = useState<LocationHierarchyModel>();
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   useEffect(() => {
-    dispatch(showLoader(true));
     getLocationHierarchyList(PAGINATION_DEFAULT_SIZE, 0, true)
       .then(res => {
         setLocationHierarchy(res);
-        dispatch(showLoader(false));
       })
-      .catch(err => {
-        dispatch(showLoader(false));
-        toast.error(err.message !== undefined ? err.message : err.toString());
-      });
-  }, [dispatch]);
+      .catch(err => toast.error(err));
+  }, []);
 
   const createHandler = () => {
-    dispatch(showLoader(true));
     getGeographicLevelList(50, 0).then(res => {
       const options: Options[] = res.content.map(el => {
         return {
@@ -50,7 +42,7 @@ const LocationHierarchy = () => {
           value: el.name
         };
       });
-      dispatch(showLoader(false));
+
       setGeographyLevelList(options);
       setShowCreate(true);
     });
@@ -62,15 +54,15 @@ const LocationHierarchy = () => {
         toast.promise(deleteLocationHierarchy(selectedHierarchy.identifier), {
           pending: 'Loading...',
           success: {
-            render({ data }: any) {
+            render() {
               closeHandler();
               return 'Deleted successfully!';
             }
           },
           error: {
-            render({ data }: { data: ErrorModel }) {
+            render({ data: err }: {data: string}) {
               setShowConfirm(false);
-              return data.message !== undefined ? data.message : 'An error has occured!';
+              return err;
             }
           }
         });
@@ -83,27 +75,22 @@ const LocationHierarchy = () => {
   const closeHandler = () => {
     setShowConfirm(false);
     setShowCreate(false);
-    dispatch(showLoader(true));
+
     getLocationHierarchyList(
       locationHierarchy?.size ?? PAGINATION_DEFAULT_SIZE,
       locationHierarchy?.pageable.pageNumber ?? 0,
       true
     ).then(res => {
       setLocationHierarchy(res);
-      dispatch(showLoader(false));
     });
   };
 
   const paginationHandler = (size: number, page: number) => {
-    dispatch(showLoader(true));
     getLocationHierarchyList(size, page, true)
       .then(res => {
         setLocationHierarchy(res);
       })
-      .catch(err => {
-        toast.error(err.message !== undefined ? err.message : err.toString());
-      })
-      .finally(() => dispatch(showLoader(false)));
+      .catch(err => toast.error(err));
   };
 
   return (
@@ -170,7 +157,7 @@ const LocationHierarchy = () => {
           />
         </>
       ) : (
-        <p className="text-center lead">{t("general.noContent")}</p>
+        <p className="text-center lead">{t('general.noContent')}</p>
       )}
 
       {showCreate && (

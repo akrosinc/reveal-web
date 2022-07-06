@@ -1,5 +1,5 @@
-import { center, Feature, Point, Properties, Polygon, MultiPolygon, bbox } from '@turf/turf';
-import { LngLatBounds, Map, Popup, GeolocateControl, NavigationControl, LngLatBoundsLike } from 'mapbox-gl';
+import { center, Feature, Point, Properties, Polygon, MultiPolygon, bbox, FeatureCollection } from '@turf/turf';
+import mapboxgl, { Map, Popup, GeolocateControl, NavigationControl, LngLatBoundsLike } from 'mapbox-gl';
 import { MutableRefObject } from 'react';
 import { toast } from 'react-toastify';
 import {
@@ -26,6 +26,9 @@ export interface LocationProperties {
 
 let timer: NodeJS.Timeout;
 let popup: Popup;
+
+//add access token to mapbox
+mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
 //init mapbox instance
 export const initMap = (
@@ -78,39 +81,34 @@ export const initMap = (
   return mapboxInstance;
 };
 
-export const getPolygonCenter = (data: any) => {
-  let centerLabel = center(data);
-
-  // Geographic coordinates of the LineString
-  let coordinates = data.geometry.coordinates[0][0];
-
-  if (typeof coordinates[0] === 'number') {
-    coordinates = data.geometry.coordinates[0];
-  }
-
-  // check if its a multy polygon, if it is append all polygons to bounds
-  if (data.geometry.coordinates.length > 1) {
-    data.geometry.coordinates.forEach((el: any[]) => {
-      // prevent bad geojson error
-      if (typeof el[0] === 'number') {
-        coordinates = [...coordinates, ...el];
-      } else {
-        coordinates = [...coordinates, ...el[0]];
-      }
-    });
-  }
-
-  // Create a 'LngLatBounds' with both corners at the first coordinate.
-  const bounds = new LngLatBounds(coordinates[0], coordinates[0]);
-
-  // Extend the 'LngLatBounds' to include every coordinate in the bounds result.
-  for (const coord of coordinates) {
-    bounds.extend(coord);
-  }
+export const getPolygonCenter = (data: Feature<Polygon | MultiPolygon>) => {
   return {
-    center: centerLabel,
-    bounds: bounds
+    center: center(data),
+    bounds: bbox(data) as LngLatBoundsLike
   };
+};
+
+export const fitCollectionToBounds = (mapInstance: Map, data: FeatureCollection<Polygon | MultiPolygon>, labelSource?: string) => {
+  const featureSet: Feature<Point, Properties>[] = [];
+  const bounds = bbox(data) as any;
+  data.features.forEach((element: Feature<Polygon | MultiPolygon, Properties>) => {
+    //create label for each of the locations
+    //create a group of locations so we can fit them all in viewport
+    const centerLabel = getPolygonCenter(element);
+    centerLabel.center.properties = { ...element.properties };
+    featureSet.push(centerLabel.center);
+  });
+  mapInstance.fitBounds(bounds, {
+    easing: e => {
+      //this is an event which is fired at the end of the fit bounds
+      if (e === 1 && labelSource) {
+        createChildLocationLabel(mapInstance, featureSet, labelSource);
+      }
+      return e;
+    },
+    padding: 20,
+    duration: 600
+  });
 };
 
 export const createLocation = (map: Map, data: any, moveend: () => void, opacity: number): void => {
@@ -210,7 +208,7 @@ export const createLocation = (map: Map, data: any, moveend: () => void, opacity
 
 // hover handler with timeout to simulate hovering effect
 export const hoverHandler = (map: Map, identifier: string) => {
-  let popup = new Popup({closeButton: false}).setHTML(
+  let popup = new Popup({ closeButton: false }).setHTML(
     `<h4 class='bg-success text-light text-center'>Actions</h4><div class='p-2'><small>Available commands:<br />
     Right click - context menu <br/> Double Click - load children<br />
     Ctrl + Left Click - Select location</small></div>`
@@ -338,7 +336,7 @@ export const createChild = (map: Map, data: any, opacity: number) => {
   }
 };
 
-export const doubleClickHandler = (map: Map, planId: string, loader: (show: boolean) => void, opacity: number) => {
+export const doubleClickHandler = (map: Map, planId: string, opacity: number) => {
   map.on('dblclick', e => {
     if (!e.originalEvent.ctrlKey) {
       const features = map.queryRenderedFeatures(e.point);
@@ -346,7 +344,7 @@ export const doubleClickHandler = (map: Map, planId: string, loader: (show: bool
         const feature = features[0];
         if (feature) {
           if (feature.properties && feature.properties.id && (feature.properties.assigned || feature.state.assigned)) {
-            loadChildren(map, feature.properties.id, planId, loader, opacity);
+            loadChildren(map, feature.properties.id, planId, opacity);
           }
         }
       }
@@ -358,7 +356,6 @@ export const contextMenuHandler = (
   map: Map,
   openHandler: (data: any, assign: boolean) => void,
   planId: string,
-  loader: (show: boolean) => void,
   opacity: number
 ) => {
   // When a click event occurs on a feature in the places layer, open a popup at the
@@ -416,9 +413,7 @@ export const contextMenuHandler = (
             .addTo(map);
           document
             .getElementById(loadChildButtonId)
-            ?.addEventListener('click', () =>
-              loadChildren(map, (feature.properties as any).id, planId, loader, opacity)
-            );
+            ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId, opacity));
           document.getElementById(parentButtonId)?.addEventListener('click', () => {
             getLocationByIdAndPlanId((feature.properties as any).parentIdentifier, planId).then(res => {
               res.properties.id = res.identifier;
@@ -509,17 +504,10 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
   }
 };
 
-export const loadChildren = (
-  map: Map,
-  id: string,
-  planId: string,
-  loader: (show: boolean) => void,
-  opacity: number
-) => {
+export const loadChildren = (map: Map, id: string, planId: string, opacity: number) => {
   const loadingToast = toast.loading('Loading locations...', {
     autoClose: false
   });
-  loader(true);
   disableMapInteractions(map, true);
   getChildLocation(id, planId)
     .then(res => {
@@ -542,9 +530,12 @@ export const loadChildren = (
         toast.info('This location has no child locations.');
       }
     })
+    .catch(err => {
+      disableMapInteractions(map, false);
+      toast.error(err);
+    })
     .finally(() => {
       toast.dismiss(loadingToast.toString());
-      loader(false);
     });
 };
 
@@ -589,7 +580,6 @@ export const disableMapInteractions = (map: Map, disable: boolean) => {
     map.dragPan.disable();
     map.dragRotate.disable();
     map.keyboard.disable();
-    map.doubleClickZoom.disable();
     map.touchZoomRotate.disable();
   } else {
     map.boxZoom.enable();
@@ -597,7 +587,6 @@ export const disableMapInteractions = (map: Map, disable: boolean) => {
     map.dragPan.enable();
     map.dragRotate.enable();
     map.keyboard.enable();
-    map.doubleClickZoom.enable();
     map.touchZoomRotate.enable();
   }
 };

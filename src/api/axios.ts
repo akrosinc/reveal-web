@@ -9,7 +9,6 @@ const api = axios.create({
   }
 });
 
-// Request interceptor to inject bearer token
 api.interceptors.request.use(function (config) {
   // Inject Bearer token in every request
   config.headers = {
@@ -17,18 +16,5 @@ api.interceptors.request.use(function (config) {
   };
   return config;
 });
-
-// Add a response interceptor
-api.interceptors.response.use(
-  response => {
-    return response;
-  },
-  (error) => {
-    if (error.response !== undefined && error.response.status === 401) {
-      keycloak.logout();
-    }
-    return Promise.reject(error.response !== undefined ? error.response.data : error);
-  }
-);
 
 export default api;

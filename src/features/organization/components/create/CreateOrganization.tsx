@@ -3,10 +3,8 @@ import { Button, Form } from 'react-bootstrap';
 import { createOrganization, getOrganizationListSummary } from '../../api';
 import { OrganizationModel } from '../../../organization/providers/types';
 import { Controller, useForm } from 'react-hook-form';
-import { useAppDispatch } from '../../../../store/hooks';
-import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
-import { ErrorModel } from '../../../../api/providers';
+import { FieldValidationError } from '../../../../api/providers';
 import Select, { SingleValue } from 'react-select';
 
 interface Props {
@@ -29,11 +27,11 @@ interface Option {
 const CreateOrganization = ({ show, handleClose }: Props) => {
   const [organizations, setOrganizations] = useState<OrganizationModel[]>([]);
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<SingleValue<Option>>();
-  const dispatch = useAppDispatch();
   const {
     register,
     handleSubmit,
     control,
+    setError,
     formState: { errors }
   } = useForm<RegisterValues>();
 
@@ -44,20 +42,26 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
   }, []);
 
   const submitHandler = (formValues: RegisterValues) => {
-    dispatch(showLoader(true));
+    
     toast.promise(createOrganization(formValues), {
       pending: 'Loading...',
       success: {
         render({ data }: { data: OrganizationModel }) {
-          dispatch(showLoader(false));
+          
           handleClose(true);
           return `Organization with id: ${data.identifier} created successfully.`;
         }
       },
       error: {
-        render({ data }: { data: ErrorModel }) {
-          dispatch(showLoader(false));
-          return data.message;
+        render({ data: err }: { data: any }) {
+          if (typeof err !== 'string') {
+            const fieldValidationErrors = err as FieldValidationError[];
+            return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
+              setError(errField.field as any, {message: errField.messageKey});
+              return errField.field;
+            }).toString();
+          }
+          return err;
         }
       }
     });

@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import mapboxgl, { Map, Popup } from 'mapbox-gl';
+import { Map, Popup } from 'mapbox-gl';
 import { Button, Container } from 'react-bootstrap';
-import { createChildLocationLabel, getPolygonCenter, initMap } from '../../../../../utils';
+import { createChildLocationLabel, disableMapInteractions, getPolygonCenter, initMap } from '../../../../../utils';
 import PopoverComponent from '../../../../../components/Popover';
 import { bbox, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
-import { useAppDispatch } from '../../../../../store/hooks';
-import { showLoader } from '../../../../reducers/loader';
 import {
   COLOR_BOOTSTRAP_DANGER,
   COLOR_BOOTSTRAP_SUCCESS,
@@ -13,11 +11,12 @@ import {
   COLOR_YELLOW,
   MAPBOX_STYLE_SATELLITE,
   MAP_DEFAULT_FILL_OPACITY,
-  MAP_STRUCTURE_LEGEND_COLORS,
+  MAP_IRS_STRUCTURE_LEGEND_COLORS,
+  MAP_MDA_STRUCTURE_LEGEND_COLORS,
   MDA_STRUCTURE_COLOR_COMPLETE,
   MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
   MDA_STRUCTURE_COLOR_NOT_VISITED,
-  MDA_STRUCTURE_COLOR_SMC_COMPLETE_,
+  MDA_STRUCTURE_COLOR_SMC_COMPLETE,
   MDA_STRUCTURE_COLOR_SPAQ_COMPLETE,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
@@ -26,8 +25,6 @@ import {
 import { IrsStructureStatus, MdaStructureStatus, ReportLocationProperties, ReportType } from '../../../providers/types';
 import { useParams } from 'react-router-dom';
 
-mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
-
 interface Props {
   featureSet:
     | [location: FeatureCollection<Polygon | MultiPolygon, ReportLocationProperties>, parentId: string]
@@ -35,15 +32,15 @@ interface Props {
   clearMap: () => void;
   doubleClickEvent: (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => void;
   showModal: (show: boolean, feature?: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => void;
+  defaultColumn: string;
 }
 
-const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Props) => {
+const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defaultColumn }: Props) => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(20);
   const [lat, setLat] = useState(10);
   const [zoom, setZoom] = useState(4);
-  const dispatch = useAppDispatch();
   let contextMenuPopup = useRef<Popup>(new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: false }));
   let hoverPopup = useRef<Popup>(new Popup({ closeOnClick: false, closeButton: false, offset: 20 }));
   const opacity = useRef(MAP_DEFAULT_FILL_OPACITY);
@@ -102,7 +99,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
     ) => {
       //check if its clear map event or new location otherwise just fit to bounds
       if (map.getSource(parentLocationIdentifier) === undefined && data.features.length) {
-        dispatch(showLoader(true));
+        disableMapInteractions(map, true);
         map.addSource(parentLocationIdentifier, {
           type: 'geojson',
           promoteId: 'id',
@@ -123,31 +120,31 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
                 'structure',
                 [
                   'case',
-                  ['==', ['get', 'locationBusinessStatus'], null],
-                  'black',
-                  ['==', ['get', 'locationBusinessStatus'], MdaStructureStatus.COMPLETE],
+                  ['==', ['get', 'defaultColumnValue'], null],
+                  'gray',
+                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.COMPLETE],
                   MDA_STRUCTURE_COLOR_COMPLETE,
-                  ['==', ['get', 'locationBusinessStatus'], MdaStructureStatus.NOT_VISITED],
+                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.NOT_VISITED],
                   MDA_STRUCTURE_COLOR_NOT_VISITED,
-                  ['==', ['get', 'locationBusinessStatus'], MdaStructureStatus.NOT_ELIGIBLE],
+                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.NOT_ELIGIBLE],
                   MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
-                  ['==', ['get', 'locationBusinessStatus'], MdaStructureStatus.SMC_COMPLETE],
-                  MDA_STRUCTURE_COLOR_SMC_COMPLETE_,
-                  ['==', ['get', 'locationBusinessStatus'], MdaStructureStatus.SPAQ_COMPLETE],
+                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.SMC_COMPLETE],
+                  MDA_STRUCTURE_COLOR_SMC_COMPLETE,
+                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.SPAQ_COMPLETE],
                   MDA_STRUCTURE_COLOR_SPAQ_COMPLETE,
                   'transparent'
                 ],
                 [
                   'case',
-                  ['==', ['get', 'distCoveragePercent'], null],
-                  'black',
-                  ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_LOW],
+                  ['==', ['get', 'defaultColumnValue'], null],
+                  'gray',
+                  ['<', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_LOW],
                   COLOR_BOOTSTRAP_DANGER,
-                  ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_MEDIUM],
+                  ['<', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_MEDIUM],
                   COLOR_BOOTSTRAP_WARNING,
-                  ['<', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_HIGH],
+                  ['<', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_HIGH],
                   COLOR_YELLOW,
-                  ['>=', ['get', 'distCoveragePercent'], REPORT_TABLE_PERCENTAGE_HIGH],
+                  ['>=', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_HIGH],
                   COLOR_BOOTSTRAP_SUCCESS,
                   'transparent'
                 ]
@@ -174,31 +171,21 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
 
         map.on('mouseover', parentLocationIdentifier + '-label', e => {
           const feature = map.queryRenderedFeatures(e.point)[0];
-          const properties = feature.properties as ReportLocationProperties;
+          const properties = feature.properties;
           if (properties && !hoverPopup.current.isOpen() && !contextMenuPopup.current.isOpen()) {
+            properties['columnDataMap'] = JSON.parse(properties['columnDataMap']);
+            let htmlText = 'Data not parsed correctly.';
+            if (properties['columnDataMap'][defaultColumn]) {
+              htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
+              ${`<small class='my-3'>${defaultColumn}: ${
+                properties['columnDataMap'][defaultColumn].isPercentage
+                  ? properties['columnDataMap'][defaultColumn].value.toFixed(2) + '%'
+                  : properties['columnDataMap'][defaultColumn].value
+              }</small>`}
+            </div>`;
+            }
             map.getCanvas().style.cursor = 'pointer';
-            hoverPopup.current
-              .setLngLat(e.lngLat)
-              .setHTML(
-                `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
-                ${
-                  properties.distCoveragePercent !== undefined
-                    ? `<small class='my-3'>Distribution coverage: ${properties.distCoveragePercent.toFixed(2)}%</small>`
-                    : ''
-                }
-                ${
-                  properties.numberOfChildrenTreated !== undefined
-                    ? `<small class='my-3'>Number Of Children Treated: ${properties.numberOfChildrenTreated}</small>`
-                    : ''
-                }
-              ${
-                properties.numberOfChildrenEligible !== undefined
-                  ? `<small class='my-3'>Number Of Children Eligible: ${properties.numberOfChildrenEligible}</small>`
-                  : ''
-              }
-              </div>`
-              )
-              .addTo(map);
+            hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(map);
           }
         });
 
@@ -221,7 +208,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
             //this is an event which is fired at the end of the fit bounds
             if (e === 1) {
               createChildLocationLabel(map, featureSet, parentLocationIdentifier);
-              dispatch(showLoader(false));
+              disableMapInteractions(map, false);
             }
             return e;
           },
@@ -231,11 +218,10 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
       }
       //fit to bounds if that location already exist
       else if (data.features.length) {
-        dispatch(showLoader(false));
         map.fitBounds(bbox(data) as any);
       }
     },
-    [dispatch]
+    [defaultColumn]
   );
 
   useEffect(() => {
@@ -296,12 +282,20 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal }: Pr
                     <li key={index}>
                       <span
                         className="sidebar-legend"
-                        style={{ backgroundColor: MAP_STRUCTURE_LEGEND_COLORS[index] }}
+                        style={{ backgroundColor: MAP_MDA_STRUCTURE_LEGEND_COLORS[index] }}
                       ></span>
                       {el}
                     </li>
                   ))
-                : Object.keys(IrsStructureStatus).map((el, index) => <li key={index}>{el}</li>)}
+                : Object.keys(IrsStructureStatus).map((el, index) => (
+                    <li key={index}>
+                      <span
+                        className="sidebar-legend"
+                        style={{ backgroundColor: MAP_IRS_STRUCTURE_LEGEND_COLORS[index] }}
+                      ></span>
+                      {el}
+                    </li>
+                  ))}
             </ul>
           </PopoverComponent>
         )}

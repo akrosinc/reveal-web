@@ -6,22 +6,14 @@ import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
 import DefaultTable from '../../../components/Table/DefaultTable';
-import {
-  PAGINATION_DEFAULT_SIZE,
-  PLAN_TABLE_COLUMNS,
-  REPORTING_PAGE,
-  UNEXPECTED_ERROR_STRING
-} from '../../../constants';
-import { useAppDispatch } from '../../../store/hooks';
+import { PAGINATION_DEFAULT_SIZE, PLAN_TABLE_COLUMNS, REPORTING_PAGE } from '../../../constants';
 import { PlanModel } from '../../plan/providers/types';
-import { showLoader } from '../../reducers/loader';
 import { getPlanReports, getReportTypes } from '../api';
 import { ReportType } from '../providers/types';
 
 const Reports = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [reportTypes, setReportTypes] = useState<string[]>();
@@ -30,30 +22,24 @@ const Reports = () => {
 
   const loadData = useCallback(
     (size: number, page: number, reportType: string, sortDirection?: boolean, sortField?: string) => {
-      dispatch(showLoader(true));
       getPlanReports(size, page, reportType, false, '', sortField, sortDirection)
         .then(plans => {
           setPlanList(plans);
         })
-        .catch(err => toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING))
-        .finally(() => dispatch(showLoader(false)));
+        .catch(err => toast.error(err));
     },
-    [dispatch]
+    []
   );
 
   useEffect(() => {
-    dispatch(showLoader(true));
     getReportTypes()
       .then(res => {
         setReportTypes(res);
         setSelectedReportType(res.length ? res[0] : undefined);
         loadData(PAGINATION_DEFAULT_SIZE, 0, res[0]);
       })
-      .catch(err => {
-        dispatch(showLoader(false));
-        toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING);
-      });
-  }, [loadData, dispatch]);
+      .catch(err => toast.error(err));
+  }, [loadData]);
 
   const paginationHandler = (size: number, page: number) => {
     if (selectedReportType) {
@@ -82,6 +68,12 @@ const Reports = () => {
         return 'MDA';
       case ReportType.MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL:
         return 'MDA Lite';
+      case ReportType.IRS_LITE_COVERAGE:
+        return 'IRS Lite';
+      case ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL:
+        return 'IRS Lite Operational Area';
+      default:
+        return reportName
     }
   };
 
@@ -107,7 +99,7 @@ const Reports = () => {
             columns={PLAN_TABLE_COLUMNS}
             data={planList.content}
             sortHandler={sortHandler}
-            clickHandler={(id: string) => navigate(REPORTING_PAGE + `/planId/${id}/reportType/${selectedReportType}`)}
+            clickHandler={(id: string) => navigate(REPORTING_PAGE + `/report/${id}/reportType/${selectedReportType}`)}
             clickAccessor="identifier"
           />
           <Paginator

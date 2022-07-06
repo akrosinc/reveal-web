@@ -4,8 +4,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { Goal, Priority } from '../../../../providers/types';
 import { createGoal, updateGoal } from '../../../../api';
-import { useAppDispatch } from '../../../../../../store/hooks';
-import { showLoader } from '../../../../../reducers/loader';
+import { useAppSelector } from '../../../../../../store/hooks';
 
 interface Props {
   show: boolean;
@@ -21,6 +20,7 @@ interface goalForm {
 }
 
 const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props) => {
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
   const {
     register,
     handleSubmit,
@@ -31,7 +31,6 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
       priority: currentGoal?.priority
     }
   });
-  const dispatch = useAppDispatch();
 
   const submitHandler = (form: goalForm) => {
     if (planId) {
@@ -39,7 +38,6 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
       //calling backend on submit
       if (currentGoal) {
         //update plan
-        dispatch(showLoader(true));
         currentGoal.description = form.description;
         currentGoal.priority = form.priority;
         toast
@@ -48,22 +46,15 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
             success: 'Goal updated successfully',
             error: 'There was an error creating goal'
           })
-          .finally(() => {
-            dispatch(showLoader(false));
-            closeHandler();
-          });
+          .finally(() => closeHandler());
       } else {
-        dispatch(showLoader(true));
         toast
           .promise(createGoal(form as Goal, planId), {
             pending: 'Loading...',
             success: 'Goal added successfully',
             error: 'There was an error creating goal'
           })
-          .finally(() => {
-            dispatch(showLoader(false));
-            closeHandler();
-          });
+          .finally(() => closeHandler());
       }
     } else {
       // edit goal on new plan or create a new one
@@ -85,7 +76,7 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
   };
 
   return (
-    <Modal show={show} centered backdrop="static" onHide={closeHandler}>
+    <Modal show={show} centered backdrop="static" onHide={closeHandler} contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header closeButton>
         <Modal.Title>{currentGoal ? 'Edit Goal' : 'Create Goal'}</Modal.Title>
       </Modal.Header>
@@ -94,7 +85,7 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
           <Form.Group className="mb-2">
             <Form.Label>Description</Form.Label>
             <Form.Control
-              id='goal-description-input'
+              id="goal-description-input"
               placeholder="Enter plan description"
               type="text"
               {...register('description', {

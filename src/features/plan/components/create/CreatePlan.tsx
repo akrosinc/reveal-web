@@ -2,10 +2,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Col, Row, Container, Tab, Tabs, Form, Button, Accordion } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
-import { PLANS, REGEX_TITLE_VALIDATION, UNEXPECTED_ERROR_STRING } from '../../../../constants';
-import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
+import { PLANS, REGEX_TITLE_VALIDATION } from '../../../../constants';
+import { useAppSelector } from '../../../../store/hooks';
 import { getLocationHierarchyList } from '../../../location/api';
-import { showLoader } from '../../../reducers/loader';
 import { createPlan, deleteGoalById, getInterventionTypeList, getPlanById, updatePlanDetails } from '../../api';
 import Moment from 'moment';
 import { useForm, Controller } from 'react-hook-form';
@@ -19,10 +18,12 @@ import { toast } from 'react-toastify';
 import CreateGoal from './Goals/CreateGoal/CreateGoal';
 import { useTranslation } from 'react-i18next';
 import { toUtcString } from '../../../../utils';
+import { FieldValidationError } from '../../../../api/providers';
 
 interface Options {
   value: string;
   label: string;
+  nodeOrder?: string[];
 }
 
 interface RegisterValues {
@@ -34,13 +35,14 @@ interface RegisterValues {
   };
   locationHierarchy: string;
   interventionType: string;
+  hierarchyLevelTarget?: string;
 }
 
 const CreatePlan = () => {
   const [activeTab, setActiveTab] = useState('plan-details');
   const [hierarchyList, setHierarchyList] = useState<Options[]>([]);
   const [interventionTypeList, setInterventionTypeList] = useState<Options[]>([]);
-  const dispatch = useAppDispatch();
+  const [targetType, setTargetType] = useState<SingleValue<Options>>();
   const navigate = useNavigate();
   const [selectedHierarchy, setSelectedHierarchy] = useState<SingleValue<Options>>();
   const [selectedInterventionType, setSelectedInterventionType] = useState<SingleValue<Options>>();
@@ -63,7 +65,8 @@ const CreatePlan = () => {
     formState: { errors, isDirty },
     trigger,
     setValue,
-    getValues
+    getValues,
+    setError
   } = useForm<RegisterValues>();
 
   const loadPlan = useCallback(
@@ -76,28 +79,29 @@ const CreatePlan = () => {
           setValue('title', res.title);
           setValue('locationHierarchy', res.locationHierarchy.identifier);
           setValue('interventionType', res.interventionType.identifier);
+          setValue('hierarchyLevelTarget', res.planTargetType);
+          setTargetType({ value: res.planTargetType, label: res.planTargetType });
           setGoalList(res.goals);
           setSelectedHierarchy({ value: res.locationHierarchy.identifier, label: res.locationHierarchy.name });
           setSelectedInterventionType({ value: res.interventionType.identifier, label: res.interventionType.name });
         })
         .catch(err => {
-          toast.error(err.message ? err.message : UNEXPECTED_ERROR_STRING);
+          toast.error(err);
           navigate(PLANS);
-        })
-        .finally(() => dispatch(showLoader(false)));
+        });
     },
-    [dispatch, setValue, navigate]
+    [setValue, navigate]
   );
 
   useEffect(() => {
-    dispatch(showLoader(true));
     Promise.all([getLocationHierarchyList(0, 0, true), getInterventionTypeList()])
       .then(async ([locationHierarchyList, interventionTypeList]) => {
         setHierarchyList(
           locationHierarchyList.content.map<Options>(el => {
             return {
               label: el.name,
-              value: el.identifier ?? ''
+              value: el.identifier ?? '',
+              nodeOrder: el.nodeOrder
             };
           })
         );
@@ -112,22 +116,14 @@ const CreatePlan = () => {
         if (id) {
           // id exists show plan details
           loadPlan(id);
-        } else {
-          dispatch(showLoader(false));
         }
       })
       .catch(err => {
-        if (err.message) {
-          toast.error(err.message);
-        } else {
-          toast.error(err.toString());
-        }
-        dispatch(showLoader(false));
+        toast.error(err);
       });
-  }, [dispatch, id, loadPlan]);
+  }, [id, loadPlan]);
 
   const createPlanHandler = (formData: RegisterValues) => {
-    dispatch(showLoader(true));
     if (goalList.length) {
       createPlan({
         ...formData,
@@ -137,11 +133,9 @@ const CreatePlan = () => {
         },
         goals: goalList
       }).then(_ => {
-        dispatch(showLoader(false));
         navigate(PLANS);
       });
     } else {
-      dispatch(showLoader(false));
       setCurrentForm({
         ...formData,
         effectivePeriod: {
@@ -155,7 +149,6 @@ const CreatePlan = () => {
 
   const updatePlanHandler = (form: RegisterValues) => {
     if (id !== undefined) {
-      dispatch(showLoader(true));
       toast
         .promise(
           updatePlanDetails(
@@ -177,7 +170,6 @@ const CreatePlan = () => {
         .finally(() => {
           //clear form dirty flag
           reset(form);
-          dispatch(showLoader(false));
         });
     }
   };
@@ -201,10 +193,8 @@ const CreatePlan = () => {
       if (res) {
         if (id) {
           // we are in edit mode call api to delete goal
-          dispatch(showLoader(true));
           deleteGoalById(goalId, id).then(_ => {
             loadPlan(id);
-            dispatch(showLoader(false));
           });
         } else {
           let newArr = goalList.filter(el => el.identifier !== goalId);
@@ -216,13 +206,28 @@ const CreatePlan = () => {
 
   const closeHandler = (action: boolean) => {
     if (action) {
-      dispatch(showLoader(true));
       createPlan(currentFrom)
         .then(_ => {
           navigate(PLANS);
         })
-        .catch(err => toast.error(err.message !== undefined ? err.message : t('toast.unexpectedError')))
-        .finally(() => dispatch(showLoader(false)));
+        .catch(err => {
+          if (typeof err !== 'string') {
+            const fieldValidationErrors = err as FieldValidationError[];
+            toast.error(
+              'Field Validation Error: ' +
+                fieldValidationErrors
+                  .map(errField => {
+                    setError(errField.field as any, { message: errField.messageKey });
+                    return errField.field;
+                  })
+                  .toString()
+                  .replace(',', ', ')
+            );
+          } else {
+            toast.error(err);
+          }
+          setShowConfirmDialog(false);
+        });
     } else {
       setShowConfirmDialog(false);
     }
@@ -437,6 +442,9 @@ const CreatePlan = () => {
                         value={selectedInterventionType}
                         onChange={selected => {
                           setSelectedInterventionType(selected);
+                          if (id === undefined || id === null) {
+                            setValue('hierarchyLevelTarget', undefined);
+                          }
                           field.onChange(selected?.value);
                         }}
                       />
@@ -446,6 +454,42 @@ const CreatePlan = () => {
                     <Form.Label className="text-danger">{errors.interventionType.message}</Form.Label>
                   )}
                 </Form.Group>
+                {selectedInterventionType?.label.toLocaleLowerCase().includes('lite') && (
+                  <Form.Group className="mb-2">
+                    <Form.Label>{t('planPage.planForm.hierarchyLevelTarget')}</Form.Label>
+                    <Controller
+                      control={control}
+                      name="hierarchyLevelTarget"
+                      rules={{ required: t('planPage.planForm.hierarchyLevelTargetError') as string, minLength: 1 }}
+                      render={({ field }) => (
+                        <Select
+                          className="custom-react-select-container"
+                          classNamePrefix="custom-react-select"
+                          id="hierarchyLevelTarget"
+                          menuPosition="fixed"
+                          isDisabled={id !== undefined}
+                          options={
+                            selectedHierarchy?.nodeOrder
+                              ? selectedHierarchy.nodeOrder.map<Options>(el => {
+                                  return {
+                                    label: el,
+                                    value: el
+                                  };
+                                }).filter(el => el.label !== 'structure')
+                              : []
+                          }
+                          value={id !== undefined ? targetType : undefined}
+                          onChange={selected => {
+                            field.onChange(selected?.value);
+                          }}
+                        />
+                      )}
+                    />
+                    {errors.hierarchyLevelTarget && (
+                      <Form.Label className="text-danger">{errors.hierarchyLevelTarget.message}</Form.Label>
+                    )}
+                  </Form.Group>
+                )}
               </Tab>
               <Tab eventKey="create-goals" title={t('planPage.goals')} style={{ minHeight: '406px' }}>
                 <Accordion id="plan-card" defaultActiveKey="0" flush>

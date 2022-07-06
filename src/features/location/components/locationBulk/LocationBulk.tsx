@@ -6,10 +6,8 @@ import { LocationBulkModel, LocationBulkDetailsModel, LocationBulkStatus } from 
 import { ActionDialog } from '../../../../components/Dialogs';
 import UploadLocation from './upload';
 import Paginator from '../../../../components/Pagination';
-import { useAppDispatch } from '../../../../store/hooks';
 import { PAGINATION_DEFAULT_SIZE, BULK_TABLE_COLUMNS } from '../../../../constants';
 import { getLocationBulkListById, getLocationBulkList } from '../../api';
-import { showLoader } from '../../../reducers/loader';
 import { toast } from 'react-toastify';
 import LocationBulkDetails from './details';
 import DefaultTable from '../../../../components/Table/DefaultTable';
@@ -23,20 +21,17 @@ const LocationBulk = () => {
   const [selectedBulkFile, setSelectedBulkFile] = useState<LocationBulkModel>();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
-  const dispatch = useAppDispatch();
   const [interval, setSelectedInterval] = useState<NodeJS.Timeout>();
 
   const loadData = useCallback(
     (page: number, size: number, field?: string, sortDirection?: boolean) => {
-      dispatch(showLoader(true));
       getLocationBulkList(page, size, field, sortDirection)
         .then(res => {
           setLocationBulkList(res);
         })
-        .catch(err => toast.error(err.message !== undefined ? err.message : err.toString()))
-        .finally(() => dispatch(showLoader(false)));
+        .catch(err => toast.error(err));
     },
-    [dispatch]
+    []
   );
 
   useEffect(() => {
@@ -52,7 +47,6 @@ const LocationBulk = () => {
   };
 
   const openBulkById = (selectedBulk: LocationBulkModel) => {
-    dispatch(showLoader(true));
     getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier)
       .then(res => {
         setSelectedBulkFile(selectedBulk);
@@ -68,8 +62,7 @@ const LocationBulk = () => {
           );
         }
       })
-      .catch(err => toast.error(err.message ? err.message : 'Error loading bulk details'))
-      .finally(() => dispatch(showLoader(false)));
+      .catch(err => toast.error(err));
   };
 
   const closeHandler = () => {
@@ -95,13 +88,11 @@ const LocationBulk = () => {
 
   const paginationHandler = (size: number, page: number) => {
     if (openDetails) {
-      dispatch(showLoader(true));
       getLocationBulkListById(size, page, selectedBulkFile?.identifier ?? '')
         .then(res => {
           setSelectedBulkLocationList(res);
         })
-        .catch(err => toast.error(err.message ? err.message : 'Error loading bulk details'))
-        .finally(() => dispatch(showLoader(false)));
+        .catch(err => toast.error(err));
     } else {
       loadData(size, page, currentSortField, currentSortDirection);
     }

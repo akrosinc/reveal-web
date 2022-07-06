@@ -1,4 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import moment from 'moment';
 import React, { useState } from 'react';
 import { Table } from 'react-bootstrap';
 import { useAppSelector } from '../../store/hooks';
@@ -73,7 +74,7 @@ const DefaultTable = ({ columns, data, sortHandler, clickHandler, clickAccessor 
                     return <td key={index}>{dataEl[el.accessor][key]}</td>;
                   } else {
                     //check if its a date field and format if so
-                    if (new Date(dataEl[el.accessor]).getTime()) {
+                    if (moment(dataEl[el.accessor], true).isValid()) {
                       return <td key={index}>{formatDate(dataEl[el.accessor])}</td>;
                     }
                     return <td key={index}>{dataEl[el.accessor]?.toString()}</td>;

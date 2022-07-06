@@ -7,6 +7,7 @@ export interface PlanModel {
   locationHierarchy: LocationHierarchy;
   interventionType: InterventionType;
   goals: Goal[];
+  planTargetType: string;
 }
 
 export interface Period {
@@ -72,6 +73,7 @@ export interface PlanCreateModel {
   locationHierarchy: string;
   interventionType: string;
   goals?: Goal[];
+  geographicLevelRequest?: string
 }
 
 export interface InterventionType {

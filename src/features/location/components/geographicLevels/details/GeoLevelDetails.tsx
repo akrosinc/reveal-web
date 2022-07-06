@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { ErrorModel } from '../../../../../api/providers';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
-import { useAppDispatch, useAppSelector } from '../../../../../store/hooks';
-import { showLoader } from '../../../../reducers/loader';
+import { useAppSelector } from '../../../../../store/hooks';
 import { deleteGeographicLevel, updateGeographicLevel } from '../../../api';
 import { GeographicLevel } from '../../../providers/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FieldValidationError } from '../../../../../api/providers';
 
 interface Props {
   closeHandler: () => void;
@@ -16,7 +15,6 @@ interface Props {
 }
 
 const GeoLevelDetails = ({ closeHandler, data }: Props) => {
-  const dispatch = useAppDispatch();
   const {
     register,
     handleSubmit,
@@ -35,33 +33,24 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
   }, [data, setValue]);
 
   const submitHandler = (formValues: GeographicLevel) => {
-    dispatch(showLoader(true));
     toast.promise(updateGeographicLevel(formValues), {
       pending: 'Loading...',
       success: {
         render({ data }: { data: GeographicLevel }) {
-          dispatch(showLoader(false));
           closeHandler();
           return 'Geographic location updated successfully with id: ' + data.identifier;
         }
       },
       error: {
-        render({ data }: any) {
-          dispatch(showLoader(false));
-          if (data.fieldValidationErrors) {
-            data.fieldValidationErrors.forEach((el: any) => {
-              if (el.field === 'name') {
-                setError('name', {
-                  message: el.messageKey
-                });
-              } else {
-                setError('title', {
-                  message: el.messageKey
-                });
-              }
-            });
+        render({ data: err }: { data: any }) {
+          if (typeof err !== 'string') {
+            const fieldValidationErrors = err as FieldValidationError[];
+            return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
+              setError(errField.field as any, {message: errField.messageKey});
+              return errField.field;
+            }).toString();
           }
-          return data.message !== undefined ? data.message : 'An error has occured!';
+          return err;
         }
       }
     });
@@ -69,21 +58,18 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
 
   const deleteHandler = (action: boolean) => {
     if (action) {
-      dispatch(showLoader(true));
       if (data !== undefined) {
         toast.promise(deleteGeographicLevel(data.identifier), {
           pending: 'Loading...',
           success: {
             render() {
-              dispatch(showLoader(false));
               closeHandler();
               return `Geographic Level with id: ${data.identifier} deleted successfully!`;
             }
           },
           error: {
-            render({ data }: { data: ErrorModel }) {
-              dispatch(showLoader(false));
-              return data.message !== undefined ? data.message : 'An error has occured!';
+            render({ data: err }: {data: string}) {
+              return err;
             }
           }
         });
