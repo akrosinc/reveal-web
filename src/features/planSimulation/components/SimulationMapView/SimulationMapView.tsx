@@ -39,7 +39,6 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
             id: 'main-border',
             type: 'line',
             source: 'main',
-            layout: {},
             paint: {
               'line-color': 'black',
               'line-width': 4

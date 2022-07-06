@@ -54,7 +54,7 @@ const FormField = ({ register, entityTag, index, errors, range }: Props) => {
           )}
           {entityTag.valueType === 'boolean' && (
             <Form.Check
-              {...register((entityTag.tag + index) as any, { required: true })}
+              {...register((entityTag.tag + index) as any)}
               inline
               name={entityTag.tag + index}
             />
