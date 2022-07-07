@@ -391,6 +391,7 @@ const Simulation = () => {
               setShowDetails(true);
             }}
           />
+          {searchData.length === 0 && <p className='text-center lead'>No data found.</p>}
         </>
       )}
       {showModal && selectedEntity && (

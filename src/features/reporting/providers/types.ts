@@ -30,6 +30,7 @@ export interface ReportLocationProperties {
   distCoveragePercent: number;
   numberOfChildrenTreated: number;
   numberOfChildrenEligible: number;
+  defaultColumnValue: number | undefined;
 }
 
 export enum IrsStructureStatus {

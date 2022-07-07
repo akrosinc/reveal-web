@@ -122,12 +122,15 @@ const Report = () => {
       ])
         .then(async ([plan, report]) => {
           if (report.features.length) {
+            //map location data to show it in a table also
+            const tableData = report.features.map(el => el.properties);
             //check if there is a default column set
             //casting to any because using custom geoJSON object
-            if ((report as any).defaultDisplayColumn) {
-              setDefaultDisplayColumn((report as any).defaultDisplayColumn);
+            const defaultDisplayColumn: string | undefined = (report as any).defaultDisplayColumn;
+            if (defaultDisplayColumn) {
+              setDefaultDisplayColumn(defaultDisplayColumn);
               report.features.forEach(el => {
-                el.properties = {...el.properties, defaultColumnValue: el.properties.columnDataMap[(report as any).defaultDisplayColumn].value} as any;
+                el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
               });
             } else {
               setDefaultDisplayColumn('');
@@ -135,8 +138,6 @@ const Report = () => {
             setPlan(plan);
             setFilterData([]);
             setCols(mapColumns(report.features[0].properties.columnDataMap));
-            //map location data to show it in a table also
-            const tableData = report.features.map(el => el.properties);
             setData(tableData);
             setFilterData(tableData);
             setFeatureSet([report, 'main']);
@@ -172,16 +173,20 @@ const Report = () => {
         .then(res => {
           //reset search input on new load
           if (searchInput.current) searchInput.current.value = '';
-          let tableData = res.features.map(el => el.properties);
+          //mapping location properties to data usable for table view
+          const tableData = res.features.map(el => el.properties);
+          //casting to any because of using custom geoJSON object
+          const defaultDisplayColumn: string | undefined = (res as any).defaultDisplayColumn;
           if (tableData.length) {
             //first set data to empty array for new columns to render
             setFilterData([]);
-            //check if there is a default column set and add default column property            
-            //casting to any because using custom geoJSON object
-            if ((res as any).defaultDisplayColumn) {
-              setDefaultDisplayColumn((res as any).defaultDisplayColumn);
+            //check if there is a default column set and add default column property
+            if (defaultDisplayColumn) {
+              setDefaultDisplayColumn(defaultDisplayColumn);
               res.features.forEach(el => {
-                el.properties = {...el.properties, defaultColumnValue: el.properties.columnDataMap[(res as any).defaultDisplayColumn].value} as any;
+                if (el.properties.columnDataMap[defaultDisplayColumn]) {
+                  el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
+                }
               });
             } else {
               setDefaultDisplayColumn('');

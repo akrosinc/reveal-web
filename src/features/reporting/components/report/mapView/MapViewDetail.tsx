@@ -173,6 +173,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
           const feature = map.queryRenderedFeatures(e.point)[0];
           const properties = feature.properties;
           if (properties && !hoverPopup.current.isOpen() && !contextMenuPopup.current.isOpen()) {
+            //mapbox strigifies objects inside properties, parsing columnDataMap back to object
             properties['columnDataMap'] = JSON.parse(properties['columnDataMap']);
             let htmlText = 'Data not parsed correctly.';
             if (properties['columnDataMap'][defaultColumn]) {
