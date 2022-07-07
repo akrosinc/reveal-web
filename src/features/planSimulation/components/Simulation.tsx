@@ -15,7 +15,7 @@ import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
 import { filterData, getEntityList, getLocationList } from '../api';
-import { EntityTag, LookupEntityType, SearchLocationProperties } from '../providers/types';
+import { EntityTag, LookupEntityType, OperatorSignEnum, SearchLocationProperties } from '../providers/types';
 import FormField from './FormField/FormField';
 import MultiFormField from './FormField/MultiFormField';
 import SimulationMapView from './SimulationMapView';
@@ -99,7 +99,7 @@ const Simulation = () => {
         arr.push({
           fieldIdentifier: requestBody.inputObj.identifier,
           entityIdentifier: requestBody.inputObj.lookupEntityType.identifier,
-          fieldType: 'tag',
+          fieldType: el.fieldType,
           range: {
             minValue: requestBody.inputValue,
             maxValue: form[el.tag + index + 'range']
@@ -109,7 +109,7 @@ const Simulation = () => {
         arr.push({
           fieldIdentifier: requestBody.inputObj.identifier,
           entityIdentifier: requestBody.inputObj.lookupEntityType.identifier,
-          fieldType: 'tag',
+          fieldType: el.fieldType,
           values: [
             { sign: requestBody.selectedValue, value: requestBody.inputValue },
             ...el.more.map((el, i) => {
@@ -124,9 +124,9 @@ const Simulation = () => {
         arr.push({
           fieldIdentifier: requestBody.inputObj.identifier,
           entityIdentifier: requestBody.inputObj.lookupEntityType.identifier,
-          fieldType: 'tag',
+          fieldType: el.fieldType,
           searchValue: {
-            sign: requestBody.selectedValue ?? '=',
+            sign: requestBody.selectedValue ?? OperatorSignEnum.EQUAL,
             value: requestBody.inputValue
           }
         });
@@ -391,6 +391,7 @@ const Simulation = () => {
               setShowDetails(true);
             }}
           />
+          {searchData.length === 0 && <p className='text-center lead'>No data found.</p>}
         </>
       )}
       {showModal && selectedEntity && (

@@ -77,8 +77,10 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
       //delete old location
       if (mapInstance.getSource('main')) {
         mapInstance.removeLayer('main-border');
-        mapInstance.removeLayer('main-label');
-        mapInstance.removeSource('main-label');
+        if (mapInstance.getSource('main-label')) {
+          mapInstance.removeLayer('main-label');
+          mapInstance.removeSource('main-label');
+        }
         mapInstance.removeSource('main');
       }
       loadLocation(mapInstance, mapData);
