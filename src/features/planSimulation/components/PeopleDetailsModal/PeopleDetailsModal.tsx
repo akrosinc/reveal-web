@@ -14,15 +14,15 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
       <Table>
         <thead>
           <tr>
-            <th>Name Use</th>
-            <th>Family Name</th>
+            <th>First Name</th>
+            <th>Last Name</th>
           </tr>
         </thead>
         <tbody>
           {locationProps.persons.map((el, index) => (
             <tr key={index}>
-              <td>{el.nameUse}</td>
-              <td>{el.nameFamily}</td>
+              <td>{el.firstName}</td>
+              <td>{el.lastName}</td>
             </tr>
           ))}
         </tbody>

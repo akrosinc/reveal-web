@@ -1,6 +1,7 @@
 export interface EntityTag {
   identifier: string;
   tag: string;
+  fieldType: string;
   valueType: string;
   lookupEntityType: LookupEntityType;
   more: EntityTag[];
@@ -28,6 +29,6 @@ export interface SearchLocationProperties {
 }
 
 export interface Person {
-  nameUse: string; 
-  nameFamily: string
+  firstName: string; 
+  lastName: string
 }
