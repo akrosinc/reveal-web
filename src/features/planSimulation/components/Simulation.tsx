@@ -121,7 +121,10 @@ const Simulation = () => {
             { sign: requestBody.selectedValue, value: requestBody.inputValue },
             ...el.more.map((el, i) => {
               return {
-                sign: el.valueType === 'string' ? OperatorSignEnum.EQUAL : form[el.tag + el.identifier + index + i + 'sign'],
+                sign:
+                  el.valueType === 'string'
+                    ? OperatorSignEnum.EQUAL
+                    : form[el.tag + el.identifier + index + i + 'sign'],
                 value: form[el.tag + el.identifier + index + i]
               };
             })
@@ -147,7 +150,10 @@ const Simulation = () => {
     filterData(requestData)
       .then(res => {
         res.features.forEach(el => {
-          if (el.properties) el.properties['childrenNumber'] = el.properties['persons'].length;
+          if (el.properties) {
+            el.properties['childrenNumber'] = el.properties['persons'].length;
+            el.properties['identifier'] = (el as any).identifier;
+          };
         });
         setMapData(res);
         setSearchData([
@@ -165,6 +171,9 @@ const Simulation = () => {
             return [];
           })
         ]);
+        if (!res.features.length) {
+          toast.info('No data found for given query.');
+        }
       })
       .catch(err => toast.error(err));
     setShowResult(true);
@@ -174,8 +183,16 @@ const Simulation = () => {
     setSelectedEntityConditionList([]);
     setShowResult(false);
     setMapData(undefined);
+    setToLocation(undefined);
     reset();
   };
+
+  const openMapLocation = (locationId: string) => {
+    setSelectedRow(searchData.find(el => el.identifier === locationId));
+    setShowDetails(true);
+  };
+  const handleDobuleClickRef = useRef(openMapLocation);
+  handleDobuleClickRef.current = openMapLocation;
 
   const conditionalRender = (el: EntityTag, index: number) => {
     if (el.more && el.more.length) {
@@ -384,6 +401,7 @@ const Simulation = () => {
             fullScreenHandler={() => {
               setMapFullScreen(!mapFullScreen);
             }}
+            openModalHandler={(id: string) => handleDobuleClickRef.current(id)}
             fullScreen={mapFullScreen}
             mapData={mapData}
             toLocation={toLocation}

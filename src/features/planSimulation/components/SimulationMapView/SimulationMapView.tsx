@@ -10,20 +10,36 @@ interface Props {
   fullScreen: boolean;
   mapData: PlanningLocationResponse | undefined;
   toLocation: LngLatBounds | undefined;
+  openModalHandler: (id: string) => void;
 }
 
-const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation }: Props) => {
+const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation, openModalHandler }: Props) => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(28.33);
   const [lat, setLat] = useState(-15.44);
   const [zoom, setZoom] = useState(10);
-  let hoverPopup = useRef<Popup>(new Popup({ closeOnClick: false, closeButton: false, offset: 20 }));
+  const hoverPopup = useRef<Popup>(new Popup({ closeOnClick: false, closeButton: false, offset: 20 }));
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
-    map.current = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_STREETS);
+    const mapInstance = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_STREETS);
+    clickHandler(mapInstance);
+    map.current = mapInstance;
   });
+
+  const clickHandler = (mapInstance: Map) => {
+    mapInstance.on('click', e => {
+      const features = mapInstance.queryRenderedFeatures(e.point);
+      if (features.length) {
+        //convert to location properties feature
+        const feature = features[0];
+        if (feature && feature.properties && (feature.source === 'main' || feature.source === 'main-label')) {
+          openModalHandler(feature.properties['identifier']);
+        }
+      }
+    });
+  };
 
   useEffect(() => {
     if (toLocation && map && map.current) map.current?.fitBounds(toLocation);
@@ -33,7 +49,6 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation 
     if (mapData && mapData.features.length) {
       mapInstance.addSource('parent', {
         type: 'geojson',
-        promoteId: 'id',
         data: { type: 'FeatureCollection', features: mapData.parents ?? [] },
         tolerance: 1
       });
@@ -51,7 +66,6 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation 
       );
       mapInstance.addSource('main', {
         type: 'geojson',
-        promoteId: 'id',
         data: mapData,
         tolerance: 1
       });
@@ -127,8 +141,9 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation 
       //Clear map and all WebGLContext from browser memory
       map.current?.remove();
       map.current = undefined;
+      //cache delete for possible performance improvements on larger datasets
       caches.keys().then(keys => {
-        keys.forEach(key => caches.delete(key).then(res => console.log('cache deleted: ' + res)));
+        keys.forEach(key => caches.delete(key));
       });
     };
   }, []);
@@ -143,6 +158,7 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation 
     const mapboxInstance = initMap(mapContainer, currentPosition ?? [lng, lat], zoom, 'bottom-left', style);
     //set zoom to another value to trigger a rerender
     setZoom(Number((zoom + Math.random()).toPrecision(2)));
+    clickHandler(mapboxInstance);
     mapboxInstance.once('load', () => loadLocation(mapboxInstance, mapData));
     map.current = mapboxInstance;
   };
