@@ -1,3 +1,6 @@
+import { Feature, MultiPolygon, Polygon, Properties } from "@turf/turf";
+import { LngLatBounds } from "mapbox-gl";
+
 export interface EntityTag {
   identifier: string;
   tag: string;
@@ -7,7 +10,6 @@ export interface EntityTag {
   more: EntityTag[];
   range?: [EntityTag, EntityTag];
 }
-
 export interface LookupEntityType {
   identifier: string;
   code: string;
@@ -25,10 +27,13 @@ export enum OperatorSignEnum {
 export interface SearchLocationProperties {
   identifier: string;
   name: string;
-  persons: Person[];
+  persons: Record<string, any>[];
+  bounds: LngLatBounds;
 }
 
-export interface Person {
-  firstName: string; 
-  lastName: string
+export interface PlanningLocationResponse {
+  identifier: string | undefined;
+  type: "FeatureCollection";
+  features: Feature<MultiPolygon | MultiPolygon, Properties>[];
+  parents: Feature<Polygon | MultiPolygon, Properties>[];
 }

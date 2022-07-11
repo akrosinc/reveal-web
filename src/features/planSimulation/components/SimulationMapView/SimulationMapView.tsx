@@ -1,18 +1,18 @@
-import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf';
-import { Map, Popup } from 'mapbox-gl';
+import { LngLatBounds, Map, Popup } from 'mapbox-gl';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
 import { MAPBOX_STYLE_SATELLITE, MAPBOX_STYLE_SATELLITE_STREETS, MAPBOX_STYLE_STREETS } from '../../../../constants';
 import { fitCollectionToBounds, initMap } from '../../../../utils';
-import { Person } from '../../providers/types';
+import { PlanningLocationResponse } from '../../providers/types';
 
 interface Props {
   fullScreenHandler: () => void;
   fullScreen: boolean;
-  mapData?: FeatureCollection<Polygon | MultiPolygon, Properties>;
+  mapData: PlanningLocationResponse | undefined;
+  toLocation: LngLatBounds | undefined;
 }
 
-const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) => {
+const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation }: Props) => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(28.33);
@@ -25,51 +25,70 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
     map.current = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_STREETS);
   });
 
-  const loadLocation = useCallback(
-    (mapInstance: Map, mapData?: FeatureCollection<Polygon | MultiPolygon, Properties>) => {
-      if (mapData && mapData.features.length) {
-        mapInstance.addSource('main', {
-          type: 'geojson',
-          promoteId: 'id',
-          data: mapData,
-          tolerance: 1
-        });
-        mapInstance.addLayer(
-          {
-            id: 'main-border',
-            type: 'line',
-            source: 'main',
-            paint: {
-              'line-color': 'black',
-              'line-width': 4
-            }
-          },
-          'label-layer'
-        );
-        mapInstance.on('mouseover', 'main-label', e => {
-          const feature = mapInstance.queryRenderedFeatures(e.point)[0];
-          const properties = feature.properties;
-          let htmlText = 'Data not parsed correctly.';
-          if (properties && properties['persons'] && !hoverPopup.current.isOpen()) {
-            const personList: Person[] = JSON.parse(properties['persons']);
-            htmlText = `<p>Persons found: ${personList.length}</p>`;
+  useEffect(() => {
+    if (toLocation && map && map.current) map.current?.fitBounds(toLocation);
+  }, [toLocation]);
+
+  const loadLocation = useCallback((mapInstance: Map, mapData?: PlanningLocationResponse) => {
+    if (mapData && mapData.features.length) {
+      mapInstance.addSource('parent', {
+        type: 'geojson',
+        promoteId: 'id',
+        data: { type: 'FeatureCollection', features: mapData.parents ?? [] },
+        tolerance: 1
+      });
+      mapInstance.addLayer(
+        {
+          id: 'parent-border',
+          type: 'line',
+          source: 'parent',
+          paint: {
+            'line-color': 'black',
+            'line-width': 4
           }
-          mapInstance.getCanvas().style.cursor = 'pointer';
-          hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(mapInstance);
-        });
-        mapInstance.on('mouseleave', 'main-label', () => {
-          mapInstance.getCanvas().style.cursor = '';
-          hoverPopup.current.remove();
-        });
-        fitCollectionToBounds(mapInstance, mapData, 'main');
-      } else {
-        mapInstance.flyTo({
-          zoom: 6
-        });
-      }
-    },
-    []
-  );
+        },
+        'label-layer'
+      );
+      mapInstance.addSource('main', {
+        type: 'geojson',
+        promoteId: 'id',
+        data: mapData,
+        tolerance: 1
+      });
+      mapInstance.addLayer(
+        {
+          id: 'main-border',
+          type: 'line',
+          source: 'main',
+          paint: {
+            'line-color': 'black',
+            'line-width': 4
+          }
+        },
+        'label-layer'
+      );
+      mapInstance.on('mouseover', 'main-label', e => {
+        const feature = mapInstance.queryRenderedFeatures(e.point)[0];
+        const properties = feature.properties;
+        let htmlText = '<p class="text-danger">Data not parsed correctly.</p>';
+        if (properties && properties['persons']) {
+          const personList: any[] = JSON.parse(properties['persons']);
+          htmlText = `<p class="text-success">Persons found: ${personList.length}</p>`;
+        }
+        mapInstance.getCanvas().style.cursor = 'pointer';
+        hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(mapInstance);
+      });
+      mapInstance.on('mouseleave', 'main-label', () => {
+        mapInstance.getCanvas().style.cursor = '';
+        hoverPopup.current.remove();
+      });
+      fitCollectionToBounds(mapInstance, mapData, 'main');
+    } else {
+      mapInstance.flyTo({
+        zoom: 6
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const mapInstance = map.current;
@@ -82,6 +101,10 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
           mapInstance.removeSource('main-label');
         }
         mapInstance.removeSource('main');
+      }
+      if (mapInstance.getSource('parent')) {
+        mapInstance.removeLayer('parent-border');
+        mapInstance.removeSource('parent');
       }
       loadLocation(mapInstance, mapData);
     }
@@ -104,6 +127,9 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData }: Props) =>
       //Clear map and all WebGLContext from browser memory
       map.current?.remove();
       map.current = undefined;
+      caches.keys().then(keys => {
+        keys.forEach(key => caches.delete(key).then(res => console.log('cache deleted: ' + res)));
+      });
     };
   }, []);
 
