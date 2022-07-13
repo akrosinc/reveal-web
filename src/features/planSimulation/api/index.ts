@@ -1,6 +1,6 @@
 import api from '../../../api/axios';
 import { LOCATION_HIERARCHY } from '../../../constants';
-import { EntityTag, LookupEntityType, PlanningLocationResponse } from '../providers/types';
+import { EntityTag, LookupEntityType, PersonMeta, PlanningLocationResponse } from '../providers/types';
 
 export const getEntityList = async (): Promise<LookupEntityType[]> => {
   const data = await api.get<LookupEntityType[]>(`entityTag/entityType`).then(res => res.data);
@@ -28,5 +28,10 @@ export const filterData = async (requestData: {
   entityFilters: any[];
 }): Promise<PlanningLocationResponse> => {
   const data = await api.post<PlanningLocationResponse>('entityTag/filter', requestData).then(res => res.data);
+  return data;
+};
+
+export const getPersonMetadata = async (personId: string): Promise<PersonMeta> => {
+  const data = await api.get<PersonMeta>(`entityTag/person/${personId}`).then(res => res.data);
   return data;
 };

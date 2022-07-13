@@ -48,3 +48,13 @@ export interface PlanningLocationResponse {
   features: Feature<MultiPolygon | MultiPolygon, Properties>[];
   parents: Feature<Polygon | MultiPolygon, Properties>[];
 }
+
+export interface PersonMeta {
+  matadata: {
+    value: string;
+    type: string;
+  }[];
+  coreFields: {
+    [x: string]: string;
+  };
+}

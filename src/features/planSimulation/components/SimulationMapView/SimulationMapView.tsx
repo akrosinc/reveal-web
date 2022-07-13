@@ -71,18 +71,6 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
       });
       mapInstance.addLayer(
         {
-          id: 'main-fill',
-          type: 'fill',
-          source: 'main',
-          paint: {
-            "fill-color": 'yellow',
-            "fill-opacity": 0.4
-          }
-        },
-        'label-layer'
-      );
-      mapInstance.addLayer(
-        {
           id: 'main-border',
           type: 'line',
           source: 'main',

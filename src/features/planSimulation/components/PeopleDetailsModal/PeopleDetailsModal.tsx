@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Col, Collapse, Row, Table } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import { getPersonMetadata } from '../../api';
 import { SearchLocationProperties } from '../../providers/types';
 
 interface Props {
@@ -7,9 +9,9 @@ interface Props {
 }
 
 const PeopleDetailsModal = ({ locationProps }: Props) => {
-  const [showColumn, setShowColumn] = useState('');
+  const [showColumn, setShowColumn] = useState<string | undefined>();
   const [locationMeta, setLocationMeta] = useState(false);
-  const [personMeta] = useState<{
+  const [personMeta, setPersonMeta] = useState<{
     matadata: {
       value: string;
       type: string;
@@ -48,27 +50,39 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
           </tr>
         </thead>
         <tbody>
-          {personMeta && locationProps.persons.map(person => (
+          {locationProps.persons.map(person => (
             <React.Fragment key={person.coreFields.identifier}>
-              <tr onClick={() => setShowColumn(showColumn === person.coreFields.identifier ? '' : person.coreFields.identifier)}>
+              <tr
+                onClick={() => {
+                  if (showColumn === person.coreFields.identifier) {
+                    getPersonMetadata(person.coreFields.identifier)
+                      .then(res => {
+                        setPersonMeta(res);
+                        setShowColumn(person.coreFields.identifier);
+                      })
+                      .catch(err => {
+                        toast.error(err);
+                        setShowColumn('');
+                      });
+                  } else {
+                    setShowColumn('');
+                  }
+                }}
+              >
                 <td>{person.coreFields.identifier}</td>
                 <td>{person.coreFields.firstName}</td>
                 <td>{person.coreFields.lastName}</td>
               </tr>
-              <Collapse
-                in={showColumn === person.coreFields.identifier}
-                onEnter={() => console.log('get request by person id:', personMeta.coreFields)}
-                timeout={0}
-              >
+              <Collapse in={showColumn === person.coreFields.identifier} timeout={0}>
                 <tr>
                   <td colSpan={3} className="p-0">
-                    {Object.keys(personMeta.coreFields).map((el, index) => (
+                    {Object.keys(personMeta?.coreFields ?? []).map((el, index) => (
                       <div className="border border-1" key={index}>
                         <Row className="p-2 m-0">
                           <Col md={2}>
                             <b>{el}:</b>
                           </Col>
-                          <Col>{personMeta.coreFields[el]}</Col>
+                          <Col>{personMeta?.coreFields[el] ?? ''}</Col>
                         </Row>
                       </div>
                     ))}
@@ -79,7 +93,6 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
           ))}
         </tbody>
       </Table>
-      {personMeta === undefined && <p className='lead text-center my-2'>No person data found.</p>}
       {locationProps.persons.length === 0 && <p className="ms-2">No data found.</p>}
     </>
   );

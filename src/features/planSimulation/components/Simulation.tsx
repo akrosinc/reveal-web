@@ -63,7 +63,7 @@ const Simulation = () => {
   const [searchData, setSearchData] = useState<SearchLocationProperties[]>([]);
   const [nodeList, setNodeList] = useState<string[]>([]);
   const [locationList, setLocationList] = useState<any[]>([]);
-  const [selectedHierarchy, setSelectedHierarchy] = useState<string>('');
+  const [selectedHierarchy, setSelectedHierarchy] = useState<string>();
   const [selectedLocation, setSelectedLocation] = useState<SingleValue<{ label: string; value: string }>>();
   const [selectedRow, setSelectedRow] = useState<SearchLocationProperties>();
   const [toLocation, setToLocation] = useState<LngLatBounds>();
@@ -238,6 +238,7 @@ const Simulation = () => {
                             setSelectedHierarchy(e.target.value);
                             setNodeList(selectedHierarchy.nodeOrder.filter(el => el !== 'structure'));
                           } else {
+                            setSelectedHierarchy(undefined);
                             setNodeList([]);
                             setSelectedLocation(null);
                           }
@@ -262,7 +263,7 @@ const Simulation = () => {
                       <Form.Select
                         className="w-50"
                         onChange={e => {
-                          if (e.target.value) {
+                          if (e.target.value && selectedHierarchy) {
                             getLocationList(selectedHierarchy, e.target.value).then(res => {
                               setLocationList(res);
                             });
@@ -389,7 +390,7 @@ const Simulation = () => {
                   })}
                 </SimpleBar>
                 <span title="Display results" style={{ position: 'absolute', bottom: 0, right: 0 }}>
-                  <Button type="submit" disabled={selectedEntityConditionList.length === 0} className="me-2 mb-2">
+                  <Button type="submit" disabled={selectedEntityConditionList.length === 0 || selectedHierarchy === undefined} className="me-2 mb-2">
                     <FontAwesomeIcon icon="search" />
                   </Button>
                 </span>
