@@ -481,7 +481,7 @@ const Simulation = () => {
         />
       )}
       {showDetails && selectedRow && (
-        <Modal size='lg' show centered backdrop='static' keyboard={false} onHide={() => setShowDetails(false)}>
+        <Modal size='lg' show centered scrollable backdrop='static' keyboard={false} onHide={() => setShowDetails(false)}>
           <Modal.Header closeButton>
             <Modal.Title className='w-100 text-center'>Location details</Modal.Title>
           </Modal.Header>

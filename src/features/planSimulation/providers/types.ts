@@ -28,9 +28,7 @@ export interface SearchLocationProperties {
   identifier: string;
   name: string;
   persons: Person[];
-  metadata: {
-    [x: string]: string;
-  };
+  metadata: Metadata[];
   bounds: LngLatBounds;
 }
 
@@ -50,11 +48,13 @@ export interface PlanningLocationResponse {
 }
 
 export interface PersonMeta {
-  matadata: {
-    value: string;
-    type: string;
-  }[];
+  metadata: Metadata[];
   coreFields: {
     [x: string]: string;
   };
+}
+
+interface Metadata {
+  value: string;
+  type: string;
 }

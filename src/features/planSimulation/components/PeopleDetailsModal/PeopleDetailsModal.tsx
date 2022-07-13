@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button, Col, Collapse, Row, Table } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { getPersonMetadata } from '../../api';
-import { SearchLocationProperties } from '../../providers/types';
+import { PersonMeta, SearchLocationProperties } from '../../providers/types';
 
 interface Props {
   locationProps: SearchLocationProperties;
@@ -11,15 +11,7 @@ interface Props {
 const PeopleDetailsModal = ({ locationProps }: Props) => {
   const [showColumn, setShowColumn] = useState<string | undefined>();
   const [locationMeta, setLocationMeta] = useState(false);
-  const [personMeta, setPersonMeta] = useState<{
-    matadata: {
-      value: string;
-      type: string;
-    }[];
-    coreFields: {
-      [x: string]: string;
-    };
-  }>();
+  const [personMeta, setPersonMeta] = useState<PersonMeta>();
 
   return (
     <>
@@ -31,11 +23,15 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
         <div className="my-2">
           {locationProps.metadata &&
             locationProps.metadata.length &&
-            Object.keys(locationProps.metadata).map((key, index) => (
-              <p key={index}>
-                <b>{key}:</b>
-                {locationProps.metadata[key]}
-              </p>
+            locationProps.metadata.map((el, index) => (
+              <div className="border border-1" key={index}>
+                <Row className="p-2 m-0">
+                  <Col md={2}>
+                    <b>{el.type}:</b>
+                  </Col>
+                  <Col>{el.value}</Col>
+                </Row>
+              </div>
             ))}
         </div>
       </Collapse>
@@ -53,8 +49,9 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
           {locationProps.persons.map(person => (
             <React.Fragment key={person.coreFields.identifier}>
               <tr
+                title={showColumn ? '' : 'Click to expand person details'}
                 onClick={() => {
-                  if (showColumn === person.coreFields.identifier) {
+                  if (showColumn !== person.coreFields.identifier) {
                     getPersonMetadata(person.coreFields.identifier)
                       .then(res => {
                         setPersonMeta(res);
@@ -62,10 +59,10 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
                       })
                       .catch(err => {
                         toast.error(err);
-                        setShowColumn('');
+                        setShowColumn(undefined);
                       });
                   } else {
-                    setShowColumn('');
+                    setShowColumn(undefined);
                   }
                 }}
               >
@@ -75,7 +72,7 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
               </tr>
               <Collapse in={showColumn === person.coreFields.identifier} timeout={0}>
                 <tr>
-                  <td colSpan={3} className="p-0">
+                  <td colSpan={3} className="p-0" style={{ backgroundColor: '#EEEE' }}>
                     {Object.keys(personMeta?.coreFields ?? []).map((el, index) => (
                       <div className="border border-1" key={index}>
                         <Row className="p-2 m-0">
@@ -83,6 +80,17 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
                             <b>{el}:</b>
                           </Col>
                           <Col>{personMeta?.coreFields[el] ?? ''}</Col>
+                        </Row>
+                      </div>
+                    ))}
+                    <p className="my-2 ms-2">Person metadata:</p>
+                    {(personMeta?.metadata ?? []).map((el, index) => (
+                      <div className="border border-1" key={index}>
+                        <Row className="p-2 m-0">
+                          <Col md={2}>
+                            <b>{el.type}:</b>
+                          </Col>
+                          <Col>{el.value}</Col>
                         </Row>
                       </div>
                     ))}
