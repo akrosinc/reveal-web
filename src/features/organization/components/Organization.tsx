@@ -133,7 +133,7 @@ const Organization = () => {
   }, [loadData]);
 
   const paginatonHandler = (size: number, page: number) => {
-    loadData(size, page);
+    loadData(size, page, currentSearchInput, currentSortField, currentSortDirection);
   };
 
   const filterData = (e: ChangeEvent<HTMLInputElement>) => {

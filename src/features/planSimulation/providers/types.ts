@@ -27,8 +27,17 @@ export enum OperatorSignEnum {
 export interface SearchLocationProperties {
   identifier: string;
   name: string;
-  persons: Record<string, any>[];
+  persons: Person[];
+  metadata: {
+    [x: string]: string
+  }
   bounds: LngLatBounds;
+}
+
+export interface Person {
+  identifier: string;
+  firstName: string;
+  lastName: string
 }
 
 export interface PlanningLocationResponse {

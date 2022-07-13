@@ -108,18 +108,18 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
             //row.depth is not existing in react table types for some reason, casting to any type solves the issue
             <tr {...row.getRowProps()} style={{ backgroundColor: getColorLevel((row as any).depth) }}>
               {row.cells.map(cell => {
+                const cellData = cell.row.original as any;
                 return cell.column.id === 'active' ? (
                   <td
                     id={cell.column.id + 'click-handler'}
                     {...cell.getCellProps()}
                     onClick={() => {
                       if (cell.column.id !== 'expander') {
-                        let col = row.original as any;
-                        clickHandler(col.identifier);
+                        clickHandler(cellData.identifier);
                       }
                     }}
                   >
-                    {cell.value === 'true' ? <FormCheck disabled checked value='true' /> : <FormCheck disabled value='false'/>}
+                    <FormCheck disabled checked={cellData.active === 'true' ? true : false} />
                   </td>
                 ) : (
                   <td

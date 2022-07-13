@@ -50,7 +50,7 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
       mapInstance.addSource('parent', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: mapData.parents ?? [] },
-        tolerance: 1
+        tolerance: 1.5
       });
       mapInstance.addLayer(
         {
@@ -67,8 +67,20 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
       mapInstance.addSource('main', {
         type: 'geojson',
         data: mapData,
-        tolerance: 1
+        tolerance: 0.75
       });
+      mapInstance.addLayer(
+        {
+          id: 'main-fill',
+          type: 'fill',
+          source: 'main',
+          paint: {
+            "fill-color": 'yellow',
+            "fill-opacity": 0.4
+          }
+        },
+        'label-layer'
+      );
       mapInstance.addLayer(
         {
           id: 'main-border',

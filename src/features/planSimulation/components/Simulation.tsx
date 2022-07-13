@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useRef } from 'react';
 import { useEffect, useState } from 'react';
-import { Button, Col, Form, Row, Table } from 'react-bootstrap';
+import { Button, Col, Form, Modal, Row, Table } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
@@ -165,7 +165,8 @@ const Simulation = () => {
                 identifier: (el as any).identifier,
                 name: props['name'],
                 persons: props['persons'] ?? [],
-                bounds: bounds
+                bounds: bounds,
+                metadata: props['metadata']
               };
             }
             return [];
@@ -479,12 +480,14 @@ const Simulation = () => {
         />
       )}
       {showDetails && selectedRow && (
-        <ActionDialog
-          closeHandler={() => setShowDetails(false)}
-          title="Location Details"
-          element={<PeopleDetailsModal locationProps={selectedRow} />}
-          footer={<Button onClick={() => setShowDetails(false)}>Close</Button>}
-        />
+        <Modal size='lg' show centered backdrop='static' keyboard={false} onHide={() => setShowDetails(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title className='w-100 text-center'>Location details</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          <PeopleDetailsModal locationProps={selectedRow} />
+          </Modal.Body>
+        </Modal>
       )}
     </>
   );
