@@ -1,5 +1,5 @@
-import { Feature, MultiPolygon, Polygon, Properties } from "@turf/turf";
-import { LngLatBounds } from "mapbox-gl";
+import { Feature, MultiPolygon, Polygon, Properties } from '@turf/turf';
+import { LngLatBounds } from 'mapbox-gl';
 
 export interface EntityTag {
   identifier: string;
@@ -29,20 +29,22 @@ export interface SearchLocationProperties {
   name: string;
   persons: Person[];
   metadata: {
-    [x: string]: string
-  }
+    [x: string]: string;
+  };
   bounds: LngLatBounds;
 }
 
 export interface Person {
-  identifier: string;
-  firstName: string;
-  lastName: string
+  coreFields: {
+    identifier: string;
+    firstName: string;
+    lastName: string;
+  };
 }
 
 export interface PlanningLocationResponse {
   identifier: string | undefined;
-  type: "FeatureCollection";
+  type: 'FeatureCollection';
   features: Feature<MultiPolygon | MultiPolygon, Properties>[];
   parents: Feature<Polygon | MultiPolygon, Properties>[];
 }
