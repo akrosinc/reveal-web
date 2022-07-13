@@ -49,14 +49,14 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
         </thead>
         <tbody>
           {personMeta && locationProps.persons.map(person => (
-            <React.Fragment key={person.identifier}>
-              <tr onClick={() => setShowColumn(showColumn === person.identifier ? '' : person.identifier)}>
-                <td>{person.identifier}</td>
-                <td>{person.firstName}</td>
-                <td>{person.lastName}</td>
+            <React.Fragment key={person.coreFields.identifier}>
+              <tr onClick={() => setShowColumn(showColumn === person.coreFields.identifier ? '' : person.coreFields.identifier)}>
+                <td>{person.coreFields.identifier}</td>
+                <td>{person.coreFields.firstName}</td>
+                <td>{person.coreFields.lastName}</td>
               </tr>
               <Collapse
-                in={showColumn === person.identifier}
+                in={showColumn === person.coreFields.identifier}
                 onEnter={() => console.log('get request by person id:', personMeta.coreFields)}
                 timeout={0}
               >
