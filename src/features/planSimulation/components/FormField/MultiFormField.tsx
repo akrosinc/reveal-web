@@ -17,16 +17,20 @@ const MultiFormField = ({ register, entityTag, index: parentIndex, errors, delet
 
   return (
     <div className="border border-2 p-2" key={parentIndex}>
-      <Form.Label className="me-2">Range</Form.Label>
-      <Form.Check
-        inline
-        onChange={e => {
-          if (e.target.value === 'on') {
-            deleteHandler(1, true);
-          }
-          setRange(!range);
-        }}
-      />
+      {entityTag.valueType !== 'string' && (
+        <>
+          <Form.Label className="me-2">Range</Form.Label>{' '}
+          <Form.Check
+            inline
+            onChange={e => {
+              if (e.target.value === 'on') {
+                deleteHandler(1, true);
+              }
+              setRange(!range);
+            }}
+          />
+        </>
+      )}
       {range && <p>Beetween</p>}
       <FormField entityTag={entityTag} errors={errors} index={parentIndex} register={register} range={range} />
       <p className="my-2">{range ? 'AND' : 'OR'}</p>
@@ -36,7 +40,7 @@ const MultiFormField = ({ register, entityTag, index: parentIndex, errors, delet
         entityTag.more.map((el, index) => (
           <div key={index}>
             <FormField
-                range={false}
+              range={false}
               entityTag={el}
               errors={errors}
               index={entityTag.identifier + parentIndex + index}

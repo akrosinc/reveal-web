@@ -216,6 +216,13 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
           padding: 20,
           duration: 600
         });
+        // Grab the prefers reduced media query.
+        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        // Check if the media query matches or is not available.
+        if (!mediaQuery || mediaQuery.matches) {
+          createChildLocationLabel(map, featureSet, parentLocationIdentifier);
+          disableMapInteractions(map, false);
+        }
       }
       //fit to bounds if that location already exist
       else if (data.features.length) {

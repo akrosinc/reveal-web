@@ -1,8 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf';
 import { useRef } from 'react';
 import { useEffect, useState } from 'react';
-import { Button, Col, Form, Row } from 'react-bootstrap';
+import { Button, Col, Form, Modal, Row, Table } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
@@ -10,18 +9,25 @@ import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
 import { PageableModel } from '../../../api/providers';
 import { ActionDialog } from '../../../components/Dialogs';
-import DefaultTable from '../../../components/Table/DefaultTable';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
 import { filterData, getEntityList, getLocationList } from '../api';
-import { EntityTag, LookupEntityType, OperatorSignEnum, SearchLocationProperties } from '../providers/types';
+import {
+  EntityTag,
+  LookupEntityType,
+  OperatorSignEnum,
+  PlanningLocationResponse,
+  SearchLocationProperties
+} from '../providers/types';
 import FormField from './FormField/FormField';
 import MultiFormField from './FormField/MultiFormField';
 import SimulationMapView from './SimulationMapView';
 import SimulationModal from './SimulationModal';
 import Select, { SingleValue } from 'react-select';
 import PeopleDetailsModal from './PeopleDetailsModal';
+import { bbox } from '@turf/turf';
+import { LngLatBounds } from 'mapbox-gl';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -53,13 +59,14 @@ const Simulation = () => {
   const divRef = useRef<HTMLDivElement>(null);
   const divHeight = useWindowResize(divRef.current);
   const [mapFullScreen, setMapFullScreen] = useState(false);
-  const [mapData, setMapData] = useState<FeatureCollection<Polygon | MultiPolygon, Properties>>();
+  const [mapData, setMapData] = useState<PlanningLocationResponse>();
   const [searchData, setSearchData] = useState<SearchLocationProperties[]>([]);
   const [nodeList, setNodeList] = useState<string[]>([]);
   const [locationList, setLocationList] = useState<any[]>([]);
-  const [selectedHierarchy, setSelectedHierarchy] = useState<string>('');
+  const [selectedHierarchy, setSelectedHierarchy] = useState<string>();
   const [selectedLocation, setSelectedLocation] = useState<SingleValue<{ label: string; value: string }>>();
   const [selectedRow, setSelectedRow] = useState<SearchLocationProperties>();
+  const [toLocation, setToLocation] = useState<LngLatBounds>();
 
   useEffect(() => {
     Promise.all([getLocationHierarchyList(50, 0, true), getEntityList()])
@@ -114,7 +121,10 @@ const Simulation = () => {
             { sign: requestBody.selectedValue, value: requestBody.inputValue },
             ...el.more.map((el, i) => {
               return {
-                sign: form[el.tag + el.identifier + index + i + 'sign'],
+                sign:
+                  el.valueType === 'string'
+                    ? OperatorSignEnum.EQUAL
+                    : form[el.tag + el.identifier + index + i + 'sign'],
                 value: form[el.tag + el.identifier + index + i]
               };
             })
@@ -139,20 +149,32 @@ const Simulation = () => {
     };
     filterData(requestData)
       .then(res => {
+        res.features.forEach(el => {
+          if (el.properties) {
+            el.properties['childrenNumber'] = el.properties['persons'].length;
+            el.properties['identifier'] = (el as any).identifier;
+          };
+        });
         setMapData(res);
         setSearchData([
           ...res.features.flatMap(el => {
             const props = el.properties;
             if (props) {
+              const bounds = bbox(el) as any;
               return {
                 identifier: (el as any).identifier,
                 name: props['name'],
-                persons: props['persons'] ?? []
+                persons: props['persons'] ?? [],
+                bounds: bounds,
+                metadata: props['metadata']
               };
             }
             return [];
           })
         ]);
+        if (!res.features.length) {
+          toast.info('No data found for given query.');
+        }
       })
       .catch(err => toast.error(err));
     setShowResult(true);
@@ -162,8 +184,16 @@ const Simulation = () => {
     setSelectedEntityConditionList([]);
     setShowResult(false);
     setMapData(undefined);
+    setToLocation(undefined);
     reset();
   };
+
+  const openMapLocation = (locationId: string) => {
+    setSelectedRow(searchData.find(el => el.identifier === locationId));
+    setShowDetails(true);
+  };
+  const handleDobuleClickRef = useRef(openMapLocation);
+  handleDobuleClickRef.current = openMapLocation;
 
   const conditionalRender = (el: EntityTag, index: number) => {
     if (el.more && el.more.length) {
@@ -208,7 +238,9 @@ const Simulation = () => {
                             setSelectedHierarchy(e.target.value);
                             setNodeList(selectedHierarchy.nodeOrder.filter(el => el !== 'structure'));
                           } else {
+                            setSelectedHierarchy(undefined);
                             setNodeList([]);
+                            setSelectedLocation(null);
                           }
                         }}
                       >
@@ -231,7 +263,7 @@ const Simulation = () => {
                       <Form.Select
                         className="w-50"
                         onChange={e => {
-                          if (e.target.value) {
+                          if (e.target.value && selectedHierarchy) {
                             getLocationList(selectedHierarchy, e.target.value).then(res => {
                               setLocationList(res);
                             });
@@ -324,7 +356,7 @@ const Simulation = () => {
                       <Row className="mx-2 my-3" key={index}>
                         <Col md={9}>{conditionalRender(el, index)}</Col>
                         <Col md={3} className="text-end align-self-end">
-                          {(el.valueType === 'number' || el.valueType === 'date') && (
+                          {(el.valueType === 'number' || el.valueType === 'date' || el.valueType === 'string') && (
                             <span title="More">
                               <Button
                                 className="m-1"
@@ -358,7 +390,7 @@ const Simulation = () => {
                   })}
                 </SimpleBar>
                 <span title="Display results" style={{ position: 'absolute', bottom: 0, right: 0 }}>
-                  <Button type="submit" disabled={selectedEntityConditionList.length === 0} className="me-2 mb-2">
+                  <Button type="submit" disabled={selectedEntityConditionList.length === 0 || selectedHierarchy === undefined} className="me-2 mb-2">
                     <FontAwesomeIcon icon="search" />
                   </Button>
                 </span>
@@ -371,8 +403,10 @@ const Simulation = () => {
             fullScreenHandler={() => {
               setMapFullScreen(!mapFullScreen);
             }}
+            openModalHandler={(id: string) => handleDobuleClickRef.current(id)}
             fullScreen={mapFullScreen}
             mapData={mapData}
+            toLocation={toLocation}
           />
         </Col>
       </Row>
@@ -380,18 +414,43 @@ const Simulation = () => {
         <>
           <hr className="my-4" />
           <h3>Result</h3>
-          <DefaultTable
-            columns={[
-              { name: 'ID', accessor: 'identifier' },
-              { name: 'Location Name', accessor: 'name' }
-            ]}
-            data={searchData}
-            clickHandler={(row: SearchLocationProperties) => {
-              setSelectedRow(row);
-              setShowDetails(true);
-            }}
-          />
-          {searchData.length === 0 && <p className='text-center lead'>No data found.</p>}
+          <Table bordered responsive hover>
+            <thead className="border border-2">
+              <tr>
+                <th>Identifier</th>
+                <th>Location name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {searchData.map(el => (
+                <tr key={el.identifier}>
+                  <td>{el.identifier}</td>
+                  <td>{el.name}</td>
+                  <td className="w-25 text-center">
+                    <Button
+                      className="mx-1"
+                      onClick={() => {
+                        //create deep copy of bounds object for trigging bounds event every time
+                        setToLocation(JSON.parse(JSON.stringify(el.bounds)));
+                      }}
+                    >
+                      View
+                    </Button>
+                    <Button
+                      className="mx-1 my-2 my-md-0"
+                      onClick={() => {
+                        setSelectedRow(el);
+                        setShowDetails(true);
+                      }}
+                    >
+                      Details
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+          {searchData.length === 0 && <p className="text-center lead">No data found.</p>}
         </>
       )}
       {showModal && selectedEntity && (
@@ -422,12 +481,14 @@ const Simulation = () => {
         />
       )}
       {showDetails && selectedRow && (
-        <ActionDialog
-          closeHandler={() => setShowDetails(false)}
-          title="Location Details"
-          element={<PeopleDetailsModal locationProps={selectedRow} />}
-          footer={<Button onClick={() => setShowDetails(false)}>Close</Button>}
-        />
+        <Modal size='lg' show centered scrollable backdrop='static' keyboard={false} onHide={() => setShowDetails(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title className='w-100 text-center'>Location details</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          <PeopleDetailsModal locationProps={selectedRow} />
+          </Modal.Body>
+        </Modal>
       )}
     </>
   );
