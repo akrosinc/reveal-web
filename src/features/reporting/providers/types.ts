@@ -46,3 +46,10 @@ export enum MdaStructureStatus {
   SMC_COMPLETE = "SMC Complete",
   SPAQ_COMPLETE = "SPAQ Complete",
 }
+
+export interface AdditionalReportInfo {
+  reportTypeEnum: string;
+  dashboardFilter: {
+    drug: string[]
+  };
+}

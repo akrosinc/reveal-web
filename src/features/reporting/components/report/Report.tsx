@@ -15,12 +15,13 @@ import {
 import { useAppSelector } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
-import { getMapReportData } from '../../api';
+import { getMapReportData, getReportTypeInfo } from '../../api';
 import { Feature, FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
 import { useRef } from 'react';
-import { FoundCoverage, ReportLocationProperties } from '../../providers/types';
+import { AdditionalReportInfo, FoundCoverage, ReportLocationProperties } from '../../providers/types';
 import ReportModal from './reportModal';
 import { useTranslation } from 'react-i18next';
+import Select, { MultiValue } from 'react-select';
 
 interface BreadcrumbModel {
   locationName: string;
@@ -46,6 +47,13 @@ const Report = () => {
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
   const [defaultDisplayColumn, setDefaultDisplayColumn] = useState('');
+  const [reportInfo, setReportInfo] = useState<AdditionalReportInfo>();
+  const [selectedReportInfo, setSelectedReportInfo] = useState<
+    MultiValue<{
+      label: string;
+      value: string;
+    }>
+  >();
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
@@ -112,45 +120,60 @@ const Report = () => {
 
   const loadData = useCallback(() => {
     if (planId && reportType) {
-      Promise.all([
-        getPlanById(planId),
-        getMapReportData({
-          parentLocationIdentifier: null,
-          reportTypeEnum: reportType,
-          planIdentifier: planId
-        })
-      ])
-        .then(async ([plan, report]) => {
-          if (report.features.length) {
-            //map location data to show it in a table also
-            const tableData = report.features.map(el => el.properties);
-            //check if there is a default column set
-            //casting to any because using custom geoJSON object
-            const defaultDisplayColumn: string | undefined = (report as any).defaultDisplayColumn;
-            if (defaultDisplayColumn) {
-              setDefaultDisplayColumn(defaultDisplayColumn);
-              report.features.forEach(el => {
-                el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
-              });
+      getReportTypeInfo(reportType).then(res => {
+        setReportInfo(res);
+        if (res.dashboardFilter && res.dashboardFilter.drug)
+          setSelectedReportInfo(
+            res.dashboardFilter.drug.map(el => {
+              return {
+                label: el,
+                value: el
+              };
+            })
+          );
+        Promise.all([
+          getPlanById(planId),
+          getMapReportData(
+            {
+              parentLocationIdentifier: null,
+              reportTypeEnum: reportType,
+              planIdentifier: planId
+            },
+            res.dashboardFilter.drug
+          )
+        ])
+          .then(async ([plan, report]) => {
+            if (report.features.length) {
+              //map location data to show it in a table also
+              const tableData = report.features.map(el => el.properties);
+              //check if there is a default column set
+              //casting to any because using custom geoJSON object
+              const defaultDisplayColumn: string | undefined = (report as any).defaultDisplayColumn;
+              if (defaultDisplayColumn) {
+                setDefaultDisplayColumn(defaultDisplayColumn);
+                report.features.forEach(el => {
+                  el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
+                });
+              } else {
+                setDefaultDisplayColumn('');
+              }
+              setPlan(plan);
+              setFilterData([]);
+              setCols(mapColumns(report.features[0].properties.columnDataMap));
+              setData(tableData);
+              setFilterData(tableData);
+              setFeatureSet([report, 'main']);
             } else {
-              setDefaultDisplayColumn('');
+              toast.error('There is no report data found.');
             }
-            setPlan(plan);
-            setFilterData([]);
-            setCols(mapColumns(report.features[0].properties.columnDataMap));
-            setData(tableData);
-            setFilterData(tableData);
-            setFeatureSet([report, 'main']);
-          } else {
-            toast.error('There is no report data found.');
-          }
-        })
-        .catch(err => {
-          toast.error(err);
-          navigate(-1);
-        });
+          })
+          .catch(err => {
+            toast.error(err);
+            //navigate(-1);
+          });
+      });
     } else {
-      navigate(-1);
+      //navigate(-1);
     }
   }, [planId, navigate, reportType]);
 
@@ -312,10 +335,9 @@ const Report = () => {
         <>
           <Row className="mt-3 mb-2">
             <Col md={4} lg={3}>
-              <Form>
-                <Form.Group>
                   <Form.Control
                     ref={searchInput}
+                    className='h-100'
                     placeholder={t('reportPage.search')}
                     type="text"
                     onChange={searchHandler}
@@ -326,9 +348,24 @@ const Report = () => {
                       }
                     }}
                   />
-                </Form.Group>
-              </Form>
             </Col>
+            {reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.drug.length && (
+              <Col md={6}>
+                <Select
+                  placeholder="Select Drug Type"
+                  className="custom-react-select-container w-50"
+                  classNamePrefix="custom-react-select"
+                  id="team-assign-select"
+                  isClearable
+                  value={selectedReportInfo}
+                  isMulti
+                  options={reportInfo.dashboardFilter.drug.map(el => {
+                    return { value: el, label: el };
+                  })}
+                  onChange={newValue => setSelectedReportInfo(newValue)}
+                />
+              </Col>
+            )}
           </Row>
           <div
             style={{

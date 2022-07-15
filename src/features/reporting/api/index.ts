@@ -3,20 +3,32 @@ import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { PLAN, REPORTS } from '../../../constants';
 import { PlanModel } from '../../plan/providers/types';
-import { MapDataReportRequest, ReportLocationProperties } from '../providers/types';
+import { AdditionalReportInfo, MapDataReportRequest, ReportLocationProperties } from '../providers/types';
 
 export const getReportTypes = async (): Promise<string[]> => {
   const data = await api.get<string[]>(REPORTS + '/reportTypes').then(response => response.data);
   return data;
 };
 
-export const getMapReportData = async (mapData: MapDataReportRequest): Promise<FeatureCollection<Polygon | MultiPolygon, ReportLocationProperties>> => {
+export const getReportTypeInfo = async (
+  reportType: string
+): Promise<AdditionalReportInfo> => {
+  const data = await api
+    .get<AdditionalReportInfo>(REPORTS + `/reportAdditionalInfo?reportType=${reportType}`)
+    .then(response => response.data);
+  return data;
+};
+
+export const getMapReportData = async (
+  mapData: MapDataReportRequest,
+  filters?: string[]
+): Promise<FeatureCollection<Polygon | MultiPolygon, ReportLocationProperties>> => {
   const data = await api
     .get<any>(
       REPORTS +
         `/reportData?reportType=${mapData.reportTypeEnum}&planIdentifier=${mapData.planIdentifier}${
           mapData.parentLocationIdentifier !== null ? '&parentIdentifier=' + mapData.parentLocationIdentifier : ''
-        }`
+        }${filters && filters.length ? '&filters=' + filters : ''}`
     )
     .then(response => response.data);
   return data;
