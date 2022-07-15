@@ -1,7 +1,6 @@
-import { FeatureCollection, MultiPolygon, Polygon, Properties } from '@turf/turf';
 import api from '../../../api/axios';
 import { LOCATION_HIERARCHY } from '../../../constants';
-import { EntityTag, LookupEntityType } from '../providers/types';
+import { EntityTag, LookupEntityType, PersonMeta, PlanningLocationResponse } from '../providers/types';
 
 export const getEntityList = async (): Promise<LookupEntityType[]> => {
   const data = await api.get<LookupEntityType[]>(`entityTag/entityType`).then(res => res.data);
@@ -27,9 +26,12 @@ export const filterData = async (requestData: {
   hierarchyIdentifier: string | undefined;
   locationIdentifier: string | undefined;
   entityFilters: any[];
-}): Promise<FeatureCollection<Polygon | MultiPolygon, Properties>> => {
-  const data = await api
-    .post<FeatureCollection<Polygon | MultiPolygon, Properties>>('entityTag/filter', requestData)
-    .then(res => res.data);
+}): Promise<PlanningLocationResponse> => {
+  const data = await api.post<PlanningLocationResponse>('entityTag/filter', requestData).then(res => res.data);
+  return data;
+};
+
+export const getPersonMetadata = async (personId: string): Promise<PersonMeta> => {
+  const data = await api.get<PersonMeta>(`entityTag/person/${personId}`).then(res => res.data);
   return data;
 };

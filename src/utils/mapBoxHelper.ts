@@ -88,7 +88,11 @@ export const getPolygonCenter = (data: Feature<Polygon | MultiPolygon>) => {
   };
 };
 
-export const fitCollectionToBounds = (mapInstance: Map, data: FeatureCollection<Polygon | MultiPolygon>, labelSource?: string) => {
+export const fitCollectionToBounds = (
+  mapInstance: Map,
+  data: FeatureCollection<Polygon | MultiPolygon>,
+  labelSource?: string
+) => {
   const featureSet: Feature<Point, Properties>[] = [];
   const bounds = bbox(data) as any;
   data.features.forEach((element: Feature<Polygon | MultiPolygon, Properties>) => {
@@ -109,6 +113,12 @@ export const fitCollectionToBounds = (mapInstance: Map, data: FeatureCollection<
     padding: 20,
     duration: 600
   });
+  // Grab the prefers reduced media query.
+  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Check if the media query matches or is not available.
+  if (!mediaQuery || mediaQuery.matches) {
+    if (labelSource) createChildLocationLabel(mapInstance, featureSet, labelSource);
+  }
 };
 
 export const createLocation = (map: Map, data: any, moveend: () => void, opacity: number): void => {
@@ -201,6 +211,14 @@ export const createLocation = (map: Map, data: any, moveend: () => void, opacity
         center: centerLabel.center
       }
     );
+    // Grab the prefers reduced media query.
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // Check if the media query matches or is not available.
+    if (!mediaQuery || mediaQuery.matches) {
+      createLocationLabel(map, data, centerLabel.center);
+      moveend();
+      disableMapInteractions(map, false);
+    }
   } else {
     moveend();
   }
@@ -331,6 +349,13 @@ export const createChild = (map: Map, data: any, opacity: number) => {
       padding: 20,
       duration: 600
     });
+    // Grab the prefers reduced media query.
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // Check if the media query matches or is not available.
+    if (!mediaQuery || mediaQuery.matches) {
+      createChildLocationLabel(map, featureSet, data.identifier);
+      disableMapInteractions(map, false);
+    }
   } else {
     disableMapInteractions(map, false);
   }

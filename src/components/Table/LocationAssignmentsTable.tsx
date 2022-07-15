@@ -113,8 +113,8 @@ const LocationAssignmentsTable = ({
                   return (
                     <td {...cell.getCellProps()} style={{ minWidth: '250px' }}>
                       <Select
-                        className="custom-react-select-container"
-                        classNamePrefix="custom-react-select"
+                        menuPortalTarget={document.body} 
+                        styles={{ menuPortal: base => ({ ...base, zIndex: 2, color: 'black' }) }}
                         id={rowData.identifier + '-select'}
                         menuPosition="fixed"
                         isMulti
