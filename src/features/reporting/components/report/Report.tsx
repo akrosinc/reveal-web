@@ -122,7 +122,7 @@ const Report = () => {
     if (planId && reportType) {
       getReportTypeInfo(reportType).then(res => {
         setReportInfo(res);
-        if (res.dashboardFilter && res.dashboardFilter.drug)
+        if (res.dashboardFilter && res.dashboardFilter.drug) {
           setSelectedReportInfo(
             res.dashboardFilter.drug.map(el => {
               return {
@@ -131,6 +131,7 @@ const Report = () => {
               };
             })
           );
+        }
         Promise.all([
           getPlanById(planId),
           getMapReportData(
@@ -139,7 +140,7 @@ const Report = () => {
               reportTypeEnum: reportType,
               planIdentifier: planId
             },
-            res.dashboardFilter.drug
+            res.dashboardFilter && res.dashboardFilter.drug ? res.dashboardFilter.drug : undefined
           )
         ])
           .then(async ([plan, report]) => {
@@ -192,7 +193,7 @@ const Report = () => {
         parentLocationIdentifier: id,
         reportTypeEnum: reportType,
         planIdentifier: planId
-      })
+      }, selectedReportInfo?.map(el => el.value))
         .then(res => {
           //reset search input on new load
           if (searchInput.current) searchInput.current.value = '';
@@ -335,19 +336,19 @@ const Report = () => {
         <>
           <Row className="mt-3 mb-2">
             <Col md={4} lg={3}>
-                  <Form.Control
-                    ref={searchInput}
-                    className='h-100'
-                    placeholder={t('reportPage.search')}
-                    type="text"
-                    onChange={searchHandler}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        return false;
-                      }
-                    }}
-                  />
+              <Form.Control
+                ref={searchInput}
+                className="h-100"
+                placeholder={t('reportPage.search')}
+                type="text"
+                onChange={searchHandler}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    return false;
+                  }
+                }}
+              />
             </Col>
             {reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.drug.length && (
               <Col md={6}>
@@ -362,7 +363,12 @@ const Report = () => {
                   options={reportInfo.dashboardFilter.drug.map(el => {
                     return { value: el, label: el };
                   })}
-                  onChange={newValue => setSelectedReportInfo(newValue)}
+                  onChange={newValue => {
+                    setSelectedReportInfo(newValue);
+                    if (path.length) {
+                      loadChildHandler(path[path.length - 1].locationIdentifier, path[path.length - 1].locationName, 0)
+                    }
+                  }}
                 />
               </Col>
             )}

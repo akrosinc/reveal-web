@@ -66,7 +66,7 @@ const Reports = () => {
         return 'IRS';
       case ReportType.MDA_FULL_COVERAGE:
         return 'MDA';
-      case ReportType.MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL:
+      case ReportType.MDA_LITE_COVERAGE:
         return 'MDA Lite';
       case ReportType.IRS_LITE_COVERAGE:
         return 'IRS Lite';
