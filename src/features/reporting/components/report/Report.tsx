@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Button, Col, Collapse, Container, Form, Row, Table } from 'react-bootstrap';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Column } from 'react-table';
 import { toast } from 'react-toastify';
 import MapViewDetail from './mapView/MapViewDetail';
@@ -57,7 +57,11 @@ const Report = () => {
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
-    loadChildHandler(feature.id as string, feature.properties.name, feature.properties.childrenNumber);
+    loadChildHandler(
+      feature.id as string,
+      feature.properties.name,
+      selectedReportInfo?.map(el => el.value)
+    );
   };
   const handleDobuleClickRef = useRef(doubleClickHandler);
   handleDobuleClickRef.current = doubleClickHandler;
@@ -118,6 +122,14 @@ const Report = () => {
     setShowModal(show);
   };
 
+  const goBackHandler = useCallback(() => {
+    navigate(REPORTING_PAGE, {
+      state: {
+        reportType: reportType
+      }
+    });
+  }, [navigate, reportType]);
+
   const loadData = useCallback(() => {
     if (planId && reportType) {
       getReportTypeInfo(reportType).then(res => {
@@ -170,16 +182,16 @@ const Report = () => {
           })
           .catch(err => {
             toast.error(err);
-            //navigate(-1);
+            goBackHandler();
           });
       });
     } else {
-      //navigate(-1);
+      goBackHandler();
     }
-  }, [planId, navigate, reportType]);
+  }, [planId, reportType, goBackHandler]);
 
   const columns = React.useMemo<Column[]>(
-    () => [{ Header: 'Location name', accessor: 'name', id: 'locationName' }, ...cols],
+    () => [{ Header: 'Name', accessor: 'name', id: 'locationName' }, ...cols],
     [cols]
   );
 
@@ -187,13 +199,16 @@ const Report = () => {
     loadData();
   }, [loadData]);
 
-  const loadChildHandler = (id: string, locationName: string, childrenNumber: number) => {
+  const loadChildHandler = (id: string, locationName: string, selectedReportInfo?: string[]) => {
     if (planId && reportType) {
-      getMapReportData({
-        parentLocationIdentifier: id,
-        reportTypeEnum: reportType,
-        planIdentifier: planId
-      }, selectedReportInfo?.map(el => el.value))
+      getMapReportData(
+        {
+          parentLocationIdentifier: id,
+          reportTypeEnum: reportType,
+          planIdentifier: planId
+        },
+        selectedReportInfo
+      )
         .then(res => {
           //reset search input on new load
           if (searchInput.current) searchInput.current.value = '';
@@ -282,9 +297,9 @@ const Report = () => {
     <Container fluid className="my-4 px-2">
       <Row className="mt-3 align-items-center">
         <Col md={3}>
-          <Link id="back-button" to={REPORTING_PAGE} className="btn btn-primary">
+          <Button id="back-button" onClick={goBackHandler} className="btn btn-primary">
             <FontAwesomeIcon icon="arrow-left" className="me-2" /> {t('reportPage.title')}
-          </Link>
+          </Button>
         </Col>
         <Col md={6} className="text-center">
           <h2 className="m-0">
@@ -366,7 +381,11 @@ const Report = () => {
                   onChange={newValue => {
                     setSelectedReportInfo(newValue);
                     if (path.length) {
-                      loadChildHandler(path[path.length - 1].locationIdentifier, path[path.length - 1].locationName, 0)
+                      loadChildHandler(
+                        path[path.length - 1].locationIdentifier,
+                        path[path.length - 1].locationName,
+                        newValue.map(el => el.value)
+                      );
                     }
                   }}
                 />
@@ -380,7 +399,13 @@ const Report = () => {
             }}
           >
             <ReportsTable
-              clickHandler={loadChildHandler}
+              clickHandler={(locationId, locationName) =>
+                loadChildHandler(
+                  locationId,
+                  locationName,
+                  selectedReportInfo?.map(el => el.value)
+                )
+              }
               sortHandler={sortDataHandler}
               columns={columns}
               data={filterData}
