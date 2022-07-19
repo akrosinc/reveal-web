@@ -130,65 +130,68 @@ const Report = () => {
     });
   }, [navigate, reportType]);
 
-  const loadData = useCallback(() => {
-    if (planId && reportType) {
-      getReportTypeInfo(reportType).then(res => {
-        setReportInfo(res);
-        if (res.dashboardFilter && res.dashboardFilter.drug) {
-          setSelectedReportInfo(
-            res.dashboardFilter.drug.map(el => {
-              return {
-                label: el,
-                value: el
-              };
-            })
-          );
-        }
-        Promise.all([
-          getPlanById(planId),
-          getMapReportData(
-            {
-              parentLocationIdentifier: null,
-              reportTypeEnum: reportType,
-              planIdentifier: planId
-            },
-            res.dashboardFilter && res.dashboardFilter.drug ? res.dashboardFilter.drug : undefined
-          )
-        ])
-          .then(async ([plan, report]) => {
-            if (report.features.length) {
-              //map location data to show it in a table also
-              const tableData = report.features.map(el => el.properties);
-              //check if there is a default column set
-              //casting to any because using custom geoJSON object
-              const defaultDisplayColumn: string | undefined = (report as any).defaultDisplayColumn;
-              if (defaultDisplayColumn) {
-                setDefaultDisplayColumn(defaultDisplayColumn);
-                report.features.forEach(el => {
-                  el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
-                });
+  const loadData = useCallback(
+    (selectedReport?: string[]) => {
+      if (planId && reportType) {
+        getReportTypeInfo(reportType).then(res => {
+          setReportInfo(res);
+          if (res.dashboardFilter && res.dashboardFilter.drug && !!!selectedReport) {
+            setSelectedReportInfo(
+              res.dashboardFilter.drug.map(el => {
+                return {
+                  label: el,
+                  value: el
+                };
+              })
+            );
+          }
+          Promise.all([
+            getPlanById(planId),
+            getMapReportData(
+              {
+                parentLocationIdentifier: null,
+                reportTypeEnum: reportType,
+                planIdentifier: planId
+              },
+              res.dashboardFilter && res.dashboardFilter.drug ? selectedReport ?? res.dashboardFilter.drug : undefined
+            )
+          ])
+            .then(async ([plan, report]) => {
+              if (report.features.length) {
+                //map location data to show it in a table also
+                const tableData = report.features.map(el => el.properties);
+                //check if there is a default column set
+                //casting to any because using custom geoJSON object
+                const defaultDisplayColumn: string | undefined = (report as any).defaultDisplayColumn;
+                if (defaultDisplayColumn) {
+                  setDefaultDisplayColumn(defaultDisplayColumn);
+                  report.features.forEach(el => {
+                    el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
+                  });
+                } else {
+                  setDefaultDisplayColumn('');
+                }
+                setPlan(plan);
+                setFilterData([]);
+                setCols(mapColumns(report.features[0].properties.columnDataMap));
+                setData(tableData);
+                setFilterData(tableData);
+                setFeatureSet([report, 'main']);
               } else {
-                setDefaultDisplayColumn('');
+                toast.error('There is no report data found.');
               }
-              setPlan(plan);
-              setFilterData([]);
-              setCols(mapColumns(report.features[0].properties.columnDataMap));
-              setData(tableData);
-              setFilterData(tableData);
-              setFeatureSet([report, 'main']);
-            } else {
-              toast.error('There is no report data found.');
-            }
-          })
-          .catch(err => {
-            toast.error(err);
-            goBackHandler();
-          });
-      });
-    } else {
-      goBackHandler();
-    }
-  }, [planId, reportType, goBackHandler]);
+            })
+            .catch(err => {
+              toast.error(err);
+              goBackHandler();
+            });
+        });
+      } else {
+        goBackHandler();
+      }
+    },
+    [planId, reportType, goBackHandler]
+  );
 
   const columns = React.useMemo<Column[]>(
     () => [{ Header: 'Name', accessor: 'name', id: 'locationName' }, ...cols],
@@ -249,7 +252,7 @@ const Report = () => {
     }
   };
 
-  const clearMap = () => {
+  const clearMap = (filter?: string[]) => {
     //clear all map data and return to root element on the grid
     if (planId && reportType) {
       //reset search input on new load
@@ -257,7 +260,7 @@ const Report = () => {
       setFeatureSet(undefined);
       path.splice(0, path.length);
       setPath(path);
-      loadData();
+      loadData(filter);
     }
   };
 
@@ -265,11 +268,14 @@ const Report = () => {
     if (planId && reportType) {
       path.splice(index + 1, path.length - index);
       setPath(path);
-      getMapReportData({
-        parentLocationIdentifier: el.locationIdentifier,
-        reportTypeEnum: reportType,
-        planIdentifier: planId
-      })
+      getMapReportData(
+        {
+          parentLocationIdentifier: el.locationIdentifier,
+          reportTypeEnum: reportType,
+          planIdentifier: planId
+        },
+        selectedReportInfo?.map(el => el.value)
+      )
         .then(res => {
           //reset search input on new load
           if (searchInput.current) searchInput.current.value = '';
@@ -318,7 +324,7 @@ const Report = () => {
             <span
               role="button"
               className={path.length ? 'me-1 link-primary' : 'me-1 text-secondary pe-none'}
-              onClick={() => clearMap()}
+              onClick={() => clearMap(selectedReportInfo?.map(el => el.value))}
             >
               {plan?.title} /
             </span>
@@ -386,6 +392,8 @@ const Report = () => {
                         path[path.length - 1].locationName,
                         newValue.map(el => el.value)
                       );
+                    } else {
+                      loadData(newValue.map(el => el.value));
                     }
                   }}
                 />
