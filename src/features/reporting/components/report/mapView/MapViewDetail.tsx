@@ -285,7 +285,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
           <PopoverComponent title="Structure Map Legend">
             <ul style={{ listStyle: 'none' }}>
               {reportType === ReportType.MDA_FULL_COVERAGE ||
-              reportType === ReportType.MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL
+              reportType === ReportType.MDA_LITE_COVERAGE
                 ? Object.keys(MdaStructureStatus).map((el, index) => (
                     <li key={index}>
                       <span

@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Button, Col, Collapse, Container, Form, Row, Table } from 'react-bootstrap';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Column } from 'react-table';
 import { toast } from 'react-toastify';
 import MapViewDetail from './mapView/MapViewDetail';
@@ -15,12 +15,13 @@ import {
 import { useAppSelector } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
-import { getMapReportData } from '../../api';
+import { getMapReportData, getReportTypeInfo } from '../../api';
 import { Feature, FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
 import { useRef } from 'react';
-import { FoundCoverage, ReportLocationProperties } from '../../providers/types';
+import { AdditionalReportInfo, FoundCoverage, ReportLocationProperties } from '../../providers/types';
 import ReportModal from './reportModal';
 import { useTranslation } from 'react-i18next';
+import Select, { MultiValue } from 'react-select';
 
 interface BreadcrumbModel {
   locationName: string;
@@ -46,10 +47,21 @@ const Report = () => {
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
   const [defaultDisplayColumn, setDefaultDisplayColumn] = useState('');
+  const [reportInfo, setReportInfo] = useState<AdditionalReportInfo>();
+  const [selectedReportInfo, setSelectedReportInfo] = useState<
+    MultiValue<{
+      label: string;
+      value: string;
+    }>
+  >();
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
-    loadChildHandler(feature.id as string, feature.properties.name, feature.properties.childrenNumber);
+    loadChildHandler(
+      feature.id as string,
+      feature.properties.name,
+      selectedReportInfo?.map(el => el.value)
+    );
   };
   const handleDobuleClickRef = useRef(doubleClickHandler);
   handleDobuleClickRef.current = doubleClickHandler;
@@ -110,52 +122,79 @@ const Report = () => {
     setShowModal(show);
   };
 
-  const loadData = useCallback(() => {
-    if (planId && reportType) {
-      Promise.all([
-        getPlanById(planId),
-        getMapReportData({
-          parentLocationIdentifier: null,
-          reportTypeEnum: reportType,
-          planIdentifier: planId
-        })
-      ])
-        .then(async ([plan, report]) => {
-          if (report.features.length) {
-            //map location data to show it in a table also
-            const tableData = report.features.map(el => el.properties);
-            //check if there is a default column set
-            //casting to any because using custom geoJSON object
-            const defaultDisplayColumn: string | undefined = (report as any).defaultDisplayColumn;
-            if (defaultDisplayColumn) {
-              setDefaultDisplayColumn(defaultDisplayColumn);
-              report.features.forEach(el => {
-                el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
-              });
-            } else {
-              setDefaultDisplayColumn('');
-            }
-            setPlan(plan);
-            setFilterData([]);
-            setCols(mapColumns(report.features[0].properties.columnDataMap));
-            setData(tableData);
-            setFilterData(tableData);
-            setFeatureSet([report, 'main']);
-          } else {
-            toast.error('There is no report data found.');
+  const goBackHandler = useCallback(() => {
+    navigate(REPORTING_PAGE, {
+      state: {
+        reportType: reportType
+      }
+    });
+  }, [navigate, reportType]);
+
+  const loadData = useCallback(
+    (selectedReport?: string[]) => {
+      if (planId && reportType) {
+        getReportTypeInfo(reportType).then(res => {
+          setReportInfo(res);
+          if (res.dashboardFilter && res.dashboardFilter.drug && !!!selectedReport) {
+            setSelectedReportInfo(
+              res.dashboardFilter.drug.map(el => {
+                return {
+                  label: el,
+                  value: el
+                };
+              })
+            );
           }
-        })
-        .catch(err => {
-          toast.error(err);
-          navigate(-1);
+          Promise.all([
+            getPlanById(planId),
+            getMapReportData(
+              {
+                parentLocationIdentifier: null,
+                reportTypeEnum: reportType,
+                planIdentifier: planId
+              },
+              res.dashboardFilter && res.dashboardFilter.drug ? selectedReport ?? res.dashboardFilter.drug : undefined
+            )
+          ])
+            .then(async ([plan, report]) => {
+              if (report.features.length) {
+                //map location data to show it in a table also
+                const tableData = report.features.map(el => el.properties);
+                //check if there is a default column set
+                //casting to any because using custom geoJSON object
+                const defaultDisplayColumn: string | undefined = (report as any).defaultDisplayColumn;
+                if (defaultDisplayColumn) {
+                  setDefaultDisplayColumn(defaultDisplayColumn);
+                  report.features.forEach(el => {
+                    el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
+                  });
+                } else {
+                  setDefaultDisplayColumn('');
+                }
+                setPlan(plan);
+                setFilterData([]);
+                setCols(mapColumns(report.features[0].properties.columnDataMap));
+                setData(tableData);
+                setFilterData(tableData);
+                setFeatureSet([report, 'main']);
+              } else {
+                toast.error('There is no report data found.');
+              }
+            })
+            .catch(err => {
+              toast.error(err);
+              goBackHandler();
+            });
         });
-    } else {
-      navigate(-1);
-    }
-  }, [planId, navigate, reportType]);
+      } else {
+        goBackHandler();
+      }
+    },
+    [planId, reportType, goBackHandler]
+  );
 
   const columns = React.useMemo<Column[]>(
-    () => [{ Header: 'Location name', accessor: 'name', id: 'locationName' }, ...cols],
+    () => [{ Header: 'Name', accessor: 'name', id: 'locationName' }, ...cols],
     [cols]
   );
 
@@ -163,13 +202,16 @@ const Report = () => {
     loadData();
   }, [loadData]);
 
-  const loadChildHandler = (id: string, locationName: string, childrenNumber: number) => {
+  const loadChildHandler = (id: string, locationName: string, selectedReportInfo?: string[]) => {
     if (planId && reportType) {
-      getMapReportData({
-        parentLocationIdentifier: id,
-        reportTypeEnum: reportType,
-        planIdentifier: planId
-      })
+      getMapReportData(
+        {
+          parentLocationIdentifier: id,
+          reportTypeEnum: reportType,
+          planIdentifier: planId
+        },
+        selectedReportInfo
+      )
         .then(res => {
           //reset search input on new load
           if (searchInput.current) searchInput.current.value = '';
@@ -210,7 +252,7 @@ const Report = () => {
     }
   };
 
-  const clearMap = () => {
+  const clearMap = (filter?: string[]) => {
     //clear all map data and return to root element on the grid
     if (planId && reportType) {
       //reset search input on new load
@@ -218,7 +260,7 @@ const Report = () => {
       setFeatureSet(undefined);
       path.splice(0, path.length);
       setPath(path);
-      loadData();
+      loadData(filter);
     }
   };
 
@@ -226,11 +268,14 @@ const Report = () => {
     if (planId && reportType) {
       path.splice(index + 1, path.length - index);
       setPath(path);
-      getMapReportData({
-        parentLocationIdentifier: el.locationIdentifier,
-        reportTypeEnum: reportType,
-        planIdentifier: planId
-      })
+      getMapReportData(
+        {
+          parentLocationIdentifier: el.locationIdentifier,
+          reportTypeEnum: reportType,
+          planIdentifier: planId
+        },
+        selectedReportInfo?.map(el => el.value)
+      )
         .then(res => {
           //reset search input on new load
           if (searchInput.current) searchInput.current.value = '';
@@ -258,9 +303,9 @@ const Report = () => {
     <Container fluid className="my-4 px-2">
       <Row className="mt-3 align-items-center">
         <Col md={3}>
-          <Link id="back-button" to={REPORTING_PAGE} className="btn btn-primary">
+          <Button id="back-button" onClick={goBackHandler} className="btn btn-primary">
             <FontAwesomeIcon icon="arrow-left" className="me-2" /> {t('reportPage.title')}
-          </Link>
+          </Button>
         </Col>
         <Col md={6} className="text-center">
           <h2 className="m-0">
@@ -279,7 +324,7 @@ const Report = () => {
             <span
               role="button"
               className={path.length ? 'me-1 link-primary' : 'me-1 text-secondary pe-none'}
-              onClick={() => clearMap()}
+              onClick={() => clearMap(selectedReportInfo?.map(el => el.value))}
             >
               {plan?.title} /
             </span>
@@ -312,23 +357,48 @@ const Report = () => {
         <>
           <Row className="mt-3 mb-2">
             <Col md={4} lg={3}>
-              <Form>
-                <Form.Group>
-                  <Form.Control
-                    ref={searchInput}
-                    placeholder={t('reportPage.search')}
-                    type="text"
-                    onChange={searchHandler}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        return false;
-                      }
-                    }}
-                  />
-                </Form.Group>
-              </Form>
+              <Form.Control
+                ref={searchInput}
+                className="h-100"
+                placeholder={t('reportPage.search')}
+                type="text"
+                onChange={searchHandler}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    return false;
+                  }
+                }}
+              />
             </Col>
+            {reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.drug.length && (
+              <Col md={6}>
+                <Select
+                  placeholder="Select Drug Type"
+                  className="custom-react-select-container w-50"
+                  classNamePrefix="custom-react-select"
+                  id="team-assign-select"
+                  isClearable
+                  value={selectedReportInfo}
+                  isMulti
+                  options={reportInfo.dashboardFilter.drug.map(el => {
+                    return { value: el, label: el };
+                  })}
+                  onChange={newValue => {
+                    setSelectedReportInfo(newValue);
+                    if (path.length) {
+                      loadChildHandler(
+                        path[path.length - 1].locationIdentifier,
+                        path[path.length - 1].locationName,
+                        newValue.map(el => el.value)
+                      );
+                    } else {
+                      loadData(newValue.map(el => el.value));
+                    }
+                  }}
+                />
+              </Col>
+            )}
           </Row>
           <div
             style={{
@@ -337,7 +407,13 @@ const Report = () => {
             }}
           >
             <ReportsTable
-              clickHandler={loadChildHandler}
+              clickHandler={(locationId, locationName) =>
+                loadChildHandler(
+                  locationId,
+                  locationName,
+                  selectedReportInfo?.map(el => el.value)
+                )
+              }
               sortHandler={sortDataHandler}
               columns={columns}
               data={filterData}

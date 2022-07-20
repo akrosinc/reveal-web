@@ -13,6 +13,7 @@ export interface FoundCoverage {
 
 export enum ReportType {
   MDA_FULL_COVERAGE = 'MDA_FULL_COVERAGE',
+  MDA_LITE_COVERAGE = "MDA_LITE_COVERAGE",
   MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL = "MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL",
   IRS_FULL_COVERAGE = "IRS_FULL_COVERAGE",
   IRS_LITE_COVERAGE = "IRS_LITE_COVERAGE",
@@ -45,4 +46,11 @@ export enum MdaStructureStatus {
   NOT_ELIGIBLE = "Not Eligible",
   SMC_COMPLETE = "SMC Complete",
   SPAQ_COMPLETE = "SPAQ Complete",
+}
+
+export interface AdditionalReportInfo {
+  reportTypeEnum: string;
+  dashboardFilter: {
+    drug: string[]
+  };
 }

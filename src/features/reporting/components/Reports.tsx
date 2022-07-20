@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Col, Form, Row } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
@@ -14,6 +14,7 @@ import { ReportType } from '../providers/types';
 const Reports = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
   const navigate = useNavigate();
+  const { state } = useLocation();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [reportTypes, setReportTypes] = useState<string[]>();
@@ -35,11 +36,11 @@ const Reports = () => {
     getReportTypes()
       .then(res => {
         setReportTypes(res);
-        setSelectedReportType(res.length ? res[0] : undefined);
-        loadData(PAGINATION_DEFAULT_SIZE, 0, res[0]);
+        setSelectedReportType(state ? state.reportType : res.length ? res[0] : undefined);
+        loadData(PAGINATION_DEFAULT_SIZE, 0, state ? state.reportType : res.length ? res[0] : undefined);
       })
       .catch(err => toast.error(err));
-  }, [loadData]);
+  }, [loadData, state]);
 
   const paginationHandler = (size: number, page: number) => {
     if (selectedReportType) {
@@ -64,16 +65,18 @@ const Reports = () => {
     switch (reportName) {
       case ReportType.IRS_FULL_COVERAGE:
         return 'IRS';
-      case ReportType.MDA_FULL_COVERAGE:
-        return 'MDA';
-      case ReportType.MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL:
-        return 'MDA Lite';
       case ReportType.IRS_LITE_COVERAGE:
         return 'IRS Lite';
       case ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL:
         return 'IRS Lite Operational Area';
+      case ReportType.MDA_FULL_COVERAGE:
+        return 'MDA';
+      case ReportType.MDA_LITE_COVERAGE:
+        return 'MDA Lite';
+      case ReportType.MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL:
+        return 'MDA Operational Area';
       default:
-        return reportName
+        return reportName;
     }
   };
 
@@ -83,7 +86,7 @@ const Reports = () => {
         <Col md={5} lg={3}>
           <Form className="mb-4">
             <Form.Label>{t('reportPage.reportType')}:</Form.Label>
-            <Form.Select onChange={reportTypeSelectHandler}>
+            <Form.Select value={selectedReportType} onChange={reportTypeSelectHandler}>
               {reportTypes?.map(res => (
                 <option key={res} value={res}>
                   {setReportTypeNames(res)}

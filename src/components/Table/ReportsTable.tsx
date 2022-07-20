@@ -13,7 +13,7 @@ import { useAppSelector } from '../../store/hooks';
 interface Props {
   columns: Column[];
   data: any[];
-  clickHandler: (locationId: string, locationName: string, childrenNumber: number) => void;
+  clickHandler: (locationId: string, locationName: string) => void;
   sortHandler: (sortDirection: boolean, columnName: string) => void;
 }
 
@@ -69,7 +69,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
             <tr
               {...row.getRowProps()}
               onClick={() => {
-                clickHandler(rowData.id, rowData.name, rowData.childrenNumber);
+                clickHandler(rowData.id, rowData.name);
               }}
             >
               {row.cells.map(cell => {
