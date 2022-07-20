@@ -14,7 +14,7 @@ import { ReportType } from '../providers/types';
 const Reports = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
   const navigate = useNavigate();
-  const { state } = useLocation(); 
+  const { state } = useLocation();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [reportTypes, setReportTypes] = useState<string[]>();
@@ -65,16 +65,18 @@ const Reports = () => {
     switch (reportName) {
       case ReportType.IRS_FULL_COVERAGE:
         return 'IRS';
-      case ReportType.MDA_FULL_COVERAGE:
-        return 'MDA';
-      case ReportType.MDA_LITE_COVERAGE:
-        return 'MDA Lite';
       case ReportType.IRS_LITE_COVERAGE:
         return 'IRS Lite';
       case ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL:
         return 'IRS Lite Operational Area';
+      case ReportType.MDA_FULL_COVERAGE:
+        return 'MDA';
+      case ReportType.MDA_LITE_COVERAGE:
+        return 'MDA Lite';
+      case ReportType.MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL:
+        return 'MDA Operational Area';
       default:
-        return reportName
+        return reportName;
     }
   };
 
