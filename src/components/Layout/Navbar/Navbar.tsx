@@ -73,7 +73,7 @@ export default function NavbarComponent() {
                         align="start"
                         title={t('topNav.' + el.pageTitle)}
                         id={el.pageTitle + '-navbar-button'}
-                        className="m-1"
+                        className="my-1 mx-1 mx-md-2"
                       >
                         {el.dropdown.map((child, childIndex) => {
                           return (
@@ -100,7 +100,7 @@ export default function NavbarComponent() {
                         onClick={() => setExpanded(false)}
                         id={el.pageTitle + '-navbar-button'}
                         to={el.route}
-                        className="nav-link m-1"
+                        className="nav-link my-1 mx-1 mx-md-2"
                       >
                         {t('topNav.' + el.pageTitle)}
                       </Link>
@@ -137,13 +137,13 @@ export default function NavbarComponent() {
               </Nav.Link>
             </Nav>
           )}
-          <Nav className="ms-1">
+          <Nav className="ms-0 my-2 my-md-0">
             <OverlayTrigger
               placement="auto"
               overlay={<Tooltip>{isDarkMode ? 'Turn off dark mode' : 'Turn on dark mode'}</Tooltip>}
             >
               <Button
-                className="rounded-circle me-auto mx-md-2"
+                className="rounded-circle me-auto mx-md-3"
                 onClick={() => {
                   dispatch(setDarkMode(!isDarkMode));
                   document.body.classList.add('dark-transition');

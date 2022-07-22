@@ -5,7 +5,7 @@ export interface GeographicLevel {
 }
 
 export interface LocationHierarchyModel {
-  identifier?: string;
+  identifier: string;
   name: string;
   nodeOrder: string[];
 }

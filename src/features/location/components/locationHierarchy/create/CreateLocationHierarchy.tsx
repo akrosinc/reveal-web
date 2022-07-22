@@ -35,11 +35,7 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) =>
 
   const submitHandler = (formData: LocationHierarchyModel) => {
     if (locationHierarchy.length > 0) {
-      const newHierarchy: LocationHierarchyModel = {
-        name: formData.name,
-        nodeOrder: locationHierarchy
-      };
-      toast.promise(createLocationHierarchy(newHierarchy), {
+      toast.promise(createLocationHierarchy({nodeOrder: formData.nodeOrder}), {
         pending: 'Loading...',
         success: {
           render({ data }: { data: LocationHierarchyModel }) {

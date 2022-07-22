@@ -9,7 +9,8 @@ import {
   LOCATION_VIEW,
   PLAN_VIEW,
   SIMULATION_PAGE,
-  TAG_MANAGEMENT
+  TAG_MANAGEMENT,
+  METADATA_IMPORT
 } from '../../../constants';
 
 export const MAIN_MENU = [
@@ -63,6 +64,11 @@ export const MAIN_MENU = [
       {
         pageTitle: 'TagManagement',
         route: TAG_MANAGEMENT,
+        roles: []
+      },
+      {
+        pageTitle: 'MetaDataImport',
+        route: METADATA_IMPORT,
         roles: []
       }
     ]

@@ -1,19 +1,17 @@
 import React from 'react';
-import { Container } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
-import AuthGuard from '../../../components/AuthGuard';
-import { ErrorPage } from '../../../components/pages';
-import { REPORT_VIEW } from '../../../constants';
-import Reports from '../../reporting/components';
-import Report from '../../reporting/components/report';
+import AuthGuard from '../../components/AuthGuard';
+import { ErrorPage } from '../../components/pages';
+import PageWrapper from '../../components/PageWrapper';
+import { REPORT_VIEW } from '../../constants';
+import Reports from '../../features/reporting/components';
+import Report from '../../features/reporting/components/report';
 
 const Reporting = () => {
   const { t } = useTranslation();
   return (
-    <Container fluid className="my-4 pb-1 px-2">
-      <h2>{t('reportPage.title')}</h2>
-      <hr />
+    <PageWrapper title={t('reportPage.title')}>
       <Routes>
         <Route
           path="/"
@@ -30,10 +28,10 @@ const Reporting = () => {
               <Report />
             </AuthGuard>
           }
-        />        
+        />
         <Route path="*" element={<ErrorPage />} />
       </Routes>
-    </Container>
+    </PageWrapper>
   );
 };
 

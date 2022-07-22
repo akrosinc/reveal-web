@@ -72,7 +72,7 @@ const GeographicLevels = () => {
 
   return (
     <>
-      <Row>
+      <Row className="mt-2">
         <Col>
           <h2 className="m-0">
             {t('locationsPage.geographicLevels')} ({geoLevelList?.totalElements ?? 0})

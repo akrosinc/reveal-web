@@ -15,7 +15,8 @@
     "Management": "Verwaltung",
     "Location": "Standortverwaltung",
     "Simulation": "Simulation",
-    "TagManagement": "Tag Management"
+    "TagManagement": "Tag Management",
+    "MetaDataImport": "Meta Data Import"
   },
   "publicPage": {
     "supportedBy": "unterstützt von",

@@ -1,13 +1,10 @@
 <p align="center" >
-<img src='./public/reveal-logo.png' width='140px' />
+<img src='./public/reveal-logo.png' width='180px' />
 </p> 
-<h2 align="center">
-Official repository
-</h2>
 
-### Frontend application for Reveal platform
+## Official Web Application for Reveal platform
 
-<br />
+<hr />
 
 ## Available Scripts
 

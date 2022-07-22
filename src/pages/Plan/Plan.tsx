@@ -1,15 +1,15 @@
 import React from 'react';
-import { Container } from 'react-bootstrap';
 import { Route, Routes } from 'react-router-dom';
-import AuthGuard from '../../../components/AuthGuard';
-import { PLAN_CREATE, PLAN_UPDATE, PLAN_VIEW } from '../../../constants';
-import CreatePlan from '../../plan/components/create';
-import Plans from '../../plan/components';
-import { ErrorPage } from '../../../components/pages';
+import AuthGuard from '../../components/AuthGuard';
+import { PLAN_CREATE, PLAN_UPDATE, PLAN_VIEW } from '../../constants';
+import CreatePlan from '../../features/plan/components/create';
+import Plans from '../../features/plan/components';
+import { ErrorPage } from '../../components/pages';
+import PageWrapper from '../../components/PageWrapper';
 
 const Plan = () => {
   return (
-    <Container fluid className="my-4 px-2">
+    <PageWrapper>
       <Routes>
         <Route
           path="/"
@@ -37,7 +37,7 @@ const Plan = () => {
         />
         <Route path="*" element={<ErrorPage />} />
       </Routes>
-    </Container>
+    </PageWrapper>
   );
 };
 
