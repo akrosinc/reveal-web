@@ -16,7 +16,7 @@ const FormField = ({ register, entityTag, index, errors, range }: Props) => {
     <Form.Group>
       <Row>
         <Form.Label className="me-3">{entityTag.tag}</Form.Label>
-        {(entityTag.valueType === 'number' || entityTag.valueType === 'date') && !range && (
+        {(entityTag.valueType === 'integer' || entityTag.valueType === 'date') && !range && (
           <Col xs={6} md={3} className="align-self-end">
             <Form.Select
               {...register((entityTag.tag + index + 'sign') as any, { required: true })}
@@ -31,15 +31,15 @@ const FormField = ({ register, entityTag, index, errors, range }: Props) => {
           </Col>
         )}
         <Col
-          xs={(entityTag.valueType === 'number' || entityTag.valueType === 'date') && !range ? 6 : 12}
+          xs={(entityTag.valueType === 'integer' || entityTag.valueType === 'date') && !range ? 6 : 12}
           sm={8}
-          md={(entityTag.valueType === 'number' || entityTag.valueType === 'date') && !range ? 9 : 12}
+          md={(entityTag.valueType === 'integer' || entityTag.valueType === 'date') && !range ? 9 : 12}
         >
-          {(entityTag.valueType === 'string' || entityTag.valueType === 'number') && (
+          {(entityTag.valueType === 'string' || entityTag.valueType === 'integer') && (
             <Form.Control
               {...register((entityTag.tag + index) as any, {
                 required: true,
-                valueAsNumber: entityTag.valueType === 'number'
+                valueAsNumber: entityTag.valueType === 'integer'
               })}
               type={entityTag.valueType}
               name={entityTag.tag + index}

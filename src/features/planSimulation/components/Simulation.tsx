@@ -356,7 +356,7 @@ const Simulation = () => {
                       <Row className="mx-2 my-3" key={index}>
                         <Col md={9}>{conditionalRender(el, index)}</Col>
                         <Col md={3} className="text-end align-self-end">
-                          {(el.valueType === 'number' || el.valueType === 'date' || el.valueType === 'string') && (
+                          {(el.valueType === 'integer' || el.valueType === 'date' || el.valueType === 'string') && (
                             <span title="More">
                               <Button
                                 className="m-1"
