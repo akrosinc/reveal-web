@@ -91,6 +91,7 @@ const Simulation = () => {
     handleSubmit,
     register,
     reset,
+    unregister,
     formState: { errors }
   } = useForm();
 
@@ -153,7 +154,7 @@ const Simulation = () => {
           if (el.properties) {
             el.properties['childrenNumber'] = el.properties['persons'].length;
             el.properties['identifier'] = (el as any).identifier;
-          };
+          }
         });
         setMapData(res);
         setSearchData([
@@ -203,11 +204,12 @@ const Simulation = () => {
           register={register}
           index={index}
           errors={errors}
-          deleteHandler={(index: number, range: boolean) => {
+          deleteHandler={(i: number, range: boolean) => {
             if (range) {
               el.more.splice(1);
             } else {
-              el.more.splice(index, 1);
+              unregister((el.tag + index + 'range') as any);
+              el.more.splice(i, 1);
             }
             setSelectedEntityConditionList([...selectedEntityConditionList]);
           }}
@@ -390,7 +392,11 @@ const Simulation = () => {
                   })}
                 </SimpleBar>
                 <span title="Display results" style={{ position: 'absolute', bottom: 0, right: 0 }}>
-                  <Button type="submit" disabled={selectedEntityConditionList.length === 0 || selectedHierarchy === undefined} className="me-2 mb-2">
+                  <Button
+                    type="submit"
+                    disabled={selectedEntityConditionList.length === 0 || selectedHierarchy === undefined}
+                    className="me-2 mb-2"
+                  >
                     <FontAwesomeIcon icon="search" />
                   </Button>
                 </span>
@@ -481,12 +487,20 @@ const Simulation = () => {
         />
       )}
       {showDetails && selectedRow && (
-        <Modal size='lg' show centered scrollable backdrop='static' keyboard={false} onHide={() => setShowDetails(false)}>
+        <Modal
+          size="lg"
+          show
+          centered
+          scrollable
+          backdrop="static"
+          keyboard={false}
+          onHide={() => setShowDetails(false)}
+        >
           <Modal.Header closeButton>
-            <Modal.Title className='w-100 text-center'>Location details</Modal.Title>
+            <Modal.Title className="w-100 text-center">Location details</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-          <PeopleDetailsModal locationProps={selectedRow} />
+            <PeopleDetailsModal locationProps={selectedRow} />
           </Modal.Body>
         </Modal>
       )}

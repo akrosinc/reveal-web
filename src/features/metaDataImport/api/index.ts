@@ -41,7 +41,7 @@ export const getMetadataImportList = async (
   return data;
 };
 
-export const getMetadataDetailsById = async (userId: string): Promise<any> => {
-  const data = await api.get<any>(`entityTag/${userId}`).then(res => res.data);
+export const getMetadataDetailsById = async (metaImportIdentifier: string): Promise<any> => {
+  const data = await api.get<any>(`metaImport/${metaImportIdentifier}`).then(res => res.data);
   return data;
 };

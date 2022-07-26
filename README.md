@@ -1,10 +1,6 @@
-<p align="center" >
 <img src='./public/reveal-logo.png' width='180px' />
-</p> 
 
 ## Official Web Application for Reveal platform
-
-<hr />
 
 ## Available Scripts
 

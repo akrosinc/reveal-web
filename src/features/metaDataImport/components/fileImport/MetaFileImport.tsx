@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
+import { ActionDialog } from '../../../../components/Dialogs';
 import Paginator from '../../../../components/Pagination';
 import DefaultTable from '../../../../components/Table/DefaultTable';
 import { PAGINATION_DEFAULT_SIZE } from '../../../../constants';
-import { getMetadataImportList } from '../../api';
+import { getMetadataDetailsById, getMetadataImportList } from '../../api';
 import UploadModal from './uploadModal';
 
 const MetaFileImport = () => {
   const [open, setOpen] = useState(false);
   const [metadataList, setMetadataList] = useState<PageableModel<any>>();
+  const [selectedMetaImport, setSelectedMetaImport] = useState<any>();
 
   useEffect(() => {
     getMetadataImportList(PAGINATION_DEFAULT_SIZE, 0).then(res => {
@@ -21,13 +24,13 @@ const MetaFileImport = () => {
     getMetadataImportList(size, page).then(res => {
       setMetadataList(res);
     });
-  }
+  };
 
   const sortHandler = (field: string, direction: boolean) => {
     getMetadataImportList(PAGINATION_DEFAULT_SIZE, 0, field, direction).then(res => {
       setMetadataList(res);
     });
-  }
+  };
 
   return (
     <>
@@ -46,7 +49,7 @@ const MetaFileImport = () => {
               };
             })}
             data={metadataList.content}
-            clickHandler={el => console.log(el)}
+            clickHandler={el => setSelectedMetaImport(el)}
             sortHandler={sortHandler}
           />
           <Paginator
@@ -61,6 +64,17 @@ const MetaFileImport = () => {
         'No data found.'
       )}
       {open && <UploadModal closeHandler={() => setOpen(false)} />}
+      {selectedMetaImport && (
+        <ActionDialog
+          element={<p>{selectedMetaImport.filename}
+          <Button onClick={() => {
+            getMetadataDetailsById(selectedMetaImport.identifier).then(res => console.log(res)).catch(err => toast.error(err))
+          }}>Get Details</Button>
+          </p>}
+          title={selectedMetaImport.identifier}
+          closeHandler={() => setSelectedMetaImport(undefined)}
+        />
+      )}
     </>
   );
 };

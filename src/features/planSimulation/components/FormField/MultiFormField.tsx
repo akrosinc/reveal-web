@@ -23,10 +23,8 @@ const MultiFormField = ({ register, entityTag, index: parentIndex, errors, delet
           <Form.Check
             inline
             onChange={e => {
-              if (e.target.value === 'on') {
-                deleteHandler(1, true);
-              }
-              setRange(!range);
+              deleteHandler(1, e.target.checked);
+              setRange(e.target.checked);
             }}
           />
         </>
