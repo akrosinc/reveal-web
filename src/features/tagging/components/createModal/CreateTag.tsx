@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
+import { BOOLEAN_STRING_AGGREGATION, DATA_AGGREGATION, NUMBER_AGGREGATION } from '../../../../constants';
 import { createTag } from '../../api';
 import { EntityTypeEnum, TagCreateRequest } from '../../providers/types';
 
@@ -29,16 +30,16 @@ const CreateTag = ({ closeHandler }: Props) => {
     let selected: string[] = [];
     switch (selectedValueType) {
       case 'integer':
-        selected = ['sum', 'average', 'min', 'max'];
+        selected = NUMBER_AGGREGATION;
         break;
       case 'string':
-        selected = ['count'];
+        selected = BOOLEAN_STRING_AGGREGATION;
         break;
       case 'date':
-        selected = ['min', 'max', 'count'];
+        selected = DATA_AGGREGATION;
         break;
       case 'boolean':
-        selected = ['count'];
+        selected = BOOLEAN_STRING_AGGREGATION;
         break;
     }
     setAggregation(selected);
@@ -116,7 +117,7 @@ const CreateTag = ({ closeHandler }: Props) => {
                   </option>
                 ))
               ) : (
-                <option value=''>Data Type needs to be selected</option>
+                <option value="">Data Type needs to be selected</option>
               )}
             </Form.Select>
           </Form.Group>

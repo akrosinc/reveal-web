@@ -34,7 +34,7 @@ const DetailsModal = ({ selectedFile, closeHandler }: Props) => {
           </thead>
           <tbody>
             {importDetails.map(el => (
-              <tr>
+              <tr key={el.identifier} onClick={() => console.log(el.entityValue.metadataObjs)}>
                 <td>{el.identifier}</td>
                 <td>{el.locationName}</td>
               </tr>
