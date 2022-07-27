@@ -1,6 +1,7 @@
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { EntityTag } from '../../planSimulation/providers/types';
+import { MetaImportTag } from '../providers/types';
 
 export const downloadLocations = async (
   hierarchyIdentifier: string,
@@ -41,7 +42,7 @@ export const getMetadataImportList = async (
   return data;
 };
 
-export const getMetadataDetailsById = async (metaImportIdentifier: string): Promise<any> => {
-  const data = await api.get<any>(`metaImport/${metaImportIdentifier}`).then(res => res.data);
+export const getMetadataDetailsById = async (metaImportIdentifier: string): Promise<MetaImportTag[]> => {
+  const data = await api.get<MetaImportTag[]>(`metaImport/${metaImportIdentifier}`).then(res => res.data);
   return data;
 };

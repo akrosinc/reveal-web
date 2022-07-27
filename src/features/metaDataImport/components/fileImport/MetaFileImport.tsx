@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
-import { ActionDialog } from '../../../../components/Dialogs';
 import Paginator from '../../../../components/Pagination';
 import DefaultTable from '../../../../components/Table/DefaultTable';
-import { PAGINATION_DEFAULT_SIZE } from '../../../../constants';
-import { getMetadataDetailsById, getMetadataImportList } from '../../api';
+import { META_IMPORT_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
+import { getMetadataImportList } from '../../api';
+import DetailsModal from './detailsModal';
 import UploadModal from './uploadModal';
 
 const MetaFileImport = () => {
@@ -17,7 +17,7 @@ const MetaFileImport = () => {
   useEffect(() => {
     getMetadataImportList(PAGINATION_DEFAULT_SIZE, 0).then(res => {
       setMetadataList(res);
-    });
+    }).catch(err => toast.error(err));
   }, []);
 
   const paginationHandler = (size: number, page: number) => {
@@ -41,13 +41,7 @@ const MetaFileImport = () => {
       {metadataList && metadataList.content.length ? (
         <>
           <DefaultTable
-            columns={Object.keys(metadataList.content[0]).map(el => {
-              return {
-                name: el,
-                sortValue: el,
-                accessor: el
-              };
-            })}
+            columns={META_IMPORT_TABLE_COLUMNS}
             data={metadataList.content}
             clickHandler={el => setSelectedMetaImport(el)}
             sortHandler={sortHandler}
@@ -64,17 +58,7 @@ const MetaFileImport = () => {
         'No data found.'
       )}
       {open && <UploadModal closeHandler={() => setOpen(false)} />}
-      {selectedMetaImport && (
-        <ActionDialog
-          element={<p>{selectedMetaImport.filename}
-          <Button onClick={() => {
-            getMetadataDetailsById(selectedMetaImport.identifier).then(res => console.log(res)).catch(err => toast.error(err))
-          }}>Get Details</Button>
-          </p>}
-          title={selectedMetaImport.identifier}
-          closeHandler={() => setSelectedMetaImport(undefined)}
-        />
-      )}
+      {selectedMetaImport && <DetailsModal closeHandler={() => setSelectedMetaImport(undefined)} selectedFile={selectedMetaImport} />}
     </>
   );
 };

@@ -82,6 +82,13 @@ export const PLAN_TABLE_COLUMNS = [
   { name: 'End Date', sortValue: 'effectivePeriodEnd', accessor: 'effectivePeriod', key: 'end' }
 ];
 
+export const META_IMPORT_TABLE_COLUMNS = [
+  { name: 'File name', sortValue: 'filename', accessor: 'filename' },
+  { name: 'Upload Date', sortValue: 'uploadedDatetime', accessor: 'uploadDatetime' },
+  { name: 'Status', sortValue: 'status', accessor: 'status' },
+  { name: 'Uploaded By', sortValue: 'uploadedBy', accessor: 'uploadedBy' }
+];
+
 export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';
 export const LOCATION_TEAM_ASSIGNMENT_TAB = 'team-assignment';
 

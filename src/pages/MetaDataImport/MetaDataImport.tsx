@@ -4,7 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AuthGuard from '../../components/AuthGuard';
 import PageWrapper from '../../components/PageWrapper';
 import { METADATA_IMPORT } from '../../constants';
-import { MetaFileImport, TemplateCreation } from '../../features/metaDataImport';
+import MetaFileImport from '../../features/metaDataImport/components/fileImport'
+import TemplateCreation from '../../features/metaDataImport/components/templateCreation';
 
 const MetaDataImport = () => {
   let { tab } = useParams();
