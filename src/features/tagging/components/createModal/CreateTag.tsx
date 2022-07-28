@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { BOOLEAN_STRING_AGGREGATION, DATA_AGGREGATION, NUMBER_AGGREGATION } from '../../../../constants';
 import { createTag } from '../../api';
 import { EntityTypeEnum, TagCreateRequest } from '../../providers/types';
+import Select from 'react-select';
 
 interface Props {
   closeHandler: () => void;
@@ -17,6 +18,7 @@ const CreateTag = ({ closeHandler }: Props) => {
     register,
     handleSubmit,
     watch,
+    control,
     formState: { errors }
   } = useForm<TagCreateRequest>({
     defaultValues: {
@@ -109,7 +111,7 @@ const CreateTag = ({ closeHandler }: Props) => {
           </Form.Group>
           <Form.Group className="mt-2">
             <Form.Label>Aggregation Method</Form.Label>
-            <Form.Select {...register('aggregationMethod')}>
+            {/* <Form.Select {...register('aggregationMethod')}>
               {aggregation.length ? (
                 aggregation.map(el => (
                   <option key={el} value={el}>
@@ -119,7 +121,34 @@ const CreateTag = ({ closeHandler }: Props) => {
               ) : (
                 <option value="">Data Type needs to be selected</option>
               )}
-            </Form.Select>
+            </Form.Select> */}
+            <Controller
+              control={control}
+              name="aggregationMethod"
+              rules={{ required: 'Select aggregation method first.', minLength: 1 }}
+              render={({ field }) => (
+                <Select
+                  className="custom-react-select-container"
+                  classNamePrefix="custom-react-select"
+                  menuPosition="fixed"
+                  isMulti
+                  options={aggregation.map<{ value: string; label: string }>(el => {
+                    return {
+                      label: el,
+                      value: el
+                    };
+                  })}
+                  onChange={selected => {
+                    field.onChange(selected.map(el => el.value));
+                  }}
+                />
+              )}
+            />
+            {errors.aggregationMethod && (
+              <Form.Label className="text-danger mt-2">
+                {errors.aggregationMethod && (errors.aggregationMethod as any).message}
+              </Form.Label>
+            )}
           </Form.Group>
           <Form.Group className="mt-2">
             <Form.Label>Scope</Form.Label>

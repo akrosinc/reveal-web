@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
@@ -14,22 +14,24 @@ const MetaFileImport = () => {
   const [metadataList, setMetadataList] = useState<PageableModel<any>>();
   const [selectedMetaImport, setSelectedMetaImport] = useState<any>();
 
-  useEffect(() => {
-    getMetadataImportList(PAGINATION_DEFAULT_SIZE, 0).then(res => {
-      setMetadataList(res);
-    }).catch(err => toast.error(err));
+  const loadData = useCallback((size: number, page: number, field?: string, direction?: boolean) => {
+    getMetadataImportList(size, page, field, direction)
+      .then(res => {
+        setMetadataList(res);
+      })
+      .catch(err => toast.error(err));
   }, []);
 
+  useEffect(() => {
+    loadData(PAGINATION_DEFAULT_SIZE, 0);
+  }, [loadData]);
+
   const paginationHandler = (size: number, page: number) => {
-    getMetadataImportList(size, page).then(res => {
-      setMetadataList(res);
-    });
+    loadData(size, page);
   };
 
   const sortHandler = (field: string, direction: boolean) => {
-    getMetadataImportList(PAGINATION_DEFAULT_SIZE, 0, field, direction).then(res => {
-      setMetadataList(res);
-    });
+    loadData(PAGINATION_DEFAULT_SIZE, 0, field, direction);
   };
 
   return (
@@ -57,8 +59,23 @@ const MetaFileImport = () => {
       ) : (
         'No data found.'
       )}
-      {open && <UploadModal closeHandler={() => setOpen(false)} />}
-      {selectedMetaImport && <DetailsModal closeHandler={() => setSelectedMetaImport(undefined)} selectedFile={selectedMetaImport} />}
+      {open && (
+        <UploadModal
+          closeHandler={() => {
+            loadData(PAGINATION_DEFAULT_SIZE, 0);
+            setOpen(false);
+          }}
+        />
+      )}
+      {selectedMetaImport && (
+        <DetailsModal
+          closeHandler={() => {
+            loadData(PAGINATION_DEFAULT_SIZE, 0);
+            setSelectedMetaImport(undefined);
+          }}
+          selectedFile={selectedMetaImport}
+        />
+      )}
     </>
   );
 };

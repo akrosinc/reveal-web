@@ -15,7 +15,12 @@ const Tagging = () => {
 
   const loadData = useCallback((size: number, page: number, field?: string, direction?: boolean) => {
     getAllTags(size, page, field, direction)
-      .then(res => setTagList(res))
+      .then(res => {
+        res.content.forEach(el => {
+          el.lookupEntityType = el.lookupEntityType.code as any;
+        });
+        setTagList(res);
+      })
       .catch(err => toast.error(err));
   }, []);
 
@@ -60,7 +65,14 @@ const Tagging = () => {
           />
         </>
       )}
-      {showCreate && <CreateTag closeHandler={() => setShowCreate(false)} />}
+      {showCreate && (
+        <CreateTag
+          closeHandler={() => {
+            loadData(PAGINATION_DEFAULT_SIZE, 0);
+            setShowCreate(false);
+          }}
+        />
+      )}
     </>
   );
 };
