@@ -111,17 +111,6 @@ const CreateTag = ({ closeHandler }: Props) => {
           </Form.Group>
           <Form.Group className="mt-2">
             <Form.Label>Aggregation Method</Form.Label>
-            {/* <Form.Select {...register('aggregationMethod')}>
-              {aggregation.length ? (
-                aggregation.map(el => (
-                  <option key={el} value={el}>
-                    {el}
-                  </option>
-                ))
-              ) : (
-                <option value="">Data Type needs to be selected</option>
-              )}
-            </Form.Select> */}
             <Controller
               control={control}
               name="aggregationMethod"
