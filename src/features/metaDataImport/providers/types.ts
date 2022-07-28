@@ -2,14 +2,14 @@ export interface MetaImportTag {
   identifier: string;
   locationIdentifier: string;
   locationName: string;
-  entityValue: {
-    metadataObjs: {
+  entityValue: 
+    {
       tag: string;
       dataType: string;
       type: string;
       dateScope: boolean;
       active: boolean;
-      current: {
+      tagData: {
         meta: {
           planId: string;
           userId: string;
@@ -19,8 +19,9 @@ export interface MetaImportTag {
         value: {
           valueString: string;
           valueObjects: {}[];
+          valueInteger: number;
         };
       };
     }[];
-  };
+  
 }
