@@ -82,6 +82,13 @@ export const PLAN_TABLE_COLUMNS = [
   { name: 'End Date', sortValue: 'effectivePeriodEnd', accessor: 'effectivePeriod', key: 'end' }
 ];
 
+export const META_IMPORT_TABLE_COLUMNS = [
+  { name: 'File name', sortValue: 'filename', accessor: 'filename' },
+  { name: 'Upload Date', sortValue: 'uploadedDatetime', accessor: 'uploadDatetime' },
+  { name: 'Status', sortValue: 'status', accessor: 'status' },
+  { name: 'Uploaded By', sortValue: 'uploadedBy', accessor: 'uploadedBy' }
+];
+
 export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';
 export const LOCATION_TEAM_ASSIGNMENT_TAB = 'team-assignment';
 
@@ -138,3 +145,7 @@ export const COLOR_YELLOW = '#ffff68';
 export const COLOR_BOOTSTRAP_SUCCESS = '#198754';
 export const COLOR_BOOTSTRAP_DANGER = '#dc3545';
 export const COLOR_BOOTSTRAP_WARNING = '#ffc107';
+
+export const NUMBER_AGGREGATION = ['sum', 'average', 'min', 'max'];
+export const BOOLEAN_STRING_AGGREGATION = ['count'];
+export const DATA_AGGREGATION = ['min', 'max', 'count'];

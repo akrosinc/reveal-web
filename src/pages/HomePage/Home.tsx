@@ -2,7 +2,7 @@ import React from 'react';
 import Container from 'react-bootstrap/Container';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import AuthorizedElement from '../../../components/AuthorizedElement';
+import AuthorizedElement from '../../components/AuthorizedElement';
 import {
   MANAGEMENT,
   PLANS,
@@ -13,9 +13,9 @@ import {
   LOCATION_VIEW,
   ASSIGNMENT_VIEW,
   REPORT_VIEW
-} from '../../../constants';
+} from '../../constants';
 import { Col, Row } from 'react-bootstrap';
-import Dashboard from '../../dashboard';
+import Dashboard from '../../features/dashboard';
 
 function Home() {
   const { t } = useTranslation();

@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
-import { Container, Tab, Tabs } from 'react-bootstrap';
-import { GEOGRAPHIC_LEVEL_VIEW, LOCATION_PAGE, LOCATION_VIEW } from '../../../constants';
+import { Tab, Tabs } from 'react-bootstrap';
+import { GEOGRAPHIC_LEVEL_VIEW, LOCATION_PAGE, LOCATION_VIEW } from '../../constants';
 import { useNavigate, useParams } from 'react-router-dom';
-import GeographicLevels from '../../location/components/geographicLevels';
-import LocationHierarchy from '../../location/components/locationHierarchy';
-import Locations from '../../location/components/locations';
-import LocationBulk from '../../location/components/locationBulk';
+import GeographicLevels from '../../features/location/components/geographicLevels';
+import LocationHierarchy from '../../features/location/components/locationHierarchy';
+import Locations from '../../features/location/components/locations';
+import LocationBulk from '../../features/location/components/locationBulk';
 import { useTranslation } from 'react-i18next';
-import AuthGuard from '../../../components/AuthGuard';
+import AuthGuard from '../../components/AuthGuard';
+import PageWrapper from '../../components/PageWrapper';
 
 const Location = () => {
   let { tab } = useParams();
@@ -23,7 +24,7 @@ const Location = () => {
   }, [tab, navigate]);
 
   return (
-    <Container fluid className="my-4 px-2">
+    <PageWrapper>
       <Tabs
         defaultActiveKey={tab}
         id="location-tabs"
@@ -55,7 +56,7 @@ const Location = () => {
           </AuthGuard>
         </Tab>
       </Tabs>
-    </Container>
+    </PageWrapper>
   );
 };
 

@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
-import { Container, Tab, Tabs } from 'react-bootstrap';
+import { Tab, Tabs } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-import AuthGuard from '../../../components/AuthGuard';
-import { MANAGEMENT, ORGANIZATION_VIEW, ROLE_MANAGE_USER } from '../../../constants';
-import Organization from '../../organization/components';
-import UserImport from '../../user/components/UserImport/UserImport';
-import Users from '../../user/components/UsersPage';
+import AuthGuard from '../../components/AuthGuard';
+import PageWrapper from '../../components/PageWrapper';
+import { MANAGEMENT, ORGANIZATION_VIEW, ROLE_MANAGE_USER } from '../../constants';
+import Organization from '../../features/organization/components';
+import UserImport from '../../features/user/components/UserImport/UserImport';
+import Users from '../../features/user/components/UsersPage';
 
 const Management = () => {
   const { t } = useTranslation();
@@ -17,13 +18,13 @@ const Management = () => {
   useEffect(() => {
     if (tab === undefined) {
       navigate(MANAGEMENT + '/organization');
-    } else if (tab !== 'organization' && tab !== 'user' && tab !=='user-import') {
+    } else if (tab !== 'organization' && tab !== 'user' && tab !== 'user-import') {
       navigate('/error');
     }
   }, [tab, navigate]);
 
   return (
-    <Container fluid className="my-4 px-2">
+    <PageWrapper>
       <Tabs
         defaultActiveKey={tab}
         id="management-tab"
@@ -50,7 +51,7 @@ const Management = () => {
           </AuthGuard>
         </Tab>
       </Tabs>
-    </Container>
+    </PageWrapper>
   );
 };
 

@@ -25,3 +25,5 @@ export const SIMULATION_PAGE = '/plans/simulation'
 export const REPORTING_PAGE = '/reports';
 
 export const TAG_MANAGEMENT = '/admin/tag-management';
+
+export const METADATA_IMPORT = '/admin/metadata';
