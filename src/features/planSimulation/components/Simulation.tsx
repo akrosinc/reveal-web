@@ -67,6 +67,7 @@ const Simulation = () => {
   const [selectedLocation, setSelectedLocation] = useState<SingleValue<{ label: string; value: string }>>();
   const [selectedRow, setSelectedRow] = useState<SearchLocationProperties>();
   const [toLocation, setToLocation] = useState<LngLatBounds>();
+  const [queryCount, setQueryCount] = useState<[number, number]>([0, 0]); // structure count, person count
 
   useEffect(() => {
     Promise.all([getLocationHierarchyList(50, 0, true), getEntityList()])
@@ -150,9 +151,13 @@ const Simulation = () => {
     };
     filterData(requestData)
       .then(res => {
+        let structureCount = 0;
+        let personCount = 0;
         res.features.forEach(el => {
           if (el.properties) {
             el.properties['childrenNumber'] = el.properties['persons'].length;
+            structureCount+= el.properties['geographicLevel'] === 'structure' ? 1 : 0;
+            personCount+= el.properties['persons'].length;
             el.properties['identifier'] = (el as any).identifier;
           }
         });
@@ -175,6 +180,9 @@ const Simulation = () => {
         ]);
         if (!res.features.length) {
           toast.info('No data found for given query.');
+        } else {
+          toast.success('Query executed successfully.');
+          setQueryCount([structureCount, personCount]);
         }
       })
       .catch(err => toast.error(err));
@@ -183,6 +191,7 @@ const Simulation = () => {
 
   const clearHandler = () => {
     setSelectedEntityConditionList([]);
+    setQueryCount([0,0]);
     setShowResult(false);
     setMapData(undefined);
     setToLocation(undefined);
@@ -419,6 +428,7 @@ const Simulation = () => {
       {showResult && (
         <>
           <hr className="my-4" />
+          <p className='lead'>Query results: {queryCount[1]} person entities and {queryCount[0]} structures</p>
           <h3>Result</h3>
           <Table bordered responsive hover>
             <thead className="border border-2">
