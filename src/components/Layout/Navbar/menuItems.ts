@@ -43,8 +43,20 @@ export const MAIN_MENU = [
   },
   {
     pageTitle: 'Reporting',
-    route: REPORTING_PAGE,
-    roles: [REPORT_VIEW]
+    route: '#',
+    roles: [REPORT_VIEW],
+    dropdown: [
+      {
+        pageTitle: 'planReporting',
+        route: REPORTING_PAGE,
+        roles: ['manage-users']
+      },
+      {
+        pageTitle: 'performanceReporting',
+        route: REPORTING_PAGE + '/performanceReports',
+        roles: ['manage-users']
+      }
+    ]
   },
   {
     pageTitle: 'Admin',

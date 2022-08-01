@@ -56,7 +56,7 @@ const UploadModal = ({ closeHandler }: Props) => {
             }
           }}
         />
-        {isError && <Form.Label className="text-danger mt-2">Please provide a valid csv file.</Form.Label>}
+        {isError && <Form.Label className="text-danger mt-2">Please provide a valid XLSX file.</Form.Label>}
       </Modal.Body>
       <Modal.Footer>
         <Button onClick={closeHandler}>Close</Button>

@@ -3,16 +3,14 @@ import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { PLAN, REPORTS } from '../../../constants';
 import { PlanModel } from '../../plan/providers/types';
-import { AdditionalReportInfo, MapDataReportRequest, ReportLocationProperties } from '../providers/types';
+import { AdditionalReportInfo, MapDataReportRequest, PerformanceDashboardModel, ReportLocationProperties } from '../providers/types';
 
 export const getReportTypes = async (): Promise<string[]> => {
   const data = await api.get<string[]>(REPORTS + '/reportTypes').then(response => response.data);
   return data;
 };
 
-export const getReportTypeInfo = async (
-  reportType: string
-): Promise<AdditionalReportInfo> => {
+export const getReportTypeInfo = async (reportType: string): Promise<AdditionalReportInfo> => {
   const data = await api
     .get<AdditionalReportInfo>(REPORTS + `/reportAdditionalInfo?reportType=${reportType}`)
     .then(response => response.data);
@@ -37,8 +35,8 @@ export const getMapReportData = async (
 export const getPlanReports = async (
   size: number,
   page: number,
-  reportType: string,
   summary: boolean,
+  reportType?: string,
   search?: string,
   sortField?: string,
   direction?: boolean
@@ -46,9 +44,19 @@ export const getPlanReports = async (
   const data = await api
     .get(
       PLAN +
-        `/reports?reportType=${reportType}&_summary=${summary}&search=${
+        `/reports?reportType=${reportType ?? ''}&_summary=${summary}&search=${
           search !== undefined ? search : ''
         }&size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ''},${direction ? 'asc' : 'desc'}`
+    )
+    .then(response => response.data);
+  return data;
+};
+
+export const getPerformanceDashboard = async (planId: string, key?: string): Promise<PerformanceDashboardModel[]> => {
+  const data = await api
+    .get<PerformanceDashboardModel[]>(
+      REPORTS +
+        `/performance-data?planIdentifier=${planId}&key=${key ?? ''}`
     )
     .then(response => response.data);
   return data;

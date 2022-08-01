@@ -27,7 +27,7 @@ const Dashboard = () => {
       getPlanCount(),
       getOrganizationList(50, 0),
       getPlanList(50, 0, true),
-      getPlanReports(5, 0, "", true)
+      getPlanReports(5, 0, true)
     ])
       .then(async ([organizationCount, userCount, planCount, orgList, planList, reportList]) => {
         setNumber([
