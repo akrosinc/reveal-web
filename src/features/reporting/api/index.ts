@@ -3,7 +3,12 @@ import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { PLAN, REPORTS } from '../../../constants';
 import { PlanModel } from '../../plan/providers/types';
-import { AdditionalReportInfo, MapDataReportRequest, PerformanceDashboardModel, ReportLocationProperties } from '../providers/types';
+import {
+  AdditionalReportInfo,
+  MapDataReportRequest,
+  PerformanceDashboardModel,
+  ReportLocationProperties
+} from '../providers/types';
 
 export const getReportTypes = async (): Promise<string[]> => {
   const data = await api.get<string[]>(REPORTS + '/reportTypes').then(response => response.data);
@@ -54,9 +59,18 @@ export const getPlanReports = async (
 
 export const getPerformanceDashboard = async (planId: string, key?: string): Promise<PerformanceDashboardModel[]> => {
   const data = await api
+    .get<PerformanceDashboardModel[]>(REPORTS + `/performance-data?planIdentifier=${planId}&key=${key ?? null}`)
+    .then(response => response.data);
+  return data;
+};
+
+export const getPerformanceDashboardDataDetails = async (
+  planId: string,
+  key?: string
+): Promise<PerformanceDashboardModel[]> => {
+  const data = await api
     .get<PerformanceDashboardModel[]>(
-      REPORTS +
-        `/performance-data?planIdentifier=${planId}&key=${key ?? null}`
+      REPORTS + `/detailed-performance-data?planIdentifier=${planId}&key=${key ?? null}`
     )
     .then(response => response.data);
   return data;

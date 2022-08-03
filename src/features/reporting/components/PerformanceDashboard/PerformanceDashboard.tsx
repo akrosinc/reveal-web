@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
-import { getPerformanceDashboard } from '../../api';
+import { getPerformanceDashboard, getPerformanceDashboardDataDetails } from '../../api';
 import { PerformanceDashboardModel } from '../../providers/types';
 
 interface BreadcrumbPath {
@@ -135,7 +135,10 @@ const PerformanceDashboard = () => {
                       //prevent row click event
                       e.stopPropagation();
                       //call details get request
-                      console.log(el.userId, planId);
+                      if (planId)
+                        getPerformanceDashboardDataDetails(planId, el.userId)
+                          .then(res => console.log('data fetch success', res))
+                          .catch(err => toast.error(err));
                     }}
                   >
                     Daily Breakdown
