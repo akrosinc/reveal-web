@@ -14,7 +14,7 @@ import { ReportType } from '../providers/types';
 const Reports = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const { state, pathname } = useLocation();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [reportTypes, setReportTypes] = useState<string[]>();
@@ -22,8 +22,8 @@ const Reports = () => {
   const { t } = useTranslation();
 
   const loadData = useCallback(
-    (size: number, page: number, reportType: string, sortDirection?: boolean, sortField?: string) => {
-      getPlanReports(size, page, reportType, false, '', sortField, sortDirection)
+    (size: number, page: number, reportType?: string, sortDirection?: boolean, sortField?: string) => {
+      getPlanReports(size, page, false, reportType, '', sortField, sortDirection)
         .then(plans => {
           setPlanList(plans);
         })
@@ -32,15 +32,24 @@ const Reports = () => {
     []
   );
 
+  const performanceDashboardChecker = () => {
+    return pathname.includes('performanceReports');
+  };
+
   useEffect(() => {
-    getReportTypes()
-      .then(res => {
-        setReportTypes(res);
-        setSelectedReportType(state ? state.reportType : res.length ? res[0] : undefined);
-        loadData(PAGINATION_DEFAULT_SIZE, 0, state ? state.reportType : res.length ? res[0] : undefined);
-      })
-      .catch(err => toast.error(err));
-  }, [loadData, state]);
+    if (pathname.includes('performanceReports')) {
+      setSelectedReportType(undefined);
+      loadData(PAGINATION_DEFAULT_SIZE, 0, undefined);
+    } else {
+      getReportTypes()
+        .then(res => {
+          setReportTypes(res);
+          setSelectedReportType(state ? state.reportType : res.length ? res[0] : undefined);
+          loadData(PAGINATION_DEFAULT_SIZE, 0, state ? state.reportType : res.length ? res[0] : undefined);
+        })
+        .catch(err => toast.error(err));
+    }
+  }, [loadData, state, pathname]);
 
   const paginationHandler = (size: number, page: number) => {
     if (selectedReportType) {
@@ -82,27 +91,33 @@ const Reports = () => {
 
   return (
     <>
-      <Row>
-        <Col md={5} lg={3}>
-          <Form className="mb-4">
-            <Form.Label>{t('reportPage.reportType')}:</Form.Label>
-            <Form.Select value={selectedReportType} onChange={reportTypeSelectHandler}>
-              {reportTypes?.map(res => (
-                <option key={res} value={res}>
-                  {setReportTypeNames(res)}
-                </option>
-              ))}
-            </Form.Select>
-          </Form>
-        </Col>
-      </Row>
+      {!(performanceDashboardChecker()) && (
+        <Row>
+          <Col md={5} lg={3}>
+            <Form className="mb-4">
+              <Form.Label>{t('reportPage.reportType')}:</Form.Label>
+              <Form.Select value={selectedReportType} onChange={reportTypeSelectHandler}>
+                {reportTypes?.map(res => (
+                  <option key={res} value={res}>
+                    {setReportTypeNames(res)}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form>
+          </Col>
+        </Row>
+      )}
       {planList !== undefined && planList.content.length > 0 ? (
         <>
           <DefaultTable
             columns={PLAN_TABLE_COLUMNS}
             data={planList.content}
             sortHandler={sortHandler}
-            clickHandler={(id: string) => navigate(REPORTING_PAGE + `/report/${id}/reportType/${selectedReportType}`)}
+            clickHandler={(id: string) =>
+              performanceDashboardChecker()
+                ? navigate(REPORTING_PAGE + `/performanceReports/${id}`)
+                : navigate(REPORTING_PAGE + `/report/${id}/reportType/${selectedReportType}`)
+            }
             clickAccessor="identifier"
           />
           <Paginator
@@ -114,7 +129,7 @@ const Reports = () => {
           />
         </>
       ) : (
-        <p className="text-center lead">No active plans found for selected report type.</p>
+        <p className="text-center lead">No active plans found for selected type.</p>
       )}
     </>
   );

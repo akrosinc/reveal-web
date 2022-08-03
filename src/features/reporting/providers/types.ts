@@ -54,3 +54,10 @@ export interface AdditionalReportInfo {
     drug: string[]
   };
 }
+
+export interface PerformanceDashboardModel {
+  userId: string;
+  userName: string;
+  userParent: string;
+  columnDataMap: { [x: string]: FoundCoverage };
+}
