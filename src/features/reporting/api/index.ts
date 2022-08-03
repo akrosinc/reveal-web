@@ -56,7 +56,7 @@ export const getPerformanceDashboard = async (planId: string, key?: string): Pro
   const data = await api
     .get<PerformanceDashboardModel[]>(
       REPORTS +
-        `/performance-data?planIdentifier=${planId}&key=${key ?? ''}`
+        `/performance-data?planIdentifier=${planId}&key=${key ?? null}`
     )
     .then(response => response.data);
   return data;

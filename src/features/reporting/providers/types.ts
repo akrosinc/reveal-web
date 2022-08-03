@@ -58,5 +58,6 @@ export interface AdditionalReportInfo {
 export interface PerformanceDashboardModel {
   userId: string;
   userName: string;
+  userParent: string;
   columnDataMap: { [x: string]: FoundCoverage };
 }
