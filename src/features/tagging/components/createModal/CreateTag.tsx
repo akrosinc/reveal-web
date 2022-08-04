@@ -73,14 +73,14 @@ const CreateTag = ({ closeHandler }: Props) => {
             />
             {errors.tag && <Form.Label className="text-danger mt-2">{errors.tag?.message}</Form.Label>}
           </Form.Group>
-          <Form.Group className="mt-2">
+          {/* <Form.Group className="mt-2">
             <Form.Label>Form Title</Form.Label>
             <Form.Control disabled type="text" />
           </Form.Group>
           <Form.Group className="mt-2">
             <Form.Label>Form Key</Form.Label>
             <Form.Control disabled type="text" />
-          </Form.Group>
+          </Form.Group> */}
           <Form.Group className="mt-2">
             <Form.Label>Entity Type</Form.Label>
             <Form.Select
@@ -139,7 +139,7 @@ const CreateTag = ({ closeHandler }: Props) => {
               </Form.Label>
             )}
           </Form.Group>
-          <Form.Group className="mt-2">
+          {/* <Form.Group className="mt-2">
             <Form.Label>Scope</Form.Label>
             <Form.Select {...register('scope')} disabled>
               <option value="global">Global</option>
@@ -150,7 +150,7 @@ const CreateTag = ({ closeHandler }: Props) => {
             <Form.Select disabled>
               <option></option>
             </Form.Select>
-          </Form.Group>
+          </Form.Group> */}
         </Form>
       </Modal.Body>
       <Modal.Footer>
