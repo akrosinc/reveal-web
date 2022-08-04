@@ -9,7 +9,7 @@ import { getAllTags } from '../api';
 import { Tag } from '../providers/types';
 import CreateTag from './createModal';
 
-const columnsNotForDisplay = ['valueType', 'resultLiteral', 'resultExpression', 'generated', 'addToMetadata', 'fieldType']
+const columnsNotForDisplay = ['valueType', 'resultLiteral', 'resultExpression', 'generated', 'addToMetadata', 'fieldType', 'referenceFields', 'generationFormula']
 
 const Tagging = () => {
   const [tagList, setTagList] = useState<PageableModel<Tag>>();
