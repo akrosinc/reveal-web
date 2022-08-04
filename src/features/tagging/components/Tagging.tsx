@@ -24,7 +24,6 @@ const Tagging = () => {
         setTagList(res);
       })
       .catch(err => toast.error(err));
-      console.log(tagList)
   }, []);
 
   useEffect(() => {
