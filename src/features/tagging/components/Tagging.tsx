@@ -9,6 +9,8 @@ import { getAllTags } from '../api';
 import { Tag } from '../providers/types';
 import CreateTag from './createModal';
 
+const columnsNotForDisplay = ['valueType', 'resultLiteral', 'resultExpression', 'generated', 'addToMetadata', 'fieldType']
+
 const Tagging = () => {
   const [tagList, setTagList] = useState<PageableModel<Tag>>();
   const [showCreate, setShowCreate] = useState(false);
@@ -47,7 +49,7 @@ const Tagging = () => {
         <>
           <DefaultTable
             sortHandler={sortHandler}
-            columns={Object.keys(tagList.content[0]).map(el => {
+            columns={Object.keys(tagList.content[0]).filter(el => !columnsNotForDisplay.includes(el)).map(el => {
               return {
                 name: el.charAt(0).toUpperCase() + el.slice(1),
                 accessor: el,
