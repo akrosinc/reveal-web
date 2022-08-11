@@ -31,7 +31,7 @@ const CreateTag = ({ closeHandler }: Props) => {
   useEffect(() => {
     let selected: string[] = [];
     switch (selectedValueType) {
-      case 'integer':
+      case 'number':
         selected = NUMBER_AGGREGATION;
         break;
       case 'string':
@@ -102,7 +102,7 @@ const CreateTag = ({ closeHandler }: Props) => {
               })}
             >
               <option value="">Select Data Type</option>
-              <option value="integer">Number</option>
+              <option value="number">Number</option>
               <option value="string">String</option>
               <option value="boolean">Boolean</option>
               <option value="date">Date</option>

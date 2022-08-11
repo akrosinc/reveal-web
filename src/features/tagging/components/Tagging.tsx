@@ -5,7 +5,7 @@ import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
 import DefaultTable from '../../../components/Table/DefaultTable';
 import { PAGINATION_DEFAULT_SIZE } from '../../../constants';
-import { getAllTags } from '../api';
+import { getAllGlobalTags } from '../api';
 import { Tag } from '../providers/types';
 import CreateTag from './createModal';
 
@@ -16,7 +16,7 @@ const Tagging = () => {
   const [showCreate, setShowCreate] = useState(false);
 
   const loadData = useCallback((size: number, page: number, field?: string, direction?: boolean) => {
-    getAllTags(size, page, field, direction)
+    getAllGlobalTags(size, page, field, direction)
       .then(res => {
         res.content.forEach(el => {
           el.lookupEntityType = el.lookupEntityType.code as any;
