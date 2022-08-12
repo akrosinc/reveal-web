@@ -7,7 +7,7 @@ import { getLocationHierarchyList } from '../../../location/api';
 import { LocationHierarchyModel } from '../../../location/providers/types';
 import Select from 'react-select';
 import { downloadLocations, getEntityTagList } from '../../api';
-import { getEntityTags } from '../../../planSimulation/api';
+import { getImportableEntityTags } from '../../../planSimulation/api';
 import { EntityTag } from '../../../planSimulation/providers/types';
 
 export const TemplateCreation = () => {
@@ -23,7 +23,7 @@ export const TemplateCreation = () => {
     getEntityTagList().then(res => {
       const location = res.content.find(el => el.lookupEntityType.code === 'Location');
       if (location) {
-        getEntityTags(location.lookupEntityType.identifier).then(res => setEntityTagList(res));
+        getImportableEntityTags(location.lookupEntityType.identifier).then(res => setEntityTagList(res));
       }
     });
   }, []);
