@@ -22,24 +22,25 @@ const LocationBulk = () => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [interval, setSelectedInterval] = useState<NodeJS.Timeout>();
-  const [dropdownValue, setDropdownValue] = useState<string>();
+  const [dropdownValue, setDropdownValue] = useState<string>('all');
   const [isValidate, setIsValidate] = useState(false);
 
-
-  const dropdownOnChangeHandler = (value:string) => {
+  const dropdownOnChangeHandler = (value: string) => {
     setDropdownValue(value);
-  }
+    getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulkFile?.identifier ?? '', value)
+      .then(res => {
+        setSelectedBulkLocationList(res);
+      })
+      .catch(err => toast.error(err));
+  };
 
-  const loadData = useCallback(
-    (page: number, size: number, field?: string, sortDirection?: boolean) => {
-      getLocationBulkList(page, size, field, sortDirection)
-        .then(res => {
-          setLocationBulkList(res);
-        })
-        .catch(err => toast.error(err));
-    },
-    []
-  );
+  const loadData = useCallback((page: number, size: number, field?: string, sortDirection?: boolean) => {
+    getLocationBulkList(page, size, field, sortDirection)
+      .then(res => {
+        setLocationBulkList(res);
+      })
+      .catch(err => toast.error(err));
+  }, []);
 
   useEffect(() => {
     loadData(PAGINATION_DEFAULT_SIZE, 0);
@@ -54,7 +55,7 @@ const LocationBulk = () => {
   };
 
   const openBulkById = (selectedBulk: LocationBulkModel) => {
-    getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier, 'all')
+    getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier, dropdownValue)
       .then(res => {
         setSelectedBulkFile(selectedBulk);
         setSelectedBulkLocationList(res);
@@ -62,7 +63,7 @@ const LocationBulk = () => {
         if (selectedBulk.status !== LocationBulkStatus.COMPLETE) {
           setSelectedInterval(
             setInterval(() => {
-              getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier, 'all').then(res => {
+              getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier, dropdownValue).then(res => {
                 setSelectedBulkLocationList(res);
               });
             }, 10000)
@@ -76,6 +77,7 @@ const LocationBulk = () => {
     setOpenUpload(false);
     setIsValidate(false);
     setOpenDetails(false);
+    setDropdownValue('all');
     if (interval) {
       clearInterval(interval);
     }
@@ -96,7 +98,7 @@ const LocationBulk = () => {
 
   const paginationHandler = (size: number, page: number) => {
     if (openDetails) {
-      getLocationBulkListById(size, page, selectedBulkFile?.identifier ?? '', dropdownValue ?? 'all')
+      getLocationBulkListById(size, page, selectedBulkFile?.identifier ?? '', dropdownValue)
         .then(res => {
           setSelectedBulkLocationList(res);
         })
@@ -115,13 +117,17 @@ const LocationBulk = () => {
           </h2>
         </Col>
         <Col>
-        <Button id="import-locations-button" className="float-end" onClick={() => setOpenUpload(true)}>
+          <Button id="import-locations-button" className="float-end" onClick={() => setOpenUpload(true)}>
             {t('userImportPage.bulkImport')}
           </Button>
-          <Button id="import-locations-button" className="float-end me-2" onClick={() => {
-            setOpenUpload(true);
-            setIsValidate(true);
-          }}>
+          <Button
+            id="import-locations-button"
+            className="float-end me-2"
+            onClick={() => {
+              setOpenUpload(true);
+              setIsValidate(true);
+            }}
+          >
             {t('userImportPage.validateImport')}
           </Button>
         </Col>
@@ -151,7 +157,7 @@ const LocationBulk = () => {
       {openUpload && (
         <ActionDialog
           closeHandler={() => closeHandler()}
-          title={isValidate ? "Validate Import File" :"Upload Locations"}
+          title={isValidate ? 'Validate Import File' : 'Upload Locations'}
           element={<UploadLocation isValidate={isValidate} handleClose={() => closeHandler()} />}
         />
       )}

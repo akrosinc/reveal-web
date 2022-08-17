@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button, Modal, Spinner, Table } from 'react-bootstrap';
 import { LocationBulkModel, LocationBulkDetailsModel, LocationBulkStatus } from '../../../providers/types';
 import { formatDate } from '../../../../../utils';
@@ -8,8 +8,6 @@ import { useAppSelector } from '../../../../../store/hooks';
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
 import Form from 'react-bootstrap/Form';
-import { PAGINATION_DEFAULT_SIZE } from '../../../../../constants';
-import { getLocationBulkListById } from '../../../api';
 
 interface Props {
   closeHandler: () => void;
@@ -19,14 +17,14 @@ interface Props {
   dropdownOnChangeHandler: (value: string) => void;
 }
 
-
-const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, paginationHandler, dropdownOnChangeHandler}: Props) => {
+const LocationBulkDetails = ({
+  closeHandler,
+  locationBulkFile,
+  locationList,
+  paginationHandler,
+  dropdownOnChangeHandler
+}: Props) => {
   const isDarkMode = useAppSelector(state => state.darkMode.value);
-  const [locationListComponent, setLocationListComponent] = useState<PageableModel<LocationBulkDetailsModel>>();
-
-  useEffect(() => {
-    setLocationListComponent(locationList);
-  }, [locationList]);
 
   return (
     <Modal show centered size="lg" contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
@@ -47,19 +45,18 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
       </Modal.Header>
       <Modal.Body>
         <SimpleBar style={{ maxHeight: '65vh' }}>
-        <Form.Select className='mb-2 w-50' 
-          defaultValue={"all"} 
-          onChange={e => {
-            dropdownOnChangeHandler(e.target.value);
-            getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, locationBulkFile.identifier, e.target.value)
-            .then(res=> setLocationListComponent(res))
-                    }
-                  } 
-                    aria-label="Status option">
-          <option value="all">All</option>
-          <option value="successful">Successful</option>
-          <option value="failed">Failed</option>
-        </Form.Select>
+          <Form.Select
+            className="mb-2 w-50"
+            defaultValue={'all'}
+            onChange={e => {
+              dropdownOnChangeHandler(e.target.value);
+            }}
+            aria-label="Status option"
+          >
+            <option value="all">All</option>
+            <option value="successful">Successful</option>
+            <option value="failed">Failed</option>
+          </Form.Select>
           <Table bordered responsive variant={isDarkMode ? 'dark' : 'white'}>
             <thead className="border border-2">
               <tr>
@@ -69,7 +66,7 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
               </tr>
             </thead>
             <tbody>
-              {locationListComponent?.content.map((el, index) => (
+              {locationList?.content.map((el, index) => (
                 <tr key={index}>
                   <td>{el.name}</td>
                   <td>{el.message}</td>
