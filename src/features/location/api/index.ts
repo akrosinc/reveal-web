@@ -172,3 +172,15 @@ export const uploadLocationJSON = async (json: FormData, toastId: string): Promi
     .then(response => response.data);
   return data;
 };
+
+export const validateLocationJSON = async (json: FormData, toastId: string): Promise<BlobPart> => {
+  const data = await api
+    .post<BlobPart>(LOCATION + '/bulk/validate', json, {
+      onUploadProgress: p => {
+        const progress = p.loaded / p.total;
+        toast.update(toastId, { progress, render: 'JSON file is validating... ' + Math.round(progress * 100) + '%' });
+      }
+    })
+    .then(response => response.data);
+  return data;
+};

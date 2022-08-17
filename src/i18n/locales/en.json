@@ -70,7 +70,8 @@
     "File name": "File Name",
     "Upload Date": "Upload Date",
     "Uploaded By": "User",
-    "Status": "Status"
+    "Status": "Status",
+    "validateImport": "Validate Import"
   },
   "organizationPage": {
     "organization": "Organization",

@@ -8,9 +8,7 @@ import { useAppSelector } from '../../../../../store/hooks';
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
 import Form from 'react-bootstrap/Form';
-import { changeLanguage } from 'i18next';
-import api from '../../../../../api/axios';
-import { LOCATION, PAGINATION_DEFAULT_SIZE } from '../../../../../constants';
+import { PAGINATION_DEFAULT_SIZE } from '../../../../../constants';
 import { getLocationBulkListById } from '../../../api';
 
 interface Props {

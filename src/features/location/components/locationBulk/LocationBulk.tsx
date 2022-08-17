@@ -11,7 +11,6 @@ import { getLocationBulkListById, getLocationBulkList } from '../../api';
 import { toast } from 'react-toastify';
 import LocationBulkDetails from './details';
 import DefaultTable from '../../../../components/Table/DefaultTable';
-import { StringDecoder } from 'string_decoder';
 
 const LocationBulk = () => {
   const [openUpload, setOpenUpload] = useState(false);
@@ -24,6 +23,7 @@ const LocationBulk = () => {
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [interval, setSelectedInterval] = useState<NodeJS.Timeout>();
   const [dropdownValue, setDropdownValue] = useState<string>();
+  const [isValidate, setIsValidate] = useState(false);
 
 
   const dropdownOnChangeHandler = (value:string) => {
@@ -74,6 +74,7 @@ const LocationBulk = () => {
 
   const closeHandler = () => {
     setOpenUpload(false);
+    setIsValidate(false);
     setOpenDetails(false);
     if (interval) {
       clearInterval(interval);
@@ -114,8 +115,14 @@ const LocationBulk = () => {
           </h2>
         </Col>
         <Col>
-          <Button id="import-locations-button" className="float-end" onClick={() => setOpenUpload(true)}>
+        <Button id="import-locations-button" className="float-end" onClick={() => setOpenUpload(true)}>
             {t('userImportPage.bulkImport')}
+          </Button>
+          <Button id="import-locations-button" className="float-end me-2" onClick={() => {
+            setOpenUpload(true);
+            setIsValidate(true);
+          }}>
+            {t('userImportPage.validateImport')}
           </Button>
         </Col>
       </Row>
@@ -144,8 +151,8 @@ const LocationBulk = () => {
       {openUpload && (
         <ActionDialog
           closeHandler={() => closeHandler()}
-          title="Upload Locations"
-          element={<UploadLocation handleClose={() => closeHandler()} />}
+          title={isValidate ? "Validate Import File" :"Upload Locations"}
+          element={<UploadLocation isValidate={isValidate} handleClose={() => closeHandler()} />}
         />
       )}
       {openDetails && selectedBulkFile !== undefined && selectedBulkLocationList !== undefined && (
