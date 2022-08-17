@@ -152,10 +152,11 @@ export const getLocationBulkListById = async (
   size: number,
   page: number,
   id: string,
+  status: string,
   search?: string
 ): Promise<PageableModel<LocationBulkDetailsModel>> => {
   const data = await api
-    .get<PageableModel<LocationBulkDetailsModel>>(LOCATION + `/bulk/${id}?size=${size}&page=${page}`)
+    .get<PageableModel<LocationBulkDetailsModel>>(LOCATION + `/bulk/${id}?size=${size}&page=${page}&status=${status}`)
     .then(response => response.data);
   return data;
 };

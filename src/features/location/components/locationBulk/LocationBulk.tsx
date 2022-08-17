@@ -11,6 +11,7 @@ import { getLocationBulkListById, getLocationBulkList } from '../../api';
 import { toast } from 'react-toastify';
 import LocationBulkDetails from './details';
 import DefaultTable from '../../../../components/Table/DefaultTable';
+import { StringDecoder } from 'string_decoder';
 
 const LocationBulk = () => {
   const [openUpload, setOpenUpload] = useState(false);
@@ -22,6 +23,12 @@ const LocationBulk = () => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [interval, setSelectedInterval] = useState<NodeJS.Timeout>();
+  const [dropdownValue, setDropdownValue] = useState<string>();
+
+
+  const dropdownOnChangeHandler = (value:string) => {
+    setDropdownValue(value);
+  }
 
   const loadData = useCallback(
     (page: number, size: number, field?: string, sortDirection?: boolean) => {
@@ -47,7 +54,7 @@ const LocationBulk = () => {
   };
 
   const openBulkById = (selectedBulk: LocationBulkModel) => {
-    getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier)
+    getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier, 'all')
       .then(res => {
         setSelectedBulkFile(selectedBulk);
         setSelectedBulkLocationList(res);
@@ -55,7 +62,7 @@ const LocationBulk = () => {
         if (selectedBulk.status !== LocationBulkStatus.COMPLETE) {
           setSelectedInterval(
             setInterval(() => {
-              getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier).then(res => {
+              getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier, 'all').then(res => {
                 setSelectedBulkLocationList(res);
               });
             }, 10000)
@@ -88,7 +95,7 @@ const LocationBulk = () => {
 
   const paginationHandler = (size: number, page: number) => {
     if (openDetails) {
-      getLocationBulkListById(size, page, selectedBulkFile?.identifier ?? '')
+      getLocationBulkListById(size, page, selectedBulkFile?.identifier ?? '', dropdownValue ?? 'all')
         .then(res => {
           setSelectedBulkLocationList(res);
         })
@@ -147,6 +154,7 @@ const LocationBulk = () => {
           locationBulkFile={selectedBulkFile}
           locationList={selectedBulkLocationList}
           paginationHandler={paginationHandler}
+          dropdownOnChangeHandler={dropdownOnChangeHandler}
         />
       )}
     </>
