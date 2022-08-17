@@ -8,7 +8,12 @@ export const getEntityList = async (): Promise<LookupEntityType[]> => {
 };
 
 export const getEntityTags = async (entityId: string): Promise<EntityTag[]> => {
-  const data = await api.get<EntityTag[]>(`entityTag/${entityId}`).then(res => res.data);
+  const data = await api.get<EntityTag[]>(`entityTag/${entityId}?filter=global`).then(res => res.data);
+  return data;
+};
+
+export const getImportableEntityTags = async (entityId: string): Promise<EntityTag[]> => {
+  const data = await api.get<EntityTag[]>(`entityTag/${entityId}?filter=importable`).then(res => res.data);
   return data;
 };
 

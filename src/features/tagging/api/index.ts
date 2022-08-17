@@ -18,6 +18,22 @@ export const getAllTags = (
   return data;
 };
 
+export const getAllGlobalTags = (
+  size: number,
+  page: number,
+  sortField?: string,
+  direction?: boolean
+): Promise<PageableModel<Tag>> => {
+  const data = api
+    .get<PageableModel<Tag>>(
+      `entityTag?filter=global&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField !== undefined ? sortField : ''},${
+        direction ? 'asc' : 'desc'
+      }`
+    )
+    .then(res => res.data);
+  return data;
+};
+
 export const createTag = async (form: TagCreateRequest): Promise<Tag> => {
   const data = await api.post<Tag>('entityTag', form).then(res => res.data);
   return data;
