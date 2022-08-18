@@ -73,7 +73,7 @@ const Tagging = () => {
               placeholder="Search Tags"
               debounceTimeout={800}
               onChange={e => filterData(e)}
-              disabled={tagList?.totalElements === 0}
+              disabled={tagList?.totalElements === 0 && currentSearchInput === ''}
             />
           </Col>
         </Row>
