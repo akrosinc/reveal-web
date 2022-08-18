@@ -21,12 +21,13 @@ export const getAllTags = (
 export const getAllGlobalTags = (
   size: number,
   page: number,
+  search?: string,
   sortField?: string,
   direction?: boolean
 ): Promise<PageableModel<Tag>> => {
   const data = api
     .get<PageableModel<Tag>>(
-      `entityTag?filter=global&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField !== undefined ? sortField : ''},${
+      `entityTag?filter=global&search=${search !== undefined ? search : ''}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField !== undefined ? sortField : ''},${
         direction ? 'asc' : 'desc'
       }`
     )
