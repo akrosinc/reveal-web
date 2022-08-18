@@ -7,15 +7,23 @@ import Paginator from '../../../../../components/Pagination';
 import { useAppSelector } from '../../../../../store/hooks';
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
+import Form from 'react-bootstrap/Form';
 
 interface Props {
   closeHandler: () => void;
   locationBulkFile: LocationBulkModel;
   locationList: PageableModel<LocationBulkDetailsModel>;
   paginationHandler: (size: number, page: number) => void;
+  dropdownOnChangeHandler: (value: string) => void;
 }
 
-const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, paginationHandler }: Props) => {
+const LocationBulkDetails = ({
+  closeHandler,
+  locationBulkFile,
+  locationList,
+  paginationHandler,
+  dropdownOnChangeHandler
+}: Props) => {
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   return (
@@ -37,6 +45,18 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
       </Modal.Header>
       <Modal.Body>
         <SimpleBar style={{ maxHeight: '65vh' }}>
+          <Form.Select
+            className="mb-2 w-50"
+            defaultValue={'all'}
+            onChange={e => {
+              dropdownOnChangeHandler(e.target.value);
+            }}
+            aria-label="Status option"
+          >
+            <option value="all">All</option>
+            <option value="successful">Successful</option>
+            <option value="failed">Failed</option>
+          </Form.Select>
           <Table bordered responsive variant={isDarkMode ? 'dark' : 'white'}>
             <thead className="border border-2">
               <tr>
@@ -46,7 +66,7 @@ const LocationBulkDetails = ({ closeHandler, locationBulkFile, locationList, pag
               </tr>
             </thead>
             <tbody>
-              {locationList.content.map((el, index) => (
+              {locationList?.content.map((el, index) => (
                 <tr key={index}>
                   <td>{el.name}</td>
                   <td>{el.message}</td>

@@ -152,10 +152,11 @@ export const getLocationBulkListById = async (
   size: number,
   page: number,
   id: string,
+  status: string,
   search?: string
 ): Promise<PageableModel<LocationBulkDetailsModel>> => {
   const data = await api
-    .get<PageableModel<LocationBulkDetailsModel>>(LOCATION + `/bulk/${id}?size=${size}&page=${page}`)
+    .get<PageableModel<LocationBulkDetailsModel>>(LOCATION + `/bulk/${id}?size=${size}&page=${page}&status=${status}`)
     .then(response => response.data);
   return data;
 };
@@ -166,6 +167,18 @@ export const uploadLocationJSON = async (json: FormData, toastId: string): Promi
       onUploadProgress: p => {
         const progress = p.loaded / p.total;
         toast.update(toastId, { progress, render: 'JSON file is uploading... ' + Math.round(progress * 100) + '%' });
+      }
+    })
+    .then(response => response.data);
+  return data;
+};
+
+export const validateLocationJSON = async (json: FormData, toastId: string): Promise<BlobPart> => {
+  const data = await api
+    .post<BlobPart>(LOCATION + '/bulk/validate', json, {
+      onUploadProgress: p => {
+        const progress = p.loaded / p.total;
+        toast.update(toastId, { progress, render: 'JSON file is validating... ' + Math.round(progress * 100) + '%' });
       }
     })
     .then(response => response.data);

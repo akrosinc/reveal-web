@@ -22,17 +22,25 @@ const LocationBulk = () => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [interval, setSelectedInterval] = useState<NodeJS.Timeout>();
+  const [dropdownValue, setDropdownValue] = useState<string>('all');
+  const [isValidate, setIsValidate] = useState(false);
 
-  const loadData = useCallback(
-    (page: number, size: number, field?: string, sortDirection?: boolean) => {
-      getLocationBulkList(page, size, field, sortDirection)
-        .then(res => {
-          setLocationBulkList(res);
-        })
-        .catch(err => toast.error(err));
-    },
-    []
-  );
+  const dropdownOnChangeHandler = (value: string) => {
+    setDropdownValue(value);
+    getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulkFile?.identifier ?? '', value)
+      .then(res => {
+        setSelectedBulkLocationList(res);
+      })
+      .catch(err => toast.error(err));
+  };
+
+  const loadData = useCallback((page: number, size: number, field?: string, sortDirection?: boolean) => {
+    getLocationBulkList(page, size, field, sortDirection)
+      .then(res => {
+        setLocationBulkList(res);
+      })
+      .catch(err => toast.error(err));
+  }, []);
 
   useEffect(() => {
     loadData(PAGINATION_DEFAULT_SIZE, 0);
@@ -47,7 +55,7 @@ const LocationBulk = () => {
   };
 
   const openBulkById = (selectedBulk: LocationBulkModel) => {
-    getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier)
+    getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier, dropdownValue)
       .then(res => {
         setSelectedBulkFile(selectedBulk);
         setSelectedBulkLocationList(res);
@@ -55,7 +63,7 @@ const LocationBulk = () => {
         if (selectedBulk.status !== LocationBulkStatus.COMPLETE) {
           setSelectedInterval(
             setInterval(() => {
-              getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier).then(res => {
+              getLocationBulkListById(PAGINATION_DEFAULT_SIZE, 0, selectedBulk.identifier, dropdownValue).then(res => {
                 setSelectedBulkLocationList(res);
               });
             }, 10000)
@@ -67,7 +75,9 @@ const LocationBulk = () => {
 
   const closeHandler = () => {
     setOpenUpload(false);
+    setIsValidate(false);
     setOpenDetails(false);
+    setDropdownValue('all');
     if (interval) {
       clearInterval(interval);
     }
@@ -88,7 +98,7 @@ const LocationBulk = () => {
 
   const paginationHandler = (size: number, page: number) => {
     if (openDetails) {
-      getLocationBulkListById(size, page, selectedBulkFile?.identifier ?? '')
+      getLocationBulkListById(size, page, selectedBulkFile?.identifier ?? '', dropdownValue)
         .then(res => {
           setSelectedBulkLocationList(res);
         })
@@ -109,6 +119,16 @@ const LocationBulk = () => {
         <Col>
           <Button id="import-locations-button" className="float-end" onClick={() => setOpenUpload(true)}>
             {t('userImportPage.bulkImport')}
+          </Button>
+          <Button
+            id="import-locations-button"
+            className="float-end me-2"
+            onClick={() => {
+              setOpenUpload(true);
+              setIsValidate(true);
+            }}
+          >
+            {t('userImportPage.validateImport')}
           </Button>
         </Col>
       </Row>
@@ -137,8 +157,8 @@ const LocationBulk = () => {
       {openUpload && (
         <ActionDialog
           closeHandler={() => closeHandler()}
-          title="Upload Locations"
-          element={<UploadLocation handleClose={() => closeHandler()} />}
+          title={isValidate ? 'Validate Import File' : 'Upload Locations'}
+          element={<UploadLocation isValidate={isValidate} handleClose={() => closeHandler()} />}
         />
       )}
       {openDetails && selectedBulkFile !== undefined && selectedBulkLocationList !== undefined && (
@@ -147,6 +167,7 @@ const LocationBulk = () => {
           locationBulkFile={selectedBulkFile}
           locationList={selectedBulkLocationList}
           paginationHandler={paginationHandler}
+          dropdownOnChangeHandler={dropdownOnChangeHandler}
         />
       )}
     </>
