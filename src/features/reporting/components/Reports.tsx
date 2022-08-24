@@ -33,7 +33,7 @@ const Reports = () => {
   );
 
   const performanceDashboardChecker = () => {
-    return pathname.includes('performanceReports');
+    return pathname.includes('performance-reports');
   };
 
   useEffect(() => {
