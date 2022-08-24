@@ -20,7 +20,7 @@ const MetaDataImport = () => {
   }, [tab, navigate]);
 
   return (
-    <PageWrapper title="Meta Data Import">
+    <PageWrapper title="Metadata Import">
       <Tabs
         defaultActiveKey="create-template"
         id="test-tabs"

@@ -21,8 +21,12 @@ export const usePath = () => {
           pageName[0].charAt(0).toUpperCase() +
           pageName[0].slice(1) +
           ' | ' +
-          pageName[1].charAt(0).toUpperCase() +
-          pageName[1].slice(1);
+          pageName[1]
+            .split('-')
+            .map(el => {
+              return (el = el.charAt(0).toUpperCase() + el.slice(1));
+            })
+            .join(' ');
       } else {
         title = pageName[0].charAt(0).toUpperCase() + pageName[0].slice(1);
       }

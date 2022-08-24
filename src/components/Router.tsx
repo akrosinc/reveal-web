@@ -8,6 +8,7 @@ import {
   METADATA_IMPORT,
   PLANS,
   REPORTING_PAGE,
+  RESOURCE_PLANNING_PAGE,
   SIMULATION_PAGE,
   TAG_MANAGEMENT
 } from '../constants/';
@@ -23,6 +24,7 @@ import Reporting from '../pages/Reporting';
 import PlanSimulation from '../pages/PlanSimulationPage';
 import TagManagement from '../pages/TagManagement';
 import MetaDataImport from '../pages/MetaDataImport';
+import ResourcePlanning from '../pages/ResourcePlanning';
 
 export default function Router() {
   const { keycloak, initialized } = useKeycloak();
@@ -46,6 +48,9 @@ export default function Router() {
           <Route path={TAG_MANAGEMENT + '/*'} element={<TagManagement />} />
           <Route path={METADATA_IMPORT + '/*'} element={<MetaDataImport />}>
             <Route path=":tab" element={<MetaDataImport />} />
+          </Route>
+          <Route path={RESOURCE_PLANNING_PAGE + '/*'} element={<ResourcePlanning />}>
+            <Route path=":tab" element={<ResourcePlanning />} />
           </Route>
           <Route path="*" element={<ErrorPage />} />
         </Routes>

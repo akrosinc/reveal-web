@@ -1,11 +1,13 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import loaderReducer from '../features/reducers/loader';
 import darkModeReducer from '../features/reducers/darkMode';
+import resourcePlanningConfigReducer from '../features/reducers/resourcePlanningConfig';
 
 export const store = configureStore({
   reducer: {
     loader: loaderReducer,
-    darkMode: darkModeReducer
+    darkMode: darkModeReducer,
+    resourceConfig: resourcePlanningConfigReducer
   }
 });
 
