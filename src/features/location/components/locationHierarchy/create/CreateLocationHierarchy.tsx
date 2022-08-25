@@ -30,12 +30,12 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) =>
   const selectHandler = (selectedOptions: MultiValue<{ value: string; label: string }>) => {
     const selected = selectedOptions.map(el => el.value);
     setLocationHierarchy(selected);
-    setValue('nodeOrder', selected.toString());
+    setValue('nodeOrder', selected);
   };
 
   const submitHandler = (formData: LocationHierarchyModel) => {
     if (locationHierarchy.length > 0) {
-      toast.promise(createLocationHierarchy({nodeOrder: formData.nodeOrder}), {
+      toast.promise(createLocationHierarchy({ name: formData.name, nodeOrder: formData.nodeOrder }), {
         pending: 'Loading...',
         success: {
           render({ data }: { data: LocationHierarchyModel }) {
@@ -47,10 +47,15 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) =>
           render({ data: err }: { data: any }) {
             if (typeof err !== 'string') {
               const fieldValidationErrors = err as FieldValidationError[];
-              return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
-                setError(errField.field as any, {message: errField.messageKey});
-                return errField.field;
-              }).toString();
+              return (
+                'Field Validation Error: ' +
+                fieldValidationErrors
+                  .map(errField => {
+                    setError(errField.field as any, { message: errField.messageKey });
+                    return errField.field;
+                  })
+                  .toString()
+              );
             }
             return err;
           }
