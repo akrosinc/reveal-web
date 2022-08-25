@@ -13,11 +13,6 @@ import {
   MAP_DEFAULT_FILL_OPACITY,
   MAP_IRS_STRUCTURE_LEGEND_COLORS,
   MAP_MDA_STRUCTURE_LEGEND_COLORS,
-  MDA_STRUCTURE_COLOR_COMPLETE,
-  MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
-  MDA_STRUCTURE_COLOR_NOT_VISITED,
-  MDA_STRUCTURE_COLOR_SMC_COMPLETE,
-  MDA_STRUCTURE_COLOR_SPAQ_COMPLETE,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
   REPORT_TABLE_PERCENTAGE_MEDIUM
@@ -118,22 +113,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
                 'match',
                 ['get', 'geographicLevel'],
                 'structure',
-                [
-                  'case',
-                  ['==', ['get', 'defaultColumnValue'], null],
-                  'gray',
-                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.COMPLETE],
-                  MDA_STRUCTURE_COLOR_COMPLETE,
-                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.NOT_VISITED],
-                  MDA_STRUCTURE_COLOR_NOT_VISITED,
-                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.NOT_ELIGIBLE],
-                  MDA_STRUCTURE_COLOR_NOT_ELIGIBLE,
-                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.SMC_COMPLETE],
-                  MDA_STRUCTURE_COLOR_SMC_COMPLETE,
-                  ['==', ['get', 'defaultColumnValue'], MdaStructureStatus.SPAQ_COMPLETE],
-                  MDA_STRUCTURE_COLOR_SPAQ_COMPLETE,
-                  'transparent'
-                ],
+                ['get', 'statusColor'],
                 [
                   'case',
                   ['==', ['get', 'defaultColumnValue'], null],
@@ -183,6 +163,11 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
                   ? properties['columnDataMap'][defaultColumn].value.toFixed(2) + '%'
                   : properties['columnDataMap'][defaultColumn].value
               }</small>`}
+            </div>`;
+            } else if (properties['businessStatus']) {
+              htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
+              ${`<small class='my-3'>Business Status: ${properties['businessStatus']}
+              </small>`}
             </div>`;
             }
             map.getCanvas().style.cursor = 'pointer';
@@ -284,8 +269,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
         {reportType && (
           <PopoverComponent title="Structure Map Legend">
             <ul style={{ listStyle: 'none' }}>
-              {reportType === ReportType.MDA_FULL_COVERAGE ||
-              reportType === ReportType.MDA_LITE_COVERAGE
+              {reportType === ReportType.MDA_FULL_COVERAGE || reportType === ReportType.MDA_LITE_COVERAGE
                 ? Object.keys(MdaStructureStatus).map((el, index) => (
                     <li key={index}>
                       <span
