@@ -13,6 +13,17 @@ interface Props {
   clickAccessor?: string;
 }
 
+const DATE_FORMATS = [
+  moment.ISO_8601,
+  moment.defaultFormat,
+  moment.defaultFormatUtc,
+  moment.defaultFormatUtc,
+  'lll',
+  'LLL',
+  'll',
+  'LL'
+];
+
 const DefaultTable = ({ columns, data, sortHandler, clickHandler, clickAccessor }: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
@@ -74,7 +85,7 @@ const DefaultTable = ({ columns, data, sortHandler, clickHandler, clickAccessor 
                     return <td key={index}>{dataEl[el.accessor][key]}</td>;
                   } else {
                     //check if its a date field and format if so
-                    if (moment(dataEl[el.accessor], true).isValid()) {
+                    if (moment(dataEl[el.accessor], DATE_FORMATS, true).isValid()) {
                       return <td key={index}>{formatDate(dataEl[el.accessor])}</td>;
                     }
                     return <td key={index}>{dataEl[el.accessor]?.toString()}</td>;
