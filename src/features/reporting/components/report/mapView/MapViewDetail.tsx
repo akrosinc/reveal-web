@@ -117,7 +117,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
                 [
                   'case',
                   ['==', ['get', 'defaultColumnValue'], null],
-                  'gray',
+                  ['case', ['==', ['get', 'statusColor'], null], 'gray', ['get', 'statusColor']],
                   ['<', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_LOW],
                   COLOR_BOOTSTRAP_DANGER,
                   ['<', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_MEDIUM],
