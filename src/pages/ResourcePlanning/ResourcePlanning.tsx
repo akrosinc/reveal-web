@@ -20,49 +20,56 @@ const ResourcePlanning = () => {
   useEffect(() => {
     if (tab === undefined) {
       navigate(RESOURCE_PLANNING_PAGE + '/config');
-    } else if (tab !== 'inputs' && tab !== 'dashboard' && tab !== 'config' && tab !== 'history') {
+    } else if (tab === 'inputs' || tab === 'dashboard' || tab === 'config' || tab === 'history') {
+      if (configValue) {
+        setActiveKey(tab);
+      } else {
+        setActiveKey('config');
+      }
+    } else {
       navigate('/error');
     }
-  }, [tab, navigate]);
+  }, [tab, navigate, configValue]);
 
   return (
-      <PageWrapper title="Resource Planning">
-        <Tabs
-          id="resource-planning-tabs"
-          className="mb-3"
-          activeKey={activeKey}
-          onSelect={tabName => {
-            if (tabName !== 'config' && configValue === undefined) {
-              toast.warning('You need to save config first');
-              setActiveKey('config');
-            } else {
-              navigate(RESOURCE_PLANNING_PAGE + '/' + tabName);
-              setActiveKey(tabName ?? '');
-            }
-          }}
-        >
-          <Tab eventKey="config" title="Config">
-            <AuthGuard roles={[PLAN_VIEW]}>
-              <ConfigTab />
-            </AuthGuard>
-          </Tab>
-          <Tab eventKey="inputs" title="Inputs">
-            <AuthGuard roles={[PLAN_VIEW]}>
-              <InputsTab />
-            </AuthGuard>
-          </Tab>
-          <Tab eventKey="dashboard" title="Dashboard">
-            <AuthGuard roles={[PLAN_VIEW]}>
-              <DashboardTab />
-            </AuthGuard>
-          </Tab>
-          <Tab eventKey="history" title="History">
-            <AuthGuard roles={[PLAN_VIEW]}>
-              <h2>History tab</h2>
-            </AuthGuard>
-          </Tab>
-        </Tabs>
-      </PageWrapper>
+    <PageWrapper title="Resource Planning">
+      <Tabs
+        mountOnEnter
+        id="resource-planning-tabs"
+        className="mb-3"
+        activeKey={activeKey}
+        onSelect={tabName => {
+          if (tabName !== 'config' && configValue === undefined) {
+            toast.warning('You need to save config first');
+            setActiveKey('config');
+          } else {
+            navigate(RESOURCE_PLANNING_PAGE + '/' + tabName);
+            setActiveKey(tabName ?? '');
+          }
+        }}
+      >
+        <Tab eventKey="config" title="Config">
+          <AuthGuard roles={[PLAN_VIEW]}>
+            <ConfigTab />
+          </AuthGuard>
+        </Tab>
+        <Tab eventKey="inputs" title="Inputs">
+          <AuthGuard roles={[PLAN_VIEW]}>
+            <InputsTab />
+          </AuthGuard>
+        </Tab>
+        <Tab eventKey="dashboard" title="Dashboard">
+          <AuthGuard roles={[PLAN_VIEW]}>
+            <DashboardTab />
+          </AuthGuard>
+        </Tab>
+        <Tab eventKey="history" title="History">
+          <AuthGuard roles={[PLAN_VIEW]}>
+            <h2>History tab</h2>
+          </AuthGuard>
+        </Tab>
+      </Tabs>
+    </PageWrapper>
   );
 };
 

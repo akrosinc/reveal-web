@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -6,11 +6,12 @@ import { RootState } from '../../../../store/store';
 import { removeConfig, setConfig } from '../../../reducers/resourcePlanningConfig';
 import { ResourceCountry, ResourcePlanningConfig } from '../../providers/types';
 import Select from 'react-select';
-import { getEntityTags } from '../../../planSimulation/api';
+import { getEntityList, getEntityTags } from '../../../planSimulation/api';
 import { EntityTag } from '../../../planSimulation/providers/types';
 import { getLocationHierarchyList } from '../../../location/api';
 import { LocationHierarchyModel } from '../../../location/providers/types';
 import { getCountryResource } from '../../api';
+import { useNavigate } from 'react-router-dom';
 
 const ConfigTab = () => {
   const configValue = useSelector((state: RootState) => state.resourceConfig.value);
@@ -20,6 +21,7 @@ const ConfigTab = () => {
   const [locationHierarchy, setLocationHierarchy] = useState<LocationHierarchyModel[]>([]);
   const [selectedNodeList, setSelectedNodeList] = useState<string[]>();
   const [countryResourceList, setCountryResourceList] = useState<ResourceCountry[]>([]);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -37,14 +39,25 @@ const ConfigTab = () => {
 
   const submitHandler = (form: any) => {
     console.log(form);
+    navigate('/plans/resource-planning/inputs');
     dispatch(setConfig(form));
   };
 
-  useEffect(() => {
-    getEntityTags('505e0e5b-9e56-4922-98e1-7c5441e177cb').then(res => setEntityTags(res));
+  const loadData = useCallback(() => {
+    getEntityList().then(res => {
+      //find locationEntityId to get location entity tags
+      const locationEntity= res.find(el => el.code === 'Location');
+      if (locationEntity) {
+        getEntityTags(locationEntity.identifier).then(res => setEntityTags(res));
+      }
+    });
     getLocationHierarchyList(50, 0, true).then(res => setLocationHierarchy(res.content));
     getCountryResource().then(res => setCountryResourceList(res));
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   return (
     <>
@@ -77,7 +90,7 @@ const ConfigTab = () => {
           </span>
         </div>
       )}
-      <Form className="container py-2 px-0 px-md-5 mx-auto" onSubmit={handleSubmit(submitHandler)}>
+      <Form className="container py-2" onSubmit={handleSubmit(submitHandler)}>
         <Form.Group className="mt-2">
           <Form.Label>Country</Form.Label>
           <Controller
