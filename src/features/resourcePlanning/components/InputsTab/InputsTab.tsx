@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import Select from 'react-select';
 import { getCampaignResource, getQuestionsResource } from '../../api';
 import { ResourceCampaign, ResourceQuestion } from '../../providers/types';
+import DynamicFormField from './DynamicFormField/DynamicFormField';
 
 const InputsTab = () => {
   const [campaignList, setCampaignList] = useState<ResourceCampaign[]>([]);
@@ -15,7 +16,8 @@ const InputsTab = () => {
     handleSubmit,
     register,
     formState: { errors },
-    control
+    control,
+    watch
   } = useForm();
 
   const submitHandler = (form: any) => {
@@ -45,45 +47,13 @@ const InputsTab = () => {
           <hr className="my-4" />
           <h2>Step 1</h2>
           <Form>
-            {questionList.map((el, index) => (
-              <Form.Group className="my-2" key={index}>
-                <Form.Label>{el.question}</Form.Label>
-                {el.fieldType.inputType === 'STRING' && (
-                  <Form.Control
-                    {...register(el.fieldName as any, { required: 'This field can not be empty.' })}
-                    type="text"
-                  />
-                )}
-                {(el.fieldType.inputType === 'DECIMAL' || el.fieldType.inputType === 'INTEGER') && (
-                  <Form.Control
-                    {...register(el.fieldName as any, { required: 'This field can not be empty.' })}
-                    type="number"
-                    min={el.fieldType.min}
-                    max={el.fieldType.max}
-                  />
-                )}
-                {el.fieldType.inputType === 'DROPDOWN' && (
-                  <Controller
-                    control={control}
-                    name={el.fieldName as any}
-                    rules={{ required: { value: true, message: 'Selecting an answer is required.' }, minLength: 1 }}
-                    render={({ field: { onChange, onBlur, ref, value } }) => (
-                      <Form.Select onChange={onChange} value={value} ref={ref} onBlur={onBlur}>
-                        <option>Select...</option>
-                        {el.fieldType.values.map((el, i) => (
-                          <option key={i} value={el}>
-                            {el}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    )}
-                  />
-                )}
-                {errors[el.fieldName] && (
-                  <Form.Label className="text-danger">{errors[el.fieldName].message}</Form.Label>
-                )}
-              </Form.Group>
-            ))}
+            {questionList.map((el, index) =>
+              el.skipPattern === undefined ? (
+                <DynamicFormField el={el} errors={errors} register={register} control={control} key={index} />
+              ) : watch()[el.skipPattern.skipFieldName] !== el.skipPattern.skipValue ? (
+                <DynamicFormField el={el} errors={errors} register={register} control={control} key={index} />
+              ) : undefined
+            )}
           </Form>
         </>
       ) : (

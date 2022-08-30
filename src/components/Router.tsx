@@ -26,7 +26,7 @@ import TagManagement from '../pages/TagManagement';
 import MetaDataImport from '../pages/MetaDataImport';
 import ResourcePlanning from '../pages/ResourcePlanning';
 
-export default function Router() {
+const Router = () => {
   const { keycloak, initialized } = useKeycloak();
 
   if (initialized) {
@@ -67,3 +67,5 @@ export default function Router() {
     return null;
   }
 }
+
+export default Router;
