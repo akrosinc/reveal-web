@@ -26,8 +26,8 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
     data
   });
   return (
-    <Table bordered responsive hover {...getTableProps()} className="mt-2" variant={isDarkMode ? 'dark' : 'white'}>
-      <thead className="border border-2">
+    <Table bordered hover {...getTableProps()} className="mt-2" variant={isDarkMode ? 'dark' : 'white'}>
+      <thead className="bg-white" style={{position: 'sticky', top: '0'}}>
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => {

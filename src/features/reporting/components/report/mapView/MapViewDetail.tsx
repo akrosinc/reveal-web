@@ -104,7 +104,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
 
         map.addLayer(
           {
-            id: parentLocationIdentifier + '-fill',
+            id: parentLocationIdentifier + (data.features.length ? data.features[0].properties.geographicLevel === 'structure' ? '-structure' : '-fill' : '-fill'),
             type: 'fill',
             source: parentLocationIdentifier,
             layout: {},
@@ -144,7 +144,8 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
             paint: {
               'line-color': 'black',
               'line-width': 4
-            }
+            },
+            filter: ['!=', 'geographicLevel', 'structure']
           },
           'label-layer'
         );
@@ -193,7 +194,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
           easing: e => {
             //this is an event which is fired at the end of the fit bounds
             if (e === 1) {
-              createChildLocationLabel(map, featureSet, parentLocationIdentifier);
+              createChildLocationLabel(map, featureSet, parentLocationIdentifier, true);
               disableMapInteractions(map, false);
             }
             return e;
@@ -205,7 +206,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
         const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         // Check if the media query matches or is not available.
         if (!mediaQuery || mediaQuery.matches) {
-          createChildLocationLabel(map, featureSet, parentLocationIdentifier);
+          createChildLocationLabel(map, featureSet, parentLocationIdentifier, true);
           disableMapInteractions(map, false);
         }
       }
@@ -255,7 +256,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
     if (map.current) {
       map.current.queryRenderedFeatures().forEach(el => {
         if (el.layer.id)
-          if (map!.current!.getLayer(el.layer.id) && el.layer.id.includes('-fill')) {
+          if (map!.current!.getLayer(el.layer.id) && el.layer.id.includes('-fill') && !el.layer.id.includes('-structure')) {
             map!.current!.setPaintProperty(el.layer.id, 'fill-opacity', Number(inputValue) / 100);
             opacity.current = Number(inputValue) / 100;
           }

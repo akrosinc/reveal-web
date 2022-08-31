@@ -81,29 +81,35 @@ const Report = () => {
   const sortDataHandler = (sortDirection: boolean, sortColumnName: string) => {
     if (filterData && filterData.length) {
       //Sort by location name
-      if (sortColumnName === 'Location name') {
+      if (sortColumnName === 'Name') {
         setFilterData([
           ...filterData.sort((a, b) => (sortDirection ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)))
         ]);
       }
-      // Otherwise check if there is a column in the data
-      else if (filterData[0].columnDataMap[sortColumnName]) {
-        setFilterData([
-          ...filterData.sort((a, b) => {
-            // cast to Number and check if its a numeric value
-            let rowDataA = Number(a.columnDataMap[sortColumnName].value);
-            let rowDataB = Number(b.columnDataMap[sortColumnName].value);
-            if (rowDataA >= 0 && rowDataB >= 0) {
-              if (sortDirection) {
-                return rowDataB - rowDataA;
+      //Check if there is a column in the data and its a numeric value otherwise sort by string value 
+      else if (filterData && filterData.length && filterData[0].columnDataMap[sortColumnName]) {
+        if (filterData[0].columnDataMap[sortColumnName].dataType === 'double') {
+          setFilterData([
+            ...filterData.sort((a, b) => {
+              // cast to Number and check if its a numeric value
+              let rowDataA = Number(a.columnDataMap[sortColumnName].value);
+              let rowDataB = Number(b.columnDataMap[sortColumnName].value);
+              if (rowDataA >= 0 && rowDataB >= 0) {
+                if (sortDirection) {
+                  return rowDataB - rowDataA;
+                } else {
+                  return rowDataA - rowDataB;
+                }
               } else {
-                return rowDataA - rowDataB;
+                return 0;
               }
-            } else {
-              return 0;
-            }
-          })
-        ]);
+            })
+          ]);
+        } else {
+          setFilterData([
+            ...filterData.sort((a, b) => (sortDirection ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)))
+          ]);
+        }
       }
     }
   };

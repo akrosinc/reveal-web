@@ -495,7 +495,12 @@ export const selectHandler = (
   });
 };
 
-export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Properties>[], identifier: string) => {
+export const createChildLocationLabel = (
+  map: Map,
+  featureSet: Feature<Point, Properties>[],
+  identifier: string,
+  reporting?: boolean
+) => {
   if (map.getSource(identifier + '-label') === undefined) {
     map.addSource(identifier + '-label', {
       type: 'geojson',
@@ -523,7 +528,7 @@ export const createChildLocationLabel = (map: Map, featureSet: Feature<Point, Pr
         'text-anchor': 'bottom'
       },
       paint: {
-        'text-color': 'white'
+        'text-color': reporting ? ['match', ['get', 'geographicLevel'], 'structure', 'transparent', 'white'] : 'white'
       }
     });
   }
