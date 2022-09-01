@@ -85,29 +85,35 @@ const Report = () => {
         setFilterData([
           ...filterData.sort((a, b) => (sortDirection ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)))
         ]);
-      }
-      //Check if there is a column in the data and its a numeric value otherwise sort by string value 
-      else if (filterData && filterData.length && filterData[0].columnDataMap[sortColumnName]) {
-        if (filterData[0].columnDataMap[sortColumnName].dataType === 'double') {
+      } else if (filterData && filterData.length && filterData[0].columnDataMap[sortColumnName]) {
+        if (
+          filterData[0].columnDataMap[sortColumnName].dataType === 'double' ||
+          filterData[0].columnDataMap[sortColumnName].dataType === 'integer'
+        ) {
           setFilterData([
             ...filterData.sort((a, b) => {
-              // cast to Number and check if its a numeric value
-              let rowDataA = Number(a.columnDataMap[sortColumnName].value);
-              let rowDataB = Number(b.columnDataMap[sortColumnName].value);
-              if (rowDataA >= 0 && rowDataB >= 0) {
-                if (sortDirection) {
-                  return rowDataB - rowDataA;
-                } else {
-                  return rowDataA - rowDataB;
-                }
-              } else {
+              try {
+                // cast to Number and check if its a numeric value
+                let rowDataA = Number(a.columnDataMap[sortColumnName].value);
+                let rowDataB = Number(b.columnDataMap[sortColumnName].value);
+                return sortDirection ? rowDataB - rowDataA : rowDataA - rowDataB;
+              } catch {
                 return 0;
               }
             })
           ]);
-        } else {
+        } else if (filterData[0].columnDataMap[sortColumnName].dataType === 'string') {
           setFilterData([
-            ...filterData.sort((a, b) => (sortDirection ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)))
+            ...filterData.sort((a, b) => {
+              try {
+                // cast to String and compare values to sort
+                const rowDataA = String(a.columnDataMap[sortColumnName].value);
+                const rowDataB = String(b.columnDataMap[sortColumnName].value);
+                return sortDirection ? rowDataA.localeCompare(rowDataB) : rowDataB.localeCompare(rowDataA);
+              } catch {
+                return 0;
+              }
+            })
           ]);
         }
       }

@@ -5,7 +5,7 @@ export interface MapDataReportRequest {
 }
 
 export interface FoundCoverage {
-  value: number;
+  value: any;
   isPercentage: boolean;
   meta: string;
   dataType: string;
