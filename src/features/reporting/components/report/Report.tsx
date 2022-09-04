@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
-import { Button, Col, Collapse, Container, Form, Row, Table } from 'react-bootstrap';
+import { Button, Card, Col, Collapse, Container, Form, ProgressBar, Row, Table } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Column } from 'react-table';
 import { toast } from 'react-toastify';
@@ -18,7 +18,7 @@ import { PlanModel } from '../../../plan/providers/types';
 import { getMapReportData, getReportTypeInfo } from '../../api';
 import { Feature, FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
 import { useRef } from 'react';
-import { AdditionalReportInfo, FoundCoverage, ReportLocationProperties } from '../../providers/types';
+import { AdditionalReportInfo, FoundCoverage, ReportLocationProperties, ReportType } from '../../providers/types';
 import ReportModal from './reportModal';
 import { useTranslation } from 'react-i18next';
 import Select, { MultiValue } from 'react-select';
@@ -26,7 +26,7 @@ import Select, { MultiValue } from 'react-select';
 interface BreadcrumbModel {
   locationName: string;
   locationIdentifier: string;
-  location: FeatureCollection<Polygon | MultiPolygon, ReportLocationProperties>;
+  locationProperties: ReportLocationProperties | undefined;
 }
 
 const Report = () => {
@@ -54,6 +54,11 @@ const Report = () => {
       value: string;
     }>
   >();
+  const [irsOaProgressBar, setIrsOaProgressBar] = useState<{
+    completeStructures: number;
+    completeStructuresPercent: number;
+    notSprayedStructures: number;
+  }>({ completeStructures: 0, completeStructuresPercent: 0, notSprayedStructures: 0 });
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
@@ -214,7 +219,12 @@ const Report = () => {
     loadData();
   }, [loadData]);
 
-  const loadChildHandler = (id: string, locationName: string, selectedReportInfo?: string[]) => {
+  const loadChildHandler = (
+    id: string,
+    locationName: string,
+    selectedReportInfo?: string[],
+    parentData?: ReportLocationProperties
+  ) => {
     if (planId && reportType) {
       getMapReportData(
         {
@@ -225,6 +235,8 @@ const Report = () => {
         selectedReportInfo
       )
         .then(res => {
+          const parentProperties = filterData.find(el => el.id === id) ?? parentData;
+          console.log(parentProperties);
           //reset search input on new load
           if (searchInput.current) searchInput.current.value = '';
           //mapping location properties to data usable for table view
@@ -250,7 +262,28 @@ const Report = () => {
             setFilterData(tableData);
             setFeatureSet([res, id]);
             if (!path.some(el => el.locationIdentifier === id)) {
-              setPath([...path, { locationIdentifier: id, locationName: locationName, location: res }]);
+              setPath([
+                ...path,
+                { locationIdentifier: id, locationName: locationName, locationProperties: parentProperties }
+              ]);
+            }
+            // in case of irs report type and structure geo level calculate progress bar data
+            if (tableData[0].geographicLevel === 'structure' && reportType === ReportType.IRS_FULL_COVERAGE) {
+              irsOaProgressBar.completeStructures = tableData.reduce((total, el) => {
+                if (el.columnDataMap['Structure Status'].value === 'Complete') {
+                  return (total += 1);
+                }
+                return total;
+              }, 0);
+              irsOaProgressBar.notSprayedStructures = tableData.reduce((total, el) => {
+                if (el.columnDataMap['Structure Status'].value === 'Not Sprayed') {
+                  return (total += 1);
+                }
+                return total;
+              }, 0);
+              irsOaProgressBar.completeStructuresPercent =
+                parentProperties?.columnDataMap['Spray Progress (Sprayed/Targeted)'].value ?? 0;
+              setIrsOaProgressBar({ ...irsOaProgressBar });
             }
           } else {
             toast.info(`${locationName} has no child locations.`);
@@ -298,16 +331,54 @@ const Report = () => {
             setCols(mapColumns(res.features[0].properties.columnDataMap));
             setData(tableData);
             setFilterData(tableData);
-          }
-          //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
-          //its enough to spread the object so rerender will be triggered
-          setFeatureSet([{ ...path[index > 0 ? index - 1 : index].location }, el.locationIdentifier]);
-          if (!res.features.length) {
+            //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
+            //its enough to spread the object so rerender will be triggered
+            setFeatureSet([{ ...res }, el.locationIdentifier]);
           }
         })
         .catch(err => {
           toast.error(err);
         });
+    }
+  };
+
+  const mapNotSprayed = () => {
+    const newMap = new Map();
+    newMap.set('locked', 0);
+    newMap.set('funeral', 0);
+    newMap.set('sick', 0);
+    newMap.set('refused', 0);
+
+    filterData.forEach(el => {
+      if (el.columnDataMap['Not Sprayed Reason'].value === 'funeral') {
+        newMap.set('funeral', newMap.get('funeral') + 1);
+      }
+      if (el.columnDataMap['Not Sprayed Reason'].value === 'locked') {
+        newMap.set('locked', newMap.get('locked') + 1);
+      }
+      if (el.columnDataMap['Not Sprayed Reason'].value === 'sick') {
+        newMap.set('sick', newMap.get('sick') + 1);
+      }
+      if (el.columnDataMap['Not Sprayed Reason'].value === 'refused') {
+        newMap.set('refused', newMap.get('refused') + 1);
+      }
+    });
+    return newMap;
+  };
+
+  const showStatusColor = (percentage: number) => {
+    console.log(percentage);
+    if (percentage >= REPORT_TABLE_PERCENTAGE_HIGH) {
+      return 'success';
+    }
+    if (percentage >= REPORT_TABLE_PERCENTAGE_MEDIUM && percentage < REPORT_TABLE_PERCENTAGE_HIGH) {
+      return 'yellow';
+    }
+    if (percentage >= REPORT_TABLE_PERCENTAGE_LOW && percentage < REPORT_TABLE_PERCENTAGE_MEDIUM) {
+      return 'warning';
+    }
+    if (percentage >= 0 && percentage < REPORT_TABLE_PERCENTAGE_LOW) {
+      return 'danger';
     }
   };
 
@@ -383,6 +454,24 @@ const Report = () => {
                 }}
               />
             </Col>
+            <Col md={2}>
+              <Button
+                onClick={() => {
+                  if (path.length) {
+                    loadChildHandler(
+                      path[path.length - 1].locationIdentifier,
+                      path[path.length - 1].locationName,
+                      undefined,
+                      path[path.length - 1].locationProperties
+                    );
+                  } else {
+                    loadData();
+                  }
+                }}
+              >
+                Refresh Data
+              </Button>
+            </Col>
             {reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.drug.length && (
               <Col md={6}>
                 <Select
@@ -414,7 +503,7 @@ const Report = () => {
           </Row>
           <div
             style={{
-              maxHeight: '50vh',
+              maxHeight: showMap ? '50vh' : '90vh',
               overflow: 'auto'
             }}
           >
@@ -435,7 +524,7 @@ const Report = () => {
       )}
       {filterData.length === 0 && <p className="lead text-center">{t('general.noDataFound')}</p>}
       <Row className="my-3">
-        <Col md={showMap ? 10 : 4}>
+        <Col md={showMap ? 10 : 2}>
           <Collapse in={showMap}>
             <div id="expand-table">
               <MapViewDetail
@@ -450,7 +539,7 @@ const Report = () => {
             </div>
           </Collapse>
         </Col>
-        <Col md={showMap ? 2 : 4} className="text-center">
+        <Col md={showMap ? 2 : 8} className="text-center">
           <Button
             className="w-75 my-2"
             onClick={() => setShowMap(!showMap)}
@@ -459,27 +548,65 @@ const Report = () => {
           >
             {showMap ? t('reportPage.hideMap') : t('reportPage.showMap')}
           </Button>
-          <Table className="mt-4 text-center">
-            <tbody>
-              <tr className="bg-danger">
-                <td className="py-4">{t('reportPage.formattingRuleColors.red')}</td>
-                <td className="py-4">{'0% - ' + REPORT_TABLE_PERCENTAGE_LOW + '%'}</td>
-              </tr>
-              <tr className="bg-warning">
-                <td className="py-4">{t('reportPage.formattingRuleColors.orange')}</td>
-                <td className="py-4">{REPORT_TABLE_PERCENTAGE_LOW + '% - ' + REPORT_TABLE_PERCENTAGE_MEDIUM + '%'}</td>
-              </tr>
-              <tr className="bg-yellow">
-                <td className="py-4">{t('reportPage.formattingRuleColors.yellow')}</td>
-                <td className="py-4">{REPORT_TABLE_PERCENTAGE_MEDIUM + '% - ' + REPORT_TABLE_PERCENTAGE_HIGH + '%'}</td>
-              </tr>
-              <tr className="bg-success">
-                <td className="py-4">{t('reportPage.formattingRuleColors.green')}</td>
-                <td className="py-4">{REPORT_TABLE_PERCENTAGE_HIGH + '% - 100%'}</td>
-              </tr>
-            </tbody>
-          </Table>
-          <p className="my-2">{t('reportPage.formattingRules')}</p>
+          {reportType === ReportType.IRS_FULL_COVERAGE &&
+          filterData.length &&
+          filterData[0].geographicLevel === 'structure' ? (
+            <Card className="text-start p-3 mt-2">
+              <p className="mb-0">
+                <b>Spray coverage (Effectiveness)</b>
+              </p>
+              <small>Percent of structures sprayed over total - {irsOaProgressBar.completeStructuresPercent}%</small>
+              <ProgressBar
+                variant={showStatusColor(irsOaProgressBar.completeStructuresPercent)}
+                max={filterData.length}
+                now={irsOaProgressBar?.completeStructures}
+              />
+              <p className="mt-3 mb-0">
+                <b>Reasons for not sprayed structures</b>
+              </p>
+              <p className="mb-0">{filterData.length} structures total</p>
+              <p className="mb-1">
+                {irsOaProgressBar?.notSprayedStructures} of {filterData.length} structures not sprayed
+              </p>
+              <ul className="list-group list-group-flush">
+                {Array.from(mapNotSprayed()).map(key => {
+                  return (
+                    <li className="list-group-item" key={key[0]}>
+                      {key[0] + ' - ' + key[1]}
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
+          ) : (
+            <>
+              <p className="my-2">{t('reportPage.formattingRules')}</p>
+              <Table className="mt-4 text-center">
+                <tbody>
+                  <tr className="bg-danger">
+                    <td className="py-4">{t('reportPage.formattingRuleColors.red')}</td>
+                    <td className="py-4">{'0% - ' + REPORT_TABLE_PERCENTAGE_LOW + '%'}</td>
+                  </tr>
+                  <tr className="bg-warning">
+                    <td className="py-4">{t('reportPage.formattingRuleColors.orange')}</td>
+                    <td className="py-4">
+                      {REPORT_TABLE_PERCENTAGE_LOW + '% - ' + REPORT_TABLE_PERCENTAGE_MEDIUM + '%'}
+                    </td>
+                  </tr>
+                  <tr className="bg-yellow">
+                    <td className="py-4">{t('reportPage.formattingRuleColors.yellow')}</td>
+                    <td className="py-4">
+                      {REPORT_TABLE_PERCENTAGE_MEDIUM + '% - ' + REPORT_TABLE_PERCENTAGE_HIGH + '%'}
+                    </td>
+                  </tr>
+                  <tr className="bg-success">
+                    <td className="py-4">{t('reportPage.formattingRuleColors.green')}</td>
+                    <td className="py-4">{REPORT_TABLE_PERCENTAGE_HIGH + '% - 100%'}</td>
+                  </tr>
+                </tbody>
+              </Table>
+            </>
+          )}
         </Col>
       </Row>
       {showModal && currentFeature && <ReportModal showModal={openModalHandler} feature={currentFeature} />}
