@@ -594,7 +594,7 @@ const Report = () => {
                 now={irsOaProgressBar?.foundCoveragePercent}
               />
               <p className="mb-0 mt-3">
-                <b>Spray coverage (Effectiveness)</b>
+                <b>Spray Coverage of Found(Sprayed/Found)</b>
               </p>
               <small>
                 Percent of Spray Coverage of Found(Sprayed/Found) - {irsOaProgressBar.sprayCoveragePercent.toFixed(2)}%
