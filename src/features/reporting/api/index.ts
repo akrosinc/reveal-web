@@ -1,5 +1,6 @@
-import { FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
+import { FeatureCollection, MultiPolygon, Point, Polygon } from '@turf/turf';
 import api from '../../../api/axios';
+import dashBoardApi from '../../../api/dashboard-axios';
 import { PageableModel } from '../../../api/providers';
 import { PLAN, REPORTS } from '../../../constants';
 import { PlanModel } from '../../plan/providers/types';
@@ -10,13 +11,15 @@ import {
   ReportLocationProperties
 } from '../providers/types';
 
+const prodAPI = process.env.REACT_APP_API_URL === process.env.REACT_APP_DASHBOARD_API_URL ? api : dashBoardApi;
+
 export const getReportTypes = async (): Promise<string[]> => {
-  const data = await api.get<string[]>(REPORTS + '/reportTypes').then(response => response.data);
+  const data = await prodAPI.get<string[]>(REPORTS + '/reportTypes').then(response => response.data);
   return data;
 };
 
 export const getReportTypeInfo = async (reportType: string): Promise<AdditionalReportInfo> => {
-  const data = await api
+  const data = await prodAPI
     .get<AdditionalReportInfo>(REPORTS + `/reportAdditionalInfo?reportType=${reportType}`)
     .then(response => response.data);
   return data;
@@ -25,8 +28,8 @@ export const getReportTypeInfo = async (reportType: string): Promise<AdditionalR
 export const getMapReportData = async (
   mapData: MapDataReportRequest,
   filters?: string[]
-): Promise<FeatureCollection<Polygon | MultiPolygon, ReportLocationProperties>> => {
-  const data = await api
+): Promise<FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>> => {
+  const data = await prodAPI
     .get<any>(
       REPORTS +
         `/reportData?reportType=${mapData.reportTypeEnum}&planIdentifier=${mapData.planIdentifier}${
@@ -46,7 +49,7 @@ export const getPlanReports = async (
   sortField?: string,
   direction?: boolean
 ): Promise<PageableModel<PlanModel>> => {
-  const data = await api
+  const data = await prodAPI
     .get(
       PLAN +
         `/reports?reportType=${reportType ?? ''}&_summary=${summary}&search=${
@@ -58,7 +61,7 @@ export const getPlanReports = async (
 };
 
 export const getPerformanceDashboard = async (planId: string, key?: string): Promise<PerformanceDashboardModel[]> => {
-  const data = await api
+  const data = await prodAPI
     .get<PerformanceDashboardModel[]>(REPORTS + `/performance-data?planIdentifier=${planId}&key=${key ?? null}`)
     .then(response => response.data);
   return data;
@@ -68,7 +71,7 @@ export const getPerformanceDashboardDataDetails = async (
   planId: string,
   key?: string
 ): Promise<PerformanceDashboardModel[]> => {
-  const data = await api
+  const data = await prodAPI
     .get<PerformanceDashboardModel[]>(
       REPORTS + `/detailed-performance-data?planIdentifier=${planId}&key=${key ?? null}`
     )
