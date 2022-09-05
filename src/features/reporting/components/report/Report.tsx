@@ -58,7 +58,15 @@ const Report = () => {
     completeStructures: number;
     completeStructuresPercent: number;
     notSprayedStructures: number;
-  }>({ completeStructures: 0, completeStructuresPercent: 0, notSprayedStructures: 0 });
+    foundCoveragePercent: number;
+    sprayCoveragePercent: number;
+  }>({
+    completeStructures: 0,
+    completeStructuresPercent: 0,
+    notSprayedStructures: 0,
+    foundCoveragePercent: 0,
+    sprayCoveragePercent: 0
+  });
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
@@ -236,7 +244,6 @@ const Report = () => {
       )
         .then(res => {
           const parentProperties = filterData.find(el => el.id === id) ?? parentData;
-          console.log(parentProperties);
           //reset search input on new load
           if (searchInput.current) searchInput.current.value = '';
           //mapping location properties to data usable for table view
@@ -283,6 +290,10 @@ const Report = () => {
               }, 0);
               irsOaProgressBar.completeStructuresPercent =
                 parentProperties?.columnDataMap['Spray Progress (Sprayed/Targeted)'].value ?? 0;
+              irsOaProgressBar.foundCoveragePercent =
+                parentProperties?.columnDataMap['Found Coverage (Found/Target)'].value ?? 0;
+              irsOaProgressBar.sprayCoveragePercent =
+                parentProperties?.columnDataMap['Spray Coverage of Found(Sprayed/Found)'].value ?? 0;
               setIrsOaProgressBar({ ...irsOaProgressBar });
             }
           } else {
@@ -367,7 +378,6 @@ const Report = () => {
   };
 
   const showStatusColor = (percentage: number) => {
-    console.log(percentage);
     if (percentage >= REPORT_TABLE_PERCENTAGE_HIGH) {
       return 'success';
     }
@@ -439,7 +449,7 @@ const Report = () => {
       {showGrid && (
         <>
           <Row className="mt-3 mb-2">
-            <Col md={4} lg={3}>
+            <Col md={4}>
               <Form.Control
                 ref={searchInput}
                 className="h-100"
@@ -454,29 +464,11 @@ const Report = () => {
                 }}
               />
             </Col>
-            <Col md={2}>
-              <Button
-                onClick={() => {
-                  if (path.length) {
-                    loadChildHandler(
-                      path[path.length - 1].locationIdentifier,
-                      path[path.length - 1].locationName,
-                      undefined,
-                      path[path.length - 1].locationProperties
-                    );
-                  } else {
-                    loadData();
-                  }
-                }}
-              >
-                Refresh Data
-              </Button>
-            </Col>
             {reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.drug.length && (
-              <Col md={6}>
+              <Col md={4} className="my-2">
                 <Select
                   placeholder="Select Drug Type"
-                  className="custom-react-select-container w-50"
+                  className="custom-react-select-container w-100"
                   classNamePrefix="custom-react-select"
                   id="team-assign-select"
                   isClearable
@@ -500,6 +492,38 @@ const Report = () => {
                 />
               </Col>
             )}
+            <Col md={2}>
+              <Button
+                className="my-2"
+                onClick={() => {
+                  if (path.length) {
+                    loadChildHandler(
+                      path[path.length - 1].locationIdentifier,
+                      path[path.length - 1].locationName,
+                      undefined,
+                      path[path.length - 1].locationProperties
+                    );
+                  } else {
+                    loadData();
+                  }
+                }}
+              >
+                Refresh Data
+              </Button>
+            </Col>
+            <Col
+              md={reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.drug.length ? 2 : 6}
+              className="text-end"
+            >
+              <Button
+                className="my-2"
+                onClick={() => setShowMap(!showMap)}
+                aria-controls="expand-table"
+                aria-expanded={showMap}
+              >
+                {showMap ? t('reportPage.hideMap') : t('reportPage.showMap')}
+              </Button>
+            </Col>
           </Row>
           <div
             style={{
@@ -539,27 +563,43 @@ const Report = () => {
             </div>
           </Collapse>
         </Col>
-        <Col md={showMap ? 2 : 8} className="text-center">
-          <Button
-            className="w-75 my-2"
-            onClick={() => setShowMap(!showMap)}
-            aria-controls="expand-table"
-            aria-expanded={showMap}
-          >
-            {showMap ? t('reportPage.hideMap') : t('reportPage.showMap')}
-          </Button>
+        <Col md={showMap ? 2 : 8} className="text-center" style={{ height: '80vh', overflowY: 'auto' }}>
           {reportType === ReportType.IRS_FULL_COVERAGE &&
           filterData.length &&
           filterData[0].geographicLevel === 'structure' ? (
-            <Card className="text-start p-3 mt-2">
-              <p className="mb-0">
+            <Card className="text-start p-3 mt-3">
+              <p className="mb-0 mt-3">
                 <b>Spray coverage (Effectiveness)</b>
               </p>
-              <small>Percent of structures sprayed over total - {irsOaProgressBar.completeStructuresPercent}%</small>
+              <small>
+                Percent of structures sprayed over total - {irsOaProgressBar.completeStructuresPercent.toFixed(2)}%
+              </small>
               <ProgressBar
                 variant={showStatusColor(irsOaProgressBar.completeStructuresPercent)}
-                max={filterData.length}
+                max={100}
                 now={irsOaProgressBar?.completeStructures}
+              />
+              <p className="mb-0 mt-3">
+                <b>Found coverage (Found/Target)</b>
+              </p>
+              <small>
+                Percent of structures found over total - {irsOaProgressBar.foundCoveragePercent.toFixed(2)}%
+              </small>
+              <ProgressBar
+                variant={showStatusColor(irsOaProgressBar.foundCoveragePercent)}
+                max={100}
+                now={irsOaProgressBar?.foundCoveragePercent}
+              />
+              <p className="mb-0 mt-3">
+                <b>Spray coverage (Effectiveness)</b>
+              </p>
+              <small>
+                Percent of Spray Coverage of Found(Sprayed/Found) - {irsOaProgressBar.sprayCoveragePercent.toFixed(2)}%
+              </small>
+              <ProgressBar
+                variant={showStatusColor(irsOaProgressBar.sprayCoveragePercent)}
+                max={100}
+                now={irsOaProgressBar?.sprayCoveragePercent}
               />
               <p className="mt-3 mb-0">
                 <b>Reasons for not sprayed structures</b>
@@ -568,10 +608,10 @@ const Report = () => {
               <p className="mb-1">
                 {irsOaProgressBar?.notSprayedStructures} of {filterData.length} structures not sprayed
               </p>
-              <ul className="list-group list-group-flush">
+              <ul className="list-group list-group-flush mt-2">
                 {Array.from(mapNotSprayed()).map(key => {
                   return (
-                    <li className="list-group-item" key={key[0]}>
+                    <li className="list-group-item mx-0 px-0" key={key[0]}>
                       {key[0] + ' - ' + key[1]}
                     </li>
                   );
