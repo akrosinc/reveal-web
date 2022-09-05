@@ -1,4 +1,4 @@
-import { Feature, MultiPolygon, Polygon } from '@turf/turf';
+import { Feature, MultiPolygon, Point, Polygon } from '@turf/turf';
 import React, { useMemo, useState } from 'react';
 import { Button, Modal, OverlayTrigger, Table, Tooltip } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ import { FoundCoverage, ReportLocationProperties } from '../../../providers/type
 
 interface Props {
   showModal: (show: boolean) => void;
-  feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>;
+  feature: Feature<Polygon | MultiPolygon | Point, ReportLocationProperties>;
 }
 
 const ReportModal = ({ showModal, feature }: Props) => {

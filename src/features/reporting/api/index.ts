@@ -1,4 +1,4 @@
-import { FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
+import { FeatureCollection, MultiPolygon, Point, Polygon } from '@turf/turf';
 import api from '../../../api/axios';
 import dashBoardApi from '../../../api/dashboard-axios';
 import { PageableModel } from '../../../api/providers';
@@ -28,7 +28,7 @@ export const getReportTypeInfo = async (reportType: string): Promise<AdditionalR
 export const getMapReportData = async (
   mapData: MapDataReportRequest,
   filters?: string[]
-): Promise<FeatureCollection<Polygon | MultiPolygon, ReportLocationProperties>> => {
+): Promise<FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>> => {
   const data = await prodAPI
     .get<any>(
       REPORTS +
