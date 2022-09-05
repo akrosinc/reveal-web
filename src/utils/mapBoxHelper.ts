@@ -81,7 +81,7 @@ export const initMap = (
   return mapboxInstance;
 };
 
-export const getPolygonCenter = (data: Feature<Polygon | MultiPolygon>) => {
+export const getPolygonCenter = (data: Feature<Polygon | MultiPolygon | Point>) => {
   return {
     center: center(data),
     bounds: bbox(data) as LngLatBoundsLike

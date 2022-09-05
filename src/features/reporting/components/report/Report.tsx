@@ -16,7 +16,7 @@ import { useAppSelector } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
 import { getMapReportData, getReportTypeInfo } from '../../api';
-import { Feature, FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
+import { Feature, FeatureCollection, MultiPolygon, Point, Polygon } from '@turf/turf';
 import { useRef } from 'react';
 import { AdditionalReportInfo, FoundCoverage, ReportLocationProperties, ReportType } from '../../providers/types';
 import ReportModal from './reportModal';
@@ -40,9 +40,12 @@ const Report = () => {
   const [showMap, setShowMap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [featureSet, setFeatureSet] =
-    useState<[location: FeatureCollection<Polygon | MultiPolygon, ReportLocationProperties>, parentId: string]>();
+    useState<
+      [location: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>, parentId: string]
+    >();
   const [showModal, setShowModal] = useState(false);
-  const [currentFeature, setCurrentFeature] = useState<Feature<Polygon | MultiPolygon, ReportLocationProperties>>();
+  const [currentFeature, setCurrentFeature] =
+    useState<Feature<Polygon | MultiPolygon | Point, ReportLocationProperties>>();
   const searchInput = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
