@@ -580,7 +580,7 @@ const Report = () => {
               <ProgressBar
                 variant={showStatusColor(irsOaProgressBar.completeStructuresPercent)}
                 max={100}
-                now={irsOaProgressBar?.completeStructures}
+                now={irsOaProgressBar?.completeStructuresPercent}
               />
               <p className="mb-0 mt-3">
                 <b>Found coverage (Found/Target)</b>
