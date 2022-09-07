@@ -1,5 +1,5 @@
 export interface ResourcePlanningConfig {
-  country: { label: string; value: string }[];
+  country: { label: string; value: string; ageGroups: AgeGroups[] }[];
   hierarchy: { label: string; value: string };
   lowestLocation: { label: string; value: string };
   populationTag: { label: string; value: string };
@@ -8,16 +8,16 @@ export interface ResourcePlanningConfig {
 }
 
 export interface ResourceCountry {
-    identifier: string;
-    name: string;
-    ageGroups: AgeGroups[]
+  identifier: string;
+  name: string;
+  ageGroups: AgeGroups[];
 }
 
 export interface AgeGroups {
-    name: string;
-    key: string;
-    min: number;
-    max: number;
+  name: string;
+  key: string;
+  min: number;
+  max: number;
 }
 
 export interface ResourceCampaign {
@@ -34,6 +34,11 @@ interface DrugResponse {
   full: boolean;
   millis: boolean;
   key: string;
+}
+
+export interface ResourceQuestionStepTwo {
+  country: string;
+  questions: ResourceQuestion[];
 }
 
 export interface ResourceQuestion {
@@ -53,4 +58,16 @@ interface FieldType {
 interface SkipPattern {
   skipFieldName: string;
   skipValue: string;
+}
+
+export interface ResourceDashboardRequest {
+  campaign: string;
+  locationHierarchy: string;
+  lowestGeograpyhy: string;
+  populationTag: string;
+  structureCountTag: string;
+  countBasedOnImportedLocations: boolean;
+  stepOneAnswers: any;
+  stepTwoAnswers: any;
+  minimalAgeGroup: string;
 }

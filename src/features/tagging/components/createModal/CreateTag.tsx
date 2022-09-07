@@ -47,7 +47,8 @@ const CreateTag = ({ closeHandler }: Props) => {
     setAggregation(selected);
   }, [selectedValueType]);
 
-  const submitHandler = (form: any) => {
+  const submitHandler = (form: TagCreateRequest) => {
+    form.tag = form.tag.replaceAll(' ', '_');
     createTag(form)
       .then(res => {
         toast.success(`Tag ${res.tag} created.`);

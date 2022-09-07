@@ -38,7 +38,6 @@ const ConfigTab = () => {
   }, [dispatch]);
 
   const submitHandler = (form: any) => {
-    console.log(form);
     navigate('/plans/resource-planning/inputs');
     dispatch(setConfig(form));
   };
@@ -107,7 +106,8 @@ const ConfigTab = () => {
                 options={countryResourceList.map(el => {
                   return {
                     value: el.identifier,
-                    label: el.name
+                    label: el.name,
+                    ageGroups: el.ageGroups
                   }
                 })}
                 onChange={el => onChange(el.map(el => el))}
