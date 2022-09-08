@@ -1,13 +1,14 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { OverlayTrigger, Table, Tooltip } from 'react-bootstrap';
+import { useParams } from 'react-router-dom';
 import { Column, useTable } from 'react-table';
 import {
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
   REPORT_TABLE_PERCENTAGE_MEDIUM
 } from '../../constants';
-import { ReportLocationProperties } from '../../features/reporting/providers/types';
+import { ReportLocationProperties, ReportType } from '../../features/reporting/providers/types';
 import { useAppSelector } from '../../store/hooks';
 
 interface Props {
@@ -18,6 +19,29 @@ interface Props {
 }
 
 const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
+  const [totalValue, setTotalValue] = useState<number[]>([]);
+  const { reportType } = useParams();
+
+  // calculate total column from given data
+  useEffect(() => {
+    if (data.length) {
+      const columnDataMapKeys = Object.keys(data[0].columnDataMap);
+      const total = columnDataMapKeys.map(_ => {
+        return 0;
+      });
+      data.forEach(el => {
+        columnDataMapKeys.forEach((key, index) => {
+          total[index] =
+            (data[0].columnDataMap[key].isPercentage === null || data[0].columnDataMap[key].isPercentage === false) &&
+            data[0].columnDataMap[key].dataType === 'double'
+              ? total[index] + el.columnDataMap[key].value
+              : '/';
+        });
+      });
+      setTotalValue(total);
+    }
+  }, [data]);
+
   const isDarkMode = useAppSelector(state => state.darkMode.value);
   const [sortDirection, setCurrentSortDirection] = useState(false);
   const [sortDirectionField, setCurrentSortDirectionField] = useState('');
@@ -27,7 +51,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
   });
   return (
     <Table bordered hover {...getTableProps()} className="mt-2" variant={isDarkMode ? 'dark' : 'white'}>
-      <thead className="bg-white" style={{position: 'sticky', top: '0'}}>
+      <thead className="bg-white" style={{ position: 'sticky', top: '0' }}>
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => {
@@ -109,10 +133,26 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
                           <td className={color}>{percentage}%</td>
                         </OverlayTrigger>
                       );
+                    } else if (
+                      cellName === 'Structure Status' &&
+                      (reportType === ReportType.IRS_FULL_COVERAGE ||
+                        reportType === ReportType.IRS_LITE_COVERAGE ||
+                        reportType === ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL)
+                    ) {
+                      return (
+                        <td {...cell.getCellProps()}>
+                          {rowData.columnDataMap[cellName].value === 'Complete'
+                            ? 'Sprayed'
+                            : rowData.columnDataMap[cellName].value}
+                        </td>
+                      );
                     }
                     return (
+                      //convert number to locale string for 1000 separator
                       <td className={color} {...cell.getCellProps()}>
-                        {rowData.columnDataMap[cellName].value}
+                        {rowData.columnDataMap[cellName].value !== null
+                          ? rowData.columnDataMap[cellName].value.toLocaleString()
+                          : rowData.columnDataMap[cellName].value}
                       </td>
                     );
                   } else {
@@ -123,6 +163,16 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
             </tr>
           );
         })}
+        {totalValue.length > 0 && (
+          <tr>
+            <td>
+              <b>Total</b>
+            </td>
+            {totalValue.map((el, index) => {
+              return <td key={index}>{el}</td>;
+            })}
+          </tr>
+        )}
       </tbody>
     </Table>
   );
