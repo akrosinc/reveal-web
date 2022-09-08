@@ -8,7 +8,7 @@ import { useAppSelector } from '../../../../store/hooks';
 import { deleteOrganizationById, updateOrganization } from '../../api';
 import { OrganizationModel } from '../../../organization/providers/types';
 import Select, { SingleValue } from 'react-select';
-import { UNEXPECTED_ERROR_STRING } from '../../../../constants';
+import { REGEX_NAME_VALIDATION, UNEXPECTED_ERROR_STRING } from '../../../../constants';
 
 interface Props {
   show: boolean;
@@ -128,11 +128,17 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
           type="text"
           placeholder="Enter organization name"
           {...register('name', {
-            required: "Organization name can't be empty.",
-            minLength: 1,
+            required: {
+              value: true,
+              message: 'Organization name must not be empty.'
+            },
+            minLength: {
+              value: 1,
+              message: 'Organization name must be at least 1 char long.'
+            },
             pattern: {
-              value: new RegExp('^[^-\\s][\\w\\s-]+$'),
-              message: "Organization name can't start with empty space."
+              value: new RegExp(REGEX_NAME_VALIDATION),
+              message: "Organization name can't start with empty space or contain special characters."
             }
           })}
         />

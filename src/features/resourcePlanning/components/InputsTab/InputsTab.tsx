@@ -12,6 +12,8 @@ import {
 import { ResourceCampaign, ResourceQuestion, ResourceQuestionStepTwo } from '../../providers/types';
 import DynamicFormField from './DynamicFormField/DynamicFormField';
 import Select from 'react-select';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const InputsTab = () => {
   const [questionList, setQuestionList] = useState<ResourceQuestion[]>([]);
@@ -19,6 +21,7 @@ const InputsTab = () => {
   const [stepTwo, setStepTwo] = useState(false);
   const configValue = useSelector((state: RootState) => state.resourceConfig.value);
   const [campaignList, setCampaignList] = useState<ResourceCampaign[]>([]);
+  const navigate = useNavigate();
 
   const {
     handleSubmit,
@@ -49,7 +52,18 @@ const InputsTab = () => {
           structureCountTag: configValue.populationTag.value,
           stepOneAnswers: Object.fromEntries(stepOneAnswers.entries()),
           stepTwoAnswers: Object.fromEntries(stepTwoAnswers.entries())
-        }).then(res => console.log(res));
+        })
+          .then(res => {
+            navigate('dashboard', {
+              state: {
+                dashboardData: res
+              }
+            });
+            console.log(res);
+          })
+          .catch(err => {
+            toast.error(err);
+          });
       }
     } else {
       getQuestionsResourceStepTwo({

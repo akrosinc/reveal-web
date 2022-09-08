@@ -12,6 +12,7 @@ import { getLocationHierarchyList } from '../../../location/api';
 import { LocationHierarchyModel } from '../../../location/providers/types';
 import { getCountryResource } from '../../api';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const ConfigTab = () => {
   const configValue = useSelector((state: RootState) => state.resourceConfig.value);
@@ -45,9 +46,11 @@ const ConfigTab = () => {
   const loadData = useCallback(() => {
     getEntityList().then(res => {
       //find locationEntityId to get location entity tags
-      const locationEntity= res.find(el => el.code === 'Location');
+      const locationEntity = res.find(el => el.code === 'Location');
       if (locationEntity) {
-        getEntityTags(locationEntity.identifier).then(res => setEntityTags(res));
+        getEntityTags(locationEntity.identifier)
+          .then(res => setEntityTags(res))
+          .catch(err => toast.error(err));
       }
     });
     getLocationHierarchyList(50, 0, true).then(res => setLocationHierarchy(res.content));
@@ -108,7 +111,7 @@ const ConfigTab = () => {
                     value: el.identifier,
                     label: el.name,
                     ageGroups: el.ageGroups
-                  }
+                  };
                 })}
                 onChange={el => onChange(el.map(el => el))}
                 onBlur={onBlur}
@@ -223,11 +226,14 @@ const ConfigTab = () => {
         </Form.Group>
         <Form.Group className="mt-2">
           <Form.Label className="me-3 my-3">Structure count based on imported location?</Form.Label>
-          <Form.Check inline {...register('structureCount', {
-            onChange: (e) => {
-              resetField('structureCountTag');
-            }
-          })}/>
+          <Form.Check
+            inline
+            {...register('structureCount', {
+              onChange: e => {
+                resetField('structureCountTag');
+              }
+            })}
+          />
           {errors.structureCount && (
             <Form.Label className="text-danger mt-2">
               {errors.structureCount && (errors.structureCount as any).message}

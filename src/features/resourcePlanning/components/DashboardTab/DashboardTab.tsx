@@ -1,9 +1,16 @@
-import React from 'react'
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const DashboardTab = () => {
-  return (
-    <div>DashboardTab</div>
-  )
-}
+  const location = useLocation();
 
-export default DashboardTab
+  const { dashboardData } = location.state;
+
+  useEffect(() => {
+    console.log(dashboardData);
+  }, [dashboardData]);
+
+  return <div>Dashboard</div>;
+};
+
+export default DashboardTab;
