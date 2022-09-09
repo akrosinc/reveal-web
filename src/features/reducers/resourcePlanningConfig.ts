@@ -1,8 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ResourcePlanningConfig } from '../resourcePlanning/providers/types';
+import { ResourceDashboardResponse, ResourcePlanningConfig } from '../resourcePlanning/providers/types';
 
-const initialState: { value: ResourcePlanningConfig | undefined } = {
-  value: undefined
+const initialState: {
+  value: ResourcePlanningConfig | undefined;
+  dashboardData: ResourceDashboardResponse[] | undefined;
+} = {
+  value: undefined,
+  dashboardData: undefined
 };
 
 const resourcePlanningConfigSlice = createSlice({
@@ -14,10 +18,13 @@ const resourcePlanningConfigSlice = createSlice({
     },
     removeConfig: state => {
       state.value = undefined;
+    },
+    setDashboard: (state, action: PayloadAction<ResourceDashboardResponse[]>) => {
+      state.dashboardData = action.payload;
     }
   }
 });
 
-export const { setConfig, removeConfig } = resourcePlanningConfigSlice.actions;
+export const { setConfig, removeConfig, setDashboard } = resourcePlanningConfigSlice.actions;
 
 export default resourcePlanningConfigSlice.reducer;

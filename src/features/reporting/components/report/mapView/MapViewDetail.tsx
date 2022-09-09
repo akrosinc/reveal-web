@@ -173,7 +173,14 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
             </div>`;
             } else if (properties['businessStatus']) {
               htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
-              ${`<small class='my-3'>Business Status: ${properties['businessStatus']}
+              ${`<small class='my-3'>Business Status: ${
+                (reportType === ReportType.IRS_FULL_COVERAGE ||
+                  reportType === ReportType.IRS_LITE_COVERAGE ||
+                  reportType === ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL) &&
+                properties['businessStatus'] === 'Complete'
+                  ? 'Sprayed'
+                  : properties['businessStatus']
+              }
               </small>`}
             </div>`;
             }
@@ -241,7 +248,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
         map.fitBounds(bbox(data) as any);
       }
     },
-    [defaultColumn]
+    [defaultColumn, reportType]
   );
 
   useEffect(() => {

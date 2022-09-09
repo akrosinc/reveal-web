@@ -43,7 +43,6 @@ const ResourcePlanning = () => {
         onSelect={tabName => {
           if (tabName !== 'config' && tabName !== 'history' && configValue === undefined) {
             toast.warning('You need to save config first');
-            setActiveKey('config');
           } else {
             navigate(RESOURCE_PLANNING_PAGE + '/' + tabName);
             setActiveKey(tabName ?? '');

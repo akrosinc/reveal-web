@@ -63,11 +63,23 @@ interface SkipPattern {
 export interface ResourceDashboardRequest {
   campaign: string;
   locationHierarchy: string;
-  lowestGeograpyhy: string;
+  lowestGeography: string;
   populationTag: string;
   structureCountTag: string;
   countBasedOnImportedLocations: boolean;
   stepOneAnswers: any;
   stepTwoAnswers: any;
   minimalAgeGroup: string;
+}
+
+export interface ResourceDashboardResponse {
+  identifier: string;
+  name: string;
+  columnDataMap: { [x: string]: CampaignValue };
+}
+export interface CampaignValue {
+  value: number;
+  isPercentage: boolean;
+  meta: null;
+  dataType: string;
 }

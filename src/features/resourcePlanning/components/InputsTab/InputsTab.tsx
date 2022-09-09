@@ -14,6 +14,8 @@ import DynamicFormField from './DynamicFormField/DynamicFormField';
 import Select from 'react-select';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useAppDispatch } from '../../../../store/hooks';
+import { setDashboard } from '../../../reducers/resourcePlanningConfig';
 
 const InputsTab = () => {
   const [questionList, setQuestionList] = useState<ResourceQuestion[]>([]);
@@ -22,6 +24,7 @@ const InputsTab = () => {
   const configValue = useSelector((state: RootState) => state.resourceConfig.value);
   const [campaignList, setCampaignList] = useState<ResourceCampaign[]>([]);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const {
     handleSubmit,
@@ -47,18 +50,15 @@ const InputsTab = () => {
           minimalAgeGroup: form.ageGroup,
           countBasedOnImportedLocations: configValue.structureCount,
           locationHierarchy: configValue.hierarchy.value,
-          lowestGeograpyhy: configValue.lowestLocation.value,
+          lowestGeography: configValue.lowestLocation.value,
           populationTag: configValue.populationTag.value,
           structureCountTag: configValue.populationTag.value,
           stepOneAnswers: Object.fromEntries(stepOneAnswers.entries()),
           stepTwoAnswers: Object.fromEntries(stepTwoAnswers.entries())
         })
           .then(res => {
-            navigate('dashboard', {
-              state: {
-                dashboardData: res
-              }
-            });
+            navigate('dashboard');
+            dispatch(setDashboard(res));
             console.log(res);
           })
           .catch(err => {
@@ -79,8 +79,12 @@ const InputsTab = () => {
   };
 
   useEffect(() => {
-    getCampaignResource().then(res => setCampaignList(res));
-    getQuestionsResource().then(res => setQuestionList(res));
+    getCampaignResource()
+      .then(res => setCampaignList(res))
+      .catch(err => toast.error(err));
+    getQuestionsResource()
+      .then(res => setQuestionList(res))
+      .catch(err => toast.error(err));
   }, []);
 
   return (

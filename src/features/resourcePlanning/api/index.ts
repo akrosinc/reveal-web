@@ -1,5 +1,12 @@
 import api from '../../../api/axios';
-import { ResourceCampaign, ResourceCountry, ResourceDashboardRequest, ResourceQuestion, ResourceQuestionStepTwo } from '../providers/types';
+import {
+  ResourceCampaign,
+  ResourceCountry,
+  ResourceDashboardRequest,
+  ResourceDashboardResponse,
+  ResourceQuestion,
+  ResourceQuestionStepTwo
+} from '../providers/types';
 
 export const getPopulationCount = async (): Promise<any> => {
   const data = await api.get<Promise<any>>('').then(res => res.data);
@@ -22,11 +29,17 @@ export const getQuestionsResource = async (): Promise<ResourceQuestion[]> => {
 };
 
 export const getQuestionsResourceStepTwo = async (stepTwoRequest: any): Promise<ResourceQuestionStepTwo[]> => {
-  const data = await api.post<Promise<ResourceQuestionStepTwo[]>>('resource-planning/formula', stepTwoRequest).then(res => res.data);
+  const data = await api
+    .post<Promise<ResourceQuestionStepTwo[]>>('resource-planning/formula', stepTwoRequest)
+    .then(res => res.data);
   return data;
 };
 
-export const getResourceDashboard = async (dashboardRequest: ResourceDashboardRequest): Promise<any> => {
-  const data = await api.post<Promise<any>>('resource-planning/dashboard', dashboardRequest).then(res => res.data);
+export const getResourceDashboard = async (
+  dashboardRequest: ResourceDashboardRequest
+): Promise<ResourceDashboardResponse[]> => {
+  const data = await api
+    .post<Promise<ResourceDashboardResponse[]>>('resource-planning/dashboard', dashboardRequest)
+    .then(res => res.data);
   return data;
 };

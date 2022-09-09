@@ -30,7 +30,7 @@ interface BreadcrumbModel {
 }
 
 const Report = () => {
-  const [cols, setCols] = useState<Column[]>([]);
+  const [cols, setCols] = useState<{ [x: string]: FoundCoverage }>({});
   const [data, setData] = useState<ReportLocationProperties[]>([]);
   const [filterData, setFilterData] = useState<ReportLocationProperties[]>([]);
   const { planId, reportType } = useParams();
@@ -93,6 +93,10 @@ const Report = () => {
       };
     });
   };
+
+  const columns = React.useMemo<Column[]>(() => {
+    return [{ Header: 'Name', accessor: 'name', id: 'locationName' }, ...mapColumns(cols)];
+  }, [cols]);
 
   const sortDataHandler = (sortDirection: boolean, sortColumnName: string) => {
     if (filterData && filterData.length) {
@@ -201,7 +205,7 @@ const Report = () => {
                 }
                 setPlan(plan);
                 setFilterData([]);
-                setCols(mapColumns(report.features[0].properties.columnDataMap));
+                setCols(report.features[0].properties.columnDataMap);
                 setData(tableData);
                 setFilterData(tableData);
                 setFeatureSet([report, 'main']);
@@ -219,11 +223,6 @@ const Report = () => {
       }
     },
     [planId, reportType, goBackHandler]
-  );
-
-  const columns = React.useMemo<Column[]>(
-    () => [{ Header: 'Name', accessor: 'name', id: 'locationName' }, ...cols],
-    [cols]
   );
 
   useEffect(() => {
@@ -267,7 +266,7 @@ const Report = () => {
             } else {
               setDefaultDisplayColumn('');
             }
-            setCols(mapColumns(res.features[0].properties.columnDataMap));
+            setCols(res.features[0].properties.columnDataMap);
             setData(tableData);
             setFilterData(tableData);
             setFeatureSet([res, id]);
@@ -342,7 +341,7 @@ const Report = () => {
           setFilterData([]);
           if (res.features.length) {
             const tableData = res.features.map(el => el.properties);
-            setCols(mapColumns(res.features[0].properties.columnDataMap));
+            setCols(res.features[0].properties.columnDataMap);
             setData(tableData);
             setFilterData(tableData);
             //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
@@ -550,7 +549,7 @@ const Report = () => {
         </>
       )}
       {filterData.length === 0 && <p className="lead text-center">{t('general.noDataFound')}</p>}
-      <Row className="my-3">
+      <Row className="my-3 align-items-center">
         <Col md={showMap ? 10 : 2}>
           <Collapse in={showMap}>
             <div id="expand-table">
@@ -566,11 +565,15 @@ const Report = () => {
             </div>
           </Collapse>
         </Col>
-        <Col md={showMap ? 2 : 8} className="text-center" style={{ height: '80vh', overflowY: 'auto' }}>
+        <Col
+          md={showMap ? 2 : 8}
+          className="text-center"
+          style={{ maxHeight: showMap ? '80vh' : 'auto', overflowY: 'auto' }}
+        >
           {reportType === ReportType.IRS_FULL_COVERAGE &&
           filterData.length &&
           filterData[0].geographicLevel === 'structure' ? (
-            <Card className="text-start p-3 mt-3">
+            <Card className="text-start p-3">
               <p className="mb-0 mt-3">
                 <b>Spray coverage (Effectiveness)</b>
               </p>
@@ -623,8 +626,7 @@ const Report = () => {
             </Card>
           ) : (
             <>
-              <p className="my-2">{t('reportPage.formattingRules')}</p>
-              <Table className="mt-4 text-center">
+              <Table className="text-center">
                 <tbody>
                   <tr className="bg-danger">
                     <td className="py-4">{t('reportPage.formattingRuleColors.red')}</td>
@@ -648,6 +650,7 @@ const Report = () => {
                   </tr>
                 </tbody>
               </Table>
+              <p className="my-2">{t('reportPage.formattingRules')}</p>
             </>
           )}
         </Col>
