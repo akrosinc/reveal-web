@@ -46,7 +46,11 @@ const DashboardTab = () => {
 
   return (
     <div>
-      {tableData && <DefaultTable columns={tableColumns} data={tableData} clickHandler={el => console.log(el)} />}
+      {tableData ? (
+        <DefaultTable columns={tableColumns} data={tableData} clickHandler={el => console.log(el)} />
+      ) : (
+        <p>No data found.</p>
+      )}
     </div>
   );
 };

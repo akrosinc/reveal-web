@@ -12,7 +12,7 @@ import {
 import { ResourceCampaign, ResourceQuestion, ResourceQuestionStepTwo } from '../../providers/types';
 import DynamicFormField from './DynamicFormField/DynamicFormField';
 import Select from 'react-select';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../../../store/hooks';
 import { setDashboard } from '../../../reducers/resourcePlanningConfig';
@@ -26,13 +26,24 @@ const InputsTab = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
+  const location = useLocation();
+  const shouldReset = location.state?.shouldReset;
+
   const {
     handleSubmit,
     register,
     formState: { errors },
     control,
-    watch
+    watch,
+    reset
   } = useForm();
+
+  useEffect(() => {
+    if (shouldReset) {
+      reset();
+      setStepTwo(false);
+    }
+  }, [shouldReset, reset]);
 
   const submitHandler = (form: { [x: string]: string }) => {
     if (stepTwo) {

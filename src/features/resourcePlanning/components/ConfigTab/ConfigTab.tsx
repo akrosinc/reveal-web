@@ -39,7 +39,11 @@ const ConfigTab = () => {
   }, [dispatch]);
 
   const submitHandler = (form: any) => {
-    navigate('/plans/resource-planning/inputs');
+    navigate('/plans/resource-planning/inputs', {
+      state: {
+        shouldReset: true
+      }
+    });
     dispatch(setConfig(form));
   };
 
