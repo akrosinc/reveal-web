@@ -41,7 +41,7 @@ const Report = () => {
   const [showGrid, setShowGrid] = useState(true);
   const [featureSet, setFeatureSet] =
     useState<
-      [location: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>, parentId: string]
+      [location: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>, parentId: string, path: string[]]
     >();
   const [showModal, setShowModal] = useState(false);
   const [currentFeature, setCurrentFeature] =
@@ -208,7 +208,7 @@ const Report = () => {
                 setCols(report.features[0].properties.columnDataMap);
                 setData(tableData);
                 setFilterData(tableData);
-                setFeatureSet([report, 'main']);
+                setFeatureSet([report, 'main', []]);
               } else {
                 toast.error('There is no report data found.');
               }
@@ -269,7 +269,7 @@ const Report = () => {
             setCols(res.features[0].properties.columnDataMap);
             setData(tableData);
             setFilterData(tableData);
-            setFeatureSet([res, id]);
+            setFeatureSet([res, id, path.map(el => el.locationIdentifier)]);
             if (!path.some(el => el.locationIdentifier === id)) {
               setPath([
                 ...path,
@@ -310,21 +310,23 @@ const Report = () => {
     }
   };
 
-  const clearMap = (filter?: string[]) => {
+  const clearMap = useCallback((filter?: string[]) => {
     //clear all map data and return to root element on the grid
     if (planId && reportType) {
       //reset search input on new load
       if (searchInput.current) searchInput.current.value = '';
       setFeatureSet(undefined);
-      path.splice(0, path.length);
-      setPath(path);
+      setPath(path => {
+        path.splice(0, path.length);
+        return path;
+      });
       loadData(filter);
     }
-  };
+  }, [planId, reportType, loadData]);
 
   const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
     if (planId && reportType) {
-      path.splice(index + 1, path.length - index);
+      const locationsToDelete = path.splice(index + 1);
       setPath(path);
       getMapReportData(
         {
@@ -346,7 +348,7 @@ const Report = () => {
             setFilterData(tableData);
             //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
             //its enough to spread the object so rerender will be triggered
-            setFeatureSet([{ ...res }, el.locationIdentifier]);
+            setFeatureSet([{ ...res }, el.locationIdentifier, locationsToDelete.map(loc => loc.locationIdentifier)]);
           }
         })
         .catch(err => {

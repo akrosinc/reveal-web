@@ -20,18 +20,8 @@ const DashboardTab = () => {
 
   useEffect(() => {
     if (dashboardData && dashboardData.length) {
-      console.log(dashboardData[0].columnDataMap);
       const cols = ['name', ...Object.keys(dashboardData[0].columnDataMap)];
       setColumns(cols);
-      console.log(
-        dashboardData.map(el => {
-          return {
-            ...el.columnDataMap,
-            name: el.name,
-            id: el.identifier
-          };
-        })
-      );
       setTableData(
         dashboardData.map(el => {
           return {

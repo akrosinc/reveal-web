@@ -71,7 +71,6 @@ const InputsTab = () => {
           .then(res => {
             navigate('dashboard');
             dispatch(setDashboard(res));
-            console.log(res);
           })
           .catch(err => {
             toast.error(err);
@@ -83,7 +82,6 @@ const InputsTab = () => {
         ageGroupKey: form.ageGroup,
         campaignIdentifiers: [form.campaign]
       }).then(res => {
-        console.log(res);
         setQuestionListStepTwo(res);
         setStepTwo(true);
       });
