@@ -46,6 +46,7 @@ const InputsTab = () => {
       });
       if (configValue) {
         getResourceDashboard({
+          country: configValue.country !== undefined && configValue.country.length ? configValue.country[0].value : '',
           campaign: form.campaign,
           minimalAgeGroup: form.ageGroup,
           countBasedOnImportedLocations: configValue.structureCount,

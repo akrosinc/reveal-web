@@ -61,6 +61,7 @@ interface SkipPattern {
 }
 
 export interface ResourceDashboardRequest {
+  country: string;
   campaign: string;
   locationHierarchy: string;
   lowestGeography: string;
