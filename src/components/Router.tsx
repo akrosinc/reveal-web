@@ -24,7 +24,7 @@ import PlanSimulation from '../pages/PlanSimulationPage';
 import TagManagement from '../pages/TagManagement';
 import MetaDataImport from '../pages/MetaDataImport';
 
-export default function Router() {
+const Router = () => {
   const { keycloak, initialized } = useKeycloak();
 
   if (initialized) {
@@ -47,6 +47,9 @@ export default function Router() {
           <Route path={METADATA_IMPORT + '/*'} element={<MetaDataImport />}>
             <Route path=":tab" element={<MetaDataImport />} />
           </Route>
+          {/* <Route path={RESOURCE_PLANNING_PAGE + '/*'} element={<ResourcePlanning />}>
+            <Route path=":tab" element={<ResourcePlanning />} />
+          </Route> */}
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       );
@@ -62,3 +65,5 @@ export default function Router() {
     return null;
   }
 }
+
+export default Router;

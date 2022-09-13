@@ -30,7 +30,7 @@ interface BreadcrumbModel {
 }
 
 const Report = () => {
-  const [cols, setCols] = useState<Column[]>([]);
+  const [cols, setCols] = useState<{ [x: string]: FoundCoverage }>({});
   const [data, setData] = useState<ReportLocationProperties[]>([]);
   const [filterData, setFilterData] = useState<ReportLocationProperties[]>([]);
   const { planId, reportType } = useParams();
@@ -41,7 +41,7 @@ const Report = () => {
   const [showGrid, setShowGrid] = useState(true);
   const [featureSet, setFeatureSet] =
     useState<
-      [location: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>, parentId: string]
+      [location: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>, parentId: string, path: string[]]
     >();
   const [showModal, setShowModal] = useState(false);
   const [currentFeature, setCurrentFeature] =
@@ -93,6 +93,10 @@ const Report = () => {
       };
     });
   };
+
+  const columns = React.useMemo<Column[]>(() => {
+    return [{ Header: 'Name', accessor: 'name', id: 'locationName' }, ...mapColumns(cols)];
+  }, [cols]);
 
   const sortDataHandler = (sortDirection: boolean, sortColumnName: string) => {
     if (filterData && filterData.length) {
@@ -201,10 +205,10 @@ const Report = () => {
                 }
                 setPlan(plan);
                 setFilterData([]);
-                setCols(mapColumns(report.features[0].properties.columnDataMap));
+                setCols(report.features[0].properties.columnDataMap);
                 setData(tableData);
                 setFilterData(tableData);
-                setFeatureSet([report, 'main']);
+                setFeatureSet([report, 'main', []]);
               } else {
                 toast.error('There is no report data found.');
               }
@@ -219,11 +223,6 @@ const Report = () => {
       }
     },
     [planId, reportType, goBackHandler]
-  );
-
-  const columns = React.useMemo<Column[]>(
-    () => [{ Header: 'Name', accessor: 'name', id: 'locationName' }, ...cols],
-    [cols]
   );
 
   useEffect(() => {
@@ -267,10 +266,10 @@ const Report = () => {
             } else {
               setDefaultDisplayColumn('');
             }
-            setCols(mapColumns(res.features[0].properties.columnDataMap));
+            setCols(res.features[0].properties.columnDataMap);
             setData(tableData);
             setFilterData(tableData);
-            setFeatureSet([res, id]);
+            setFeatureSet([res, id, path.map(el => el.locationIdentifier)]);
             if (!path.some(el => el.locationIdentifier === id)) {
               setPath([
                 ...path,
@@ -311,21 +310,23 @@ const Report = () => {
     }
   };
 
-  const clearMap = (filter?: string[]) => {
+  const clearMap = useCallback((filter?: string[]) => {
     //clear all map data and return to root element on the grid
     if (planId && reportType) {
       //reset search input on new load
       if (searchInput.current) searchInput.current.value = '';
       setFeatureSet(undefined);
-      path.splice(0, path.length);
-      setPath(path);
+      setPath(path => {
+        path.splice(0, path.length);
+        return path;
+      });
       loadData(filter);
     }
-  };
+  }, [planId, reportType, loadData]);
 
   const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
     if (planId && reportType) {
-      path.splice(index + 1, path.length - index);
+      const locationsToDelete = path.splice(index + 1);
       setPath(path);
       getMapReportData(
         {
@@ -342,12 +343,12 @@ const Report = () => {
           setFilterData([]);
           if (res.features.length) {
             const tableData = res.features.map(el => el.properties);
-            setCols(mapColumns(res.features[0].properties.columnDataMap));
+            setCols(res.features[0].properties.columnDataMap);
             setData(tableData);
             setFilterData(tableData);
             //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
             //its enough to spread the object so rerender will be triggered
-            setFeatureSet([{ ...res }, el.locationIdentifier]);
+            setFeatureSet([{ ...res }, el.locationIdentifier, locationsToDelete.map(loc => loc.locationIdentifier)]);
           }
         })
         .catch(err => {
@@ -550,7 +551,7 @@ const Report = () => {
         </>
       )}
       {filterData.length === 0 && <p className="lead text-center">{t('general.noDataFound')}</p>}
-      <Row className="my-3">
+      <Row className="my-3 align-items-center">
         <Col md={showMap ? 10 : 2}>
           <Collapse in={showMap}>
             <div id="expand-table">
@@ -566,11 +567,15 @@ const Report = () => {
             </div>
           </Collapse>
         </Col>
-        <Col md={showMap ? 2 : 8} className="text-center" style={{ height: '80vh', overflowY: 'auto' }}>
+        <Col
+          md={showMap ? 2 : 8}
+          className="text-center"
+          style={{ maxHeight: showMap ? '80vh' : 'auto', overflowY: 'auto' }}
+        >
           {reportType === ReportType.IRS_FULL_COVERAGE &&
           filterData.length &&
           filterData[0].geographicLevel === 'structure' ? (
-            <Card className="text-start p-3 mt-3">
+            <Card className="text-start p-3">
               <p className="mb-0 mt-3">
                 <b>Spray coverage (Effectiveness)</b>
               </p>
@@ -623,8 +628,7 @@ const Report = () => {
             </Card>
           ) : (
             <>
-              <p className="my-2">{t('reportPage.formattingRules')}</p>
-              <Table className="mt-4 text-center">
+              <Table className="text-center">
                 <tbody>
                   <tr className="bg-danger">
                     <td className="py-4">{t('reportPage.formattingRuleColors.red')}</td>
@@ -648,6 +652,7 @@ const Report = () => {
                   </tr>
                 </tbody>
               </Table>
+              <p className="my-2">{t('reportPage.formattingRules')}</p>
             </>
           )}
         </Col>

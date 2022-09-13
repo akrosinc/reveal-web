@@ -22,7 +22,11 @@ import { useParams } from 'react-router-dom';
 
 interface Props {
   featureSet:
-    | [location: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>, parentId: string]
+    | [
+        location: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>,
+        parentId: string,
+        path: string[]
+      ]
     | undefined;
   clearMap: () => void;
   doubleClickEvent: (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => void;
@@ -88,28 +92,27 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
   // logic for displaying borders and fill colors
   const loadLocationSet = useCallback(
     (
-      map: Map,
+      currentMap: Map,
       data: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>,
-      parentLocationIdentifier: string
+      parentLocationIdentifier: string,
+      path: string[]
     ) => {
       //check if its clear map event or new location otherwise just fit to bounds
-      if (map.getSource(parentLocationIdentifier) === undefined && data.features.length) {
-        disableMapInteractions(map, true);
-        map.addSource(parentLocationIdentifier, {
+      if (currentMap.getSource(parentLocationIdentifier) === undefined && data.features.length) {
+        disableMapInteractions(currentMap, true);
+        currentMap.addSource(parentLocationIdentifier, {
           type: 'geojson',
           promoteId: 'id',
           data: data,
           tolerance: 1
         });
 
-        map.addLayer(
+        currentMap.addLayer(
           {
             id:
               parentLocationIdentifier +
-              (data.features.length
-                ? data.features[0].properties.geographicLevel === 'structure'
-                  ? '-structure'
-                  : '-fill'
+              (data.features.length && data.features[0].properties.geographicLevel === 'structure'
+                ? '-structure'
                 : '-fill'),
             type: 'fill',
             source: parentLocationIdentifier,
@@ -141,7 +144,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
           'label-layer'
         );
 
-        map.addLayer(
+        currentMap.addLayer(
           {
             id: parentLocationIdentifier + '-border',
             type: 'line',
@@ -156,34 +159,42 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
           'label-layer'
         );
 
-        map.on('mouseover', parentLocationIdentifier + '-label', e => {
-          const feature = map.queryRenderedFeatures(e.point)[0];
+        currentMap.on('mouseover', parentLocationIdentifier + '-label', e => {
+          const feature = currentMap.queryRenderedFeatures(e.point)[0];
           const properties = feature.properties;
           if (properties && !hoverPopup.current.isOpen() && !contextMenuPopup.current.isOpen()) {
             //mapbox strigifies objects inside properties, parsing columnDataMap back to object
             properties['columnDataMap'] = JSON.parse(properties['columnDataMap']);
             let htmlText = 'Data not parsed correctly.';
-            if (properties['columnDataMap'][defaultColumn]) {
+            const defaultColumnName = (data as any).defaultDisplayColumn;
+            if (defaultColumnName) {
               htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
-              ${`<small class='my-3'>${defaultColumn}: ${
-                properties['columnDataMap'][defaultColumn].isPercentage
-                  ? properties['columnDataMap'][defaultColumn].value.toFixed(2) + '%'
-                  : properties['columnDataMap'][defaultColumn].value
+              ${`<small class='my-3'>${defaultColumnName}: ${
+                properties['columnDataMap'][defaultColumnName].isPercentage
+                  ? properties['columnDataMap'][defaultColumnName].value.toFixed(2) + '%'
+                  : properties['columnDataMap'][defaultColumnName].value
               }</small>`}
             </div>`;
             } else if (properties['businessStatus']) {
               htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
-              ${`<small class='my-3'>Business Status: ${properties['businessStatus']}
+              ${`<small class='my-3'>Business Status: ${
+                (reportType === ReportType.IRS_FULL_COVERAGE ||
+                  reportType === ReportType.IRS_LITE_COVERAGE ||
+                  reportType === ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL) &&
+                properties['businessStatus'] === 'Complete'
+                  ? 'Sprayed'
+                  : properties['businessStatus']
+              }
               </small>`}
             </div>`;
             }
-            map.getCanvas().style.cursor = 'pointer';
-            hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(map);
+            currentMap.getCanvas().style.cursor = 'pointer';
+            hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(currentMap);
           }
         });
 
-        map.on('mouseleave', parentLocationIdentifier + '-label', () => {
-          map.getCanvas().style.cursor = '';
+        currentMap.on('mouseleave', parentLocationIdentifier + '-label', () => {
+          currentMap.getCanvas().style.cursor = '';
           hoverPopup.current.remove();
         });
 
@@ -194,13 +205,13 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
         data.features.forEach((element: Feature<Polygon | MultiPolygon | Point, ReportLocationProperties>) => {
           // if its a point structure type createa a circle layer to present it on the map
           if (element.geometry.type === 'Point') {
-            map.addSource(element.properties.id, {
+            currentMap.addSource(element.properties.id, {
               type: 'geojson',
               data: element,
               tolerance: 2
             });
 
-            map.addLayer({
+            currentMap.addLayer({
               id: element.properties.id + 'point',
               source: element.properties.id,
               type: 'circle',
@@ -216,12 +227,12 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
           centerLabel.center.properties = { ...element.properties };
           featureSet.push(centerLabel.center);
         });
-        map.fitBounds(bounds, {
+        currentMap.fitBounds(bounds, {
           easing: e => {
             //this is an event which is fired at the end of the fit bounds
             if (e === 1) {
-              createChildLocationLabel(map, featureSet, parentLocationIdentifier, true);
-              disableMapInteractions(map, false);
+              createChildLocationLabel(currentMap, featureSet, parentLocationIdentifier, true);
+              disableMapInteractions(currentMap, false);
             }
             return e;
           },
@@ -232,16 +243,49 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
         const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         // Check if the media query matches or is not available.
         if (!mediaQuery || mediaQuery.matches) {
-          createChildLocationLabel(map, featureSet, parentLocationIdentifier, true);
-          disableMapInteractions(map, false);
+          createChildLocationLabel(currentMap, featureSet, parentLocationIdentifier, true);
+          disableMapInteractions(currentMap, false);
+        }
+      } else if (data.features.length) {
+        // if path is empty load main location and clear the map
+        if (path.length) {
+          //reload existing location or if breadcrumb event to delete all child locations and reload
+          if (path[path.length - 1] === parentLocationIdentifier) {
+            if (currentMap.getLayer(parentLocationIdentifier + '-fill')) {
+              currentMap.removeLayer(parentLocationIdentifier + '-fill');
+            }
+            currentMap.removeLayer(parentLocationIdentifier + '-border');
+            if (currentMap.getLayer(parentLocationIdentifier + '-structure'))
+              currentMap.removeLayer(parentLocationIdentifier + '-structure');
+            if (currentMap.getLayer(parentLocationIdentifier + '-label')) {
+              currentMap.removeLayer(parentLocationIdentifier + '-label');
+              currentMap.removeSource(parentLocationIdentifier + '-label');
+            }
+            currentMap.removeSource(parentLocationIdentifier);
+            loadLocationSet(currentMap, data, parentLocationIdentifier, path);
+          } else {
+            path.forEach(el => {
+              if (currentMap.getLayer(el + '-fill')) {
+                currentMap.removeLayer(el + '-fill');
+              }
+              currentMap.removeLayer(el + '-border');
+              if (currentMap.getSource(el + '-label')) {
+                currentMap.removeLayer(el + '-label');
+                currentMap.removeSource(el + '-label');
+              }
+              if (currentMap.getLayer(el + '-structure')) currentMap.removeLayer(el + '-structure');
+              currentMap.removeSource(el);
+            });
+            currentMap.fitBounds(bbox(data) as any);
+          }
+        } else {
+          currentMap.remove();
+          map.current = undefined;
+          clearMap();
         }
       }
-      //fit to bounds if that location already exist
-      else if (data.features.length) {
-        map.fitBounds(bbox(data) as any);
-      }
     },
-    [defaultColumn]
+    [reportType, clearMap]
   );
 
   useEffect(() => {
@@ -249,10 +293,10 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
       const mapInstance = map.current;
       //check if map is loaded completly
       if (mapInstance.getLayer('label-layer')) {
-        loadLocationSet(mapInstance, featureSet[0], featureSet[1]);
+        loadLocationSet(mapInstance, featureSet[0], featureSet[1], featureSet[2]);
       } else {
         mapInstance.once('load', () => {
-          loadLocationSet(mapInstance, featureSet[0], featureSet[1]);
+          loadLocationSet(mapInstance, featureSet[0], featureSet[1], featureSet[2]);
         });
       }
     }
@@ -347,9 +391,6 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
             if (map.current) {
               map.current.remove();
               map.current = undefined;
-              setZoom(4);
-              setLat(10);
-              setLng(20);
               clearMap();
             }
           }}

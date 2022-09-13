@@ -65,8 +65,8 @@ const DetailsModal = ({ selectedFile, closeHandler }: Props) => {
                               <tr key={Math.random()}>
                                 <td>{el.tag}</td>
                                 <td>
-                                  {el.tagData.value.valueInteger !== undefined
-                                    ? el.tagData.value.valueInteger
+                                  {el.tagData.value.valueDouble !== undefined
+                                    ? el.tagData.value.valueDouble
                                     : el.tagData.value.valueString}
                                 </td>
                                 <td>Success</td>

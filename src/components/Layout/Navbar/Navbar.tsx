@@ -17,7 +17,7 @@ import { setToBrowser } from '../../../utils';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { setDarkMode } from '../../../features/reducers/darkMode';
 
-export default function NavbarComponent() {
+const NavbarComponent = () => {
   const { t } = useTranslation();
   const { keycloak, initialized } = useKeycloak();
   const [user, setUser] = useState<KeycloakProfile>();
@@ -177,3 +177,5 @@ export default function NavbarComponent() {
     </Navbar>
   );
 }
+
+export default NavbarComponent;

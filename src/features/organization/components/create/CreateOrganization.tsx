@@ -6,6 +6,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { FieldValidationError } from '../../../../api/providers';
 import Select, { SingleValue } from 'react-select';
+import { REGEX_NAME_VALIDATION } from '../../../../constants';
 
 interface Props {
   show: boolean;
@@ -42,12 +43,10 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
   }, []);
 
   const submitHandler = (formValues: RegisterValues) => {
-    
     toast.promise(createOrganization(formValues), {
       pending: 'Loading...',
       success: {
         render({ data }: { data: OrganizationModel }) {
-          
           handleClose(true);
           return `Organization with id: ${data.identifier} created successfully.`;
         }
@@ -56,10 +55,15 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
         render({ data: err }: { data: any }) {
           if (typeof err !== 'string') {
             const fieldValidationErrors = err as FieldValidationError[];
-            return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
-              setError(errField.field as any, {message: errField.messageKey});
-              return errField.field;
-            }).toString();
+            return (
+              'Field Validation Error: ' +
+              fieldValidationErrors
+                .map(errField => {
+                  setError(errField.field as any, { message: errField.messageKey });
+                  return errField.field;
+                })
+                .toString()
+            );
           }
           return err;
         }
@@ -72,13 +76,19 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
       <Form.Group className="my-4">
         <Form.Label>Organization name</Form.Label>
         <Form.Control
-          id='organization-name-input'
+          id="organization-name-input"
           {...register('name', {
-            required: 'Organization name must not be empty.',
-            minLength: 1,
+            required: {
+              value: true,
+              message: 'Organization name must not be empty.'
+            },
+            minLength: {
+              value: 1,
+              message: 'Organization name must be at least 1 char long.'
+            },
             pattern: {
-              value: new RegExp('^[^-\\s][\\w\\s-]+$'),
-              message: "Organization name can't start with empty space."
+              value: new RegExp(REGEX_NAME_VALIDATION),
+              message: "Organization name can't start with empty space or contain special characters."
             }
           })}
           type="input"
@@ -87,7 +97,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Type</Form.Label>
-        <Form.Select id='type-select' {...register('type', { required: 'Organization type must be selected.' })}>
+        <Form.Select id="type-select" {...register('type', { required: 'Organization type must be selected.' })}>
           <option value=""></option>
           <option value="CG">Community group</option>
           <option value="TEAM">Team</option>
@@ -104,7 +114,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
             <Select
               className="custom-react-select-container"
               classNamePrefix="custom-react-select"
-              id='part-of-select'
+              id="part-of-select"
               menuPosition="fixed"
               isClearable
               {...register('partOf', { required: false })}
@@ -124,13 +134,13 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
         />
       </Form.Group>
       <Form.Group className="my-4">
-        <Form.Switch id='active-switch' {...register('active', { required: false })} defaultChecked label="Active" />
+        <Form.Switch id="active-switch" {...register('active', { required: false })} defaultChecked label="Active" />
       </Form.Group>
       <hr />
-      <Button id='save-button' variant="primary" className="float-end" onClick={handleSubmit(submitHandler)}>
+      <Button id="save-button" variant="primary" className="float-end" onClick={handleSubmit(submitHandler)}>
         Save
       </Button>
-      <Button id='close-button' variant="secondary" className="float-end me-2" onClick={() => handleClose(false)}>
+      <Button id="close-button" variant="secondary" className="float-end me-2" onClick={() => handleClose(false)}>
         Close
       </Button>
     </Form>

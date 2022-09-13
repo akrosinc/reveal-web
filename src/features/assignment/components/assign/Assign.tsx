@@ -165,6 +165,7 @@ const Assign = () => {
     []
   );
 
+  //CHECK HANDLERS - responsible for checkbox event
   const checkHandler = (id: string, checked: boolean) => {
     setIsEdited(true);
     let selectedHierarchy = { ...locationHierarchy } as PageableModel<LocationModel>;
@@ -177,6 +178,27 @@ const Assign = () => {
       }
     });
     setLocationHierarchy(selectedHierarchy);
+  };
+
+  const findLocationToCheck = (id: string, children: LocationModel[], checked: boolean) => {
+    children.forEach(childEl => {
+      if (childEl.identifier === id) {
+        childEl.active = checked;
+        checkChildren(childEl, checked);
+        selectParent(childEl, checked);
+      } else if (childEl.children.length) {
+        findLocationToCheck(id, childEl.children, checked);
+      }
+    });
+  };
+
+  const checkChildren = (parentLocation: LocationModel, checked: boolean) => {
+    parentLocation.children.forEach(el => {
+      el.active = checked;
+      if (el.children.length) {
+        checkChildren(el, checked);
+      }
+    });
   };
 
   const selectParent = (location: LocationModel, selected: boolean) => {
@@ -214,6 +236,9 @@ const Assign = () => {
       }
     });
   };
+  //END OF CHECK HANDLERS
+
+  //SELECT HANDLERS - responsible for dropdown select onChange event handle
 
   const selectHandler = (id: string, selected: MultiValue<Option>, unselectAll?: boolean) => {
     let selectedHierarchy = { ...locationHierarchy } as PageableModel<LocationModel>;
@@ -231,43 +256,6 @@ const Assign = () => {
       }
     });
     setLocationHierarchy(selectedHierarchy);
-  };
-
-  const findLocationToCheck = (id: string, children: LocationModel[], checked: boolean) => {
-    children.forEach(childEl => {
-      if (childEl.identifier === id) {
-        childEl.active = checked;
-        checkChildren(childEl, checked);
-        selectParent(childEl, checked);
-      } else if (childEl.children.length) {
-        findLocationToCheck(id, childEl.children, checked);
-      }
-    });
-  };
-
-  const findChildrenToSelect = (id: string, children: LocationModel[], selected: MultiValue<Option>) => {
-    children.forEach(childEl => {
-      if (childEl.identifier === id) {
-        childEl.teams = selected.map(team => {
-          return {
-            identifier: team.value,
-            name: team.label
-          };
-        });
-        selectChildren(childEl, selected);
-      } else if (childEl.children.length) {
-        findChildrenToSelect(id, childEl.children, selected);
-      }
-    });
-  };
-
-  const checkChildren = (parentLocation: LocationModel, checked: boolean) => {
-    parentLocation.children.forEach(el => {
-      el.active = checked;
-      if (el.children.length) {
-        checkChildren(el, checked);
-      }
-    });
   };
 
   const selectChildren = (parentLocation: LocationModel, selected: MultiValue<Option>, unselectAll?: boolean) => {
@@ -291,6 +279,65 @@ const Assign = () => {
       }
     });
   };
+
+  const findChildrenToSelect = (id: string, children: LocationModel[], selected: MultiValue<Option>) => {
+    const childLoc = children.find(el => {
+      return el.identifier === id;
+    });
+    if (childLoc) {
+      childLoc.teams = selected.map(team => {
+        return {
+          identifier: team.value,
+          name: team.label
+        };
+      });
+      selectChildren(childLoc, selected);
+      //selectTeamParent(childLoc, selected);
+    } else {
+      children.forEach(childEl => {
+        findChildrenToSelect(id, childEl.children, selected);
+      });
+    }
+  };
+
+  const selectTeamParent = (location: LocationModel, selected: MultiValue<Option>) => {
+    locationHierarchy?.content.forEach(el => {
+      if (el.identifier === location.properties.parentIdentifier) {
+        if (selected) {
+          el.teams = selected.map(team => {
+            return {
+              identifier: team.value,
+              name: team.label
+            };
+          });
+        }
+      } else {
+        if (el.children.length) {
+          findParentToSelect(el.children, location.properties.parentIdentifier, selected);
+        }
+      }
+    });
+  };
+
+  const findParentToSelect = (locations: LocationModel[], identifier: string, selected: MultiValue<Option>) => {
+    locations.forEach(el => {
+      if (el.identifier === identifier) {
+        if (selected) {
+          el.teams = selected.map(team => {
+            return {
+              identifier: team.value,
+              name: team.label
+            };
+          });
+          selectTeamParent(el, selected);
+        }
+      } else if (el.children.length) {
+        findParentToSelect(el.children, identifier, selected);
+      }
+    });
+  };
+
+  //END OF SELECT HANDLERS
 
   //creates an array of selected location identifiers
   const filterChildren = (location: LocationModel) => {

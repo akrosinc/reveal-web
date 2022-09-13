@@ -14,7 +14,7 @@ const Reporting = () => {
   const { pathname } = useLocation();
 
   return (
-    <PageWrapper title={pathname.includes('performanceReports') ? 'Performance Reports' : t('reportPage.title')}>
+    <PageWrapper title={pathname.includes('performance-reports') ? 'Performance Reports' : t('reportPage.title')}>
       <Routes>
         <Route
           path="/"
@@ -33,7 +33,7 @@ const Reporting = () => {
           }
         />
         <Route
-          path="/performanceReports"
+          path="/performance-reports"
           element={
             <AuthGuard roles={[REPORT_VIEW]}>
               <Reports />

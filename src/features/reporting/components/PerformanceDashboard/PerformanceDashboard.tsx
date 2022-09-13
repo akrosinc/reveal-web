@@ -106,7 +106,7 @@ const PerformanceDashboard = () => {
           })}
         </p>
       </Container>
-      {dashboardData.length ? (
+      {dashboardData.length && dashboardData[0] !== null ? (
         <Table hover responsive bordered>
           <thead className="border border-2">
             <tr>

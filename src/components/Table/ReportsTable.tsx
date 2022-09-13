@@ -169,7 +169,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
               <b>Total</b>
             </td>
             {totalValue.map((el, index) => {
-              return <td key={index}>{el}</td>;
+              return <td key={index}>{el.toLocaleString()}</td>;
             })}
           </tr>
         )}

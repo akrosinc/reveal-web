@@ -19,7 +19,7 @@ export interface MetaImportTag {
         value: {
           valueString: string;
           valueObjects: {}[];
-          valueInteger: number;
+          valueDouble: number;
         };
       };
     }[];
