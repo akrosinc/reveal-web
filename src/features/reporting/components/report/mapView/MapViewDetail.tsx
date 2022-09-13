@@ -204,23 +204,28 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
         //create a group of locations so we can fit them all in viewport
         data.features.forEach((element: Feature<Polygon | MultiPolygon | Point, ReportLocationProperties>) => {
           // if its a point structure type createa a circle layer to present it on the map
-          if (element.geometry.type === 'Point') {
+          const addLayer = (id: string, statusColor: string) => {
+            currentMap.addLayer({
+              id: id + 'point',
+              source: id,
+              type: 'circle',
+              minzoom: 15.5,
+              paint: {
+                'circle-color': statusColor ?? 'black',
+                'circle-radius': 8
+              }
+            });
+          };
+          if (element.geometry.type === 'Point' && currentMap.getSource(element.properties.id) === undefined) {
             currentMap.addSource(element.properties.id, {
               type: 'geojson',
               data: element,
               tolerance: 2
             });
-
-            currentMap.addLayer({
-              id: element.properties.id + 'point',
-              source: element.properties.id,
-              type: 'circle',
-              minzoom: 15.5,
-              paint: {
-                'circle-color': element.properties.statusColor ?? 'black',
-                'circle-radius': 8
-              }
-            });
+            addLayer(element.properties.id, element.properties.statusColor ?? 'black');
+          } else {
+            currentMap.removeLayer(element.properties.id + 'point');
+            addLayer(element.properties.id, element.properties.statusColor ?? 'black');
           }
 
           const centerLabel = getPolygonCenter(element);
