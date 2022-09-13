@@ -281,18 +281,18 @@ const Assign = () => {
   };
 
   const findChildrenToSelect = (id: string, children: LocationModel[], selected: MultiValue<Option>) => {
-    let a = children.find(el => {
+    const childLoc = children.find(el => {
       return el.identifier === id;
     });
-    if (a) {
-      a.teams = selected.map(team => {
+    if (childLoc) {
+      childLoc.teams = selected.map(team => {
         return {
           identifier: team.value,
           name: team.label
         };
       });
-      selectChildren(a, selected);
-      selectTeamParent(a, selected);
+      selectChildren(childLoc, selected);
+      //selectTeamParent(childLoc, selected);
     } else {
       children.forEach(childEl => {
         findChildrenToSelect(id, childEl.children, selected);

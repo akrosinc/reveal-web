@@ -255,10 +255,12 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
               currentMap.removeLayer(parentLocationIdentifier + '-fill');
             }
             currentMap.removeLayer(parentLocationIdentifier + '-border');
-            currentMap.removeLayer(parentLocationIdentifier + '-label');
             if (currentMap.getLayer(parentLocationIdentifier + '-structure'))
               currentMap.removeLayer(parentLocationIdentifier + '-structure');
-            currentMap.removeSource(parentLocationIdentifier + '-label');
+            if (currentMap.getLayer(parentLocationIdentifier + '-label')) {
+              currentMap.removeLayer(parentLocationIdentifier + '-label');
+              currentMap.removeSource(parentLocationIdentifier + '-label');
+            }
             currentMap.removeSource(parentLocationIdentifier);
             loadLocationSet(currentMap, data, parentLocationIdentifier, path);
           } else {

@@ -2,13 +2,14 @@ import { Feature, MultiPolygon, Point, Polygon } from '@turf/turf';
 import React, { useMemo, useState } from 'react';
 import { Button, Modal, OverlayTrigger, Table, Tooltip } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 import {
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
   REPORT_TABLE_PERCENTAGE_MEDIUM
 } from '../../../../../constants';
 import { useAppSelector } from '../../../../../store/hooks';
-import { FoundCoverage, ReportLocationProperties } from '../../../providers/types';
+import { FoundCoverage, ReportLocationProperties, ReportType } from '../../../providers/types';
 
 interface Props {
   showModal: (show: boolean) => void;
@@ -19,6 +20,7 @@ const ReportModal = ({ showModal, feature }: Props) => {
   const [tableData, setTableData] = useState<{ [key: string]: FoundCoverage }>();
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
+  const { reportType } = useParams();
 
   const columns = useMemo<string[]>(() => {
     //Map columns depending on server response
@@ -105,6 +107,11 @@ const ReportModal = ({ showModal, feature }: Props) => {
                 return tableData ? (
                   tableData[el].isPercentage ? (
                     generatePercentageRow(tableData[el], index)
+                  ) : el === 'Structure Status' &&
+                    (reportType === ReportType.IRS_FULL_COVERAGE ||
+                      reportType === ReportType.IRS_LITE_COVERAGE ||
+                      reportType === ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL) ? (
+                    <td key={index}>{tableData[el].value === 'Complete' ? 'Sprayed' : tableData[el].value}</td>
                   ) : (
                     <td key={index}>{tableData[el].value}</td>
                   )

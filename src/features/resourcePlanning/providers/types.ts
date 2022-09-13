@@ -84,3 +84,10 @@ export interface CampaignValue {
   meta: null;
   dataType: string;
 }
+
+export interface ResourcePlanningHistory {
+  identifier: string;
+  name: string;
+  createdBy: string;
+  created: string;
+}

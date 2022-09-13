@@ -8,6 +8,7 @@ import PageWrapper from '../../components/PageWrapper';
 import { PLAN_VIEW, RESOURCE_PLANNING_PAGE } from '../../constants';
 import ConfigTab from '../../features/resourcePlanning/components/ConfigTab';
 import DashboardTab from '../../features/resourcePlanning/components/DashboardTab/DashboardTab';
+import HistoryTab from '../../features/resourcePlanning/components/HistoryTab';
 import InputsTab from '../../features/resourcePlanning/components/InputsTab';
 import { RootState } from '../../store/store';
 
@@ -66,7 +67,7 @@ const ResourcePlanning = () => {
         </Tab>
         <Tab eventKey="history" title="History">
           <AuthGuard roles={[PLAN_VIEW]}>
-            <h2>History tab</h2>
+            <HistoryTab />
           </AuthGuard>
         </Tab>
       </Tabs>

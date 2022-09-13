@@ -89,6 +89,13 @@ export const META_IMPORT_TABLE_COLUMNS = [
   { name: 'Uploaded By', sortValue: 'uploadedBy', accessor: 'uploadedBy' }
 ];
 
+export const RESOURCE_PLANNING_HISTORY_TABLE_COLUMNS = [
+  { name: 'Identifier', sortValue: 'identifier', accessor: 'identifier' },
+  { name: 'Name', sortValue: 'name', accessor: 'name' },
+  { name: 'Create Date', sortValue: 'created', accessor: 'created' },
+  { name: 'Uploaded By', sortValue: 'createdBy', accessor: 'createdBy' }
+];
+
 export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';
 export const LOCATION_TEAM_ASSIGNMENT_TAB = 'team-assignment';
 

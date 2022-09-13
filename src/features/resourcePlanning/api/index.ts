@@ -4,6 +4,7 @@ import {
   ResourceCountry,
   ResourceDashboardRequest,
   ResourceDashboardResponse,
+  ResourcePlanningHistory,
   ResourceQuestion,
   ResourceQuestionStepTwo
 } from '../providers/types';
@@ -41,5 +42,10 @@ export const getResourceDashboard = async (
   const data = await api
     .post<Promise<ResourceDashboardResponse[]>>('resource-planning/dashboard', dashboardRequest)
     .then(res => res.data);
+  return data;
+};
+
+export const getResourceHistory = async (): Promise<ResourcePlanningHistory[]> => {
+  const data = await api.get<Promise<ResourcePlanningHistory[]>>('resource-planning/history').then(res => res.data);
   return data;
 };

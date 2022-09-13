@@ -10,8 +10,7 @@ import {
   PLAN_VIEW,
   SIMULATION_PAGE,
   TAG_MANAGEMENT,
-  METADATA_IMPORT,
-  RESOURCE_PLANNING_PAGE
+  METADATA_IMPORT
 } from '../../../constants';
 
 export const MAIN_MENU = [
@@ -40,11 +39,11 @@ export const MAIN_MENU = [
         route: SIMULATION_PAGE,
         roles: [PLAN_VIEW]
       },
-      {
-        pageTitle: 'Resource Planning',
-        route: RESOURCE_PLANNING_PAGE,
-        roles: [PLAN_VIEW]
-      }
+      // {
+      //   pageTitle: 'Resource Planning',
+      //   route: RESOURCE_PLANNING_PAGE,
+      //   roles: [PLAN_VIEW]
+      // }
     ]
   },
   {
