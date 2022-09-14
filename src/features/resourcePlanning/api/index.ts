@@ -38,10 +38,10 @@ export const getQuestionsResourceStepTwo = async (stepTwoRequest: any): Promise<
 };
 
 export const getResourceDashboard = async (
-  dashboardRequest: ResourceDashboardRequest
+  dashboardRequest: ResourceDashboardRequest, saveData?: boolean
 ): Promise<ResourceDashboardResponse[]> => {
   const data = await api
-    .post<ResourceDashboardResponse[]>('resource-planning/dashboard', dashboardRequest)
+    .post<ResourceDashboardResponse[]>(`resource-planning/dashboard${saveData ? '?saveData=true' : ''}`, dashboardRequest)
     .then(res => res.data);
   return data;
 };

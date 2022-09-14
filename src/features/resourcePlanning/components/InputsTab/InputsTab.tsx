@@ -67,7 +67,7 @@ const InputsTab = () => {
           structureCountTag: configValue.populationTag.value,
           stepOneAnswers: Object.fromEntries(stepOneAnswers.entries()),
           stepTwoAnswers: Object.fromEntries(stepTwoAnswers.entries())
-        })
+        }, true)
           .then(res => {
             navigate('dashboard');
             dispatch(setDashboard(res));
