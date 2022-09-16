@@ -124,7 +124,6 @@ const ConfigTab = () => {
                 classNamePrefix="custom-react-select"
                 menuPosition="fixed"
                 isClearable
-                isMulti
                 options={countryResourceList.map(el => {
                   return {
                     value: el.identifier,
@@ -132,7 +131,7 @@ const ConfigTab = () => {
                     ageGroups: el.ageGroups
                   };
                 })}
-                onChange={el => onChange(el.map(el => el))}
+                onChange={el => onChange(el)}
                 onBlur={onBlur}
                 ref={ref}
                 value={value}

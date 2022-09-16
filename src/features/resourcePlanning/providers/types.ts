@@ -1,6 +1,6 @@
 export interface ResourcePlanningConfig {
   resourcePlanName: string;
-  country: { label: string; value: string; ageGroups: AgeGroups[] }[];
+  country: { label: string; value: string; ageGroups: AgeGroups[] };
   hierarchy: { label: string; value: string };
   lowestLocation: { label: string; value: string };
   populationTag: { label: string; value: string };
