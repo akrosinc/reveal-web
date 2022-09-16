@@ -1,4 +1,5 @@
 export interface ResourcePlanningConfig {
+  resourcePlanName: string;
   country: { label: string; value: string; ageGroups: AgeGroups[] }[];
   hierarchy: { label: string; value: string };
   lowestLocation: { label: string; value: string };
@@ -61,12 +62,13 @@ interface SkipPattern {
 }
 
 export interface ResourceDashboardRequest {
+  name: string;
   country: string;
   campaign: string;
   locationHierarchy: string;
   lowestGeography: string;
   populationTag: string;
-  structureCountTag: string;
+  structureCountTag: string | undefined;
   countBasedOnImportedLocations: boolean;
   stepOneAnswers: any;
   stepTwoAnswers: any;
@@ -77,6 +79,8 @@ export interface ResourceDashboardResponse {
   identifier: string;
   name: string;
   columnDataMap: { [x: string]: CampaignValue };
+  hierachy: string[];
+  request: ResourceDashboardRequest;
 }
 export interface CampaignValue {
   value: number;

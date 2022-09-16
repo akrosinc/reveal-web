@@ -16,6 +16,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../../../store/hooks';
 import { setDashboard } from '../../../reducers/resourcePlanningConfig';
+import { getHierarchyById } from '../../../location/api';
 
 const InputsTab = () => {
   const [questionList, setQuestionList] = useState<ResourceQuestion[]>([]);
@@ -56,7 +57,8 @@ const InputsTab = () => {
         }
       });
       if (configValue) {
-        getResourceDashboard({
+        const dashboardRequest = {
+          name: configValue.resourcePlanName,
           country: configValue.country !== undefined && configValue.country.length ? configValue.country[0].value : '',
           campaign: form.campaign,
           minimalAgeGroup: form.ageGroup,
@@ -64,17 +66,36 @@ const InputsTab = () => {
           locationHierarchy: configValue.hierarchy.value,
           lowestGeography: configValue.lowestLocation.value,
           populationTag: configValue.populationTag.value,
-          structureCountTag: configValue.populationTag.value,
+          structureCountTag: configValue.structureCountTag ? configValue.structureCountTag.value : undefined,
           stepOneAnswers: Object.fromEntries(stepOneAnswers.entries()),
           stepTwoAnswers: Object.fromEntries(stepTwoAnswers.entries())
-        }, true)
-          .then(res => {
-            navigate('dashboard');
-            dispatch(setDashboard(res));
-          })
-          .catch(err => {
-            toast.error(err);
+        };
+        getHierarchyById(configValue.hierarchy.value).then(hierarchyList => {
+          const allowedPath: string[] = [];
+          hierarchyList.nodeOrder.some(el => {
+            if (el === configValue.lowestLocation.value) {
+              allowedPath.push(el);
+              return true;
+            } else {
+              allowedPath.push(el);
+            }
+            return false;
           });
+          getResourceDashboard(dashboardRequest, true)
+            .then(res => {
+              navigate('dashboard');
+              dispatch(
+                setDashboard({
+                  request: dashboardRequest,
+                  response: res,
+                  path: allowedPath
+                })
+              );
+            })
+            .catch(err => {
+              toast.error(err);
+            });
+        });
       }
     } else {
       getQuestionsResourceStepTwo({

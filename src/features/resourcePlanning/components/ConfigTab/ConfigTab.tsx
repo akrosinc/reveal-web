@@ -98,6 +98,21 @@ const ConfigTab = () => {
       )}
       <Form className="container py-2" onSubmit={handleSubmit(submitHandler)}>
         <Form.Group className="mt-2">
+          <Form.Label>Resource plan name</Form.Label>
+          <Form.Control
+            placeholder="Enter resource plan name..."
+            type="text"
+            {...register('resourcePlanName', {
+              required: { value: true, message: 'Resource plan name is required.' }
+            })}
+          />
+          {errors.resourcePlanName && (
+            <Form.Label className="text-danger mt-2">
+              {errors.resourcePlanName && (errors.resourcePlanName as any).message}
+            </Form.Label>
+          )}
+        </Form.Group>
+        <Form.Group className="mt-2">
           <Form.Label>Country</Form.Label>
           <Controller
             control={control}
