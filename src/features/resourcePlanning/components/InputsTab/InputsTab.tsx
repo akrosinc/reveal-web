@@ -59,7 +59,7 @@ const InputsTab = () => {
       if (configValue) {
         const dashboardRequest = {
           name: configValue.resourcePlanName,
-          country: configValue.country !== undefined && configValue.country.length ? configValue.country[0].value : '',
+          country: configValue.country.value,
           campaign: form.campaign,
           minimalAgeGroup: form.ageGroup,
           countBasedOnImportedLocations: configValue.structureCount,
@@ -99,7 +99,7 @@ const InputsTab = () => {
       }
     } else {
       getQuestionsResourceStepTwo({
-        countryIdentifiers: configValue?.country.map(el => el.value),
+        countryIdentifiers: [configValue?.country.value],
         ageGroupKey: form.ageGroup,
         campaignIdentifiers: [form.campaign]
       }).then(res => {
@@ -158,7 +158,7 @@ const InputsTab = () => {
               <Form.Label>What is the first Age Group targeted with this campaign?</Form.Label>
               <Form.Select {...register('ageGroup', { required: 'This field is required' })}>
                 <option>Select...</option>
-                {configValue?.country[0].ageGroups.map(el => (
+                {configValue?.country.ageGroups.map(el => (
                   <option key={el.key} value={el.key}>
                     {el.name}
                   </option>
