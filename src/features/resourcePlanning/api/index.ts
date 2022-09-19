@@ -50,8 +50,19 @@ export const getResourceDashboard = async (
   return data;
 };
 
-export const getResourceHistory = async (): Promise<PageableModel<ResourcePlanningHistory>> => {
-  const data = await api.get<PageableModel<ResourcePlanningHistory>>('resource-planning/history').then(res => res.data);
+export const getResourceHistory = async (
+  size: number,
+  page: number,
+  sortField?: string,
+  sortDirection?: boolean
+): Promise<PageableModel<ResourcePlanningHistory>> => {
+  const data = await api
+    .get<PageableModel<ResourcePlanningHistory>>(
+      `resource-planning/history?size=${size}&page=${page}${
+        sortField ? '&sort=' + sortField + (sortDirection ? ',asc' : ',desc') : ''
+      }`
+    )
+    .then(res => res.data);
   return data;
 };
 
