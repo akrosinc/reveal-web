@@ -2,7 +2,6 @@ import api from '../../../api/axios';
 import { OrganizationModel, Groups } from '../providers/types';
 import { PageableModel } from '../../../api/providers';
 import { KEYCLOAK_SECURITY_GROUPS, ORGANIZATION } from '../../../constants';
-import { CancelToken } from 'axios';
 
 export const getOrganizationList = async (
   size: number,
@@ -29,16 +28,7 @@ export const getOrganizationCount = async (): Promise<{ count: number }> => {
 
 export const getOrganizationListSummary = async (): Promise<PageableModel<OrganizationModel>> => {
   const data = await api
-    .get<PageableModel<OrganizationModel>>(ORGANIZATION + '?_summary=TRUE&root=false')
-    .then(response => response.data);
-  return data;
-};
-
-export const getAllOrganizations = async (cancelToken?: CancelToken): Promise<PageableModel<OrganizationModel>> => {
-  const data = await api
-    .get<PageableModel<OrganizationModel>>(ORGANIZATION + '?_summary=TRUE&root=false', {
-      cancelToken: cancelToken
-    })
+    .get<PageableModel<OrganizationModel>>(ORGANIZATION + '?_summary=TRUE&root=false&size=100&page=0')
     .then(response => response.data);
   return data;
 };
