@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
 import Select, { MultiValue } from 'react-select';
 import { createUser } from '../../../api';
-import { getAllOrganizations, getSecurityGroups } from '../../../../organization/api';
+import { getOrganizationListSummary, getSecurityGroups } from '../../../../organization/api';
 import { useForm } from 'react-hook-form';
 import { CreateUserModel } from '../../../providers/types';
 import { useAppSelector } from '../../../../../store/hooks';
@@ -56,7 +56,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
         })
       );
     });
-    getAllOrganizations().then(res => {
+    getOrganizationListSummary().then(res => {
       setOrganizations(
         res.content.map(el => {
           return {
