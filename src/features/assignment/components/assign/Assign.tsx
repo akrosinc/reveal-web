@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Row, Col, Container, Button, Tabs, Tab } from 'react-bootstrap';
+import { Row, Col, Container, Button, Tabs, Tab, Form } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ASSIGNMENT_PAGE,
@@ -50,6 +50,7 @@ const Assign = () => {
   const [tableHeight, setTableHeight] = useState(0);
   const [isEdited, setIsEdited] = useState(false);
   const { t } = useTranslation();
+  const [selectChildrenChecker, setSelectChildrenChecker] = useState(true);
 
   const loadData = useCallback(() => {
     if (planId !== undefined) {
@@ -250,7 +251,9 @@ const Assign = () => {
             name: team.label
           };
         });
-        selectChildren(location, selected, unselectAll);
+        if (selectChildrenChecker) {
+          selectChildren(location, selected, unselectAll);
+        }
       } else if (location.children.length) {
         findChildrenToSelect(id, location.children, selected);
       }
@@ -291,7 +294,9 @@ const Assign = () => {
           name: team.label
         };
       });
-      selectChildren(childLoc, selected);
+      if (selectChildrenChecker) {
+        selectChildren(childLoc, selected);
+      }
       //selectTeamParent(childLoc, selected);
     } else {
       children.forEach(childEl => {
@@ -439,6 +444,10 @@ const Assign = () => {
             <Button id="save-assignments-button" className="w-25" onClick={saveHandler}>
               {t('buttons.save')}
             </Button>
+            <div className='text-center mx-2'>
+            <Form.Label>Select children</Form.Label>
+            <Form.Check checked={selectChildrenChecker} onChange={e => setSelectChildrenChecker(e.target.checked)} />
+            </div>
           </div>
           <SimpleBar style={{ maxHeight: tableHeight > 0 ? tableHeight : 'auto' }}>
             <hr />
