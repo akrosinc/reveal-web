@@ -32,14 +32,15 @@ const Reports = () => {
     []
   );
 
-  const performanceDashboardChecker = () => {
+  const performanceDashboardChecker = useCallback(() => {
     return pathname.includes('performance-reports');
-  };
+  }, [pathname]);
+
 
   useEffect(() => {
-    if (pathname.includes('performanceReports')) {
+    if (performanceDashboardChecker()) {
       setSelectedReportType(undefined);
-      loadData(PAGINATION_DEFAULT_SIZE, 0, undefined);
+      loadData(PAGINATION_DEFAULT_SIZE, 0);
     } else {
       getReportTypes()
         .then(res => {
@@ -49,7 +50,7 @@ const Reports = () => {
         })
         .catch(err => toast.error(err));
     }
-  }, [loadData, state, pathname]);
+  }, [loadData, state, performanceDashboardChecker]);
 
   const paginationHandler = (size: number, page: number) => {
     if (selectedReportType) {
@@ -115,7 +116,7 @@ const Reports = () => {
             sortHandler={sortHandler}
             clickHandler={(id: string) =>
               performanceDashboardChecker()
-                ? navigate(REPORTING_PAGE + `/performanceReports/${id}`)
+                ? navigate(REPORTING_PAGE + `/performance-report/${id}`)
                 : navigate(REPORTING_PAGE + `/report/${id}/reportType/${selectedReportType}`)
             }
             clickAccessor="identifier"
