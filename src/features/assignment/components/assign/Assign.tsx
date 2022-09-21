@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Row, Col, Container, Button, Tabs, Tab, Form } from 'react-bootstrap';
+import { Row, Col, Container, Button, Tabs, Tab } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ASSIGNMENT_PAGE,
@@ -28,6 +28,7 @@ import MapViewAssignments from './map';
 import { useTranslation } from 'react-i18next';
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
+import TeamAssignment from './TeamAssignment';
 
 interface Option {
   label: string;
@@ -37,6 +38,7 @@ interface Option {
 const Assign = () => {
   const [currentPlan, setCurrentPlan] = useState<PlanModel>();
   const [open, setOpen] = useState(false);
+  const [showTable, setShowTable] = useState(false);
   const [geoLocation, setGeoLocation] = useState<LocationModel>();
   const [locationHierarchy, setLocationHierarchy] = useState<PageableModel<LocationModel>>();
   const [assignedLocations, setAssignedLocations] = useState(0);
@@ -50,7 +52,6 @@ const Assign = () => {
   const [tableHeight, setTableHeight] = useState(0);
   const [isEdited, setIsEdited] = useState(false);
   const { t } = useTranslation();
-  const [selectChildrenChecker, setSelectChildrenChecker] = useState(true);
 
   const loadData = useCallback(() => {
     if (planId !== undefined) {
@@ -79,7 +80,7 @@ const Assign = () => {
                   setNotInMove(false);
                   setGeoLocation(res);
                   setTableHeight(
-                    (document.getElementsByClassName('mapboxgl-canvas')[0] as any).height -
+                    (document.getElementsByClassName('mapboxgl-canvas')[0] as any)?.height -
                       (document.getElementById('title-div')?.clientHeight ?? 0)
                   );
                 });
@@ -251,9 +252,7 @@ const Assign = () => {
             name: team.label
           };
         });
-        if (selectChildrenChecker) {
-          selectChildren(location, selected, unselectAll);
-        }
+        selectChildren(location, selected, unselectAll);
       } else if (location.children.length) {
         findChildrenToSelect(id, location.children, selected);
       }
@@ -294,9 +293,7 @@ const Assign = () => {
           name: team.label
         };
       });
-      if (selectChildrenChecker) {
-        selectChildren(childLoc, selected);
-      }
+      selectChildren(childLoc, selected);
       //selectTeamParent(childLoc, selected);
     } else {
       children.forEach(childEl => {
@@ -431,10 +428,13 @@ const Assign = () => {
             {currentPlan?.title})
           </h4>
         </Col>
+        <Col md={3} className='text-end'>
+          <Button onClick={() => setShowTable(!showTable)}>{showTable ? 'Hide Map' : 'Show Map'}</Button>
+        </Col>
       </Row>
       <hr className="my-3" />
       <Row>
-        <Col md={4} style={{ display: open ? 'none' : '' }}>
+        <Col md={showTable ? 12 : 4} style={{ display: open ? 'none' : '' }}>
           <div className="d-flex justify-content-between align-items-center" id="title-div">
             <span>
               {assignedLocations
@@ -444,10 +444,6 @@ const Assign = () => {
             <Button id="save-assignments-button" className="w-25" onClick={saveHandler}>
               {t('buttons.save')}
             </Button>
-            <div className='text-center mx-2'>
-            <Form.Label>Select children</Form.Label>
-            <Form.Check checked={selectChildrenChecker} onChange={e => setSelectChildrenChecker(e.target.checked)} />
-            </div>
           </div>
           <SimpleBar style={{ maxHeight: tableHeight > 0 ? tableHeight : 'auto' }}>
             <hr />
@@ -478,7 +474,10 @@ const Assign = () => {
                   />
                 </div>
               </Tab>
-              <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title={t('assignPage.titleTeams')}>
+              <Tab eventKey="team-assign-new" title={t('assignPage.titleTeams')}>
+              <TeamAssignment columns={columns} data={tableData} planId={planId ?? ''} organizationsList={organizationsList} />
+              </Tab>
+              <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title={t('assignPage.assignmentPreview')}>
                 <LocationAssignmentsTable
                   teamTab={true}
                   organizationList={organizationsList}
@@ -501,7 +500,7 @@ const Assign = () => {
             </Tabs>
           </SimpleBar>
         </Col>
-        <Col md={open ? 12 : 8}>
+        {!showTable && (        <Col md={open ? 12 : 8}>
           <MapViewAssignments
             collapse={() => setOpen(!open)}
             rerender={open}
@@ -517,7 +516,7 @@ const Assign = () => {
             moveend={notMoving}
             reloadData={() => loadData()}
           />
-        </Col>
+        </Col>)}
       </Row>
     </Container>
   );

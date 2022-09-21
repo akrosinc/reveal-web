@@ -90,3 +90,10 @@ export const getChildLocation = async (locationId: string, planId: string): Prom
     .then(response => response.data);
   return data;
 };
+
+export const searchLocations = async (planId: string, search: string): Promise<{ value: string; label: string }[]> => {
+  const data = await api
+    .get<{ value: string; label: string }[]>(`plan/assignedLocations/${planId}?search=${search}`)
+    .then(response => response.data);
+  return data;
+};
