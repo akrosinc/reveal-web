@@ -2,7 +2,7 @@ import React from 'react';
 import { Form, Table } from 'react-bootstrap';
 import { useTable, useExpanded, Column } from 'react-table';
 import { ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3 } from '../../constants';
-import Select, { Options, MultiValue } from 'react-select';
+import Select, { Options } from 'react-select';
 import { useAppSelector } from '../../store/hooks';
 
 interface Option {
@@ -15,7 +15,6 @@ interface Props {
   data: any;
   clickHandler?: (id: string, el?: any) => void;
   checkHandler: (id: string, checked: boolean) => void;
-  selectHandler: (id: string, selectedTeams: MultiValue<Option>) => void;
   organizationList: Options<Option>;
   teamTab: boolean;
 }
@@ -24,7 +23,6 @@ const LocationAssignmentsTable = ({
   columns,
   data,
   clickHandler,
-  selectHandler,
   checkHandler,
   organizationList,
   teamTab
@@ -113,6 +111,7 @@ const LocationAssignmentsTable = ({
                   return (
                     <td {...cell.getCellProps()} style={{ minWidth: '250px' }}>
                       <Select
+                        isDisabled={true}
                         menuPortalTarget={document.body} 
                         styles={{ menuPortal: base => ({ ...base, zIndex: 2, color: 'black' }) }}
                         id={rowData.identifier + '-select'}
@@ -129,7 +128,6 @@ const LocationAssignmentsTable = ({
                               })
                             : []
                         }
-                        onChange={selected => selectHandler(rowData.identifier, selected)}
                       />
                     </td>
                   );

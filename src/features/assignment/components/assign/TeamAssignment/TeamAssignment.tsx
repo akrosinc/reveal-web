@@ -1,61 +1,76 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, memo } from 'react';
 import { Col, Form, Row } from 'react-bootstrap';
 import LocationAssignmentsTable from '../../../../../components/Table/LocationAssignmentsTable';
-import { LocationModel } from '../../../../location/providers/types';
-import Select, { Options } from 'react-select';
-import { searchLocations } from '../../../api';
+import Select, { MultiValue, Options } from 'react-select';
+import { getLocationsAssignedToTeam, searchLocations } from '../../../api';
 
 interface Props {
   columns: any;
   data: any;
   planId: string;
-  organizationsList: Options<{value: string, label: string}>
+  organizationsList: Options<{ value: string; label: string }>;
 }
 
 const TeamAssignment = ({ columns, data, planId, organizationsList }: Props) => {
-  const [locationList, setLocationList] = useState<{value: string, label: string}[]>([]);
-
-  const filterAssignedLocations = useCallback((locationList: LocationModel[]) => {
-    locationList = [...locationList.filter(el => el.active)];
-    locationList.forEach(el => {
-      if (el.active && el.children.length) {
-        el.children = filterAssignedLocations(el.children);
-      }
-    });
-    return locationList;
-  }, []);
+  const [locationList, setLocationList] = useState<{ value: string; label: string }[]>([]);
+  const [dropdownValue, setDropdownValue] = useState<MultiValue<{ value: string; label: string }> | null>([]);
+  const [selectedTeam, setSelectedTeam] = useState<{ value: string; label: string }>();
 
   return (
     <div className="mt-3">
       <Row className="my-4">
         <Col>
           <Form.Label>Select team</Form.Label>
-          <Select isClearable options={organizationsList} />
+          <Select
+            isClearable
+            onChange={selected => {
+              if (selected) {
+                setSelectedTeam(selected);
+                getLocationsAssignedToTeam(planId, selected.value).then(res => setDropdownValue(res));
+              } else {
+                setSelectedTeam(undefined);
+                setDropdownValue(null);
+              }
+            }}
+            options={organizationsList}
+          />
         </Col>
         <Col>
           <Form.Label>Select locations</Form.Label>
           <Select
+            isDisabled={!selectedTeam}
             isMulti
             options={locationList}
+            value={dropdownValue}
+            noOptionsMessage={obj => {
+              if (obj.inputValue === '') {
+                return 'Enter at least 1 char to display the results...';
+              } else {
+                return 'No location found.';
+              }
+            }}
+            placeholder={selectedTeam ? 'Search...' : 'Select team first.'}
             onInputChange={e => {
-                if (e.length) {
-                    searchLocations(planId, e).then(res => setLocationList(res));
-                } else {
-                    setLocationList([]);
-                }
+              if (e.length) {
+                searchLocations(planId, e).then(res => setLocationList(res));
+              } else {
+                setLocationList([]);
+              }
+            }}
+            onChange={newValues => {
+              setDropdownValue(newValues);
             }}
           />
         </Col>
       </Row>
       <hr />
-      <h4 className="my-2">Location tree</h4>
+      <h4 className="my-2">Assigned locations preview</h4>
       <LocationAssignmentsTable
         organizationList={[]}
         checkHandler={(id: string, checked: boolean) => undefined}
-        selectHandler={(id: string, selectedTeam: any) => undefined}
         teamTab={false}
         columns={columns.filter((el: any) => el.Header !== 'Select')}
-        data={filterAssignedLocations(JSON.parse(JSON.stringify(data)))}
+        data={data}
       />
     </div>
   );

@@ -97,3 +97,17 @@ export const searchLocations = async (planId: string, search: string): Promise<{
     .then(response => response.data);
   return data;
 };
+
+export const getLocationsAssignedToTeam = async (planId: string, teamId: string): Promise<{ value: string; label: string }[]> => {
+  const data = await api
+    .get<{ value: string; label: string }[]>(`plan/assignedLocationsToTeam/${planId}/${teamId}`)
+    .then(response => response.data);
+  return data;
+};
+
+export const saveLocationsAssignedToTeam = async (requestBody: {organizationIdentifier: string, locationIdentifiers: string[]}, planId: string): Promise<{ value: string; label: string }[]> => {
+  const data = await api
+    .post<{ value: string; label: string }[]>(`plan/assignedLocationsToTeam/${planId}`, requestBody)
+    .then(response => response.data);
+  return data;
+};

@@ -21,7 +21,7 @@ import {
 } from '../../api';
 import { toast } from 'react-toastify';
 import { getLocationByIdAndPlanId } from '../../../location/api';
-import { MultiValue, Options } from 'react-select';
+import { Options } from 'react-select';
 import { getOrganizationListSummary } from '../../../organization/api';
 import { Column } from 'react-table';
 import MapViewAssignments from './map';
@@ -240,107 +240,6 @@ const Assign = () => {
   };
   //END OF CHECK HANDLERS
 
-  //SELECT HANDLERS - responsible for dropdown select onChange event handle
-
-  const selectHandler = (id: string, selected: MultiValue<Option>, unselectAll?: boolean) => {
-    let selectedHierarchy = { ...locationHierarchy } as PageableModel<LocationModel>;
-    selectedHierarchy.content?.forEach(location => {
-      if (location.identifier === id) {
-        location.teams = selected.map(team => {
-          return {
-            identifier: team.value,
-            name: team.label
-          };
-        });
-        selectChildren(location, selected, unselectAll);
-      } else if (location.children.length) {
-        findChildrenToSelect(id, location.children, selected);
-      }
-    });
-    setLocationHierarchy(selectedHierarchy);
-  };
-
-  const selectChildren = (parentLocation: LocationModel, selected: MultiValue<Option>, unselectAll?: boolean) => {
-    parentLocation.children.forEach(el => {
-      if (el.active) {
-        if (unselectAll) {
-          el.teams = [];
-        } else {
-          el.teams = [
-            ...selected.map(t => {
-              return {
-                identifier: t.value,
-                name: t.label
-              };
-            })
-          ];
-        }
-      }
-      if (el.children.length) {
-        selectChildren(el, selected, unselectAll);
-      }
-    });
-  };
-
-  const findChildrenToSelect = (id: string, children: LocationModel[], selected: MultiValue<Option>) => {
-    const childLoc = children.find(el => {
-      return el.identifier === id;
-    });
-    if (childLoc) {
-      childLoc.teams = selected.map(team => {
-        return {
-          identifier: team.value,
-          name: team.label
-        };
-      });
-      selectChildren(childLoc, selected);
-      //selectTeamParent(childLoc, selected);
-    } else {
-      children.forEach(childEl => {
-        findChildrenToSelect(id, childEl.children, selected);
-      });
-    }
-  };
-
-  const selectTeamParent = (location: LocationModel, selected: MultiValue<Option>) => {
-    locationHierarchy?.content.forEach(el => {
-      if (el.identifier === location.properties.parentIdentifier) {
-        if (selected) {
-          el.teams = selected.map(team => {
-            return {
-              identifier: team.value,
-              name: team.label
-            };
-          });
-        }
-      } else {
-        if (el.children.length) {
-          findParentToSelect(el.children, location.properties.parentIdentifier, selected);
-        }
-      }
-    });
-  };
-
-  const findParentToSelect = (locations: LocationModel[], identifier: string, selected: MultiValue<Option>) => {
-    locations.forEach(el => {
-      if (el.identifier === identifier) {
-        if (selected) {
-          el.teams = selected.map(team => {
-            return {
-              identifier: team.value,
-              name: team.label
-            };
-          });
-          selectTeamParent(el, selected);
-        }
-      } else if (el.children.length) {
-        findParentToSelect(el.children, identifier, selected);
-      }
-    });
-  };
-
-  //END OF SELECT HANDLERS
-
   //creates an array of selected location identifiers
   const filterChildren = (location: LocationModel) => {
     if (location.active) {
@@ -429,7 +328,7 @@ const Assign = () => {
           </h4>
         </Col>
         <Col md={3} className='text-end'>
-          <Button onClick={() => setShowTable(!showTable)}>{showTable ? 'Hide Map' : 'Show Map'}</Button>
+          <Button onClick={() => setShowTable(!showTable)}>{showTable ? 'Show Map' : 'Hide Map'}</Button>
         </Col>
       </Row>
       <hr className="my-3" />
@@ -467,7 +366,6 @@ const Assign = () => {
                   <LocationAssignmentsTable
                     organizationList={organizationsList}
                     checkHandler={checkHandler}
-                    selectHandler={selectHandler}
                     teamTab={false}
                     columns={columns}
                     data={tableData}
@@ -475,14 +373,13 @@ const Assign = () => {
                 </div>
               </Tab>
               <Tab eventKey="team-assign-new" title={t('assignPage.titleTeams')}>
-              <TeamAssignment columns={columns} data={tableData} planId={planId ?? ''} organizationsList={organizationsList} />
+              <TeamAssignment columns={columns} data={showAssignedOnly(tableData)} planId={planId ?? ''} organizationsList={organizationsList} />
               </Tab>
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title={t('assignPage.assignmentPreview')}>
                 <LocationAssignmentsTable
                   teamTab={true}
                   organizationList={organizationsList}
                   checkHandler={checkHandler}
-                  selectHandler={selectHandler}
                   columns={columns}
                   clickHandler={(id: string, rowData: any) => {
                     if (rowData.active && notInMove && id !== (geoLocation?.identifier ?? '') && planId) {
