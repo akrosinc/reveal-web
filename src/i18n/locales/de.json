@@ -87,7 +87,8 @@
   "assignPage": {
     "title": "Assignments",
     "subTitle": "Assign Plans",
-    "titleTeams": "Assign Teams",
+    "titleTeams": "Assign Teams",    
+    "assignmentPreview": "Assignment Summary",
     "titleLocations": "Assign Locations",
     "selectLocations": "Select Locations",
     "assignmentsWarningMessage": "Please select and save your changes, at least one location needs to be able selected to assign teams.",

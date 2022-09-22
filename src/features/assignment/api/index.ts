@@ -107,7 +107,7 @@ export const getLocationsAssignedToTeam = async (planId: string, teamId: string)
 
 export const saveLocationsAssignedToTeam = async (requestBody: {organizationIdentifier: string, locationIdentifiers: string[]}, planId: string): Promise<{ value: string; label: string }[]> => {
   const data = await api
-    .post<{ value: string; label: string }[]>(`plan/assignedLocationsToTeam/${planId}`, requestBody)
+    .post<{ value: string; label: string }[]>(`plan/assignLocationsToTeam/${planId}`, requestBody)
     .then(response => response.data);
   return data;
 };

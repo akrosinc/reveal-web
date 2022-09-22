@@ -6,6 +6,7 @@ import {
   ASSIGNMENT_PAGE,
   LOCATION_ASSIGNMENT_TAB,
   LOCATION_ASSIGN_TABLE_COLUMNS,
+  LOCATION_TEAM_ASSIGNMENT_SUMMARY,
   LOCATION_TEAM_ASSIGNMENT_TAB
 } from '../../../../constants';
 import { getPlanById } from '../../../plan/api';
@@ -15,9 +16,9 @@ import { ErrorModel, PageableModel } from '../../../../api/providers';
 import { LocationModel } from '../../../location/providers/types';
 import {
   assignLocationsToPlan,
-  assignTeamsToLocationHierarchy,
   getAssignedLocationHierarcyCount,
-  getLocationHierarchyByPlanId
+  getLocationHierarchyByPlanId,
+  saveLocationsAssignedToTeam
 } from '../../api';
 import { toast } from 'react-toastify';
 import { getLocationByIdAndPlanId } from '../../../location/api';
@@ -29,6 +30,7 @@ import { useTranslation } from 'react-i18next';
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
 import TeamAssignment from './TeamAssignment';
+import { LocationAssignmentRequest } from '../../providers/types';
 
 interface Option {
   label: string;
@@ -52,6 +54,7 @@ const Assign = () => {
   const [tableHeight, setTableHeight] = useState(0);
   const [isEdited, setIsEdited] = useState(false);
   const { t } = useTranslation();
+  const [selectedTeams, setSelectedTeams] = useState<LocationAssignmentRequest>();
 
   const loadData = useCallback(() => {
     if (planId !== undefined) {
@@ -66,7 +69,7 @@ const Assign = () => {
             .then(async ([hierarchy, assignedLocationCount, organizations]) => {
               setLocationHierarchy(hierarchy);
               setAssignedLocations(assignedLocationCount.count);
-              setActiveTab(assignedLocationCount.count ? LOCATION_TEAM_ASSIGNMENT_TAB : LOCATION_ASSIGNMENT_TAB);
+              setActiveTab(assignedLocationCount.count ? LOCATION_TEAM_ASSIGNMENT_SUMMARY : LOCATION_ASSIGNMENT_TAB);
               let orgList = organizations.content.map(el => {
                 return {
                   value: el.identifier,
@@ -283,28 +286,17 @@ const Assign = () => {
             document.getElementById('clear-map-button')?.click();
           });
       } else {
-        // assign teams to selected locations
-
-        const locationTeamAssignment = selectedLocationsTeams.map(el => {
-          return {
-            locationId: el.identifier,
-            teams: el.teams.map(el => el.identifier)
-          };
-        });
-        toast
-          .promise(assignTeamsToLocationHierarchy(planId, { hierarchy: locationTeamAssignment }), {
-            pending: t('toast.loading'),
-            success: t('assignPage.assignTeamMessage'),
-            error: t('assignPage.assignTeamErrorMessage')
-          })
-          .finally(() => {
-            //empty array after sending
-            selectedLocationsIdentifiers.length = 0;
-            selectedLocationsTeams.length = 0;
-
-            //clear map after changes on grid
-            document.getElementById('clear-map-button')?.click();
-          });
+        if (selectedTeams) {
+          saveLocationsAssignedToTeam(selectedTeams, planId)
+            .then(_ => toast.success('Teams successfully assigned.'))
+            .finally(() => {
+              setSelectedTeams(undefined);
+              loadData();
+              document.getElementById('clear-map-button')?.click();
+            });
+        } else {
+          toast.error('Select team to save changes.');
+        }
       }
     }
   };
@@ -327,7 +319,7 @@ const Assign = () => {
             {currentPlan?.title})
           </h4>
         </Col>
-        <Col md={3} className='text-end'>
+        <Col md={3} className="text-end">
           <Button onClick={() => setShowTable(!showTable)}>{showTable ? 'Show Map' : 'Hide Map'}</Button>
         </Col>
       </Row>
@@ -340,20 +332,27 @@ const Assign = () => {
                 ? `${t('assignPage.titleLocations') + ' | ' + t('assignPage.titleTeams')}: ${assignedLocations}`
                 : t('assignPage.selectLocations')}
             </span>
-            <Button id="save-assignments-button" className="w-25" onClick={saveHandler}>
+            <Button
+              id="save-assignments-button"
+              className="w-25"
+              disabled={!selectedTeams && activeTab !== LOCATION_ASSIGNMENT_TAB}
+              onClick={saveHandler}
+            >
               {t('buttons.save')}
             </Button>
           </div>
           <SimpleBar style={{ maxHeight: tableHeight > 0 ? tableHeight : 'auto' }}>
             <hr />
             <Tabs
+              mountOnEnter
+              unmountOnExit
               id="assignments"
               activeKey={activeTab}
               onSelect={tab => {
                 if (tab && assignedLocations && !isEdited) {
                   setActiveTab(tab);
                 } else {
-                  if (tab === LOCATION_TEAM_ASSIGNMENT_TAB) {
+                  if (tab === LOCATION_TEAM_ASSIGNMENT_TAB || tab === LOCATION_TEAM_ASSIGNMENT_SUMMARY) {
                     toast.warning(t('assignPage.assignmentsWarningMessage'));
                   }
                   setActiveTab(LOCATION_ASSIGNMENT_TAB);
@@ -372,10 +371,16 @@ const Assign = () => {
                   />
                 </div>
               </Tab>
-              <Tab eventKey="team-assign-new" title={t('assignPage.titleTeams')}>
-              <TeamAssignment columns={columns} data={showAssignedOnly(tableData)} planId={planId ?? ''} organizationsList={organizationsList} />
+              <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title={t('assignPage.titleTeams')}>
+                <TeamAssignment
+                  columns={columns}
+                  data={showAssignedOnly(tableData)}
+                  planId={planId ?? ''}
+                  organizationsList={organizationsList}
+                  selectTeams={setSelectedTeams}
+                />
               </Tab>
-              <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title={t('assignPage.assignmentPreview')}>
+              <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_SUMMARY} title={t('assignPage.assignmentPreview')}>
                 <LocationAssignmentsTable
                   teamTab={true}
                   organizationList={organizationsList}
@@ -397,23 +402,25 @@ const Assign = () => {
             </Tabs>
           </SimpleBar>
         </Col>
-        {!showTable && (        <Col md={open ? 12 : 8}>
-          <MapViewAssignments
-            collapse={() => setOpen(!open)}
-            rerender={open}
-            data={geoLocation}
-            clearHandler={() => {
-              if (locationHierarchy && locationHierarchy.content.length && planId) {
-                getLocationByIdAndPlanId(locationHierarchy.content[0].identifier, planId).then(res => {
-                  setNotInMove(false);
-                  setGeoLocation(res);
-                });
-              }
-            }}
-            moveend={notMoving}
-            reloadData={() => loadData()}
-          />
-        </Col>)}
+        {!showTable && (
+          <Col md={open ? 12 : 8}>
+            <MapViewAssignments
+              collapse={() => setOpen(!open)}
+              rerender={open}
+              data={geoLocation}
+              clearHandler={() => {
+                if (locationHierarchy && locationHierarchy.content.length && planId) {
+                  getLocationByIdAndPlanId(locationHierarchy.content[0].identifier, planId).then(res => {
+                    setNotInMove(false);
+                    setGeoLocation(res);
+                  });
+                }
+              }}
+              moveend={notMoving}
+              reloadData={() => loadData()}
+            />
+          </Col>
+        )}
       </Row>
     </Container>
   );

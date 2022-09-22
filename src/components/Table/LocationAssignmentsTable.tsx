@@ -118,6 +118,7 @@ const LocationAssignmentsTable = ({
                         menuPosition="fixed"
                         isMulti
                         options={organizationList}
+                        placeholder='No teams assigned.'
                         value={
                           rowData.teams !== undefined
                             ? rowData.teams.map((el: any) => {

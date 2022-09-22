@@ -3,15 +3,17 @@ import { Col, Form, Row } from 'react-bootstrap';
 import LocationAssignmentsTable from '../../../../../components/Table/LocationAssignmentsTable';
 import Select, { MultiValue, Options } from 'react-select';
 import { getLocationsAssignedToTeam, searchLocations } from '../../../api';
+import { LocationAssignmentRequest } from '../../../providers/types';
 
 interface Props {
   columns: any;
   data: any;
   planId: string;
   organizationsList: Options<{ value: string; label: string }>;
+  selectTeams: React.Dispatch<LocationAssignmentRequest>
 }
 
-const TeamAssignment = ({ columns, data, planId, organizationsList }: Props) => {
+const TeamAssignment = ({ columns, data, planId, organizationsList, selectTeams }: Props) => {
   const [locationList, setLocationList] = useState<{ value: string; label: string }[]>([]);
   const [dropdownValue, setDropdownValue] = useState<MultiValue<{ value: string; label: string }> | null>([]);
   const [selectedTeam, setSelectedTeam] = useState<{ value: string; label: string }>();
@@ -59,6 +61,10 @@ const TeamAssignment = ({ columns, data, planId, organizationsList }: Props) => 
             }}
             onChange={newValues => {
               setDropdownValue(newValues);
+              selectTeams({
+                organizationIdentifier: selectedTeam?.value ?? '',
+                locationIdentifiers: newValues.map(el => el.value)
+              })
             }}
           />
         </Col>
