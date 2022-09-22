@@ -98,6 +98,7 @@ export const RESOURCE_PLANNING_HISTORY_TABLE_COLUMNS = [
 
 export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';
 export const LOCATION_TEAM_ASSIGNMENT_TAB = 'team-assignment';
+export const LOCATION_TEAM_ASSIGNMENT_SUMMARY = 'team-assignment-summary';
 
 export const MAP_COLOR_NO_TEAMS = '#A7171A';
 export const MAP_COLOR_TEAM_ASSIGNED = '#5DBB63';

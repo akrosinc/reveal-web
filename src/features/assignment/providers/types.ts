@@ -6,3 +6,8 @@ export interface TeamAssignModel {
 export interface TeamAssignHierarchyRequest {
   hierarchy: TeamAssignModel[];
 }
+
+export interface LocationAssignmentRequest {
+  organizationIdentifier: string;
+  locationIdentifiers: string[];
+}

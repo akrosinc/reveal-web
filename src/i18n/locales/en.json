@@ -23,7 +23,7 @@
   },
   "publicPage": {
     "supportedBy": "supported by",
-    "description": "Reveal is a Global Good and an open-source platform taht uses spatial intelligence to drive delivery of live-saving interventions",
+    "description": "Reveal is a Global Good and an open-source platform that uses spatial intelligence to drive delivery of live-saving interventions",
     "question": "WHAT IS REVEAL?",
     "firstPartAbout": "REVEAL IS AN APPROVED",
     "secondPartAbout": "THROUGH DIGITAL SQUARE AND IS FEATURED IN THE WORLD HEALTH ORGANIZATION’S",
@@ -91,6 +91,7 @@
     "title": "Assignments",
     "subTitle": "Assign Plans",
     "titleTeams": "Assign Teams",
+    "assignmentPreview": "Assignment Summary",
     "titleLocations": "Assign Locations",
     "selectLocations": "Select Locations",
     "assignmentsWarningMessage": "Please select and save your changes, at least one location needs to be able selected to assign teams.",
