@@ -60,5 +60,6 @@ export interface PerformanceDashboardModel {
   userId: string;
   userName: string;
   userParent: string;
+  userLabel: string;
   columnDataMap: { [x: string]: FoundCoverage };
 }

@@ -3,10 +3,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Container, Row, Table } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import DetailsDialogService from '../../../../components/Dialogs/DetailsDialogService';
+import { useAppSelector } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
 import { getPerformanceDashboard, getPerformanceDashboardDataDetails } from '../../api';
 import { PerformanceDashboardModel } from '../../providers/types';
+import PerformanceDetailsModal from './PerformanceDetailsModal';
 
 interface BreadcrumbPath {
   username: string;
@@ -20,11 +23,15 @@ const PerformanceDashboard = () => {
   const navigate = useNavigate();
   const [plan, setPlan] = useState<PlanModel>();
   const [path, setPath] = useState<BreadcrumbPath[]>([]);
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const loadData = useCallback(
     (loadBreadcrumb: boolean, currentPath?: BreadcrumbPath) => {
       if (planId) {
-        getPerformanceDashboard(planId, loadBreadcrumb ? currentPath?.parentId : currentPath?.userId)
+        getPerformanceDashboard(
+          planId,
+          loadBreadcrumb ? currentPath?.parentId : currentPath?.userId
+        )
           .then(res => {
             setDashboardData(res);
             // if currentPath != undefined loading children triggred call
@@ -74,7 +81,7 @@ const PerformanceDashboard = () => {
           <h2 className="m-0">({plan?.name})</h2>
         </Col>
       </Row>
-      <Container fluid className="my-2 p-3 rounded bg-light">
+      <Container fluid className={(isDarkMode ? 'bg-dark' : 'bg-light') + ' my-2 p-3 rounded'}>
         <p className="p-0 m-0">
           <FontAwesomeIcon
             icon="align-left"
@@ -107,11 +114,11 @@ const PerformanceDashboard = () => {
         </p>
       </Container>
       {dashboardData.length && dashboardData[0] !== null ? (
-        <Table hover responsive bordered>
+        <Table hover responsive bordered variant={isDarkMode ? 'dark' : 'white'}>
           <thead className="border border-2">
             <tr>
-              <th>User Identifier</th>
-              <th>Username</th>
+              <th>Identifier</th>
+              <th>{dashboardData[0].userLabel}</th>
               {Object.keys(dashboardData[0].columnDataMap).map((el, index) => (
                 <th key={index}>{el}</th>
               ))}
@@ -137,7 +144,18 @@ const PerformanceDashboard = () => {
                       //call details get request
                       if (planId)
                         getPerformanceDashboardDataDetails(planId, el.userId)
-                          .then(res => console.log('data fetch success', res))
+                          .then(res => {
+                            if (res.length && res[0] !== null) {
+                              DetailsDialogService(({ closeHandler }) => (
+                                <PerformanceDetailsModal
+                                  closeHandler={closeHandler}
+                                  data={res}
+                                  title={el.userName}
+                                  darkMode={isDarkMode}
+                                />
+                              ));
+                            }
+                          })
                           .catch(err => toast.error(err));
                     }}
                   >
