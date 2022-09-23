@@ -26,11 +26,11 @@ const PerformanceDashboard = () => {
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const loadData = useCallback(
-    (loadBreadcrumb: boolean, currentPath?: BreadcrumbPath) => {
+    (currentPath?: BreadcrumbPath) => {
       if (planId) {
         getPerformanceDashboard(
           planId,
-          loadBreadcrumb ? currentPath?.parentId : currentPath?.userId
+          currentPath?.userId
         )
           .then(res => {
             setDashboardData(res);
@@ -53,20 +53,20 @@ const PerformanceDashboard = () => {
   );
 
   useEffect(() => {
-    loadData(false);
+    loadData();
     //get plan on first load
     if (planId) getPlanById(planId).then(res => setPlan(res));
   }, [loadData, planId]);
 
   const clickHandler = (newPath: BreadcrumbPath) => {
     //load child data on click
-    loadData(false, newPath);
+    loadData(newPath);
   };
 
   const breadCrumbClickHandler = (clickedPath: BreadcrumbPath, index: number) => {
-    path.splice(index + 1);
+    path.splice(index);
     setPath([...path]);
-    loadData(true, clickedPath);
+    loadData(clickedPath);
   };
 
   return (
@@ -90,7 +90,7 @@ const PerformanceDashboard = () => {
           <span
             role="button"
             className={path.length ? 'me-1 link-primary' : 'me-1 text-secondary pe-none'}
-            onClick={() => loadData(false)}
+            onClick={() => loadData()}
           >
             {plan?.title} /
           </span>

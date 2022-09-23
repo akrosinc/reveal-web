@@ -400,7 +400,7 @@ const Report = () => {
     <Container fluid className="my-4 px-2">
       <Row className="mt-3 align-items-center">
         <Col md={3}>
-          <Button id="back-button" onClick={goBackHandler} className="btn btn-primary">
+          <Button id="back-button" onClick={goBackHandler} className="btn btn-primary mb-3 mb-md-0">
             <FontAwesomeIcon icon="arrow-left" className="me-2" /> {t('reportPage.title')}
           </Button>
         </Col>
