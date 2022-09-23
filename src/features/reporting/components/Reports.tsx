@@ -36,7 +36,6 @@ const Reports = () => {
     return pathname.includes('performance-reports');
   }, [pathname]);
 
-
   useEffect(() => {
     if (performanceDashboardChecker()) {
       setSelectedReportType(undefined);
@@ -53,17 +52,13 @@ const Reports = () => {
   }, [loadData, state, performanceDashboardChecker]);
 
   const paginationHandler = (size: number, page: number) => {
-    if (selectedReportType) {
-      loadData(size, page, selectedReportType, currentSortDirection, currentSortField);
-    }
+    loadData(size, page, selectedReportType, currentSortDirection, currentSortField);
   };
 
   const sortHandler = (sortValue: string, direction: boolean) => {
     setCurrentSortDirection(direction);
     setCurrentSortField(sortValue);
-    if (selectedReportType) {
-      loadData(PAGINATION_DEFAULT_SIZE, 0, selectedReportType, direction, sortValue);
-    }
+    loadData(PAGINATION_DEFAULT_SIZE, 0, selectedReportType, direction, sortValue);
   };
 
   const reportTypeSelectHandler = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -92,7 +87,7 @@ const Reports = () => {
 
   return (
     <>
-      {!(performanceDashboardChecker()) && (
+      {!performanceDashboardChecker() && (
         <Row>
           <Col md={5} lg={3}>
             <Form className="mb-4">

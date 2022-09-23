@@ -14,7 +14,7 @@ const PerformanceDetailsModal = ({ closeHandler, data, title, darkMode }: Props)
     <Modal
       show
       centered
-      size="lg"
+      size="xl"
       onHide={closeHandler}
       backdrop="static"
       contentClassName={darkMode ? 'bg-dark' : 'bg-white'}

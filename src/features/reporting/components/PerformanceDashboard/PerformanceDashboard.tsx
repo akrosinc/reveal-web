@@ -64,7 +64,7 @@ const PerformanceDashboard = () => {
   };
 
   const breadCrumbClickHandler = (clickedPath: BreadcrumbPath, index: number) => {
-    path.splice(index);
+    path.splice(index + 1);
     setPath([...path]);
     loadData(true, clickedPath);
   };
@@ -73,7 +73,7 @@ const PerformanceDashboard = () => {
     <>
       <Row className="my-3 align-items-center">
         <Col md={3}>
-          <Button id="back-button" onClick={() => navigate(-1)} className="btn btn-primary">
+          <Button id="back-button" onClick={() => navigate(-1)} className="btn btn-primary mb-3 mb-md-0">
             <FontAwesomeIcon icon="arrow-left" className="me-2" /> Performance Reports
           </Button>
         </Col>
@@ -122,7 +122,7 @@ const PerformanceDashboard = () => {
               {Object.keys(dashboardData[0].columnDataMap).map((el, index) => (
                 <th key={index}>{el}</th>
               ))}
-              <th>Details</th>
+              <th className='text-center'>Details</th>
             </tr>
           </thead>
           <tbody>
