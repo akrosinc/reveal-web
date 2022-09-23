@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Button, Col, Container, Row, Table } from 'react-bootstrap';
+import { Button, Col, Container, OverlayTrigger, Row, Table, Tooltip } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import DetailsDialogService from '../../../../components/Dialogs/DetailsDialogService';
@@ -122,7 +122,7 @@ const PerformanceDashboard = () => {
               {Object.keys(dashboardData[0].columnDataMap).map((el, index) => (
                 <th key={index}>{el}</th>
               ))}
-              <th className='text-center'>Details</th>
+              <th className="text-center">Details</th>
             </tr>
           </thead>
           <tbody>
@@ -133,9 +133,18 @@ const PerformanceDashboard = () => {
               >
                 <td>{el.userId}</td>
                 <td>{el.userName}</td>
-                {Object.keys(el.columnDataMap).map((columns, index) => (
-                  <td key={index}>{el.columnDataMap[columns].value}</td>
-                ))}
+                {Object.keys(el.columnDataMap).map((columns, index) =>
+                  el.columnDataMap[columns].meta ? (
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={<Tooltip id="meta-tooltip">{el.columnDataMap[columns].meta}</Tooltip>}
+                    >
+                      <td key={index}>{el.columnDataMap[columns].value}</td>
+                    </OverlayTrigger>
+                  ) : (
+                    <td key={index}>{el.columnDataMap[columns].value}</td>
+                  )
+                )}
                 <td>
                   <Button
                     onClick={e => {
