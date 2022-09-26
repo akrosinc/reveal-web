@@ -50,8 +50,7 @@ export const initMap = (
       positionOptions: {
         enableHighAccuracy: true
       },
-      trackUserLocation: true,
-      showUserHeading: false
+      trackUserLocation: true
     }),
     position
   );
