@@ -28,10 +28,7 @@ const PerformanceDashboard = () => {
   const loadData = useCallback(
     (currentPath?: BreadcrumbPath) => {
       if (planId) {
-        getPerformanceDashboard(
-          planId,
-          currentPath?.userId
-        )
+        getPerformanceDashboard(planId, currentPath?.userId)
           .then(res => {
             setDashboardData(res);
             // if currentPath != undefined loading children triggred call
@@ -136,10 +133,11 @@ const PerformanceDashboard = () => {
                 {Object.keys(el.columnDataMap).map((columns, index) =>
                   el.columnDataMap[columns].meta ? (
                     <OverlayTrigger
+                      key={index}
                       placement="top"
                       overlay={<Tooltip id="meta-tooltip">{el.columnDataMap[columns].meta}</Tooltip>}
                     >
-                      <td key={index}>{el.columnDataMap[columns].value}</td>
+                      <td>{el.columnDataMap[columns].value}</td>
                     </OverlayTrigger>
                   ) : (
                     <td key={index}>{el.columnDataMap[columns].value}</td>

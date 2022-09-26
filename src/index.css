@@ -65,3 +65,7 @@ code {
 .custom-react-select-container .custom-react-select__option {
   color: #212529 !important;
 }
+
+.modal-90w {
+  max-width: 90vw !important;
+}
