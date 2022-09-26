@@ -32,14 +32,14 @@ const Reports = () => {
     []
   );
 
-  const performanceDashboardChecker = () => {
+  const performanceDashboardChecker = useCallback(() => {
     return pathname.includes('performance-reports');
-  };
+  }, [pathname]);
 
   useEffect(() => {
-    if (pathname.includes('performanceReports')) {
+    if (performanceDashboardChecker()) {
       setSelectedReportType(undefined);
-      loadData(PAGINATION_DEFAULT_SIZE, 0, undefined);
+      loadData(PAGINATION_DEFAULT_SIZE, 0);
     } else {
       getReportTypes()
         .then(res => {
@@ -49,20 +49,16 @@ const Reports = () => {
         })
         .catch(err => toast.error(err));
     }
-  }, [loadData, state, pathname]);
+  }, [loadData, state, performanceDashboardChecker]);
 
   const paginationHandler = (size: number, page: number) => {
-    if (selectedReportType) {
-      loadData(size, page, selectedReportType, currentSortDirection, currentSortField);
-    }
+    loadData(size, page, selectedReportType, currentSortDirection, currentSortField);
   };
 
   const sortHandler = (sortValue: string, direction: boolean) => {
     setCurrentSortDirection(direction);
     setCurrentSortField(sortValue);
-    if (selectedReportType) {
-      loadData(PAGINATION_DEFAULT_SIZE, 0, selectedReportType, direction, sortValue);
-    }
+    loadData(PAGINATION_DEFAULT_SIZE, 0, selectedReportType, direction, sortValue);
   };
 
   const reportTypeSelectHandler = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -91,7 +87,7 @@ const Reports = () => {
 
   return (
     <>
-      {!(performanceDashboardChecker()) && (
+      {!performanceDashboardChecker() && (
         <Row>
           <Col md={5} lg={3}>
             <Form className="mb-4">
@@ -115,7 +111,7 @@ const Reports = () => {
             sortHandler={sortHandler}
             clickHandler={(id: string) =>
               performanceDashboardChecker()
-                ? navigate(REPORTING_PAGE + `/performanceReports/${id}`)
+                ? navigate(REPORTING_PAGE + `/performance-report/${id}`)
                 : navigate(REPORTING_PAGE + `/report/${id}/reportType/${selectedReportType}`)
             }
             clickAccessor="identifier"

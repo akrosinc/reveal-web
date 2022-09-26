@@ -216,18 +216,19 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
               }
             });
           };
-          if (element.geometry.type === 'Point' && currentMap.getSource(element.properties.id) === undefined) {
-            currentMap.addSource(element.properties.id, {
-              type: 'geojson',
-              data: element,
-              tolerance: 2
-            });
-            addLayer(element.properties.id, element.properties.statusColor ?? 'black');
-          } else {
-            currentMap.removeLayer(element.properties.id + 'point');
-            addLayer(element.properties.id, element.properties.statusColor ?? 'black');
+          if (element.geometry.type === 'Point') {
+            if (currentMap.getSource(element.properties.id) === undefined) {
+              currentMap.addSource(element.properties.id, {
+                type: 'geojson',
+                data: element,
+                tolerance: 2
+              });
+              addLayer(element.properties.id, element.properties.statusColor ?? 'black');
+            } else {
+              currentMap.removeLayer(element.properties.id + 'point');
+              addLayer(element.properties.id, element.properties.statusColor ?? 'black');
+            }
           }
-
           const centerLabel = getPolygonCenter(element);
           centerLabel.center.properties = { ...element.properties };
           featureSet.push(centerLabel.center);

@@ -80,6 +80,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
                 required: 'Action title must be selected.',
                 minLength: 1
               })}
+              value={selectedAction?.title}
             >
               <option></option>
               {actionTitles.map((el, index) => <option key={index} value={el}>{el}</option>)}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Modal, Table, Accordion } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
+import { useAppSelector } from '../../../../../../store/hooks';
 import { ConditionModel } from '../../../../providers/types';
 
 interface Props {
@@ -16,7 +17,8 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
     formState: { errors },
     reset
   } = useForm();
-  const [selectedEntity, setSelectedEntity] = useState('');
+  const [selectedEntity, setSelectedEntity] = useState('');  
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const submitHandler = (formData: any) => {
     closeHandler(formData);
@@ -27,13 +29,13 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
   }, [show, reset]);
 
   return (
-    <Modal show={show} onHide={closeHandler} backdrop="static" scrollable size="lg" keyboard={false} centered>
+    <Modal show={show} onHide={closeHandler} backdrop="static" contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'} scrollable size="lg" keyboard={false} centered>
       <Modal.Header closeButton>
         <Modal.Title>Conditions</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p className="lead">Active conditions</p>
-        <Table bordered responsive hover>
+        <Table bordered responsive hover variant={isDarkMode ? 'dark' : 'white'}>
           <thead className="border border-2">
             <tr>
               <th>Entity</th>
@@ -128,7 +130,7 @@ const Condition = ({ show, closeHandler, conditionList }: Props) => {
             {errors.filterValue && <Form.Label className="text-danger">{errors.filterValue.message}</Form.Label>}
           </Form.Group>
           <Accordion id="target-cards" className="mt-4">
-            <Accordion.Item eventKey="0">
+            <Accordion.Item eventKey="0" className={isDarkMode ? 'bg-dark' : 'bg-white'}>
               <Accordion.Header>Target</Accordion.Header>
               <Accordion.Body>
                 <Form.Group className="mb-2">
