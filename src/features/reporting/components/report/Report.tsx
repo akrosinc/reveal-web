@@ -186,7 +186,6 @@ const Report = () => {
 
   const loadData = useCallback(
     (selectedReport?: string[], type?: string) => {
-      console.log(selectedReport);
       if (planId && reportType) {
         getReportTypeInfo(reportType).then(res => {
           if (res.dashboardFilter && res.dashboardFilter.drug && selectedReport === undefined) {
@@ -338,7 +337,6 @@ const Report = () => {
 
   const clearMap = useCallback(
     (filter?: string[]) => {
-      console.log('call');
       //clear all map data and return to root element on the grid
       if (planId && reportType) {
         //reset search input on new load
