@@ -34,7 +34,7 @@ interface Props {
   defaultColumn: string;
 }
 
-const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defaultColumn }: Props) => {
+const MapViewDetail = React.forwardRef<any, Props>(({ featureSet, clearMap, doubleClickEvent, showModal, defaultColumn }, ref) => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(20);
@@ -386,6 +386,7 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
           Lat: {lat} Lng: {lng} Zoom: {zoom}
         </p>
         <Button
+          ref={ref}
           id="clear-map-button"
           className="float-end"
           style={{ boxShadow: '4px 4px 3px rgba(24, 24, 24, 0.8)' }}
@@ -403,6 +404,6 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
       <div ref={mapContainer} className="map-container" />
     </Container>
   );
-};
+});
 
-export default MapViewDetail;
+export default React.memo(MapViewDetail);

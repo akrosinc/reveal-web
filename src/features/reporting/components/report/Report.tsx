@@ -88,7 +88,8 @@ const Report = () => {
   const [selectedMdaLiteReport, setSelectedMdaLiteReport] = useState<{ label: string; value: string } | undefined>(
     reportType === ReportType.MDA_LITE_COVERAGE ? REPORT_TYPE[0] : undefined
   );
-  const selectInputRef = useRef<any>();
+  const selectInputRef = useRef<any>(null);
+  const clearButtonRef = useRef<any>(null);
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
@@ -452,7 +453,7 @@ const Report = () => {
               role="button"
               className={path.length ? 'me-1 link-primary' : 'me-1 text-secondary pe-none'}
               onClick={() => {
-                document.getElementById('clear-map-button')?.click();
+                clearButtonRef.current.click();
               }}
             >
               {plan?.title} /
@@ -542,26 +543,28 @@ const Report = () => {
                     options={DISEASE_LIST}
                     ref={selectInputRef}
                     onChange={newValue => {
-                      const mappedValues = newValue?.drugs.map(el => {
-                        return {
-                          value: el,
-                          label: el
-                        };
-                      });
-                      setSelectedReportInfo(mappedValues);
-                      if (path.length) {
-                        loadChildHandler(
-                          path[path.length - 1].locationIdentifier,
-                          path[path.length - 1].locationName,
-                          mappedValues ? mappedValues.map(el => el.value) : selectedReportInfo?.map(el => el.value),
-                          undefined,
-                          selectedMdaLiteReport?.value
-                        );
-                      } else {
-                        loadData(
-                          mappedValues ? mappedValues.map(el => el.value) : selectedReportInfo?.map(el => el.value),
-                          selectedMdaLiteReport?.value
-                        );
+                      if (newValue) {
+                        const mappedValues = newValue?.drugs.map(el => {
+                          return {
+                            value: el,
+                            label: el
+                          };
+                        });
+                        setSelectedReportInfo(mappedValues);
+                        if (path.length) {
+                          loadChildHandler(
+                            path[path.length - 1].locationIdentifier,
+                            path[path.length - 1].locationName,
+                            mappedValues ? mappedValues.map(el => el.value) : selectedReportInfo?.map(el => el.value),
+                            undefined,
+                            selectedMdaLiteReport?.value
+                          );
+                        } else {
+                          loadData(
+                            mappedValues ? mappedValues.map(el => el.value) : selectedReportInfo?.map(el => el.value),
+                            selectedMdaLiteReport?.value
+                          );
+                        }
                       }
                     }}
                   />
@@ -663,6 +666,7 @@ const Report = () => {
                 }
                 featureSet={featureSet}
                 clearMap={clearMap}
+                ref={clearButtonRef}
               />
             </div>
           </Collapse>
