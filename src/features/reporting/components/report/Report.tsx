@@ -36,8 +36,8 @@ const REPORT_TYPE = [
 ];
 
 const DISEASE_LIST = [
-  { label: 'STH', value: 'STH' },
-  { label: 'SCH', value: 'SCH' }
+  { label: 'STH', value: 'STH', drugs: ['ALB', 'MEB'] },
+  { label: 'SCH', value: 'SCH', drugs: ['PZQ'] }
 ];
 
 const Report = () => {
@@ -88,6 +88,7 @@ const Report = () => {
   const [selectedMdaLiteReport, setSelectedMdaLiteReport] = useState<{ label: string; value: string } | undefined>(
     reportType === ReportType.MDA_LITE_COVERAGE ? REPORT_TYPE[0] : undefined
   );
+  const selectInputRef = useRef<any>();
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
@@ -360,7 +361,7 @@ const Report = () => {
         {
           parentLocationIdentifier: el.locationIdentifier,
           reportTypeEnum: reportType,
-          planIdentifier: planId,
+          planIdentifier: planId
         },
         selectedReportInfo?.map(el => el.value),
         selectedMdaLiteReport?.value
@@ -451,7 +452,7 @@ const Report = () => {
               role="button"
               className={path.length ? 'me-1 link-primary' : 'me-1 text-secondary pe-none'}
               onClick={() => {
-                document.getElementById('clear-map-button')?.click(); 
+                document.getElementById('clear-map-button')?.click();
               }}
             >
               {plan?.title} /
@@ -516,6 +517,7 @@ const Report = () => {
                     })}
                     onChange={newValue => {
                       setSelectedReportInfo(newValue);
+                      selectInputRef.current.clearValue();
                       if (path.length) {
                         loadChildHandler(
                           path[path.length - 1].locationIdentifier,
@@ -538,19 +540,27 @@ const Report = () => {
                     id="team-assign-select"
                     isClearable
                     options={DISEASE_LIST}
+                    ref={selectInputRef}
                     onChange={newValue => {
+                      const mappedValues = newValue?.drugs.map(el => {
+                        return {
+                          value: el,
+                          label: el
+                        };
+                      });
+                      setSelectedReportInfo(mappedValues);
                       if (path.length) {
                         loadChildHandler(
                           path[path.length - 1].locationIdentifier,
                           path[path.length - 1].locationName,
-                          selectedReportInfo?.map(el => el.value),
+                          mappedValues ? mappedValues.map(el => el.value) : selectedReportInfo?.map(el => el.value),
                           undefined,
                           selectedMdaLiteReport?.value
                         );
                       } else {
                         loadData(
-                          selectedReportInfo?.map(el => el.value),
-                          newValue?.value
+                          mappedValues ? mappedValues.map(el => el.value) : selectedReportInfo?.map(el => el.value),
+                          selectedMdaLiteReport?.value
                         );
                       }
                     }}
