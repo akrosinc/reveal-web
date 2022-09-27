@@ -284,14 +284,10 @@ const MapViewDetail = ({ featureSet, clearMap, doubleClickEvent, showModal, defa
             });
             currentMap.fitBounds(bbox(data) as any);
           }
-        } else {
-          currentMap.remove();
-          map.current = undefined;
-          clearMap();
         }
       }
     },
-    [reportType, clearMap]
+    [reportType]
   );
 
   useEffect(() => {

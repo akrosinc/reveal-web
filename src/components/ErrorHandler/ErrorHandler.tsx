@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import api from '../../api/axios';
+import dashBoardApi from '../../api/dashboard-axios';
 import { errorHandler } from '../../api/errorHandler';
 import { showLoader } from '../../features/reducers/loader';
 import { useAppDispatch } from '../../store/hooks';
@@ -14,6 +15,18 @@ const ErrorHandler = ({ children }: { children: JSX.Element }) => {
   useEffect(() => {
     // Add a response interceptor
     api.interceptors.response.use(
+      response => {
+        dispatch(showLoader(false));
+        return response;
+      },
+      error => {
+        dispatch(showLoader(false));
+        const { message } = errorHandler(error);
+        return Promise.reject(message);
+      }
+    );
+    // Add a response interceptor
+    dashBoardApi.interceptors.response.use(
       response => {
         dispatch(showLoader(false));
         return response;
