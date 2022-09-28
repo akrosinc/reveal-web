@@ -609,14 +609,18 @@ const Report = () => {
                   <Form.Check
                     key={el.value}
                     defaultChecked={el.value === REPORT_TYPE[0].value}
-                    onChange={e => {
+                    onChange={_ => {
                       setSelectedMdaLiteReport(el);
                       if (path.length) {
-                      } else {
-                        loadData(
-                          selectedReportInfo?.map(el => el.value),
-                          el.value
+                        loadChildHandler(
+                          path[path.length - 1].locationIdentifier,
+                          path[path.length - 1].locationName,
+                          undefined,
+                          path[path.length - 1].locationProperties,
+                          selectedMdaLiteReport?.value
                         );
+                      } else {
+                        clearButtonRef.current.click();
                       }
                     }}
                     name="report-group"
