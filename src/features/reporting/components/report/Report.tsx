@@ -208,7 +208,7 @@ const Report = () => {
                 planIdentifier: planId
               },
               res.dashboardFilter && res.dashboardFilter.drug ? selectedReport ?? res.dashboardFilter.drug : undefined,
-              type ?? selectedMdaLiteReport?.value
+              type
             )
           ])
             .then(async ([plan, report]) => {
@@ -245,7 +245,7 @@ const Report = () => {
         goBackHandler();
       }
     },
-    [planId, reportType, goBackHandler, selectedMdaLiteReport]
+    [planId, reportType, goBackHandler]
   );
 
   useEffect(() => {
@@ -346,10 +346,10 @@ const Report = () => {
           path.splice(0, path.length);
           return path;
         });
-        loadData(filter);
+        loadData(filter, selectedMdaLiteReport?.value);
       }
     },
-    [planId, reportType, loadData]
+    [planId, reportType, loadData, selectedMdaLiteReport]
   );
 
   const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
@@ -580,7 +580,7 @@ const Report = () => {
                     loadChildHandler(
                       path[path.length - 1].locationIdentifier,
                       path[path.length - 1].locationName,
-                      undefined,
+                      selectedReportInfo?.map(el => el.value),
                       path[path.length - 1].locationProperties,
                       selectedMdaLiteReport?.value
                     );
