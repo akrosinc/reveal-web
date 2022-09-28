@@ -34,6 +34,7 @@ import 'simplebar/dist/simplebar.min.css';
 import ErrorHandler from '../components/ErrorHandler';
 import api from '../api/axios';
 import { usePath } from '../hooks/usePath';
+import dashBoardApi from '../api/dashboard-axios';
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
 library.add(
@@ -72,6 +73,14 @@ function App() {
           toast.success('Welcome back ' + res.username);
         });
         api.interceptors.request.use(function (config) {
+          dispatch(showLoader(true));
+          // Inject Bearer token in every request
+          config.headers = {
+            Authorization: `Bearer ${keycloak.token}`
+          };
+          return config;
+        });
+        dashBoardApi.interceptors.request.use(function (config) {
           dispatch(showLoader(true));
           // Inject Bearer token in every request
           config.headers = {

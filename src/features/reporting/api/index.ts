@@ -27,14 +27,15 @@ export const getReportTypeInfo = async (reportType: string): Promise<AdditionalR
 
 export const getMapReportData = async (
   mapData: MapDataReportRequest,
-  filters?: string[]
+  filters?: string[],
+  type?: string
 ): Promise<FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>> => {
   const data = await prodAPI
     .get<any>(
       REPORTS +
         `/reportData?reportType=${mapData.reportTypeEnum}&planIdentifier=${mapData.planIdentifier}${
           mapData.parentLocationIdentifier !== null ? '&parentIdentifier=' + mapData.parentLocationIdentifier : ''
-        }${filters && filters.length ? '&filters=' + filters : ''}`
+        }${filters && filters.length ? '&filters=' + filters : ''}${type ? '&type=' + type : ''}`
     )
     .then(response => response.data);
   return data;
@@ -49,7 +50,7 @@ export const getPlanReports = async (
   sortField?: string,
   direction?: boolean
 ): Promise<PageableModel<PlanModel>> => {
-  const data = await prodAPI
+  const data = await api
     .get(
       PLAN +
         `/reports?reportType=${reportType ?? ''}&_summary=${summary}&search=${
