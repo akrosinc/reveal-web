@@ -170,11 +170,12 @@ const MapViewDetail = React.forwardRef<any, Props>(
               const defaultColumnName = (data as any).defaultDisplayColumn;
               if (defaultColumnName) {
                 htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
-              ${`<small class='my-3'>${defaultColumnName}: ${
-                properties['columnDataMap'][defaultColumnName] !== undefined &&
-                properties['columnDataMap'][defaultColumnName].isPercentage
-                  ? properties['columnDataMap'][defaultColumnName].value.toFixed(3) + '%'
-                  : properties['columnDataMap'][defaultColumnName].value
+              ${`<small class='my-3'>${defaultColumnName ?? "Data not parsed correctly"}: ${
+                properties['columnDataMap'][defaultColumnName] !== undefined
+                  ? properties['columnDataMap'][defaultColumnName].isPercentage
+                    ? properties['columnDataMap'][defaultColumnName].value.toFixed(3) + '%'
+                    : properties['columnDataMap'][defaultColumnName].value
+                  : ''
               }</small>`}
             </div>`;
               } else if (properties['businessStatus']) {
