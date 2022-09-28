@@ -16,13 +16,14 @@ const ResourcePlanning = () => {
   let { tab } = useParams();
   let navigate = useNavigate();
   const configValue = useSelector((state: RootState) => state.resourceConfig.value);
+  const dashboardValue = useSelector((state: RootState) => state.resourceConfig.dashboardData);
   const [activeKey, setActiveKey] = useState('config');
 
   useEffect(() => {
     if (tab === undefined) {
       navigate(RESOURCE_PLANNING_PAGE + '/config');
     } else if (tab === 'inputs' || tab === 'dashboard' || tab === 'config' || tab === 'history') {
-      if (configValue) {
+      if (configValue || dashboardValue) {
         setActiveKey(tab);
       } else {
         if (tab === 'config' || tab === 'history') {
@@ -32,7 +33,7 @@ const ResourcePlanning = () => {
     } else {
       navigate('/error');
     }
-  }, [tab, navigate, configValue]);
+  }, [tab, navigate, configValue, dashboardValue]);
 
   return (
     <PageWrapper title="Resource Planning">

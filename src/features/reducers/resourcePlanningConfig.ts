@@ -1,9 +1,19 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ResourceDashboardResponse, ResourcePlanningConfig } from '../resourcePlanning/providers/types';
+import {
+  ResourceDashboardRequest,
+  ResourceDashboardResponse,
+  ResourcePlanningConfig
+} from '../resourcePlanning/providers/types';
+
+interface DashboardResource {
+  path: string[];
+  request: ResourceDashboardRequest;
+  response: ResourceDashboardResponse[];
+}
 
 const initialState: {
   value: ResourcePlanningConfig | undefined;
-  dashboardData: ResourceDashboardResponse[] | undefined;
+  dashboardData: DashboardResource | undefined;
 } = {
   value: undefined,
   dashboardData: undefined
@@ -19,7 +29,7 @@ const resourcePlanningConfigSlice = createSlice({
     removeConfig: state => {
       state.value = undefined;
     },
-    setDashboard: (state, action: PayloadAction<ResourceDashboardResponse[]>) => {
+    setDashboard: (state, action: PayloadAction<DashboardResource>) => {
       state.dashboardData = action.payload;
     }
   }
