@@ -611,17 +611,7 @@ const Report = () => {
                     defaultChecked={el.value === REPORT_TYPE[0].value}
                     onChange={_ => {
                       setSelectedMdaLiteReport(el);
-                      if (path.length) {
-                        loadChildHandler(
-                          path[path.length - 1].locationIdentifier,
-                          path[path.length - 1].locationName,
-                          undefined,
-                          path[path.length - 1].locationProperties,
-                          selectedMdaLiteReport?.value
-                        );
-                      } else {
-                        clearButtonRef.current.click();
-                      }
+                      clearButtonRef.current.click();
                     }}
                     name="report-group"
                     inline
