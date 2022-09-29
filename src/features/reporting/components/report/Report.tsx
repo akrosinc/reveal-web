@@ -257,7 +257,8 @@ const Report = () => {
     locationName: string,
     selectedReportInfo?: string[],
     parentData?: ReportLocationProperties,
-    mdaReportType?: string
+    mdaReportType?: string,
+    refreshButton?: boolean
   ) => {
     if (planId && reportType) {
       getMapReportData(
@@ -270,7 +271,7 @@ const Report = () => {
         mdaReportType
       )
         .then(res => {
-          const parentProperties = filterData.find(el => el.id === id) ?? parentData;
+          let parentProperties = filterData.find(el => el.id === id) ?? parentData;
           //reset search input on new load
           if (searchInput.current) searchInput.current.value = '';
           //mapping location properties to data usable for table view
@@ -303,25 +304,25 @@ const Report = () => {
             }
             // in case of irs report type and structure geo level calculate progress bar data
             if (tableData[0].geographicLevel === 'structure' && reportType === ReportType.IRS_FULL_COVERAGE) {
-              irsOaProgressBar.completeStructures = tableData.reduce((total, el) => {
-                if (el.columnDataMap['Structure Status'].value === 'Complete') {
-                  return (total += 1);
-                }
-                return total;
-              }, 0);
-              irsOaProgressBar.notSprayedStructures = tableData.reduce((total, el) => {
-                if (el.columnDataMap['Structure Status'].value === 'Not Sprayed') {
-                  return (total += 1);
-                }
-                return total;
-              }, 0);
-              irsOaProgressBar.completeStructuresPercent =
-                parentProperties?.columnDataMap['Spray Progress (Sprayed/Targeted)'].value ?? 0;
-              irsOaProgressBar.foundCoveragePercent =
-                parentProperties?.columnDataMap['Found Coverage (Found/Target)'].value ?? 0;
-              irsOaProgressBar.sprayCoveragePercent =
-                parentProperties?.columnDataMap['Spray Coverage of Found(Sprayed/Found)'].value ?? 0;
-              setIrsOaProgressBar({ ...irsOaProgressBar });
+              //reload parent data also on refresh button
+              if (refreshButton) {
+                getMapReportData(
+                  {
+                    parentLocationIdentifier: path[path.length - 2].locationIdentifier,
+                    reportTypeEnum: reportType,
+                    planIdentifier: planId
+                  },
+                  selectedReportInfo,
+                  mdaReportType
+                ).then(res => {
+                  parentProperties =
+                    res.features.find(el => el.properties.id === path[path.length - 1].locationIdentifier)
+                      ?.properties ?? parentProperties;
+                  OAtableHandler(tableData, parentProperties);
+                });
+              } else {
+                OAtableHandler(tableData, parentProperties);
+              }
             }
           } else {
             toast.info(`${locationName} has no child locations.`);
@@ -333,6 +334,27 @@ const Report = () => {
     } else {
       toast.info(`There was an error loading ${locationName}.`);
     }
+  };
+
+  const OAtableHandler = (tableData: ReportLocationProperties[], parentProperties?: ReportLocationProperties) => {
+    irsOaProgressBar.completeStructures = tableData.reduce((total, el) => {
+      if (el.columnDataMap['Structure Status'].value === 'Complete') {
+        return (total += 1);
+      }
+      return total;
+    }, 0);
+    irsOaProgressBar.notSprayedStructures = tableData.reduce((total, el) => {
+      if (el.columnDataMap['Structure Status'].value === 'Not Sprayed') {
+        return (total += 1);
+      }
+      return total;
+    }, 0);
+    irsOaProgressBar.completeStructuresPercent =
+      parentProperties?.columnDataMap['Spray Progress (Sprayed/Targeted)'].value ?? 0;
+    irsOaProgressBar.foundCoveragePercent = parentProperties?.columnDataMap['Found Coverage (Found/Target)'].value ?? 0;
+    irsOaProgressBar.sprayCoveragePercent =
+      parentProperties?.columnDataMap['Spray Coverage of Found(Sprayed/Found)'].value ?? 0;
+    setIrsOaProgressBar({ ...irsOaProgressBar });
   };
 
   const clearMap = useCallback(
@@ -582,7 +604,8 @@ const Report = () => {
                       path[path.length - 1].locationName,
                       selectedReportInfo?.map(el => el.value),
                       path[path.length - 1].locationProperties,
-                      selectedMdaLiteReport?.value
+                      selectedMdaLiteReport?.value,
+                      true
                     );
                   } else {
                     loadData();
