@@ -9,10 +9,9 @@ import {
   LOCATION_PAGE,
   ASSIGNMENT_PAGE,
   REPORTING_PAGE,
-  PLAN_VIEW,
-  LOCATION_VIEW,
-  ASSIGNMENT_VIEW,
-  REPORT_VIEW
+  REPORT_VIEW,
+  REVEAL_MANAGE,
+  PLAN_MANAGEMENT
 } from '../../constants';
 import { Col, Row } from 'react-bootstrap';
 import Dashboard from '../../features/dashboard';
@@ -27,21 +26,21 @@ function Home() {
       <hr className="w-75 mx-auto" />
       <Row className="justify-content-center">
         <Col md={3}>
-          <AuthorizedElement roles={['manage-users']}>
+          <AuthorizedElement roles={[REVEAL_MANAGE]}>
             <Link id="management-button" to={MANAGEMENT} className="m-2 w-100 btn btn-success">
               {t('buttons.management')}
             </Link>
           </AuthorizedElement>
         </Col>
         <Col md={3}>
-          <AuthorizedElement roles={[PLAN_VIEW]}>
+          <AuthorizedElement roles={[PLAN_MANAGEMENT]}>
             <Link id="plans-button" to={PLANS} className="m-2 w-100 btn btn-success">
               {t('buttons.plans')}
             </Link>
           </AuthorizedElement>
         </Col>
         <Col md={3}>
-          <AuthorizedElement roles={[LOCATION_VIEW]}>
+          <AuthorizedElement roles={[REVEAL_MANAGE]}>
             <Link id="locations-button" to={LOCATION_PAGE} className="m-2 w-100 btn btn-success">
               {t('buttons.locationManagement')}
             </Link>
@@ -50,7 +49,7 @@ function Home() {
       </Row>
       <Row className="justify-content-center">
         <Col md={3}>
-          <AuthorizedElement roles={[ASSIGNMENT_VIEW]}>
+          <AuthorizedElement roles={[PLAN_MANAGEMENT]}>
             <Link id="assign-button" to={ASSIGNMENT_PAGE} className="m-2 w-100 btn btn-success">
             {t('buttons.assign')}
             </Link>

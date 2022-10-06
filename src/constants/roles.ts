@@ -40,6 +40,7 @@ export const LOCATION_DELETE = 'location_delete';
 
 //PLAN
 export const PLAN_VIEW = 'plan_view';
+export const PLAN_MANAGEMENT = 'plan_manage';
 export const PLAN_CREATE = 'plan_create';
 export const PLAN_UPDATE = 'plan_update';
 export const PLAN_DELETE = 'plan_delete';
@@ -52,3 +53,5 @@ export const ASSIGNMENT_VIEW = 'assignment_view';
 export const ASSIGNMENT_CREATE = 'assignment_create';
 export const ASSIGNMENT_UPDATE = 'assignment_update';
 export const ASSIGNMENT_DELETE = 'assignment_delete';
+
+export const REVEAL_MANAGE = 'reveal_manage';
