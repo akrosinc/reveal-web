@@ -10,7 +10,9 @@ import {
   PLAN_VIEW,
   SIMULATION_PAGE,
   TAG_MANAGEMENT,
-  METADATA_IMPORT
+  METADATA_IMPORT,
+  PLAN_MANAGEMENT,
+  REVEAL_MANAGE
 } from '../../../constants';
 
 export const MAIN_MENU = [
@@ -22,7 +24,7 @@ export const MAIN_MENU = [
   {
     pageTitle: 'Plan Management',
     route: '/plan',
-    roles: [PLAN_VIEW],
+    roles: [PLAN_MANAGEMENT],
     dropdown: [
       {
         pageTitle: 'Plans',
@@ -66,7 +68,7 @@ export const MAIN_MENU = [
   {
     pageTitle: 'Admin',
     route: '/admin',
-    roles: ['manage-users'],
+    roles: [REVEAL_MANAGE],
     dropdown: [
       {
         pageTitle: 'Management',
