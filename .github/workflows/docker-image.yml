@@ -2,7 +2,7 @@ name: Reveal Web test, build and deploy
 
 on:
   push:
-    branches: [ main , zambia_2022]
+    branches: [ main, rev-75-resource-planning-dashboard, zambia_2022 ]
 
 jobs:
 
