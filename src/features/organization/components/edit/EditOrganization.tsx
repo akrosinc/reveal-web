@@ -167,7 +167,7 @@ const EditOrganization = ({ organization, organizations, handleClose }: Props) =
             <Select
               className="custom-react-select-container"
               classNamePrefix="custom-react-select"
-              id="part-of-select"
+              inputId="part-of-select"
               menuPosition="fixed"
               isDisabled={!edit}
               isClearable
