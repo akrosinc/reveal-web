@@ -36,8 +36,8 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
   }, [goal]);
 
   return (
-    <Accordion.Item id={goal.identifier + '-goal'} eventKey={goal.identifier}>
-      <Accordion.Header>
+    <Accordion.Item id={'goal_'+ goal.description } eventKey={goal.identifier}>
+      <Accordion.Header id={'goal_'+ goal.description +'_header'}>
         {t('planPage.goal')} - {goal.description}
       </Accordion.Header>
       <Accordion.Body className={isDarkMode ? 'bg-dark' : 'bg-white'}>
@@ -68,9 +68,9 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
             </Button>
           </Col>
         </Row>
-        <Form.Control type="text" readOnly={true} value={goal.description} />
+        <Form.Control type="text" readOnly={true} value={goal.description} id={goal.description +"_text"}/>
         <Form.Label className="mt-3">{t('planPage.priority')}</Form.Label>
-        <Form.Control type="text" readOnly={true} value={goal.priority} />
+        <Form.Control type="text" readOnly={true} value={goal.priority} id={goal.priority +"_text"}/>
         <hr />
         <Row className="my-2">
           <Col>
@@ -101,7 +101,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                   setSelectedIndex(index);
                 }}
               >
-                <td>{el.title}</td>
+                <td id={'action_'+el.title}>{el.title}</td>
                 <td>
                   {el.timingPeriod.start} - {el.timingPeriod.end}
                 </td>
