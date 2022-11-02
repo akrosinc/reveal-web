@@ -164,27 +164,6 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
               </Form.Group>
             </Col>
           </Row>
-          <Form.Group className="mb-2">
-            <Form.Label>Form</Form.Label>
-            <Form.Select
-              id="action-form-select"
-              placeholder="Choose form"
-              {...register('formIdentifier', {
-                required: 'Action form must be selected.',
-                minLength: 1
-              })}
-            >
-              <option></option>
-              {formList !== undefined
-                ? formList.map(el => (
-                    <option key={el.identifier} value={el.identifier}>
-                      {el.name}
-                    </option>
-                  ))
-                : null}
-            </Form.Select>
-            {errors.formIdentifier && <Form.Label className="text-danger">{errors.formIdentifier.message}</Form.Label>}
-          </Form.Group>
         </Form>
       </Modal.Body>
       <Modal.Footer>
