@@ -1,6 +1,6 @@
 {
   "realm": "reveal",
-  "auth-server-url": "https://sso-isg-mz-uat.akros.online/auth/",
+   auth-server-url": "https://sso-ops.akros.online/auth/",
   "ssl-required": "external",
   "resource": "reveal-web",
   "public-client": true,
