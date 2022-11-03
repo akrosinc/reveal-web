@@ -13,7 +13,7 @@ export const PAGE_TITLE_MONITOR = 'Monitor';
 export const PAGE_TITLE_ADMIN = 'Admin';
 
 // KEYCLOAK
-export const KEYCLOAK_URL = 'https://sso-ef-ke-uat.akros.online/auth/';
+export const KEYCLOAK_URL = 'https://sso-ops.akros.online/auth/';
 export const KEYCLOAK_REALM = 'reveal';
 export const KEYCLOAK_CLIENT_ID = 'reveal-web';
 
