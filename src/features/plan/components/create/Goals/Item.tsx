@@ -87,7 +87,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
             <tr>
               <th>{t('planPage.description')}</th>
               <th>{t('planPage.dates')}</th>
-              <th>{t('planPage.form')}</th>
               <th>{t('planPage.conditions')}</th>
             </tr>
           </thead>
@@ -105,7 +104,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                 <td>
                   {el.timingPeriod.start} - {el.timingPeriod.end}
                 </td>
-                <td>{el.formIdentifier}</td>
                 <td className="text-center">
                   <Button
                     id="edit-action-button"
