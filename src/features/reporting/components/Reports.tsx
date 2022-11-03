@@ -80,6 +80,8 @@ const Reports = () => {
         return 'MDA Lite';
       case ReportType.MDA_FULL_COVERAGE_OPERATIONAL_AREA_LEVEL:
         return 'MDA Operational Area';
+      case ReportType.SURVEY:
+        return 'Survey'
       default:
         return reportName;
     }
