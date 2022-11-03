@@ -93,7 +93,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
           })}
           type="input"
         />
-        {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
+        {errors.name && <Form.Label className="text-danger" id='org-name-error'>{errors.name.message}</Form.Label>}
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Type</Form.Label>
@@ -103,7 +103,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
           <option value="TEAM">Team</option>
           <option value="OTHER">Other</option>
         </Form.Select>
-        {errors.type && <Form.Label className="text-danger">{errors.type.message}</Form.Label>}
+        {errors.type && <Form.Label className="text-danger" id='org-type-error'>{errors.type.message}</Form.Label>}
       </Form.Group>
       <Form.Group className="my-4">
         <Form.Label>Part of</Form.Label>
@@ -114,7 +114,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
             <Select
               className="custom-react-select-container"
               classNamePrefix="custom-react-select"
-              id="part-of-select"
+              inputId="part-of-select"
               menuPosition="fixed"
               isClearable
               {...register('partOf', { required: false })}

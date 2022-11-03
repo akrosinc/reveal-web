@@ -24,10 +24,10 @@ const ConfirmDialog = ({ title, message, closeHandler, backdrop, isDarkMode }: P
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => closeHandler(false)}>
+        <Button variant="secondary" onClick={() => closeHandler(false)} id="dialog-close">
           {t('buttons.cancel')}
         </Button>
-        <Button variant="primary" onClick={() => closeHandler(true)}>
+        <Button variant="primary" onClick={() => closeHandler(true)} id="dialog-confirm">
         {t('buttons.confirm')}
         </Button>
       </Modal.Footer>

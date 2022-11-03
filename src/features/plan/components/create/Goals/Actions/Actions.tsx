@@ -174,7 +174,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
                 minLength: 1
               })}
             >
-              <option></option>
+              <option id='action-form-option'></option>
               {formList !== undefined
                 ? formList.map(el => (
                     <option key={el.identifier} value={el.identifier}>
@@ -198,7 +198,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
         >
           Discard
         </Button>
-        {selectedAction && <Button onClick={() => closeHandler(selectedAction, true)}>Delete</Button>}
+        {selectedAction && <Button onClick={() => closeHandler(selectedAction, true)} id="delete-action">Delete</Button>}
         <Button id="action-save-button" disabled={!isDirty} onClick={handleSubmit(submitHandler)}>
           {selectedAction ? 'Save Changes' : 'Create Action'}
         </Button>

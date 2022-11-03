@@ -120,8 +120,8 @@ const Plans = () => {
                     navigate(PLANS + '/planId/' + el.identifier);
                   }}
                 >
-                  <td>{el.title}</td>
-                  <td>{el.status}</td>
+                  <td id={'plan_'+ el.title}>{el.title}</td>
+                  <td id={'plan_'+ el.status}>{el.status}</td>
                   <td>{el.interventionType.name}</td>
                   <td>{el.locationHierarchy.name}</td>
                   <td>{el.effectivePeriod.start}</td>
@@ -133,7 +133,7 @@ const Plans = () => {
                         setCurrentPlanId(el.identifier);
                         setShowActivate(true);
                       }}
-                      disabled={el.status !== 'DRAFT'}
+                      disabled={el.status !== 'DRAFT'} id="plan-status"
                     >
                       {el.status === 'DRAFT' ? t('planPage.activate') : t('planPage.active')}
                     </Button>

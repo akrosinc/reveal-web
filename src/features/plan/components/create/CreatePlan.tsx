@@ -411,7 +411,7 @@ const CreatePlan = () => {
                       <Select
                         className="custom-react-select-container"
                         classNamePrefix="custom-react-select"
-                        id="hierarchy-select"
+                        inputId='hierarchy-select'
                         menuPosition="fixed"
                         options={hierarchyList}
                         value={selectedHierarchy}
@@ -436,7 +436,7 @@ const CreatePlan = () => {
                       <Select
                         className="custom-react-select-container"
                         classNamePrefix="custom-react-select"
-                        id="intervetion-type-select"
+                        inputId='intervention-type-select'
                         menuPosition="fixed"
                         options={interventionTypeList}
                         value={selectedInterventionType}
@@ -465,7 +465,7 @@ const CreatePlan = () => {
                         <Select
                           className="custom-react-select-container"
                           classNamePrefix="custom-react-select"
-                          id="hierarchyLevelTarget"
+                          inputId="hierarchyLevelTarget"
                           menuPosition="fixed"
                           isDisabled={id !== undefined}
                           options={
