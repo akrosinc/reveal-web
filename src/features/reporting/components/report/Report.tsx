@@ -34,7 +34,14 @@ const REPORT_TYPE = [
   { label: 'Drug distribution', value: 'DRUG_DISTRIBUTION' },
   { label: 'Age coverage', value: 'AGE_COVERAGE' }
 ];
-
+const AGE_COVERAGE_LEGEND =[
+    'No. of Male 1-4 years',
+    'No. of Male 5-14 years',
+    'No. of Male 15 years and above',
+    'No. of Female 1-4 years',
+    'No. of Female 5-14 years',
+    'No. of Female 15 years and above'
+]
 const DISEASE_LIST = [
   { label: 'STH', value: 'STH', drugs: ['ALB', 'MEB'] },
   { label: 'SCH', value: 'SCH', drugs: ['PZQ'] }

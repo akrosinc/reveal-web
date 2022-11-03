@@ -168,8 +168,22 @@ const MapViewDetail = React.forwardRef<any, Props>(
               properties['columnDataMap'] = JSON.parse(properties['columnDataMap']);
               let htmlText = 'Data not parsed correctly.';
               const defaultColumnName = (data as any).defaultDisplayColumn;
-              if (defaultColumnName) {
-                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
+              if(reportType == ReportType.MDA_LITE_COVERAGE && defaultColumnName === 'Male 1-4 years (ALB)'){
+                  htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4>
+                          <div class='p-2'>
+                         <span class="my-3">Male 1-4 years (ALB): ${properties['columnDataMap']['Male 1-4 years (ALB)'].value}</span>
+                         </div>
+                         <div class="p-2">
+                         <span class="my-3">Male 5-14 years (ALB): ${properties['columnDataMap']['Male 5-14 years (ALB)'].value}</span>
+                         </div>
+                         <div class="p-2">
+                         <span class="my-3">Male 5-14 years (ALB): ${properties['columnDataMap']['Male 15+ years (ALB)'].value}</span>
+                         </div>
+                          `;
+
+              } else if (defaultColumnName) {
+                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4>
+                  <div class='p-2'>
               ${`<small class='my-3'>${defaultColumnName ?? "Data not parsed correctly"}: ${
                 properties['columnDataMap'][defaultColumnName] !== undefined
                   ? properties['columnDataMap'][defaultColumnName].isPercentage
@@ -178,8 +192,10 @@ const MapViewDetail = React.forwardRef<any, Props>(
                   : ''
               }</small>`}
             </div>`;
+
               } else if (properties['businessStatus']) {
-                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4><div class='p-2'>
+                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4>
+               <div class='p-2'>
               ${`<small class='my-3'>Business Status: ${
                 (reportType === ReportType.IRS_FULL_COVERAGE ||
                   reportType === ReportType.IRS_LITE_COVERAGE ||
