@@ -34,7 +34,6 @@ const REPORT_TYPE = [
   { label: 'Drug distribution', value: 'DRUG_DISTRIBUTION' },
   { label: 'Age coverage', value: 'AGE_COVERAGE' }
 ];
-
 const DISEASE_LIST = [
   { label: 'STH', value: 'STH', drugs: ['ALB', 'MEB'] },
   { label: 'SCH', value: 'SCH', drugs: ['PZQ'] }
@@ -106,7 +105,7 @@ const Report = () => {
 
   //Dynamic function to map columns depending on server response
   const mapColumns = (rowColumns: { [x: string]: FoundCoverage }): Column[] => {
-    return Object.keys(rowColumns).map(el => {
+    return Object.entries(rowColumns).filter(rc => !rc[1].isHidden).map(e => e[0]).map(el => {
       return {
         Header: el,
         accessor: (row: any) => {

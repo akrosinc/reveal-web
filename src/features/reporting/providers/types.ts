@@ -9,6 +9,7 @@ export interface FoundCoverage {
   isPercentage: boolean;
   meta: string;
   dataType: string;
+  isHidden: boolean;
 }
 
 export enum ReportType {
