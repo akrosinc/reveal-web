@@ -82,6 +82,10 @@ const Reports = () => {
         return 'MDA Operational Area';
       case ReportType.SURVEY:
         return 'Survey'
+      case ReportType.LSM_HABITAT_SURVEY:
+        return 'LSM Habitat Coverage'
+      case ReportType.LSM_HOUSEHOLD_SURVEY:
+        return 'LSM Household Coverage'
       default:
         return reportName;
     }
