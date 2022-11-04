@@ -18,7 +18,7 @@ interface Props {
 }
 
 const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
-  const [formList, setFormList] = useState<{ identifier: string; name: string }[]>();
+  // const [formList, setFormList] = useState<{ identifier: string; name: string }[]>();
   const [actionTitles, setActionTitles] = useState<string[]>([]);
   const isDarkMode = useAppSelector(state => state.darkMode.value);
   
@@ -53,7 +53,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
 
   useEffect(() => {
     getformList().then(res => {
-      setFormList(res);
+      // setFormList(res);
       setValue('formIdentifier', selectedAction?.formIdentifier ?? '');
     });
   }, [setValue, selectedAction]);
