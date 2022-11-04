@@ -2,7 +2,7 @@ name: Reveal Web test, build and deploy
 
 on:
   push:
-    branches: [ main, rev-75-resource-planning-dashboard, zambia_2022 ]
+    branches: [ main, rev-75-resource-planning-dashboard, zambia_2022, test_old_yarn ]
 
 jobs:
 
@@ -19,15 +19,20 @@ jobs:
 
     - uses: borales/actions-yarn@v3.0.0
       with:
+        cmd: upgrade # will run `yarn upgrade` command
+
+
+    - uses: borales/actions-yarn@v3.0.0
+      with:
         cmd: install # will run `yarn install` command
+
 
     - uses: borales/actions-yarn@v3.0.0
       with:
         cmd: build # will run `yarn build` command
+      env:
+        NODE_OPTIONS: --openssl-legacy-provider
 
-    - uses: borales/actions-yarn@v3.0.0
-      with:
-        cmd: test # will run `yarn test` command
 
   container:
 
