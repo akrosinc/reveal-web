@@ -17,11 +17,11 @@ jobs:
       with:
         repository: akrosinc/reveal-web
 
-    - uses: borales/actions-yarn@v3.0.0
-      with:
-        cmd: upgrade # will run `yarn upgrade` command
-      env:
-        NODE_OPTIONS: --openssl-legacy-provider
+    # - uses: borales/actions-yarn@v3.0.0
+    #   with:
+    #     cmd: upgrade # will run `yarn upgrade` command
+    #   env:
+    #     NODE_OPTIONS: --openssl-legacy-provider
 
     - uses: borales/actions-yarn@v3.0.0
       with:
