@@ -35,12 +35,6 @@ jobs:
       env:
         NODE_OPTIONS: --openssl-legacy-provider
 
-    - uses: borales/actions-yarn@v3.0.0
-      with:
-        cmd: test # will run `yarn test` command
-      env:
-        NODE_OPTIONS: --openssl-legacy-provider
-        
   container:
 
     runs-on: ubuntu-latest
