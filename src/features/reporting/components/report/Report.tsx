@@ -352,7 +352,7 @@ const Report = () => {
         });
       }
     },
-    [planId, reportType, loadData]
+    [planId, reportType, loadData, selectedMdaLiteReport]
   );
 
   const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
