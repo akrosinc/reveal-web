@@ -346,7 +346,10 @@ const Report = () => {
           path.splice(0, path.length);
           return path;
         });
-        loadData(filter, selectedMdaLiteReport?.value);
+        setSelectedMdaLiteReport((state) => {
+          loadData(filter,state?.value);
+          return state;
+        });
       }
     },
     [planId, reportType, loadData, selectedMdaLiteReport]
@@ -558,10 +561,13 @@ const Report = () => {
                             selectedMdaLiteReport?.value
                           );
                         } else {
-                          loadData(
-                            mappedValues ? mappedValues.map(el => el.value) : selectedReportInfo?.map(el => el.value),
-                            selectedMdaLiteReport?.value
-                          );
+                          setSelectedMdaLiteReport((state)=>{
+                            console.log(state)
+                            loadData(
+                                mappedValues ? mappedValues.map(el => el.value) : selectedReportInfo?.map(el => el.value),  state?.value
+                            );
+                            return state;
+                          });
                         }
                       }
                     }}
@@ -585,7 +591,10 @@ const Report = () => {
                       selectedMdaLiteReport?.value
                     );
                   } else {
-                    loadData();
+                    setSelectedMdaLiteReport((state) =>{
+                      loadData(undefined, state?.value );
+                      return state;
+                    })
                   }
                 }}
               >
