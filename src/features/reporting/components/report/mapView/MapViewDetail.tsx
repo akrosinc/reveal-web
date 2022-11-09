@@ -202,7 +202,7 @@ const MapViewDetail = React.forwardRef<any, Props>(
                   properties['columnDataMap'] = JSON.parse(properties['columnDataMap']);
                   let htmlText = 'Data not parsed correctly.';
                   const defaultColumnName = (data as any).defaultDisplayColumn;
-                  if (reportType == ReportType.MDA_LITE_COVERAGE && defaultColumnName === 'Male 1-4 years (ALB)') {
+                  if (reportType === ReportType.MDA_LITE_COVERAGE && defaultColumnName === 'Male 1-4 years (ALB)') {
                     let ageCoverageLegend  =  AGE_COVERAGE_LEGEND.map(e =>{
                     return( `<div className='p-2'><span className="my-3">${e.label}: ${properties['columnDataMap'][e.key].value}</span></div>`)
                     }).join(" ");
