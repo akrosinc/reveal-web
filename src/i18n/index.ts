@@ -4,11 +4,12 @@ import { getFromBrowser } from '../utils';
 
 import translationEn from './locales/en.json';
 import translationDe from './locales/de.json';
+import translationPt from './locales/pt.json';
 
 const LOCALE_EN = {name: 'en', flag: 'fi fi-gb'};
 const LOCALE_DE = {name: 'de', flag: 'fi fi-de'};
-
-export const LOCALES = [LOCALE_EN, LOCALE_DE];
+const LOCALE_PT = {name: 'pt', flag: 'fi fi-mz'}
+export const LOCALES = [LOCALE_EN,LOCALE_PT,LOCALE_DE];
 
 export const DEFAULT_LOCALE = LOCALE_EN.name;
 export const USER_PREF_LOCALE = getFromBrowser('locale') ?? undefined;
@@ -19,7 +20,11 @@ const resources = {
   },
   de: {
     translation: translationDe
+  },
+  pt: {
+    translation: translationPt
   }
+
 };
 
 i18n.use(initReactI18next).init({
