@@ -10,6 +10,7 @@ import {
 } from '../../constants';
 import { ReportLocationProperties, ReportType } from '../../features/reporting/providers/types';
 import { useAppSelector } from '../../store/hooks';
+import {t} from "i18next";
 
 interface Props {
   columns: Column[];
@@ -166,7 +167,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
         {totalValue.length > 0 && (
           <tr>
             <td>
-              <b>Total</b>
+              <b>{t('reportPage.table.total')}</b>
             </td>
             {totalValue.map((el, index) => {
               return <td key={index}>{el.toLocaleString()}</td>;

@@ -37,6 +37,7 @@ import {
   ReportType
 } from '../../../providers/types';
 import {useParams} from 'react-router-dom';
+import {t} from "i18next";
 
 interface Props {
   featureSet:
@@ -415,7 +416,7 @@ const MapViewDetail = React.forwardRef<any, Props>(
               )}
               <div className="mt-2">
                 <label id="range-input-label" className="text-white">
-                  Layer opacity
+                  {t('label.layerOpacity')}
                 </label>
                 <br/>
                 <input
@@ -443,7 +444,7 @@ const MapViewDetail = React.forwardRef<any, Props>(
                     }
                   }}
               >
-                Clear Map
+                {t('buttons.clearMap')}
               </Button>
             </div>
             <div ref={mapContainer} className="map-container"/>
