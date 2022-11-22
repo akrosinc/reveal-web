@@ -27,7 +27,7 @@ export const getReportTypeInfo = async (reportType: string): Promise<AdditionalR
 
 export const getMapReportData = async (
   mapData: MapDataReportRequest,
-  filters?: string[],
+  filters?: string,
   type?: string
 ): Promise<FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>> => {
   const data = await prodAPI

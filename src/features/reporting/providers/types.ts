@@ -56,7 +56,7 @@ export enum MdaStructureStatus {
 export interface AdditionalReportInfo {
   reportTypeEnum: string;
   dashboardFilter: {
-    drug: string[];
+    ntd: string;
   };
 }
 
