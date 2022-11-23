@@ -1,0 +1,193 @@
+{
+  "topNav": {
+    "logOut": "Terminar a sessão",
+    "logIn": "Iniciar Sessão",
+    "Home": "Página inicial",
+    "Plan": "Plano",
+    "Assign": "Atribuição",
+    "Reporting": "Reportar",
+    "Plans": "Gestão",
+    "Admin": "Admin",
+    "Plan Management": "Plano",
+    "Planning tools": "Ferramenta de planificação",
+    "IRS Reporting": "Relatório IRS",
+    "SMC Reporting": "Relatório SMC",
+    "Management": "Gestão de Utilizadores",
+    "Location": "Gerenciar localização",
+    "Simulation": "Simulação",
+    "TagManagement": "Gestão de etiquetas"
+  },
+  "publicPage": {
+    "supportedBy": "Fornecido por",
+    "description": "Reveal é um bem global e uma plataforma de código aberto que usa inteligência espacial para impulsionar a entrega de intervenções que salvam vidas",
+    "question": "O que é REVEAL?",
+    "firstPartAbout": "REVEAL É UMA APROVADA",
+    "secondPartAbout": "ATRAVÉS DA PRAÇA DIGITAL E É APRESENTADO NA ORGANIZAÇÃO MUNDIAL DE SAÚDE",
+    "about": "O Reveal apoia tomadores de decisão e gestores de intervenção, orientando e rastreando a entrega de actividades de campo com precisão e responsabilizando as equipas de campo pela acção. O Reveal usa mapas inteligentes e tecnologia apropriada para ambientes de poucos recursos para monitorar a cobertura das intervenções à medida que elas acontecem. Modelado na ferramenta mSpray e DiSARM, o Reveal ajuda a optimizar os recursos disponíveis e garantir que ninguém seja esquecido no processo."
+  },
+  "toast": {
+    "welcomeMessage": "Bem-vindo de volta!",
+    "unexpectedError": "Ocorreu um erro inesperado.",
+    "loading": "A carregar..."
+  },
+  "homePage": {
+    "welcomeMessage": "Bem-vindo ao Revelar"
+  },
+  "buttons": {
+    "management": "Gestão de Utilizadores",
+    "plans": "Gestão do plano",
+    "create": "Criar",
+    "delete": "Eliminar",
+    "locationManagement": "Gerenciamento de Localizações",
+    "assign": "Atribuir plano",
+    "report": "Relatórios",
+    "save": "Salvar",
+    "submit": "Submeter",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "confirm": "Confirmar"
+  },
+  "managementPage": {
+    "organization": "Organização",
+    "user": "Utilizador",
+    "userImport": "Importação de utilizadores"
+  },
+  "userPage": {
+    "Username": "Nome de utilizador",
+    "First Name": "Primeiro Nome",
+    "Last Name": "Apelido",
+    "Organization": "Organização",
+    "users": "Utilizadores",
+    "search": "Procurar"
+  },
+  "userImportPage": {
+    "importedFiles": "Ficheiros importados",
+    "bulkImport": "Importar em massa",
+    "search": "Procurar",
+    "File name": "Nome do Ficheiro",
+    "Upload Date": "Data De carregamento",
+    "Uploaded By": "Utilizador",
+    "Status": "Estado"
+  },
+  "organizationPage": {
+    "organization": "Organização",
+    "Name": "Nome",
+    "Type": "Tipo",
+    "Active": "Ativo",
+    "search": "Procurar"
+  },
+  "locationsPage": {
+    "geographicLevels": "Níveis geográficos",
+    "locationHierarchy": "Hierarquia de localização",
+    "locations": "Inspector de localização",
+    "locationsBulk": "Importar Localização"
+  },
+  "assignPage": {
+    "title": "Atribuições",
+    "subTitle": "Atribuir Planos",
+    "titleTeams": "Atribuir equipas",
+    "titleLocations": "Atribuir Localizações",
+    "selectLocations": "Seleccionar Localizações",
+    "assignmentsWarningMessage": "Por favor, selecione e salve suas alterações. Pelo menos uma localização precisa ser possível de ser seleccionada para atribuição de equipas.",
+    "assignTeamMessage": "Equipas seleccionadas atribuídas com sucesso.",
+    "assignTeamErrorMessage": "Ocorreu um erro ao adicionar uma nova equipa.",
+    "assignLocationMessage": "Locais atribuídos ao plano com sucesso.",
+    "assignLocationErrorMessage": ""
+  },
+  "general": {
+    "noContent": "Nenhum conteúdo.",
+    "noDataFound": "Nenhum dado encontrado."
+  },
+  "confirmDialog": {
+    "discardChanges": "Descartar alterações"
+  },
+  "planPage": {
+    "title": "Planos",
+    "planDetails": "Detalhes Do Plano",
+    "updateDetails": "Atualizar Detalhes",
+    "createPlan": "Criar plano",
+    "details": "Detalhes",
+    "goals": "Metas",
+    "goal": "Meta",
+    "priority": "Prioridade",
+    "actions": "Acções",
+    "conditions": "Condições",
+    "form": "Formulário",
+    "dates": "Datas",
+    "deleteGoal": "Excluir meta",
+    "deleteGoalMessage": "Tem certeza que deseja excluir a meta com o identificador: ",
+    "description": "Descrição",
+    "activate": "Activar",
+    "active": "Activo",
+    "planActivateMessage": "Plano activado com sucesso",
+    "planActivationError": "Houve um erro ao ativar este plano.",
+    "planActivationBody": "Tem certeza que deseja excluir a meta com o identificador",
+    "planActivationTitle": "Activar plano",
+    "Title": "Título",
+    "Status": "Estado",
+    "Intervention Type": "Tipo de Intervenção",
+    "Location Hierarchy": "Hierarquia de localização",
+    "Start Date": "Data de início",
+    "End Date": "Data de Fim",
+    "searchField": "Pesquisar (mínimo 3 caracteres)",
+    "planErrorMessage": "O plano não existe.",
+    "planErrorRedirectMessage": "O plano não existe, redirecionado para a página anterior.",
+    "planUpdatedMessage": "Atualização feita com sucesso.",
+    "planUpdateErrorMessage": "Ocorreu um erro a actualizar os dados.",
+    "noGoalMessage": "Você está criando um plano sem nenhum conjunto de objetivos. Sem um plano de objetivo será criado como rascunho e você não poderá ativá-lo até adicionar pelo menos uma meta.",
+    "planUpdateDiscardMessage": "Você está prestes a descartar todas as novas alterações feitas. Tem certeza?",
+    "planDiscardMessage": "Tem a certeza de que quer descartar esta informação?",
+    "planForm": {
+      "title": "Título do plano",
+      "titleError": "O título do plano não pode estar vazio.",
+      "titleErrorRegex": "O título do plano contém caracteres não suportados.",
+      "startDate": "Data de início",
+      "startDateError": "Data de início deve ser seleccionada.",
+      "endDate": "Data de conclusão",
+      "endDateError": "Data de término deve ser seleccionada.",
+      "selectHierarchy": "Selecione a hierarquia",
+      "selectHierarchyError": "Por favor, selecione a hierarquia da localização.",
+      "selectInterventionType": "Seleccionar Tipo de Intervenção",
+      "selectInterventionTypeError": "Seleccione o tipo de intervenção.",
+      "hierarchyLevelTarget": "Nível de Hierarquia Alvo",
+      "hierarchyLevelTargetError": "Por favor, seleccione primeiro a hierarquia do local e depois escolha o alvo"
+    }
+  },
+  "reportPage": {
+    "title": "Relatórios",
+    "subtitle": "Reportar",
+    "search": "Filtrar por nome da localização",
+    "reportDetails": "Detalhes do relatório",
+    "locationInfo": "Informações de localização",
+    "locationData": "Dados de localização",
+    "formattingRules": "Regras de formatação condicional",
+    "formattingRuleColors": {
+      "red": "Vermelho",
+      "orange": "Laranja",
+      "yellow": "Amarelo",
+      "green": "Verde"
+    },
+    "hideMap": "Ocultar mapa",
+    "showMap": "Mostrar mapa",
+    "reportType": "Tipo de Relatório",
+    "table": {
+      "Title": "Título",
+      "Status": "Estado",
+      "Intervention Type": "Seleccionar Tipo de Intervenção",
+      "Location Hierarchy": "Hierarquia de localização",
+      "Start Date": "Data de início",
+      "End Date": "Data de Fim"
+    },
+    "locationName": "Nome da Localização",
+    "locationType": "Tipo de Localização",
+    "identifier": "Identificador"
+  },
+  "simulationPage": {
+    "title": "Simulação do plano",
+    "country": "País",
+    "entity": "Entidade",
+    "hierarchy": "Hierarquia",
+    "location": "Localização",
+    "geographicLevel": "Nível Geográfico"
+  }
+}
