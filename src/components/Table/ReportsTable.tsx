@@ -26,16 +26,18 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
   useEffect(() => {
     if (data.length) {
       const columnDataMapKeys = Object.keys(data[0].columnDataMap);
-      const total = columnDataMapKeys.map(_ => {
+      const total = columnDataMapKeys.filter(k => !data[0].columnDataMap[k].isHidden).map(_ => {
         return 0;
       });
       data.forEach(el => {
         columnDataMapKeys.forEach((key, index) => {
-          total[index] =
-            (data[0].columnDataMap[key].isPercentage === null || data[0].columnDataMap[key].isPercentage === false) &&
-            data[0].columnDataMap[key].dataType === 'double'
-              ? total[index] + el.columnDataMap[key].value
-              : '/';
+          if (!data[0].columnDataMap[key].isHidden) {
+            total[index] =
+              (data[0].columnDataMap[key].isPercentage === null || data[0].columnDataMap[key].isPercentage === false) &&
+                data[0].columnDataMap[key].dataType === 'double'
+                ? total[index] + el.columnDataMap[key].value
+                : '/';
+          }
         });
       });
       setTotalValue(total);

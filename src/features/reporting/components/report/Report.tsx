@@ -21,7 +21,7 @@ import { useRef } from 'react';
 import { AdditionalReportInfo, FoundCoverage, ReportLocationProperties, ReportType } from '../../providers/types';
 import ReportModal from './reportModal';
 import { useTranslation } from 'react-i18next';
-import Select, { MultiValue } from 'react-select';
+import Select, { SingleValue } from 'react-select';
 
 interface BreadcrumbModel {
   locationName: string;
@@ -32,11 +32,11 @@ interface BreadcrumbModel {
 const REPORT_TYPE = [
   { label: 'Treatment coverage', value: 'TREATMENT_COVERAGE' },
   { label: 'Drug distribution', value: 'DRUG_DISTRIBUTION' },
-  { label: 'Age coverage', value: 'AGE_COVERAGE' }
+  { label: 'Population coverage', value: 'POPULATION_DISTRIBUTION' }
 ];
 const DISEASE_LIST = [
-  { label: 'STH', value: 'STH', drugs: ['ALB', 'MEB'] },
-  { label: 'SCH', value: 'SCH', drugs: ['PZQ'] }
+  { label: 'STH', value: 'STH' },
+  { label: 'SCH', value: 'SCH' }
 ];
 
 const Report = () => {
@@ -66,7 +66,7 @@ const Report = () => {
   const [defaultDisplayColumn, setDefaultDisplayColumn] = useState('');
   const [reportInfo, setReportInfo] = useState<AdditionalReportInfo>();
   const [selectedReportInfo, setSelectedReportInfo] = useState<
-    MultiValue<{
+    SingleValue<{
       label: string;
       value: string;
     }>
@@ -95,7 +95,7 @@ const Report = () => {
     loadChildHandler(
       feature.id as string,
       feature.properties.name,
-      selectedReportInfo?.map(el => el.value),
+      selectedReportInfo?.value,
       undefined,
       selectedMdaLiteReport?.value
     );
@@ -184,19 +184,17 @@ const Report = () => {
   }, [navigate, reportType]);
 
   const loadData = useCallback(
-    (selectedReport?: string[], type?: string) => {
+    (selectedReport?: string, type?: string) => {
       if (planId && reportType) {
         getReportTypeInfo(reportType).then(res => {
-          if (res.dashboardFilter && res.dashboardFilter.drug && selectedReport === undefined) {
+          if (res.dashboardFilter && res.dashboardFilter.ntd && selectedReport === undefined) {
             setReportInfo(res);
-            setSelectedReportInfo(
-              res.dashboardFilter.drug.map(el => {
-                return {
-                  label: el,
-                  value: el
-                };
-              })
-            );
+            if (selectedReport === undefined) {
+              setSelectedReportInfo({
+                label: res.dashboardFilter.ntd,
+                value: res.dashboardFilter.ntd
+              });
+            }
           }
           Promise.all([
             getPlanById(planId),
@@ -206,7 +204,7 @@ const Report = () => {
                 reportTypeEnum: reportType,
                 planIdentifier: planId
               },
-              res.dashboardFilter && res.dashboardFilter.drug ? selectedReport ?? res.dashboardFilter.drug : undefined,
+              res.dashboardFilter && res.dashboardFilter.ntd ? selectedReport ?? res.dashboardFilter.ntd : undefined,
               type
             )
           ])
@@ -254,7 +252,7 @@ const Report = () => {
   const loadChildHandler = (
     id: string,
     locationName: string,
-    selectedReportInfo?: string[],
+    selectedReportInfo?: string,
     parentData?: ReportLocationProperties,
     mdaReportType?: string
   ) => {
@@ -335,7 +333,7 @@ const Report = () => {
   };
 
   const clearMap = useCallback(
-    (filter?: string[]) => {
+    (filter?: string) => {
       //clear all map data and return to root element on the grid
       if (planId && reportType) {
         //reset search input on new load
@@ -346,12 +344,12 @@ const Report = () => {
           return path;
         });
         setSelectedMdaLiteReport((state) => {
-          loadData(filter,state?.value);
+            loadData(selectedReportInfo?.value, state?.value);
           return state;
         });
       }
     },
-    [planId, reportType, loadData]
+    [planId, reportType,loadData,selectedReportInfo]
   );
 
   const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
@@ -364,7 +362,7 @@ const Report = () => {
           reportTypeEnum: reportType,
           planIdentifier: planId
         },
-        selectedReportInfo?.map(el => el.value),
+        selectedReportInfo?.value,
         selectedMdaLiteReport?.value
       )
         .then(res => {
@@ -487,7 +485,7 @@ const Report = () => {
         <>
           <Row className="mt-3 mb-2 align-items-center">
             <Col
-              md={reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.drug.length ? 3 : 6}
+              md={reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.ntd ? 3 : 6}
             >
               <Form.Control
                 ref={searchInput}
@@ -502,68 +500,34 @@ const Report = () => {
                 }}
               />
             </Col>
-            {reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.drug.length && (
+            {reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.ntd && (
               <>
-                <Col md={3} className="my-2">
-                  <Select
-                    placeholder="Select Drug Type"
-                    className="custom-react-select-container w-100"
-                    classNamePrefix="custom-react-select"
-                    id="team-assign-select"
-                    isClearable
-                    value={selectedReportInfo}
-                    isMulti
-                    options={reportInfo.dashboardFilter.drug.map(el => {
-                      return { value: el, label: el };
-                    })}
-                    onChange={newValue => {
-                      setSelectedReportInfo(newValue);
-                      selectInputRef.current.clearValue();
-                      if (path.length) {
-                        loadChildHandler(
-                          path[path.length - 1].locationIdentifier,
-                          path[path.length - 1].locationName,
-                          newValue.map(el => el.value),
-                          undefined,
-                          selectedMdaLiteReport?.value
-                        );
-                      } else {
-                        clearMap(newValue.map(el => el.value));
-                      }
-                    }}
-                  />
-                </Col>
+
                 <Col md={3} className="my-2">
                   <Select
                     placeholder="Filter by disease"
                     className="custom-react-select-container w-100"
                     classNamePrefix="custom-react-select"
                     id="team-assign-select"
-                    isClearable
+                    defaultValue={DISEASE_LIST[0]}
                     options={DISEASE_LIST}
                     ref={selectInputRef}
                     onChange={newValue => {
                       if (newValue) {
-                        const mappedValues = newValue?.drugs.map(el => {
-                          return {
-                            value: el,
-                            label: el
-                          };
-                        });
-                        setSelectedReportInfo(mappedValues);
+                        // const mappedValues = newValue;
+                        setSelectedReportInfo(newValue);
                         if (path.length) {
                           loadChildHandler(
                             path[path.length - 1].locationIdentifier,
                             path[path.length - 1].locationName,
-                            mappedValues ? mappedValues.map(el => el.value) : selectedReportInfo?.map(el => el.value),
+                            newValue?.value,
                             undefined,
                             selectedMdaLiteReport?.value
                           );
                         } else {
-                          setSelectedMdaLiteReport((state)=>{
-                            console.log(state)
+                          setSelectedMdaLiteReport((state) => {
                             loadData(
-                                mappedValues ? mappedValues.map(el => el.value) : selectedReportInfo?.map(el => el.value),  state?.value
+                              newValue ? newValue.value : selectedReportInfo?.value, state?.value
                             );
                             return state;
                           });
@@ -572,10 +536,12 @@ const Report = () => {
                     }}
                   />
                 </Col>
+                <Col md={3} className="my-2">
+                </Col>
               </>
             )}
             <Col
-              md={reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.drug.length ? 3 : 6}
+              md={reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.ntd !== null}
               className="text-end"
             >
               <Button
@@ -585,13 +551,13 @@ const Report = () => {
                     loadChildHandler(
                       path[path.length - 1].locationIdentifier,
                       path[path.length - 1].locationName,
-                      selectedReportInfo?.map(el => el.value),
+                      selectedReportInfo?.value,
                       path[path.length - 1].locationProperties,
                       selectedMdaLiteReport?.value
                     );
                   } else {
-                    setSelectedMdaLiteReport((state) =>{
-                      loadData(undefined, state?.value );
+                    setSelectedMdaLiteReport((state) => {
+                      loadData(selectedReportInfo?.value, state?.value);
                       return state;
                     })
                   }
@@ -613,20 +579,24 @@ const Report = () => {
             <Row className="justify-content-center">
               <Col md={8} className="my-2 text-center">
                 <label className="me-2">Report type: </label>
-                {REPORT_TYPE.map(el => (
-                  <Form.Check
-                    key={el.value}
-                    defaultChecked={el.value === REPORT_TYPE[0].value}
-                    onChange={_ => {
-                      setSelectedMdaLiteReport(el);
-                      clearButtonRef.current.click();
-                    }}
-                    name="report-group"
-                    inline
-                    label={el.label}
-                    type="radio"
-                  />
-                ))}
+                {REPORT_TYPE.map(el => {
+                  if (!(el.value === 'POPULATION_DISTRIBUTION' && selectedReportInfo?.value === 'SCH')) {
+                    return <Form.Check
+                      key={el.value}
+                      defaultChecked={el.value === REPORT_TYPE[0].value}
+                      onChange={_ => {
+                        setSelectedMdaLiteReport(el);
+                        setSelectedReportInfo(selectedReportInfo);
+                        clearButtonRef.current.click();
+                      }}
+                      name="report-group"
+                      inline
+                      label={el.label}
+                      type="radio"
+                    />
+                  }
+                  return undefined;
+                })}
               </Col>
             </Row>
           )}
@@ -641,7 +611,7 @@ const Report = () => {
                 loadChildHandler(
                   locationId,
                   locationName,
-                  selectedReportInfo?.map(el => el.value),
+                  selectedReportInfo?.value,
                   undefined,
                   selectedMdaLiteReport?.value
                 )
@@ -677,8 +647,8 @@ const Report = () => {
           style={{ maxHeight: showMap ? '80vh' : 'auto', overflowY: 'auto' }}
         >
           {reportType === ReportType.IRS_FULL_COVERAGE &&
-          filterData.length &&
-          filterData[0].geographicLevel === 'structure' ? (
+            filterData.length &&
+            filterData[0].geographicLevel === 'structure' ? (
             <Card className="text-start p-3">
               <p className="mb-0 mt-3">
                 <b>Spray coverage (Effectiveness)</b>
