@@ -27,6 +27,7 @@ import {
   MAP_LEGEND_TEXT
 } from '../../../../../constants';
 import PopoverComponent from '../../../../../components/Popover';
+import {t} from "i18next";
 
 interface Props {
   data: any;
@@ -326,7 +327,7 @@ const MapViewAssignments = ({ data, rerender, collapse, clearHandler, moveend, r
         </PopoverComponent>
         <div className="mt-2">
           <label id="range-input-label" className="text-white">
-            Layer opacity
+            {t('label.layerOpacity')}
           </label>
           <br />
           <input

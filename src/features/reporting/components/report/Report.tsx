@@ -563,7 +563,7 @@ const Report = () => {
                   }
                 }}
               >
-                Refresh Data
+                {t('reportPage.refreshData')}
               </Button>
               <Button
                 className="my-2"
