@@ -37,6 +37,7 @@ import {
   ReportType
 } from '../../../providers/types';
 import { useParams } from 'react-router-dom';
+import { t } from "i18next";
 
 interface Props {
   featureSet:
@@ -203,11 +204,11 @@ const MapViewDetail = React.forwardRef<any, Props>(
               let htmlText = 'Data not parsed correctly.';
               const defaultColumnName = (data as any).defaultDisplayColumn;
               if (reportType === ReportType.MDA_LITE_COVERAGE && (defaultColumnName === 'SCH Treatment Coverage' || defaultColumnName === 'STH Treatment Coverage')) {
-                
+
                 let filteredAgeCoverage;
                 if (defaultColumnName === 'SCH Treatment Coverage') {
                   filteredAgeCoverage = AGE_COVERAGE_LEGEND.filter(e => e.key !== 'Male 1-4 years' && e.key !== 'Female 1-4 years');
-                } else{
+                } else {
                   filteredAgeCoverage = AGE_COVERAGE_LEGEND
                 }
 
@@ -422,7 +423,7 @@ const MapViewDetail = React.forwardRef<any, Props>(
           )}
           <div className="mt-2">
             <label id="range-input-label" className="text-white">
-              Layer opacity
+              {t('label.layerOpacity')}
             </label>
             <br />
             <input
@@ -450,7 +451,7 @@ const MapViewDetail = React.forwardRef<any, Props>(
               }
             }}
           >
-            Clear Map
+            {t('buttons.clearMap')}
           </Button>
         </div>
         <div ref={mapContainer} className="map-container" />
@@ -458,5 +459,6 @@ const MapViewDetail = React.forwardRef<any, Props>(
     );
   }
 );
+
 
 export default React.memo(MapViewDetail);

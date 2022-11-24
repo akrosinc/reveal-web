@@ -49,7 +49,8 @@
     "submit": "Submit",
     "cancel": "Cancel",
     "close": "Close",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "clearMap": "Clear Map"
   },
   "managementPage": {
     "organization": "Organization",
@@ -175,6 +176,7 @@
     },
     "hideMap": "Hide map",
     "showMap": "Show map",
+    "refreshData": "Refresh Data",
     "reportType": "Report Type",
     "table": {
       "Title": "Title",
@@ -182,7 +184,8 @@
       "Intervention Type": "Intervention Type",
       "Location Hierarchy": "Location Hierarchy",
       "Start Date": "Start Date",
-      "End Date":"End Date"
+      "End Date":"End Date",
+      "total": "Total"
     },
     "locationName": "Location Name",
     "locationType": "Location Type",
@@ -195,5 +198,8 @@
     "hierarchy": "Hierarchy",
     "location": "Location",
     "geographicLevel": "Geographic Level"
+  },
+  "label": {
+    "layerOpacity":  "Layer opacity"
   }
 }

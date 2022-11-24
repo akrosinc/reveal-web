@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Table } from 'react-bootstrap';
 import { useAppSelector } from '../../store/hooks';
 import { formatDate } from '../../utils';
+import {t} from "i18next";
 
 interface Props {
   columns: { name: string; sortValue?: string; accessor?: string; key?: string }[];
@@ -44,7 +45,7 @@ const DefaultTable = ({ columns, data, sortHandler, clickHandler, clickAccessor 
                 }
               }}
             >
-              {el.name}
+              {t('reportPage.table.' + el.name)}
               {activeSortField === el.name ? (
                 sortDirection ? (
                   <FontAwesomeIcon className="ms-2" icon="sort-up" />
