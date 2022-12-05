@@ -21,8 +21,11 @@ export enum ReportType {
   IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL = 'IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL',
   SURVEY = 'SURVEY',
   LSM_HOUSEHOLD_SURVEY = 'LSM_HOUSEHOLD_SURVEY',
-  LSM_HABITAT_SURVEY = 'LSM_HABITAT_SURVEY'
+  LSM_HABITAT_SURVEY = 'LSM_HABITAT_SURVEY',
+  DEFAULT = 'DEFAULT'
 }
+
+
 
 export interface ReportLocationProperties {
   id: string;
@@ -37,6 +40,7 @@ export interface ReportLocationProperties {
   numberOfChildrenEligible: number;
   defaultColumnValue: number | undefined;
   statusColor: string | undefined;
+  evaluatedColor: string;
 }
 
 export enum IrsStructureStatus {

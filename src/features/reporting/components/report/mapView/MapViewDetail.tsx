@@ -18,17 +18,10 @@ import {
   Properties
 } from '@turf/turf';
 import {
-  COLOR_BOOTSTRAP_DANGER,
-  COLOR_BOOTSTRAP_SUCCESS,
-  COLOR_BOOTSTRAP_WARNING,
-  COLOR_YELLOW,
   MAPBOX_STYLE_SATELLITE,
   MAP_DEFAULT_FILL_OPACITY,
   MAP_IRS_STRUCTURE_LEGEND_COLORS,
   MAP_MDA_STRUCTURE_LEGEND_COLORS,
-  REPORT_TABLE_PERCENTAGE_HIGH,
-  REPORT_TABLE_PERCENTAGE_LOW,
-  REPORT_TABLE_PERCENTAGE_MEDIUM
 } from '../../../../../constants';
 import {
   IrsStructureStatus,
@@ -124,6 +117,7 @@ const MapViewDetail = React.forwardRef<any, Props>(
       });
     });
 
+
     // main function to load and draw locations to the map
     // logic for displaying borders and fill colors
     const loadLocationSet = useCallback(
@@ -154,26 +148,13 @@ const MapViewDetail = React.forwardRef<any, Props>(
               source: parentLocationIdentifier,
               layout: {},
               paint: {
-                'fill-color': [
-                  'match',
-                  ['get', 'geographicLevel'],
-                  'structure',
-                  ['get', 'statusColor'],
-                  [
-                    'case',
-                    ['==', ['get', 'defaultColumnValue'], null],
-                    ['case', ['==', ['get', 'statusColor'], null], 'gray', ['get', 'statusColor']],
-                    ['<', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_LOW],
-                    COLOR_BOOTSTRAP_DANGER,
-                    ['<', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_MEDIUM],
-                    COLOR_BOOTSTRAP_WARNING,
-                    ['<', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_HIGH],
-                    COLOR_YELLOW,
-                    ['>=', ['get', 'defaultColumnValue'], REPORT_TABLE_PERCENTAGE_HIGH],
-                    COLOR_BOOTSTRAP_SUCCESS,
-                    'transparent'
+                'fill-color':
+                  ['match',
+                    ['get', 'geographicLevel'], 'structure',
+                    ['get', 'statusColor'],
+                    ['get', 'evaluatedColor']
                   ]
-                ],
+                ,
                 'fill-opacity': opacity.current
               }
             },

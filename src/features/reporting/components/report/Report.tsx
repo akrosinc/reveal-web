@@ -10,7 +10,8 @@ import {
   REPORTING_PAGE,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
-  REPORT_TABLE_PERCENTAGE_MEDIUM
+  REPORT_TABLE_PERCENTAGE_MEDIUM,
+  KEY_INDICATOR_LEVELS
 } from '../../../../constants';
 import { useAppSelector } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
@@ -38,6 +39,16 @@ const DISEASE_LIST = [
   { label: 'STH', value: 'STH' },
   { label: 'SCH', value: 'SCH' }
 ];
+
+
+const getReportDetails = (reportType: any) => {
+  let report = reportType ? reportType : "DEFAULT";
+  if (KEY_INDICATOR_LEVELS[report] === undefined) {
+    return KEY_INDICATOR_LEVELS["DEFAULT"];
+  } else {
+    return KEY_INDICATOR_LEVELS[report];
+  }
+}
 
 const Report = () => {
   const [cols, setCols] = useState<{ [x: string]: FoundCoverage }>({});
@@ -183,6 +194,20 @@ const Report = () => {
     });
   }, [navigate, reportType]);
 
+
+  const matchReportBandLevelByValue = useCallback((val: number | undefined) => {
+    let reportBandLevels = getReportDetails(reportType);
+    for (const i in reportBandLevels) {
+      let doesFitInRange = ((val ? val : 0) >= reportBandLevels[i].min &&
+        (val ? val : 0) < reportBandLevels[i].max) ||
+        ((val ? val : 0) >= reportBandLevels[i].max &&
+          reportBandLevels[i].highest);
+      if (doesFitInRange) {
+        return reportBandLevels[i];
+      }
+    }
+  }, [reportType]);
+
   const loadData = useCallback(
     (selectedReport?: string, type?: string) => {
       if (planId && reportType) {
@@ -219,9 +244,14 @@ const Report = () => {
                   setDefaultDisplayColumn(defaultDisplayColumn);
                   report.features.forEach(el => {
                     el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
+                    el.properties.evaluatedColor = matchReportBandLevelByValue(el.properties.defaultColumnValue).color;
                   });
                 } else {
                   setDefaultDisplayColumn('');
+                  report.features.forEach(el => {
+                    el.properties.evaluatedColor = matchReportBandLevelByValue(undefined).color;
+
+                  });
                 }
                 setPlan(plan);
                 setFilterData([]);
@@ -242,7 +272,7 @@ const Report = () => {
         goBackHandler();
       }
     },
-    [planId, reportType, goBackHandler]
+    [planId, reportType, goBackHandler, matchReportBandLevelByValue]
   );
 
   useEffect(() => {
@@ -283,10 +313,14 @@ const Report = () => {
               res.features.forEach(el => {
                 if (el.properties.columnDataMap[defaultDisplayColumn]) {
                   el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
+                  el.properties.evaluatedColor = matchReportBandLevelByValue(el.properties.defaultColumnValue).color;
                 }
               });
             } else {
               setDefaultDisplayColumn('');
+              res.features.forEach(el => {
+                el.properties.evaluatedColor = matchReportBandLevelByValue(undefined).color;
+              });
             }
             setCols(res.features[0].properties.columnDataMap);
             setData(tableData);
@@ -344,12 +378,12 @@ const Report = () => {
           return path;
         });
         setSelectedMdaLiteReport((state) => {
-            loadData(selectedReportInfo?.value, state?.value);
+          loadData(selectedReportInfo?.value, state?.value);
           return state;
         });
       }
     },
-    [planId, reportType,loadData,selectedReportInfo]
+    [planId, reportType, loadData, selectedReportInfo]
   );
 
   const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
@@ -372,6 +406,19 @@ const Report = () => {
           setFilterData([]);
           if (res.features.length) {
             const tableData = res.features.map(el => el.properties);
+            const defaultDisplayColumn: string | undefined = (res as any).defaultDisplayColumn;
+            if (defaultDisplayColumn) {
+              setDefaultDisplayColumn(defaultDisplayColumn);
+              res.features.forEach(el => {
+                el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
+                el.properties.evaluatedColor = matchReportBandLevelByValue(el.properties.defaultColumnValue).color;
+              });
+            } else {
+              setDefaultDisplayColumn('');
+              res.features.forEach(el => {
+                el.properties.evaluatedColor = matchReportBandLevelByValue(undefined).color;
+              });
+            }
             setCols(res.features[0].properties.columnDataMap);
             setData(tableData);
             setFilterData(tableData);
@@ -619,6 +666,7 @@ const Report = () => {
               sortHandler={sortDataHandler}
               columns={columns}
               data={filterData}
+              rangeDeterminer={matchReportBandLevelByValue}
             />
           </div>
         </>
@@ -704,26 +752,19 @@ const Report = () => {
             <>
               <Table className="text-center">
                 <tbody>
-                  <tr className="bg-danger">
-                    <td className="py-4">{t('reportPage.formattingRuleColors.red')}</td>
-                    <td className="py-4">{'0% - ' + REPORT_TABLE_PERCENTAGE_LOW + '%'}</td>
-                  </tr>
-                  <tr className="bg-warning">
-                    <td className="py-4">{t('reportPage.formattingRuleColors.orange')}</td>
-                    <td className="py-4">
-                      {REPORT_TABLE_PERCENTAGE_LOW + '% - ' + REPORT_TABLE_PERCENTAGE_MEDIUM + '%'}
-                    </td>
-                  </tr>
-                  <tr className="bg-yellow">
-                    <td className="py-4">{t('reportPage.formattingRuleColors.yellow')}</td>
-                    <td className="py-4">
-                      {REPORT_TABLE_PERCENTAGE_MEDIUM + '% - ' + REPORT_TABLE_PERCENTAGE_HIGH + '%'}
-                    </td>
-                  </tr>
-                  <tr className="bg-success">
-                    <td className="py-4">{t('reportPage.formattingRuleColors.green')}</td>
-                    <td className="py-4">{REPORT_TABLE_PERCENTAGE_HIGH + '% - 100%'}</td>
-                  </tr>
+
+                  {
+
+                    Object.keys(getReportDetails(reportType)).map((key) => {
+                      let obj = getReportDetails(reportType)[key];
+                      return (
+                        <tr className={obj.class}>
+                          <td className="py-4">{t('reportPage.formattingRuleColors.' + obj.colorName)}</td>
+                          <td className="py-4">{obj.min + '% - ' + obj.max + '%'}</td>
+                        </tr>
+                      );
+                    })
+                  }
                 </tbody>
               </Table>
               <p className="my-2">{t('reportPage.formattingRules')}</p>

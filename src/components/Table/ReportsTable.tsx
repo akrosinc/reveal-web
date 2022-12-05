@@ -3,23 +3,19 @@ import React, { useEffect, useState } from 'react';
 import { OverlayTrigger, Table, Tooltip } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { Column, useTable } from 'react-table';
-import {
-  REPORT_TABLE_PERCENTAGE_HIGH,
-  REPORT_TABLE_PERCENTAGE_LOW,
-  REPORT_TABLE_PERCENTAGE_MEDIUM
-} from '../../constants';
 import { ReportLocationProperties, ReportType } from '../../features/reporting/providers/types';
 import { useAppSelector } from '../../store/hooks';
-import {t} from "i18next";
+import { t } from "i18next";
 
 interface Props {
   columns: Column[];
   data: any[];
   clickHandler: (locationId: string, locationName: string) => void;
   sortHandler: (sortDirection: boolean, columnName: string) => void;
+  rangeDeterminer: (value: number) => any;
 }
 
-const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
+const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDeterminer }: Props) => {
   const [totalValue, setTotalValue] = useState<number[]>([]);
   const { reportType } = useParams();
 
@@ -114,26 +110,14 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler }: Props) => {
                     if (rowData.columnDataMap[cellName].isPercentage) {
                       let percentage = rowData.columnDataMap[cellName].value;
                       percentage = Number(percentage.toFixed(percentage > 1 ? 2 : 3));
-                      //check if its already a round number or should be rounded
-                      if (percentage >= REPORT_TABLE_PERCENTAGE_HIGH) {
-                        color = 'bg-success';
-                      }
-                      if (percentage >= REPORT_TABLE_PERCENTAGE_MEDIUM && percentage < REPORT_TABLE_PERCENTAGE_HIGH) {
-                        color = 'bg-yellow';
-                      }
-                      if (percentage >= REPORT_TABLE_PERCENTAGE_LOW && percentage < REPORT_TABLE_PERCENTAGE_MEDIUM) {
-                        color = 'bg-warning';
-                      }
-                      if (percentage >= 0 && percentage < REPORT_TABLE_PERCENTAGE_LOW) {
-                        color = 'bg-danger';
-                      }
+
                       return (
                         <OverlayTrigger
                           {...cell.getCellProps()}
                           placement="top"
                           overlay={<Tooltip id="meta-tooltip">{rowData.columnDataMap[cellName].meta}</Tooltip>}
                         >
-                          <td className={color}>{percentage}%</td>
+                          <td className={rangeDeterminer(rowData.columnDataMap[cellName].value).class}>{percentage}%</td>
                         </OverlayTrigger>
                       );
                     } else if (
