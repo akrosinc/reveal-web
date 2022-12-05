@@ -1,3 +1,5 @@
+import { ReportType } from "../features/reporting/providers/types";
+
 // APP TEXT
 export const APP_TITLE = 'Reveal';
 export const FOOTER_TEXT = `${new Date().getFullYear()} Reveal`;
@@ -157,3 +159,34 @@ export const COLOR_BOOTSTRAP_WARNING = '#ffc107';
 export const NUMBER_AGGREGATION = ['sum', 'average', 'min', 'max'];
 export const BOOLEAN_STRING_AGGREGATION = ['count'];
 export const DATA_AGGREGATION = ['min', 'max', 'count'];
+
+export const KEY_INDICATOR_LEVELS: any[string] = {
+  //Add new entry here for customization
+  [ReportType.MDA_LITE_COVERAGE]: {
+    DANGER: {
+      colorName: "red", min: 0, max: 65, class: "bg-danger", color: COLOR_BOOTSTRAP_DANGER, highest: false
+    },
+    GOOD: {
+      colorName: "yellow", min: 65, max: 80, class: "bg-yellow", color: COLOR_YELLOW, highest: false
+    },
+    EXCELLENT: {
+      colorName: "orange", min: 80, max: 100, class: "bg-success", color: COLOR_BOOTSTRAP_SUCCESS, highest: true
+    }
+  },
+  [ReportType.DEFAULT]: {
+    DANGER: {
+      colorName: "red", min: 0, max: 25, class: "bg-danger", color: COLOR_BOOTSTRAP_DANGER, highest: false
+    },
+    MEDIUM: {
+      colorName: "orange", min: 25, max: 50, class: "bg-warning", color: COLOR_BOOTSTRAP_WARNING, highest: false
+    },
+    GOOD: {
+      colorName: "yellow", min: 50, max: 75, class: "bg-yellow", color: COLOR_YELLOW, highest: false
+    },
+    EXCELLENT: {
+      colorName: "orange", min: 75, max: 100, class: "bg-success", color: COLOR_BOOTSTRAP_SUCCESS, highest: true
+    }
+  }
+}
+
+
