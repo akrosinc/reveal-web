@@ -170,7 +170,7 @@ export const KEY_INDICATOR_LEVELS: any[string] = {
       colorName: "yellow", min: 65, max: 80, class: "bg-yellow", color: COLOR_YELLOW, highest: false
     },
     EXCELLENT: {
-      colorName: "orange", min: 80, max: 100, class: "bg-success", color: COLOR_BOOTSTRAP_SUCCESS, highest: true
+      colorName: "green", min: 80, max: 100, class: "bg-success", color: COLOR_BOOTSTRAP_SUCCESS, highest: true
     }
   },
   [ReportType.DEFAULT]: {
