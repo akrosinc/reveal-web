@@ -198,9 +198,9 @@ const Report = () => {
   const matchReportBandLevelByValue = useCallback((val: number | undefined) => {
     let reportBandLevels = getReportDetails(reportType);
     for (const i in reportBandLevels) {
-      let doesFitInRange = ((val ? val : 0) >= reportBandLevels[i].min &&
-        (val ? val : 0) < reportBandLevels[i].max) ||
-        ((val ? val : 0) >= reportBandLevels[i].max &&
+      let doesFitInRange = (((val ? val > 0 ? val : 0 : 0)) >= reportBandLevels[i].min &&
+        ((val ? val > 0 ? val : 0 : 0)) < reportBandLevels[i].max) ||
+        ((val ? val > 0 ? val : 0 : 0) >= reportBandLevels[i].max &&
           reportBandLevels[i].highest);
       if (doesFitInRange) {
         return reportBandLevels[i];
