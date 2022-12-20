@@ -86,6 +86,8 @@ const Reports = () => {
         return 'LSM Habitat Coverage'
       case ReportType.LSM_HOUSEHOLD_SURVEY:
         return 'LSM Household Coverage'
+      case ReportType.ONCHOCERCIASIS_SURVEY:
+        return 'Onchocerciasis Survey'
       default:
         return reportName;
     }
