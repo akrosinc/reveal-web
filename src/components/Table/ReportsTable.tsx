@@ -23,12 +23,12 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
   useEffect(() => {
     if (data.length) {
       const columnDataMapKeys = Object.keys(data[0].columnDataMap);
-      const total = columnDataMapKeys.filter(k => !data[0].columnDataMap[k].isHidden).map(_ => {
+      const total = columnDataMapKeys.filter(k => data[0] && data[0].columnDataMap[k] && !data[0].columnDataMap[k].isHidden).map(_ => {
         return 0;
       });
       data.forEach(el => {
         columnDataMapKeys.forEach((key, index) => {
-          if (!data[0].columnDataMap[key].isHidden) {
+          if (data[0] && data[0].columnDataMap[key] && !data[0].columnDataMap[key].isHidden) {
             total[index] =
               (data[0].columnDataMap[key].isPercentage === null || data[0].columnDataMap[key].isPercentage === false) &&
                 data[0].columnDataMap[key].dataType === 'double'
@@ -95,7 +95,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
                 clickHandler(rowData.id, rowData.name);
               }}
             >
-              {row.cells.map((cell, index) => {
+              {row.cells.map((cell) => {
                 if (cell.column.id === 'locationName') {
                   return (
                     <td {...cell.getCellProps()} title={rowData.geographicLevel}>
