@@ -95,10 +95,10 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
                 clickHandler(rowData.id, rowData.name);
               }}
             >
-              {row.cells.map(cell => {
+              {row.cells.map((cell, index) => {
                 if (cell.column.id === 'locationName') {
                   return (
-                    <td {...cell.getCellProps()}>
+                    <td {...cell.getCellProps()} title={rowData.geographicLevel}>
                       {cell.render('Cell')}
                       {rowData.childrenNumber ? `(${rowData.childrenNumber})` : ''}
                     </td>

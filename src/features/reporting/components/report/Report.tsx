@@ -536,6 +536,7 @@ const Report = () => {
                       breadCrumbClickHandler(el, index);
                     }
                   }}
+                  title={el.locationProperties?.geographicLevel}
                 >
                   {index !== 0 ? ' / ' : ''}
                   {el.locationName}
@@ -645,7 +646,7 @@ const Report = () => {
             </Col>
           </Row>
           {((reportType === ReportType.MDA_LITE_COVERAGE) ||
-            (reportType === ReportType.ONCHOCERCIASIS_SURVEY && (reportLevel !== "Directly Above Structure" && reportLevel !== "Structure")))
+            (reportType === ReportType.ONCHOCERCIASIS_SURVEY && (reportLevel !== "Structure")))
             &&
             (
               <Row className="justify-content-center">
@@ -654,23 +655,25 @@ const Report = () => {
                   {REPORT_TYPE.map(el => {
 
                     if ((reportType === ReportType.MDA_LITE_COVERAGE && (!(el.value === 'POPULATION_DISTRIBUTION') && selectedReportInfo?.value === 'SCH'))
-                      || (reportType === ReportType.ONCHOCERCIASIS_SURVEY )) {
+                      || (reportType === ReportType.ONCHOCERCIASIS_SURVEY)) {
 
 
-                        return <Form.Check
-                          key={el.value}
-                          defaultChecked={el.value === REPORT_TYPE[0].value}
-                          onChange={_ => {
-                            setSelectedMdaLiteReport(el);
-                            setSelectedReportInfo(selectedReportInfo);
-                            clearButtonRef.current.click();
-                          }}
-                          name="report-group"
-                          inline
-                          label={el.label}
-                          type="radio"
-                        />
-                      
+
+                      return <Form.Check
+                        key={el.value}
+                        defaultChecked={el.value === REPORT_TYPE[0].value}
+                        onChange={_ => {
+                          setSelectedMdaLiteReport(el);
+                          setSelectedReportInfo(selectedReportInfo);
+                          clearButtonRef.current.click();
+                        }}
+                        name="report-group"
+                        inline
+                        label={el.label}
+                        type="radio"
+                      />
+
+
 
                     }
                     return undefined;
