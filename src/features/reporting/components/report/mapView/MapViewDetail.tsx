@@ -204,14 +204,14 @@ const MapViewDetail = React.forwardRef<any, Props>(
                 }).join(" ");
 
                 htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4> ${ageCoverageLegend}`
-              } else if (reportType === ReportType.ONCHOCERCIASIS_SURVEY && properties["reportLevel"]!=='Structure') {
+              } else if (reportType === ReportType.ONCHOCERCIASIS_SURVEY && properties["reportLevel"] !== 'Structure') {
 
-                let onchoCoverageLegend = ONCHO_COVERAGE_LEGEND.map(e=>{
+                let onchoCoverageLegend = ONCHO_COVERAGE_LEGEND.map(e => {
                   return (`<div className='p-2'><span className="my-3">${e.label}: ${properties['columnDataMap'][e.key]?.value}</span></div>`)
                 }).join(" ");
 
                 htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4> ${onchoCoverageLegend}`
-              } 
+              }
               else if (defaultColumnName) {
                 htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4>
             <div class='p-2'>
@@ -322,16 +322,26 @@ const MapViewDetail = React.forwardRef<any, Props>(
                 if (currentMap.getLayer(el + '-fill')) {
                   currentMap.removeLayer(el + '-fill');
                 }
-                currentMap.removeLayer(el + '-border');
+                if (currentMap.getLayer(el + '-border')) {
+                  currentMap.removeLayer(el + '-border');
+
+                }
+                if (currentMap.getSource(el + '-border')) {
+                  currentMap.removeSource(el + '-border');
+                }
                 if (currentMap.getSource(el + '-label')) {
                   currentMap.removeLayer(el + '-label');
-                  currentMap.removeSource(el + '-label');
+
                 }
+                if (currentMap.getSource(el + '-label')) {
+                  currentMap.removeSource(el + '-label')
+                }
+
                 if (currentMap.getLayer(el + '-structure')) currentMap.removeLayer(el + '-structure');
-                if (currentMap.isSourceLoaded(el)){
+                if (currentMap.getSource(el)) {
                   currentMap.removeSource(el);
                 }
-                 
+
               });
               currentMap.fitBounds(bbox(data) as any);
             }
