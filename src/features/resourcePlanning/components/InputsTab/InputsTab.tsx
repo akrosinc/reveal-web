@@ -120,55 +120,55 @@ const InputsTab = () => {
 
   return (
     <Container className="mt-4">
-      {!stepTwo ? (
-        <>
-          <h2>Step 1</h2>
-          <Form>
-            <Form.Group>
-              <Form.Label>Which campaign(s) are you planning in the selected locations?</Form.Label>
-              <Controller
-                control={control}
-                name="campaign"
-                rules={{ required: { value: true, message: 'Selecting an answer is required.' }, minLength: 1 }}
-                render={({ field: { onChange, onBlur, ref, value } }) => (
-                  <Select
-                    options={campaignList.map(el => {
-                      return {
-                        value: el.identifier,
-                        label: el.name
-                      };
-                    })}
-                    onBlur={onBlur}
-                    ref={ref}
-                    onChange={el => onChange(el?.value)}
-                  />
-                )}
-              />
-              {errors['campaign'] && <Form.Label className="text-danger">{errors['campaign'].message}</Form.Label>}
-            </Form.Group>
-            {questionList.map((el, index) =>
-              el.skipPattern === undefined ? (
-                <DynamicFormField el={el} errors={errors} register={register} control={control} key={index} />
-              ) : watch()[el.skipPattern.skipFieldName] !== el.skipPattern.skipValue ? (
-                <DynamicFormField el={el} errors={errors} register={register} control={control} key={index} />
-              ) : undefined
-            )}
-            <hr className="mt-4" />
-            <Form.Group>
-              <Form.Label>What is the first Age Group targeted with this campaign?</Form.Label>
-              <Form.Select {...register('ageGroup', { required: 'This field is required' })}>
-                <option>Select...</option>
-                {configValue?.country.ageGroups.map(el => (
-                  <option key={el.key} value={el.key}>
-                    {el.name}
-                  </option>
-                ))}
-              </Form.Select>
-              {errors['ageGroup'] && <Form.Label className="text-danger">{errors['ageGroup'].message}</Form.Label>}
-            </Form.Group>
-          </Form>
-        </>
-      ) : (
+
+      <>
+        <h2>Step 1</h2>
+        <Form>
+          <Form.Group>
+            <Form.Label>Which campaign(s) are you planning in the selected locations?</Form.Label>
+            <Controller
+              control={control}
+              name="campaign"
+              rules={{ required: { value: true, message: 'Selecting an answer is required.' }, minLength: 1 }}
+              render={({ field: { onChange, onBlur, ref, value } }) => (
+                <Select
+                  options={campaignList.map(el => {
+                    return {
+                      value: el.identifier,
+                      label: el.name
+                    };
+                  })}
+                  onBlur={onBlur}
+                  ref={ref}
+                  onChange={el => onChange(el?.value)}
+                />
+              )}
+            />
+            {errors['campaign'] && <Form.Label className="text-danger">{errors['campaign'].message}</Form.Label>}
+          </Form.Group>
+          {questionList.map((el, index) =>
+            el.skipPattern === undefined ? (
+              <DynamicFormField el={el} errors={errors} register={register} control={control} key={index} />
+            ) : watch()[el.skipPattern.skipFieldName] !== el.skipPattern.skipValue ? (
+              <DynamicFormField el={el} errors={errors} register={register} control={control} key={index} />
+            ) : undefined
+          )}
+          <hr className="mt-4" />
+          <Form.Group>
+            <Form.Label>What is the first Age Group targeted with this campaign?</Form.Label>
+            <Form.Select {...register('ageGroup', { required: 'This field is required' })}>
+              <option>Select...</option>
+              {configValue?.country.ageGroups.map(el => (
+                <option key={el.key} value={el.key}>
+                  {el.name}
+                </option>
+              ))}
+            </Form.Select>
+            {errors['ageGroup'] && <Form.Label className="text-danger">{errors['ageGroup'].message}</Form.Label>}
+          </Form.Group>
+        </Form>
+      </>
+      {stepTwo ? (
         <>
           <h2>Step 2</h2>
           <hr />
@@ -187,7 +187,7 @@ const InputsTab = () => {
             );
           })}
         </>
-      )}
+      ) : (null)}
       <div className="text-end my-4">
         {stepTwo && (
           <Button className="px-5 me-2" onClick={() => setStepTwo(false)}>
