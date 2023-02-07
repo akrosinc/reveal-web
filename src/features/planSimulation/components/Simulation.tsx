@@ -28,6 +28,7 @@ import Select, { SingleValue } from 'react-select';
 import PeopleDetailsModal from './PeopleDetailsModal';
 import { bbox } from '@turf/turf';
 import { LngLatBounds } from 'mapbox-gl';
+import SummaryModal from './Summary/SummaryModal';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -67,7 +68,8 @@ const Simulation = () => {
   const [selectedLocation, setSelectedLocation] = useState<SingleValue<{ label: string; value: string }>>();
   const [selectedRow, setSelectedRow] = useState<SearchLocationProperties>();
   const [toLocation, setToLocation] = useState<LngLatBounds>();
-  const [queryCount, setQueryCount] = useState<[number, number]>([0, 0]); // structure count, person count
+  // const [queryCount, setQueryCount] = useState<[number, number]>([0, 0]); // structure count, person count
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
 
   useEffect(() => {
     Promise.all([getLocationHierarchyList(50, 0, true), getEntityList()])
@@ -151,13 +153,13 @@ const Simulation = () => {
     };
     filterData(requestData)
       .then(res => {
-        let structureCount = 0;
-        let personCount = 0;
+        // let structureCount = 0;
+        // let personCount = 0;
         res.features.forEach(el => {
           if (el.properties) {
             el.properties['childrenNumber'] = el.properties['persons'].length;
-            structureCount+= el.properties['geographicLevel'] === 'structure' ? 1 : 0;
-            personCount+= el.properties['persons'].length;
+            // structureCount += el.properties['geographicLevel'] === 'structure' ? 1 : 0;
+            // personCount += el.properties['persons'].length;
             el.properties['identifier'] = (el as any).identifier;
           }
         });
@@ -182,7 +184,7 @@ const Simulation = () => {
           toast.info('No data found for given query.');
         } else {
           toast.success('Query executed successfully.');
-          setQueryCount([structureCount, personCount]);
+          // setQueryCount([structureCount, personCount]);
         }
       })
       .catch(err => toast.error(err));
@@ -191,11 +193,15 @@ const Simulation = () => {
 
   const clearHandler = () => {
     setSelectedEntityConditionList([]);
-    setQueryCount([0,0]);
+    // setQueryCount([0, 0]);
     setShowResult(false);
     setMapData(undefined);
     setToLocation(undefined);
     reset();
+  };
+
+  const showSummary = () => {
+    setShowSummaryModal(true);
   };
 
   const openMapLocation = (locationId: string) => {
@@ -367,7 +373,7 @@ const Simulation = () => {
                       <Row className="mx-2 my-3" key={index}>
                         <Col md={9}>{conditionalRender(el, index)}</Col>
                         <Col md={3} className="text-end align-self-end">
-                          {(el.valueType === 'integer'||el.valueType === 'double' || el.valueType === 'date' || el.valueType === 'string') && (
+                          {(el.valueType === 'integer' || el.valueType === 'double' || el.valueType === 'date' || el.valueType === 'string') && (
                             <span title="More">
                               <Button
                                 className="m-1"
@@ -428,7 +434,19 @@ const Simulation = () => {
       {showResult && (
         <>
           <hr className="my-4" />
-          <p className='lead'>Query results: {queryCount[1]} person entities and {queryCount[0]} structures</p>
+          {showSummaryModal && (
+            <SummaryModal
+              show={true}
+              closeHandler={() => { setShowSummaryModal(false) }}
+              isDarkMode={false}
+              mapData={mapData}
+            />
+
+          )}
+          <Button className="float-end" variant="secondary" onClick={showSummary}>
+            Summary
+          </Button>
+
           <h3>Result</h3>
           <Table bordered responsive hover>
             <thead className="border border-2">
@@ -517,5 +535,6 @@ const Simulation = () => {
     </>
   );
 };
+
 
 export default Simulation;

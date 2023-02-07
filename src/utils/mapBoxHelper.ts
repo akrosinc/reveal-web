@@ -87,6 +87,29 @@ export const getPolygonCenter = (data: Feature<Polygon | MultiPolygon | Point>) 
   };
 };
 
+export const getFeatureCentres = (
+  data: FeatureCollection<Polygon | MultiPolygon>) => {
+  const featureSet: Feature<Point, Properties>[] = [];
+  data.features.forEach((element: Feature<Polygon | MultiPolygon, Properties>) => {
+    //create label for each of the locations
+    //create a group of locations so we can fit them all in viewport
+    const centerLabel = getPolygonCenter(element);
+    centerLabel.center.properties = { ...element.properties };
+    featureSet.push(centerLabel.center);
+  });
+  return featureSet;
+}
+
+export const getLocationsFilteredByGeoLevel = (
+  data: FeatureCollection<Polygon | MultiPolygon>, geographicLevel: String) => {
+
+  return data.features.filter((element: Feature<Polygon | MultiPolygon, Properties>) => {
+    //create label for each of the locations
+    //create a group of locations so we can fit them all in viewport
+    return element.properties?.geographicLevel === geographicLevel
+  });
+}
+
 export const fitCollectionToBounds = (
   mapInstance: Map,
   data: FeatureCollection<Polygon | MultiPolygon>,
@@ -101,6 +124,7 @@ export const fitCollectionToBounds = (
     centerLabel.center.properties = { ...element.properties };
     featureSet.push(centerLabel.center);
   });
+
   mapInstance.fitBounds(bounds, {
     easing: e => {
       //this is an event which is fired at the end of the fit bounds
@@ -419,9 +443,8 @@ export const contextMenuHandler = (
                 <br />
             </p>`;
           const end = `<button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
-          <button class='btn btn-primary w-75 mb-2' id='${parentButtonId}' style='${
-            (feature.properties as any).parentIdentifier ? 'display: ""' : 'display: none'
-          }'>Parent details</button>
+          <button class='btn btn-primary w-75 mb-2' id='${parentButtonId}' style='${(feature.properties as any).parentIdentifier ? 'display: ""' : 'display: none'
+            }'>Parent details</button>
           <button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Actions and Details</button>
           </div>`;
           const displayHTML =
@@ -429,8 +452,8 @@ export const contextMenuHandler = (
             ((feature.properties as LocationProperties).assigned || feature.state.assigned
               ? end
               : feature.properties.geographicLevel === 'structure'
-              ? `<button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Structure Details</button>`
-              : `<button class='btn btn-primary w-75 mb-3' id='${assignButtonId}'>Assign location</button></div>`);
+                ? `<button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Structure Details</button>`
+                : `<button class='btn btn-primary w-75 mb-3' id='${assignButtonId}'>Assign location</button></div>`);
           popup = new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: false })
             .setLngLat(e.lngLat)
             .setHTML(displayHTML)
@@ -510,26 +533,26 @@ export const createChildLocationLabel = (
       tolerance: 1.5
     });
 
-    map.addLayer({
-      id: identifier + '-label',
-      type: 'symbol',
-      minzoom: map.getZoom() - 1.0,
-      source: identifier + '-label',
-      layout: {
-        'text-field': [
-          'match',
-          ['get', 'geographicLevel'],
-          'structure',
-          ['get', 'name'],
-          ['concat', ['get', 'name'], ' (', ['get', 'childrenNumber'], ')']
-        ],
-        'text-font': ['Open Sans Bold', 'Open Sans Semibold'],
-        'text-anchor': 'bottom'
-      },
-      paint: {
-        'text-color': reporting ? ['match', ['get', 'geographicLevel'], 'structure', 'transparent', 'white'] : 'white'
-      }
-    });
+    // map.addLayer({
+    //   id: identifier + '-label',
+    //   type: 'symbol',
+    //   minzoom: map.getZoom() - 1.0,
+    //   source: identifier + '-label',
+    //   layout: {
+    //     'text-field': [
+    //       'match',
+    //       ['get', 'geographicLevel'],
+    //       'structure',
+    //       ['get', 'name'],
+    //       ['concat', ['get', 'name'], ' (', ['get', 'childrenNumber'], ')']
+    //     ],
+    //     'text-font': ['Open Sans Bold', 'Open Sans Semibold'],
+    //     'text-anchor': 'bottom'
+    //   },
+    //   paint: {
+    //     'text-color': reporting ? ['match', ['get', 'geographicLevel'], 'structure', 'transparent', 'blue'] : '#900C3F'
+    //   }
+    // });
   }
 };
 
