@@ -1,17 +1,25 @@
-import React, { useState } from 'react';
-import { Button, Col, Collapse, Row, Table } from 'react-bootstrap';
-import { toast } from 'react-toastify';
-import { getPersonMetadata } from '../../api';
-import { PersonMeta, SearchLocationProperties } from '../../providers/types';
+import
+// React, 
+{ useState } from 'react';
+import {
+  Button, Col, Collapse, Row,
+  // Table 
+} from 'react-bootstrap';
+// import { toast } from 'react-toastify';
+// import { getPersonMetadata } from '../../api';
+import {
+  //  PersonMeta,
+  SearchLocationProperties
+} from '../../providers/types';
 
 interface Props {
   locationProps: SearchLocationProperties;
 }
 
 const PeopleDetailsModal = ({ locationProps }: Props) => {
-  const [showColumn, setShowColumn] = useState<string | undefined>();
+  // const [showColumn, setShowColumn] = useState<string | undefined>();
   const [locationMeta, setLocationMeta] = useState(false);
-  const [personMeta, setPersonMeta] = useState<PersonMeta>();
+  // const [personMeta, setPersonMeta] = useState<PersonMeta>();
 
   return (
     <>
@@ -36,7 +44,7 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
         </div>
       </Collapse>
       <hr />
-      <h4 className="mb-3">Persons:</h4>
+      {/* <h4 className="mb-3">Persons:</h4>
       <Table bordered responsive hover>
         <thead className="border border-2">
           <tr>
@@ -100,8 +108,8 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
             </React.Fragment>
           ))}
         </tbody>
-      </Table>
-      {locationProps.persons.length === 0 && <p className="ms-2">No data found.</p>}
+      </Table> */}
+      {/* {locationProps.persons.length === 0 && <p className="ms-2">No data found.</p>} */}
     </>
   );
 };
