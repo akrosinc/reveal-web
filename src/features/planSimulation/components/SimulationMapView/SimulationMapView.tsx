@@ -4,7 +4,7 @@ import { Button, Container, Form } from 'react-bootstrap';
 import { MAPBOX_STYLE_SATELLITE, MAPBOX_STYLE_SATELLITE_STREETS, MAPBOX_STYLE_STREETS } from '../../../../constants';
 import {
   fitCollectionToBounds
-  // , getFeatureCentres
+  , getFeatureCentres
   , getLocationsFilteredByGeoLevel, initMap
 } from '../../../../utils';
 import { PlanningLocationResponse } from '../../providers/types';
@@ -24,7 +24,7 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
   const [lat, setLat] = useState(-15.44);
   const [zoom, setZoom] = useState(10);
   const [metadataList, setMetadatList] = useState<Set<string>>();
-  const [selectedGeoLevel, setSelectedGeoLevel] = useState<string>("");
+  const [selectedGeoLevel, setSelectedGeoLevel] = useState<string>();
   const [geoList, setGeoList] = useState<Set<string>>();
   const [mapLayerStyle, setMapLayerStyle] = useState<string>();
   const [selectedMetadata, setSelectedMetadata] = useState<string>();
@@ -32,9 +32,9 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
-    const mapInstance = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_STREETS);
-    // clickHandler(mapInstance);
-    map.current = mapInstance;
+      const mapInstance = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_STREETS);
+      // clickHandler(mapInstance);
+      map.current = mapInstance;
   });
 
   // const clickHandler = useCallback((mapInstance: Map) => {
@@ -71,6 +71,11 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
   useEffect(() => {
     if (toLocation && map && map.current) map.current?.fitBounds(toLocation);
   }, [toLocation]);
+
+  useEffect(() => {
+    setSelectedMetadata("None");
+    setSelectedGeoLevel("All")
+  }, [mapData])
 
   // const loadHeatMap = useCallback((mapInstance: Map, tag: string, mapData?: PlanningLocationResponse) => {
   //   if (mapData && mapData.features.length) {
@@ -232,6 +237,13 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
         data: { type: 'FeatureCollection', features: mapData.parents ?? [] },
         tolerance: 1.5
       });
+
+      mapInstance.addSource('parent-labels', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: getFeatureCentres({ type: 'FeatureCollection', features: mapData.parents ?? [] }) },
+        tolerance: 1.5
+      });
+
       mapInstance.addLayer(
         {
           id: 'parent-border',
@@ -248,7 +260,7 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
       mapInstance.addLayer({
         id: 'result-parent-label',
         type: 'symbol',
-        source: 'parent',
+        source: 'parent-labels',
         layout: {
           'text-field': ['format', ['get', 'name'], { 'font-scale': 1.2, 'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']] }],
           'text-anchor': 'bottom'
@@ -265,21 +277,27 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
 
         mapData.features.forEach(feature => {
           feature.properties?.metadata?.forEach((element: any) => {
-            if (element.type === tag && tagStats.max && tagStats.max[tag]) {
-              if (feature?.properties) {
+            if (feature?.properties) {
+              if (element.type === tag && tagStats.max && tagStats.max[tag]) {
                 feature.properties.selectedTagValue = element.value;
                 feature.properties.selectedTag = element.type;
-                feature.properties.selectedTagValuePercent = element.value / tagStats.max[tag];
-
+                if (element.value < 0) {
+                  feature.properties.selectedTagValuePercent = (-1 * element.value) / (-1 * tagStats.min[tag])
+                } else {
+                  feature.properties.selectedTagValuePercent = (element.value) / (tagStats.max[tag])
+                }
+                feature.properties.selectedTagValueMin = tagStats.min[tag];
+                feature.properties.selectedTagValueMax = tagStats.max[tag];
               }
             }
-
           });
           if (!feature.properties?.selectedTagValue) {
             if (feature?.properties) {
               feature.properties.selectedTagValue = 0;
               feature.properties.selectedTag = tag;
               feature.properties.selectedTagValuePercent = 0;
+              feature.properties.selectedTagValueMin = 0;
+              feature.properties.selectedTagValueMax = 0;
             }
           }
         })
@@ -315,15 +333,15 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
         },
         'label-layer'
       );
-      if (tag) {
+      if (tag && tag !== "None") {
         mapInstance.addLayer(
           {
             id: 'fill-layer',
             type: 'fill',
             source: 'main',
             paint: {
-              'fill-color': 'green',
-              'fill-opacity': ['get', 'selectedTagValuePercent']
+              'fill-color': ['case', ['<', ['get', 'selectedTagValue'], 0], 'brown', ['case', ['==', ['get', 'selectedTagValue'], 0], 'blue', 'green']],
+              'fill-opacity': ['case', ['==', ['get', 'selectedTagValuePercent'], 0], 0.1, ['get', 'selectedTagValuePercent']]
             }
           },
           'label-layer'
@@ -343,15 +361,20 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
         );
       }
 
+      mapInstance.addSource('main-labels', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: getFeatureCentres(info) },
+        tolerance: 0.75
+      });
+
       mapInstance.addLayer({
         id: 'result-label',
         type: 'symbol',
-        source: 'main',
+        source: 'main-labels',
         layout: {
-          'text-field': ['format', ['get', 'name'], { 'font-scale': 0.8, 'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']] }]
-          ,
-
-          'text-anchor': 'bottom'
+          'text-field': ['format', ['get', 'name'], { 'font-scale': 0.8, 'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']] }],
+          'text-anchor': 'bottom',
+          'text-justify': 'center'
         },
         paint: {
           'text-color': 'black'
@@ -361,12 +384,16 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
       mapInstance.on('mouseover', 'result-label', e => {
         const feature = mapInstance.queryRenderedFeatures(e.point)[0];
         const properties = feature.properties;
-        if (properties && properties['selectedTagValue']) {
+        if (properties && (properties['selectedTagValue'] === 0 || properties['selectedTagValue'])) {
 
           let htmlText = '<p class="text-danger">Data not parsed correctly.</p>';
 
           const selectedValue: any[] = JSON.parse(properties['selectedTagValue']);
-          htmlText = `<p class="text-success">Tag: ${tag} Value: ${selectedValue}</p>`;
+          htmlText = `<p class="text-success">Tag: ${tag} Value: ${selectedValue}</p > `;
+          //  <br> 
+          // Percentage: ${properties['selectedTagValuePercent']}  <br> 
+          // Min: ${properties['selectedTagValueMin']} <br>
+          // Max: ${properties['selectedTagValueMax']}
           mapInstance.getCanvas().style.cursor = 'pointer';
           hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(mapInstance);
         }
@@ -400,8 +427,11 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
             mapInstance.removeLayer('main-label');
           }
           mapInstance.removeSource('main-label');
-          if (mapInstance.getLayer('result-label')) {
-            mapInstance.removeLayer('result-label');
+          if (mapInstance.getSource('main-labels')) {
+            if (mapInstance.getLayer('result-label')) {
+              mapInstance.removeLayer('result-label');
+            }
+            mapInstance.removeSource('main-labels')
           }
         }
         mapInstance.removeLayer('fill-layer');
@@ -411,8 +441,11 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
         if (mapInstance.getLayer('parent-border')) {
           mapInstance.removeLayer('parent-border');
         }
-        if (mapInstance.getLayer('result-parent-label')) {
-          mapInstance.removeLayer('result-parent-label');
+        if (mapInstance.getSource('parent-labels')) {
+          if (mapInstance.getLayer('result-parent-label')) {
+            mapInstance.removeLayer('result-parent-label');
+          }
+          mapInstance.removeSource('parent-labels');
         }
         mapInstance.removeSource('parent');
 
@@ -517,7 +550,7 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
     clickHandler(mapboxInstance);
     mapboxInstance.once('load', () => loadLocation(mapboxInstance, mapData, selectedGeoLevel, selectedMetadata));
     map.current = mapboxInstance;
-   // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedGeoLevel, mapLayerStyle, selectedMetadata]);
 
   return (
@@ -532,7 +565,7 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
       </div>
       <div className="sidebar-right-further text-dark bg-light p-2 rounded">
         <p className="lead mb-1">Metadata</p>
-        <Form.Select onChange={e => setSelectedMetadata(e.target.value)}>
+        <Form.Select onChange={e => setSelectedMetadata(e.target.value)} value={selectedMetadata}>
           {metadataList && Array.from(metadataList).map(metaDataItem => {
             return (<option key={metaDataItem} value={metaDataItem}>{metaDataItem}</option>);
           })}
@@ -541,9 +574,9 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
       {
         (geoList !== undefined && geoList.size > 0) && (<div className="sidebar-right text-dark bg-light p-2 rounded">
           <p className="lead mb-1">Geographic Levels</p>
-          <Form.Select onChange={e => setSelectedGeoLevel(e.target.value)}>
+          <Form.Select onChange={e => setSelectedGeoLevel(e.target.value)} value={selectedGeoLevel}>
             {geoList && Array.from(geoList).map(geoLevel => {
-              return (<option key={geoLevel} value={geoLevel}>{geoLevel}</option>);
+              return (<option key={geoLevel} value={geoLevel} >{geoLevel}</option>);
             })}
           </Form.Select>
         </div>)
