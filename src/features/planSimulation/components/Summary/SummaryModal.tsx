@@ -44,64 +44,8 @@ const SummaryModal = ({ show, closeHandler, isDarkMode, mapData }: Props) => {
         setGeoSummary(val);
     }
 
-
-    // const getTagStats = (mapData: PlanningLocationResponse | undefined) => {
-
-
-
-    //     let val = mapData?.features.reduce((map: any, obj) => {
-    //         if (obj.properties) {
-    //             if (obj.properties?.metadata) {
-    //                 let metadata = obj.properties?.metadata;
-    //                 map.max = map.max ?? {};
-    //                 map.min = map.min ?? {};
-    //                 map.avg = map.avg ?? {};
-    //                 map.sum = map.sum ?? {};
-    //                 map.cnt = map.cnt ?? {};
-
-
-
-    //                 metadata.forEach((element: any) => {
-    //                     if (element.type) {
-    //                         if (map.max[element.type]) {
-    //                             map.max[element.type] = map.max[element.type] < element.value ? element.value : map.max[element.type]
-    //                         } else {
-    //                             map.max[element.type] = element.value;
-    //                         }
-
-    //                         if (map.min[element.type]) {
-    //                             map.min[element.type] = map.min[element.type] > element.value ? element.value : map.min[element.type]
-    //                         } else {
-    //                             map.min[element.type] = element.value;
-    //                         }
-
-    //                         if (map.sum[element.type]) {
-    //                             map.sum[element.type] = map.sum[element.type] + element.value
-    //                         } else {
-    //                             map.sum[element.type] = element.value
-    //                         }
-
-    //                         if (map.cnt[element.type]) {
-    //                             map.cnt[element.type] = map.cnt[element.type] + 1
-    //                         } else {
-    //                             map.cnt[element.type] = 1
-    //                         }
-    //                     }
-
-    //                 });
-
-    //             }
-    //         }
-
-
-    //         return map
-    //     }, {})
-
-    // }
-
     useEffect(() => {
         getGeographicLevelMap(mapData);
-        // getTagStats(mapData);
     }, [mapData]);
 
 
@@ -127,19 +71,6 @@ const SummaryModal = ({ show, closeHandler, isDarkMode, mapData }: Props) => {
                                     return <tr key={key}>
                                         <td>{key}</td>
                                         <td>{geoSummary[key].cnt}</td>
-                                        {/* <Table bordered responsive hover>
-                                            <thead>
-                                                {geoSummary[key].stats.sum && Object.keys(geoSummary[key].stats.sum).map((keyObj, index) => {
-                                                    return <th>{keyObj}</th>
-                                                })}
-                                            </thead>
-                                            <tr>
-                                                {geoSummary[key].stats.sum && Object.keys(geoSummary[key].stats.sum).map((keyObj, index) => {
-                                                    return <td>{geoSummary[key].stats.sum[keyObj] / geoSummary[key].cnt}</td>
-                                                })}
-                                            </tr>
-                                        </Table> */}
-
                                     </tr>
                                 })
 
