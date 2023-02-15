@@ -12,7 +12,7 @@ import { ActionDialog } from '../../../components/Dialogs';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
-import { filterData, getEntityList, getLocationList } from '../api';
+import { filterData, getEntityList, getEntityTags, getLocationList } from '../api';
 import {
   EntityTag,
   LookupEntityType,
@@ -68,7 +68,7 @@ const Simulation = () => {
   const [selectedLocation, setSelectedLocation] = useState<SingleValue<{ label: string; value: string }>>();
   const [selectedRow, setSelectedRow] = useState<SearchLocationProperties>();
   const [toLocation, setToLocation] = useState<LngLatBounds>();
-  // const [queryCount, setQueryCount] = useState<[number, number]>([0, 0]); // structure count, person count
+  const [entityTags, setEntityTags] = useState<EntityTag[]>([]);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
 
   useEffect(() => {
@@ -203,6 +203,13 @@ const Simulation = () => {
   const showSummary = () => {
     setShowSummaryModal(true);
   };
+
+
+  useEffect(() => {
+    if (selectedEntity) {
+      getEntityTags(selectedEntity).then(res => setEntityTags(res))
+    }
+  }, [selectedEntity]);
 
   const openMapLocation = (locationId: string) => {
     setSelectedRow(searchData.find(el => el.identifier === locationId));
@@ -436,109 +443,110 @@ const Simulation = () => {
             fullScreen={mapFullScreen}
             mapData={mapData}
             toLocation={toLocation}
+            entityTags={entityTags} 
           />
         </Col>
       </Row>
       {showResult && (
-          <>
-            <hr className="my-4" />
-            {showSummaryModal && (
-              <SummaryModal
-                show={true}
-                closeHandler={() => { setShowSummaryModal(false) }}
-                isDarkMode={false}
-                mapData={mapData}
-              />
+        <>
+          <hr className="my-4" />
+          {showSummaryModal && (
+            <SummaryModal
+              show={true}
+              closeHandler={() => { setShowSummaryModal(false) }}
+              isDarkMode={false}
+              mapData={mapData}
+            />
 
-            )}
-            <Button className="float-end" variant="secondary" onClick={showSummary}>
-              Summary
-            </Button>
+          )}
+          <Button className="float-end" variant="secondary" onClick={showSummary}>
+            Summary
+          </Button>
 
-            <h3>Result</h3>
-            <Table bordered responsive hover>
-              <thead className="border border-2">
-                <tr>
-                  <th>Identifier</th>
-                  <th>Location name</th>
+          <h3>Result</h3>
+          <Table bordered responsive hover>
+            <thead className="border border-2">
+              <tr>
+                <th>Identifier</th>
+                <th>Location name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {searchData.map(el => (
+                <tr key={el.identifier}>
+                  <td>{el.identifier}</td>
+                  <td>{el.name}</td>
+                  <td className="w-25 text-center">
+                    <Button
+                      className="mx-1"
+                      onClick={() => {
+                        //create deep copy of bounds object for trigging bounds event every time
+                        setToLocation(JSON.parse(JSON.stringify(el.bounds)));
+                      }}
+                    >
+                      View
+                    </Button>
+                    <Button
+                      className="mx-1 my-2 my-md-0"
+                      onClick={() => {
+                        setSelectedRow(el);
+                        setShowDetails(true);
+                      }}
+                    >
+                      Details
+                    </Button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {searchData.map(el => (
-                  <tr key={el.identifier}>
-                    <td>{el.identifier}</td>
-                    <td>{el.name}</td>
-                    <td className="w-25 text-center">
-                      <Button
-                        className="mx-1"
-                        onClick={() => {
-                          //create deep copy of bounds object for trigging bounds event every time
-                          setToLocation(JSON.parse(JSON.stringify(el.bounds)));
-                        }}
-                      >
-                        View
-                      </Button>
-                      <Button
-                        className="mx-1 my-2 my-md-0"
-                        onClick={() => {
-                          setSelectedRow(el);
-                          setShowDetails(true);
-                        }}
-                      >
-                        Details
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            {searchData.length === 0 && <p className="text-center lead">No data found.</p>}
-          </>
+              ))}
+            </tbody>
+          </Table>
+          {searchData.length === 0 && <p className="text-center lead">No data found.</p>}
+        </>
       )}
       {showModal && selectedEntity && (
-          <ActionDialog
-            closeHandler={() => {
-              setSelectedEntityCondition(undefined);
-              setShowModal(false);
-            }}
-            title="Properties"
-            element={
-              <SimulationModal selectedEntity={selectedEntity} selectedEntityCondition={setSelectedEntityCondition} />
-            }
-            footer={
-              <>
-                <Button
-                  onClick={() => {
-                    setSelectedEntityCondition(undefined);
-                    setShowModal(false);
-                  }}
-                >
-                  Close
-                </Button>
-                <Button disabled={selectedEntityCondition === undefined} onClick={() => openModalHandler(false)}>
-                  Add
-                </Button>
-              </>
-            }
-          />
+        <ActionDialog
+          closeHandler={() => {
+            setSelectedEntityCondition(undefined);
+            setShowModal(false);
+          }}
+          title="Properties"
+          element={
+            <SimulationModal selectedEntityCondition={setSelectedEntityCondition} entityTags={entityTags} />
+          }
+          footer={
+            <>
+              <Button
+                onClick={() => {
+                  setSelectedEntityCondition(undefined);
+                  setShowModal(false);
+                }}
+              >
+                Close
+              </Button>
+              <Button disabled={selectedEntityCondition === undefined} onClick={() => openModalHandler(false)}>
+                Add
+              </Button>
+            </>
+          }
+        />
       )}
       {showDetails && selectedRow && (
-          <Modal
-            size="lg"
-            show
-            centered
-            scrollable
-            backdrop="static"
-            keyboard={false}
-            onHide={() => setShowDetails(false)}
-          >
-            <Modal.Header closeButton>
-              <Modal.Title className="w-100 text-center">Location details</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <PeopleDetailsModal locationProps={selectedRow} />
-            </Modal.Body>
-          </Modal>
+        <Modal
+          size="lg"
+          show
+          centered
+          scrollable
+          backdrop="static"
+          keyboard={false}
+          onHide={() => setShowDetails(false)}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title className="w-100 text-center">Location details</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <PeopleDetailsModal locationProps={selectedRow} />
+          </Modal.Body>
+        </Modal>
       )}
     </>
   );

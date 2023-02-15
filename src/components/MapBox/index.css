@@ -6,21 +6,12 @@
   margin: 1em;
 }
 
-.sidebar-right {
+.sidebar-adjust {
   z-index: 1;
   position: absolute;
-  top: 0;
-  left: 20%;
   margin: 1em;
 }
 
-.sidebar-right-further {
-  z-index: 1;
-  position: absolute;
-  top: 0;
-  left: 40%;
-  margin: 1em;
-}
 
 .mapbox-container {
   width: 100%;

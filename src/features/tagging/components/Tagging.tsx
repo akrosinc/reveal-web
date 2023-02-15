@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { DebounceInput } from 'react-debounce-input';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
-import DefaultTable from '../../../components/Table/DefaultTable';
+import EntityTagTable from '../../../components/Table/EntityTagTable';
 import { PAGINATION_DEFAULT_SIZE } from '../../../constants';
-import { getAllGlobalTags } from '../api';
-import { Tag } from '../providers/types';
+import { getAllGlobalTags, updateTag } from '../api';
+import { Tag, TagUpdateRequest } from '../providers/types';
 import CreateTag from './createModal';
 
 const columnsNotForDisplay = [
@@ -58,13 +58,18 @@ const Tagging = () => {
     loadData(tagList?.size ?? PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
 
+  const updateSimulationDisplay = (tag: TagUpdateRequest) => {
+    updateTag(tag);
+    loadData(PAGINATION_DEFAULT_SIZE, 0);
+  }
+
   return (
     <>
-      
-        <h2>Tags({tagList?.totalElements})        
+
+      <h2>Tags({tagList?.totalElements})
         <Row className="my-4">
           <Col md={8} className="mb-2">
-          <Button className='float-end' onClick={() => setShowCreate(true)}>Create Tag</Button>
+            <Button className='float-end' onClick={() => setShowCreate(true)}>Create Tag</Button>
           </Col>
           <Col sm={12} md={4} className="order-md-first">
             <DebounceInput
@@ -77,11 +82,11 @@ const Tagging = () => {
             />
           </Col>
         </Row>
-        </h2>
+      </h2>
       <hr />
       {tagList && tagList.content.length > 0 ? (
         <>
-          <DefaultTable
+          <EntityTagTable
             sortHandler={sortHandler}
             columns={Object.keys(tagList.content[0])
               .filter(el => !columnsNotForDisplay.includes(el))
@@ -93,6 +98,7 @@ const Tagging = () => {
                 };
               })}
             data={tagList?.content}
+            updateTag={updateSimulationDisplay}
           />
           <Paginator
             page={tagList.pageable.pageNumber}
@@ -116,5 +122,4 @@ const Tagging = () => {
     </>
   );
 };
-
 export default Tagging;

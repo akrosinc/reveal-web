@@ -14,16 +14,29 @@ const SummaryModal = ({ show, closeHandler, isDarkMode, mapData }: Props) => {
     const [geoSummary, setGeoSummary] = useState<any>(null);
 
     const getGeographicLevelMap = (mapData: PlanningLocationResponse | undefined) => {
-
-
-
         let val = mapData?.features.reduce((map: any, obj) => {
-            if (map[obj.properties?.geographicLevel]) {
-                map[obj.properties?.geographicLevel] = map[obj.properties?.geographicLevel] + 1;
+            if (map[obj.properties?.geographicLevel] && map[obj.properties?.geographicLevel].cnt) {
+                map[obj.properties?.geographicLevel].cnt += 1;
             } else {
-                map[obj.properties?.geographicLevel] = 1;
+                map[obj.properties?.geographicLevel] = {
+                    cnt: 1,
+                    stats: {
+                        sum: {}
+                    }
+                };
             }
-
+            if (obj.properties?.metadata) {
+                let metadata = obj.properties?.metadata;
+                metadata.forEach((element: any) => {
+                    if (element.type) {
+                        if (map[obj.properties?.geographicLevel].stats.sum[element.type]) {
+                            map[obj.properties?.geographicLevel].stats.sum[element.type] = map[obj.properties?.geographicLevel].stats.sum[element.type] + element.value
+                        } else {
+                            map[obj.properties?.geographicLevel].stats.sum[element.type] = element.value
+                        }
+                    }
+                });
+            }
 
             return map
         }, {})
@@ -111,7 +124,23 @@ const SummaryModal = ({ show, closeHandler, isDarkMode, mapData }: Props) => {
                         <tbody>
                             {
                                 geoSummary && Object.keys(geoSummary).map((key, index) => {
-                                    return <tr><td>{key}</td><td>{geoSummary[key]}</td></tr>
+                                    return <tr key={key}>
+                                        <td>{key}</td>
+                                        <td>{geoSummary[key].cnt}</td>
+                                        {/* <Table bordered responsive hover>
+                                            <thead>
+                                                {geoSummary[key].stats.sum && Object.keys(geoSummary[key].stats.sum).map((keyObj, index) => {
+                                                    return <th>{keyObj}</th>
+                                                })}
+                                            </thead>
+                                            <tr>
+                                                {geoSummary[key].stats.sum && Object.keys(geoSummary[key].stats.sum).map((keyObj, index) => {
+                                                    return <td>{geoSummary[key].stats.sum[keyObj] / geoSummary[key].cnt}</td>
+                                                })}
+                                            </tr>
+                                        </Table> */}
+
+                                    </tr>
                                 })
 
                             }
