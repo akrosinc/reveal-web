@@ -534,26 +534,6 @@ export const createChildLocationLabel = (
       tolerance: 1.5
     });
 
-    // map.addLayer({
-    //   id: identifier + '-label',
-    //   type: 'symbol',
-    //   minzoom: map.getZoom() - 1.0,
-    //   source: identifier + '-label',
-    //   layout: {
-    //     'text-field': [
-    //       'match',
-    //       ['get', 'geographicLevel'],
-    //       'structure',
-    //       ['get', 'name'],
-    //       ['concat', ['get', 'name'], ' (', ['get', 'childrenNumber'], ')']
-    //     ],
-    //     'text-font': ['Open Sans Bold', 'Open Sans Semibold'],
-    //     'text-anchor': 'bottom'
-    //   },
-    //   paint: {
-    //     'text-color': reporting ? ['match', ['get', 'geographicLevel'], 'structure', 'transparent', 'blue'] : '#900C3F'
-    //   }
-    // });
   }
 };
 
