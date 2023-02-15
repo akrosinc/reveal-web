@@ -1,18 +1,12 @@
-import React, { useEffect, useState } from 'react';
 import Select, { SingleValue } from 'react-select';
-import { getEntityTags } from '../../api';
 import { EntityTag } from '../../providers/types';
 
 interface Props {
-  selectedEntity: string;
   selectedEntityCondition: (entityCondition: EntityTag | undefined) => void;
+  entityTags: EntityTag[];
 }
 
-const SimulationModal = ({ selectedEntity, selectedEntityCondition }: Props) => {
-  const [entityTags, setEntityTags] = useState<EntityTag[]>([]);
-  useEffect(() => {
-    getEntityTags(selectedEntity).then(res => setEntityTags(res));
-  }, [selectedEntity]);
+const SimulationModal = ({ selectedEntityCondition, entityTags }: Props) => {
 
   return (
     <div>

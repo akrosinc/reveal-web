@@ -1,14 +1,16 @@
-import { Feature, MultiPolygon, Polygon, Properties } from '@turf/turf';
+import { Feature, MultiPolygon, Polygon, Properties, Point } from '@turf/turf';
 import { LngLatBounds } from 'mapbox-gl';
 
 export interface EntityTag {
   identifier: string;
   tag: string;
+  definition: string;
   fieldType: string;
   valueType: string;
   lookupEntityType: LookupEntityType;
   more: EntityTag[];
   range?: [EntityTag, EntityTag];
+  simulationDisplay: boolean;
 }
 export interface LookupEntityType {
   identifier: string;
@@ -43,8 +45,8 @@ export interface Person {
 export interface PlanningLocationResponse {
   identifier: string | undefined;
   type: 'FeatureCollection';
-  features: Feature<MultiPolygon | MultiPolygon, Properties>[];
-  parents: Feature<Polygon | MultiPolygon, Properties>[];
+  features: Feature<Point | Polygon | MultiPolygon, Properties>[];
+  parents: Feature<Point | Polygon | MultiPolygon, Properties>[];
 }
 
 export interface PersonMeta {

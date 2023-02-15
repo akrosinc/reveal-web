@@ -13,6 +13,7 @@ export interface Tag {
   isResultLiteral: boolean;
   isGenerated: boolean;
   addToMetadata: boolean;
+  simulationDisplay: boolean;
 }
 
 export interface TagCreateRequest {
@@ -31,7 +32,12 @@ export interface TagCreateRequest {
   addToMetadata: boolean;
 }
 
+export interface TagUpdateRequest {
+  identifier: string;
+  simulationDisplay: boolean;
+}
+
 export enum EntityTypeEnum {
-  PERSON_CODE = "PERSON_CODE", 
+  PERSON_CODE = "PERSON_CODE",
   LOCATION_CODE = "LOCATION_CODE"
 }

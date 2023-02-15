@@ -1,6 +1,6 @@
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
-import { Tag, TagCreateRequest } from '../providers/types';
+import { Tag, TagCreateRequest, TagUpdateRequest } from '../providers/types';
 
 export const getAllTags = (
   size: number,
@@ -33,6 +33,16 @@ export const getAllGlobalTags = (
     )
     .then(res => res.data);
   return data;
+};
+
+export const updateTag = (
+  tag: TagUpdateRequest,
+): void => {
+  api
+    .put<TagUpdateRequest>(
+      `entityTag`, tag
+    )
+    .then(res => res.data);
 };
 
 export const createTag = async (form: TagCreateRequest): Promise<Tag> => {

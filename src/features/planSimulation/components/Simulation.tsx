@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useRef } from 'react';
 import { useEffect, useState } from 'react';
-import { Button, Col, Form, Modal, Row, Table } from 'react-bootstrap';
+import { Button, Col, Form, Modal, OverlayTrigger, Row, Table, Tooltip } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
@@ -12,7 +12,7 @@ import { ActionDialog } from '../../../components/Dialogs';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
-import { filterData, getEntityList, getLocationList } from '../api';
+import { filterData, getEntityList, getEntityTags, getLocationList } from '../api';
 import {
   EntityTag,
   LookupEntityType,
@@ -28,6 +28,7 @@ import Select, { SingleValue } from 'react-select';
 import PeopleDetailsModal from './PeopleDetailsModal';
 import { bbox } from '@turf/turf';
 import { LngLatBounds } from 'mapbox-gl';
+import SummaryModal from './Summary/SummaryModal';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -67,7 +68,8 @@ const Simulation = () => {
   const [selectedLocation, setSelectedLocation] = useState<SingleValue<{ label: string; value: string }>>();
   const [selectedRow, setSelectedRow] = useState<SearchLocationProperties>();
   const [toLocation, setToLocation] = useState<LngLatBounds>();
-  const [queryCount, setQueryCount] = useState<[number, number]>([0, 0]); // structure count, person count
+  const [entityTags, setEntityTags] = useState<EntityTag[]>([]);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
 
   useEffect(() => {
     Promise.all([getLocationHierarchyList(50, 0, true), getEntityList()])
@@ -151,13 +153,9 @@ const Simulation = () => {
     };
     filterData(requestData)
       .then(res => {
-        let structureCount = 0;
-        let personCount = 0;
         res.features.forEach(el => {
           if (el.properties) {
             el.properties['childrenNumber'] = el.properties['persons'].length;
-            structureCount+= el.properties['geographicLevel'] === 'structure' ? 1 : 0;
-            personCount+= el.properties['persons'].length;
             el.properties['identifier'] = (el as any).identifier;
           }
         });
@@ -182,7 +180,6 @@ const Simulation = () => {
           toast.info('No data found for given query.');
         } else {
           toast.success('Query executed successfully.');
-          setQueryCount([structureCount, personCount]);
         }
       })
       .catch(err => toast.error(err));
@@ -191,12 +188,22 @@ const Simulation = () => {
 
   const clearHandler = () => {
     setSelectedEntityConditionList([]);
-    setQueryCount([0,0]);
     setShowResult(false);
     setMapData(undefined);
     setToLocation(undefined);
     reset();
   };
+
+  const showSummary = () => {
+    setShowSummaryModal(true);
+  };
+
+
+  useEffect(() => {
+    if (selectedEntity) {
+      getEntityTags(selectedEntity).then(res => setEntityTags(res))
+    }
+  }, [selectedEntity]);
 
   const openMapLocation = (locationId: string) => {
     setSelectedRow(searchData.find(el => el.identifier === locationId));
@@ -267,8 +274,12 @@ const Simulation = () => {
                 </Form.Group>
                 <Form.Group className="my-3">
                   <Row className="align-items-center">
-                    <Col md={3} lg={2}>
-                      <Form.Label>{t('simulationPage.geographicLevel')}:</Form.Label>
+                    <Col md={3} lg={2} >
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={<Tooltip id="meta-tooltip">Select Parent Geographic Level to Search within</Tooltip>}>
+                        <Form.Label >{t('simulationPage.geographicLevel')}:</Form.Label>
+                      </OverlayTrigger>
                     </Col>
                     <Col>
                       <Form.Select
@@ -297,7 +308,11 @@ const Simulation = () => {
                 <Form.Group className="my-3">
                   <Row className="align-items-center">
                     <Col md={3} lg={2}>
-                      <Form.Label>{t('simulationPage.location')}:</Form.Label>
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={<Tooltip id="meta-tooltip">Select Parent Location to Search within</Tooltip>}>
+                        <Form.Label >{t('simulationPage.location')}:</Form.Label>
+                      </OverlayTrigger>
                     </Col>
                     <Col>
                       <Select
@@ -367,7 +382,7 @@ const Simulation = () => {
                       <Row className="mx-2 my-3" key={index}>
                         <Col md={9}>{conditionalRender(el, index)}</Col>
                         <Col md={3} className="text-end align-self-end">
-                          {(el.valueType === 'integer'||el.valueType === 'double' || el.valueType === 'date' || el.valueType === 'string') && (
+                          {(el.valueType === 'integer' || el.valueType === 'double' || el.valueType === 'date' || el.valueType === 'string') && (
                             <span title="More">
                               <Button
                                 className="m-1"
@@ -422,13 +437,26 @@ const Simulation = () => {
             fullScreen={mapFullScreen}
             mapData={mapData}
             toLocation={toLocation}
+            entityTags={entityTags} 
           />
         </Col>
       </Row>
       {showResult && (
         <>
           <hr className="my-4" />
-          <p className='lead'>Query results: {queryCount[1]} person entities and {queryCount[0]} structures</p>
+          {showSummaryModal && (
+            <SummaryModal
+              show={true}
+              closeHandler={() => { setShowSummaryModal(false) }}
+              isDarkMode={false}
+              mapData={mapData}
+            />
+
+          )}
+          <Button className="float-end" variant="secondary" onClick={showSummary}>
+            Summary
+          </Button>
+
           <h3>Result</h3>
           <Table bordered responsive hover>
             <thead className="border border-2">
@@ -477,7 +505,7 @@ const Simulation = () => {
           }}
           title="Properties"
           element={
-            <SimulationModal selectedEntity={selectedEntity} selectedEntityCondition={setSelectedEntityCondition} />
+            <SimulationModal selectedEntityCondition={setSelectedEntityCondition} entityTags={entityTags} />
           }
           footer={
             <>
@@ -517,5 +545,6 @@ const Simulation = () => {
     </>
   );
 };
+
 
 export default Simulation;

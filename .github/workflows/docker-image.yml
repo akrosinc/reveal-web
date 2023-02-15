@@ -2,7 +2,7 @@ name: Reveal Web test, build and deploy
 
 on:
   push:
-    branches: [ main, rev-75-resource-planning-dashboard, zambia_2022, test_old_yarn ]
+    branches: [ main, resource-planning-changes, zambia_2022, simulation-for-kenya-demo ]
 
 jobs:
 

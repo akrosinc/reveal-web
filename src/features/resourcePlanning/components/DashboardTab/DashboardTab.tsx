@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Container } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
-import DefaultTable from '../../../../components/Table/DefaultTable';
+import ResourcePlanningTable from '../../../../components/Table/ResourcePlanningTable';
 import { RootState } from '../../../../store/store';
 import { getResourceDashboard } from '../../api';
 
@@ -87,7 +87,7 @@ const DashboardTab = () => {
           })}
         </p>
       </Container>
-      {tableData ? <DefaultTable columns={tableColumns} data={tableData} /> : <p>No data found.</p>}
+      {tableData ? <ResourcePlanningTable columns={tableColumns} data={tableData} /> : <p>No data found.</p>}
     </div>
   );
 };
