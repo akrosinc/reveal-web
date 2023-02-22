@@ -40,7 +40,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
           type: el.type.valueCodableConcept
         };
       });
-    } else if (row.children !== undefined) {
+    } else if (row.children !== undefined && row.children.length > 0) {
       return row.children.map((el: any) => {
         return {
           identifier: el.identifier,
@@ -102,39 +102,42 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {rows.map((row, i) => {
+        {rows.map((row) => {
           prepareRow(row);
           return (
             //row.depth is not existing in react table types for some reason, casting to any type solves the issue
             <tr {...row.getRowProps()} style={{ backgroundColor: getColorLevel((row as any).depth) }}>
               {row.cells.map(cell => {
                 const cellData = cell.row.original as any;
-                return cell.column.id === 'active' ? (
-                  <td
-                    id={cell.column.id + 'click-handler'}
-                    {...cell.getCellProps()}
-                    onClick={() => {
-                      if (cell.column.id !== 'expander') {
-                        clickHandler(cellData.identifier);
-                      }
-                    }}
-                  >
-                    <FormCheck disabled checked={cellData.active === 'true' ? true : false} />
-                  </td>
-                ) : (
-                  <td
-                    id={cell.column.id + 'click-handler'}
-                    {...cell.getCellProps()}
-                    onClick={() => {
-                      if (cell.column.id !== 'expander') {
-                        let col = row.original as any;
-                        clickHandler(col.identifier);
-                      }
-                    }}
-                  >
-                    {cell.render('Cell')}
-                  </td>
-                );
+                if (cell.column.id === 'active') {
+                  return  (
+                      <td
+                          id={cell.column.id + 'click-handler'}
+                          {...cell.getCellProps()}
+                          onClick={() => {
+                            if (cell.column.id !== 'expander') {
+                              clickHandler(cellData.identifier);
+                            }
+                          }}
+                      >
+                        <FormCheck disabled checked={cellData.active === 'true'} />
+                      </td>)
+                } else {
+                  return (
+                      <td
+                          id={cell.column.id + 'click-handler'}
+                          {...cell.getCellProps()}
+                          onClick={() => {
+                            if (cell.column.id !== 'expander') {
+                              let col = row.original as any;
+                              clickHandler(col.identifier);
+                            }
+                          }}
+                      >
+                        {cell.render('Cell')}
+                      </td>
+                  );
+                }
               })}
             </tr>
           );

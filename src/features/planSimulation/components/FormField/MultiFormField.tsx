@@ -29,7 +29,7 @@ const MultiFormField = ({ register, entityTag, index: parentIndex, errors, delet
           />
         </>
       )}
-      {range && <p>Beetween</p>}
+      {range && <p>Between</p>}
       <FormField entityTag={entityTag} errors={errors} index={parentIndex} register={register} range={range} />
       <p className="my-2">{range ? 'AND' : 'OR'}</p>
       {range ? (

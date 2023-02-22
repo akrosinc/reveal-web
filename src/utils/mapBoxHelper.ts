@@ -1,7 +1,22 @@
-import { center, Feature, Point, Properties, Polygon, MultiPolygon, bbox, FeatureCollection } from '@turf/turf';
-import mapboxgl, { Map, Popup, GeolocateControl, NavigationControl, LngLatBoundsLike } from 'mapbox-gl';
-import { MutableRefObject } from 'react';
-import { toast } from 'react-toastify';
+import {
+  bbox,
+  center,
+  Feature,
+  FeatureCollection,
+  MultiPolygon,
+  Point,
+  Polygon,
+  Properties
+} from '@turf/turf';
+import mapboxgl, {
+  GeolocateControl,
+  LngLatBoundsLike,
+  Map,
+  NavigationControl,
+  Popup
+} from 'mapbox-gl';
+import {MutableRefObject} from 'react';
+import {toast} from 'react-toastify';
 import {
   MAP_COLOR_NO_TEAMS,
   MAP_COLOR_SELECTED,
@@ -10,9 +25,9 @@ import {
   MAP_DEFAULT_DISABLED_FILL_OPACITY,
   MAP_DEFAULT_FILL_OPACITY
 } from '../constants';
-import { assignLocationToPlan, getChildLocation } from '../features/assignment/api';
-import { getLocationByIdAndPlanId } from '../features/location/api';
-import { PlanningLocationResponse } from '../features/planSimulation/providers/types';
+import {assignLocationToPlan, getChildLocation} from '../features/assignment/api';
+import {getLocationByIdAndPlanId} from '../features/location/api';
+import {PlanningLocationResponse} from '../features/planSimulation/providers/types';
 
 export interface LocationProperties {
   id: string;
@@ -33,11 +48,11 @@ mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
 
 //init mapbox instance
 export const initMap = (
-  container: MutableRefObject<any>,
-  center: [number, number],
-  zoom: number,
-  position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left',
-  style: string
+    container: MutableRefObject<any>,
+    center: [number, number],
+    zoom: number,
+    position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left',
+    style: string
 ): Map => {
   const mapboxInstance = new Map({
     container: container.current,
@@ -47,19 +62,19 @@ export const initMap = (
     doubleClickZoom: false
   });
   mapboxInstance.addControl(
-    new GeolocateControl({
-      positionOptions: {
-        enableHighAccuracy: true
-      },
-      trackUserLocation: true
-    }),
-    position
+      new GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true
+        },
+        trackUserLocation: true
+      }),
+      position
   );
   mapboxInstance.addControl(
-    new NavigationControl({
-      showCompass: false
-    }),
-    position
+      new NavigationControl({
+        showCompass: false
+      }),
+      position
   );
   mapboxInstance.setMinZoom(1.5);
   //initialize an empty top layer for all labels
@@ -89,20 +104,20 @@ export const getPolygonCenter = (data: Feature<Polygon | MultiPolygon | Point>) 
 };
 
 export const getFeatureCentres = (
-  data: FeatureCollection<Polygon | MultiPolygon | Point>): Feature<Point, Properties>[] => {
+    data: FeatureCollection<Polygon | MultiPolygon | Point>): Feature<Point, Properties>[] => {
   const featureSet: Feature<Point, Properties>[] = [];
   data.features.forEach((element: Feature<Polygon | MultiPolygon | Point, Properties>) => {
     //create label for each of the locations
     //create a group of locations so we can fit them all in viewport
     const centerLabel = getPolygonCenter(element);
-    centerLabel.center.properties = { ...element.properties };
+    centerLabel.center.properties = {...element.properties};
     featureSet.push(centerLabel.center);
   });
   return featureSet;
 }
 
 export const getLocationsFilteredByGeoLevel = (
-  data: FeatureCollection<Polygon | MultiPolygon | Point>, geographicLevel: String) => {
+    data: FeatureCollection<Polygon | MultiPolygon | Point>, geographicLevel: String) => {
 
   return data.features.filter((element: Feature<Polygon | MultiPolygon | Point, Properties>) => {
     //create label for each of the locations
@@ -112,9 +127,9 @@ export const getLocationsFilteredByGeoLevel = (
 }
 
 export const fitCollectionToBounds = (
-  mapInstance: Map,
-  data: FeatureCollection<Polygon | MultiPolygon>,
-  labelSource?: string
+    mapInstance: Map,
+    data: FeatureCollection<Polygon | MultiPolygon>,
+    labelSource?: string
 ) => {
   const featureSet: Feature<Point, Properties>[] = [];
   const bounds = bbox(data) as any;
@@ -122,7 +137,7 @@ export const fitCollectionToBounds = (
     //create label for each of the locations
     //create a group of locations so we can fit them all in viewport
     const centerLabel = getPolygonCenter(element);
-    centerLabel.center.properties = { ...element.properties };
+    centerLabel.center.properties = {...element.properties};
     featureSet.push(centerLabel.center);
   });
 
@@ -147,9 +162,9 @@ export const fitCollectionToBounds = (
 
 export const createLocation = (map: Map, data: any, moveend: () => void, opacity: number): void => {
   if (
-    map.getSource(data.identifier) === undefined &&
-    map.getSource(data.properties.id + 'children') === undefined &&
-    map.getLayer(data.properties.id + '-fill') === undefined
+      map.getSource(data.identifier) === undefined &&
+      map.getSource(data.properties.id + 'children') === undefined &&
+      map.getLayer(data.properties.id + '-fill') === undefined
   ) {
     disableMapInteractions(map, true);
     //save property id
@@ -162,52 +177,52 @@ export const createLocation = (map: Map, data: any, moveend: () => void, opacity
     });
 
     map.addLayer(
-      {
-        id: data.identifier + '-outline',
-        type: 'line',
-        source: data.identifier,
-        layout: {},
-        paint: {
-          'line-color': 'black',
-          'line-width': 3.5
-        }
-      },
-      'label-layer'
+        {
+          id: data.identifier + '-outline',
+          type: 'line',
+          source: data.identifier,
+          layout: {},
+          paint: {
+            'line-color': 'black',
+            'line-width': 3.5
+          }
+        },
+        'label-layer'
     );
     map.addLayer(
-      {
-        id: data.identifier + '-fill',
-        type: 'fill',
-        source: data.identifier,
-        layout: {},
-        paint: {
-          'fill-color': [
-            'match',
-            ['get', 'geographicLevel'],
-            'structure',
-            'yellow',
-            ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED]
-          ],
-          'fill-opacity': opacity
-        }
-      },
-      'label-layer'
-    );
-
-    if (data.properties.numberOfTeams !== undefined) {
-      map.addLayer(
         {
-          id: data.identifier + '-fill-disable',
+          id: data.identifier + '-fill',
           type: 'fill',
           source: data.identifier,
           layout: {},
           paint: {
-            'fill-color': MAP_COLOR_UNASSIGNED,
-            'fill-opacity': MAP_DEFAULT_DISABLED_FILL_OPACITY
-          },
-          filter: ['in', 'assigned', false]
+            'fill-color': [
+              'match',
+              ['get', 'geographicLevel'],
+              'structure',
+              'yellow',
+              ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED]
+            ],
+            'fill-opacity': opacity
+          }
         },
         'label-layer'
+    );
+
+    if (data.properties.numberOfTeams !== undefined) {
+      map.addLayer(
+          {
+            id: data.identifier + '-fill-disable',
+            type: 'fill',
+            source: data.identifier,
+            layout: {},
+            paint: {
+              'fill-color': MAP_COLOR_UNASSIGNED,
+              'fill-opacity': MAP_DEFAULT_DISABLED_FILL_OPACITY
+            },
+            filter: ['in', 'assigned', false]
+          },
+          'label-layer'
       );
     }
 
@@ -215,25 +230,25 @@ export const createLocation = (map: Map, data: any, moveend: () => void, opacity
     let centerLabel = getPolygonCenter(data);
 
     map.fitBounds(
-      centerLabel.bounds,
-      {
-        easing: e => {
-          //this is an event which is fired at the end of the fit bounds
-          if (e === 1) {
-            createLocationLabel(map, data, centerLabel.center);
-            moveend();
-            disableMapInteractions(map, false);
-          }
-          return e;
+        centerLabel.bounds,
+        {
+          easing: e => {
+            //this is an event which is fired at the end of the fit bounds
+            if (e === 1) {
+              createLocationLabel(map, data, centerLabel.center);
+              moveend();
+              disableMapInteractions(map, false);
+            }
+            return e;
+          },
+          padding: 20,
+          duration: 1000
         },
-        padding: 20,
-        duration: 1000
-      },
-      {
-        //send data event only if its 1st location to be loaded to initialize event handlers;
-        data: map.queryRenderedFeatures().length > 1 ? undefined : data,
-        center: centerLabel.center
-      }
+        {
+          //send data event only if its 1st location to be loaded to initialize event handlers;
+          data: map.queryRenderedFeatures().length > 1 ? undefined : data,
+          center: centerLabel.center
+        }
     );
     // Grab the prefers reduced media query.
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -250,8 +265,8 @@ export const createLocation = (map: Map, data: any, moveend: () => void, opacity
 
 // hover handler with timeout to simulate hovering effect
 export const hoverHandler = (map: Map, identifier: string) => {
-  let popup = new Popup({ closeButton: false }).setHTML(
-    `<h4 class='bg-success text-light text-center'>Actions</h4><div class='p-2'><small>Available commands:<br />
+  let popup = new Popup({closeButton: false}).setHTML(
+      `<h4 class='bg-success text-light text-center'>Actions</h4><div class='p-2'><small>Available commands:<br />
     Right click - context menu <br/> Double Click - load children<br />
     Ctrl + Left Click - Select location</small></div>`
   );
@@ -274,7 +289,7 @@ export const hoverHandler = (map: Map, identifier: string) => {
 
 export const createChild = (map: Map, data: any, opacity: number) => {
   let layerList = new Set(
-    map
+      map
       .queryRenderedFeatures()
       .map(el => (el.properties as any).name as string)
       .filter(el => el !== undefined)
@@ -295,57 +310,57 @@ export const createChild = (map: Map, data: any, opacity: number) => {
     });
 
     map.addLayer(
-      {
-        id: data.identifier + '-fill',
-        type: 'fill',
-        source: data.identifier,
-        layout: {},
-        paint: {
-          'fill-color': [
-            'match',
-            ['get', 'geographicLevel'],
-            'structure',
-            'yellow',
-            ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED]
-          ],
-          'fill-opacity': opacity
-        }
-      },
-      'label-layer'
-    );
-
-    map.addLayer(
-      {
-        id: data.identifier + '-fill-disable',
-        type: 'fill',
-        source: data.identifier,
-        layout: {},
-        paint: {
-          'fill-color': MAP_COLOR_UNASSIGNED,
-          'fill-opacity': MAP_DEFAULT_DISABLED_FILL_OPACITY
+        {
+          id: data.identifier + '-fill',
+          type: 'fill',
+          source: data.identifier,
+          layout: {},
+          paint: {
+            'fill-color': [
+              'match',
+              ['get', 'geographicLevel'],
+              'structure',
+              'yellow',
+              ['match', ['get', 'numberOfTeams'], 0, MAP_COLOR_NO_TEAMS, MAP_COLOR_TEAM_ASSIGNED]
+            ],
+            'fill-opacity': opacity
+          }
         },
-        filter: [
-          'case',
-          ['==', ['get', 'geographicLevel'], 'structure'],
-          false,
-          ['case', ['boolean', ['get', 'assigned']], false, true]
-        ]
-      },
-      'label-layer'
+        'label-layer'
     );
 
     map.addLayer(
-      {
-        id: data.identifier + '-border',
-        type: 'line',
-        source: data.identifier,
-        layout: {},
-        paint: {
-          'line-color': 'black',
-          'line-width': 3
-        }
-      },
-      'label-layer'
+        {
+          id: data.identifier + '-fill-disable',
+          type: 'fill',
+          source: data.identifier,
+          layout: {},
+          paint: {
+            'fill-color': MAP_COLOR_UNASSIGNED,
+            'fill-opacity': MAP_DEFAULT_DISABLED_FILL_OPACITY
+          },
+          filter: [
+            'case',
+            ['==', ['get', 'geographicLevel'], 'structure'],
+            false,
+            ['case', ['boolean', ['get', 'assigned']], false, true]
+          ]
+        },
+        'label-layer'
+    );
+
+    map.addLayer(
+        {
+          id: data.identifier + '-border',
+          type: 'line',
+          source: data.identifier,
+          layout: {},
+          paint: {
+            'line-color': 'black',
+            'line-width': 3
+          }
+        },
+        'label-layer'
     );
 
     const featureSet: Feature<Point, Properties>[] = [];
@@ -402,10 +417,10 @@ export const doubleClickHandler = (map: Map, planId: string, opacity: number) =>
 };
 
 export const contextMenuHandler = (
-  map: Map,
-  openHandler: (data: any, assign: boolean) => void,
-  planId: string,
-  opacity: number
+    map: Map,
+    openHandler: (data: any, assign: boolean) => void,
+    planId: string,
+    opacity: number
 ) => {
   // When a click event occurs on a feature in the places layer, open a popup at the
   // location of the feature, with description HTML from its properties.
@@ -422,16 +437,16 @@ export const contextMenuHandler = (
       if (feature && feature.properties && feature.properties.id) {
         const buttonId = feature.properties.id + '-button';
         if (feature.layer.id.includes('-highlighted')) {
-          popup = new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: false })
-            .setLngLat(e.lngLat)
-            .setHTML(
+          popup = new Popup({focusAfterOpen: true, closeOnMove: true, closeButton: false})
+          .setLngLat(e.lngLat)
+          .setHTML(
               `<h4 class='bg-success text-center'>Action menu</h4>
               <div class='m-0 p-0 text-center'>
               <p>You have selected multiple locations.</p>
               <button class='btn btn-primary mx-2 mt-2 mb-4' style='min-width: 200px' id='${buttonId}'>Assign teams</button>
               </div>`
-            )
-            .addTo(map);
+          )
+          .addTo(map);
         } else {
           const loadChildButtonId = feature.properties.id + '-child-button';
           const assignButtonId = feature.properties.id + '-assign';
@@ -445,23 +460,23 @@ export const contextMenuHandler = (
             </p>`;
           const end = `<button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
           <button class='btn btn-primary w-75 mb-2' id='${parentButtonId}' style='${(feature.properties as any).parentIdentifier ? 'display: ""' : 'display: none'
-            }'>Parent details</button>
+          }'>Parent details</button>
           <button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Actions and Details</button>
           </div>`;
           const displayHTML =
-            start +
-            ((feature.properties as LocationProperties).assigned || feature.state.assigned
-              ? end
-              : feature.properties.geographicLevel === 'structure'
-                ? `<button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Structure Details</button>`
-                : `<button class='btn btn-primary w-75 mb-3' id='${assignButtonId}'>Assign location</button></div>`);
-          popup = new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: false })
-            .setLngLat(e.lngLat)
-            .setHTML(displayHTML)
-            .addTo(map);
+              start +
+              ((feature.properties as LocationProperties).assigned || feature.state.assigned
+                  ? end
+                  : feature.properties.geographicLevel === 'structure'
+                      ? `<button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Structure Details</button>`
+                      : `<button class='btn btn-primary w-75 mb-3' id='${assignButtonId}'>Assign location</button></div>`);
+          popup = new Popup({focusAfterOpen: true, closeOnMove: true, closeButton: false})
+          .setLngLat(e.lngLat)
+          .setHTML(displayHTML)
+          .addTo(map);
           document
-            .getElementById(loadChildButtonId)
-            ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId, opacity));
+          .getElementById(loadChildButtonId)
+          ?.addEventListener('click', () => loadChildren(map, (feature.properties as any).id, planId, opacity));
           document.getElementById(parentButtonId)?.addEventListener('click', () => {
             getLocationByIdAndPlanId((feature.properties as any).parentIdentifier, planId).then(res => {
               res.properties.id = res.identifier;
@@ -483,9 +498,9 @@ export const contextMenuHandler = (
 };
 
 export const selectHandler = (
-  map: Map,
-  selectedLocations: string[],
-  setSelectedLocations: (locations: string[]) => void
+    map: Map,
+    selectedLocations: string[],
+    setSelectedLocations: (locations: string[]) => void
 ) => {
   map.on('click', e => {
     if (e.originalEvent.ctrlKey) {
@@ -519,10 +534,10 @@ export const selectHandler = (
 };
 
 export const createChildLocationLabel = (
-  map: Map,
-  featureSet: Feature<Point, Properties>[],
-  identifier: string,
-  reporting?: boolean
+    map: Map,
+    featureSet: Feature<Point, Properties>[],
+    identifier: string,
+    reporting?: boolean
 ) => {
   if (map.getSource(identifier + '-label') === undefined) {
     map.addSource(identifier + '-label', {
@@ -543,33 +558,33 @@ export const loadChildren = (map: Map, id: string, planId: string, opacity: numb
   });
   disableMapInteractions(map, true);
   getChildLocation(id, planId)
-    .then(res => {
-      res.map(el => {
-        const properties = {
-          ...el.properties,
-          id: el.identifier
-        };
-        el.properties = properties;
-        return el;
-      });
-      if (res.length) {
-        let featureSet = {
-          identifier: id + 'children',
-          type: 'FeatureCollection',
-          features: res
-        };
-        createChild(map, featureSet, opacity);
-      } else {
-        toast.info('This location has no child locations.');
-      }
-    })
-    .catch(err => {
-      disableMapInteractions(map, false);
-      toast.error(err);
-    })
-    .finally(() => {
-      toast.dismiss(loadingToast.toString());
+  .then(res => {
+    res.map(el => {
+      const properties = {
+        ...el.properties,
+        id: el.identifier
+      };
+      el.properties = properties;
+      return el;
     });
+    if (res.length) {
+      let featureSet = {
+        identifier: id + 'children',
+        type: 'FeatureCollection',
+        features: res
+      };
+      createChild(map, featureSet, opacity);
+    } else {
+      toast.info('This location has no child locations.');
+    }
+  })
+  .catch(err => {
+    disableMapInteractions(map, false);
+    toast.error(err);
+  })
+  .finally(() => {
+    toast.dismiss(loadingToast.toString());
+  });
 };
 
 export const createLocationLabel = (map: Map, data: any, center: Feature<Point, Properties>) => {
@@ -587,8 +602,8 @@ export const createLocationLabel = (map: Map, data: any, center: Feature<Point, 
       source: data.identifier + 'Label',
       layout: {
         'text-field':
-          data.properties.name +
-          (data.properties.geographicLevel === 'structure' ? '' : ' (' + data.properties.childrenNumber + ')'),
+            data.properties.name +
+            (data.properties.geographicLevel === 'structure' ? '' : ' (' + data.properties.childrenNumber + ')'),
         'text-font': ['Open Sans Bold', 'Open Sans Semibold'],
         'text-anchor': 'bottom'
       },
@@ -627,27 +642,30 @@ export const disableMapInteractions = (map: Map, disable: boolean) => {
 export const createParentLayers = (mapInstance: Map, mapData: PlanningLocationResponse, parentSource: string, parentlabelSource: string, parentLayer: string, parentLabelLayer: string) => {
   mapInstance.addSource(parentSource, {
     type: 'geojson',
-    data: { type: 'FeatureCollection', features: mapData.parents ?? [] },
+    data: {type: 'FeatureCollection', features: mapData.parents ?? []},
     tolerance: 1.5
   });
 
   mapInstance.addSource(parentlabelSource, {
     type: 'geojson',
-    data: { type: 'FeatureCollection', features: getFeatureCentres({ type: 'FeatureCollection', features: mapData.parents ?? [] }) },
+    data: {
+      type: 'FeatureCollection',
+      features: getFeatureCentres({type: 'FeatureCollection', features: mapData.parents ?? []})
+    },
     tolerance: 1.5
   });
 
   mapInstance.addLayer(
-    {
-      id: parentLayer,
-      type: 'line',
-      source: parentSource,
-      paint: {
-        'line-color': ['get', 'levelColor'],
-        'line-width': 4
-      }
-    },
-    'label-layer'
+      {
+        id: parentLayer,
+        type: 'line',
+        source: parentSource,
+        paint: {
+          'line-color': ['get', 'levelColor'],
+          'line-width': 4
+        }
+      },
+      'label-layer'
   );
 
   mapInstance.addLayer({
@@ -655,11 +673,14 @@ export const createParentLayers = (mapInstance: Map, mapData: PlanningLocationRe
     type: 'symbol',
     source: parentlabelSource,
     layout: {
-      'text-field': ['format', ['get', 'name'], { 'font-scale': 1.2, 'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']] }],
+      'text-field': ['format', ['get', 'name'], {
+        'font-scale': 0.6,
+        'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']]
+      }],
       'text-anchor': 'bottom'
     },
     paint: {
-      'text-color': 'lightgrey'
+      'text-color': ['get', 'levelColor']
     }
   }, 'label-layer');
 };
@@ -717,34 +738,34 @@ export const getTagStats = (mapData: PlanningLocationResponse | undefined, geogr
 
 export const createHeatMapLayer = (mapInstance: Map, featureCentres: Feature<Point, Properties>[], sourceLabel: string, layerLabel: string) => {
   mapInstance.addSource(sourceLabel, {
-    type: 'geojson',
-    data: {
-      type: 'FeatureCollection',
-      features: featureCentres
-    },
-    tolerance: 0.75
-  }
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: featureCentres
+        },
+        tolerance: 0.75
+      }
   );
 
   mapInstance.addLayer(
-    {
-      id: layerLabel,
-      type: 'heatmap',
-      source: sourceLabel,
-      paint: {
-        'heatmap-radius': ['*', ['get', 'selectedTagValuePercent'], 50],
-        'heatmap-weight': ['*', ['get', 'selectedTagValuePercent'], 30],
-        'heatmap-opacity': 0.2
-      }
-    },
-    'label-layer'
+      {
+        id: layerLabel,
+        type: 'heatmap',
+        source: sourceLabel,
+        paint: {
+          'heatmap-radius': ['*', ['get', 'selectedTagValuePercent'], 50],
+          'heatmap-weight': ['*', ['get', 'selectedTagValuePercent'], 30],
+          'heatmap-opacity': 0.2
+        }
+      },
+      'label-layer'
   );
 }
 
 export const createSearchResultLabelLayer = (mapInstance: Map, info: any, sourceLabel: string, layerLabel: string) => {
   mapInstance.addSource(sourceLabel, {
     type: 'geojson',
-    data: { type: 'FeatureCollection', features: getFeatureCentres(info) },
+    data: {type: 'FeatureCollection', features: getFeatureCentres(info)},
     tolerance: 0.75
   });
 
@@ -753,7 +774,10 @@ export const createSearchResultLabelLayer = (mapInstance: Map, info: any, source
     type: 'symbol',
     source: sourceLabel,
     layout: {
-      'text-field': ['format', ['get', 'name'], { 'font-scale': 0.8, 'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']] }],
+      'text-field': ['format', ['get', 'name'], {
+        'font-scale': 0.8,
+        'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']]
+      }],
       'text-anchor': 'bottom',
       'text-justify': 'center'
     },
@@ -771,46 +795,46 @@ export const createSearchResultLineLayer = (mapInstance: Map, info: any, sourceL
   });
 
   mapInstance.addLayer(
-    {
-      id: layerLabel,
-      type: 'line',
-      source: sourceLabel,
-      paint: {
-        'line-color': 'black',
-        'line-width': 4
-      }
-    },
-    'label-layer'
+      {
+        id: layerLabel,
+        type: 'line',
+        source: sourceLabel,
+        paint: {
+          'line-color': 'black',
+          'line-width': 4
+        }
+      },
+      'label-layer'
   );
 }
 
-export const createSearchResultFillLayer = (mapInstance: Map, sourceLabel: string, layerLabel: string) => {
+export const createSearchResultFillLayer = (mapInstance: Map, sourceLabel: string, layerLabel: string, color: string) => {
   mapInstance.addLayer(
-    {
-      id: layerLabel,
-      type: 'fill',
-      source: sourceLabel,
-      paint: {
-        'fill-color': 'green',
-        'fill-opacity': .2
-      }
-    },
-    'label-layer'
+      {
+        id: layerLabel,
+        type: 'fill',
+        source: sourceLabel,
+        paint: {
+          'fill-color': color,
+          'fill-opacity': .2
+        }
+      },
+      'label-layer'
   );
 }
 //
-export const createSearchResultFillLayerWeightedOnTagValue = (mapInstance: Map, sourceLabel: string, layerLabel: string) => {
+export const createSearchResultFillLayerWeightedOnTagValue = (mapInstance: Map, sourceLabel: string, layerLabel: string, color: string) => {
   mapInstance.addLayer(
-    {
-      id: layerLabel,
-      type: 'fill',
-      source: sourceLabel,
-      paint: {
-        'fill-color': ['case', ['<', ['get', 'selectedTagValue'], 0], 'brown', ['case', ['==', ['get', 'selectedTagValue'], 0], 'blue', 'green']],
-        'fill-opacity': ['case', ['==', ['get', 'selectedTagValuePercent'], 0], 0.1, ['get', 'selectedTagValuePercent']]
-      }
-    },
-    'label-layer'
+      {
+        id: layerLabel,
+        type: 'fill',
+        source: sourceLabel,
+        paint: {
+          'fill-color': ['case', ['<', ['get', 'selectedTagValue'], 0], 'brown', ['case', ['==', ['get', 'selectedTagValue'], 0], 'blue', color]],
+          'fill-opacity': ['case', ['==', ['get', 'selectedTagValuePercent'], 0], 0.1, ['get', 'selectedTagValuePercent']]
+        }
+      },
+      'label-layer'
   );
 }
 
@@ -821,22 +845,22 @@ export const getGeoListFromMapData = (mapData: PlanningLocationResponse | undefi
 
   if (mapData) {
     mapData?.features.flatMap(feature => feature.properties)
-      .map(property => {
-        return {
-          geographicLevel: property.geographicLevel,
-          nodeNumber: property.geographicLevelNodeNumber
+    .map(property => {
+          return {
+            geographicLevel: property.geographicLevel,
+            nodeNumber: property.geographicLevelNodeNumber
+          }
         }
+    ).forEach(prop => {
+      if (prop.geographicLevel) {
+        arr3[prop.geographicLevel] = prop.nodeNumber
       }
-      ).forEach(prop => {
-        if (prop.geographicLevel) {
-          arr3[prop.geographicLevel] = prop.nodeNumber
-        }
-      });
+    });
 
     if (arr3) {
       Object.keys(arr3).sort((keya, keyb) => {
-        return arr3[keyb] - arr3[keya]
-      }
+            return arr3[keyb] - arr3[keya]
+          }
       ).forEach(prop => {
         arr.add(prop)
       });
@@ -852,6 +876,6 @@ export const getMetadataListFromMapData = (mapData: PlanningLocationResponse | u
   let arr = new Set<string>();
   arr.add("None");
   mapData?.features.flatMap(feature => feature.properties).flatMap(property => property.metadata)
-    .forEach(metadata => arr.add(metadata?.type));
+  .forEach(metadata => arr.add(metadata?.type));
   return arr;
 };

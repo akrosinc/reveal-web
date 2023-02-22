@@ -8,8 +8,13 @@
 
 .sidebar-adjust {
   z-index: 1;
-  position: absolute;
   margin: 1em;
+}
+
+.sidebar-adjust-list {
+  z-index: 1;
+  margin: 1em;
+  width:18%
 }
 
 

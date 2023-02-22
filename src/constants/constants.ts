@@ -68,6 +68,12 @@ export const LOCATION_TABLE_COLUMNS = [
   { Header: 'Geography Level', accessor: 'properties.geographicLevel' }
 ];
 
+export const SIMULATION_LOCATION_TABLE_COLUMNS = [
+  { Header: 'Location', accessor: 'properties.name', id:'resultName' },
+  { Header: 'Geography Level', accessor: 'properties.geographicLevel' },
+  { Header: 'Details', id:'details'  }
+];
+
 export const LOCATION_ASSIGN_TABLE_COLUMNS = [
   { Header: 'Location', accessor: 'properties.name', id: 'location' },
   { Header: 'Geography Level', accessor: 'properties.geographicLevel' },

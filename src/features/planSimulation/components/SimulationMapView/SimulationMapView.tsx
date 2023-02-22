@@ -1,20 +1,30 @@
-import { Expression, LngLatBounds, Map, Popup } from 'mapbox-gl';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Container, Form } from 'react-bootstrap';
-import { MAPBOX_STYLE_SATELLITE, MAPBOX_STYLE_SATELLITE_STREETS, MAPBOX_STYLE_STREETS } from '../../../../constants';
+import {Expression, LngLatBounds, Map, Popup} from 'mapbox-gl';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import {Button, Container, Form} from 'react-bootstrap';
 import {
+  MAPBOX_STYLE_SATELLITE,
+  MAPBOX_STYLE_SATELLITE_STREETS,
+  MAPBOX_STYLE_STREETS
+} from '../../../../constants';
+import {
+  createHeatMapLayer,
+  createParentLayers,
   createSearchResultFillLayer,
   createSearchResultFillLayerWeightedOnTagValue,
   createSearchResultLabelLayer,
   createSearchResultLineLayer,
-  fitCollectionToBounds
-  , getFeatureCentres
-  , getGeoListFromMapData, getLocationsFilteredByGeoLevel, getMetadataListFromMapData, initMap
+  fitCollectionToBounds,
+  getFeatureCentres,
+  getGeoListFromMapData,
+  getLocationsFilteredByGeoLevel,
+  getMetadataListFromMapData,
+  getTagStats,
+  initMap
 } from '../../../../utils';
-import { EntityTag, PlanningLocationResponse } from '../../providers/types';
-import { createParentLayers, getTagStats, createHeatMapLayer } from '../../../../utils';
-import { Feature, MultiPolygon, Point, Polygon } from '@turf/turf';
-
+import {EntityTag, PlanningLocationResponse} from '../../providers/types';
+import {Feature, MultiPolygon, Point, Polygon} from '@turf/turf';
+import {ColorPicker, useColor} from "react-color-palette";
+import "react-color-palette/lib/css/styles.css";
 
 interface Props {
   fullScreenHandler: () => void;
@@ -38,7 +48,14 @@ const PARENT_LABEL_LAYER = 'result-parent-label';
 const SEARCH_RESULT_SOURCE = 'main';
 const SEARCH_RESULT_FILL_LAYER = 'fill-layer';
 const SEARCH_RESULT_LINE_LAYER = 'main-border';
-const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation, openModalHandler, entityTags }: Props) => {
+const SimulationMapView = ({
+                             fullScreenHandler,
+                             fullScreen,
+                             mapData,
+                             toLocation,
+                             openModalHandler,
+                             entityTags
+                           }: Props) => {
   const mapContainer = useRef<any>();
   const map = useRef<Map>();
   const [lng, setLng] = useState(28.33);
@@ -50,19 +67,32 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
   const [mapLayerStyle, setMapLayerStyle] = useState<string>();
   const [selectedMetadata, setSelectedMetadata] = useState<string>();
   const [selectedHeatMapMetadata, setSelectedHeatMapMetadata] = useState<string>();
-  const hoverPopup = useRef<Popup>(new Popup({ closeOnClick: false, closeButton: false, offset: 20 }));
+  const hoverPopup = useRef<Popup>(new Popup({
+    closeOnClick: false,
+    closeButton: false,
+    offset: 20
+  }));
   const [metadataListCounter] = useState<number>(1);
   const [showMapControls, setShowMapControls] = useState<boolean>(true);
+  const [showLayerStyle, setShowLayerStyle] = useState<Boolean>(true);
+  const [showMetaStyle, setShowMetaStyle] = useState<Boolean>(true);
+  const [showGeoLevelStyle, setShowGeoLevelStyle] = useState<Boolean>(true);
+  const [showHeatMapStyle, setShowHeatMapStyle] = useState<Boolean>(true);
   const [mapStateData, setMapStateData] = useState<PlanningLocationResponse>();
+  const [color, setColor] = useColor("hex", "#005512");
+
+  const [showColorPicker,setShowColorPicker] = useState(false);
+  const [showStats,setShowStats] = useState(true);
+  const [showHeatMapToggles,setShowHeatMapToggles] = useState(false);
 
   useEffect(() => {
 
     if (map.current) return; // initialize map only once
-    const mapInstance = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_STREETS);
-    map.current = mapInstance;
+    map.current = initMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_STREETS);
 
   });
-
+  
+  
   useEffect(() => {
     if (toLocation && map && map.current) map.current?.fitBounds(toLocation);
   }, [toLocation]);
@@ -72,7 +102,7 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
     setMapStateData(mapData);
   }, [mapData])
 
-  const loadLocation = useCallback((mapInstance: Map, mapData?: PlanningLocationResponse, geographicLevel?: string, tag?: string, heatMapTag?: string) => {
+  const loadLocation = useCallback((mapInstance: Map, mapData?: PlanningLocationResponse, geographicLevel?: string, tag?: string, heatMapTag?: string,selectedColor?:string) => {
     if (mapData && mapData.features.length) {
       createParentLayers(mapInstance, mapData, PARENT_SOURCE, PARENT_LABEL_SOURCE, PARENT_LAYER, PARENT_LABEL_LAYER);
 
@@ -91,7 +121,10 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
           type: 'FeatureCollection',
           features: getLocationsFilteredByGeoLevel(mapData, geographicLevel)
         }
-        filteredParentFeatures = getLocationsFilteredByGeoLevel({ type: 'FeatureCollection', features: mapData.parents ?? [] }, geographicLevel);
+        filteredParentFeatures = getLocationsFilteredByGeoLevel({
+          type: 'FeatureCollection',
+          features: mapData.parents ?? []
+        }, geographicLevel);
       } else {
         info = mapData;
       }
@@ -99,14 +132,22 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
       createSearchResultLineLayer(mapInstance, info, SEARCH_RESULT_SOURCE, SEARCH_RESULT_LINE_LAYER);
 
       if (tag && tag !== "None") {
-        createSearchResultFillLayerWeightedOnTagValue(mapInstance, SEARCH_RESULT_SOURCE, SEARCH_RESULT_FILL_LAYER);
+        createSearchResultFillLayerWeightedOnTagValue(mapInstance, SEARCH_RESULT_SOURCE, SEARCH_RESULT_FILL_LAYER,selectedColor??'green' );
       } else {
-        createSearchResultFillLayer(mapInstance, SEARCH_RESULT_SOURCE, SEARCH_RESULT_FILL_LAYER);
+        createSearchResultFillLayer(mapInstance, SEARCH_RESULT_SOURCE, SEARCH_RESULT_FILL_LAYER,selectedColor??'green' );
       }
 
       if (heatMapTag && heatMapTag !== "None") {
-        let featureCentres = getFeatureCentres({ type: 'FeatureCollection', features: filteredParentFeatures });
-        tagStats = getTagStats({ identifier: undefined, type: 'FeatureCollection', features: featureCentres, parents: [] }, geographicLevel)
+        let featureCentres = getFeatureCentres({
+          type: 'FeatureCollection',
+          features: filteredParentFeatures
+        });
+        tagStats = getTagStats({
+          identifier: undefined,
+          type: 'FeatureCollection',
+          features: featureCentres,
+          parents: []
+        }, geographicLevel)
         featureCentres.forEach(feature => {
           updateFeaturesWithTagStats(feature, tagStats, heatMapTag);
         })
@@ -120,10 +161,10 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
         const properties = feature.properties;
         if (properties && (properties['selectedTagValue'] === 0 || properties['selectedTagValue'])) {
 
-          let htmlText = '<p class="text-danger">Data not parsed correctly.</p>';
+
 
           const selectedValue: any[] = JSON.parse(properties['selectedTagValue']);
-          htmlText = `<p class="text-success">Tag: ${tag} Value: ${selectedValue}</p > `;
+          let htmlText = `<p class="text-success">Tag: ${tag} Value: ${selectedValue}</p > `;
           mapInstance.getCanvas().style.cursor = 'pointer';
           hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(mapInstance);
         }
@@ -193,7 +234,7 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
   }, [mapData, loadLocation]);
 
   useEffect(() => {
-    if (map.current !== undefined && map !== undefined) {
+    if (map !== undefined  &&  map.current !== undefined) {
       map.current.on('move', () => {
         if (map !== undefined && map.current !== undefined) {
           setLng(Number(map.current.getCenter().lng.toPrecision(4)));
@@ -216,6 +257,14 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
     };
   }, []);
 
+  useEffect(()=>{
+    if (map.current?.getSource(SEARCH_RESULT_SOURCE)){
+      if ( map.current?.getLayer(SEARCH_RESULT_FILL_LAYER)){
+        map.current?.setPaintProperty(SEARCH_RESULT_FILL_LAYER, 'fill-color', color.hex)
+      }
+    }
+  },[color])
+
   useEffect(() => {
 
     const clickHandler = (mapInstance: Map) => {
@@ -233,15 +282,15 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
 
     //store current position of the map before reloading to new style
     const currentPosition: [number, number] | undefined = map.current
-      ? [map.current.getCenter().lng, map.current.getCenter().lat]
-      : undefined;
+        ? [map.current.getCenter().lng, map.current.getCenter().lat]
+        : undefined;
     map.current?.remove();
     map.current = undefined;
     const mapboxInstance = initMap(mapContainer, currentPosition ?? [lng, lat], zoom, 'bottom-left', mapLayerStyle ?? MAPBOX_STYLE_STREETS);
     //set zoom to another value to trigger a rerender
     setZoom(Number((zoom + Math.random()).toPrecision(2)));
     clickHandler(mapboxInstance);
-    mapboxInstance.once('load', () => loadLocation(mapboxInstance, mapData, selectedGeoLevel, selectedMetadata, selectedHeatMapMetadata));
+    mapboxInstance.once('load', () => loadLocation(mapboxInstance, mapData, selectedGeoLevel, selectedMetadata, selectedHeatMapMetadata,color.hex));
     map.current = mapboxInstance;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -293,98 +342,169 @@ const SimulationMapView = ({ fullScreenHandler, fullScreen, mapData, toLocation,
   }
 
   return (
-    <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
+      <Container fluid style={{position: 'relative'}} className="mx-0 px-0">
+        <div style={{position: "absolute", zIndex: 2, width: '100%'}} className="mx-0 px-0">
+          <div style={{float: 'left', position: 'relative'}} className="sidebar-adjust ">
+            <div>
+              <Button style={{width: '75px'}} onClick={() => {
+                setShowMapControls(!showMapControls);
+                console.log("Clicked")
+              }}
+                      className="rounded" size='sm'
+                      variant="primary">{(showMapControls ? "Hide" : "Show")} </Button>
+            </div>
+            {showMapControls && (
+                <>
+                  <div style={{paddingTop: '1em'}}>
+                    <Button style={{width: '75px', fontSize: 'smaller'}}
+                            onClick={() => setShowLayerStyle(!showLayerStyle)}
+                            className="rounded" size='sm'
+                            variant="success">{((showLayerStyle ? "Hide" : "") + " Style")} </Button>
+                  </div>
+                  {selectedGeoLevel && (selectedGeoLevel !== 'All') && (
+                      <div style={{paddingTop: '1em'}}>
+                        <Button style={{width: '75px', fontSize: 'smaller'}}
+                                onClick={() => setShowGeoLevelStyle(!showGeoLevelStyle)}
+                                className="rounded" size='sm'
+                                variant="success">{((showGeoLevelStyle ? "Hide" : "") + " Level")} </Button>
+                      </div>)}
 
-      <div style={{ left: '0%', width: '10px' }} className="sidebar-adjust " >
-        <Button onClick={() => setShowMapControls(!showMapControls)}
-          className="rounded" size='sm' variant="primary">{(showMapControls ? "Hide" : "Show")} </Button>
-      </div>
-
-      {showMapControls && (
-        <>
-          <div style={{ left: '10%' }} className="sidebar-adjust text-dark bg-light p-2 rounded">
-            <p className="lead mb-1">Layer style</p>
-            <Form.Select onChange={e => setMapLayerStyle(e.target.value)}>
-              <option value={MAPBOX_STYLE_STREETS}>Streets</option>
-              <option value={MAPBOX_STYLE_SATELLITE_STREETS}>Streets Satellite</option>
-              <option value={MAPBOX_STYLE_SATELLITE}>Satellite</option>
-            </Form.Select>
+                  {selectedGeoLevel && (selectedGeoLevel !== 'All') && (
+                      <div style={{paddingTop: '1em'}}>
+                        <Button style={{width: '75px', fontSize: 'smaller'}}
+                                onClick={() => setShowMetaStyle(!showMetaStyle)}
+                                className="rounded" size='sm'
+                                variant="success">{((showMetaStyle ? "Hide" : "") + " Meta")} </Button>
+                      </div>
+                  )}
+                  {selectedGeoLevel && (selectedGeoLevel !== 'All') && (
+                      <div style={{paddingTop: '1em'}}>
+                        <Button style={{width: '75px', fontSize: 'smaller'}}
+                                onClick={() => setShowHeatMapStyle(!showHeatMapStyle)}
+                                className="rounded" size='sm'
+                                variant="success">{((showHeatMapStyle ? "Hide" : "") + " Heatmap")} </Button>
+                      </div>
+                  )}
+                </>)}
           </div>
 
+          {(showMapControls) &&
+              (<div>
+                {(showLayerStyle) && (<div style={{float: 'left'}}
+                                           className="sidebar-adjust-list text-dark bg-light p-2 rounded">
+                  <p className="lead mb-1">Layer style</p>
+                  <Form.Select onChange={e => setMapLayerStyle(e.target.value)}>
+                    <option value={MAPBOX_STYLE_STREETS}>Streets</option>
+                    <option value={MAPBOX_STYLE_SATELLITE_STREETS}>Streets Satellite</option>
+                    <option value={MAPBOX_STYLE_SATELLITE}>Satellite</option>
+                  </Form.Select>
 
-          {(selectedGeoLevel) && (selectedGeoLevel !== 'All') && (<div style={{ left: '30%' }} className="sidebar-adjust text-dark bg-light p-2 rounded">
-            <p className="lead mb-1">Geographic Levels</p>
-            <Form.Select onChange={e => setSelectedGeoLevel(e.target.value)} value={selectedGeoLevel}>
-              {geoList && Array.from(geoList).map(geoLevel => {
-                return (<option key={geoLevel} value={geoLevel} >{geoLevel}</option>);
+                </div>)}
+
+                {(showGeoLevelStyle) && (selectedGeoLevel) && (selectedGeoLevel !== 'All') && (
+                    <div style={{float: 'left'}}
+                         className="sidebar-adjust-list text-dark bg-light p-2 rounded">
+                      <p className="lead mb-1" onClick={()=>{setShowColorPicker(!showColorPicker)}}>Geographic Levels</p>
+                      <Form.Select onChange={e => setSelectedGeoLevel(e.target.value)}
+                                   value={selectedGeoLevel}>
+                        {geoList && Array.from(geoList).map(geoLevel => {
+                          return (<option key={geoLevel} value={geoLevel}>{geoLevel}</option>);
+                        })}
+                      </Form.Select>
+                      {showColorPicker && (
+                          <div>
+                              <ColorPicker width={(fullScreen)?287:190} color={color} onChange={setColor} hideHEX={true} hideHSV={true} hideRGB={true}/>
+                          </div>
+                      )}
+                    </div>)}
+
+
+
+                {(showMetaStyle) && (selectedGeoLevel) && (selectedGeoLevel !== 'All') && (
+                    <div style={{float: 'left'}}
+                         className="sidebar-adjust-list text-dark bg-light p-2 rounded">
+                      <p className="lead mb-1">Metadata</p>
+                      {metadataListCounter && intArrGenerator(metadataListCounter).map(counter => {
+
+                        return <div key={"metadataList" + counter}><Form.Select
+                            style={{display: 'inline-block'}} key={"metadataList" + counter}
+                            onChange={e => setSelectedMetadata(e.target.value)}
+                            value={selectedMetadata}>
+                          {metadataList && Array.from(metadataList).map(metaDataItem => {
+                            return (<option key={metaDataItem + counter}
+                                            value={metaDataItem}>{metaDataItem}</option>);
+                          })}
+                        </Form.Select>
+                        </div>
+                      })}
+                    </div>)}
+
+                {/* enable when needed by setting false to true */}
+                {(showHeatMapStyle) && (selectedGeoLevel) && (selectedGeoLevel !== 'All') && true && (
+                    <div style={{float: 'left'}}
+                         className="sidebar-adjust-list text-dark bg-light p-2 rounded"
+                         >
+                      <p className="lead mb-1" onClick={()=>setShowHeatMapToggles(!showHeatMapToggles)}>HeatMap</p>
+                      {metadataListCounter && intArrGenerator(metadataListCounter).map(counter => {
+
+                        return <div key={"heatMapMetadataList"}><Form.Select
+                            style={{display: 'inline-block'}} key={"metadataList" + counter}
+                            onChange={e => setSelectedHeatMapMetadata(e.target.value)}
+                            value={selectedHeatMapMetadata}>
+                          {metadataList && Array.from(metadataList).map(metaDataItem => {
+                            return (<option key={metaDataItem + counter}
+                                            value={metaDataItem}>{metaDataItem}</option>);
+                          })}
+                        </Form.Select>
+                          {(showHeatMapToggles && (<><b>Opacity</b><Form.Range min={0} max={100} onChange={(e) => {
+                            map.current?.setPaintProperty(HEAT_MAP_LAYER_LABEL, 'heatmap-opacity', Number(e.target.value) / 100)
+                          }}/>
+                          <b>Radius</b><Form.Range min={0} max={100} onChange={(e) => {
+                            let expression: Expression = map.current?.getPaintProperty(HEAT_MAP_LAYER_LABEL, 'heatmap-radius');
+                            expression[2] = Number(e.target.value)
+                            map.current?.setPaintProperty(HEAT_MAP_LAYER_LABEL, 'heatmap-radius', expression)
+                          }}/></>))}
+                        </div>
+                      })}
+                    </div>)}
+              </div>)
+          }
+
+
+          <div className="clearButton">
+            <p className="small text-dark bg-white p-2 rounded">
+              Lat: {lat} Lng: {lng} Zoom: {zoom}
+            </p>
+            <Button
+                onClick={() => {
+                  fullScreenHandler();
+                  setTimeout(() => {
+                    map.current?.resize();
+                    document.getElementById('mapRow')?.scrollIntoView({behavior: 'smooth'});
+                  }, 0);
+                }}
+                className="mb-2 float-end"
+            >
+              Full Screen
+            </Button>
+          </div>
+        </div>
+        {/* enable when needed by setting false to true */}
+        {(selectedGeoLevel) && true && (selectedGeoLevel !== 'All') && (
+            <div style={{right: '2%', bottom: '3%',position: "absolute", zIndex: 2, width:'20%'}}
+                 className="sidebar-adjust-list text-dark bg-light p-2 rounded" onClick={()=>setShowStats(!showStats)}>
+              <p className="lead mb-1" style={{fontSize: 'small'}}><u><b>Stats</b></u></p>
+              {showStats && entityTags && Array.from(entityTags).filter(tag => tag.simulationDisplay).map(tag => {
+                return (<p style={{fontSize: 'smaller'}}
+                           key={tag.identifier}>{tag.definition ?? tag.tag}: {getTagSumValues(tag.tag)}</p>);
               })}
-            </Form.Select>
-          </div>)}
+            </div>)}
 
-          {(selectedGeoLevel) && (selectedGeoLevel !== 'All') && (<div style={{ right: '3%', bottom: '3%' }} className="sidebar-adjust text-dark bg-light p-2 rounded">
-            <p className="lead mb-1" style={{ fontSize: 'small' }}><u><b>Totals</b></u></p>
-            {entityTags && Array.from(entityTags).filter(tag => tag.simulationDisplay).map(tag => {
-              return (<p style={{ fontSize: 'smaller' }} key={tag.identifier} >{tag.definition ?? tag.tag}: {getTagSumValues(tag.tag)}</p>);
-            })}
-          </div>)}
-
-          {(selectedGeoLevel) && (selectedGeoLevel !== 'All') && (<div style={{ left: '50%' }} className="sidebar-adjust text-dark bg-light p-2 rounded">
-            <p className="lead mb-1">Metadata</p>
-            {metadataListCounter && intArrGenerator(metadataListCounter).map(counter => {
-
-              return <div key={"metadataList" + counter}><Form.Select style={{ display: 'inline-block' }} key={"metadataList" + counter} onChange={e => setSelectedMetadata(e.target.value)} value={selectedMetadata}>
-                {metadataList && Array.from(metadataList).map(metaDataItem => {
-                  return (<option key={metaDataItem + counter} value={metaDataItem}>{metaDataItem}</option>);
-                })}
-              </Form.Select>
-              </div>
-            })}
-          </div>)}
-
-          {(selectedGeoLevel) && (selectedGeoLevel !== 'All') && (false) && (<div style={{ left: '70%' }} className="sidebar-adjust text-dark bg-light p-2 rounded">
-            <p className="lead mb-1">HeatMap</p>
-            {metadataListCounter && intArrGenerator(metadataListCounter).map(counter => {
-
-              return <div key={"heatMapMetadataList"}><Form.Select style={{ display: 'inline-block' }} key={"metadataList" + counter} onChange={e => setSelectedHeatMapMetadata(e.target.value)} value={selectedHeatMapMetadata}>
-                {metadataList && Array.from(metadataList).map(metaDataItem => {
-                  return (<option key={metaDataItem + counter} value={metaDataItem}>{metaDataItem}</option>);
-                })}
-              </Form.Select>
-                <Form.Range min={0} max={100} onChange={(e) => { map.current?.setPaintProperty(HEAT_MAP_LAYER_LABEL, 'heatmap-opacity', Number(e.target.value) / 100) }} />
-                <Form.Range min={0} max={100} onChange={(e) => {
-                  let expression: Expression = map.current?.getPaintProperty(HEAT_MAP_LAYER_LABEL, 'heatmap-radius');
-                  expression[2] = Number(e.target.value)
-                  map.current?.setPaintProperty(HEAT_MAP_LAYER_LABEL, 'heatmap-radius', expression)
-                }} />
-                <Form.Range min={0} max={100} onChange={(e) => { map.current?.setPaintProperty(HEAT_MAP_LAYER_LABEL, 'heatmap-intensity', Number(e.target.value)) }} />
-              </div>
-            })}
-          </div>)}
-        </>
-      )
-      }
+        <div id="mapContainer" ref={mapContainer}
+             style={{height: fullScreen ? '95vh' : '75vh', width: '100%'}}/>
 
 
-      <div className="clearButton">
-        <p className="small text-dark bg-white p-2 rounded">
-          Lat: {lat} Lng: {lng} Zoom: {zoom}
-        </p>
-        <Button
-          onClick={() => {
-            fullScreenHandler();
-            setTimeout(() => {
-              map.current?.resize();
-              document.getElementById('mapRow')?.scrollIntoView({ behavior: 'smooth' });
-            }, 0);
-          }}
-          className="mb-2 float-end"
-        >
-          Full Screen
-        </Button>
-      </div>
-      <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '95vh' : '650px', width: '100%' }} />
-    </Container >
+      </Container>
   );
 };
-
 export default SimulationMapView;
