@@ -17,6 +17,11 @@
   width:18%
 }
 
+.span-header{
+  font-size: medium;
+  text-decoration-line: underline;
+  font-weight: bold;
+}
 
 .mapbox-container {
   width: 100%;

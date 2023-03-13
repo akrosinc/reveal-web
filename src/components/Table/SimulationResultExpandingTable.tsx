@@ -1,29 +1,23 @@
-import React, {useState} from 'react';
-import {Button, Table} from 'react-bootstrap';
-import {useExpanded, useTable} from 'react-table';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3} from '../../constants';
-import {useAppSelector} from '../../store/hooks';
+import React from 'react';
+import { Button, Table } from 'react-bootstrap';
+import { useExpanded, useTable } from 'react-table';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  ROW_DEPTH_COLOR_1,
+  ROW_DEPTH_COLOR_2,
+  ROW_DEPTH_COLOR_3,
+  SIMULATION_LOCATION_TABLE_COLUMNS
+} from '../../constants';
+import { useAppSelector } from '../../store/hooks';
 
 interface Props {
-  columns: any;
   data: any;
   clickHandler: (id: string) => void;
-  sortHandler: (field: string, direction: boolean) => void;
   detailsClickHandler: (id: string) => void;
   summaryClickHandler: (mapData: any) => void;
 }
 
-const SimulationResultExpandingTable = ({
-                                          columns,
-                                          data,
-                                          clickHandler,
-                                          sortHandler,
-                                          detailsClickHandler,
-                                          summaryClickHandler
-                                        }: Props) => {
-  const [sortDirection, setSortDirection] = useState(false);
-  const [activeSortField, setActiveSortField] = useState('');
+const SimulationResultExpandingTable = ({ data, clickHandler, detailsClickHandler, summaryClickHandler }: Props) => {
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const getColorLevel = (depth: number) => {
@@ -61,7 +55,8 @@ const SimulationResultExpandingTable = ({
             geographicLevel: el.properties.geographicLevel,
             result: el.properties.result,
             hasResultChild: el.properties.hasResultChild
-          }
+          },
+          aggregates: el.aggregates
         };
       });
     } else {
@@ -69,132 +64,159 @@ const SimulationResultExpandingTable = ({
     }
   };
 
-  const {getTableProps, getTableBodyProps, headerGroups, rows, prepareRow} = useTable(
+  const columns = React.useMemo(
+    () => [
       {
-        columns,
-        data,
-        getSubRows: (row: any) => mapRows(row),
-        autoResetExpanded: false
+        // Build our expander column
+        id: 'expander', // Make sure it has an ID
+        Cell: ({ row }: { row: any }) =>
+          // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
+          // to build the toggle for expanding a row
+          row.canExpand ? (
+            <span
+              {...row.getToggleRowExpandedProps({
+                style: {
+                  // Use the row.depth property
+                  // and paddingLeft to indicate the depth
+                  // of the row
+                  paddingLeft: `${row.depth}rem`,
+                  paddingTop: '15px',
+                  paddingBottom: '15px',
+                  paddingRight: '15px'
+                }
+              })}
+            >
+              {row.isExpanded ? (
+                <FontAwesomeIcon className="ms-1" icon="chevron-down" />
+              ) : (
+                <FontAwesomeIcon className="ms-1" icon="chevron-right" />
+              )}
+            </span>
+          ) : null
       },
-      useExpanded // Use the useExpanded plugin hook
+      ...SIMULATION_LOCATION_TABLE_COLUMNS
+    ],
+    []
+  );
+
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
+    {
+      columns,
+      data,
+      getSubRows: (row: any) => mapRows(row),
+      autoResetExpanded: false
+    },
+    useExpanded // Use the useExpanded plugin hook
   );
 
   return (
-      <Table bordered responsive hover {...getTableProps()} variant={isDarkMode ? 'dark' : 'white'}>
-        <thead className="border border-2">
+    <Table bordered responsive hover {...getTableProps()} variant={isDarkMode ? 'dark' : 'white'}>
+      <thead className="border border-2">
         {headerGroups.map(headerGroup => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map(column => (
-                  <th
-                      id={column.id + '-sort'}
-                      style={{width: column.id === 'expander' ? '37px' : 'auto'}}
-                      onClick={() => {
-                        if (column.id !== 'expander') {
-                          setSortDirection(!sortDirection);
-                          setActiveSortField(column.Header?.toString() ?? '');
-                          sortHandler(column.id, sortDirection);
-                        }
-                      }}
-                      {...column.getHeaderProps()}
-                  >
-                    {column.render('Header')}
-                    {activeSortField === column.render('Header') ? (
-                        sortDirection ? (
-                            <FontAwesomeIcon className="ms-1" icon="sort-up"/>
-                        ) : (
-                            <FontAwesomeIcon className="ms-1" icon="sort-down"/>
-                        )
-                    ) : column.id !== 'expander' ? (
-                        <FontAwesomeIcon className="ms-1" icon="sort"/>
-                    ) : null}
-                  </th>
-              ))}
-            </tr>
+          <tr {...headerGroup.getHeaderGroupProps()}>
+            {headerGroup.headers.map(column => (
+              <th
+                id={column.id + '-header'}
+                style={{ width: column.id === 'expander' ? '37px' : 'auto' }}
+                {...column.getHeaderProps()}
+              >
+                {column.render('Header')}
+              </th>
+            ))}
+          </tr>
         ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-        {rows.map((row) => {
+      </thead>
+      <tbody {...getTableBodyProps()}>
+        {rows.map(row => {
           prepareRow(row);
           return (
-              //row.depth is not existing in react table types for some reason, casting to any type solves the issue
-              <tr {...row.getRowProps()}
-                  style={{backgroundColor: getColorLevel((row as any).depth)}}>
-                {row.cells.map(cell => {
-                  const cellData = cell.row.original as any;
+            //row.depth is not existing in react table types for some reason, casting to any type solves the issue
+            <tr {...row.getRowProps()} style={{ backgroundColor: getColorLevel((row as any).depth) }}>
+              {row.cells.map(cell => {
+                const cellData = cell.row.original as any;
 
-                  if (cellData.properties?.hasResultChild || cellData.properties?.result) {
-                    if (cell.column.id === 'resultName') {
-
-                      return (
-                          <td
-                              id={cell.column.id + 'click-handler'}
-                              // style={{color:cellData.properties?.result?'black':'lightgray'}}
-                              style={{
-                                color: cellData.properties?.result ? 'black' : 'grey',
-                                fontWeight: cellData.properties?.result ? "bold" : "normal"
-                              }}
-                              {...cell.getCellProps()}
-                              onClick={() => {
-                                if (cell.column.id !== 'expander') {
-                                  clickHandler(cellData.identifier);
-                                }
-                              }}
-                          >
-                            {cell.render('Cell')} {cellData.properties?.hasResultChild ? "*" : ""}
-                          </td>
-                      )
-                    } else if (cell.column.id === 'details') {
-                      return (
-                          <td
-                              id={cell.column.id + 'click-handler'}
-                              style={{
-                                color: 'black',
-                                fontWeight: cellData.properties?.result ? "bold" : "normal"
-                              }}
-                              {...cell.getCellProps()}
-
-                          >
-                            {/*{*/}
-                            {/*  cellData.properties?.result?(*/}
-                            <Button
-                                onClick={() => {
-                                  detailsClickHandler(cellData.identifier)
-                                }}>Details</Button>
-                            <Button
-                                onClick={() => {
-                                  summaryClickHandler(cellData)
-                                }}>Summary</Button>
-                            {/*):null*/}
-                            {/*}*/}
-
-                          </td>
-                      )
-                    } else {
-                      return (
-                          <td
-                              id={cell.column.id + 'click-handler'}
-                              {...cell.getCellProps()}
-                              onClick={() => {
-                                if (cell.column.id !== 'expander') {
-                                  let col = row.original as any;
-                                  clickHandler(col.identifier);
-                                  console.log("this is col: ", col)
-                                }
-                              }}
-                          >
-                            {cell.render('Cell')}
-                          </td>
-                      )
-                    }
+                if (cellData.properties?.hasResultChild || cellData.properties?.result) {
+                  if (cell.column.id === 'resultName') {
+                    return (
+                      <td
+                        id={cell.column.id + 'click-handler'}
+                        // style={{color:cellData.properties?.result?'black':'lightgray'}}
+                        style={{
+                          color: cellData.properties?.result ? 'black' : 'grey',
+                          fontWeight: cellData.properties?.result ? 'bold' : 'normal'
+                        }}
+                        {...cell.getCellProps()}
+                        onClick={() => {
+                          if (cell.column.id !== 'expander') {
+                            clickHandler(cellData.identifier);
+                          }
+                        }}
+                      >
+                        {cell.render('Cell')} {cellData.properties?.hasResultChild ? '*' : ''}
+                      </td>
+                    );
+                  } else if (cell.column.id === 'details') {
+                    return (
+                      <td
+                        id={cell.column.id + 'click-handler'}
+                        style={{
+                          color: 'black',
+                          fontWeight: cellData.properties?.result ? 'bold' : 'normal'
+                        }}
+                        {...cell.getCellProps()}
+                        onClick={() => {
+                          if (cell.column.id !== 'expander') {
+                            clickHandler(cellData.identifier);
+                          }
+                        }}
+                      >
+                        {/*{*/}
+                        {/*  cellData.properties?.result?(*/}
+                        <Button
+                          className={'mx-2'}
+                          onClick={() => {
+                            detailsClickHandler(cellData.identifier);
+                          }}
+                        >
+                          Details
+                        </Button>
+                        <Button
+                          className={'mx-2'}
+                          onClick={() => {
+                            summaryClickHandler(cellData);
+                          }}
+                        >
+                          Summary
+                        </Button>
+                        {/*):null*/}
+                        {/*}*/}
+                      </td>
+                    );
+                  } else {
+                    return (
+                      <td
+                        id={cell.column.id + 'click-handler'}
+                        {...cell.getCellProps()}
+                        onClick={() => {
+                          if (cell.column.id !== 'expander') {
+                            let col = row.original as any;
+                            clickHandler(col.identifier);
+                          }
+                        }}
+                      >
+                        {cell.render('Cell')}
+                      </td>
+                    );
                   }
+                }
 
-                  return null
-                })}
-              </tr>
+                return null;
+              })}
+            </tr>
           );
         })}
-        </tbody>
-      </Table>
+      </tbody>
+    </Table>
   );
 };
 

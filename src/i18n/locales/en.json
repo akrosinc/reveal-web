@@ -197,7 +197,8 @@
     "entity": "Entity",
     "hierarchy": "Hierarchy",
     "location": "Location",
-    "geographicLevel": "Geographic Level"
+    "geographicLevel": "Geographic Level",
+    "filterGeographicLevel": "Geographic Level Filter"
   },
   "label": {
     "layerOpacity":  "Layer opacity"

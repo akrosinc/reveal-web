@@ -1,4 +1,4 @@
-import { ReportType } from "../features/reporting/providers/types";
+import { ReportType } from '../features/reporting/providers/types';
 
 // APP TEXT
 export const APP_TITLE = 'Reveal';
@@ -69,9 +69,9 @@ export const LOCATION_TABLE_COLUMNS = [
 ];
 
 export const SIMULATION_LOCATION_TABLE_COLUMNS = [
-  { Header: 'Location', accessor: 'properties.name', id:'resultName' },
+  { Header: 'Location', accessor: 'properties.name', id: 'resultName' },
   { Header: 'Geography Level', accessor: 'properties.geographicLevel' },
-  { Header: 'Details', id:'details'  }
+  { Header: 'Details', id: 'details' }
 ];
 
 export const LOCATION_ASSIGN_TABLE_COLUMNS = [
@@ -170,40 +170,88 @@ export const KEY_INDICATOR_LEVELS: any[string] = {
   //Add new entry here for customization
   [ReportType.MDA_LITE_COVERAGE]: {
     DANGER: {
-      colorName: "red", min: 0, max: 65, class: "bg-danger", color: COLOR_BOOTSTRAP_DANGER, highest: false
+      colorName: 'red',
+      min: 0,
+      max: 65,
+      class: 'bg-danger',
+      color: COLOR_BOOTSTRAP_DANGER,
+      highest: false
     },
     GOOD: {
-      colorName: "yellow", min: 65, max: 80, class: "bg-yellow", color: COLOR_YELLOW, highest: false
+      colorName: 'yellow',
+      min: 65,
+      max: 80,
+      class: 'bg-yellow',
+      color: COLOR_YELLOW,
+      highest: false
     },
     EXCELLENT: {
-      colorName: "green", min: 80, max: 100, class: "bg-success", color: COLOR_BOOTSTRAP_SUCCESS, highest: true
+      colorName: 'green',
+      min: 80,
+      max: 100,
+      class: 'bg-success',
+      color: COLOR_BOOTSTRAP_SUCCESS,
+      highest: true
     }
   },
   [ReportType.SURVEY]: {
     DANGER: {
-      colorName: "red", min: 0, max: 70, class: "bg-danger", color: COLOR_BOOTSTRAP_DANGER, highest: false
+      colorName: 'red',
+      min: 0,
+      max: 70,
+      class: 'bg-danger',
+      color: COLOR_BOOTSTRAP_DANGER,
+      highest: false
     },
     GOOD: {
-      colorName: "yellow", min: 70, max: 80, class: "bg-yellow", color: COLOR_YELLOW, highest: false
+      colorName: 'yellow',
+      min: 70,
+      max: 80,
+      class: 'bg-yellow',
+      color: COLOR_YELLOW,
+      highest: false
     },
     EXCELLENT: {
-      colorName: "green", min: 80, max: 100, class: "bg-success", color: COLOR_BOOTSTRAP_SUCCESS, highest: true
+      colorName: 'green',
+      min: 80,
+      max: 100,
+      class: 'bg-success',
+      color: COLOR_BOOTSTRAP_SUCCESS,
+      highest: true
     }
   },
   [ReportType.DEFAULT]: {
     DANGER: {
-      colorName: "red", min: 0, max: 25, class: "bg-danger", color: COLOR_BOOTSTRAP_DANGER, highest: false
+      colorName: 'red',
+      min: 0,
+      max: 25,
+      class: 'bg-danger',
+      color: COLOR_BOOTSTRAP_DANGER,
+      highest: false
     },
     MEDIUM: {
-      colorName: "orange", min: 25, max: 50, class: "bg-warning", color: COLOR_BOOTSTRAP_WARNING, highest: false
+      colorName: 'orange',
+      min: 25,
+      max: 50,
+      class: 'bg-warning',
+      color: COLOR_BOOTSTRAP_WARNING,
+      highest: false
     },
     GOOD: {
-      colorName: "yellow", min: 50, max: 75, class: "bg-yellow", color: COLOR_YELLOW, highest: false
+      colorName: 'yellow',
+      min: 50,
+      max: 75,
+      class: 'bg-yellow',
+      color: COLOR_YELLOW,
+      highest: false
     },
     EXCELLENT: {
-      colorName: "orange", min: 75, max: 100, class: "bg-success", color: COLOR_BOOTSTRAP_SUCCESS, highest: true
+      colorName: 'orange',
+      min: 75,
+      max: 100,
+      class: 'bg-success',
+      color: COLOR_BOOTSTRAP_SUCCESS,
+      highest: true
     }
   }
-}
-
-
+};

@@ -49,6 +49,33 @@ export interface PlanningLocationResponse {
   parents: Feature<Point | Polygon | MultiPolygon, Properties>[];
 }
 
+export interface RevealFeature {
+  identifier: string | undefined;
+  geometry: Point | Polygon | MultiPolygon;
+  properties: Properties;
+  type: 'Feature';
+  children: any[] | undefined;
+  aggregates: any[] | undefined;
+}
+
+export interface PlanningLocationResponseTagged {
+  identifier: string | undefined;
+  type: 'FeatureCollection';
+  features: RevealFeatureTagged;
+  parents: RevealFeatureTagged;
+}
+
+export interface PlanningParentLocationResponse {
+  identifier: string | undefined;
+  type: 'FeatureCollection';
+  features: Feature<Point | Polygon | MultiPolygon, Properties>[];
+  featureCount: number;
+}
+
+export interface RevealFeatureTagged {
+  [identifier: string]: RevealFeature;
+}
+
 export interface PersonMeta {
   metadata: Metadata[];
   coreFields: {
