@@ -105,19 +105,23 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
   ): Promise<string> => {
     let features = Object.keys(mapDataCurrent.features).map(key => mapDataCurrent.features[key]);
 
-    let parents = Object.keys(mapDataCurrent.parents)
-      .map(key => mapDataCurrent.parents[key])
-      .map(parentFeature => {
-        if (parentFeature.properties) {
-          parentFeature.properties.isParent = true;
+    let parents = Object.keys(mapDataCurrent.parents).map(key => mapDataCurrent.parents[key]);
+
+    parents.forEach(parentFeature => {
+      if (parentFeature && parentFeature.identifier) {
+        if (
+          !mapDataCurrent.features[parentFeature.identifier] ||
+          mapDataCurrent.features[parentFeature.identifier] == null
+        ) {
+          if (parentFeature.properties) {
+            parentFeature.properties['isParent'] = true;
+          }
         }
-        return parentFeature;
-      });
+      }
+    });
 
     if (!includeParentData) {
-      parents = parents.filter(parentFeature =>
-        features.map(feature => feature.properties?.identifier).includes(parentFeature.properties?.indentifier)
-      );
+      parents = parents.filter(parentFeature => !parentFeature.properties?.isParent);
     }
 
     if (fileTypeSelector === 'FeatureCollection') {

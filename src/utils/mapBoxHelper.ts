@@ -202,10 +202,15 @@ export const getFeatureCentresFromLocation = (
     //create label for each of the locations
     //create a group of locations so we can fit them all in viewport
     if (element && element.properties) {
-      let geometry: Point = {
-        type: 'Point',
-        coordinates: [element.properties.xcentroid, element.properties.ycentroid]
-      };
+      let geometry: Point;
+      if (element.properties.hasOwnProperty('point')) {
+        geometry = element.properties.point.geometry;
+      } else {
+        geometry = {
+          type: 'Point',
+          coordinates: [element.properties.xcentroid, element.properties.ycentroid]
+        };
+      }
 
       let point: Feature<Point, Properties> = {
         id: element.id,
@@ -214,9 +219,6 @@ export const getFeatureCentresFromLocation = (
         geometry: geometry
       };
 
-      // getPolygonCenter(element);
-
-      // centerLabel.center.properties = { ...element.properties };
       featureSet.push(point);
     }
   });

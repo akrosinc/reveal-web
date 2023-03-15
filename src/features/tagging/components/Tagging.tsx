@@ -59,17 +59,18 @@ const Tagging = () => {
   };
 
   const updateSimulationDisplay = (tag: TagUpdateRequest) => {
-    updateTag(tag);
-    loadData(PAGINATION_DEFAULT_SIZE, 0);
-  }
+    updateTag(tag).then(() => loadData(PAGINATION_DEFAULT_SIZE, 0));
+  };
 
   return (
     <>
-
-      <h2>Tags({tagList?.totalElements})
+      <h2>
+        Tags({tagList?.totalElements})
         <Row className="my-4">
           <Col md={8} className="mb-2">
-            <Button className='float-end' onClick={() => setShowCreate(true)}>Create Tag</Button>
+            <Button className="float-end" onClick={() => setShowCreate(true)}>
+              Create Tag
+            </Button>
           </Col>
           <Col sm={12} md={4} className="order-md-first">
             <DebounceInput

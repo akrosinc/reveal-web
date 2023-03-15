@@ -40,6 +40,7 @@ import SimulationResultExpandingTable from '../../../components/Table/Simulation
 import TableSummaryModal from './Summary/TableSummaryModal';
 import SearchResultCountModal from './modals/SearchResultCountModal';
 import DownloadSimulationResultsModal from './modals/DownloadSimulationResultsModal';
+import UploadSimulationData from './modals/UploadSimulationData';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -116,6 +117,7 @@ const Simulation = () => {
   const [selectedFilterInactiveGeographicLevelList, setSelectedFilterInactiveGeographicLevelList] =
     useState<string[]>();
   const levelsLoaded = useRef<string[]>([]);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   useEffect(() => {
     Promise.all([getLocationHierarchyList(50, 0, true), getEntityList()])
@@ -384,6 +386,7 @@ const Simulation = () => {
     setToLocation(undefined);
     setResetMap(true);
     setParentMapData(undefined);
+    levelsLoaded.current = [];
     reset();
   };
 
@@ -563,6 +566,14 @@ const Simulation = () => {
     levelsLoaded.current = levels;
   };
 
+  const uploadDataHandler = (data: PlanningLocationResponse) => {
+    setMapDataLoad(data);
+    setResultsLoaded(true);
+    setParentsLoaded(true);
+    setParentsLoadingState('complete');
+    setResultsLoadingState('complete');
+    setShowResult(true);
+  };
   const conditionalRender = (el: EntityTag, index: number) => {
     if (el.more && el.more.length) {
       return (
@@ -788,7 +799,6 @@ const Simulation = () => {
                 <Form.Group className="my-3">
                   <Row>
                     <Col xs={10}>
-                      {/*<Form.Group className="mb-3">*/}
                       <Form.Group>
                         <Form.Label className="pe-3">Add query attribute </Form.Label>
                       </Form.Group>
@@ -808,27 +818,11 @@ const Simulation = () => {
                       </div>
                     </Col>
                   </Row>
-
-                  {/*</Form>*/}
                 </Form.Group>
                 <Container
-                  // style={{
-                  //   // height: 'fit-content',
-                  //   //? 590 - divHeight : 460,
-                  //   // position: 'relative',
-                  //   // overflowX: 'hidden',
-                  //   // maxHeight: '44vh',
-                  //   display: 'block',
-                  //   overflow: 'auto'
-                  // }}
                   style={{ position: 'relative', minHeight: '300px', maxHeight: '400px' }}
                   className="border rounded overflow-auto"
                 >
-                  {/*<SimpleBar*/}
-                  {/*//   style={{*/}
-                  {/*//   maxHeight: divHeight ? 620 - divHeight : 457*/}
-                  {/*// }}*/}
-                  {/*>*/}
                   {selectedEntityConditionList.map((el, index) => {
                     return (
                       <Row className="mx-2 my-3" key={index}>
@@ -869,7 +863,6 @@ const Simulation = () => {
                       </Row>
                     );
                   })}
-                  {/*</SimpleBar>*/}
                   <div style={{ position: 'absolute', bottom: '0px', right: '0px' }} className={'p-2'}>
                     <Button
                       type="submit"
@@ -891,24 +884,6 @@ const Simulation = () => {
                   </div>
                 </Container>
               </Form>
-              {/*<Form.Group className="my-3">*/}
-              {/*<Row className="align-items-center">*/}
-              {/*  <Col>*/}
-              {/*    <span*/}
-              {/*      className={'float-end'}*/}
-              {/*      title={*/}
-              {/*        resultsLoadingState === 'started' || parentsLoadingState === 'started'*/}
-              {/*          ? 'Loading Results'*/}
-              {/*          : 'Display results'*/}
-              {/*      }*/}
-              {/*      style={{ position: 'relative', bottom: 0, right: 0 }}*/}
-              {/*    >*/}
-
-              {/*<span>{entityTags.map(entityTag => entityTag.tag)}</span>*/}
-              {/*    </span>*/}
-              {/*  </Col>*/}
-              {/*</Row>*/}
-              {/*</Form.Group>*/}
             </Col>
           )}
           <Col md={mapFullScreen ? 12 : 8} id="mapRow" className={mapFullScreen ? 'pt-4' : ''}>
@@ -927,32 +902,35 @@ const Simulation = () => {
               updateLevelsLoaded={updateLoadedLevels}
               resetMap={resetMap}
               setResetMap={setResetMap}
+              resultsLoadingState={resultsLoadingState}
+              parentsLoadingState={parentsLoadingState}
             />
           </Col>
         </Row>
       </Container>
-      {showResult && (
-        <>
-          <hr className="my-4" />
-          {showSummaryModal && (
-            <TableSummaryModal
-              show={true}
-              closeHandler={() => {
-                setShowSummaryModal(false);
-              }}
-              isDarkMode={false}
-              summary={summary}
-              initiatingMapData={selectedMapData}
-            />
-          )}
+      <>
+        <hr className="my-4" />
+        {showSummaryModal && showResult && (
+          <TableSummaryModal
+            show={true}
+            closeHandler={() => {
+              setShowSummaryModal(false);
+            }}
+            isDarkMode={false}
+            summary={summary}
+            initiatingMapData={selectedMapData}
+          />
+        )}
 
-          {highestLocations && (
-            <Container fluid>
-              <Row>
-                <Col>
-                  <h3 className="my-3 ">Result</h3>
-                </Col>
-                <Col>
+        <Container fluid>
+          <Row>
+            <Col>{highestLocations && showResult && <h3 className="my-3 ">Result</h3>}</Col>
+            <Col>
+              <Button className="float-end my-3 ms-2" variant="secondary" onClick={() => setShowUploadModal(true)}>
+                Upload Data
+              </Button>
+              {highestLocations && showResult && (
+                <>
                   <Button
                     className="float-end ms-2 my-3"
                     variant="secondary"
@@ -965,22 +943,24 @@ const Simulation = () => {
                   <Button className="float-end my-3 " variant="secondary" onClick={clearHandler}>
                     Clear All
                   </Button>
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <SimulationResultExpandingTable
-                    clickHandler={loadLocationHandler}
-                    data={highestLocations}
-                    detailsClickHandler={showDetailsClickHandler}
-                    summaryClickHandler={summaryDetailsClickHandler}
-                  />
-                </Col>
-              </Row>
-            </Container>
-          )}
-        </>
-      )}
+                </>
+              )}
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              {highestLocations && showResult && (
+                <SimulationResultExpandingTable
+                  clickHandler={loadLocationHandler}
+                  data={highestLocations}
+                  detailsClickHandler={showDetailsClickHandler}
+                  summaryClickHandler={summaryDetailsClickHandler}
+                />
+              )}
+            </Col>
+          </Row>
+        </Container>
+      </>
       {showModal && selectedEntity && (
         <ActionDialog
           closeHandler={() => {
@@ -1041,6 +1021,7 @@ const Simulation = () => {
           hierarchyIdentifier={selectedHierarchy}
         />
       )}
+      {showUploadModal && <UploadSimulationData dataFunction={uploadDataHandler} closeHandler={setShowUploadModal} />}
     </>
   );
 };

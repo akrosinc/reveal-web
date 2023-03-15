@@ -1,6 +1,7 @@
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { Tag, TagCreateRequest, TagUpdateRequest } from '../providers/types';
+import { AxiosResponse } from 'axios';
 
 export const getAllTags = (
   size: number,
@@ -27,7 +28,9 @@ export const getAllGlobalTags = (
 ): Promise<PageableModel<Tag>> => {
   const data = api
     .get<PageableModel<Tag>>(
-      `entityTag?filter=global&search=${search !== undefined ? search : ''}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField !== undefined ? sortField : ''},${
+      `entityTag?filter=global&search=${
+        search !== undefined ? search : ''
+      }&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField !== undefined ? sortField : ''},${
         direction ? 'asc' : 'desc'
       }`
     )
@@ -35,17 +38,12 @@ export const getAllGlobalTags = (
   return data;
 };
 
-export const updateTag = (
-  tag: TagUpdateRequest,
-): void => {
-  api
-    .put<TagUpdateRequest>(
-      `entityTag`, tag
-    )
-    .then(res => res.data);
+export const updateTag = async (tag: TagUpdateRequest): Promise<AxiosResponse> => {
+  const data = await api.put<AxiosResponse>(`entityTag`, tag).then(res => res.data);
+  return data;
 };
 
 export const createTag = async (form: TagCreateRequest): Promise<Tag> => {
   const data = await api.post<Tag>('entityTag', form).then(res => res.data);
   return data;
-}
+};

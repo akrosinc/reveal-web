@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
 import { MAPBOX_STYLE_STREETS } from '../../../../constants';
 import {
+  disableMapInteractions,
   fitCollectionToBounds,
   getFeatureCentresFromLocation,
   getGeoListFromMapData,
@@ -38,6 +39,8 @@ interface Props {
   updateLevelsLoaded: (levels: string[]) => void;
   resetMap: boolean;
   setResetMap: (resetMap: boolean) => void;
+  resultsLoadingState: 'notstarted' | 'started' | 'complete';
+  parentsLoadingState: 'notstarted' | 'started' | 'complete';
 }
 
 interface PlanningLocationResponseGeoContainer {
@@ -57,7 +60,9 @@ const SimulationMapView = ({
   chunkedData,
   updateLevelsLoaded,
   resetMap,
-  setResetMap
+  setResetMap,
+  resultsLoadingState,
+  parentsLoadingState
 }: Props) => {
   const INITIAL_HEAT_MAP_RADIUS = 50;
   const INITIAL_HEAT_MAP_OPACITY = 0.2;
@@ -103,6 +108,19 @@ const SimulationMapView = ({
     if (map.current) return;
     initializeMap();
   });
+
+  useEffect(() => {
+    if (map.current) {
+      if (
+        (resultsLoadingState === 'notstarted' || resultsLoadingState === 'complete') &&
+        (parentsLoadingState === 'notstarted' || parentsLoadingState === 'complete')
+      ) {
+        disableMapInteractions(map.current, false);
+      } else {
+        disableMapInteractions(map.current, true);
+      }
+    }
+  }, [resultsLoadingState, parentsLoadingState]);
 
   const testfile = useCallback(
     (e: any) => {
@@ -208,6 +226,14 @@ const SimulationMapView = ({
                 });
               }
 
+              if (!map.current?.getSource(geo.concat('-points'))) {
+                map.current?.addSource(geo.concat('-points'), {
+                  type: 'geojson',
+                  data: initData,
+                  tolerance: 0.75
+                });
+              }
+
               if (!map.current?.getSource(geo.concat('-centers'))) {
                 map.current?.addSource(geo.concat('-centers'), {
                   type: 'geojson',
@@ -231,12 +257,49 @@ const SimulationMapView = ({
                 );
               }
 
+              if (!map.current?.getLayer(geo.concat('-points'))) {
+                map.current?.addLayer(
+                  {
+                    id: geo.concat('-points'),
+                    type: 'circle',
+                    source: geo,
+                    filter: ['==', ['geometry-type'], 'Point'],
+                    paint: {
+                      'circle-color': [
+                        'case',
+                        ['==', ['get', 'selectedTagValue'], null],
+                        'red',
+                        ['<', ['get', 'selectedTagValue'], 0],
+                        'brown',
+                        ['==', ['get', 'selectedTagValue'], 0],
+                        'blue',
+                        INITIAL_FILL_COLOR
+                      ],
+                      'circle-opacity': [
+                        'case',
+                        ['==', ['get', 'selectedTagValuePercent'], null],
+                        0.1,
+                        ['==', ['get', 'selectedTagValuePercent'], 0],
+                        0.1,
+                        ['get', 'selectedTagValuePercent']
+                      ],
+                      'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 1, 18, 15],
+                      'circle-stroke-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0, 18, 1],
+                      'circle-stroke-color': 'black',
+                      'circle-stroke-width': 1
+                    }
+                  },
+                  'label-layer'
+                );
+              }
+
               if (!map.current?.getLayer(geo.concat('-fill'))) {
                 map.current?.addLayer(
                   {
                     id: geo.concat('-fill'),
                     type: 'fill',
                     source: geo,
+                    filter: ['!=', ['geometry-type'], 'Point'],
                     paint: {
                       'fill-color': [
                         'case',
@@ -441,6 +504,7 @@ const SimulationMapView = ({
                 geographicLevelMapStateDataIds.current.add(feature.properties?.identifier);
               });
             }
+
             if (map.current?.getSource(geo)) {
               if (planningLocationResponseGeoContainer) {
                 (map.current?.getSource(geo) as GeoJSONSource).setData(planningLocationResponseGeoContainer.data);
@@ -571,6 +635,20 @@ const SimulationMapView = ({
             map.current?.setPaintProperty(geographicLevelResultLayerId.layer.concat('-fill'), 'fill-color', expression);
           }
         }
+        if (map.current?.getLayer(geographicLevelResultLayerId.layer.concat('-points'))) {
+          if (map.current?.getPaintProperty(geographicLevelResultLayerId.layer.concat('-points'), 'circle-color')) {
+            let expression: Expression = map.current?.getPaintProperty(
+              geographicLevelResultLayerId.layer.concat('-points'),
+              'circle-color'
+            );
+            expression[7] = color.hex;
+            map.current?.setPaintProperty(
+              geographicLevelResultLayerId.layer.concat('-points'),
+              'circle-color',
+              expression
+            );
+          }
+        }
       }
     });
   }, [color, geographicLevelResultLayerIds]);
@@ -658,6 +736,7 @@ const SimulationMapView = ({
       map.current?.setLayoutProperty(layer.concat('-fill'), 'visibility', show ? 'visible' : 'none');
       map.current?.setLayoutProperty(layer.concat('-line'), 'visibility', show ? 'visible' : 'none');
       map.current?.setLayoutProperty(layer.concat('-symbol'), 'visibility', show ? 'visible' : 'none');
+      map.current?.setLayoutProperty(layer.concat('-points'), 'visibility', show ? 'visible' : 'none');
     }
   };
 
