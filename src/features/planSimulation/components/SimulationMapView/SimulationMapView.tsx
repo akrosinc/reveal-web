@@ -531,7 +531,14 @@ const SimulationMapView = ({
         });
       }
     }
-  }, [selectedMetadata, selectedHeatMapMetadata, chunkedData, openModalHandler]);
+  }, [
+    selectedMetadata,
+    selectedHeatMapMetadata,
+    chunkedData,
+    openModalHandler,
+    updateLevelsLoaded,
+    geographicLevelResultLayerIds
+  ]);
 
   useEffect(() => {
     setMetadataList(getMetadataListFromMapData(mapData));
@@ -1062,7 +1069,6 @@ const SimulationMapView = ({
         )}
 
       <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '95vh' : '75vh', width: '100%' }} />
-      {/*<div id="mapContainer" ref={mapContainer} className={'vh-75'} />*/}
     </Container>
   );
 };

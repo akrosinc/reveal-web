@@ -30,7 +30,6 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
 
   const {
     register,
-    unregister,
     handleSubmit,
     formState: { errors }
   } = useForm<FormValues>();
