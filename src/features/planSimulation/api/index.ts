@@ -52,11 +52,16 @@ export const submitSimulationRequest = async (requestData: {
   return data;
 };
 
-export const getFullHierarchy = async (hierarchyIdentifier: string): Promise<PlanningLocationResponse> => {
-  const data = await api
+export const getFullHierarchyCSV = async (hierarchyIdentifier: string): Promise<File> => {
+  return await api
+    .get<File>('entityTag/fullHierarchyCSV?hierarchyIdentifier=' + hierarchyIdentifier)
+    .then(res => res.data);
+};
+
+export const getFullHierarchyJSON = async (hierarchyIdentifier: string): Promise<PlanningLocationResponse> => {
+  return await api
     .get<PlanningLocationResponse>('entityTag/fullHierarchy?hierarchyIdentifier=' + hierarchyIdentifier)
     .then(res => res.data);
-  return data;
 };
 
 export const getLocationsSSE = (

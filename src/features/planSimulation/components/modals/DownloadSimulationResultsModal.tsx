@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { PlanningLocationResponseTagged } from '../../providers/types';
 import { useForm } from 'react-hook-form';
 import { Feature, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
-import { getFullHierarchy } from '../../api';
+import { getFullHierarchyJSON } from '../../api';
+import { toast } from 'react-toastify';
 
 interface Props {
   inputData: PlanningLocationResponseTagged | undefined;
@@ -12,7 +13,8 @@ interface Props {
 }
 
 interface FormValues {
-  filename: string;
+  filenameCSV: string;
+  filenameJSON: string;
   includeParentData: boolean;
   fieldSelector: string;
   downloadFullHierarchy: boolean;
@@ -22,12 +24,13 @@ interface FormValues {
 const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIdentifier }: Props) => {
   const mapData = useRef<PlanningLocationResponseTagged>();
   let link = useRef<HTMLAnchorElement>(null);
-  const [activeTab, setActiveTab] = useState<string>();
+  const [activeTab, setActiveTab] = useState<string>('CSV');
   const [includeParent, setIncludeParent] = useState<boolean>();
   const [downLoadFullHierarchy, setDownLoadFullHierarchy] = useState<boolean>();
 
   const {
     register,
+    unregister,
     handleSubmit,
     formState: { errors }
   } = useForm<FormValues>();
@@ -37,7 +40,8 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
   });
 
   const testPromise = (
-    filename: string,
+    filenameCSV: string,
+    filenameJSON: string,
     includeParentData: boolean,
     fieldSelector: string,
     fileTypeSelector: string,
@@ -45,20 +49,35 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
   ) => {
     if (mapData && mapData.current) {
       if (activeTab === 'CSV') {
-        getFileCSVData(mapData.current, includeParentData, fieldSelector)
-          .then(res => {
-            if (link && link.current) {
-              link.current.href = 'data:text/csv;charset=utf-8,'.concat(encodeURI(res));
-              link.current.download = filename;
-              link.current.click();
+        if (downloadFullHierarchy && hierarchyIdentifier) {
+          if (link && link.current) {
+            link.current.href =
+              process.env.REACT_APP_API_URL +
+              '/entityTag/fullHierarchyCSV?hierarchyIdentifier=' +
+              hierarchyIdentifier +
+              '&fileName=' +
+              filenameCSV +
+              '&delimiter=' +
+              fieldSelector;
+            link.current.click();
+            closeHandler();
+          }
+        } else {
+          getFileCSVData(mapData.current, includeParentData, fieldSelector)
+            .then(res => {
+              if (link && link.current) {
+                link.current.href = 'data:text/csv;charset=utf-8,'.concat(encodeURI(res));
+                link.current.download = filenameCSV;
+                link.current.click();
 
-              closeHandler();
-            }
-          })
-          .catch();
+                closeHandler();
+              }
+            })
+            .catch(e => toast.error(e));
+        }
       } else {
         if (downloadFullHierarchy && hierarchyIdentifier) {
-          getFullHierarchy(hierarchyIdentifier)
+          getFullHierarchyJSON(hierarchyIdentifier)
             .then(res => {
               if (link && link.current) {
                 let downLoadVal: any = res;
@@ -69,26 +88,24 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
                   new Blob([JSON.stringify(downLoadVal)], { type: 'application/json' })
                 );
                 // link.current.href = 'data:text/json;charset=utf-8,'.concat(res);
-                link.current.download = filename;
+                link.current.download = filenameJSON;
                 link.current.click();
 
                 closeHandler();
               }
             })
-            .catch();
+            .catch(e => toast.error(e));
         } else {
           getFileGeojsonData(mapData.current, includeParentData, fileTypeSelector)
             .then(res => {
               if (link && link.current) {
                 link.current.href = window.URL.createObjectURL(new Blob([res], { type: 'application/json' }));
-                // link.current.href = 'data:text/json;charset=utf-8,'.concat(res);
-                link.current.download = filename;
+                link.current.download = filenameJSON;
                 link.current.click();
-
                 closeHandler();
               }
             })
-            .catch();
+            .catch(e => toast.error(e));
         }
       }
     }
@@ -223,8 +240,10 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
   };
 
   function submitHandler(formValues: FormValues) {
+    console.log('here');
     testPromise(
-      formValues.filename,
+      formValues.filenameCSV,
+      formValues.filenameJSON,
       formValues.includeParentData,
       formValues.fieldSelector,
       formValues.fileTypeSelector,
@@ -280,97 +299,112 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
         <Tabs
           id={'download-data'}
           onSelect={tabName => {
-            setActiveTab('plan-details');
+            setActiveTab(tabName ? tabName : activeTab);
           }}
+          defaultActiveKey={activeTab}
         >
           <Tab eventKey="CSV" title="CSV">
-            <Form>
-              <Form.Group className="my-3">
-                <Form.Label>File Name</Form.Label>
-                <Form.Control
-                  aria-label={'test'}
-                  type="text"
-                  {...register('filename', {
-                    required: true,
-                    pattern: { value: new RegExp('.*\\.csv$'), message: 'Must be .csv file' }
-                  })}
-                  placeholder={'Enter a name for the CSV file (.csv)'}
-                />
-                {errors.filename && <Form.Label className="text-danger">{errors.filename.message}</Form.Label>}
-              </Form.Group>
-              {getIncludeParentSlider()}
-              {getFullHierarchySlider()}
-              <Form.Group className="my-3">
-                <Form.Label>Field delimiter</Form.Label>
-                <Form.Select {...register('fieldSelector')}>
-                  {[
-                    { sep: ';', desc: 'semi-colon delimited' },
-                    { sep: ',', desc: 'comma delimited' },
-                    { sep: '|', desc: 'pipe delimited' },
-                    { sep: ' ', desc: 'space delimited' }
-                  ].map(value => {
-                    return (
-                      <option value={value.sep} key={value.desc}>
-                        {value.desc}
-                      </option>
-                    );
-                  })}
-                  defaultChecked={false}
-                </Form.Select>
-              </Form.Group>
-            </Form>
-            <a
-              style={{ display: 'none' }}
-              target={'_blank'}
-              ref={link}
-              href={'data:text/csv;charset=utf-8,'}
-              download={'emptyfile.csv'}
-              rel="noreferrer"
-            >
-              hidden
-            </a>
+            {activeTab === 'CSV' && (
+              <>
+                {' '}
+                <Form>
+                  <Form.Group className="my-3">
+                    <Form.Label>File Name</Form.Label>
+                    <Form.Control
+                      aria-label={'test'}
+                      type="text"
+                      {...register('filenameCSV', {
+                        required: true,
+                        pattern: { value: new RegExp('.*\\.csv$'), message: 'Must be .csv file' }
+                      })}
+                      placeholder={'Enter a name for the CSV file (.csv)'}
+                    />
+                    {errors.filenameCSV && (
+                      <Form.Label className="text-danger">{errors.filenameCSV.message}</Form.Label>
+                    )}
+                  </Form.Group>
+                  {getIncludeParentSlider()}
+                  {getFullHierarchySlider()}
+                  <Form.Group className="my-3">
+                    <Form.Label>Field delimiter</Form.Label>
+                    <Form.Select {...register('fieldSelector')}>
+                      {[
+                        { sep: ';', desc: 'semi-colon delimited' },
+                        { sep: ',', desc: 'comma delimited' },
+                        { sep: '|', desc: 'pipe delimited' },
+                        { sep: ' ', desc: 'space delimited' }
+                      ].map(value => {
+                        return (
+                          <option value={value.sep} key={value.desc}>
+                            {value.desc}
+                          </option>
+                        );
+                      })}
+                      defaultChecked={false}
+                    </Form.Select>
+                  </Form.Group>
+                </Form>
+                <a
+                  style={{ display: 'none' }}
+                  target={'_blank'}
+                  ref={link}
+                  href={'data:text/csv;charset=utf-8,'}
+                  download={'emptyfile.csv'}
+                  rel="noreferrer"
+                >
+                  hidden
+                </a>
+              </>
+            )}
           </Tab>
           <Tab eventKey="GeoJSON" title="GeoJSON">
-            <Form>
-              <Form.Group className="my-3">
-                <Form.Label>File Name</Form.Label>
-                <Form.Control
-                  aria-label={'test'}
-                  type="text"
-                  {...register('filename', {
-                    required: true,
-                    pattern: { value: new RegExp('.*\\..*(geo)*.*json$'), message: 'Must be .json or geojson file' }
-                  })}
-                  placeholder={'Enter a name for the JSON or geojson file (.json / .geojson)'}
-                />
-                {errors.filename && <Form.Label className="text-danger">{errors.filename.message}</Form.Label>}
-              </Form.Group>
-              {getIncludeParentSlider()}
-              {getFullHierarchySlider()}
-              <Form.Group className="my-3">
-                <Form.Label>GeoJson file type</Form.Label>
-                <Form.Select {...register('fileTypeSelector')} defaultValue={'FeatureCollection'}>
-                  {[{ desc: 'FeatureCollection' }, { desc: 'Feature List' }].map(value => {
-                    return (
-                      <option value={value.desc} key={value.desc}>
-                        {value.desc}
-                      </option>
-                    );
-                  })}
-                  defaultChecked={false}
-                </Form.Select>
-              </Form.Group>
-            </Form>
-            <a
-              style={{ display: 'none' }}
-              target={'_blank'}
-              ref={link}
-              href={'data:text/json;charset=utf-8,'}
-              download={'emptyfile.json'}
-              rel="noreferrer"
-            >
-              hidden
-            </a>
+            {activeTab === 'GeoJSON' && (
+              <>
+                {' '}
+                <Form>
+                  <Form.Group className="my-3">
+                    <Form.Label>File Name</Form.Label>
+                    <Form.Control
+                      aria-label={'test'}
+                      type="text"
+                      {...register('filenameJSON', {
+                        required: true,
+                        pattern: { value: new RegExp('.*\\..*(geo)*.*json$'), message: 'Must be .json or geojson file' }
+                      })}
+                      placeholder={'Enter a name for the JSON or geojson file (.json / .geojson)'}
+                    />
+                    {errors.filenameJSON && (
+                      <Form.Label className="text-danger">{errors.filenameJSON.message}</Form.Label>
+                    )}
+                  </Form.Group>
+                  {getIncludeParentSlider()}
+                  {getFullHierarchySlider()}
+                  <Form.Group className="my-3">
+                    <Form.Label>GeoJson file type</Form.Label>
+                    <Form.Select {...register('fileTypeSelector')} defaultValue={'FeatureCollection'}>
+                      {[{ desc: 'FeatureCollection' }, { desc: 'Feature List' }].map(value => {
+                        return (
+                          <option value={value.desc} key={value.desc}>
+                            {value.desc}
+                          </option>
+                        );
+                      })}
+                      defaultChecked={false}
+                    </Form.Select>
+                  </Form.Group>
+                </Form>
+                <a
+                  style={{ display: 'none' }}
+                  target={'_blank'}
+                  ref={link}
+                  href={'data:text/json;charset=utf-8,'}
+                  download={'emptyfile.json'}
+                  rel="noreferrer"
+                >
+                  hidden
+                </a>
+              </>
+            )}
           </Tab>
         </Tabs>
       </Modal.Body>

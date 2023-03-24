@@ -265,7 +265,6 @@ const Simulation = () => {
     if (mapDataSave.features && mapDataSave.features.length > 0) {
       mapDataSave.features.forEach((el: any) => {
         if (el.properties) {
-          el.properties['childrenNumber'] = el.properties['persons'].length;
           el.properties['identifier'] = (el as any).identifier;
         }
       });
@@ -285,7 +284,6 @@ const Simulation = () => {
     if (mapDataSave.features && mapDataSave.features.length > 0) {
       mapDataSave.features.forEach((el: any) => {
         if (el.properties) {
-          el.properties['childrenNumber'] = el.properties['persons'].length;
           el.properties['identifier'] = (el as any).identifier;
         }
       });
@@ -600,9 +598,10 @@ const Simulation = () => {
   return (
     <>
       <Container fluid ref={divRef}>
+        <span style={{ position: 'absolute', top: '5px', left: '5px' }}>{divHeight}</span>
         <Row>
           {!mapFullScreen && (
-            <Col md={4} style={{ height: '72vh', position: 'relative' }}>
+            <Col xs={12} sm={12} md={4} style={{ position: 'relative' }}>
               <Form>
                 <Form.Group className="my-3">
                   <Row className="align-items-center">
@@ -798,29 +797,52 @@ const Simulation = () => {
                 </Form.Group>
                 <Form.Group className="my-3">
                   <Row>
-                    <Col xs={10}>
+                    <Col xs={9}>
                       <Form.Group>
                         <Form.Label className="pe-3">Add query attribute </Form.Label>
                       </Form.Group>
                     </Col>
-                    <Col xs={2}>
-                      <div
-                        className="text-end"
-                        title={selectedEntity !== undefined ? undefined : 'Please select entity type first.'}
-                      >
-                        <Button
-                          disabled={selectedEntity === undefined}
-                          className="rounded"
-                          onClick={() => openModalHandler(true)}
-                        >
-                          <FontAwesomeIcon icon="plus" />
-                        </Button>
-                      </div>
+                    <Col xs={3}>
+                      <Row>
+                        <Col md={3}>
+                          <Button
+                            disabled={selectedEntity === undefined}
+                            className="rounded float-end"
+                            onClick={() => openModalHandler(true)}
+                          >
+                            <FontAwesomeIcon icon="plus" />
+                          </Button>
+                        </Col>
+                        <Col md={9}>
+                          <Button
+                            type="submit"
+                            disabled={
+                              selectedHierarchy === undefined ||
+                              resultsLoadingState === 'started' ||
+                              parentsLoadingState === 'started'
+                            }
+                            className="float-end"
+                            onClick={handleSubmit(submitHandlerCount)}
+                          >
+                            {(resultsLoadingState === 'notstarted' || resultsLoadingState === 'complete') &&
+                            (parentsLoadingState === 'notstarted' || parentsLoadingState === 'complete') ? (
+                              <>
+                                <FontAwesomeIcon icon="search" /> <span className={'p-2'}>Search</span>
+                              </>
+                            ) : (
+                              <>
+                                <Spinner animation="border" size="sm" role="status" />
+                                <span className={'p-2'}>Loading</span>
+                              </>
+                            )}
+                          </Button>
+                        </Col>
+                      </Row>
                     </Col>
                   </Row>
                 </Form.Group>
-                <Container
-                  style={{ position: 'relative', minHeight: '300px', maxHeight: '400px' }}
+                <div
+                  style={{ position: 'relative', maxHeight: divHeight > 900 ? '51vh' : '44vh' }}
                   className="border rounded overflow-auto"
                 >
                   {selectedEntityConditionList.map((el, index) => {
@@ -863,30 +885,11 @@ const Simulation = () => {
                       </Row>
                     );
                   })}
-                  <div style={{ position: 'absolute', bottom: '0px', right: '0px' }} className={'p-2'}>
-                    <Button
-                      type="submit"
-                      disabled={
-                        selectedHierarchy === undefined ||
-                        resultsLoadingState === 'started' ||
-                        parentsLoadingState === 'started'
-                      }
-                      //  className="me-2 mb-2"
-                      onClick={handleSubmit(submitHandlerCount)}
-                    >
-                      {(resultsLoadingState === 'notstarted' || resultsLoadingState === 'complete') &&
-                      (parentsLoadingState === 'notstarted' || parentsLoadingState === 'complete') ? (
-                        <FontAwesomeIcon icon="search" />
-                      ) : (
-                        <Spinner animation="border" size="sm" role="status" />
-                      )}
-                    </Button>
-                  </div>
-                </Container>
+                </div>
               </Form>
             </Col>
           )}
-          <Col md={mapFullScreen ? 12 : 8} id="mapRow" className={mapFullScreen ? 'pt-4' : ''}>
+          <Col xs={12} sm={12} md={mapFullScreen ? 12 : 8} id="mapRow" className={mapFullScreen ? 'pt-4' : ''}>
             <SimulationMapView
               fullScreenHandler={() => {
                 setMapFullScreen(!mapFullScreen);
