@@ -2,7 +2,7 @@ name: Reveal Web test, build and deploy
 
 on:
   push:
-    branches: [ main, resource-planning-changes, zambia_2022, simulation-for-kenya-demo, simulation-lazy-load ]
+    branches: [ main, mali-dashboard-2 ]
 
 jobs:
 

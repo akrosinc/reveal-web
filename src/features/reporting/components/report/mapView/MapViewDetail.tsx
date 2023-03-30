@@ -54,6 +54,12 @@ const AGE_COVERAGE_LEGEND = [
   { label: 'Female 15 years and above', key: 'Female 15+ years' }
 ]
 
+const ONCHO_COVERAGE_LEGEND = [
+  { label: 'Field Verified Pop Treatment Coverage', key: 'Field Verified Pop Treatment Coverage' },
+  { label: 'Coverage Of Structures Completed', key: 'Coverage Of Structures Completed' },
+  { label: 'Coverage Of Structures Visited', key: 'Coverage Of Structures Visited' }
+]
+
 const MapViewDetail = React.forwardRef<any, Props>(
   ({ featureSet, clearMap, doubleClickEvent, showModal, defaultColumn }, ref) => {
     const mapContainer = useRef<any>();
@@ -183,7 +189,7 @@ const MapViewDetail = React.forwardRef<any, Props>(
               //mapbox strigifies objects inside properties, parsing columnDataMap back to object
               properties['columnDataMap'] = JSON.parse(properties['columnDataMap']);
               let htmlText = 'Data not parsed correctly.';
-              const defaultColumnName = (data as any).defaultDisplayColumn;
+              const defaultColumnName = defaultColumn;//(data as any).defaultDisplayColumn;
               if (reportType === ReportType.MDA_LITE_COVERAGE && (defaultColumnName === 'SCH Treatment Coverage' || defaultColumnName === 'STH Treatment Coverage')) {
 
                 let filteredAgeCoverage;
@@ -198,7 +204,15 @@ const MapViewDetail = React.forwardRef<any, Props>(
                 }).join(" ");
 
                 htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4> ${ageCoverageLegend}`
-              } else if (defaultColumnName) {
+              } else if (reportType === ReportType.ONCHOCERCIASIS_SURVEY && properties["reportLevel"] !== 'Structure') {
+
+                let onchoCoverageLegend = ONCHO_COVERAGE_LEGEND.map(e => {
+                  return (`<div className='p-2'><span className="my-3">${e.label}: ${properties['columnDataMap'][e.key]?.value}</span></div>`)
+                }).join(" ");
+
+                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4> ${onchoCoverageLegend}`
+              }
+              else if (defaultColumnName) {
                 htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4>
             <div class='p-2'>
               ${`<small class='my-3'>${defaultColumnName ?? "Data not parsed correctly"}: ${properties['columnDataMap'][defaultColumnName] !== undefined
@@ -308,20 +322,33 @@ const MapViewDetail = React.forwardRef<any, Props>(
                 if (currentMap.getLayer(el + '-fill')) {
                   currentMap.removeLayer(el + '-fill');
                 }
-                currentMap.removeLayer(el + '-border');
+                if (currentMap.getLayer(el + '-border')) {
+                  currentMap.removeLayer(el + '-border');
+
+                }
+                if (currentMap.getSource(el + '-border')) {
+                  currentMap.removeSource(el + '-border');
+                }
                 if (currentMap.getSource(el + '-label')) {
                   currentMap.removeLayer(el + '-label');
-                  currentMap.removeSource(el + '-label');
+
                 }
+                if (currentMap.getSource(el + '-label')) {
+                  currentMap.removeSource(el + '-label')
+                }
+
                 if (currentMap.getLayer(el + '-structure')) currentMap.removeLayer(el + '-structure');
-                currentMap.removeSource(el);
+                if (currentMap.getSource(el)) {
+                  currentMap.removeSource(el);
+                }
+
               });
               currentMap.fitBounds(bbox(data) as any);
             }
           }
         }
       },
-      [reportType]
+      [reportType, defaultColumn]
     );
 
     useEffect(() => {

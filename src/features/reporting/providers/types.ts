@@ -22,6 +22,7 @@ export enum ReportType {
   SURVEY = 'SURVEY',
   LSM_HOUSEHOLD_SURVEY = 'LSM_HOUSEHOLD_SURVEY',
   LSM_HABITAT_SURVEY = 'LSM_HABITAT_SURVEY',
+  ONCHOCERCIASIS_SURVEY = 'ONCHOCERCIASIS_SURVEY',
   DEFAULT = 'DEFAULT'
 }
 
@@ -41,6 +42,7 @@ export interface ReportLocationProperties {
   defaultColumnValue: number | undefined;
   statusColor: string | undefined;
   evaluatedColor: string;
+  reportLevel: string;
 }
 
 export enum IrsStructureStatus {

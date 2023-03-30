@@ -37,8 +37,25 @@ const REPORT_TYPE = [
 ];
 const DISEASE_LIST = [
   { label: 'STH', value: 'STH' },
-  { label: 'SCH', value: 'SCH' }
+  { label: 'SCH', value: 'SCH' },
+  { label: 'Onchocerciasis', value: 'Onchocerciasis' }
 ];
+
+const getValidDiseaseList = (reportType: any) => {
+  if (reportType === ReportType.MDA_LITE_COVERAGE) {
+    return [DISEASE_LIST[0], DISEASE_LIST[1]];
+  } else {
+    return [DISEASE_LIST[2]];
+  }
+}
+
+const getValidDefaultDisease = (reportType: any) => {
+  if (reportType === ReportType.MDA_LITE_COVERAGE) {
+    return DISEASE_LIST[0];
+  } else {
+    return DISEASE_LIST[2];
+  }
+}
 
 
 const getReportDetails = (reportType: any) => {
@@ -60,6 +77,7 @@ const Report = () => {
   const [plan, setPlan] = useState<PlanModel>();
   const [showMap, setShowMap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
+  const [reportLevel, setReportLevel] = useState<String>();
   const [featureSet, setFeatureSet] =
     useState<
       [
@@ -96,7 +114,7 @@ const Report = () => {
     sprayCoveragePercent: 0
   });
   const [selectedMdaLiteReport, setSelectedMdaLiteReport] = useState<{ label: string; value: string } | undefined>(
-    reportType === ReportType.MDA_LITE_COVERAGE ? REPORT_TYPE[0] : undefined
+    reportType === (ReportType.MDA_LITE_COVERAGE || ReportType.ONCHOCERCIASIS_SURVEY) ? REPORT_TYPE[0] : undefined
   );
   const selectInputRef = useRef<any>(null);
   const clearButtonRef = useRef<any>(null);
@@ -116,7 +134,7 @@ const Report = () => {
 
   //Dynamic function to map columns depending on server response
   const mapColumns = (rowColumns: { [x: string]: FoundCoverage }): Column[] => {
-    return Object.entries(rowColumns).filter(rc => !rc[1].isHidden).map(e => e[0]).map(el => {
+    return Object.entries(rowColumns).filter(rc => rc[1] && !rc[1].isHidden).map(e => e[0]).map(el => {
       return {
         Header: el,
         accessor: (row: any) => {
@@ -198,9 +216,9 @@ const Report = () => {
   const matchReportBandLevelByValue = useCallback((val: number | undefined) => {
     let reportBandLevels = getReportDetails(reportType);
     for (const i in reportBandLevels) {
-      let doesFitInRange = (((val ? val > 0 ? val : 0 : 0)) >= reportBandLevels[i].min &&
-        ((val ? val > 0 ? val : 0 : 0)) < reportBandLevels[i].max) ||
-        ((val ? val > 0 ? val : 0 : 0) >= reportBandLevels[i].max &&
+      let doesFitInRange = ((val ? val > 0 ? val : 0 : 0) >= reportBandLevels[i].min &&
+        (val ? val : 0) < reportBandLevels[i].max) ||
+        ((val ? val : 0) >= reportBandLevels[i].max &&
           reportBandLevels[i].highest);
       if (doesFitInRange) {
         return reportBandLevels[i];
@@ -259,6 +277,7 @@ const Report = () => {
                 setData(tableData);
                 setFilterData(tableData);
                 setFeatureSet([report, 'main', []]);
+                setReportLevel(report.features[0].properties.reportLevel);
               } else {
                 toast.error('There is no report data found.');
               }
@@ -324,6 +343,7 @@ const Report = () => {
             }
             setCols(res.features[0].properties.columnDataMap);
             setData(tableData);
+            setReportLevel(res.features[0].properties.reportLevel);
             setFilterData(tableData);
             setFeatureSet([res, id, path.map(el => el.locationIdentifier)]);
             if (!path.some(el => el.locationIdentifier === id)) {
@@ -404,6 +424,7 @@ const Report = () => {
           if (searchInput.current) searchInput.current.value = '';
           setData([]);
           setFilterData([]);
+          setReportLevel("");
           if (res.features.length) {
             const tableData = res.features.map(el => el.properties);
             const defaultDisplayColumn: string | undefined = (res as any).defaultDisplayColumn;
@@ -422,6 +443,7 @@ const Report = () => {
             setCols(res.features[0].properties.columnDataMap);
             setData(tableData);
             setFilterData(tableData);
+            setReportLevel(res.features[0].properties.reportLevel);
             //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
             //its enough to spread the object so rerender will be triggered
             setFeatureSet([{ ...res }, el.locationIdentifier, locationsToDelete.map(loc => loc.locationIdentifier)]);
@@ -514,6 +536,7 @@ const Report = () => {
                       breadCrumbClickHandler(el, index);
                     }
                   }}
+                  title={el.locationProperties?.geographicLevel}
                 >
                   {index !== 0 ? ' / ' : ''}
                   {el.locationName}
@@ -556,8 +579,8 @@ const Report = () => {
                     className="custom-react-select-container w-100"
                     classNamePrefix="custom-react-select"
                     id="team-assign-select"
-                    defaultValue={DISEASE_LIST[0]}
-                    options={DISEASE_LIST}
+                    defaultValue={getValidDefaultDisease(reportType)}
+                    options={getValidDiseaseList(reportType)}
                     ref={selectInputRef}
                     onChange={newValue => {
                       if (newValue) {
@@ -622,31 +645,42 @@ const Report = () => {
               </Button>
             </Col>
           </Row>
-          {reportType === ReportType.MDA_LITE_COVERAGE && (
-            <Row className="justify-content-center">
-              <Col md={8} className="my-2 text-center">
-                <label className="me-2">Report type: </label>
-                {REPORT_TYPE.map(el => {
-                  if (!(el.value === 'POPULATION_DISTRIBUTION' && selectedReportInfo?.value === 'SCH')) {
-                    return <Form.Check
-                      key={el.value}
-                      defaultChecked={el.value === REPORT_TYPE[0].value}
-                      onChange={_ => {
-                        setSelectedMdaLiteReport(el);
-                        setSelectedReportInfo(selectedReportInfo);
-                        clearButtonRef.current.click();
-                      }}
-                      name="report-group"
-                      inline
-                      label={el.label}
-                      type="radio"
-                    />
-                  }
-                  return undefined;
-                })}
-              </Col>
-            </Row>
-          )}
+          {((reportType === ReportType.MDA_LITE_COVERAGE) ||
+            (reportType === ReportType.ONCHOCERCIASIS_SURVEY && (reportLevel !== "Structure")))
+            &&
+            (
+              <Row className="justify-content-center">
+                <Col md={8} className="my-2 text-center">
+                  <label className="me-2">Report type: </label>
+                  {REPORT_TYPE.map(el => {
+
+                    if ((reportType === ReportType.MDA_LITE_COVERAGE && (!(el.value === 'POPULATION_DISTRIBUTION') && selectedReportInfo?.value === 'SCH'))
+                      || (reportType === ReportType.ONCHOCERCIASIS_SURVEY)) {
+
+
+
+                      return <Form.Check
+                        key={el.value}
+                        defaultChecked={el.value === REPORT_TYPE[0].value}
+                        onChange={_ => {
+                          setSelectedMdaLiteReport(el);
+                          setSelectedReportInfo(selectedReportInfo);
+                          clearButtonRef.current.click();
+                        }}
+                        name="report-group"
+                        inline
+                        label={el.label}
+                        type="radio"
+                      />
+
+
+
+                    }
+                    return undefined;
+                  })}
+                </Col>
+              </Row>
+            )}
           <div
             style={{
               maxHeight: showMap ? '50vh' : '90vh',

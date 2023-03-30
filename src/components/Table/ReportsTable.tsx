@@ -22,13 +22,13 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
   // calculate total column from given data
   useEffect(() => {
     if (data.length) {
-      const columnDataMapKeys = Object.keys(data[0].columnDataMap);
-      const total = columnDataMapKeys.filter(k => !data[0].columnDataMap[k].isHidden).map(_ => {
+      const columnDataMapKeys = Object.keys(data[0].columnDataMap).filter(k => data[0] && data[0].columnDataMap[k] && !data[0].columnDataMap[k].isHidden);
+      const total = columnDataMapKeys.filter(k => data[0] && data[0].columnDataMap[k] && !data[0].columnDataMap[k].isHidden).map(_ => {
         return 0;
       });
       data.forEach(el => {
         columnDataMapKeys.forEach((key, index) => {
-          if (!data[0].columnDataMap[key].isHidden) {
+          if (data[0] && data[0].columnDataMap[key] && !data[0].columnDataMap[key].isHidden) {
             total[index] =
               (data[0].columnDataMap[key].isPercentage === null || data[0].columnDataMap[key].isPercentage === false) &&
                 data[0].columnDataMap[key].dataType === 'double'
@@ -95,10 +95,10 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
                 clickHandler(rowData.id, rowData.name);
               }}
             >
-              {row.cells.map(cell => {
+              {row.cells.map((cell) => {
                 if (cell.column.id === 'locationName') {
                   return (
-                    <td {...cell.getCellProps()}>
+                    <td {...cell.getCellProps()} title={rowData.geographicLevel}>
                       {cell.render('Cell')}
                       {rowData.childrenNumber ? `(${rowData.childrenNumber})` : ''}
                     </td>
@@ -107,7 +107,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
                   let cellName = cell.column.Header?.toString();
                   if (cellName) {
                     let color = '';
-                    if (rowData.columnDataMap[cellName].isPercentage) {
+                    if (rowData.columnDataMap[cellName].isPercentage || rowData.columnDataMap[cellName].meta) {
                       let percentage = rowData.columnDataMap[cellName].value;
                       percentage = Number(percentage.toFixed(percentage > 1 ? 2 : 3));
 
@@ -117,7 +117,9 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
                           placement="top"
                           overlay={<Tooltip id="meta-tooltip">{rowData.columnDataMap[cellName].meta}</Tooltip>}
                         >
-                          <td className={rangeDeterminer(rowData.columnDataMap[cellName].value).class}>{percentage}%</td>
+                          <td className={rowData.columnDataMap[cellName].isPercentage ? rangeDeterminer(rowData.columnDataMap[cellName].value).class : ""}>{percentage}
+                            {rowData.columnDataMap[cellName].isPercentage ? "%" : ""}
+                          </td>
                         </OverlayTrigger>
                       );
                     } else if (
