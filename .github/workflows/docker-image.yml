@@ -2,7 +2,7 @@ name: Reveal Web test, build and deploy
 
 on:
   push:
-    branches: [ main, mali-dashboard-2 ]
+    branches: [ main, zambia-aggregation ]
 
 jobs:
 
