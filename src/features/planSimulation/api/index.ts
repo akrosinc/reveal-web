@@ -14,6 +14,11 @@ export const getEntityTags = async (entityId: string): Promise<EntityTag[]> => {
   return data;
 };
 
+export const getEventBasedEntityTags = async (entityId: string): Promise<EntityTag[]> => {
+  const data = await api.get<EntityTag[]>(`entityTag/eventBasedTags/${entityId}`).then(res => res.data);
+  return data;
+};
+
 export const getImportableEntityTags = async (entityId: string): Promise<EntityTag[]> => {
   const data = await api.get<EntityTag[]>(`entityTag/${entityId}?filter=importable`).then(res => res.data);
   return data;

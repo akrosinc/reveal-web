@@ -13,6 +13,7 @@ import { LocationHierarchyModel } from '../../location/providers/types';
 import {
   getEntityList,
   getEntityTags,
+  getEventBasedEntityTags,
   getFullLocationsSSE,
   getLocationList,
   getLocationsSSE,
@@ -48,6 +49,8 @@ interface SubmitValue {
   entityIdentifier: string;
   searchValue?: SearchValue;
   values?: SearchValue[];
+  valueType: string;
+  tag: string;
   range?: {
     minValue: number;
     maxValue: number;
@@ -161,6 +164,8 @@ const Simulation = () => {
           fieldIdentifier: requestBody.inputObj.identifier,
           entityIdentifier: requestBody.inputObj.lookupEntityType.identifier,
           fieldType: el.fieldType,
+          valueType: el.valueType,
+          tag: el.tag,
           range: {
             minValue: requestBody.inputValue,
             maxValue: form[el.tag + index + 'range']
@@ -171,6 +176,8 @@ const Simulation = () => {
           fieldIdentifier: requestBody.inputObj.identifier,
           entityIdentifier: requestBody.inputObj.lookupEntityType.identifier,
           fieldType: el.fieldType,
+          valueType: el.valueType,
+          tag: el.tag,
           values: [
             { sign: requestBody.selectedValue, value: requestBody.inputValue },
             ...el.more.map((el, i) => {
@@ -189,6 +196,8 @@ const Simulation = () => {
           fieldIdentifier: requestBody.inputObj.identifier,
           entityIdentifier: requestBody.inputObj.lookupEntityType.identifier,
           fieldType: el.fieldType,
+          valueType: el.valueType,
+          tag: el.tag,
           searchValue: {
             sign: requestBody.selectedValue ?? OperatorSignEnum.EQUAL,
             value: requestBody.inputValue
@@ -489,7 +498,13 @@ const Simulation = () => {
 
   useEffect(() => {
     if (selectedEntity) {
-      getEntityTags(selectedEntity).then(res => setEntityTags(res));
+      getEntityTags(selectedEntity).then(res => {
+        let tags: EntityTag[] = res;
+        getEventBasedEntityTags(selectedEntity).then(result => {
+          tags = tags.concat(result);
+          setEntityTags(tags);
+        });
+      });
     }
   }, [selectedEntity]);
 

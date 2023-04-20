@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Card, Col, Collapse, Container, Form, ProgressBar, Row, Table } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Column } from 'react-table';
@@ -7,18 +7,17 @@ import { toast } from 'react-toastify';
 import MapViewDetail from './mapView/MapViewDetail';
 import ReportsTable from '../../../../components/Table/ReportsTable';
 import {
-  REPORTING_PAGE,
+  KEY_INDICATOR_LEVELS,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
   REPORT_TABLE_PERCENTAGE_MEDIUM,
-  KEY_INDICATOR_LEVELS
+  REPORTING_PAGE
 } from '../../../../constants';
 import { useAppSelector } from '../../../../store/hooks';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
 import { getMapReportData, getReportTypeInfo } from '../../api';
 import { Feature, FeatureCollection, MultiPolygon, Point, Polygon } from '@turf/turf';
-import { useRef } from 'react';
 import { AdditionalReportInfo, FoundCoverage, ReportLocationProperties, ReportType } from '../../providers/types';
 import ReportModal from './reportModal';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +31,7 @@ interface BreadcrumbModel {
 
 const REPORT_TYPE = [
   { label: 'Treatment coverage', value: 'TREATMENT_COVERAGE' },
-  { label: 'Drug distribution', value: 'DRUG_DISTRIBUTION' },
+  { label: 'Drug Inventory / Adverse Reporting', value: 'DRUG_DISTRIBUTION' },
   { label: 'Population coverage', value: 'POPULATION_DISTRIBUTION' }
 ];
 const DISEASE_LIST = [
@@ -47,7 +46,7 @@ const getValidDiseaseList = (reportType: any) => {
   } else {
     return [DISEASE_LIST[2]];
   }
-}
+};
 
 const getValidDefaultDisease = (reportType: any) => {
   if (reportType === ReportType.MDA_LITE_COVERAGE) {
@@ -55,17 +54,16 @@ const getValidDefaultDisease = (reportType: any) => {
   } else {
     return DISEASE_LIST[2];
   }
-}
-
+};
 
 const getReportDetails = (reportType: any) => {
-  let report = reportType ? reportType : "DEFAULT";
+  let report = reportType ? reportType : 'DEFAULT';
   if (KEY_INDICATOR_LEVELS[report] === undefined) {
-    return KEY_INDICATOR_LEVELS["DEFAULT"];
+    return KEY_INDICATOR_LEVELS['DEFAULT'];
   } else {
     return KEY_INDICATOR_LEVELS[report];
   }
-}
+};
 
 const Report = () => {
   const [cols, setCols] = useState<{ [x: string]: FoundCoverage }>({});
@@ -134,14 +132,17 @@ const Report = () => {
 
   //Dynamic function to map columns depending on server response
   const mapColumns = (rowColumns: { [x: string]: FoundCoverage }): Column[] => {
-    return Object.entries(rowColumns).filter(rc => rc[1] && !rc[1].isHidden).map(e => e[0]).map(el => {
-      return {
-        Header: el,
-        accessor: (row: any) => {
-          return row.columnDataMap[el].value;
-        }
-      };
-    });
+    return Object.entries(rowColumns)
+      .filter(rc => rc[1] && !rc[1].isHidden)
+      .map(e => e[0])
+      .map(el => {
+        return {
+          Header: el,
+          accessor: (row: any) => {
+            return row.columnDataMap[el].value;
+          }
+        };
+      });
   };
 
   const columns = React.useMemo<Column[]>(() => {
@@ -212,19 +213,20 @@ const Report = () => {
     });
   }, [navigate, reportType]);
 
-
-  const matchReportBandLevelByValue = useCallback((val: number | undefined) => {
-    let reportBandLevels = getReportDetails(reportType);
-    for (const i in reportBandLevels) {
-      let doesFitInRange = ((val ? val > 0 ? val : 0 : 0) >= reportBandLevels[i].min &&
-        (val ? val : 0) < reportBandLevels[i].max) ||
-        ((val ? val : 0) >= reportBandLevels[i].max &&
-          reportBandLevels[i].highest);
-      if (doesFitInRange) {
-        return reportBandLevels[i];
+  const matchReportBandLevelByValue = useCallback(
+    (val: number | undefined) => {
+      let reportBandLevels = getReportDetails(reportType);
+      for (const i in reportBandLevels) {
+        let doesFitInRange =
+          ((val ? (val > 0 ? val : 0) : 0) >= reportBandLevels[i].min && (val ? val : 0) < reportBandLevels[i].max) ||
+          ((val ? val : 0) >= reportBandLevels[i].max && reportBandLevels[i].highest);
+        if (doesFitInRange) {
+          return reportBandLevels[i];
+        }
       }
-    }
-  }, [reportType]);
+    },
+    [reportType]
+  );
 
   const loadData = useCallback(
     (selectedReport?: string, type?: string) => {
@@ -268,7 +270,6 @@ const Report = () => {
                   setDefaultDisplayColumn('');
                   report.features.forEach(el => {
                     el.properties.evaluatedColor = matchReportBandLevelByValue(undefined).color;
-
                   });
                 }
                 setPlan(plan);
@@ -349,7 +350,11 @@ const Report = () => {
             if (!path.some(el => el.locationIdentifier === id)) {
               setPath([
                 ...path,
-                { locationIdentifier: id, locationName: locationName, locationProperties: parentProperties }
+                {
+                  locationIdentifier: id,
+                  locationName: locationName,
+                  locationProperties: parentProperties
+                }
               ]);
             }
             // in case of irs report type and structure geo level calculate progress bar data
@@ -397,7 +402,7 @@ const Report = () => {
           path.splice(0, path.length);
           return path;
         });
-        setSelectedMdaLiteReport((state) => {
+        setSelectedMdaLiteReport(state => {
           loadData(selectedReportInfo?.value, state?.value);
           return state;
         });
@@ -424,7 +429,7 @@ const Report = () => {
           if (searchInput.current) searchInput.current.value = '';
           setData([]);
           setFilterData([]);
-          setReportLevel("");
+          setReportLevel('');
           if (res.features.length) {
             const tableData = res.features.map(el => el.properties);
             const defaultDisplayColumn: string | undefined = (res as any).defaultDisplayColumn;
@@ -529,7 +534,7 @@ const Report = () => {
               return (
                 <span
                   role="button"
-                  className={index === path.length - 1 ? 'me-1 text-secondary pe-none' : 'me-1 link-primary'}
+                  className={index === path.length - 1 ? 'me-1 text-secondary pe-auto' : 'me-1 link-primary'}
                   key={el.locationIdentifier}
                   onClick={() => {
                     if (index < path.length - 1) {
@@ -554,9 +559,7 @@ const Report = () => {
       {showGrid && (
         <>
           <Row className="mt-3 mb-2 align-items-center">
-            <Col
-              md={reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.ntd ? 3 : 6}
-            >
+            <Col md={reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.ntd ? 3 : 6}>
               <Form.Control
                 ref={searchInput}
                 placeholder={t('reportPage.search')}
@@ -572,7 +575,6 @@ const Report = () => {
             </Col>
             {reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.ntd && (
               <>
-
                 <Col md={3} className="my-2">
                   <Select
                     placeholder="Filter by disease"
@@ -595,10 +597,8 @@ const Report = () => {
                             selectedMdaLiteReport?.value
                           );
                         } else {
-                          setSelectedMdaLiteReport((state) => {
-                            loadData(
-                              newValue ? newValue.value : selectedReportInfo?.value, state?.value
-                            );
+                          setSelectedMdaLiteReport(state => {
+                            loadData(newValue ? newValue.value : selectedReportInfo?.value, state?.value);
                             return state;
                           });
                         }
@@ -606,8 +606,7 @@ const Report = () => {
                     }}
                   />
                 </Col>
-                <Col md={3} className="my-2">
-                </Col>
+                <Col md={3} className="my-2"></Col>
               </>
             )}
             <Col
@@ -626,10 +625,10 @@ const Report = () => {
                       selectedMdaLiteReport?.value
                     );
                   } else {
-                    setSelectedMdaLiteReport((state) => {
+                    setSelectedMdaLiteReport(state => {
                       loadData(selectedReportInfo?.value, state?.value);
                       return state;
-                    })
+                    });
                   }
                 }}
               >
@@ -645,21 +644,20 @@ const Report = () => {
               </Button>
             </Col>
           </Row>
-          {((reportType === ReportType.MDA_LITE_COVERAGE) ||
-            (reportType === ReportType.ONCHOCERCIASIS_SURVEY && (reportLevel !== "Structure")))
-            &&
-            (
-              <Row className="justify-content-center">
-                <Col md={8} className="my-2 text-center">
-                  <label className="me-2">Report type: </label>
-                  {REPORT_TYPE.map(el => {
-
-                    if ((reportType === ReportType.MDA_LITE_COVERAGE && (!(el.value === 'POPULATION_DISTRIBUTION') && selectedReportInfo?.value === 'SCH'))
-                      || (reportType === ReportType.ONCHOCERCIASIS_SURVEY)) {
-
-
-
-                      return <Form.Check
+          {(reportType === ReportType.MDA_LITE_COVERAGE ||
+            (reportType === ReportType.ONCHOCERCIASIS_SURVEY && reportLevel !== 'Structure')) && (
+            <Row className="justify-content-center">
+              <Col md={8} className="my-2 text-center">
+                <label className="me-2">Report type: </label>
+                {REPORT_TYPE.map(el => {
+                  if (
+                    (reportType === ReportType.MDA_LITE_COVERAGE &&
+                      !(el.value === 'POPULATION_DISTRIBUTION') &&
+                      selectedReportInfo?.value === 'SCH') ||
+                    reportType === ReportType.ONCHOCERCIASIS_SURVEY
+                  ) {
+                    return (
+                      <Form.Check
                         key={el.value}
                         defaultChecked={el.value === REPORT_TYPE[0].value}
                         onChange={_ => {
@@ -672,15 +670,13 @@ const Report = () => {
                         label={el.label}
                         type="radio"
                       />
-
-
-
-                    }
-                    return undefined;
-                  })}
-                </Col>
-              </Row>
-            )}
+                    );
+                  }
+                  return undefined;
+                })}
+              </Col>
+            </Row>
+          )}
           <div
             style={{
               maxHeight: showMap ? '50vh' : '90vh',
@@ -729,8 +725,8 @@ const Report = () => {
           style={{ maxHeight: showMap ? '80vh' : 'auto', overflowY: 'auto' }}
         >
           {reportType === ReportType.IRS_FULL_COVERAGE &&
-            filterData.length &&
-            filterData[0].geographicLevel === 'structure' ? (
+          filterData.length &&
+          filterData[0].geographicLevel === 'structure' ? (
             <Card className="text-start p-3">
               <p className="mb-0 mt-3">
                 <b>Spray coverage (Effectiveness)</b>
@@ -786,19 +782,15 @@ const Report = () => {
             <>
               <Table className="text-center">
                 <tbody>
-
-                  {
-
-                    Object.keys(getReportDetails(reportType)).map((key) => {
-                      let obj = getReportDetails(reportType)[key];
-                      return (
-                        <tr className={obj.class}>
-                          <td className="py-4">{t('reportPage.formattingRuleColors.' + obj.colorName)}</td>
-                          <td className="py-4">{obj.min + '% - ' + obj.max + '%'}</td>
-                        </tr>
-                      );
-                    })
-                  }
+                  {Object.keys(getReportDetails(reportType)).map(key => {
+                    let obj = getReportDetails(reportType)[key];
+                    return (
+                      <tr className={obj.class}>
+                        <td className="py-4">{t('reportPage.formattingRuleColors.' + obj.colorName)}</td>
+                        <td className="py-4">{obj.min + '% - ' + obj.max + '%'}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </Table>
               <p className="my-2">{t('reportPage.formattingRules')}</p>

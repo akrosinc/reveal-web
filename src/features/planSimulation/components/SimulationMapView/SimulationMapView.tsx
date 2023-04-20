@@ -730,10 +730,26 @@ const SimulationMapView = ({
             delete feature.properties[tagField];
             delete feature.properties[percentageField];
             delete feature.properties.selectedTagValueMin;
-            delete feature.properties.selectedTagValueMin;
+            delete feature.properties.selectedTagValueMax;
           }
         }
       });
+      if (
+        !feature.properties?.metadata?.some((element: any) => {
+          if (feature?.properties) {
+            return element.type === tag;
+          }
+          return false;
+        })
+      ) {
+        if (feature?.properties) {
+          delete feature.properties[valueField];
+          delete feature.properties[tagField];
+          delete feature.properties[percentageField];
+          delete feature.properties.selectedTagValueMin;
+          delete feature.properties.selectedTagValueMax;
+        }
+      }
     }
     return feature;
   };

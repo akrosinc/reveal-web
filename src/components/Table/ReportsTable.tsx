@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { Column, useTable } from 'react-table';
 import { ReportLocationProperties, ReportType } from '../../features/reporting/providers/types';
 import { useAppSelector } from '../../store/hooks';
-import { t } from "i18next";
+import { t } from 'i18next';
 
 interface Props {
   columns: Column[];
@@ -22,16 +22,20 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
   // calculate total column from given data
   useEffect(() => {
     if (data.length) {
-      const columnDataMapKeys = Object.keys(data[0].columnDataMap).filter(k => data[0] && data[0].columnDataMap[k] && !data[0].columnDataMap[k].isHidden);
-      const total = columnDataMapKeys.filter(k => data[0] && data[0].columnDataMap[k] && !data[0].columnDataMap[k].isHidden).map(_ => {
-        return 0;
-      });
+      const columnDataMapKeys = Object.keys(data[0].columnDataMap).filter(
+        k => data[0] && data[0].columnDataMap[k] && !data[0].columnDataMap[k].isHidden
+      );
+      const total = columnDataMapKeys
+        .filter(k => data[0] && data[0].columnDataMap[k] && !data[0].columnDataMap[k].isHidden)
+        .map(_ => {
+          return 0;
+        });
       data.forEach(el => {
         columnDataMapKeys.forEach((key, index) => {
           if (data[0] && data[0].columnDataMap[key] && !data[0].columnDataMap[key].isHidden) {
             total[index] =
               (data[0].columnDataMap[key].isPercentage === null || data[0].columnDataMap[key].isPercentage === false) &&
-                data[0].columnDataMap[key].dataType === 'double'
+              data[0].columnDataMap[key].dataType === 'double'
                 ? total[index] + el.columnDataMap[key].value
                 : '/';
           }
@@ -95,7 +99,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
                 clickHandler(rowData.id, rowData.name);
               }}
             >
-              {row.cells.map((cell) => {
+              {row.cells.map(cell => {
                 if (cell.column.id === 'locationName') {
                   return (
                     <td {...cell.getCellProps()} title={rowData.geographicLevel}>
@@ -117,8 +121,15 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
                           placement="top"
                           overlay={<Tooltip id="meta-tooltip">{rowData.columnDataMap[cellName].meta}</Tooltip>}
                         >
-                          <td className={rowData.columnDataMap[cellName].isPercentage ? rangeDeterminer(rowData.columnDataMap[cellName].value).class : ""}>{percentage}
-                            {rowData.columnDataMap[cellName].isPercentage ? "%" : ""}
+                          <td
+                            className={
+                              rowData.columnDataMap[cellName].isPercentage
+                                ? rangeDeterminer(rowData.columnDataMap[cellName].value).class
+                                : ''
+                            }
+                          >
+                            {percentage}
+                            {rowData.columnDataMap[cellName].isPercentage ? '%' : ''}
                           </td>
                         </OverlayTrigger>
                       );
