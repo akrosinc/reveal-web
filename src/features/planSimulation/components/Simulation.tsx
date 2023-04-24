@@ -511,7 +511,9 @@ const Simulation = () => {
 
       let allTags = tagsMeta.concat(tagsEvent);
       console.log('allTags', allTags);
-      setEntityTags(allTags);
+      if (allTags.length > 0) {
+        setEntityTags(allTags);
+      }
     }
   }, [selectedEntity]);
 
