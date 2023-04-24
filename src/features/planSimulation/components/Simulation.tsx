@@ -501,19 +501,21 @@ const Simulation = () => {
       let tagsMeta: EntityTag[] = [];
       getEntityTags(selectedEntity).then(res => {
         tagsMeta = res;
-      });
-      console.log('tagsMeta', tagsMeta);
-      let tagsEvent: EntityTag[] = [];
-      getEventBasedEntityTags(selectedEntity).then(result => {
-        tagsEvent = result;
-      });
-      console.log('tagsEvent', tagsEvent);
+        console.log('tagsMeta', tagsMeta);
 
-      let allTags = tagsMeta.concat(tagsEvent);
-      console.log('allTags', allTags);
-      if (allTags.length > 0) {
-        setEntityTags(allTags);
-      }
+        let tagsEvent: EntityTag[] = [];
+        getEventBasedEntityTags(selectedEntity).then(result => {
+          tagsEvent = result;
+
+          console.log('tagsEvent', tagsEvent);
+
+          let allTags = tagsMeta.concat(tagsEvent);
+          console.log('allTags', allTags);
+          if (allTags.length > 0) {
+            setEntityTags(allTags);
+          }
+        });
+      });
     }
   }, [selectedEntity]);
 
