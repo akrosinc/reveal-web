@@ -498,14 +498,20 @@ const Simulation = () => {
 
   useEffect(() => {
     if (selectedEntity) {
-      let tags: EntityTag[] = [];
+      let tagsMeta: EntityTag[] = [];
       getEntityTags(selectedEntity).then(res => {
-        tags = res;
+        tagsMeta = res;
       });
+      console.log('tagsMeta', tagsMeta);
+      let tagsEvent: EntityTag[] = [];
       getEventBasedEntityTags(selectedEntity).then(result => {
-        tags = tags.concat(result);
+        tagsEvent = result;
       });
-      setEntityTags(tags);
+      console.log('tagsEvent', tagsEvent);
+
+      let allTags = tagsMeta.concat(tagsEvent);
+      console.log('allTags', allTags);
+      setEntityTags(allTags);
     }
   }, [selectedEntity]);
 
