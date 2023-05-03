@@ -152,6 +152,13 @@ const Simulation = () => {
   } = useForm();
 
   const submitHandlerCount = (form: any) => {
+    setShowResult(false);
+    setMapData(undefined);
+    setToLocation(undefined);
+    setResetMap(true);
+    setParentMapData(undefined);
+    levelsLoaded.current = [];
+    
     const arr: SubmitValue[] = [];
     selectedEntityConditionList.forEach((el, index) => {
       const requestBody = {
