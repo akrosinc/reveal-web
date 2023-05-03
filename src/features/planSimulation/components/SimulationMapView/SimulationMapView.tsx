@@ -1077,7 +1077,7 @@ const SimulationMapView = ({
                   return (
                     <p>
                       <b>{entityTag.tag}:</b>
-                      {Math.round(getMapDataSumsFromSource(entityTag.tag)) / 100}
+                      {Math.round(getMapDataSumsFromSource(entityTag.tag) * 100) / 100}
                     </p>
                   );
                 })}
