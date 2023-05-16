@@ -35,6 +35,7 @@ import ErrorHandler from '../components/ErrorHandler';
 import api from '../api/axios';
 import { usePath } from '../hooks/usePath';
 import dashBoardApi from '../api/dashboard-axios';
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
 library.add(
@@ -59,7 +60,7 @@ library.add(
 function App() {
   const { keycloak, initialized } = useKeycloak();
   const dispatch = useAppDispatch();
-  
+
   // custom hook to listen and change document title on page navigation
   usePath();
 

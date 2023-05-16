@@ -1,4 +1,5 @@
 import { Expression, GeoJSONSource, LngLatBounds, Map, Popup } from 'mapbox-gl';
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
 import { MAPBOX_STYLE_STREETS } from '../../../../constants';
@@ -344,7 +345,7 @@ const SimulationMapView = ({
                       'text-justify': 'center'
                     },
                     paint: {
-                      'text-color': 'black',
+                      'text-color': ['case', ['==', ['get', 'mark'], true], 'red', 'black'],
                       'text-opacity': [
                         'step',
                         ['zoom'],
@@ -1077,7 +1078,7 @@ const SimulationMapView = ({
                   return (
                     <p>
                       <b>{entityTag.tag}:</b>
-                      {getMapDataSumsFromSource(entityTag.tag)}
+                      {Math.round(getMapDataSumsFromSource(entityTag.tag)) / 100}
                     </p>
                   );
                 })}

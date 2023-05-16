@@ -57,6 +57,19 @@ export const submitSimulationRequest = async (requestData: {
   return data;
 };
 
+export const updateSimulationRequest = async (
+  simulationRequestId: string | undefined,
+  resultTags: EntityTag[] | undefined
+): Promise<SimulationCountResponse> => {
+  const data = await api
+    .post<SimulationCountResponse>(
+      '/entityTag/updateSimulationRequest?simulationRequestId=' + simulationRequestId,
+      resultTags
+    )
+    .then(res => res.data);
+  return data;
+};
+
 export const getFullHierarchyCSV = async (hierarchyIdentifier: string): Promise<File> => {
   return await api
     .get<File>('entityTag/fullHierarchyCSV?hierarchyIdentifier=' + hierarchyIdentifier)

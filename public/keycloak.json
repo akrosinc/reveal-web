@@ -1,7 +1,8 @@
 {
   "realm": "reveal",
-  "auth-server-url": "https://sso-my-local.akros.online/auth/",
+  "auth-server-url-mali": "https://sso-ef-mali-uat.akros.online/auth/",
   "auth-server-url-local": "https://sso-ef-ke-uat.akros.online/auth/",
+  "auth-server-url": "https://sso-my-local.akros.online/auth/",
   "ssl-required": "external",
   "resource": "reveal-web",
   "public-client": true,

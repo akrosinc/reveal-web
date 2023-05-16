@@ -17,7 +17,8 @@ import {
   getFullLocationsSSE,
   getLocationList,
   getLocationsSSE,
-  submitSimulationRequest
+  submitSimulationRequest,
+  updateSimulationRequest
 } from '../api';
 import {
   EntityTag,
@@ -39,9 +40,9 @@ import { LngLatBounds } from 'mapbox-gl';
 
 import SimulationResultExpandingTable from '../../../components/Table/SimulationResultExpandingTable';
 import TableSummaryModal from './Summary/TableSummaryModal';
-import SearchResultCountModal from './modals/SearchResultCountModal';
 import DownloadSimulationResultsModal from './modals/DownloadSimulationResultsModal';
 import UploadSimulationData from './modals/UploadSimulationData';
+import SearchResultCountModal from './modals/SearchResultCountModal';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -152,6 +153,13 @@ const Simulation = () => {
   } = useForm();
 
   const submitHandlerCount = (form: any) => {
+    setShowResult(false);
+    setMapData(undefined);
+    setToLocation(undefined);
+    setResetMap(true);
+    setParentMapData(undefined);
+    levelsLoaded.current = [];
+
     const arr: SubmitValue[] = [];
     selectedEntityConditionList.forEach((el, index) => {
       const requestBody = {
@@ -222,14 +230,20 @@ const Simulation = () => {
       .catch(err => toast.error(err));
   };
 
-  const subithandler = () => {
+  const subithandler = (resultEntityTags: EntityTag[] | undefined) => {
     const requestData = {
       simulationRequestId: simulationRequestId
     };
-    getLocationsSSE(requestData, messageHandler, closeConnHandler, openHandler);
-    if (loadParentsToggle) {
-      getFullLocationsSSE(requestData, parentMessageHandler, closeParentConnHandler, openParentHandler);
-    }
+    updateSimulationRequest(simulationRequestId, resultEntityTags)
+      .then(() => {
+        getLocationsSSE(requestData, messageHandler, closeConnHandler, openHandler);
+        if (loadParentsToggle) {
+          getFullLocationsSSE(requestData, parentMessageHandler, closeParentConnHandler, openParentHandler);
+        }
+      })
+      .catch(() => {
+        toast.error('Cannot get result set - refresh page');
+      });
   };
 
   const closeConnHandler = (message: any) => {
@@ -577,8 +591,8 @@ const Simulation = () => {
     setSelectedMapData(mapDataClone);
   };
 
-  const proceedToSearch = (loadInactiveLocations: boolean) => {
-    subithandler();
+  const proceedToSearch = (loadInactiveLocations: boolean, resultEntityTags: EntityTag[] | undefined) => {
+    subithandler(resultEntityTags);
     setResultsLoadingState('started');
     if (loadInactiveLocations) {
       setParentsLoadingState('started');
@@ -624,7 +638,6 @@ const Simulation = () => {
   return (
     <>
       <Container fluid ref={divRef}>
-        <span style={{ position: 'absolute', top: '5px', left: '5px' }}>{divHeight}</span>
         <Row>
           {!mapFullScreen && (
             <Col xs={12} sm={12} md={4} style={{ position: 'relative' }}>
@@ -1037,7 +1050,11 @@ const Simulation = () => {
         <SearchResultCountModal
           setShowCountModal={setShowCountResponseModal}
           simulationCountData={simulationCountData}
-          proceedToSearch={() => proceedToSearch(loadParentsToggle)}
+          proceedToSearch={(resultEntityTags: EntityTag[] | undefined) =>
+            proceedToSearch(loadParentsToggle, resultEntityTags)
+          }
+          selectedEntityCondition={setSelectedEntityCondition}
+          entityTags={entityTags}
         />
       )}
 

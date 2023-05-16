@@ -1,6 +1,17 @@
-import { bbox, center, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
+import {
+  bbox,
+  center,
+  Feature,
+  FeatureCollection,
+  MultiPolygon,
+  Point,
+  pointsWithinPolygon,
+  Polygon,
+  Properties
+} from '@turf/turf';
 import mapboxgl, {
   EventData,
+  GeoJSONSource,
   GeolocateControl,
   LngLatBoundsLike,
   Map,
@@ -8,6 +19,7 @@ import mapboxgl, {
   NavigationControl,
   Popup
 } from 'mapbox-gl';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { MutableRefObject } from 'react';
 import { toast } from 'react-toastify';
 import {
@@ -106,6 +118,10 @@ export const initSimulationMap = (
       source: 'label-source'
     });
 
+    mapboxInstance.on('mouseover', 'draw-layer', e => {
+      console.log(e);
+    });
+
     let initParentData: PlanningParentLocationResponse = {
       features: [],
       type: 'FeatureCollection',
@@ -114,9 +130,68 @@ export const initSimulationMap = (
     };
     createParentLayers(mapboxInstance, initParentData, PARENT_SOURCE, PARENT_LAYER);
     createSearchResultLabelLayer(mapboxInstance, initParentData, PARENT_LABEL_SOURCE, PARENT_LABEL_LAYER);
-  });
 
-  mapboxInstance.on('contextmenu', listener);
+    mapboxInstance.on('contextmenu', listener);
+
+    let mapboxDraw = new MapboxDraw({
+      displayControlsDefault: true
+    });
+
+    // mapboxInstance.addControl(mapboxDraw, 'bottom-left');
+    mapboxInstance.on('mouseover', 'gl-draw-polygon-fill-inactive.hot', e => {
+      console.log(e);
+
+      let sourceCentres: any = mapboxInstance.getSource('catchment-centers');
+
+      let sourceData: FeatureCollection<Point> = {
+        type: (sourceCentres._data as any)['type'],
+        features: (sourceCentres._data as any)['features']
+        // parents: (sourceCentres._data as any)['parents'],
+        // identifier: undefined
+      };
+
+      e.features?.forEach((feature: any) => {
+        if (feature != null && feature['properties'] && feature['properties']['id']) {
+          console.log('feature', feature['properties']['id']);
+          let item = mapboxDraw.get(feature['properties']['id']);
+
+          let drawFeature: FeatureCollection<Polygon> = {
+            type: 'FeatureCollection',
+            features: [
+              {
+                type: 'Feature',
+                geometry: feature.geometry,
+                properties: null,
+                id: undefined
+              }
+            ]
+          };
+
+          let a = pointsWithinPolygon(sourceData, drawFeature)
+            .features.filter(feature => feature.properties && feature.properties.identifier)
+            .map(feature => feature?.properties?.identifier);
+
+          sourceData.features.map(feature => {
+            if (feature.properties && feature.properties.identifier) {
+              if (a.includes(feature.properties.identifier)) {
+                feature.properties['mark'] = true;
+              }
+            }
+          });
+
+          if (mapboxInstance.getSource('catchment-centers')) {
+            (mapboxInstance.getSource('catchment-centers') as GeoJSONSource).setData(sourceData);
+          }
+        }
+      });
+
+      console.log(e.point);
+
+      // if (e && e.features) {
+      //   pointsWithinPolygon(e.features, sourceData);
+      // }
+    });
+  });
 
   return mapboxInstance;
 };
@@ -351,7 +426,7 @@ export const createLocation = (map: Map, data: any, moveend: () => void, opacity
 // hover handler with timeout to simulate hovering effect
 export const hoverHandler = (map: Map, identifier: string) => {
   let popup = new Popup({ closeButton: false }).setHTML(
-    `<h4 class='bg-success text-light text-center'>Actions</h4><div class='p-2'><small>Available commands:<br />
+    `<h4 class="bg-success text-light text-center">Actions</h4><div class="p-2"><small>Available commands:<br />
     Right click - context menu <br/> Double Click - load children<br />
     Ctrl + Left Click - Select location</small></div>`
   );
@@ -525,10 +600,10 @@ export const contextMenuHandler = (
           popup = new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: false })
             .setLngLat(e.lngLat)
             .setHTML(
-              `<h4 class='bg-success text-center'>Action menu</h4>
-              <div class='m-0 p-0 text-center'>
+              `<h4 class="bg-success text-center">Action menu</h4>
+              <div class="m-0 p-0 text-center">
               <p>You have selected multiple locations.</p>
-              <button class='btn btn-primary mx-2 mt-2 mb-4' style='min-width: 200px' id='${buttonId}'>Assign teams</button>
+              <button class="btn btn-primary mx-2 mt-2 mb-4" style="min-width: 200px" id="${buttonId}">Assign teams</button>
               </div>`
             )
             .addTo(map);
@@ -536,26 +611,26 @@ export const contextMenuHandler = (
           const loadChildButtonId = feature.properties.id + '-child-button';
           const assignButtonId = feature.properties.id + '-assign';
           const parentButtonId = feature.properties.id + '-parent';
-          const start = `<h4 class='bg-success text-center'>Action menu</h4>
-          <div class='m-0 p-0 text-center'>
+          const start = `<h4 class="bg-success text-center">Action menu</h4>
+          <div class="m-0 p-0 text-center">
             <p>
               <label>Property name: </label>
                 ${(feature.properties as any).name}
                 <br />
             </p>`;
-          const end = `<button class='btn btn-primary w-75 mb-2' id='${loadChildButtonId}'>Load lower level</button>
-          <button class='btn btn-primary w-75 mb-2' id='${parentButtonId}' style='${
+          const end = `<button class="btn btn-primary w-75 mb-2" id="${loadChildButtonId}">Load lower level</button>
+          <button class="btn btn-primary w-75 mb-2" id="${parentButtonId}" style="${
             (feature.properties as any).parentIdentifier ? 'display: ""' : 'display: none'
-          }'>Parent details</button>
-          <button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Actions and Details</button>
+          }">Parent details</button>
+          <button class="btn btn-primary w-75 mb-3" id="${buttonId}">Actions and Details</button>
           </div>`;
           const displayHTML =
             start +
             ((feature.properties as LocationProperties).assigned || feature.state.assigned
               ? end
               : feature.properties.geographicLevel === 'structure'
-              ? `<button class='btn btn-primary w-75 mb-3' id='${buttonId}'>Structure Details</button>`
-              : `<button class='btn btn-primary w-75 mb-3' id='${assignButtonId}'>Assign location</button></div>`);
+              ? `<button class="btn btn-primary w-75 mb-3" id="${buttonId}">Structure Details</button>`
+              : `<button class="btn btn-primary w-75 mb-3" id="${assignButtonId}">Assign location</button></div>`);
           popup = new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: false })
             .setLngLat(e.lngLat)
             .setHTML(displayHTML)
