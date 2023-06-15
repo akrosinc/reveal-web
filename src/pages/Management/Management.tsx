@@ -17,7 +17,7 @@ const Management = () => {
 
   useEffect(() => {
     if (tab === undefined) {
-      navigate(MANAGEMENT + '/organization');
+      navigate(MANAGEMENT + '/user');
     } else if (tab !== 'organization' && tab !== 'user' && tab !== 'user-import') {
       navigate('/error');
     }

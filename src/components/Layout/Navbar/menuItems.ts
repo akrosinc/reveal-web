@@ -57,12 +57,12 @@ export const MAIN_MENU = [
       {
         pageTitle: 'planReporting',
         route: REPORTING_PAGE,
-        roles: ['manage-users']
+        roles: ['plan_reporting']
       },
       {
         pageTitle: 'performanceReporting',
         route: REPORTING_PAGE + '/performance-reports',
-        roles: ['manage-users']
+        roles: ['performance_reporting']
       },
       {
         pageTitle: 'surveyReporting',
@@ -89,12 +89,12 @@ export const MAIN_MENU = [
       {
         pageTitle: 'TagManagement',
         route: TAG_MANAGEMENT,
-        roles: []
+        roles: ['tag_management']
       },
       {
         pageTitle: 'MetaDataImport',
         route: METADATA_IMPORT,
-        roles: []
+        roles: ['metadata_import']
       }
     ]
   }
