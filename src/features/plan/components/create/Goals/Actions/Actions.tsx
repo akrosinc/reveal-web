@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Modal, Row, Col } from 'react-bootstrap';
-import { useForm, Controller } from 'react-hook-form';
+import { Button, Form, Modal } from 'react-bootstrap';
+import { useForm } from 'react-hook-form';
 import { Action } from '../../../../providers/types';
-import DatePicker from 'react-datepicker';
 import { getActionTitles, getformList } from '../../../../api';
 import Moment from 'moment';
 import { toUtcString } from '../../../../../../utils';
@@ -30,9 +29,6 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
     register,
     handleSubmit,
     formState: { errors, isDirty },
-    watch,
-    control,
-    resetField,
     setValue
   } = useForm<Action>({
     defaultValues: {

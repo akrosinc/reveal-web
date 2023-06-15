@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { Goal, Priority } from '../../../../providers/types';
+import { Goal } from '../../../../providers/types';
 import { createGoal, updateGoal } from '../../../../api';
 import { useAppSelector } from '../../../../../../store/hooks';
 import { useTranslation } from 'react-i18next';

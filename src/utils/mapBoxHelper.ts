@@ -19,7 +19,7 @@ import mapboxgl, {
   NavigationControl,
   Popup
 } from 'mapbox-gl';
-import MapboxDraw from '@mapbox/mapbox-gl-draw';
+// import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { MutableRefObject } from 'react';
 import { toast } from 'react-toastify';
 import {
@@ -133,14 +133,12 @@ export const initSimulationMap = (
 
     mapboxInstance.on('contextmenu', listener);
 
-    let mapboxDraw = new MapboxDraw({
-      displayControlsDefault: true
-    });
+    // let mapboxDraw = new MapboxDraw({
+    //   displayControlsDefault: true
+    // });
 
     // mapboxInstance.addControl(mapboxDraw, 'bottom-left');
     mapboxInstance.on('mouseover', 'gl-draw-polygon-fill-inactive.hot', e => {
-      console.log(e);
-
       let sourceCentres: any = mapboxInstance.getSource('catchment-centers');
 
       let sourceData: FeatureCollection<Point> = {

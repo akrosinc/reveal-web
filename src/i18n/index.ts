@@ -1,5 +1,5 @@
 import i18n from 'i18next';
-import { initReactI18next, getI18n } from 'react-i18next';
+import { initReactI18next } from 'react-i18next';
 import { getFromBrowser } from '../utils';
 
 import translationEn from './locales/en.json';

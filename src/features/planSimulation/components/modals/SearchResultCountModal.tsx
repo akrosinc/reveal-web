@@ -1,5 +1,5 @@
 import { Button, Col, Row } from 'react-bootstrap';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import SimulationModal from '../SimulationModal';
 import { EntityTag } from '../../providers/types';
 import { ActionDialog } from '../../../../components/Dialogs';

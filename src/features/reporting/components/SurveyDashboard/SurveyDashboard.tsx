@@ -1,9 +1,9 @@
 import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { Controller, useForm } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import Select, { SingleValue } from 'react-select';
+import Select from 'react-select';
 import { getSurveyData } from '../../api';
 import { toast } from 'react-toastify';
 
@@ -14,11 +14,6 @@ export interface SurveyDataRequest {
 }
 
 export interface SurveyDataResponse {}
-
-interface Options {
-  value: string;
-  label: string;
-}
 
 const options = [
   { value: 'rawdata', label: 'Raw Data' },

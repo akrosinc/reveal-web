@@ -67,7 +67,7 @@ const Dashboard = () => {
         }
       })
       .catch(err => toast.error(err));
-  }, [dispatch]);
+  }, [t, dispatch]);
 
   return (
     <AuthorizedElement roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}>
