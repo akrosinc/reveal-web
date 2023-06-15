@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Feature, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
 import { getFullHierarchyJSON } from '../../api';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   inputData: PlanningLocationResponseTagged | undefined;
@@ -33,6 +34,8 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
     handleSubmit,
     formState: { errors }
   } = useForm<FormValues>();
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     mapData.current = inputData;
@@ -253,12 +256,12 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
   const getFullHierarchySlider = () => {
     return (
       <Form.Group className="my-3">
-        <Form.Label>Download Full Hierarchy</Form.Label>
+        <Form.Label>{t('simulationPage.downloadFullHierarchy')}</Form.Label>
         <Form.Check
           {...register('downloadFullHierarchy')}
           type="switch"
           id="custom-switch-full-hierarchy"
-          label="Select to download full hierarchy"
+          label={t('simulationPage.selectToDownloadFullHierarchy')}
           defaultChecked={false}
           checked={downLoadFullHierarchy}
           onChange={e => {
@@ -272,12 +275,12 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
   const getIncludeParentSlider = () => {
     return (
       <Form.Group className="my-3">
-        <Form.Label>Include Parent data</Form.Label>
+        <Form.Label>{t('simulationPage.includeParentData')}</Form.Label>
         <Form.Check
           {...register('includeParentData')}
           type="switch"
           id="custom-switch-parent"
-          label="Select to include parent data in CSV file"
+          label={t('simulationPage.selectToIncludeParentData')}
           defaultChecked={false}
           checked={includeParent}
           onChange={e => {
@@ -292,7 +295,7 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
   return (
     <Modal size="lg" show centered scrollable backdrop="static" keyboard={false} onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title className="w-100 text-center">Download</Modal.Title>
+        <Modal.Title className="w-100 text-center">{t('simulationPage.downloadData')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Tabs
@@ -308,7 +311,7 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
                 {' '}
                 <Form>
                   <Form.Group className="my-3">
-                    <Form.Label>File Name</Form.Label>
+                    <Form.Label>{t('simulationPage.fileName')}</Form.Label>
                     <Form.Control
                       aria-label={'test'}
                       type="text"
@@ -325,7 +328,7 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
                   {getIncludeParentSlider()}
                   {getFullHierarchySlider()}
                   <Form.Group className="my-3">
-                    <Form.Label>Field delimiter</Form.Label>
+                    <Form.Label>{t('simulationPage.fieldDelimiter')}</Form.Label>
                     <Form.Select {...register('fieldSelector')}>
                       {[
                         { sep: ';', desc: 'semi-colon delimited' },
@@ -362,7 +365,7 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
                 {' '}
                 <Form>
                   <Form.Group className="my-3">
-                    <Form.Label>File Name</Form.Label>
+                    <Form.Label>{t('simulationPage.fileName')}</Form.Label>
                     <Form.Control
                       aria-label={'test'}
                       type="text"
@@ -370,7 +373,7 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
                         required: true,
                         pattern: { value: new RegExp('.*\\..*(geo)*.*json$'), message: 'Must be .json or geojson file' }
                       })}
-                      placeholder={'Enter a name for the JSON or geojson file (.json / .geojson)'}
+                      placeholder={t('simulationPage.enterNameForJson') + ' (.json / .geojson)'}
                     />
                     {errors.filenameJSON && (
                       <Form.Label className="text-danger">{errors.filenameJSON.message}</Form.Label>
@@ -410,11 +413,11 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
       <Modal.Footer>
         <Row>
           <Col>
-            <Button onClick={closeHandler}>Cancel</Button>
+            <Button onClick={closeHandler}>{t('simulationPage.cancel')}</Button>
           </Col>
           <Col>
             <Button type="submit" onClick={handleSubmit(submitHandler)}>
-              Download
+              {t('simulationPage.download')}
             </Button>
           </Col>
         </Row>

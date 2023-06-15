@@ -153,7 +153,7 @@ export const initSimulationMap = (
       e.features?.forEach((feature: any) => {
         if (feature != null && feature['properties'] && feature['properties']['id']) {
           console.log('feature', feature['properties']['id']);
-          let item = mapboxDraw.get(feature['properties']['id']);
+          // let item = mapboxDraw.get(feature['properties']['id']);
 
           let drawFeature: FeatureCollection<Polygon> = {
             type: 'FeatureCollection',
@@ -171,7 +171,7 @@ export const initSimulationMap = (
             .features.filter(feature => feature.properties && feature.properties.identifier)
             .map(feature => feature?.properties?.identifier);
 
-          sourceData.features.map(feature => {
+          sourceData.features.forEach(feature => {
             if (feature.properties && feature.properties.identifier) {
               if (a.includes(feature.properties.identifier)) {
                 feature.properties['mark'] = true;

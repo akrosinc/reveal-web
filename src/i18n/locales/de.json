@@ -16,8 +16,11 @@
     "Location": "Standortverwaltung",
     "Simulation": "Simulation",
     "TagManagement": "Tag Management",
-    "MetaDataImport": "Metadata Import",
-    "Resource Planning": "Resource Planning"
+    "Resource Planning": "Resource Planning (de)",
+    "planReporting": "Plan Reporting (de)",
+    "performanceReporting": "Performance Reporting (de)",
+    "surveyReporting": "Survey Reporting (de)",
+    "MetaDataImport": "Metadata Import (de)"
   },
   "publicPage": {
     "supportedBy": "unterstützt von",
@@ -33,7 +36,13 @@
     "loading": "Loading..."
   },
   "homePage": {
-    "welcomeMessage": " Willkommen bei Reveal"
+    "welcomeMessage": " Willkommen bei Reveal",
+    "users": "Users (de)",
+    "organizations": "Organizations (de)",
+    "plans": "Plans (de)",
+    "reports": "Reports (de)",
+    "activePlans": " Active Plans (de)",
+    "activeOrganizations": "Active Organizations (de)"
   },
   "buttons": {
     "management": "Verwaltung",
@@ -99,7 +108,12 @@
   },
   "general": {
     "noContent": "No content.",
-    "noDataFound": "No data found."
+    "noDataFound": "No data found.",
+    "priority": {
+      "high": "High priority (de)",
+      "medium": "Medium priority (de)",
+      "low": "Low priority (de)"
+    }
   },
   "confirmDialog" :{
     "discardChanges": "Discard Changes"
@@ -126,12 +140,12 @@
     "planActivationError": "There was an error activating this plan.",
     "planActivationBody": "Are you sure you want to active plan with identifier",
     "planActivationTitle": "Activate plan",
-    "Title": "Title",
-    "Status": "Status",
-    "Intervention Type": "Intervention Type",
-    "Location Hierarchy": "Location Hierarchy",
-    "Start Date": "Start Date",
-    "End Date": "End Date",
+    "planTitle": "Title",
+    "status": "Status",
+    "interventionType": "Intervention Type",
+    "locationHierarchy": "Location Hierarchy",
+    "startDate": "Start Date (de)",
+    "endDate": "End Date (de)",
     "searchField": "Search (minimum 3 charaters)",
     "planErrorMessage": "Plan does not exist.",
     "planErrorRedirectMessage": "Plan does not exist, redirected to previous page.",
@@ -154,7 +168,12 @@
       "selectInterventionTypeError": "Please select intervention type.",
       "hierarchyLevelTarget": "Hierarchy Level Target",
       "hierarchyLevelTargetError": "Please select location hierarchy first and than pick target"
-    }
+    },
+    "createGoal": "Create Goal (de)",
+    "editGoal": "Edit Goal (de)",
+    "enterPlanDescription": "Enter plan description (de)",
+    "createAction": "Create Action (de)",
+    "editAction": "Edit Action (de)"
   },
   "reportPage": {
     "title": "Reports",
@@ -192,5 +211,9 @@
     "hierarchy": "Hierarchy",
     "location": "Location",
     "geographicLevel": "Geographic Level"
+  },
+  "darkMode": {
+    "on": "Turn on dark mode (de)",
+    "off": "Turn off dark mode (de)"
   }
 }

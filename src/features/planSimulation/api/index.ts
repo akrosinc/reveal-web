@@ -64,7 +64,7 @@ export const updateSimulationRequest = async (
   const data = await api
     .post<SimulationCountResponse>(
       '/entityTag/updateSimulationRequest?simulationRequestId=' + simulationRequestId,
-      resultTags
+      resultTags !== undefined && resultTags !== null ? resultTags : [{}]
     )
     .then(res => res.data);
   return data;

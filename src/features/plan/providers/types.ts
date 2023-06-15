@@ -3,6 +3,7 @@ export interface PlanModel {
   name: string;
   title: string;
   status: string;
+  date: Date;
   effectivePeriod: Period;
   locationHierarchy: LocationHierarchy;
   interventionType: InterventionType;
@@ -35,7 +36,7 @@ export interface Action {
   timingPeriod: Period;
   formIdentifier: string;
   type: string;
-  conditions: ConditionModel[]
+  conditions: ConditionModel[];
 }
 
 export interface ConditionModel {
@@ -73,7 +74,7 @@ export interface PlanCreateModel {
   locationHierarchy: string;
   interventionType: string;
   goals?: Goal[];
-  geographicLevelRequest?: string
+  geographicLevelRequest?: string;
 }
 
 export interface InterventionType {

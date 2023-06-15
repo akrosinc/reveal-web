@@ -124,6 +124,7 @@ const Plans = () => {
                   <td>{el.status}</td>
                   <td>{el.interventionType.name}</td>
                   <td>{el.locationHierarchy.name}</td>
+                  <td>{el.date}</td>
                   <td>{el.effectivePeriod.start}</td>
                   <td>{el.effectivePeriod.end}</td>
                   <td className="text-center">

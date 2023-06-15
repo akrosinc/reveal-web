@@ -69,8 +69,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
           </Col>
         </Row>
         <Form.Control type="text" readOnly={true} value={goal.description} />
-        <Form.Label className="mt-3">{t('planPage.priority')}</Form.Label>
-        <Form.Control type="text" readOnly={true} value={goal.priority} />
         <hr />
         <Row className="my-2">
           <Col>
@@ -82,12 +80,11 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
             </Button>
           </Col>
         </Row>
-        <Table bordered responsive hover variant={isDarkMode? 'dark' : 'light'}>
+        <Table bordered responsive hover variant={isDarkMode ? 'dark' : 'light'}>
           <thead className="border border-2">
             <tr>
               <th>{t('planPage.description')}</th>
-              <th>{t('planPage.dates')}</th>
-              <th>{t('planPage.conditions')}</th>
+              <th>{t('planPage.editAction')}</th>
             </tr>
           </thead>
           <tbody>
@@ -101,17 +98,13 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                 }}
               >
                 <td>{el.title}</td>
-                <td>
-                  {el.timingPeriod.start} - {el.timingPeriod.end}
-                </td>
                 <td className="text-center">
                   <Button
                     id="edit-action-button"
-                    onClick={e => {
-                      e.stopPropagation();
+                    onClick={() => {
+                      setShow(true);
                       setSelectedAction(el);
                       setSelectedIndex(index);
-                      setShowCondition(true);
                     }}
                   >
                     Edit
@@ -180,16 +173,6 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
             }}
           />
         )}
-        <Condition
-          show={showCondition}
-          conditionList={selectedAction?.conditions ?? []}
-          closeHandler={(condition?: ConditionModel) => {
-            if (condition !== undefined && selectedAction !== undefined) {
-              actionsList[selectedIndex].conditions.push(condition);
-            }
-            setShowCondition(false);
-          }}
-        />
       </Accordion.Body>
     </Accordion.Item>
   );

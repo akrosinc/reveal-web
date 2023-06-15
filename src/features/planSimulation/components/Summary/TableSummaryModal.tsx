@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Form, Modal, Row, Table } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   show: boolean;
@@ -17,6 +18,7 @@ const TableSummaryModal = ({ show, closeHandler, isDarkMode, summary, initiating
     name: string;
     data: any[];
   }>();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (summary) {
@@ -125,16 +127,24 @@ const TableSummaryModal = ({ show, closeHandler, isDarkMode, summary, initiating
         <Modal.Title>
           <Row>
             <Col>
-              <b>Summary {tableData ? ' - '.concat(tableData.name) : ''}</b>
+              <b>
+                {t('simulationPage.summary')} {tableData ? ' - '.concat(tableData.name) : ''}
+              </b>
             </Col>
           </Row>
           {tableData && (
             <>
               <Row>
-                <Col>Identifier: {tableData.identifier}</Col>
+                <Col>
+                  {' '}
+                  {t('simulationPage.identifier')}: {tableData.identifier}
+                </Col>
               </Row>
               <Row>
-                <Col>Level: {tableData.geoLevel}</Col>
+                <Col>
+                  {' '}
+                  {t('simulationPage.level')}: {tableData.geoLevel}
+                </Col>
               </Row>
             </>
           )}
@@ -146,8 +156,8 @@ const TableSummaryModal = ({ show, closeHandler, isDarkMode, summary, initiating
             <Table bordered responsive hover>
               <thead className="border border-2">
                 <tr>
-                  <th>Tag</th>
-                  <th>Sum</th>
+                  <th>{t('simulationPage.property')}</th>
+                  <th>{t('simulationPage.sum')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -167,7 +177,7 @@ const TableSummaryModal = ({ show, closeHandler, isDarkMode, summary, initiating
       </Modal.Body>
       <Modal.Footer>
         <Button id="cancel-goal-button" variant="secondary" onClick={closeHandler}>
-          Cancel
+          {t('simulationPage.close')}
         </Button>
       </Modal.Footer>
     </Modal>

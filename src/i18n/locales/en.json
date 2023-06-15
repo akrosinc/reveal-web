@@ -8,6 +8,7 @@
     "Reporting": "Reporting",
     "planReporting": "Plan Reporting",
     "performanceReporting": "Performance Reporting",
+    "surveyReporting": "Survey Reporting",
     "Plans": "Management",
     "Admin": "Admin",
     "Plan Management": "Plan",
@@ -35,7 +36,13 @@
     "loading": "Loading..."
   },
   "homePage": {
-    "welcomeMessage": "Welcome to Reveal"
+    "welcomeMessage": "Welcome to Reveal",
+    "users": "Users",
+    "organizations": "Organizations",
+    "plans": "Plans",
+    "reports": "Reports",
+    "activePlans": " Active Plans",
+    "activeOrganizations": "Active Organizations"
   },
   "buttons": {
     "management": "User Management",
@@ -103,9 +110,14 @@
   },
   "general": {
     "noContent": "No content.",
-    "noDataFound": "No data found."
+    "noDataFound": "No data found.",
+    "priority": {
+      "high": "High priority",
+      "medium": "Medium priority",
+      "low": "Low priority"
+    }
   },
-  "confirmDialog" :{
+  "confirmDialog": {
     "discardChanges": "Discard Changes"
   },
   "planPage": {
@@ -130,12 +142,12 @@
     "planActivationError": "There was an error activating this plan.",
     "planActivationBody": "Are you sure you want to active plan with identifier",
     "planActivationTitle": "Activate plan",
-    "Title": "Title",
-    "Status": "Status",
-    "Intervention Type": "Intervention Type",
-    "Location Hierarchy": "Location Hierarchy",
-    "Start Date": "Start Date",
-    "End Date": "End Date",
+    "planTitle": "Title",
+    "status": "Status",
+    "interventionType": "Intervention Type",
+    "locationHierarchy": "Location Hierarchy",
+    "startDate": "Start Date",
+    "endDate": "End Date",
     "searchField": "Search (minimum 3 charaters)",
     "planErrorMessage": "Plan does not exist.",
     "planErrorRedirectMessage": "Plan does not exist, redirected to previous page.",
@@ -153,12 +165,18 @@
       "endDate": "End date",
       "endDateError": "End date must be selected.",
       "selectHierarchy": "Select Hierarchy",
-      "selectHierarchyError": "Please select location hierarchy.", 
+      "selectHierarchyError": "Please select location hierarchy.",
       "selectInterventionType": "Select Intervention Type",
       "selectInterventionTypeError": "Please select intervention type.",
       "hierarchyLevelTarget": "Hierarchy Level Target",
       "hierarchyLevelTargetError": "Please select location hierarchy first and than pick target"
-    }
+    },
+    "createGoal": "Create Goal",
+    "editGoal": "Edit Goal",
+    "enterPlanDescription": "Enter plan description",
+    "createAction": "Create Action",
+    "editAction": "Edit Action",
+    "createDate": "Create Date"
   },
   "reportPage": {
     "title": "Reports",
@@ -179,12 +197,12 @@
     "refreshData": "Refresh Data",
     "reportType": "Report Type",
     "table": {
-      "Title": "Title",
-      "Status": "Status",
-      "Intervention Type": "Intervention Type",
-      "Location Hierarchy": "Location Hierarchy",
-      "Start Date": "Start Date",
-      "End Date":"End Date",
+      "title": "Title",
+      "status": "Status",
+      "interventionType": "Intervention Type",
+      "locationHierarchy": "Location Hierarchy",
+      "startDate": "Start Date",
+      "endDate": "End Date",
       "total": "Total"
     },
     "locationName": "Location Name",
@@ -198,9 +216,67 @@
     "hierarchy": "Hierarchy",
     "location": "Location",
     "geographicLevel": "Geographic Level",
-    "filterGeographicLevel": "Geographic Level Filter"
+    "filterGeographicLevel": "Geographic Level Filter",
+    "loadInactiveLocations": "Load inactive locations",
+    "selectToLoadInactiveLocations": "Select to Load Inactive Locations",
+    "addQueryAttribute": "Add query attribute",
+    "selectHierarchy": "Select Hierarchy",
+    "selectGeographicLevel": "Select Geographic Level",
+    "selectLocation": "Select Location",
+    "selectHierarchyFirst": "Select hierarchy first",
+    "selectParentToSearchWithin": "Select Parent Geographic Level to Search Within",
+    "selectParentLocationToSearchWithin": "Select Parent Location to Search Within",
+    "filterSearchByLevel": "Filter search result by Level",
+    "search":"Search",
+    "filterInactiveLocationsByLevel": "Filter inactive locations by Level",
+    "delete": "Delete",
+    "more": "More",
+    "properties": "Properties",
+    "property": "Property",
+    "selectProperty": "Select property",
+    "locationDetails": "Location details",
+    "searchResultCounts": "Search Result Counts",
+    "results": "Results",
+    "inactiveLocations": "Inactive Locations",
+    "availableProperties": "Available Properties",
+    "close": "Close",
+    "proceed": "Proceed",
+    "add": "Add",
+    "uploadData": "Upload Data",
+    "downloadData":"Download Data",
+    "clearAll": "Clear All",
+    "details": "Details",
+    "summary": "Summary",
+    "locationName": "Location Name",
+    "showMetadata": "Show Metadata",
+    "identifier": "Identifier",
+    "level": "Level",
+    "sum": "Sum",
+    "selectToIncludeParentData": "Select to include parent data in CSV file",
+    "includeParentData": "Include Parent Data",
+    "selectToDownloadFullHierarchy": "Select to download full hierarchy",
+    "downloadFullHierarchy": "Download Full Hierarchy",
+    "fieldDelimiter": "Field Delimiter",
+    "fileName": "File Name",
+    "cancel": "Cancel",
+    "download": "Download",
+    "enterNameForJson": "Enter a name for the JSON or geojson file",
+    "uploadLocationData": "Upload Location Data",
+    "fileType": "File type",
+    "upload": "Upload",
+    "file": "File"
   },
   "label": {
-    "layerOpacity":  "Layer opacity"
+    "layerOpacity": "Layer opacity"
+  },
+  "besdSurvey": {
+    "downloadType": "Download Type",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "getReport": "Get Report"
+  },
+  "darkMode": {
+    "on": "Turn on dark mode",
+    "off": "Turn off dark mode"
   }
 }

@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { PlanningLocationResponse } from '../../providers/types';
 import { getPolygonCenter } from '../../../../utils';
 import { Feature, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   closeHandler: (close: boolean) => void;
@@ -26,7 +27,7 @@ const fileTypes: FileType[] = [REVEAL_FILE_TYPE, ELASTIC_FILE_TYPE];
 
 const UploadSimulationData = ({ closeHandler, dataFunction }: Props) => {
   const { handleSubmit, register } = useForm();
-
+  const { t } = useTranslation();
   const handleUpload = (formValues: FormValues) => {
     console.log(formValues);
     if (formValues.fileType === REVEAL_FILE_TYPE.key) {
@@ -101,12 +102,12 @@ const UploadSimulationData = ({ closeHandler, dataFunction }: Props) => {
   return (
     <Modal size="sm" show centered scrollable backdrop="static" keyboard={false} onHide={() => closeHandler(false)}>
       <Modal.Header closeButton>
-        <Modal.Title className="text-center">Upload Location Data</Modal.Title>
+        <Modal.Title className="text-center">{t('simulationPage.uploadLocationData')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
           <Form.Group className={'mb-3'}>
-            <Form.Label>File type:</Form.Label>
+            <Form.Label>{t('simulationPage.fileType')}:</Form.Label>
             <Form.Select {...register('fileType')}>
               {fileTypes.map(type => (
                 <option key={type.key} value={type.key}>
@@ -117,14 +118,14 @@ const UploadSimulationData = ({ closeHandler, dataFunction }: Props) => {
           </Form.Group>
 
           <Form.Group className={'mb-3'}>
-            <Form.Label>File</Form.Label>
+            <Form.Label>{t('simulationPage.file')}</Form.Label>
             <Form.Control type="file" {...register('bulk', { required: 'Please provide a JSON file.' })} />
           </Form.Group>
         </Form>
       </Modal.Body>
       <Modal.Footer>
         <Button variant={'primary'} onClick={handleSubmit(handleUpload)}>
-          Upload
+          {t('simulationPage.upload')}
         </Button>
       </Modal.Footer>
     </Modal>

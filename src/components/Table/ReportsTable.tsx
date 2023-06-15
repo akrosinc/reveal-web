@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { Column, useTable } from 'react-table';
 import { ReportLocationProperties, ReportType } from '../../features/reporting/providers/types';
 import { useAppSelector } from '../../store/hooks';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   columns: Column[];
@@ -52,6 +52,8 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
     columns,
     data
   });
+  const { t } = useTranslation();
+
   return (
     <Table bordered hover {...getTableProps()} className="mt-2" variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="bg-white" style={{ position: 'sticky', top: '0' }}>
@@ -69,7 +71,9 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
                     }}
                     {...column.getHeaderProps()}
                   >
-                    {column.render('Header')}
+                    {column.Header !== null && column.Header !== undefined
+                      ? t('dashboard.' + column.Header.toString(), column.Header.toString())
+                      : ''}
                     {sortDirectionField === header ? (
                       sortDirection ? (
                         <FontAwesomeIcon className="ms-2" icon="sort-up" />

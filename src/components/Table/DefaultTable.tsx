@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Table } from 'react-bootstrap';
 import { useAppSelector } from '../../store/hooks';
 import { formatDate } from '../../utils';
-import {t} from "i18next";
+import { t } from 'i18next';
 
 interface Props {
   columns: { name: string; sortValue?: string; accessor?: string; key?: string }[];
@@ -80,10 +80,12 @@ const DefaultTable = ({ columns, data, sortHandler, clickHandler, clickAccessor 
                   if (el.key) {
                     const key = el.key;
                     //check if its and array or just an object
-                    if (dataEl[el.accessor].length) {
+                    if (dataEl[el.accessor] instanceof Array) {
                       return <td key={index}>{dataEl[el.accessor].map((obj: any) => obj[key]).toString()}</td>;
+                    } else if (dataEl[el.accessor] instanceof Object) {
+                      return <td key={index}>{dataEl[el.accessor][key]}</td>;
                     }
-                    return <td key={index}>{dataEl[el.accessor][key]}</td>;
+                    return <td key={index}>{dataEl[el.accessor]}</td>;
                   } else {
                     //check if its a date field and format if so
                     if (moment(dataEl[el.accessor], DATE_FORMATS, true).isValid()) {

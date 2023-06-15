@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { Goal, Priority } from '../../../../providers/types';
 import { createGoal, updateGoal } from '../../../../api';
 import { useAppSelector } from '../../../../../../store/hooks';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   show: boolean;
@@ -31,6 +32,7 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
       priority: currentGoal?.priority
     }
   });
+  const { t } = useTranslation();
 
   const submitHandler = (form: goalForm) => {
     if (planId) {
@@ -76,17 +78,23 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
   };
 
   return (
-    <Modal show={show} centered backdrop="static" onHide={closeHandler} contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
+    <Modal
+      show={show}
+      centered
+      backdrop="static"
+      onHide={closeHandler}
+      contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}
+    >
       <Modal.Header closeButton>
-        <Modal.Title>{currentGoal ? 'Edit Goal' : 'Create Goal'}</Modal.Title>
+        <Modal.Title>{currentGoal ? t('planPage.editGoal') : t('planPage.createGoal')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
           <Form.Group className="mb-2">
-            <Form.Label>Description</Form.Label>
+            <Form.Label>{t('planPage.description')}</Form.Label>
             <Form.Control
               id="goal-description-input"
-              placeholder="Enter plan description"
+              placeholder={t('planPage.enterPlanDescription')}
               type="text"
               {...register('description', {
                 required: 'Description must not be empty.',
@@ -97,21 +105,6 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList }: Props
               })}
             />
             {errors.description && <Form.Label className="text-danger">{errors.description.message}</Form.Label>}
-          </Form.Group>
-          <Form.Group className="mb-2">
-            <Form.Label>Priority</Form.Label>
-            <Form.Select
-              id="goal-priority-select"
-              {...register('priority', {
-                required: 'Please select plan priority.'
-              })}
-            >
-              <option></option>
-              <option value={Priority.HIGH_PRIORITY}>High priority</option>
-              <option value={Priority.MEDIUM_PRIORITY}>Medium priority</option>
-              <option value={Priority.LOW_PRIORITY}>Low priority</option>
-            </Form.Select>
-            {errors.priority && <Form.Label className="text-danger">{errors.priority.message}</Form.Label>}
           </Form.Group>
         </Form>
       </Modal.Body>

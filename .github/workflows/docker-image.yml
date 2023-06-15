@@ -2,7 +2,7 @@ name: Reveal Web test, build and deploy
 
 on:
   push:
-    branches: [ main, zambia-aggregation ]
+    branches: [ main, zambia-aggregation, zam-agg ]
 
 jobs:
 
@@ -37,7 +37,7 @@ jobs:
   build-and-push-docker-image:
 
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [yarn-install-and-build]
 
     steps:
 

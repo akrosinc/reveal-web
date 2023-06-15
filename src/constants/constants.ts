@@ -69,9 +69,9 @@ export const LOCATION_TABLE_COLUMNS = [
 ];
 
 export const SIMULATION_LOCATION_TABLE_COLUMNS = [
-  { Header: 'Location', accessor: 'properties.name', id: 'resultName' },
-  { Header: 'Geography Level', accessor: 'properties.geographicLevel' },
-  { Header: 'Details', id: 'details' }
+  { Header: 'location', accessor: 'properties.name', id: 'resultName' },
+  { Header: 'geographicLevel', accessor: 'properties.geographicLevel' },
+  { Header: 'details', id: 'details' }
 ];
 
 export const LOCATION_ASSIGN_TABLE_COLUMNS = [
@@ -82,12 +82,18 @@ export const LOCATION_ASSIGN_TABLE_COLUMNS = [
 ];
 
 export const PLAN_TABLE_COLUMNS = [
-  { name: 'Title', sortValue: 'title', accessor: 'title' },
-  { name: 'Status', sortValue: 'status', accessor: 'status' },
-  { name: 'Intervention Type', sortValue: 'interventionType', accessor: 'interventionType', key: 'name' },
-  { name: 'Location Hierarchy', sortValue: 'locationHierarchy', accessor: 'locationHierarchy', key: 'name' },
-  { name: 'Start Date', sortValue: 'effectivePeriodStart', accessor: 'effectivePeriod', key: 'start' },
-  { name: 'End Date', sortValue: 'effectivePeriodEnd', accessor: 'effectivePeriod', key: 'end' }
+  { name: 'planTitle', sortValue: 'title', accessor: 'title', key: 'planTitle' },
+  { name: 'status', sortValue: 'status', accessor: 'status', key: 'status' },
+  { name: 'interventionType', sortValue: 'interventionType', accessor: 'interventionType', key: 'name' },
+  {
+    name: 'locationHierarchy',
+    sortValue: 'locationHierarchy',
+    accessor: 'locationHierarchy',
+    key: 'name'
+  },
+  { name: 'createDate', sortValue: 'date', accessor: 'date', key: 'createDate' },
+  { name: 'startDate', sortValue: 'effectivePeriodStart', accessor: 'effectivePeriod', key: 'start' },
+  { name: 'endDate', sortValue: 'effectivePeriodEnd', accessor: 'effectivePeriod', key: 'end' }
 ];
 
 export const META_IMPORT_TABLE_COLUMNS = [

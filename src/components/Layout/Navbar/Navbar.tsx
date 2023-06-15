@@ -32,7 +32,7 @@ const NavbarComponent = () => {
       });
       keycloak.onAuthLogout = () => {
         setUser(undefined);
-      }
+      };
     }
   }, [keycloak, initialized]);
 
@@ -140,7 +140,7 @@ const NavbarComponent = () => {
           <Nav className="ms-0 my-2 my-md-0">
             <OverlayTrigger
               placement="auto"
-              overlay={<Tooltip>{isDarkMode ? 'Turn off dark mode' : 'Turn on dark mode'}</Tooltip>}
+              overlay={<Tooltip>{isDarkMode ? t('darkMode.off') : t('darkMode.on')}</Tooltip>}
             >
               <Button
                 className="rounded-circle me-auto mx-md-3"
@@ -166,7 +166,7 @@ const NavbarComponent = () => {
                     setExpanded(false);
                   }}
                 >
-                  <span className={locale.flag + ' me-2'}></span>
+                  <span className={locale.flag + ' me-2'} />
                   {locale.name.toUpperCase()}
                 </NavDropdown.Item>
               ))}
@@ -176,6 +176,6 @@ const NavbarComponent = () => {
       </Container>
     </Navbar>
   );
-}
+};
 
 export default NavbarComponent;

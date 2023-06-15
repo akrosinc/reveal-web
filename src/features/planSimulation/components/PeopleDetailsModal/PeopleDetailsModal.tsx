@@ -1,13 +1,8 @@
-import
-{ useState } from 'react';
-import {
-  Button, Col, Collapse, Row,
-} from 'react-bootstrap';
+import { useState } from 'react';
+import { Button, Col, Collapse, Row } from 'react-bootstrap';
 
-import {
- 
-  SearchLocationProperties
-} from '../../providers/types';
+import { SearchLocationProperties } from '../../providers/types';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   locationProps: SearchLocationProperties;
@@ -15,12 +10,14 @@ interface Props {
 
 const PeopleDetailsModal = ({ locationProps }: Props) => {
   const [locationMeta, setLocationMeta] = useState(false);
-
+  const { t } = useTranslation();
   return (
     <>
       <div className="d-flex justify-content-between align-items-center">
-        <h5>Location name: {locationProps.name}</h5>
-        <Button onClick={() => setLocationMeta(!locationMeta)}>Show Metadata</Button>
+        <h5>
+          {t('simulationPage.locationName')}: {locationProps.name}
+        </h5>
+        <Button onClick={() => setLocationMeta(!locationMeta)}>{t('simulationPage.showMetadata')}</Button>
       </div>
       <Collapse in={locationMeta} timeout={300}>
         <div className="my-2">

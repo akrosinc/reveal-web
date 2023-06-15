@@ -15,7 +15,12 @@
     "Management": "Gestão de Utilizadores",
     "Location": "Gerenciar localização",
     "Simulation": "Simulação",
-    "TagManagement": "Gestão de etiquetas"
+    "TagManagement": "Gestão de etiquetas",
+    "Resource Planning": "Resource Planning(pt)",
+    "planReporting": "Plan Reporting (pt)",
+    "performanceReporting": "Performance Reporting (pt)",
+    "surveyReporting": "Survey Reporting (pt)",
+    "MetaDataImport": "Metadata Import (pt)"
   },
   "publicPage": {
     "supportedBy": "Fornecido por",
@@ -31,7 +36,13 @@
     "loading": "A carregar..."
   },
   "homePage": {
-    "welcomeMessage": "Bem-vindo ao Revelar"
+    "welcomeMessage": "Bem-vindo ao Revelar",
+    "users": "Users (pt)",
+    "organizations": "Organizations (pt)",
+    "plans": "Plans (pt)",
+    "reports": "Reports (pt)",
+    "activePlans": " Active Plans (pt)",
+    "activeOrganizations": "Active Organizations (pt)"
   },
   "buttons": {
     "management": "Gestão de Utilizadores",
@@ -97,7 +108,12 @@
   },
   "general": {
     "noContent": "Nenhum conteúdo.",
-    "noDataFound": "Nenhum dado encontrado."
+    "noDataFound": "Nenhum dado encontrado.",
+    "priority": {
+      "high": "High priority (pt)",
+      "medium": "Medium priority (pt)",
+      "low": "Low priority (pt)"
+    }
   },
   "confirmDialog": {
     "discardChanges": "Descartar alterações"
@@ -124,12 +140,14 @@
     "planActivationError": "Houve um erro ao ativar este plano.",
     "planActivationBody": "Tem certeza que deseja excluir a meta com o identificador",
     "planActivationTitle": "Activar plano",
-    "Title": "Título",
-    "Status": "Estado",
-    "Intervention Type": "Tipo de Intervenção",
-    "Location Hierarchy": "Hierarquia de localização",
+    "planTitle": "Título",
+    "status": "Estado",
+    "interventionType": "Tipo de Intervenção",
+    "locationHierarchy": "Hierarquia de localização",
     "Start Date": "Data de início",
     "End Date": "Data de Fim",
+    "startDate": "Data de início",
+    "endDate": "Data de Fim",
     "searchField": "Pesquisar (mínimo 3 caracteres)",
     "planErrorMessage": "O plano não existe.",
     "planErrorRedirectMessage": "O plano não existe, redirecionado para a página anterior.",
@@ -152,7 +170,12 @@
       "selectInterventionTypeError": "Seleccione o tipo de intervenção.",
       "hierarchyLevelTarget": "Nível de Hierarquia Alvo",
       "hierarchyLevelTargetError": "Por favor, seleccione primeiro a hierarquia do local e depois escolha o alvo"
-    }
+    },
+    "createGoal": "Create Goal (pt)",
+    "editGoal": "Edit Goal (pt)",
+    "enterPlanDescription": "Enter plan description (pt)",
+    "createAction": "Create Action (pt)",
+    "editAction": "Edit Action (pt)"
   },
   "reportPage": {
     "title": "Relatórios",
@@ -195,5 +218,9 @@
   },
   "label": {
     "layerOpacity":  "Opacidade da camada"
+  },
+  "darkMode": {
+    "on": "Turn on dark mode (pt)",
+    "off": "Turn off dark mode (pt)"
   }
 }

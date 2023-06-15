@@ -275,7 +275,7 @@ const CreatePlan = () => {
       <Row>
         <Col md={8} className="mx-auto">
           <Form>
-            {activeTab === 'create-goals' && (
+            {activeTab === 'create-goals' && goalList.length <= 0 && (
               <Button
                 id="add-goal-button"
                 className="float-end"
@@ -470,12 +470,14 @@ const CreatePlan = () => {
                           isDisabled={id !== undefined}
                           options={
                             selectedHierarchy?.nodeOrder
-                              ? selectedHierarchy.nodeOrder.map<Options>(el => {
-                                  return {
-                                    label: el,
-                                    value: el
-                                  };
-                                }).filter(el => el.label !== 'structure')
+                              ? selectedHierarchy.nodeOrder
+                                  .map<Options>(el => {
+                                    return {
+                                      label: el,
+                                      value: el
+                                    };
+                                  })
+                                  .filter(el => el.label !== 'structure')
                               : []
                           }
                           value={id !== undefined ? targetType : undefined}

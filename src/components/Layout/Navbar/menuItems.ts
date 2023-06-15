@@ -52,7 +52,7 @@ export const MAIN_MENU = [
   {
     pageTitle: 'Reporting',
     route: '#',
-    roles: [REPORT_VIEW],
+    roles: [REPORT_VIEW, 'view_survey_data'],
     dropdown: [
       {
         pageTitle: 'planReporting',
@@ -63,6 +63,11 @@ export const MAIN_MENU = [
         pageTitle: 'performanceReporting',
         route: REPORTING_PAGE + '/performance-reports',
         roles: ['manage-users']
+      },
+      {
+        pageTitle: 'surveyReporting',
+        route: REPORTING_PAGE + '/survey-data',
+        roles: ['view_survey_data']
       }
     ]
   },

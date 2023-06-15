@@ -10,6 +10,7 @@ import {
   PerformanceDashboardModel,
   ReportLocationProperties
 } from '../providers/types';
+import { SurveyDataRequest } from '../components/SurveyDashboard/SurveyDashboard';
 
 const prodAPI = process.env.REACT_APP_API_URL === process.env.REACT_APP_DASHBOARD_API_URL ? api : dashBoardApi;
 
@@ -68,6 +69,11 @@ export const getPerformanceDashboard = async (planId: string, key?: string): Pro
   return data;
 };
 
+export const getColumnHeaderNameTranslations = async (): Promise<any> => {
+  const data = await prodAPI.get<any>(REPORTS + `/translation-data`).then(response => response.data);
+  return data;
+};
+
 export const getPerformanceDashboardDataDetails = async (
   planId: string,
   key?: string
@@ -76,6 +82,15 @@ export const getPerformanceDashboardDataDetails = async (
     .get<PerformanceDashboardModel[]>(
       REPORTS + `/detailed-performance-data?planIdentifier=${planId}&key=${key ?? null}`
     )
+    .then(response => response.data);
+  return data;
+};
+
+export const getSurveyData = async (request: SurveyDataRequest): Promise<BlobPart> => {
+  const data = await api
+    .post<string>(`/getSurveyData`, request, {
+      responseType: 'arraybuffer'
+    })
     .then(response => response.data);
   return data;
 };

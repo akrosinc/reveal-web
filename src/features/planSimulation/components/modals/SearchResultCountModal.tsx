@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import SimulationModal from '../SimulationModal';
 import { EntityTag } from '../../providers/types';
 import { ActionDialog } from '../../../../components/Dialogs';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   setShowCountModal: (val: boolean) => void;
@@ -20,24 +21,21 @@ const SearchResultCountModal = ({
   entityTags
 }: Props) => {
   const [selectedEntityTags, setSelectedEntityTags] = useState<EntityTag[]>();
-
-  useEffect(() => {
-    console.log('selectedEntityTags', selectedEntityTags);
-  }, [selectedEntityTags]);
+  const { t } = useTranslation();
 
   return (
     <ActionDialog
-      title={'Search Result Counts'}
+      title={t('simulationPage.searchResultCounts')}
       closeHandler={() => setShowCountModal(false)}
       footer={
         <>
-          <Button onClick={() => setShowCountModal(false)}>Close</Button>
-          <Button onClick={() => proceedToSearch(selectedEntityTags)}>Proceed</Button>
+          <Button onClick={() => setShowCountModal(false)}>{t('simulationPage.close')}</Button>
+          <Button onClick={() => proceedToSearch(selectedEntityTags)}>{t('simulationPage.proceed')}</Button>
         </>
       }
       element={
         <>
-          <span className="span-header">Results</span>
+          <span className="span-header">{t('simulationPage.results')}</span>
           {simulationCountData &&
             Object.keys(simulationCountData['countResponse']).map(key => {
               return (
@@ -51,7 +49,7 @@ const SearchResultCountModal = ({
           {simulationCountData && simulationCountData['inactiveCountResponse'] && (
             <>
               <hr />
-              <span className="span-header">Inactive Locations</span>
+              <span className="span-header">{t('simulationPage.inactiveLocations')}</span>
               {Object.keys(simulationCountData['inactiveCountResponse']).map(key => {
                 return (
                   <Row key={key}>
@@ -63,9 +61,9 @@ const SearchResultCountModal = ({
             </>
           )}
           <hr />
-          <span className="span-header">Results</span>
-          <Row key={'Response Tags: '}>
-            <Col>{'Response Tags: '} </Col>
+          <span className="span-header">{t('simulationPage.results')}</span>
+          <Row key="availableProperties">
+            <Col>{t('simulationPage.availableProperties')} </Col>
             <Col>
               <SimulationModal
                 selectedEntityCondition={selectedEntityCondition}

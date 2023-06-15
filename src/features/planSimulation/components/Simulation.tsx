@@ -70,7 +70,7 @@ export interface SimulationCountResponse {
 }
 
 const Simulation = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showModal, setShowModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -221,6 +221,7 @@ const Simulation = () => {
       inactiveGeographicLevelList: selectedFilterInactiveGeographicLevelList,
       includeInactive: loadParentsToggle
     };
+    console.log('language', i18n.language);
     submitSimulationRequest(requestData)
       .then(res => {
         setSimulationCountData(res);
@@ -663,7 +664,7 @@ const Simulation = () => {
                           }
                         }}
                       >
-                        <option value={''}>Select Hierarchy...</option>
+                        <option value={''}>{t('simulationPage.selectHierarchy')}...</option>
                         {hierarchyList?.content.map(el => (
                           <option key={el.identifier} value={el.identifier}>
                             {el.name}
@@ -678,7 +679,7 @@ const Simulation = () => {
                     <Col md={5} lg={5}>
                       <OverlayTrigger
                         placement="top"
-                        overlay={<Tooltip id="meta-tooltip">Select Parent Geographic Level to Search within</Tooltip>}
+                        overlay={<Tooltip id="meta-tooltip">{t('simulationPage.selectParentToSearchWithin')}</Tooltip>}
                       >
                         <Form.Label>{t('simulationPage.geographicLevel')}:</Form.Label>
                       </OverlayTrigger>
@@ -696,7 +697,7 @@ const Simulation = () => {
                           setSelectedLocation(null);
                         }}
                       >
-                        <option value={''}>Select Geographic Level...</option>
+                        <option value={''}>{t('simulationPage.selectGeographicLevel')}...</option>
                         {nodeList.map(el => (
                           <option key={el} value={el}>
                             {el}
@@ -711,7 +712,9 @@ const Simulation = () => {
                     <Col md={5} lg={5}>
                       <OverlayTrigger
                         placement="top"
-                        overlay={<Tooltip id="meta-tooltip">Select Parent Location to Search within</Tooltip>}
+                        overlay={
+                          <Tooltip id="meta-tooltip">{t('simulationPage.selectParentLocationToSearchWithin')}</Tooltip>
+                        }
                       >
                         <Form.Label>{t('simulationPage.location')}:</Form.Label>
                       </OverlayTrigger>
@@ -737,7 +740,7 @@ const Simulation = () => {
                     <Col md={5} lg={5}>
                       <OverlayTrigger
                         placement="top"
-                        overlay={<Tooltip id="meta-tooltip">Filter search result by Level</Tooltip>}
+                        overlay={<Tooltip id="meta-tooltip">{t('simulationPage.filterSearchByLevel')}</Tooltip>}
                       >
                         <Form.Label>{t('simulationPage.filterGeographicLevel')}:</Form.Label>
                       </OverlayTrigger>
@@ -758,7 +761,11 @@ const Simulation = () => {
                             return 'No location found.';
                           }
                         }}
-                        placeholder={completeGeographicList.length > 0 ? 'Search...' : 'Select hierarchy first'}
+                        placeholder={
+                          completeGeographicList.length > 0
+                            ? t('simulationPage.search') + '...'
+                            : t('simulationPage.selectHierarchyFirst')
+                        }
                         onInputChange={e => {
                           console.log(e);
                         }}
@@ -777,9 +784,11 @@ const Simulation = () => {
                     <Col md={5} lg={5}>
                       <OverlayTrigger
                         placement="top"
-                        overlay={<Tooltip id="meta-tooltip">Select to Load Inactive Locations</Tooltip>}
+                        overlay={
+                          <Tooltip id="meta-tooltip">{t('simulationPage.selectToLoadInactiveLocations')}</Tooltip>
+                        }
                       >
-                        <Form.Label>Load Inactive locations:</Form.Label>
+                        <Form.Label>{t('simulationPage.loadInactiveLocations')}:</Form.Label>
                       </OverlayTrigger>
                     </Col>
                     <Col>
@@ -800,7 +809,9 @@ const Simulation = () => {
                       <Col md={5} lg={5}>
                         <OverlayTrigger
                           placement="top"
-                          overlay={<Tooltip id="meta-tooltip">Filter inactive locations by Level</Tooltip>}
+                          overlay={
+                            <Tooltip id="meta-tooltip">{t('simulationPage.filterInactiveLocationsByLevel')}</Tooltip>
+                          }
                         >
                           <Form.Label>{t('simulationPage.filterGeographicLevel')}:</Form.Label>
                         </OverlayTrigger>
@@ -819,10 +830,11 @@ const Simulation = () => {
                               return 'No location found.';
                             }
                           }}
-                          placeholder={completeGeographicList.length > 0 ? 'Search...' : 'Select hierarchy first'}
-                          onInputChange={e => {
-                            console.log(e);
-                          }}
+                          placeholder={
+                            completeGeographicList.length > 0
+                              ? t('simulationPage.search') + '...'
+                              : t('simulationPage.selectHierarchyFirst')
+                          }
                           onChange={newValues => {
                             setInactiveGeoFilterList(newValues);
                             if (newValues) {
@@ -838,7 +850,7 @@ const Simulation = () => {
                   <Row>
                     <Col xs={9}>
                       <Form.Group>
-                        <Form.Label className="pe-3">Add query attribute </Form.Label>
+                        <Form.Label className="pe-3">{t('simulationPage.addQueryAttribute')} </Form.Label>
                       </Form.Group>
                     </Col>
                     <Col xs={3}>
@@ -866,7 +878,8 @@ const Simulation = () => {
                             {(resultsLoadingState === 'notstarted' || resultsLoadingState === 'complete') &&
                             (parentsLoadingState === 'notstarted' || parentsLoadingState === 'complete') ? (
                               <>
-                                <FontAwesomeIcon icon="search" /> <span className={'p-2'}>Search</span>
+                                <FontAwesomeIcon icon="search" />{' '}
+                                <span className={'p-2'}>{t('simulationPage.search')}</span>
                               </>
                             ) : (
                               <>
@@ -893,7 +906,7 @@ const Simulation = () => {
                             el.valueType === 'double' ||
                             el.valueType === 'date' ||
                             el.valueType === 'string') && (
-                            <span title="More">
+                            <span title={t('simulationPage.more')}>
                               <Button
                                 className="m-1"
                                 onClick={() => {
@@ -909,7 +922,7 @@ const Simulation = () => {
                               </Button>
                             </span>
                           )}
-                          <span title="Delete">
+                          <span title={t('simulationPage.delete')}>
                             <Button
                               variant="secondary"
                               onClick={() => {
@@ -966,10 +979,10 @@ const Simulation = () => {
 
         <Container fluid>
           <Row>
-            <Col>{highestLocations && showResult && <h3 className="my-3 ">Result</h3>}</Col>
+            <Col>{highestLocations && showResult && <h3 className="my-3 ">{t('simulationPage.results')}</h3>}</Col>
             <Col>
               <Button className="float-end my-3 ms-2" variant="secondary" onClick={() => setShowUploadModal(true)}>
-                Upload Data
+                {t('simulationPage.uploadData')}
               </Button>
               {highestLocations && showResult && (
                 <>
@@ -980,10 +993,10 @@ const Simulation = () => {
                       setShowDownloadPanel(true);
                     }}
                   >
-                    Download Data
+                    {t('simulationPage.downloadData')}
                   </Button>
                   <Button className="float-end my-3 " variant="secondary" onClick={clearHandler}>
-                    Clear All
+                    {t('simulationPage.clearAll')}
                   </Button>
                 </>
               )}
@@ -1009,7 +1022,7 @@ const Simulation = () => {
             setSelectedEntityCondition(undefined);
             setShowModal(false);
           }}
-          title="Properties"
+          title={t('simulationPage.properties')}
           element={<SimulationModal selectedEntityCondition={setSelectedEntityCondition} entityTags={entityTags} />}
           footer={
             <>
@@ -1019,10 +1032,10 @@ const Simulation = () => {
                   setShowModal(false);
                 }}
               >
-                Close
+                {t('simulationPage.close')}
               </Button>
               <Button disabled={selectedEntityCondition === undefined} onClick={() => openModalHandler(false)}>
-                Add
+                {t('simulationPage.add')}
               </Button>
             </>
           }
@@ -1039,7 +1052,7 @@ const Simulation = () => {
           onHide={() => setShowDetails(false)}
         >
           <Modal.Header closeButton>
-            <Modal.Title className="w-100 text-center">Location details</Modal.Title>
+            <Modal.Title className="w-100 text-center">{t('simulationPage.locationDetails')}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <PeopleDetailsModal locationProps={selectedRow} />

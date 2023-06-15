@@ -1,5 +1,6 @@
 import Select, { SingleValue } from 'react-select';
 import { EntityTag } from '../../providers/types';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   selectedEntityCondition: (entityCondition: EntityTag | undefined) => void;
@@ -16,14 +17,18 @@ const SimulationModal = ({
   multi = false,
   setSelectedEntityTags
 }: Props) => {
+  const { t } = useTranslation();
   return (
     <div>
       {showEntity && (
-        <p className="mb-3">{entityTags.length ? entityTags[0].lookupEntityType.code : 'No entity types found'} </p>
+        <p className="mb-3">
+          {entityTags.length ? entityTags[0].lookupEntityType.code : 'No entity types found'}{' '}
+          {t('simulationPage.properties')}{' '}
+        </p>
       )}
       {!multi ? (
         <Select
-          placeholder="Select Location..."
+          placeholder={t('simulationPage.selectProperty') + '...'}
           className="custom-react-select-container w-100"
           classNamePrefix="custom-react-select"
           id="team-assign-select"
@@ -41,7 +46,7 @@ const SimulationModal = ({
         />
       ) : (
         <Select
-          placeholder="Select Location..."
+          placeholder={t('simulationPage.selectProperty') + '...'}
           className="custom-react-select-container w-100"
           classNamePrefix="custom-react-select"
           id="team-assign-select"
@@ -52,8 +57,6 @@ const SimulationModal = ({
             return [...prev, { ...current, label: current.tag, value: current.identifier }];
           }, [])}
           onChange={(newValue, action) => {
-            console.log(newValue, action);
-
             let items: SingleValue<EntityTag | undefined>[] = newValue.map(item => item);
             let vals: (EntityTag | undefined)[] = items.map(singItem => {
               if (singItem) {

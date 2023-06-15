@@ -11,14 +11,16 @@ import { ChartData } from 'chart.js/auto';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut, Pie } from 'react-chartjs-2';
 import { getPlanReports } from '../reporting/api';
+import { useTranslation } from 'react-i18next';
 
-ChartJS.register(ArcElement, Tooltip, Legend)
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Dashboard = () => {
   const [data, setData] = useState<ChartData<'pie'>>();
   const [dougData, setDougData] = useState<ChartData<'doughnut'>>();
   const dispatch = useAppDispatch();
   const [numbers, setNumber] = useState<{ title: string; count: number }[]>([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     Promise.all([
@@ -31,14 +33,14 @@ const Dashboard = () => {
     ])
       .then(async ([organizationCount, userCount, planCount, orgList, planList, reportList]) => {
         setNumber([
-          { title: 'Users', count: userCount.totalElements },
-          { title: 'Organizations', count: organizationCount.count },
-          { title: 'Plans', count: planCount.count },
-          { title: 'Reports', count: reportList.totalElements }
+          { title: t('homePage.users'), count: userCount.totalElements },
+          { title: t('homePage.organizations'), count: organizationCount.count },
+          { title: t('homePage.plans'), count: planCount.count },
+          { title: t('homePage.reports'), count: reportList.totalElements }
         ]);
         if (userCount.totalElements > 0 || organizationCount.count > 0 || planCount.count > 0) {
           setData({
-            labels: ['Users', 'Organizations', 'Plans'],
+            labels: [t('homePage.users'), t('homePage.organizations'), t('homePage.plans')],
             datasets: [
               {
                 label: 'Count',
@@ -53,7 +55,7 @@ const Dashboard = () => {
         let activeOrganizationsCount = orgList.content.filter(el => el.active).length;
         if (activePlansCount > 0 || activeOrganizationsCount > 0) {
           setDougData({
-            labels: ['Active Plans', 'Active Organizations'],
+            labels: [t('homePage.activePlans'), t('homePage.activeOrganizations')],
             datasets: [
               {
                 label: '# of active',
@@ -70,7 +72,7 @@ const Dashboard = () => {
   return (
     <AuthorizedElement roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}>
       <>
-      <Row className="mb-5 justify-content-center">
+        <Row className="mb-5 justify-content-center">
           {numbers.map((el, index) => (
             <Col md={3} xl={2} key={index}>
               <div className="p-4 my-2 border border-1 rounded">
@@ -81,7 +83,7 @@ const Dashboard = () => {
           ))}
         </Row>
         <Row style={{ minHeight: '500px' }} className="justify-content-center align-items-center">
-          <Col md={6} xl={4} style={{height: '400px'}}>
+          <Col md={6} xl={4} style={{ height: '400px' }}>
             {data !== undefined && data.datasets[0].data.length ? (
               <Pie
                 data={data}
@@ -93,7 +95,7 @@ const Dashboard = () => {
               <p className="lead mt-5">No data to display.</p>
             )}
           </Col>
-          <Col md={6} xl={4} style={{height: '450px'}} className='mt-4 mt-md-0'>
+          <Col md={6} xl={4} style={{ height: '450px' }} className="mt-4 mt-md-0">
             {dougData !== undefined && dougData.datasets[0].data.length ? (
               <Doughnut
                 data={dougData}

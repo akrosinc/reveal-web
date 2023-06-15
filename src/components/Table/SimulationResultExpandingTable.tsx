@@ -9,6 +9,7 @@ import {
   SIMULATION_LOCATION_TABLE_COLUMNS
 } from '../../constants';
 import { useAppSelector } from '../../store/hooks';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   data: any;
@@ -108,21 +109,26 @@ const SimulationResultExpandingTable = ({ data, clickHandler, detailsClickHandle
     },
     useExpanded // Use the useExpanded plugin hook
   );
-
+  const { t } = useTranslation();
   return (
     <Table bordered responsive hover {...getTableProps()} variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="border border-2">
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
-            {headerGroup.headers.map(column => (
-              <th
-                id={column.id + '-header'}
-                style={{ width: column.id === 'expander' ? '37px' : 'auto' }}
-                {...column.getHeaderProps()}
-              >
-                {column.render('Header')}
-              </th>
-            ))}
+            {headerGroup.headers.map(column => {
+              console.log(column);
+              return (
+                <th
+                  id={column.id + '-header'}
+                  style={{ width: column.id === 'expander' ? '37px' : 'auto' }}
+                  {...column.getHeaderProps()}
+                >
+                  {column.Header !== undefined && column.Header !== null && column.id !== 'expander'
+                    ? t('simulationPage.' + column.Header.toString())
+                    : ''}
+                </th>
+              );
+            })}
           </tr>
         ))}
       </thead>
@@ -178,7 +184,7 @@ const SimulationResultExpandingTable = ({ data, clickHandler, detailsClickHandle
                             detailsClickHandler(cellData.identifier);
                           }}
                         >
-                          Details
+                          {t('simulationPage.details')}
                         </Button>
                         <Button
                           className={'mx-2'}
@@ -186,10 +192,8 @@ const SimulationResultExpandingTable = ({ data, clickHandler, detailsClickHandle
                             summaryClickHandler(cellData);
                           }}
                         >
-                          Summary
+                          {t('simulationPage.summary')}
                         </Button>
-                        {/*):null*/}
-                        {/*}*/}
                       </td>
                     );
                   } else {
