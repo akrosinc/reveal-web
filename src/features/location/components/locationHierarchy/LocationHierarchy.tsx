@@ -60,7 +60,7 @@ const LocationHierarchy = () => {
             }
           },
           error: {
-            render({ data: err }: {data: string}) {
+            render({ data: err }: { data: string }) {
               setShowConfirm(false);
               return err;
             }
@@ -116,7 +116,7 @@ const LocationHierarchy = () => {
                 {LOCATION_HIERARCHY_TABLE_COLUMNS.map((el, index) => {
                   return (
                     <th style={{ cursor: 'default' }} key={index}>
-                      {el.name}
+                      {t('locationHierarchyPage.' + el.name)}
                     </th>
                   );
                 })}

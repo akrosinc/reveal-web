@@ -216,7 +216,12 @@
       "lastname": "Nom de famille",
       "organization": "Organisation",
       "type": "Taper",
-      "active": "Actif"
+      "active": "Actif",
+      "identifier": "Identifiant",
+      "tag": "Balises",
+      "lookupEntityType": "Type d'entité",
+      "simulationDisplay": "Balise d'affichage",
+      "aggregate":"Est, un agrégat"
     },
     "locationName": "Nom de la localisation",
     "locationType": "Type de lieu",
@@ -277,7 +282,9 @@
     "uploadLocationData": "Télécharger les données de localisation",
     "fileType": "Type de fichier",
     "upload": "Télécharger",
-    "file": "Déposer"
+    "file": "Déposer",
+    "entityTags": "Balises d'entité",
+    "fileTemplate": "Modèle de fichier"
   },
   "label": {
     "layerOpacity": "Opacité du calque"
@@ -290,5 +297,14 @@
   "darkMode": {
     "on": "Activer le mode sombre",
     "off": "Désactiver le mode sombre"
+  },
+  "metadataImport": {
+    "templateCreation": "Création de modèles",
+    "fileImport": "Importation de fichiers",
+    "uploadFile": "Téléverser un fichier"
+  },
+  "locationHierarchyPage": {
+    "Name": "Nom",
+    "nodeOrder": "Ordre des nœuds"
   }
 }

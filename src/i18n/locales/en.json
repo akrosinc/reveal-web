@@ -216,7 +216,12 @@
       "lastname": "Lastname",
       "organization": "Organization",
       "type": "Type",
-      "active": "active"
+      "active": "active",
+      "identifier": "Identifier",
+      "tag": "Tag",
+      "lookupEntityType": "Entity Type",
+      "simulationDisplay": "Display Tag",
+      "aggregate": "Is an aggregate"
     },
     "locationName": "Location Name",
     "locationType": "Location Type",
@@ -277,7 +282,9 @@
     "uploadLocationData": "Upload Location Data",
     "fileType": "File type",
     "upload": "Upload",
-    "file": "File"
+    "file": "File",
+    "entityTags": "Entity Tags",
+    "fileTemplate": "File Template"
   },
   "label": {
     "layerOpacity": "Layer opacity"
@@ -291,5 +298,15 @@
   "darkMode": {
     "on": "Turn on dark mode",
     "off": "Turn off dark mode"
+  },
+  "metadataImport": {
+    "templateCreation": "Template Creation",
+    "fileImport": "File Import",
+    "uploadFile": "Upload File"
+
+  },
+  "locationHierarchyPage": {
+    "name": "Name",
+    "nodeOrder": "Node Order"
   }
 }

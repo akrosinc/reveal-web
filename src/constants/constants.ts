@@ -59,8 +59,8 @@ export const GEOGRAPHY_LEVEL_TABLE_COLUMNS = [
 ];
 
 export const LOCATION_HIERARCHY_TABLE_COLUMNS = [
-  { name: 'Name', sortValue: 'name' },
-  { name: 'Node Order', sortValue: 'nodeOrder' }
+  { name: 'name', sortValue: 'name' },
+  { name: 'nodeOrder', sortValue: 'nodeOrder' }
 ];
 
 export const LOCATION_TABLE_COLUMNS = [
@@ -97,10 +97,10 @@ export const PLAN_TABLE_COLUMNS = [
 ];
 
 export const META_IMPORT_TABLE_COLUMNS = [
-  { name: 'File name', sortValue: 'filename', accessor: 'filename' },
-  { name: 'Upload Date', sortValue: 'uploadedDatetime', accessor: 'uploadDatetime' },
-  { name: 'Status', sortValue: 'status', accessor: 'status' },
-  { name: 'Uploaded By', sortValue: 'uploadedBy', accessor: 'uploadedBy' }
+  { name: 'fileName', sortValue: 'filename', accessor: 'filename' },
+  { name: 'uploadDate', sortValue: 'uploadedDatetime', accessor: 'uploadDatetime' },
+  { name: 'status', sortValue: 'status', accessor: 'status' },
+  { name: 'uploadedBy', sortValue: 'uploadedBy', accessor: 'uploadedBy' }
 ];
 
 export const RESOURCE_PLANNING_HISTORY_TABLE_COLUMNS = [

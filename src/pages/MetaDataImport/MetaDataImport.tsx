@@ -4,12 +4,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AuthGuard from '../../components/AuthGuard';
 import PageWrapper from '../../components/PageWrapper';
 import { METADATA_IMPORT } from '../../constants';
-import MetaFileImport from '../../features/metaDataImport/components/fileImport'
+import MetaFileImport from '../../features/metaDataImport/components/fileImport';
 import TemplateCreation from '../../features/metaDataImport/components/templateCreation';
+import { useTranslation } from 'react-i18next';
 
 const MetaDataImport = () => {
   let { tab } = useParams();
   let navigate = useNavigate();
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (tab === undefined) {
@@ -20,7 +23,7 @@ const MetaDataImport = () => {
   }, [tab, navigate]);
 
   return (
-    <PageWrapper title="Metadata Import">
+    <PageWrapper title={t('topNav.MetaDataImport')}>
       <Tabs
         defaultActiveKey="create-template"
         id="test-tabs"
@@ -31,12 +34,12 @@ const MetaDataImport = () => {
           navigate(METADATA_IMPORT + '/' + tabName);
         }}
       >
-        <Tab eventKey="create-template" title="Template Creation">
+        <Tab eventKey="create-template" title={t('metadataImport.templateCreation')}>
           <AuthGuard roles={[]}>
             <TemplateCreation />
           </AuthGuard>
         </Tab>
-        <Tab eventKey="file-import" title="File Import">
+        <Tab eventKey="file-import" title={t('metadataImport.fileImport')}>
           <AuthGuard roles={[]}>
             <MetaFileImport />
           </AuthGuard>

@@ -38,7 +38,7 @@ export const TemplateCreation = () => {
         </Col>
         <Col md={6}>
           <Select
-            placeholder="Select Hierarchy"
+            placeholder={t('simulationPage.selectHierarchy') + '...'}
             options={hierarchyList?.content.map<{ value: string; label: string }>(el => {
               return {
                 label: el.name,
@@ -78,7 +78,7 @@ export const TemplateCreation = () => {
       </Row>
       <Row className="mt-4 align-items-center">
         <Col md={2}>
-          <Form.Label className="text-center">Entity tags:</Form.Label>
+          <Form.Label className="text-center">{t('simulationPage.entityTags')}:</Form.Label>
         </Col>
         <Col md={6}>
           <Select
@@ -97,7 +97,7 @@ export const TemplateCreation = () => {
       </Row>
       <Row className="mt-4 align-items-center">
         <Col md={2}>
-          <Form.Label className="text-center">File Template:</Form.Label>
+          <Form.Label className="text-center">{t('simulationPage.fileTemplate')}:</Form.Label>
         </Col>
         <Col md={6}>
           <Button
@@ -120,7 +120,7 @@ export const TemplateCreation = () => {
               }
             }}
           >
-            Download
+            {t('simulationPage.download')}
           </Button>
         </Col>
       </Row>

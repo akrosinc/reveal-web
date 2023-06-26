@@ -93,7 +93,7 @@ const Tagging = () => {
               .filter(el => !columnsNotForDisplay.includes(el))
               .map(el => {
                 return {
-                  name: el.charAt(0).toUpperCase() + el.slice(1),
+                  name: el,
                   accessor: el,
                   sortValue: el
                 };

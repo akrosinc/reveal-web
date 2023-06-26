@@ -8,11 +8,14 @@ import { META_IMPORT_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../
 import { getMetadataImportList } from '../../api';
 import DetailsModal from './detailsModal';
 import UploadModal from './uploadModal';
+import { useTranslation } from 'react-i18next';
 
 const MetaFileImport = () => {
   const [open, setOpen] = useState(false);
   const [metadataList, setMetadataList] = useState<PageableModel<any>>();
   const [selectedMetaImport, setSelectedMetaImport] = useState<any>();
+
+  const { t } = useTranslation();
 
   const loadData = useCallback((size: number, page: number, field?: string, direction?: boolean) => {
     getMetadataImportList(size, page, field, direction)
@@ -38,7 +41,7 @@ const MetaFileImport = () => {
     <>
       <div className="d-flex justify-content-between my-4">
         <h2>Metadata Imports({metadataList?.totalElements})</h2>
-        <Button onClick={() => setOpen(!open)}>Upload File</Button>
+        <Button onClick={() => setOpen(!open)}>{t('metadataImport.uploadFile')}</Button>
       </div>
       {metadataList && metadataList.content.length ? (
         <>
