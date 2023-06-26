@@ -88,7 +88,6 @@ export const getLocationsSSE = (
   closeHandler: (e: any) => any,
   openHandler: () => any
 ) => {
-  console.log('Invoked');
   const events = new EventSource(
     process.env.REACT_APP_API_URL + '/entityTag/filter-sse?simulationRequestId=' + requestData.simulationRequestId
   );
@@ -111,7 +110,6 @@ export const getFullLocationsSSE = (
   closeHandler: () => any,
   openHandler: () => any
 ) => {
-  console.log('Invoked');
   const events = new EventSource(
     process.env.REACT_APP_API_URL +
       '/entityTag/inactive-locations?simulationRequestId=' +

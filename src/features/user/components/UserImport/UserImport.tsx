@@ -96,7 +96,7 @@ const UserImport = () => {
           clickHandler={(el: UserBulk) => openBulkById(el)}
         />
       ) : (
-        <p className="text-center lead">No bulk files found.</p>
+        <p className="text-center lead">{t('locationsPage.noBulkFilesFound')}</p>
       )}
       {bulkList !== undefined && bulkList.content.length > 0 ? (
         <Paginator

@@ -143,7 +143,7 @@ const LocationBulk = () => {
           clickHandler={(identifier: LocationBulkModel) => openBulkById(identifier)}
         />
       ) : (
-        <p className="text-center lead">No bulk files found.</p>
+        <p className="text-center lead">{t('locationsPage.noBulkFilesFound')}</p>
       )}
       {locationBulkList !== undefined && locationBulkList.content.length > 0 ? (
         <Paginator

@@ -15,4 +15,11 @@ export const formatDate = (date?: Date) => {
 export const toUtcString = (date: Date) => {
   let momentDate = Moment(date);
   return Moment(date).utc().add(momentDate.utcOffset(), 'm').format('yyyy-MM-DD');
-}
+};
+
+export const toStartOfDay = (date: Date) => {
+  return Moment(date).startOf('day');
+};
+export const toEndOfDay = (date: Date) => {
+  return Moment(date).endOf('day');
+};

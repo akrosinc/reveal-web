@@ -1,13 +1,21 @@
-import { Button, Col, Container, Form, Row } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row, Table } from 'react-bootstrap';
 import { Controller, useForm } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
-import { getSurveyData } from '../../api';
+import { getFailedSurveyRequests, getSurveyData } from '../../api';
 import { toast } from 'react-toastify';
+import { toEndOfDay, toStartOfDay } from '../../../../utils';
+import { BesdFailedIntegrationRetry } from '../types';
 
 export interface SurveyDataRequest {
+  downloadType: 'extract' | 'rawdata' | undefined;
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface FormValues {
   downloadType: 'extract' | 'rawdata' | undefined;
   startDate: Date;
   endDate: Date;
@@ -25,11 +33,18 @@ const SurveyDashboard = () => {
     handleSubmit,
     control,
     formState: { errors }
-  } = useForm<SurveyDataRequest>();
+  } = useForm<FormValues>();
+
+  const [failedResponses, setFailedResponses] = useState<BesdFailedIntegrationRetry[]>([]);
+
   const { t } = useTranslation();
   let link = useRef<HTMLAnchorElement>(null);
 
-  const dataHandler = (formData: SurveyDataRequest) => {
+  useEffect(() => {
+    getFailedSurveyRequests().then(res => setFailedResponses(res));
+  }, []);
+
+  const dataHandler = (formData: FormValues) => {
     if (formData.endDate === undefined) {
       formData.endDate = new Date();
     }
@@ -39,15 +54,22 @@ const SurveyDashboard = () => {
     if (formData.downloadType === undefined) {
       formData.downloadType = 'rawdata';
     }
-    getSurveyData(formData)
+
+    let request: SurveyDataRequest = {
+      downloadType: formData.downloadType,
+      startDate: toStartOfDay(formData.startDate).toDate(),
+      endDate: toEndOfDay(formData.endDate).toDate()
+    };
+
+    getSurveyData(request)
       .then(res => {
         if (link && link.current) {
           link.current.href = window.URL.createObjectURL(new Blob([res], { type: 'application/vnd.ms-excel' }));
           link.current.setAttribute(
             'download',
             formData.downloadType === 'extract'
-              ? `ResponseAggregation_${formData.startDate.toDateString()}_${formData.endDate.toDateString()}.xlsx`
-              : `RawResponses_${formData.startDate.toDateString()}_${formData.endDate.toDateString()}.xlsx`
+              ? `ResponseAggregation_${formData.startDate}_${formData.endDate}.xlsx`
+              : `RawResponses_${formData.startDate}_${formData.endDate}.xlsx`
           );
           link.current.click();
         }
@@ -176,6 +198,38 @@ const SurveyDashboard = () => {
           </Button>
         </Col>
       </Row>
+      {failedResponses.length > 0 && (
+        <>
+          <hr />
+          <h4>ERRORS - Please contact product team</h4>
+          <Table>
+            <thead>
+              <tr>
+                <th>id</th>
+                <td>Vendor Integration Response Id</td>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Message</th>
+                <th>http Code</th>
+              </tr>
+            </thead>
+            <tbody>
+              {failedResponses.map(failedResponse => {
+                return (
+                  <tr>
+                    <td>{failedResponse.id}</td>
+                    <td>{failedResponse.vendorIntegrationId}</td>
+                    <td>{failedResponse.startDate}</td>
+                    <td>{failedResponse.endDate}</td>
+                    <td>{failedResponse.errorMessage.substr(0, 100)}</td>
+                    <td>{failedResponse.httpCode}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        </>
+      )}
     </Container>
   );
 };

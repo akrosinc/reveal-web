@@ -1,16 +1,16 @@
 import React from 'react';
 import { Spinner } from 'react-bootstrap';
-import { CSSProperties } from 'react-transition-group/node_modules/@types/react';
+// import { CSSProperties } from 'react-transition-group';
 import { useAppSelector } from '../../store/hooks';
 
-const loaderBackdrop: CSSProperties = {
+const loaderBackdrop: React.CSSProperties = {
   backgroundColor: 'rgba(0, 0, 0, 0.25)',
   position: 'absolute',
   left: '0',
   top: '0',
   width: '100vw',
   height: '100vh',
-  zIndex: 9999,
+  zIndex: 9999
 };
 
 const Loader = () => {

@@ -70,7 +70,7 @@ export interface SimulationCountResponse {
 }
 
 const Simulation = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [showModal, setShowModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -221,7 +221,6 @@ const Simulation = () => {
       inactiveGeographicLevelList: selectedFilterInactiveGeographicLevelList,
       includeInactive: loadParentsToggle
     };
-    console.log('language', i18n.language);
     submitSimulationRequest(requestData)
       .then(res => {
         setSimulationCountData(res);
@@ -505,7 +504,6 @@ const Simulation = () => {
               mapDataClone.parents[key].properties?.geographicLevelNodeNumber === min
           )
           .map(key => mapDataClone.parents[key]);
-        console.log('after recursive', highestLocations);
         setHighestLocations(highestLocations);
       }
     }
@@ -516,16 +514,12 @@ const Simulation = () => {
       let tagsMeta: EntityTag[] = [];
       getEntityTags(selectedEntity).then(res => {
         tagsMeta = res;
-        console.log('tagsMeta', tagsMeta);
 
         let tagsEvent: EntityTag[] = [];
         getEventBasedEntityTags(selectedEntity).then(result => {
           tagsEvent = result;
 
-          console.log('tagsEvent', tagsEvent);
-
           let allTags = tagsMeta.concat(tagsEvent);
-          console.log('allTags', allTags);
           if (allTags.length > 0) {
             setEntityTags(allTags);
           }
@@ -766,9 +760,7 @@ const Simulation = () => {
                             ? t('simulationPage.search') + '...'
                             : t('simulationPage.selectHierarchyFirst')
                         }
-                        onInputChange={e => {
-                          console.log(e);
-                        }}
+                        onInputChange={e => {}}
                         onChange={newValues => {
                           setGeoFilterList(newValues);
                           if (newValues) {

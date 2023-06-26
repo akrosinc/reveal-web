@@ -93,7 +93,8 @@
     "geographicLevels": "Geographic Levels",
     "locationHierarchy": "Location Hierarchy",
     "locations": "Location Inspector",
-    "locationsBulk": "Location Import"
+    "locationsBulk": "Location Import",
+    "noBulkFilesFound": "No bulk files found."
   },
   "assignPage": {
     "title": "Assignments",
@@ -198,12 +199,24 @@
     "reportType": "Report Type",
     "table": {
       "title": "Title",
+      "planTitle": "Title",
       "status": "Status",
       "interventionType": "Intervention Type",
       "locationHierarchy": "Location Hierarchy",
       "startDate": "Start Date",
       "endDate": "End Date",
-      "total": "Total"
+      "total": "Total",
+      "name": "Name",
+      "fileName": "File Name",
+      "uploadedBy": "Uploaded By",
+      "uploadDate": "Uploaded Date",
+      "createDate": "Create Date",
+      "username": "Username",
+      "firstname": "Firstname",
+      "lastname": "Lastname",
+      "organization": "Organization",
+      "type": "Type",
+      "active": "active"
     },
     "locationName": "Location Name",
     "locationType": "Location Type",

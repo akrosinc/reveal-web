@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Table, FormCheck } from 'react-bootstrap';
-import { useTable, useExpanded } from 'react-table';
+import { useTable, useExpanded, Column } from 'react-table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3 } from '../../constants';
 import { useAppSelector } from '../../store/hooks';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   columns: any;
@@ -16,7 +17,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
   const isDarkMode = useAppSelector(state => state.darkMode.value);
-
+  const { t } = useTranslation();
   const getColorLevel = (depth: number) => {
     if (depth === 0) {
       return '';
@@ -68,6 +69,20 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
     useExpanded // Use the useExpanded plugin hook
   );
 
+  const checkColumn = (column?: Column<object>) => {
+    if (column) {
+      if (
+        typeof column.Header !== 'function' &&
+        column.Header !== null &&
+        column.Header !== undefined &&
+        column.Header.toString() !== ''
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   return (
     <Table bordered responsive hover {...getTableProps()} variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="border border-2">
@@ -86,7 +101,9 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
                 }}
                 {...column.getHeaderProps()}
               >
-                {column.render('Header')}
+                {checkColumn(column)
+                  ? t('reportPage.table.' + column.Header?.toString(), column.Header?.toString())
+                  : ''}
                 {activeSortField === column.render('Header') ? (
                   sortDirection ? (
                     <FontAwesomeIcon className="ms-1" icon="sort-up" />
@@ -102,7 +119,7 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {rows.map((row) => {
+        {rows.map(row => {
           prepareRow(row);
           return (
             //row.depth is not existing in react table types for some reason, casting to any type solves the issue
@@ -110,32 +127,33 @@ const ExpandingTable = ({ columns, data, clickHandler, sortHandler }: Props) => 
               {row.cells.map(cell => {
                 const cellData = cell.row.original as any;
                 if (cell.column.id === 'active') {
-                  return  (
-                      <td
-                          id={cell.column.id + 'click-handler'}
-                          {...cell.getCellProps()}
-                          onClick={() => {
-                            if (cell.column.id !== 'expander') {
-                              clickHandler(cellData.identifier);
-                            }
-                          }}
-                      >
-                        <FormCheck disabled checked={cellData.active === 'true'} />
-                      </td>)
+                  return (
+                    <td
+                      id={cell.column.id + 'click-handler'}
+                      {...cell.getCellProps()}
+                      onClick={() => {
+                        if (cell.column.id !== 'expander') {
+                          clickHandler(cellData.identifier);
+                        }
+                      }}
+                    >
+                      <FormCheck disabled checked={cellData.active === 'true'} />
+                    </td>
+                  );
                 } else {
                   return (
-                      <td
-                          id={cell.column.id + 'click-handler'}
-                          {...cell.getCellProps()}
-                          onClick={() => {
-                            if (cell.column.id !== 'expander') {
-                              let col = row.original as any;
-                              clickHandler(col.identifier);
-                            }
-                          }}
-                      >
-                        {cell.render('Cell')}
-                      </td>
+                    <td
+                      id={cell.column.id + 'click-handler'}
+                      {...cell.getCellProps()}
+                      onClick={() => {
+                        if (cell.column.id !== 'expander') {
+                          let col = row.original as any;
+                          clickHandler(col.identifier);
+                        }
+                      }}
+                    >
+                      {cell.render('Cell')}
+                    </td>
                   );
                 }
               })}

@@ -37,25 +37,25 @@ export const MAPBOX_STYLE_STREETS = 'mapbox://styles/mapbox/streets-v11';
 export const MAPBOX_STYLE_SATELLITE_STREETS = 'mapbox://styles/mapbox/satellite-streets-v11';
 
 export const ORGANIZATION_TABLE_COLUMNS = [
-  { Header: 'Name', accessor: 'name' },
-  { Header: 'Type', accessor: 'type' },
-  { Header: 'Active', accessor: 'active' }
+  { Header: 'name', accessor: 'name' },
+  { Header: 'type', accessor: 'type' },
+  { Header: 'active', accessor: 'active' }
 ];
 export const USER_TABLE_COLUMNS = [
-  { name: 'Username', sortValue: 'username', accessor: 'username' },
-  { name: 'First Name', sortValue: 'firstName', accessor: 'firstName' },
-  { name: 'Last Name', sortValue: 'lastName', accessor: 'lastName' },
-  { name: 'Organization', sortValue: undefined, accessor: 'organizations', key: 'name' }
+  { name: 'username', sortValue: 'username', accessor: 'username' },
+  { name: 'firstname', sortValue: 'firstName', accessor: 'firstName' },
+  { name: 'lastname', sortValue: 'lastName', accessor: 'lastName' },
+  { name: 'organization', sortValue: undefined, accessor: 'organizations', key: 'name' }
 ];
 export const BULK_TABLE_COLUMNS = [
-  { name: 'File name', sortValue: 'filename', accessor: 'filename' },
-  { name: 'Upload Date', sortValue: 'uploadedDatetime', accessor: 'uploadDatetime' },
-  { name: 'Status', sortValue: 'status', accessor: 'status' },
-  { name: 'Uploaded By', sortValue: 'username', accessor: 'uploadedBy' }
+  { name: 'fileName', sortValue: 'filename', accessor: 'filename' },
+  { name: 'uploadDate', sortValue: 'uploadedDatetime', accessor: 'uploadDatetime' },
+  { name: 'status', sortValue: 'status', accessor: 'status' },
+  { name: 'uploadedBy', sortValue: 'username', accessor: 'uploadedBy' }
 ];
 export const GEOGRAPHY_LEVEL_TABLE_COLUMNS = [
-  { name: 'Name', sortValue: 'name', accessor: 'name' },
-  { name: 'Title', sortValue: 'title', accessor: 'title' }
+  { name: 'name', sortValue: 'name', accessor: 'name' },
+  { name: 'title', sortValue: 'title', accessor: 'title' }
 ];
 
 export const LOCATION_HIERARCHY_TABLE_COLUMNS = [

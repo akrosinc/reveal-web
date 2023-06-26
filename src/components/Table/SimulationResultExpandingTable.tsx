@@ -116,7 +116,6 @@ const SimulationResultExpandingTable = ({ data, clickHandler, detailsClickHandle
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => {
-              console.log(column);
               return (
                 <th
                   id={column.id + '-header'}

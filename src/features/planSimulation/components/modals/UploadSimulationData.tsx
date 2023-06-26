@@ -29,14 +29,12 @@ const UploadSimulationData = ({ closeHandler, dataFunction }: Props) => {
   const { handleSubmit, register } = useForm();
   const { t } = useTranslation();
   const handleUpload = (formValues: FormValues) => {
-    console.log(formValues);
     if (formValues.fileType === REVEAL_FILE_TYPE.key) {
       let file: File = formValues.bulk[0];
       const reader = new FileReader();
       let data: any;
       reader.addEventListener('load', e => {
         data = e.target?.result;
-        console.log(data);
         let jsData = JSON.parse(data);
         jsData.features.forEach((feature: Feature<Polygon | MultiPolygon | Point, Properties>) => {
           if (feature.properties) {
@@ -63,7 +61,6 @@ const UploadSimulationData = ({ closeHandler, dataFunction }: Props) => {
       let data: any;
       reader.addEventListener('load', e => {
         data = e.target?.result;
-        console.log(data);
         let jsData = JSON.parse(data);
 
         let props = jsData.hits.hits.map((hit: any) => {

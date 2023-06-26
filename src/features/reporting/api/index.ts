@@ -11,6 +11,7 @@ import {
   ReportLocationProperties
 } from '../providers/types';
 import { SurveyDataRequest } from '../components/SurveyDashboard/SurveyDashboard';
+import { BesdFailedIntegrationRetry } from '../components/types';
 
 const prodAPI = process.env.REACT_APP_API_URL === process.env.REACT_APP_DASHBOARD_API_URL ? api : dashBoardApi;
 
@@ -88,9 +89,16 @@ export const getPerformanceDashboardDataDetails = async (
 
 export const getSurveyData = async (request: SurveyDataRequest): Promise<BlobPart> => {
   const data = await api
-    .post<string>(`/getSurveyData`, request, {
+    .post<string>(`/besd/getSurveyData`, request, {
       responseType: 'arraybuffer'
     })
+    .then(response => response.data);
+  return data;
+};
+
+export const getFailedSurveyRequests = async (): Promise<BesdFailedIntegrationRetry[]> => {
+  const data = await api
+    .get<BesdFailedIntegrationRetry[]>(`/besd/getFailedBesdRequests`)
     .then(response => response.data);
   return data;
 };

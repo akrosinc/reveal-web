@@ -113,10 +113,6 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
     }
   };
 
-  useEffect(() => {
-    console.log('when is this available', link);
-  }, [link]);
-
   const getFileGeojsonData = (
     mapDataCurrent: PlanningLocationResponseTagged,
     includeParentData: boolean,
@@ -242,7 +238,6 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
   };
 
   function submitHandler(formValues: FormValues) {
-    console.log('here');
     testPromise(
       formValues.filenameCSV,
       formValues.filenameJSON,

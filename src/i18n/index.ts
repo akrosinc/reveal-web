@@ -5,11 +5,13 @@ import { getFromBrowser } from '../utils';
 import translationEn from './locales/en.json';
 import translationDe from './locales/de.json';
 import translationPt from './locales/pt.json';
+import translationFr from './locales/fr.json';
 
 const LOCALE_EN = { name: 'en', flag: 'fi fi-gb' };
 const LOCALE_DE = { name: 'de', flag: 'fi fi-de' };
 const LOCALE_PT = { name: 'pt', flag: 'fi fi-mz' };
-export const LOCALES = [LOCALE_EN, LOCALE_PT, LOCALE_DE];
+const LOCALE_FR = { name: 'fr', flag: 'fi fi-fr' };
+export const LOCALES = [LOCALE_EN, LOCALE_PT, LOCALE_DE, LOCALE_FR];
 
 export const DEFAULT_LOCALE = LOCALE_EN.name;
 export const USER_PREF_LOCALE = getFromBrowser('locale') ?? undefined;
@@ -23,24 +25,25 @@ const resources = {
   },
   pt: {
     translation: translationPt
+  },
+  fr: {
+    translation: translationFr
   }
 };
 
-i18n
-  .use(initReactI18next)
-  .init({
-    lng: USER_PREF_LOCALE,
-    fallbackLng: DEFAULT_LOCALE,
-    interpolation: {
-      escapeValue: false
-    },
-    debug: true,
-    resources
-  })
-  .then(_ => {
-    // i18n.addResourceBundle('pt', 'translation', { colTest: 'hello' }, true);
-    console.log('data', i18n.store);
-  });
+i18n.use(initReactI18next).init({
+  lng: USER_PREF_LOCALE,
+  fallbackLng: DEFAULT_LOCALE,
+  interpolation: {
+    escapeValue: false
+  },
+  debug: true,
+  resources
+});
+// .then(_ => {
+//   // i18n.addResourceBundle('pt', 'translation', { colTest: 'hello' }, true);
+//   console.log('data', i18n.store);
+// });
 
 export const $t = (key: string, params = {}) => {
   return i18n.t(key, params);

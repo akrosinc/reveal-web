@@ -130,7 +130,6 @@ const SimulationMapView = ({
       let data: any;
       reader.addEventListener('load', e => {
         data = e.target?.result;
-        console.log(data);
         let jsData = JSON.parse(data);
 
         let props = jsData.hits.hits.map((hit: any) => {
@@ -210,7 +209,6 @@ const SimulationMapView = ({
           setGeographicLevelResultLayerIds(geoLayerList => {
             if (!geoLayerList.map(geoLayer => geoLayer.layer).includes(geo)) {
               geoLayerList.push({ layer: geo, active: true });
-              console.log(geoLayerList);
 
               let initData: PlanningLocationResponse = {
                 parents: [],

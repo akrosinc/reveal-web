@@ -118,9 +118,9 @@ export const initSimulationMap = (
       source: 'label-source'
     });
 
-    mapboxInstance.on('mouseover', 'draw-layer', e => {
-      console.log(e);
-    });
+    // mapboxInstance.on('mouseover', 'draw-layer', e => {
+    //   console.log(e);
+    // });
 
     let initParentData: PlanningParentLocationResponse = {
       features: [],
@@ -150,9 +150,6 @@ export const initSimulationMap = (
 
       e.features?.forEach((feature: any) => {
         if (feature != null && feature['properties'] && feature['properties']['id']) {
-          console.log('feature', feature['properties']['id']);
-          // let item = mapboxDraw.get(feature['properties']['id']);
-
           let drawFeature: FeatureCollection<Polygon> = {
             type: 'FeatureCollection',
             features: [
@@ -182,8 +179,6 @@ export const initSimulationMap = (
           }
         }
       });
-
-      console.log(e.point);
 
       // if (e && e.features) {
       //   pointsWithinPolygon(e.features, sourceData);
@@ -305,7 +300,6 @@ export const getLocationsFilteredByGeoLevel = (
   return data.features.filter((element: Feature<Polygon | MultiPolygon | Point, Properties>) => {
     //create label for each of the locations
     //create a group of locations so we can fit them all in viewport
-    console.log(element);
     return element.properties?.geographicLevel === geographicLevel;
   });
 };
