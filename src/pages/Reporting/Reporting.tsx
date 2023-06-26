@@ -21,6 +21,7 @@ const Reporting = () => {
       i18n.addResourceBundle('en', 'translation', { dashboard: data['en'] }, true);
       i18n.addResourceBundle('pt', 'translation', { dashboard: data['pt'] }, true);
       i18n.addResourceBundle('de', 'translation', { dashboard: data['de'] }, true);
+      i18n.addResourceBundle('fr', 'translation', { dashboard: data['fr'] }, true);
     });
   }, []);
 
