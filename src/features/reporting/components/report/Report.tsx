@@ -30,9 +30,9 @@ interface BreadcrumbModel {
 }
 
 const REPORT_TYPE = [
-  { label: 'Treatment coverage', value: 'TREATMENT_COVERAGE' },
-  { label: 'Drug Inventory / Adverse Reporting', value: 'DRUG_DISTRIBUTION' },
-  { label: 'Population coverage', value: 'POPULATION_DISTRIBUTION' }
+  { name: 'treatmentCoverage', label: 'Treatment coverage', value: 'TREATMENT_COVERAGE' },
+  { name: 'drugInventoryAdverseReporting', label: 'Drug Inventory / Adverse Reporting', value: 'DRUG_DISTRIBUTION' },
+  { name: 'populationCoverage', label: 'Population coverage', value: 'POPULATION_DISTRIBUTION' }
 ];
 const DISEASE_LIST = [
   { label: 'STH', value: 'STH' },
@@ -667,7 +667,7 @@ const Report = () => {
                         }}
                         name="report-group"
                         inline
-                        label={el.label}
+                        label={t('reportPage.' + el.name)}
                         type="radio"
                       />
                     );

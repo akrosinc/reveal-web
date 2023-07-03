@@ -225,7 +225,10 @@
     },
     "locationName": "Nom de la localisation",
     "locationType": "Type de lieu",
-    "identifier": "Identifiant"
+    "identifier": "Identifiant",
+    "treatmentCoverage": "Couverture du traitement",
+    "drugInventoryAdverseReporting": "Inventaire des médicaments / Rapports indésirables",
+    "populationCoverage": "Couverture de la population"
   },
   "simulationPage": {
     "title": "Planifier la simulation",

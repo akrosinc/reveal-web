@@ -225,7 +225,10 @@
     },
     "locationName": "Location Name",
     "locationType": "Location Type",
-    "identifier": "Identifier"
+    "identifier": "Identifier",
+    "treatmentCoverage": "Treatment Coverage",
+    "drugInventoryAdverseReporting": "Drug Inventory / Adverse Reporting",
+    "populationCoverage": "Population coverage"
   },
   "simulationPage": {
     "title": "Plan Simulation",
