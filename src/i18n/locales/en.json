@@ -287,7 +287,9 @@
     "upload": "Upload",
     "file": "File",
     "entityTags": "Entity Tags",
-    "fileTemplate": "File Template"
+    "fileTemplate": "File Template",
+    "saveHierarchy": "Save Hierarchy",
+    "hierarchyName": "Hierarchy Name"
   },
   "label": {
     "layerOpacity": "Layer opacity"

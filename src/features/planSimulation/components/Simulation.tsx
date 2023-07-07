@@ -22,6 +22,8 @@ import {
 } from '../api';
 import {
   EntityTag,
+  LocationMetadataObj,
+  Metadata,
   OperatorSignEnum,
   PlanningLocationResponse,
   PlanningLocationResponseTagged,
@@ -39,10 +41,11 @@ import { bbox, Feature, MultiPolygon, Point, Polygon } from '@turf/turf';
 import { LngLatBounds } from 'mapbox-gl';
 
 import SimulationResultExpandingTable from '../../../components/Table/SimulationResultExpandingTable';
-import TableSummaryModal from './Summary/TableSummaryModal';
 import DownloadSimulationResultsModal from './modals/DownloadSimulationResultsModal';
 import UploadSimulationData from './modals/UploadSimulationData';
 import SearchResultCountModal from './modals/SearchResultCountModal';
+import TableSummaryModal from './Summary/TableSummaryModal';
+import SaveHierarchyModal from './modals/SaveHierarchyModal';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -67,6 +70,17 @@ export interface SimulationCountResponse {
   searchRequestId: string;
   countResponse: any;
   inactiveCountResponse: any;
+}
+export interface Stats {
+  [key: string]: Metadata;
+}
+export interface SimulationRequestData {
+  hierarchyIdentifier: string | undefined;
+  locationIdentifier: string | undefined;
+  entityFilters: SubmitValue[];
+  filterGeographicLevelList: string[] | undefined;
+  inactiveGeographicLevelList: string[] | undefined;
+  includeInactive: boolean;
 }
 
 const Simulation = () => {
@@ -122,6 +136,10 @@ const Simulation = () => {
     useState<string[]>();
   const levelsLoaded = useRef<string[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [statsMetadata, setStatsMetadata] = useState<Stats>({});
+  const [aggregationSummary, setAggregationSummary] = useState<LocationMetadataObj>({});
+  const [submitSimulationRequestData, setSubmitSimulationRequestData] = useState<SimulationRequestData>();
+  const [showSaveHierarchyPanel, setShowSaveHierarchyPanel] = useState(false);
 
   useEffect(() => {
     Promise.all([getLocationHierarchyList(50, 0, true), getEntityList()])
@@ -213,7 +231,7 @@ const Simulation = () => {
         });
       }
     });
-    const requestData = {
+    const requestData: SimulationRequestData = {
       hierarchyIdentifier: selectedHierarchy,
       locationIdentifier: selectedLocation?.value,
       entityFilters: arr,
@@ -221,6 +239,7 @@ const Simulation = () => {
       inactiveGeographicLevelList: selectedFilterInactiveGeographicLevelList,
       includeInactive: loadParentsToggle
     };
+    setSubmitSimulationRequestData(requestData);
     submitSimulationRequest(requestData)
       .then(res => {
         setSimulationCountData(res);
@@ -236,7 +255,15 @@ const Simulation = () => {
     };
     updateSimulationRequest(simulationRequestId, resultEntityTags)
       .then(() => {
-        getLocationsSSE(requestData, messageHandler, closeConnHandler, openHandler);
+        getLocationsSSE(
+          requestData,
+          messageHandler,
+          closeConnHandler,
+          openHandler,
+          parentHandler,
+          statsHandler,
+          locationAggregationHandler
+        );
         if (loadParentsToggle) {
           getFullLocationsSSE(requestData, parentMessageHandler, closeParentConnHandler, openParentHandler);
         }
@@ -247,17 +274,6 @@ const Simulation = () => {
   };
 
   const closeConnHandler = (message: any) => {
-    const parents: any = JSON.parse(message.data);
-
-    let mapDataSave: PlanningLocationResponse = {
-      features: [],
-      parents: parents,
-      type: 'FeatureCollection',
-      identifier: undefined
-    };
-
-    setMapDataLoad(mapDataSave);
-
     setResultsLoaded(true);
     setResultsLoadingState('complete');
     setShowResult(true);
@@ -274,6 +290,30 @@ const Simulation = () => {
 
   const openParentHandler = () => {
     setParentsLoaded(false);
+  };
+
+  const parentHandler = (message: MessageEvent) => {
+    // setMapReset(false);
+    const parents: any = JSON.parse(message.data);
+    console.log(parents);
+    let mapDataSave: PlanningLocationResponse = {
+      features: [],
+      parents: parents,
+      type: 'FeatureCollection',
+      identifier: undefined
+    };
+
+    setMapDataLoad(mapDataSave);
+  };
+
+  const statsHandler = (message: MessageEvent) => {
+    console.log('stats', JSON.parse(message.data));
+    setStatsMetadata(JSON.parse(message.data));
+  };
+
+  const locationAggregationHandler = (message: MessageEvent) => {
+    console.log('aggregations', JSON.parse(message.data));
+    setAggregationSummary(JSON.parse(message.data));
   };
 
   const messageHandler = (message: MessageEvent) => {
@@ -367,7 +407,7 @@ const Simulation = () => {
                 type: newFeature.type,
                 geometry: newFeature.geometry,
                 children: undefined,
-                aggregates: newFeature.aggregates
+                aggregates: undefined
               };
             }
           });
@@ -949,6 +989,7 @@ const Simulation = () => {
               updateLevelsLoaded={updateLoadedLevels}
               resetMap={resetMap}
               setResetMap={setResetMap}
+              stats={statsMetadata}
               resultsLoadingState={resultsLoadingState}
               parentsLoadingState={parentsLoadingState}
             />
@@ -964,7 +1005,7 @@ const Simulation = () => {
               setShowSummaryModal(false);
             }}
             isDarkMode={false}
-            summary={summary}
+            aggregationSummary={aggregationSummary}
             initiatingMapData={selectedMapData}
           />
         )}
@@ -973,6 +1014,13 @@ const Simulation = () => {
           <Row>
             <Col>{highestLocations && showResult && <h3 className="my-3 ">{t('simulationPage.results')}</h3>}</Col>
             <Col>
+              <Button
+                className="float-end my-3 ms-2"
+                variant="secondary"
+                onClick={() => setShowSaveHierarchyPanel(true)}
+              >
+                {t('simulationPage.saveHierarchy')}
+              </Button>
               <Button className="float-end my-3 ms-2" variant="secondary" onClick={() => setShowUploadModal(true)}>
                 {t('simulationPage.uploadData')}
               </Button>
@@ -1073,6 +1121,13 @@ const Simulation = () => {
         />
       )}
       {showUploadModal && <UploadSimulationData dataFunction={uploadDataHandler} closeHandler={setShowUploadModal} />}
+      {showSaveHierarchyPanel && (
+        <SaveHierarchyModal
+          submitSimulationRequestData={submitSimulationRequestData}
+          setShowModal={setShowSaveHierarchyPanel}
+          mapdata={mapData}
+        />
+      )}
     </>
   );
 };

@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Col, Form, Modal, Row, Table } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import { LocationMetadataObj } from '../../providers/types';
 
 interface Props {
   show: boolean;
   isDarkMode: boolean;
   closeHandler: () => void;
-  summary: any | undefined;
+  aggregationSummary: LocationMetadataObj;
   initiatingMapData: any;
 }
 
-const TableSummaryModal = ({ show, closeHandler, isDarkMode, summary, initiatingMapData }: Props) => {
-  const [selectedGeoLevel, setSelectedGeoLevel] = useState<string>();
+const TableSummaryModal = ({ show, closeHandler, isDarkMode, aggregationSummary, initiatingMapData }: Props) => {
   const [tableData, setTableData] = useState<{
     identifier: string;
     geoLevel: string;
@@ -21,98 +21,28 @@ const TableSummaryModal = ({ show, closeHandler, isDarkMode, summary, initiating
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (summary) {
-      setSelectedGeoLevel(Object.keys(summary).filter(key => initiatingMapData.properties.geographicLevel !== key)[0]);
-
+    if (aggregationSummary) {
       if (initiatingMapData) {
-        let val = summary[initiatingMapData.properties.geographicLevel][initiatingMapData.identifier];
+        let val = aggregationSummary[initiatingMapData.identifier];
         if (val) {
-          if (val.aggregates) {
-            let i = Object.keys(val.aggregates)
-              .filter(key => val.aggregates[key])
-              .map((key: string) => {
-                let f: any = {
-                  tag: key,
-                  agg: val.aggregates[key]
-                };
-                return f;
-              });
-            let a = {
-              identifier: initiatingMapData.identifier,
-              geoLevel: initiatingMapData.properties.geographicLevel,
-              name: initiatingMapData.properties.name,
-              data: i
+          let i = Object.keys(val).map((key: string) => {
+            let f: any = {
+              tag: key,
+              agg: val[key]
             };
-            setTableData(a);
-          }
-        }
-      }
-    }
-  }, [summary, initiatingMapData]);
-
-  const getGeographicLevelMap = useCallback(() => {
-    let val: any = {
-      cnt: 0,
-      stats: {
-        sum: {}
-      },
-      resultCount: 0,
-      resultStats: {
-        sum: {}
-      }
-    };
-
-    if (selectedGeoLevel) {
-      if (summary[selectedGeoLevel]) {
-        let item = summary[selectedGeoLevel];
-        if (Object.keys(item).length > 0) {
-          Object.keys(item).forEach((key: any) => {
-            val.cnt = val.cnt + 1;
-            if (item[key].metadata && item[key].metadata.length > 0) {
-              item[key].metadata.forEach((element: any) => {
-                if (
-                  element.type &&
-                  !element.type.endsWith('-min') &&
-                  !element.type.endsWith('-max') &&
-                  !element.type.endsWith('-average')
-                ) {
-                  if (val.stats.sum[element.type]) {
-                    val.stats.sum[element.type] = val.stats.sum[element.type] + element.value;
-                  } else {
-                    val.stats.sum[element.type] = element.value;
-                  }
-                }
-              });
-            }
-
-            if (item[key].result) {
-              val.resultCount = val.resultCount + 1;
-              if (item[key].metadata && item[key].metadata.length > 0) {
-                item[key].metadata.forEach((element: any) => {
-                  if (
-                    element.type &&
-                    !element.type.endsWith('-min') &&
-                    !element.type.endsWith('-max') &&
-                    !element.type.endsWith('-average')
-                  ) {
-                    if (val.resultStats.sum[element.type]) {
-                      val.resultStats.sum[element.type] = val.resultStats.sum[element.type] ?? 0 + element.value ?? 0;
-                    } else {
-                      val.resultStats.sum[element.type] = element.value ?? 0;
-                    }
-                  }
-                });
-              }
-            }
+            return f;
           });
+          let a = {
+            identifier: initiatingMapData.identifier,
+            geoLevel: initiatingMapData.properties.geographicLevel,
+            name: initiatingMapData.properties.name,
+            data: i
+          };
+          setTableData(a);
         }
       }
     }
-  }, [summary, selectedGeoLevel]);
-
-  useEffect(() => {
-    getGeographicLevelMap();
-  }, [selectedGeoLevel, summary, getGeographicLevelMap]);
+  }, [aggregationSummary, initiatingMapData]);
 
   return (
     <Modal

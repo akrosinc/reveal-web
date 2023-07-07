@@ -10,7 +10,6 @@ import {
   getGeoListFromMapData,
   getMetadataListFromMapData,
   getTagStats,
-  getTagStatsByTag,
   initSimulationMap,
   PARENT_LABEL_SOURCE,
   PARENT_SOURCE
@@ -26,6 +25,7 @@ import { Feature, MultiPolygon, Point, Polygon } from '@turf/turf';
 import { ColorPicker, useColor } from 'react-color-palette';
 import 'react-color-palette/lib/css/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Stats } from '../Simulation';
 
 interface Props {
   fullScreenHandler: () => void;
@@ -42,6 +42,7 @@ interface Props {
   setResetMap: (resetMap: boolean) => void;
   resultsLoadingState: 'notstarted' | 'started' | 'complete';
   parentsLoadingState: 'notstarted' | 'started' | 'complete';
+  stats: Stats;
 }
 
 interface PlanningLocationResponseGeoContainer {
@@ -63,7 +64,8 @@ const SimulationMapView = ({
   resetMap,
   setResetMap,
   resultsLoadingState,
-  parentsLoadingState
+  parentsLoadingState,
+  stats
 }: Props) => {
   const INITIAL_HEAT_MAP_RADIUS = 50;
   const INITIAL_HEAT_MAP_OPACITY = 0.2;
@@ -123,68 +125,75 @@ const SimulationMapView = ({
     }
   }, [resultsLoadingState, parentsLoadingState]);
 
-  const testfile = useCallback(
-    (e: any) => {
-      let file: File = e.target.files[0];
-      const reader = new FileReader();
-      let data: any;
-      reader.addEventListener('load', e => {
-        data = e.target?.result;
-        let jsData = JSON.parse(data);
-
-        let props = jsData.hits.hits.map((hit: any) => {
-          let featureObj = {
-            type: 'Feature',
-            properties: {
-              name: hit._source.name,
-              metadata: [],
-              geographicLevel: hit._source.level,
-              externalId: hit._source.externalId
-            },
-            geometry: hit._source.geometry
-          };
-          let meta = hit._source.metadata.map((meta: any) => {
-            return {
-              type: meta.tag,
-              value: meta.valueNumber
-            };
-          });
-          featureObj.properties.metadata = meta;
-          return featureObj;
-        });
-
-        let upplaodMap: PlanningLocationResponse | undefined = {
-          type: 'FeatureCollection',
-          features: props,
-          parents: [],
-          identifier: undefined
-        };
-        setMapDataLoad(upplaodMap);
-      });
-      reader.readAsText(file);
-    },
-    [setMapDataLoad]
-  );
-
   const initializeMap = useCallback(() => {
     map.current = initSimulationMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_STREETS, e => {
       if (map.current) {
-        new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: true })
-          .setHTML(
-            `<h4 class="bg-success text-center">Action menu</h4>
-              <div class="m-0 p-0 text-center">
-              <p>You have selected multiple locations.</p>
-              <input type="file" id="simulationfile">
-              <button class="btn btn-primary mx-2 mt-2 mb-4" style="min-width: 200px" id="simulationpopup" onclick="test">Upload</button>
-              </div>`
-          )
-          .setLngLat(e.lngLat)
-          .addTo(map.current);
+        const features = map.current.queryRenderedFeatures(e.point);
+        let filteredfeatures = features.filter(feature => feature.layer.id.includes('-fill'));
 
-        document.getElementById('simulationfile')?.addEventListener('change', e => testfile(e));
+        let filteredfeature = filteredfeatures[0];
+
+        if (filteredfeature) {
+          let sourceCentres: any = map.current.getSource(filteredfeature.layer.id.split('-')[0].concat('-centers'));
+
+          let sourceData: PlanningLocationResponse = {
+            type: (sourceCentres._data as any)['type'],
+            features: (sourceCentres._data as any)['features'],
+            parents: (sourceCentres._data as any)['parents'],
+            identifier: undefined
+          };
+
+          let featureSource = sourceData.features.filter(
+            feat => feat.properties?.identifier === filteredfeature?.properties?.identifier
+          );
+
+          let feature = featureSource[0];
+          if (feature) {
+            let labelMarked = false;
+            if (feature.properties) {
+              if (feature.properties['mark']) {
+                labelMarked = true;
+              }
+            }
+
+            let popup = new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: true })
+              .setHTML(
+                `<h4 class="bg-success text-center">Location Action</h4>
+              <div class="m-0 p-0 text-center">
+              <button class="btn btn-primary mx-2 mt-2 mb-4" style="min-width: 200px" id="simulationpopup" >` +
+                  (labelMarked ? `unmark` : `mark`) +
+                  `</button>
+              <script>        
+              </script>
+              </div>`
+              )
+              .setLngLat(e.lngLat)
+              .addTo(map.current);
+
+            document.getElementById('simulationpopup')?.addEventListener('click', () => {
+              if (feature !== null) {
+                if (map.current) {
+                  sourceData.features
+                    .filter(feat => feat.properties?.identifier === filteredfeature?.properties?.identifier)
+                    .forEach(feat => {
+                      if (feat.properties) {
+                        feat.properties['mark'] = !labelMarked;
+                      }
+                    });
+
+                  (
+                    map.current?.getSource(filteredfeature.layer.id.split('-')[0].concat('-centers')) as GeoJSONSource
+                  ).setData(sourceData);
+                }
+              }
+
+              popup.remove();
+            });
+          }
+        }
       }
     });
-  }, [lng, lat, testfile, zoom]);
+  }, [lng, lat, zoom]);
 
   useEffect(() => {
     if (resetMap) {
@@ -762,34 +771,6 @@ const SimulationMapView = ({
     }
   };
 
-  const getMapDataSumsFromSource = (tag: string): any => {
-    let sourceData: PlanningLocationResponse = {
-      type: 'FeatureCollection',
-      features: [],
-      parents: [],
-      identifier: undefined
-    };
-
-    let total = geographicLevelResultLayerIds
-      .map(geoLevel => {
-        if (map.current) {
-          let sourceCentres: any = map.current.getSource(geoLevel.layer.concat('-centers'));
-          sourceData.features = (sourceCentres._data as any)['features'];
-          sourceData.parents = (sourceCentres._data as any)['parents'];
-        }
-        return getTagStatsByTag(sourceData, tag);
-      })
-      .reduce((total, newValue) => {
-        if (newValue.sum[tag] !== null && newValue.sum[tag] !== undefined) {
-          total += newValue.sum[tag];
-        } else {
-          total += 0;
-        }
-        return total;
-      }, 0);
-    return total;
-  };
-
   return (
     <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
       <div style={{ position: 'absolute', zIndex: 2, width: '100%' }} className="mx-0 px-0">
@@ -1076,7 +1057,7 @@ const SimulationMapView = ({
                   return (
                     <p>
                       <b>{entityTag.tag}:</b>
-                      {Math.round(getMapDataSumsFromSource(entityTag.tag)) / 100}
+                      {stats[entityTag.tag]}
                     </p>
                   );
                 })}

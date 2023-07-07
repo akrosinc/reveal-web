@@ -862,34 +862,6 @@ export const getTagStats = (mapData: PlanningLocationResponse) => {
   }, {});
 };
 
-export const getTagStatsByTag = (mapData: PlanningLocationResponse, tag: string) => {
-  return mapData.features.reduce((map: any, obj) => {
-    if (obj.properties) {
-      if (obj.properties?.metadata) {
-        let metadata = obj.properties?.metadata;
-        map.max = map.max ?? {};
-        map.min = map.min ?? {};
-        map.avg = map.avg ?? {};
-        map.sum = map.sum ?? {};
-        map.cnt = map.cnt ?? {};
-        metadata
-          .filter((element: any) => element.type === tag)
-          .forEach((element: any) => {
-            if (element.type) {
-              if (map.sum[element.type]) {
-                map.sum[element.type] = map.sum[element.type] + element.value;
-              } else {
-                map.sum[element.type] = element.value;
-              }
-            }
-          });
-      }
-    }
-
-    return map;
-  }, {});
-};
-
 export const createHeatMapLayer = (
   mapInstance: Map,
   featureCentres: Feature<Point, Properties>[],

@@ -83,7 +83,13 @@ export interface PersonMeta {
   };
 }
 
-interface Metadata {
+export interface Metadata {
   value: string;
   type: string;
+}
+export interface MetadataObj {
+  [key: string]: any;
+}
+export interface LocationMetadataObj {
+  [key: string]: MetadataObj;
 }

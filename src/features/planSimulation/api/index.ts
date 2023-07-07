@@ -1,8 +1,9 @@
 import api from '../../../api/axios';
 import { LOCATION_HIERARCHY } from '../../../constants';
 import { EntityTag, LookupEntityType, PersonMeta, PlanningLocationResponse } from '../providers/types';
-import { SimulationCountResponse } from '../components/Simulation';
+import { SimulationCountResponse, SimulationRequestData } from '../components/Simulation';
 import { toast } from 'react-toastify';
+import { SaveHierarchyRequest, SaveHierarchyResponse } from '../components/modals/SaveHierarchyModal';
 
 export const getEntityList = async (): Promise<LookupEntityType[]> => {
   const data = await api.get<LookupEntityType[]>(`entityTag/entityType`).then(res => res.data);
@@ -43,14 +44,7 @@ export const filterData = async (requestData: {
   return data;
 };
 
-export const submitSimulationRequest = async (requestData: {
-  hierarchyIdentifier: string | undefined;
-  locationIdentifier: string | undefined;
-  entityFilters: any[];
-  filterGeographicLevelList: string[] | undefined;
-  inactiveGeographicLevelList: string[] | undefined;
-  includeInactive: boolean;
-}): Promise<SimulationCountResponse> => {
+export const submitSimulationRequest = async (requestData: SimulationRequestData): Promise<SimulationCountResponse> => {
   const data = await api
     .post<SimulationCountResponse>('entityTag/submitSearchRequest', requestData)
     .then(res => res.data);
@@ -86,7 +80,10 @@ export const getLocationsSSE = (
   requestData: any,
   messageHandler: (e: MessageEvent<any>) => void,
   closeHandler: (e: any) => any,
-  openHandler: () => any
+  openHandler: () => any,
+  parentHandler: (e: any) => any,
+  statsHandler: (e: any) => any,
+  locationAggregationHandler: (e: any) => any
 ) => {
   const events = new EventSource(
     process.env.REACT_APP_API_URL + '/entityTag/filter-sse?simulationRequestId=' + requestData.simulationRequestId
@@ -95,6 +92,11 @@ export const getLocationsSSE = (
   events.addEventListener('open', e => {
     openHandler();
   });
+  events.addEventListener('parent', e => parentHandler(e));
+
+  events.addEventListener('stats', e => statsHandler(e));
+  events.addEventListener('aggregations', e => locationAggregationHandler(e));
+
   events.addEventListener('error', e => {
     toast.error('Error getting locations');
   });
@@ -134,5 +136,12 @@ export const getFullLocationsSSE = (
 
 export const getPersonMetadata = async (personId: string): Promise<PersonMeta> => {
   const data = await api.get<PersonMeta>(`entityTag/person/${personId}`).then(res => res.data);
+  return data;
+};
+
+export const saveHierarchy = async (saveHierarchyRequest: SaveHierarchyRequest): Promise<SaveHierarchyResponse> => {
+  const data = await api
+    .post<SaveHierarchyResponse>(`entityTag/saveSimulationHierarchy`, saveHierarchyRequest)
+    .then(res => res.data);
   return data;
 };

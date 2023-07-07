@@ -27,6 +27,7 @@ const SearchResultCountModal = ({
     <ActionDialog
       title={t('simulationPage.searchResultCounts')}
       closeHandler={() => setShowCountModal(false)}
+      size={'xl'}
       footer={
         <>
           <Button onClick={() => setShowCountModal(false)}>{t('simulationPage.close')}</Button>

@@ -6,13 +6,22 @@ interface Props {
   closeHandler: (isEdited: boolean) => void;
   element: JSX.Element;
   footer?: JSX.Element;
+  size?: 'sm' | 'lg' | 'xl';
 }
 
-const ActionDialog = ({ title, closeHandler, element, footer }: Props) => {
+const ActionDialog = ({ title, closeHandler, element, footer, size }: Props) => {
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   return (
-    <Modal show={true} centered backdrop='static' keyboard={false} onHide={() => closeHandler(false)} contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
+    <Modal
+      size={size ? size : 'lg'}
+      show={true}
+      centered
+      backdrop="static"
+      keyboard={false}
+      onHide={() => closeHandler(false)}
+      contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}
+    >
       <Modal.Header closeButton>
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
