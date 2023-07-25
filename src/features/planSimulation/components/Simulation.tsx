@@ -5,14 +5,13 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import 'simplebar/dist/simplebar.min.css';
-import { PageableModel } from '../../../api/providers';
 import { ActionDialog } from '../../../components/Dialogs';
 import { useWindowResize } from '../../../hooks/useWindowResize';
-import { getLocationHierarchyList } from '../../location/api';
+import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
 import {
   getEntityList,
-  getEntityTags,
+  getDataAssociatedEntityTags,
   getEventBasedEntityTags,
   getFullLocationsSSE,
   getLocationList,
@@ -24,6 +23,7 @@ import {
   EntityTag,
   LocationMetadataObj,
   Metadata,
+  MetadataDefinition,
   OperatorSignEnum,
   PlanningLocationResponse,
   PlanningLocationResponseTagged,
@@ -50,7 +50,6 @@ import SaveHierarchyModal from './modals/SaveHierarchyModal';
 interface SubmitValue {
   fieldIdentifier: string;
   fieldType: string;
-  entityIdentifier: string;
   searchValue?: SearchValue;
   values?: SearchValue[];
   valueType: string;
@@ -71,11 +70,14 @@ export interface SimulationCountResponse {
   countResponse: any;
   inactiveCountResponse: any;
 }
+
 export interface Stats {
   [key: string]: Metadata;
 }
+
 export interface SimulationRequestData {
   hierarchyIdentifier: string | undefined;
+  hierarchyType: string | undefined;
   locationIdentifier: string | undefined;
   entityFilters: SubmitValue[];
   filterGeographicLevelList: string[] | undefined;
@@ -88,7 +90,7 @@ const Simulation = () => {
   const [showModal, setShowModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [hierarchyList, setHierarchyList] = useState<PageableModel<LocationHierarchyModel>>();
+  const [combinedHierarchyList, setCombinedHierarchyList] = useState<LocationHierarchyModel[]>();
   const [selectedEntity, setSelectedEntity] = useState<string>();
   const [selectedEntityCondition, setSelectedEntityCondition] = useState<EntityTag>();
   const [selectedEntityConditionList, setSelectedEntityConditionList] = useState<EntityTag[]>([]);
@@ -107,7 +109,7 @@ const Simulation = () => {
   const [nodeList, setNodeList] = useState<string[]>([]);
   const [completeGeographicList, setCompleteGeographicList] = useState<string[]>([]);
   const [locationList, setLocationList] = useState<any[]>([]);
-  const [selectedHierarchy, setSelectedHierarchy] = useState<string>();
+  const [selectedHierarchy, setSelectedHierarchy] = useState<LocationHierarchyModel>();
   const [selectedLocation, setSelectedLocation] = useState<SingleValue<{ label: string; value: string }>>();
   const [selectedRow, setSelectedRow] = useState<SearchLocationProperties>();
   const [toLocation, setToLocation] = useState<LngLatBounds>();
@@ -123,8 +125,12 @@ const Simulation = () => {
   const [simulationRequestId, setSimulationRequestId] = useState<string>();
   const [parentsLoaded, setParentsLoaded] = useState(false);
   const [resultsLoaded, setResultsLoaded] = useState(false);
-  const [resultsLoadingState, setResultsLoadingState] = useState<'notstarted' | 'started' | 'complete'>('notstarted');
-  const [parentsLoadingState, setParentsLoadingState] = useState<'notstarted' | 'started' | 'complete'>('notstarted');
+  const [resultsLoadingState, setResultsLoadingState] = useState<'notstarted' | 'error' | 'started' | 'complete'>(
+    'notstarted'
+  );
+  const [parentsLoadingState, setParentsLoadingState] = useState<'notstarted' | 'error' | 'started' | 'complete'>(
+    'notstarted'
+  );
   const [loadParentsToggle, setLoadParentsToggle] = useState(false);
   const [geoFilterList, setGeoFilterList] = useState<MultiValue<{ value: string; label: string }> | null>([]);
   const [showDownloadPanel, setShowDownloadPanel] = useState(false);
@@ -138,13 +144,33 @@ const Simulation = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [statsMetadata, setStatsMetadata] = useState<Stats>({});
   const [aggregationSummary, setAggregationSummary] = useState<LocationMetadataObj>({});
+  const [aggregationSummaryDefinition, setAggregationSummaryDefinition] = useState<MetadataDefinition>({});
   const [submitSimulationRequestData, setSubmitSimulationRequestData] = useState<SimulationRequestData>();
   const [showSaveHierarchyPanel, setShowSaveHierarchyPanel] = useState(false);
 
   useEffect(() => {
-    Promise.all([getLocationHierarchyList(50, 0, true), getEntityList()])
-      .then(([locationHierarchyList, entityList]) => {
-        setHierarchyList(locationHierarchyList);
+    Promise.all([getLocationHierarchyList(50, 0, true), getEntityList(), getGeneratedLocationHierarchyList()])
+      .then(([locationHierarchyList, entityList, generatedHierarchyList]) => {
+        let generatedHierarchyItems = generatedHierarchyList?.map(generatedHierarchy => {
+          return {
+            identifier: generatedHierarchy.identifier,
+            name: generatedHierarchy.name,
+            nodeOrder: generatedHierarchy.nodeOrder,
+            type: 'generated'
+          };
+        });
+
+        let list = locationHierarchyList?.content.map(savedHierarchy => {
+          return {
+            identifier: savedHierarchy.identifier,
+            name: savedHierarchy.name,
+            nodeOrder: savedHierarchy.nodeOrder,
+            type: 'saved'
+          };
+        });
+
+        let combinedList = list.concat(generatedHierarchyItems);
+        setCombinedHierarchyList(combinedList);
 
         let entityObj = entityList.find(entity => entity.code === 'Location');
         setSelectedEntity(entityObj?.identifier);
@@ -160,6 +186,14 @@ const Simulation = () => {
       setSelectedEntityCondition(undefined);
       setShowModal(false);
     }
+  };
+  const updateHierarchyLists = (newHierarchy: LocationHierarchyModel) => {
+    setCombinedHierarchyList(combinedHierarchyList => {
+      let newList: LocationHierarchyModel[] = [];
+      combinedHierarchyList?.forEach(hierarchy => newList.push(hierarchy));
+      newList.push(newHierarchy);
+      return newList;
+    });
   };
 
   const {
@@ -188,7 +222,6 @@ const Simulation = () => {
       if (form[el.tag + index + 'range']) {
         arr.push({
           fieldIdentifier: requestBody.inputObj.identifier,
-          entityIdentifier: requestBody.inputObj.lookupEntityType.identifier,
           fieldType: el.fieldType,
           valueType: el.valueType,
           tag: el.tag,
@@ -200,7 +233,6 @@ const Simulation = () => {
       } else if (el.more && el.more.length) {
         arr.push({
           fieldIdentifier: requestBody.inputObj.identifier,
-          entityIdentifier: requestBody.inputObj.lookupEntityType.identifier,
           fieldType: el.fieldType,
           valueType: el.valueType,
           tag: el.tag,
@@ -220,7 +252,6 @@ const Simulation = () => {
       } else {
         arr.push({
           fieldIdentifier: requestBody.inputObj.identifier,
-          entityIdentifier: requestBody.inputObj.lookupEntityType.identifier,
           fieldType: el.fieldType,
           valueType: el.valueType,
           tag: el.tag,
@@ -232,7 +263,8 @@ const Simulation = () => {
       }
     });
     const requestData: SimulationRequestData = {
-      hierarchyIdentifier: selectedHierarchy,
+      hierarchyIdentifier: selectedHierarchy?.identifier,
+      hierarchyType: selectedHierarchy?.type,
       locationIdentifier: selectedLocation?.value,
       entityFilters: arr,
       filterGeographicLevelList: selectedFilterGeographicLevelList,
@@ -250,6 +282,8 @@ const Simulation = () => {
   };
 
   const subithandler = (resultEntityTags: EntityTag[] | undefined) => {
+    setParentsLoadingState('notstarted');
+    setResultsLoadingState('notstarted');
     const requestData = {
       simulationRequestId: simulationRequestId
     };
@@ -262,10 +296,18 @@ const Simulation = () => {
           openHandler,
           parentHandler,
           statsHandler,
-          locationAggregationHandler
+          locationAggregationHandler,
+          locationAggregationDefinitionHandler,
+          resultsErrorHandler
         );
         if (loadParentsToggle) {
-          getFullLocationsSSE(requestData, parentMessageHandler, closeParentConnHandler, openParentHandler);
+          getFullLocationsSSE(
+            requestData,
+            parentMessageHandler,
+            closeParentConnHandler,
+            openParentHandler,
+            parentResultsErrorHandler
+          );
         }
       })
       .catch(() => {
@@ -273,11 +315,21 @@ const Simulation = () => {
       });
   };
 
-  const closeConnHandler = (message: any) => {
+  const closeConnHandler = () => {
     setResultsLoaded(true);
     setResultsLoadingState('complete');
     setShowResult(true);
     setParentsLoaded(true);
+  };
+
+  const resultsErrorHandler = () => {
+    toast.error('Error getting locations');
+    setResultsLoadingState('error');
+  };
+
+  const parentResultsErrorHandler = () => {
+    toast.error('Error getting inactive locations');
+    setParentsLoadingState('error');
   };
 
   const closeParentConnHandler = () => {
@@ -293,9 +345,7 @@ const Simulation = () => {
   };
 
   const parentHandler = (message: MessageEvent) => {
-    // setMapReset(false);
     const parents: any = JSON.parse(message.data);
-    console.log(parents);
     let mapDataSave: PlanningLocationResponse = {
       features: [],
       parents: parents,
@@ -307,17 +357,18 @@ const Simulation = () => {
   };
 
   const statsHandler = (message: MessageEvent) => {
-    console.log('stats', JSON.parse(message.data));
     setStatsMetadata(JSON.parse(message.data));
   };
 
   const locationAggregationHandler = (message: MessageEvent) => {
-    console.log('aggregations', JSON.parse(message.data));
     setAggregationSummary(JSON.parse(message.data));
   };
 
+  const locationAggregationDefinitionHandler = (message: MessageEvent) => {
+    setAggregationSummaryDefinition(JSON.parse(message.data));
+  };
+
   const messageHandler = (message: MessageEvent) => {
-    // setMapReset(false);
     const res: any = JSON.parse(message.data);
     let mapDataSave: PlanningLocationResponse = {
       features: res.features,
@@ -391,7 +442,8 @@ const Simulation = () => {
                 type: newFeature.type,
                 geometry: newFeature.geometry,
                 children: undefined,
-                aggregates: undefined
+                aggregates: undefined,
+                ancestry: newFeature?.ancestry
               };
             }
           });
@@ -407,7 +459,8 @@ const Simulation = () => {
                 type: newFeature.type,
                 geometry: newFeature.geometry,
                 children: undefined,
-                aggregates: undefined
+                aggregates: undefined,
+                ancestry: newFeature?.ancestry
               };
             }
           });
@@ -447,6 +500,8 @@ const Simulation = () => {
     setToLocation(undefined);
     setResetMap(true);
     setParentMapData(undefined);
+    setParentsLoadingState('notstarted');
+    setResultsLoadingState('notstarted');
     levelsLoaded.current = [];
     reset();
   };
@@ -550,13 +605,13 @@ const Simulation = () => {
   }, [mapData, resultsLoaded, parentsLoaded, getLocationHierarchyFromLowestLocation]);
 
   useEffect(() => {
-    if (selectedEntity) {
+    if (selectedHierarchy) {
       let tagsMeta: EntityTag[] = [];
-      getEntityTags(selectedEntity).then(res => {
+      getDataAssociatedEntityTags(selectedHierarchy.identifier).then(res => {
         tagsMeta = res;
-
+        setEntityTags(tagsMeta);
         let tagsEvent: EntityTag[] = [];
-        getEventBasedEntityTags(selectedEntity).then(result => {
+        getEventBasedEntityTags().then(result => {
           tagsEvent = result;
 
           let allTags = tagsMeta.concat(tagsEvent);
@@ -566,7 +621,7 @@ const Simulation = () => {
         });
       });
     }
-  }, [selectedEntity]);
+  }, [selectedHierarchy]);
 
   const loadLocationHandler = (locationId: string) => {
     let feature = mapData?.features[locationId] || mapData?.parents[locationId];
@@ -685,9 +740,9 @@ const Simulation = () => {
                     <Col>
                       <Form.Select
                         onChange={e => {
-                          const selectedHierarchy = hierarchyList?.content.find(el => el.identifier === e.target.value);
+                          const selectedHierarchy = combinedHierarchyList?.find(el => el.identifier === e.target.value);
                           if (selectedHierarchy) {
-                            setSelectedHierarchy(e.target.value);
+                            setSelectedHierarchy(selectedHierarchy);
                             setNodeList(selectedHierarchy.nodeOrder.filter(el => el !== 'structure'));
                             setCompleteGeographicList(selectedHierarchy.nodeOrder);
                           } else {
@@ -699,7 +754,7 @@ const Simulation = () => {
                         }}
                       >
                         <option value={''}>{t('simulationPage.selectHierarchy')}...</option>
-                        {hierarchyList?.content.map(el => (
+                        {combinedHierarchyList?.map(el => (
                           <option key={el.identifier} value={el.identifier}>
                             {el.name}
                           </option>
@@ -722,7 +777,7 @@ const Simulation = () => {
                       <Form.Select
                         onChange={e => {
                           if (e.target.value && selectedHierarchy) {
-                            getLocationList(selectedHierarchy, e.target.value).then(res => {
+                            getLocationList(selectedHierarchy?.identifier, e.target.value).then(res => {
                               setLocationList(res);
                             });
                           } else {
@@ -897,29 +952,54 @@ const Simulation = () => {
                           </Button>
                         </Col>
                         <Col md={9}>
-                          <Button
-                            type="submit"
-                            disabled={
-                              selectedHierarchy === undefined ||
-                              resultsLoadingState === 'started' ||
-                              parentsLoadingState === 'started'
+                          <OverlayTrigger
+                            placement="top"
+                            overlay={
+                              resultsLoadingState === 'error' || parentsLoadingState === 'error' ? (
+                                <Tooltip>
+                                  {resultsLoadingState === 'error' && parentsLoadingState === 'error'
+                                    ? 'Error loading active and inactive locations'
+                                    : resultsLoadingState === 'error' && parentsLoadingState !== 'error'
+                                    ? 'Error loading active locations'
+                                    : 'Error loading inactive locations'}
+                                </Tooltip>
+                              ) : (
+                                <></>
+                              )
                             }
-                            className="float-end"
-                            onClick={handleSubmit(submitHandlerCount)}
                           >
-                            {(resultsLoadingState === 'notstarted' || resultsLoadingState === 'complete') &&
-                            (parentsLoadingState === 'notstarted' || parentsLoadingState === 'complete') ? (
-                              <>
-                                <FontAwesomeIcon icon="search" />{' '}
-                                <span className={'p-2'}>{t('simulationPage.search')}</span>
-                              </>
-                            ) : (
-                              <>
-                                <Spinner animation="border" size="sm" role="status" />
-                                <span className={'p-2'}>Loading</span>
-                              </>
-                            )}
-                          </Button>
+                            <Button
+                              type="submit"
+                              disabled={
+                                selectedHierarchy === undefined ||
+                                resultsLoadingState === 'started' ||
+                                parentsLoadingState === 'started'
+                              }
+                              className="float-end"
+                              onClick={handleSubmit(submitHandlerCount)}
+                            >
+                              {(resultsLoadingState === 'notstarted' ||
+                                resultsLoadingState === 'complete' ||
+                                resultsLoadingState === 'error') &&
+                              (parentsLoadingState === 'notstarted' ||
+                                parentsLoadingState === 'complete' ||
+                                parentsLoadingState === 'error') ? (
+                                <>
+                                  {resultsLoadingState === 'error' || parentsLoadingState === 'error' ? (
+                                    <FontAwesomeIcon icon="exclamation-triangle" />
+                                  ) : (
+                                    <FontAwesomeIcon icon="search" />
+                                  )}
+                                  <span className={'p-2'}>{t('simulationPage.search')}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Spinner animation="border" size="sm" role="status" />
+                                  <span className={'p-2'}>Loading</span>
+                                </>
+                              )}
+                            </Button>
+                          </OverlayTrigger>
                         </Col>
                       </Row>
                     </Col>
@@ -1006,6 +1086,7 @@ const Simulation = () => {
             }}
             isDarkMode={false}
             aggregationSummary={aggregationSummary}
+            aggregationSummaryDefinition={aggregationSummaryDefinition}
             initiatingMapData={selectedMapData}
           />
         )}
@@ -1014,18 +1095,18 @@ const Simulation = () => {
           <Row>
             <Col>{highestLocations && showResult && <h3 className="my-3 ">{t('simulationPage.results')}</h3>}</Col>
             <Col>
-              <Button
-                className="float-end my-3 ms-2"
-                variant="secondary"
-                onClick={() => setShowSaveHierarchyPanel(true)}
-              >
-                {t('simulationPage.saveHierarchy')}
-              </Button>
               <Button className="float-end my-3 ms-2" variant="secondary" onClick={() => setShowUploadModal(true)}>
                 {t('simulationPage.uploadData')}
               </Button>
               {highestLocations && showResult && (
                 <>
+                  <Button
+                    className="float-end my-3 ms-2"
+                    variant="secondary"
+                    onClick={() => setShowSaveHierarchyPanel(true)}
+                  >
+                    {t('simulationPage.saveHierarchy')}
+                  </Button>
                   <Button
                     className="float-end ms-2 my-3"
                     variant="secondary"
@@ -1117,7 +1198,7 @@ const Simulation = () => {
           closeHandler={() => {
             setShowDownloadPanel(false);
           }}
-          hierarchyIdentifier={selectedHierarchy}
+          hierarchyIdentifier={selectedHierarchy?.identifier}
         />
       )}
       {showUploadModal && <UploadSimulationData dataFunction={uploadDataHandler} closeHandler={setShowUploadModal} />}
@@ -1125,7 +1206,11 @@ const Simulation = () => {
         <SaveHierarchyModal
           submitSimulationRequestData={submitSimulationRequestData}
           setShowModal={setShowSaveHierarchyPanel}
+          aggregationSummary={aggregationSummary}
           mapdata={mapData}
+          selectedHierarchy={selectedHierarchy}
+          updateHierarchyLists={updateHierarchyLists}
+          aggregationSummaryDefinition={aggregationSummaryDefinition}
         />
       )}
     </>

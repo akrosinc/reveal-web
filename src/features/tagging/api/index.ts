@@ -28,7 +28,7 @@ export const getAllGlobalTags = (
 ): Promise<PageableModel<Tag>> => {
   const data = api
     .get<PageableModel<Tag>>(
-      `entityTag?filter=global&search=${
+      `entityTag/page?filter=all&search=${
         search !== undefined ? search : ''
       }&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField !== undefined ? sortField : ''},${
         direction ? 'asc' : 'desc'

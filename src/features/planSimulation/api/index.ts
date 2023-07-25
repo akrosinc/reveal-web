@@ -2,7 +2,6 @@ import api from '../../../api/axios';
 import { LOCATION_HIERARCHY } from '../../../constants';
 import { EntityTag, LookupEntityType, PersonMeta, PlanningLocationResponse } from '../providers/types';
 import { SimulationCountResponse, SimulationRequestData } from '../components/Simulation';
-import { toast } from 'react-toastify';
 import { SaveHierarchyRequest, SaveHierarchyResponse } from '../components/modals/SaveHierarchyModal';
 
 export const getEntityList = async (): Promise<LookupEntityType[]> => {
@@ -10,18 +9,23 @@ export const getEntityList = async (): Promise<LookupEntityType[]> => {
   return data;
 };
 
-export const getEntityTags = async (entityId: string): Promise<EntityTag[]> => {
-  const data = await api.get<EntityTag[]>(`entityTag/${entityId}?filter=global`).then(res => res.data);
+export const getEntityTags = async (): Promise<EntityTag[]> => {
+  const data = await api.get<EntityTag[]>(`entityTag?filter=dataAssociated`).then(res => res.data);
   return data;
 };
 
-export const getEventBasedEntityTags = async (entityId: string): Promise<EntityTag[]> => {
-  const data = await api.get<EntityTag[]>(`entityTag/eventBasedTags/${entityId}`).then(res => res.data);
+export const getDataAssociatedEntityTags = async (hierarchyIdentifier: string): Promise<EntityTag[]> => {
+  const data = await api.get<EntityTag[]>('entityTag/dataAssociated/' + hierarchyIdentifier).then(res => res.data);
   return data;
 };
 
-export const getImportableEntityTags = async (entityId: string): Promise<EntityTag[]> => {
-  const data = await api.get<EntityTag[]>(`entityTag/${entityId}?filter=importable`).then(res => res.data);
+export const getEventBasedEntityTags = async (): Promise<EntityTag[]> => {
+  const data = await api.get<EntityTag[]>(`entityTag/eventBasedTags`).then(res => res.data);
+  return data;
+};
+
+export const getImportableEntityTags = async (): Promise<EntityTag[]> => {
+  const data = await api.get<EntityTag[]>(`entityTag?filter=importable`).then(res => res.data);
   return data;
 };
 
@@ -79,29 +83,33 @@ export const getFullHierarchyJSON = async (hierarchyIdentifier: string): Promise
 export const getLocationsSSE = (
   requestData: any,
   messageHandler: (e: MessageEvent<any>) => void,
-  closeHandler: (e: any) => any,
+  closeHandler: () => any,
   openHandler: () => any,
   parentHandler: (e: any) => any,
   statsHandler: (e: any) => any,
-  locationAggregationHandler: (e: any) => any
+  locationAggregationHandler: (e: any) => any,
+  locationAggregationDefinitionHandler: (e: any) => any,
+  resultsErrorHandler: (e: any) => any
 ) => {
   const events = new EventSource(
     process.env.REACT_APP_API_URL + '/entityTag/filter-sse?simulationRequestId=' + requestData.simulationRequestId
   );
   events.addEventListener('message', messageHandler);
-  events.addEventListener('open', e => {
+  events.addEventListener('open', _ => {
     openHandler();
   });
   events.addEventListener('parent', e => parentHandler(e));
 
   events.addEventListener('stats', e => statsHandler(e));
   events.addEventListener('aggregations', e => locationAggregationHandler(e));
+  events.addEventListener('aggregationDefinitions', e => locationAggregationDefinitionHandler(e));
 
   events.addEventListener('error', e => {
-    toast.error('Error getting locations');
+    resultsErrorHandler(e);
+    return events.close();
   });
-  events.addEventListener('close', e => {
-    closeHandler(e);
+  events.addEventListener('close', _ => {
+    closeHandler();
     return events.close();
   });
 };
@@ -110,7 +118,8 @@ export const getFullLocationsSSE = (
   requestData: any,
   messageHandler: (e: any) => void,
   closeHandler: () => any,
-  openHandler: () => any
+  openHandler: () => any,
+  resultsErrorHandler: (e: any) => any
 ) => {
   const events = new EventSource(
     process.env.REACT_APP_API_URL +
@@ -118,11 +127,11 @@ export const getFullLocationsSSE = (
       requestData.simulationRequestId
   );
 
-  events.addEventListener('open', e => {
+  events.addEventListener('open', _ => {
     openHandler();
   });
   events.addEventListener('error', e => {
-    toast.error('Error getting locations');
+    resultsErrorHandler(e);
   });
   events.addEventListener('close', () => {
     closeHandler();

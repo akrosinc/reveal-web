@@ -7,7 +7,7 @@ export interface EntityTag {
   definition: string;
   fieldType: string;
   valueType: string;
-  lookupEntityType: LookupEntityType;
+  subType?: string;
   more: EntityTag[];
   range?: [EntityTag, EntityTag];
   simulationDisplay: boolean;
@@ -56,6 +56,7 @@ export interface RevealFeature {
   type: 'Feature';
   children: any[] | undefined;
   aggregates: any[] | undefined;
+  ancestry: any[] | undefined;
 }
 
 export interface PlanningLocationResponseTagged {
@@ -86,10 +87,14 @@ export interface PersonMeta {
 export interface Metadata {
   value: string;
   type: string;
+  fieldType?: string;
 }
 export interface MetadataObj {
   [key: string]: any;
 }
 export interface LocationMetadataObj {
   [key: string]: MetadataObj;
+}
+export interface MetadataDefinition {
+  [key: string]: string;
 }

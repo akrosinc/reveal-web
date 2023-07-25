@@ -62,9 +62,8 @@ const SearchResultCountModal = ({
             </>
           )}
           <hr />
-          <span className="span-header">{t('simulationPage.results')}</span>
+          <span className="span-header">{t('simulationPage.tagFilters')}</span>
           <Row key="availableProperties">
-            <Col>{t('simulationPage.availableProperties')} </Col>
             <Col>
               <SimulationModal
                 selectedEntityCondition={selectedEntityCondition}

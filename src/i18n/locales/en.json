@@ -289,7 +289,11 @@
     "entityTags": "Entity Tags",
     "fileTemplate": "File Template",
     "saveHierarchy": "Save Hierarchy",
-    "hierarchyName": "Hierarchy Name"
+    "hierarchyName": "Hierarchy Name",
+    "tagsSelected": "The following tags will be saved with this hierarchy",
+    "noTagsSelected": "No Tags Selected!",
+    "selectToLoad": "Select to Load",
+    "tagFilters": "Tag Filters"
   },
   "label": {
     "layerOpacity": "Layer opacity"

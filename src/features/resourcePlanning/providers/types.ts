@@ -1,7 +1,7 @@
 export interface ResourcePlanningConfig {
   resourcePlanName: string;
   country: { label: string; value: string; ageGroups: AgeGroups[] };
-  hierarchy: { label: string; value: string };
+  hierarchy: { label: string; value: string; type?: string; nodeOrder?: string[] };
   lowestLocation: { label: string; value: string };
   populationTag: { label: string; value: string };
   structureCount: boolean;
@@ -65,8 +65,12 @@ export interface ResourceDashboardRequest {
   name: string;
   country: string;
   campaign: string;
-  locationHierarchy: string;
-  lowestGeography: string;
+  locationHierarchy: {
+    identifier: string;
+    nodeOrder?: string[];
+    type?: string;
+  };
+  lowestGeography?: string;
   populationTag: string;
   structureCountTag: string | undefined;
   countBasedOnImportedLocations: boolean;

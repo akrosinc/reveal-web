@@ -26,7 +26,7 @@ export const ROW_DEPTH_COLOR_3 = '#DCDCDC';
 
 //REGEX
 export const REGEX_NAME_VALIDATION = new RegExp('^[-\\a-zA-Z0-9][ a-zA-Z0-9_.-]*[^- _]$');
-export const REGEX_TITLE_VALIDATION = new RegExp('^[^-\\s][a-zA-Z0-9.__\\s-]*$');
+export const REGEX_TITLE_VALIDATION = new RegExp('^[^-\\s][a-zA-Z0-9._\\s-]*$');
 export const REGEX_USERNAME_VALIDATION = new RegExp('^[a-z0-9]+([._]?[a-z0-9]+)*$');
 export const REGEX_EMAIL_VALIDATION = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
 
@@ -168,7 +168,7 @@ export const COLOR_BOOTSTRAP_SUCCESS = '#198754';
 export const COLOR_BOOTSTRAP_DANGER = '#dc3545';
 export const COLOR_BOOTSTRAP_WARNING = '#ffc107';
 
-export const NUMBER_AGGREGATION = ['sum', 'average', 'min', 'max'];
+export const NUMBER_AGGREGATION = ['sum', 'average', 'min', 'max', 'median'];
 export const BOOLEAN_STRING_AGGREGATION = ['count'];
 export const DATA_AGGREGATION = ['min', 'max', 'count'];
 

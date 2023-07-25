@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react';
-import { Button, Col, Form, Modal, Row, Table } from 'react-bootstrap';
+import { Accordion, Button, Col, Form, Modal, Row, Table } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { LocationMetadataObj } from '../../providers/types';
+import { LocationMetadataObj, MetadataDefinition } from '../../providers/types';
 
 interface Props {
   show: boolean;
   isDarkMode: boolean;
   closeHandler: () => void;
   aggregationSummary: LocationMetadataObj;
+  aggregationSummaryDefinition: MetadataDefinition;
   initiatingMapData: any;
 }
 
-const TableSummaryModal = ({ show, closeHandler, isDarkMode, aggregationSummary, initiatingMapData }: Props) => {
+const TableSummaryModal = ({
+  show,
+  closeHandler,
+  isDarkMode,
+  aggregationSummary,
+  initiatingMapData,
+  aggregationSummaryDefinition
+}: Props) => {
   const [tableData, setTableData] = useState<{
     identifier: string;
     geoLevel: string;
@@ -19,7 +27,7 @@ const TableSummaryModal = ({ show, closeHandler, isDarkMode, aggregationSummary,
     data: any[];
   }>();
   const { t } = useTranslation();
-
+  const [fieldTypeSet, setFieldTypeSet] = useState<string[]>();
   useEffect(() => {
     if (aggregationSummary) {
       if (initiatingMapData) {
@@ -43,6 +51,12 @@ const TableSummaryModal = ({ show, closeHandler, isDarkMode, aggregationSummary,
       }
     }
   }, [aggregationSummary, initiatingMapData]);
+
+  useEffect(() => {
+    let fieldTypeSet = new Set<string>();
+    Object.keys(aggregationSummaryDefinition).forEach(key => fieldTypeSet.add(aggregationSummaryDefinition[key]));
+    setFieldTypeSet(Array.from(fieldTypeSet));
+  }, [aggregationSummaryDefinition]);
 
   return (
     <Modal
@@ -83,25 +97,46 @@ const TableSummaryModal = ({ show, closeHandler, isDarkMode, aggregationSummary,
       <Modal.Body>
         <Form>
           <Form.Group className="mb-2">
-            <Table bordered responsive hover>
-              <thead className="border border-2">
-                <tr>
-                  <th>{t('simulationPage.property')}</th>
-                  <th>{t('simulationPage.sum')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tableData &&
-                  tableData.data.map((val, index) => {
-                    return (
-                      <tr key={index}>
-                        <td>{val.tag}</td>
-                        <td>{val.agg}</td>
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </Table>
+            <Accordion defaultActiveKey="0" alwaysOpen>
+              {fieldTypeSet?.map(fieldType => (
+                // <>
+                //   <h4>{fieldType}</h4>
+
+                <Accordion.Item eventKey={fieldType}>
+                  <Accordion.Header>{fieldType}</Accordion.Header>
+                  <Accordion.Body>
+                    <Table bordered responsive hover className={'my-6'}>
+                      <thead className="border border-2">
+                        <tr>
+                          <th>{t('simulationPage.property')}</th>
+                          <th>{t('simulationPage.sum')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tableData &&
+                          tableData.data
+                            .filter(
+                              val =>
+                                aggregationSummaryDefinition[val.tag] !== null &&
+                                aggregationSummaryDefinition[val.tag] !== undefined &&
+                                aggregationSummaryDefinition[val.tag] === fieldType
+                            )
+                            .map((val, index) => {
+                              return (
+                                <tr key={index}>
+                                  <td>{val.tag}</td>
+                                  <td>{val.agg}</td>
+                                </tr>
+                              );
+                            })}
+                      </tbody>
+                    </Table>
+                  </Accordion.Body>
+                </Accordion.Item>
+
+                // </>
+              ))}
+            </Accordion>
           </Form.Group>
         </Form>
       </Modal.Body>

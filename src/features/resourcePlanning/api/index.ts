@@ -50,6 +50,11 @@ export const getResourceDashboard = async (
   return data;
 };
 
+export const submitDashboard = async (dashboardRequest: ResourceDashboardRequest): Promise<string> => {
+  const data = await api.post<void>(`resource-planning/submitDashboard`, dashboardRequest).then(_ => 'ok');
+  return data;
+};
+
 export const getResourceHistory = async (
   size: number,
   page: number,

@@ -27,7 +27,8 @@ import {
   faAlignLeft,
   faSun,
   faMoon,
-  faSearch
+  faSearch,
+  faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
@@ -54,7 +55,8 @@ library.add(
   faAlignLeft,
   faSun,
   faMoon,
-  faSearch
+  faSearch,
+  faExclamationTriangle
 );
 
 function App() {

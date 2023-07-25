@@ -20,11 +20,8 @@ export const TemplateCreation = () => {
 
   useEffect(() => {
     getLocationHierarchyList(50, 0, true).then(res => setHierarchyList(res));
-    getEntityTagList().then(res => {
-      const location = res.content.find(el => el.lookupEntityType.code === 'Location');
-      if (location) {
-        getImportableEntityTags(location.lookupEntityType.identifier).then(res => setEntityTagList(res));
-      }
+    getEntityTagList().then(_ => {
+      getImportableEntityTags().then(res => setEntityTagList(res));
     });
   }, []);
 

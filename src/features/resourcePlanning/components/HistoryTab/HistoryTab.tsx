@@ -41,7 +41,7 @@ const HistoryTab = () => {
 
   const loadHistoryHandler = (id: string) => {
     getResourceHistoryById(id).then(res => {
-      getHierarchyById(res.locationHierarchy).then(hierarchyList => {
+      getHierarchyById(res.locationHierarchy.identifier).then(hierarchyList => {
         const allowedPath: string[] = [];
         hierarchyList.nodeOrder.some(el => {
           if (el === res.lowestGeography) {

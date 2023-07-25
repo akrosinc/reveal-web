@@ -31,9 +31,6 @@ const Tagging = () => {
   const loadData = useCallback((size: number, page: number, filter?: string, field?: string, direction?: boolean) => {
     getAllGlobalTags(size, page, filter, field, direction)
       .then(res => {
-        res.content.forEach(el => {
-          el.lookupEntityType = el.lookupEntityType.code as any;
-        });
         setTagList(res);
       })
       .catch(err => toast.error(err));

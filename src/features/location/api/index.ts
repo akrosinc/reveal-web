@@ -7,7 +7,7 @@ import {
 } from '../providers/types';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
-import { GEOGRAPHIC_LEVEL, LOCATION, LOCATION_HIERARCHY } from '../../../constants';
+import { GENERATED_LOCATION_HIERARCHY, GEOGRAPHIC_LEVEL, LOCATION, LOCATION_HIERARCHY } from '../../../constants';
 import { toast } from 'react-toastify';
 
 export const getGeographicLevelList = async (
@@ -66,6 +66,11 @@ export const getLocationHierarchyList = async (
         },${direction ? 'asc' : 'desc'}&_summary=${summary.toString()}`
     )
     .then(response => response.data);
+  return data;
+};
+
+export const getGeneratedLocationHierarchyList = async (): Promise<LocationHierarchyModel[]> => {
+  const data = await api.get<LocationHierarchyModel[]>(GENERATED_LOCATION_HIERARCHY).then(response => response.data);
   return data;
 };
 

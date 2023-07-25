@@ -40,8 +40,8 @@ interface Props {
   updateLevelsLoaded: (levels: string[]) => void;
   resetMap: boolean;
   setResetMap: (resetMap: boolean) => void;
-  resultsLoadingState: 'notstarted' | 'started' | 'complete';
-  parentsLoadingState: 'notstarted' | 'started' | 'complete';
+  resultsLoadingState: 'notstarted' | 'error' | 'started' | 'complete';
+  parentsLoadingState: 'notstarted' | 'error' | 'started' | 'complete';
   stats: Stats;
 }
 
@@ -115,8 +115,10 @@ const SimulationMapView = ({
   useEffect(() => {
     if (map.current) {
       if (
-        (resultsLoadingState === 'notstarted' || resultsLoadingState === 'complete') &&
-        (parentsLoadingState === 'notstarted' || parentsLoadingState === 'complete')
+        (resultsLoadingState === 'notstarted' ||
+          resultsLoadingState === 'complete' ||
+          resultsLoadingState === 'error') &&
+        (parentsLoadingState === 'notstarted' || parentsLoadingState === 'complete' || parentsLoadingState === 'error')
       ) {
         disableMapInteractions(map.current, false);
       } else {

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Modal } from 'react-bootstrap';
-import { Controller, useForm } from 'react-hook-form';
+import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { BOOLEAN_STRING_AGGREGATION, DATA_AGGREGATION, NUMBER_AGGREGATION } from '../../../../constants';
 import { createTag } from '../../api';
-import { EntityTypeEnum, TagCreateRequest } from '../../providers/types';
+import { TagCreateRequest } from '../../providers/types';
 import Select from 'react-select';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface Props {
   closeHandler: () => void;
@@ -22,8 +23,12 @@ const CreateTag = ({ closeHandler }: Props) => {
     formState: { errors }
   } = useForm<TagCreateRequest>({
     defaultValues: {
-      scope: 'global'
+      tags: [{ name: '' }]
     }
+  });
+  const { fields, append } = useFieldArray({
+    control,
+    name: 'tags'
   });
 
   const selectedValueType = watch('valueType');
@@ -48,13 +53,25 @@ const CreateTag = ({ closeHandler }: Props) => {
   }, [selectedValueType]);
 
   const submitHandler = (form: TagCreateRequest) => {
-    form.tag = form.tag.replaceAll(' ', '_');
+    form.tags.forEach(tag => {
+      tag.name = tag.name.replaceAll(' ', '-');
+      tag.name = tag.name.replaceAll('_', '-');
+    });
     createTag(form)
       .then(res => {
         toast.success(`Tag ${res.tag} created.`);
         closeHandler();
       })
       .catch(err => toast.error(err));
+  };
+
+  const getError = (errors: any, index: number) => {
+    let find = errors.tags.find((tag: any, tagIndex: number) => tagIndex === index);
+    if (find) {
+      return find.name.message;
+    } else {
+      return '';
+    }
   };
 
   return (
@@ -64,37 +81,41 @@ const CreateTag = ({ closeHandler }: Props) => {
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Form.Group>
-            <Form.Label>Tag Name</Form.Label>
-            <Form.Control
-              {...register('tag', {
-                required: { value: true, message: 'Tag name is required' }
-              })}
-              type="text"
-            />
-            {errors.tag && <Form.Label className="text-danger mt-2">{errors.tag?.message}</Form.Label>}
-          </Form.Group>
-          {/* <Form.Group className="mt-2">
-            <Form.Label>Form Title</Form.Label>
-            <Form.Control disabled type="text" />
-          </Form.Group>
-          <Form.Group className="mt-2">
-            <Form.Label>Form Key</Form.Label>
-            <Form.Control disabled type="text" />
-          </Form.Group> */}
-          <Form.Group className="mt-2">
-            <Form.Label>Entity Type</Form.Label>
-            <Form.Select
-              {...register('entityType', {
-                required: { value: true, message: 'Entity Type is required' }
-              })}
-            >
-              <option value={''}>Select Entity Type</option>
-              <option value={EntityTypeEnum.PERSON_CODE}>Person</option>
-              <option value={EntityTypeEnum.LOCATION_CODE}>Location</option>
-            </Form.Select>
-            {errors.entityType && <Form.Label className="text-danger mt-2">{errors.entityType?.message}</Form.Label>}
-          </Form.Group>
+          <Row>
+            <Col>
+              <Form.Label>Tag Name</Form.Label>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={11}>
+              {fields.map((item, index: number) => (
+                <>
+                  <Controller
+                    rules={{ required: 'error' }}
+                    control={control}
+                    render={({ field: { onChange } }) => (
+                      <>
+                        <Form.Group>
+                          <Form.Control
+                            {...register(`tags.${index}.name` as const, { required: 'error' })}
+                            onChange={onChange}
+                            type="text"
+                          />
+                        </Form.Group>
+                        {errors.tags && <Form.Label className="text-danger mt-2">{getError(errors, index)}</Form.Label>}
+                      </>
+                    )}
+                    name={`tags.${index}.name` as const}
+                  />
+                </>
+              ))}
+            </Col>
+            <Col md={1}>
+              <Button className="rounded float-end" onClick={() => append({})}>
+                <FontAwesomeIcon icon="plus" />
+              </Button>
+            </Col>
+          </Row>
           <Form.Group className="mt-2">
             <Form.Label>Data Type</Form.Label>
             <Form.Select
@@ -106,7 +127,6 @@ const CreateTag = ({ closeHandler }: Props) => {
               <option value="number">Number</option>
               <option value="string">String</option>
               <option value="boolean">Boolean</option>
-              <option value="date">Date</option>
             </Form.Select>
             {errors.valueType && <Form.Label className="text-danger mt-2">{errors.valueType?.message}</Form.Label>}
           </Form.Group>
@@ -140,18 +160,6 @@ const CreateTag = ({ closeHandler }: Props) => {
               </Form.Label>
             )}
           </Form.Group>
-          {/* <Form.Group className="mt-2">
-            <Form.Label>Scope</Form.Label>
-            <Form.Select {...register('scope')} disabled>
-              <option value="global">Global</option>
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="my-2">
-            <Form.Label>Definition Type</Form.Label>
-            <Form.Select disabled>
-              <option></option>
-            </Form.Select>
-          </Form.Group> */}
         </Form>
       </Modal.Body>
       <Modal.Footer>

@@ -34,7 +34,7 @@
     "mapbox-gl": "^1.0.0",
     "moment": "^2.29.1",
     "react": "^17.0.2",
-    "react-bootstrap": "^2.0.3",
+    "react-bootstrap": "^2.8.0",
     "react-chartjs-2": "^4.0.1",
     "react-color-palette": "^6.2.0",
     "react-csv": "^2.2.2",

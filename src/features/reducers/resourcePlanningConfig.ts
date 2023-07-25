@@ -2,12 +2,16 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
   ResourceDashboardRequest,
   ResourceDashboardResponse,
-  ResourcePlanningConfig
+  ResourcePlanningConfig,
+  ResourceQuestion,
+  ResourceQuestionStepTwo
 } from '../resourcePlanning/providers/types';
 
 interface DashboardResource {
   path: string[];
   request: ResourceDashboardRequest;
+  questionsOne?: ResourceQuestion[];
+  questionsTwo?: ResourceQuestionStepTwo[];
   response: ResourceDashboardResponse[];
 }
 

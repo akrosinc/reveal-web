@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -6,9 +6,9 @@ import { RootState } from '../../../../store/store';
 import { removeConfig, setConfig } from '../../../reducers/resourcePlanningConfig';
 import { ResourceCountry, ResourcePlanningConfig } from '../../providers/types';
 import Select from 'react-select';
-import { getEntityList, getEntityTags } from '../../../planSimulation/api';
+import { getDataAssociatedEntityTags } from '../../../planSimulation/api';
 import { EntityTag } from '../../../planSimulation/providers/types';
-import { getLocationHierarchyList } from '../../../location/api';
+import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../../location/api';
 import { LocationHierarchyModel } from '../../../location/providers/types';
 import { getCountryResource } from '../../api';
 import { useNavigate } from 'react-router-dom';
@@ -19,9 +19,10 @@ const ConfigTab = () => {
   const dispatch = useDispatch();
   const [oldConfig, setOldConfig] = useState<ResourcePlanningConfig | undefined>(configValue);
   const [entityTags, setEntityTags] = useState<EntityTag[]>([]);
-  const [locationHierarchy, setLocationHierarchy] = useState<LocationHierarchyModel[]>([]);
+  const [selectedHierarchy, setSelectedHierarchy] = useState<LocationHierarchyModel | undefined>();
   const [selectedNodeList, setSelectedNodeList] = useState<string[]>();
   const [countryResourceList, setCountryResourceList] = useState<ResourceCountry[]>([]);
+  const [combinedHierarchyList, setCombinedHierarchyList] = useState<LocationHierarchyModel[]>();
   const navigate = useNavigate();
 
   const {
@@ -47,23 +48,44 @@ const ConfigTab = () => {
     dispatch(setConfig(form));
   };
 
-  const loadData = useCallback(() => {
-    getEntityList().then(res => {
-      //find locationEntityId to get location entity tags
-      const locationEntity = res.find(el => el.code === 'Location');
-      if (locationEntity) {
-        getEntityTags(locationEntity.identifier)
-          .then(res => setEntityTags(res))
-          .catch(err => toast.error(err));
-      }
-    });
-    getLocationHierarchyList(50, 0, true).then(res => setLocationHierarchy(res.content));
+  useEffect(() => {
     getCountryResource().then(res => setCountryResourceList(res));
   }, []);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (selectedHierarchy && selectedHierarchy.identifier) {
+      getDataAssociatedEntityTags(selectedHierarchy.identifier)
+        .then(res => {
+          setEntityTags(res);
+        })
+        .catch(err => toast.error(err));
+    }
+
+    Promise.all([getLocationHierarchyList(50, 0, true), getGeneratedLocationHierarchyList()]).then(
+      ([locationHierarchyList, generatedHierarchyList]) => {
+        let generatedHierarchyItems = generatedHierarchyList?.map(generatedHierarchy => {
+          return {
+            identifier: generatedHierarchy.identifier,
+            name: generatedHierarchy.name,
+            nodeOrder: generatedHierarchy.nodeOrder,
+            type: 'generated'
+          };
+        });
+
+        let list = locationHierarchyList?.content.map(savedHierarchy => {
+          return {
+            identifier: savedHierarchy.identifier,
+            name: savedHierarchy.name,
+            nodeOrder: savedHierarchy.nodeOrder,
+            type: 'saved'
+          };
+        });
+
+        let combinedList = list.concat(generatedHierarchyItems);
+        setCombinedHierarchyList(combinedList);
+      }
+    );
+  }, [selectedHierarchy]);
 
   return (
     <>
@@ -147,25 +169,39 @@ const ConfigTab = () => {
           <Controller
             control={control}
             name="hierarchy"
-            rules={{ required: { value: true, message: 'Select hierarchy first.' }, minLength: 1 }}
+            rules={{
+              required: { value: true, message: 'Select hierarchy first.' },
+              minLength: 1
+            }}
             render={({ field: { onChange, onBlur, ref, value } }) => (
               <Select
                 className="custom-react-select-container"
                 classNamePrefix="custom-react-select"
                 menuPosition="fixed"
                 isClearable
-                options={locationHierarchy.map(el => {
+                options={combinedHierarchyList?.map(el => {
                   return {
                     label: el.name,
-                    value: el.identifier
+                    value: el.identifier,
+                    type: el.type,
+                    nodeOrder: el.nodeOrder
                   };
                 })}
                 onChange={el => {
                   onChange(el);
                   resetField('lowestLocation');
                   setSelectedNodeList(
-                    locationHierarchy.find(hierarchy => hierarchy.identifier === el?.value)?.nodeOrder
+                    combinedHierarchyList?.find(hierarchy => hierarchy.identifier === el?.value)?.nodeOrder
                   );
+                  if (el) {
+                    setSelectedHierarchy({
+                      name: el.label,
+                      nodeOrder: el.nodeOrder ? el.nodeOrder : [],
+                      type: el.type,
+                      identifier: el.value
+                    });
+                    setValue('structureCount', false);
+                  }
                 }}
                 onBlur={onBlur}
                 ref={ref}
@@ -184,7 +220,10 @@ const ConfigTab = () => {
           <Controller
             control={control}
             name="lowestLocation"
-            rules={{ required: { value: true, message: 'Select hierarchy first.' }, minLength: 1 }}
+            rules={{
+              required: { value: true, message: 'Select hierarchy first.' },
+              minLength: 1
+            }}
             render={({ field: { onChange, onBlur, ref, value } }) => (
               <Select
                 className="custom-react-select-container"
@@ -216,7 +255,10 @@ const ConfigTab = () => {
           <Controller
             control={control}
             name="populationTag"
-            rules={{ required: { value: true, message: 'Population tag is required.' }, minLength: 1 }}
+            rules={{
+              required: { value: true, message: 'Population tag is required.' },
+              minLength: 1
+            }}
             render={({ field: { onChange, onBlur, ref, value } }) => (
               <Select
                 className="custom-react-select-container"
@@ -242,29 +284,35 @@ const ConfigTab = () => {
             </Form.Label>
           )}
         </Form.Group>
-        <Form.Group className="mt-2">
-          <Form.Label className="me-3 my-3">Structure count based on imported location?</Form.Label>
-          <Form.Check
-            inline
-            {...register('structureCount', {
-              onChange: e => {
-                resetField('structureCountTag');
-              }
-            })}
-          />
-          {errors.structureCount && (
-            <Form.Label className="text-danger mt-2">
-              {errors.structureCount && (errors.structureCount as any).message}
-            </Form.Label>
-          )}
-        </Form.Group>
+        {selectedHierarchy && selectedHierarchy.type === 'saved' && (
+          <Form.Group className="mt-2">
+            <Form.Label className="me-3 my-3">Structure count based on imported location?</Form.Label>
+            <Form.Check
+              inline
+              {...register('structureCount', {
+                onChange: _ => {
+                  resetField('structureCountTag');
+                }
+              })}
+            />
+            {errors.structureCount && (
+              <Form.Label className="text-danger mt-2">
+                {errors.structureCount && (errors.structureCount as any).message}
+              </Form.Label>
+            )}
+          </Form.Group>
+        )}
+
         {!watch().structureCount && (
           <Form.Group className="mt-2">
             <Form.Label>Structure Count Tag</Form.Label>
             <Controller
               control={control}
               name="structureCountTag"
-              rules={{ required: { value: true, message: 'Structure Count Tag is required.' }, minLength: 1 }}
+              rules={{
+                required: { value: true, message: 'Structure Count Tag is required.' },
+                minLength: 1
+              }}
               render={({ field: { onChange, onBlur, ref, value } }) => (
                 <Select
                   className="custom-react-select-container"

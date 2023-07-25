@@ -917,7 +917,7 @@ export const createSearchResultLabelLayer = (mapInstance: Map, info: any, source
         'text-justify': 'center'
       },
       paint: {
-        'text-color': 'grey'
+        'text-color': ['get', 'levelColor']
       }
     },
     'label-layer'

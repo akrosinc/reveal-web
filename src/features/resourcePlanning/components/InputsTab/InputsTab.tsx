@@ -9,14 +9,18 @@ import {
   getQuestionsResourceStepTwo,
   getResourceDashboard
 } from '../../api';
-import { ResourceCampaign, ResourceQuestion, ResourceQuestionStepTwo } from '../../providers/types';
+import {
+  ResourceCampaign,
+  ResourceDashboardRequest,
+  ResourceQuestion,
+  ResourceQuestionStepTwo
+} from '../../providers/types';
 import DynamicFormField from './DynamicFormField/DynamicFormField';
 import Select from 'react-select';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../../../store/hooks';
 import { setDashboard } from '../../../reducers/resourcePlanningConfig';
-import { getHierarchyById } from '../../../location/api';
 
 const InputsTab = () => {
   const [questionList, setQuestionList] = useState<ResourceQuestion[]>([]);
@@ -57,45 +61,51 @@ const InputsTab = () => {
         }
       });
       if (configValue) {
-        const dashboardRequest = {
+        const dashboardRequest: ResourceDashboardRequest = {
           name: configValue.resourcePlanName,
           country: configValue.country.value,
           campaign: form.campaign,
           minimalAgeGroup: form.ageGroup,
           countBasedOnImportedLocations: configValue.structureCount,
-          locationHierarchy: configValue.hierarchy.value,
+          locationHierarchy: {
+            identifier: configValue.hierarchy.value,
+            type: configValue.hierarchy.type,
+            nodeOrder: configValue.hierarchy.nodeOrder
+          },
           lowestGeography: configValue.lowestLocation.value,
           populationTag: configValue.populationTag.value,
           structureCountTag: configValue.structureCountTag ? configValue.structureCountTag.value : undefined,
           stepOneAnswers: Object.fromEntries(stepOneAnswers.entries()),
           stepTwoAnswers: Object.fromEntries(stepTwoAnswers.entries())
         };
-        getHierarchyById(configValue.hierarchy.value).then(hierarchyList => {
-          const allowedPath: string[] = [];
-          hierarchyList.nodeOrder.some(el => {
-            if (el === configValue.lowestLocation.value) {
-              allowedPath.push(el);
-              return true;
-            } else {
-              allowedPath.push(el);
-            }
-            return false;
-          });
-          getResourceDashboard(dashboardRequest, true)
-            .then(res => {
-              navigate('dashboard');
-              dispatch(
-                setDashboard({
-                  request: dashboardRequest,
-                  response: res,
-                  path: allowedPath
-                })
-              );
-            })
-            .catch(err => {
-              toast.error(err);
-            });
+
+        // getHierarchyById(configValue.hierarchy.nodeOrder).then(hierarchyList => {
+        const allowedPath: string[] = [];
+        configValue.hierarchy.nodeOrder?.some(el => {
+          if (el === configValue.lowestLocation.value) {
+            allowedPath.push(el);
+            return true;
+          } else {
+            allowedPath.push(el);
+          }
+          return false;
         });
+        getResourceDashboard(dashboardRequest, true)
+          .then(res => {
+            navigate('dashboard');
+            dispatch(
+              setDashboard({
+                request: dashboardRequest,
+                response: res,
+                questionsOne: questionList,
+                questionsTwo: questionListStepTwo,
+                path: allowedPath
+              })
+            );
+          })
+          .catch(err => {
+            toast.error(err);
+          });
       }
     } else {
       getQuestionsResourceStepTwo({
@@ -120,7 +130,6 @@ const InputsTab = () => {
 
   return (
     <Container className="mt-4">
-
       <>
         <h2>Step 1</h2>
         <Form>
@@ -130,7 +139,7 @@ const InputsTab = () => {
               control={control}
               name="campaign"
               rules={{ required: { value: true, message: 'Selecting an answer is required.' }, minLength: 1 }}
-              render={({ field: { onChange, onBlur, ref, value } }) => (
+              render={({ field: { onChange, onBlur, ref } }) => (
                 <Select
                   options={campaignList.map(el => {
                     return {
@@ -187,7 +196,7 @@ const InputsTab = () => {
             );
           })}
         </>
-      ) : (null)}
+      ) : null}
       <div className="text-end my-4">
         {stepTwo && (
           <Button className="px-5 me-2" onClick={() => setStepTwo(false)}>
