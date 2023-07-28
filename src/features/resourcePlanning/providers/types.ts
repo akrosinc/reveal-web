@@ -63,6 +63,7 @@ interface SkipPattern {
 
 export interface ResourceDashboardRequest {
   name: string;
+  baseName: string;
   country: string;
   campaign: string;
   locationHierarchy: {
@@ -77,6 +78,9 @@ export interface ResourceDashboardRequest {
   stepOneAnswers: any;
   stepTwoAnswers: any;
   minimalAgeGroup: string;
+  resourcePlanningConfig?: ResourcePlanningConfig;
+  questionsOne?: ResourceQuestion[];
+  questionsTwo?: ResourceQuestionStepTwo[];
 }
 
 export interface ResourceDashboardResponse {

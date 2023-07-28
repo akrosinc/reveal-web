@@ -66,6 +66,7 @@ const DashboardTab = () => {
   const submitDashboardData = () => {
     if (dashboardData && dashboardData.request) {
       let newRequest: ResourceDashboardRequest = {
+        baseName: dashboardData.request.name,
         name: dashboardData.request.name,
         country: dashboardData.request.country,
         campaign: dashboardData.request.campaign,

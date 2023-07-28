@@ -776,10 +776,12 @@ const Simulation = () => {
                     <Col>
                       <Form.Select
                         onChange={e => {
-                          if (e.target.value && selectedHierarchy) {
-                            getLocationList(selectedHierarchy?.identifier, e.target.value).then(res => {
-                              setLocationList(res);
-                            });
+                          if (e.target.value && selectedHierarchy && selectedHierarchy.type) {
+                            getLocationList(selectedHierarchy.identifier, selectedHierarchy.type, e.target.value).then(
+                              res => {
+                                setLocationList(res);
+                              }
+                            );
                           } else {
                             setLocationList([]);
                           }

@@ -6,7 +6,7 @@ import DefaultTable from '../../../../components/Table/DefaultTable';
 import { PAGINATION_DEFAULT_SIZE, RESOURCE_PLANNING_HISTORY_TABLE_COLUMNS } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
 import { getHierarchyById } from '../../../location/api';
-import { setDashboard } from '../../../reducers/resourcePlanningConfig';
+import { setConfig, setDashboard } from '../../../reducers/resourcePlanningConfig';
 import { getResourceDashboard, getResourceHistory, getResourceHistoryById } from '../../api';
 import { ResourcePlanningHistory } from '../../providers/types';
 
@@ -61,6 +61,9 @@ const HistoryTab = () => {
               path: allowedPath
             })
           );
+          if (res.resourcePlanningConfig) {
+            dispatch(setConfig(res.resourcePlanningConfig));
+          }
           navigate('dashboard');
         });
       });

@@ -16,7 +16,6 @@ import {
   ResourceQuestionStepTwo
 } from '../../providers/types';
 import DynamicFormField from './DynamicFormField/DynamicFormField';
-import Select from 'react-select';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../../../store/hooks';
@@ -27,6 +26,7 @@ const InputsTab = () => {
   const [questionListStepTwo, setQuestionListStepTwo] = useState<ResourceQuestionStepTwo[]>();
   const [stepTwo, setStepTwo] = useState(false);
   const configValue = useSelector((state: RootState) => state.resourceConfig.value);
+  const dashboardData = useSelector((state: RootState) => state.resourceConfig.dashboardData);
   const [campaignList, setCampaignList] = useState<ResourceCampaign[]>([]);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -40,7 +40,8 @@ const InputsTab = () => {
     formState: { errors },
     control,
     watch,
-    reset
+    reset,
+    setValue
   } = useForm();
 
   useEffect(() => {
@@ -62,6 +63,7 @@ const InputsTab = () => {
       });
       if (configValue) {
         const dashboardRequest: ResourceDashboardRequest = {
+          baseName: configValue.resourcePlanName,
           name: configValue.resourcePlanName,
           country: configValue.country.value,
           campaign: form.campaign,
@@ -76,10 +78,12 @@ const InputsTab = () => {
           populationTag: configValue.populationTag.value,
           structureCountTag: configValue.structureCountTag ? configValue.structureCountTag.value : undefined,
           stepOneAnswers: Object.fromEntries(stepOneAnswers.entries()),
-          stepTwoAnswers: Object.fromEntries(stepTwoAnswers.entries())
+          stepTwoAnswers: Object.fromEntries(stepTwoAnswers.entries()),
+          resourcePlanningConfig: configValue,
+          questionsOne: questionList,
+          questionsTwo: questionListStepTwo
         };
 
-        // getHierarchyById(configValue.hierarchy.nodeOrder).then(hierarchyList => {
         const allowedPath: string[] = [];
         configValue.hierarchy.nodeOrder?.some(el => {
           if (el === configValue.lowestLocation.value) {
@@ -128,6 +132,46 @@ const InputsTab = () => {
       .catch(err => toast.error(err));
   }, []);
 
+  useEffect(() => {
+    if (dashboardData) {
+      if (dashboardData.request) {
+        if (dashboardData.request.stepOneAnswers) {
+          setValue('mda_year', dashboardData.request.stepOneAnswers['mda_year']);
+          setValue('pop_year', dashboardData.request.stepOneAnswers['pop_year']);
+          setValue('pop_growth', dashboardData.request.stepOneAnswers['pop_growth']);
+          setValue('choice_days', dashboardData.request.stepOneAnswers['choice_days']);
+          setValue('mda_days', dashboardData.request.stepOneAnswers['mda_days']);
+          setValue('choice_cdd', dashboardData.request.stepOneAnswers['choice_cdd']);
+          setValue('cdd_number', dashboardData.request.stepOneAnswers['cdd_number']);
+          setValue('cdd_denom', dashboardData.request.stepOneAnswers['cdd_denom']);
+          setValue('cdd_target', dashboardData.request.stepOneAnswers['cdd_target']);
+          setValue('structure_day', dashboardData.request.stepOneAnswers['structure_day']);
+          setValue('cdd_allow', dashboardData.request.stepOneAnswers['cdd_allow']);
+          setValue('cdd_job', dashboardData.request.stepOneAnswers['cdd_job']);
+          setValue('cdd_super', dashboardData.request.stepOneAnswers['cdd_super']);
+          setValue('super_allow', dashboardData.request.stepOneAnswers['super_allow']);
+        }
+
+        setValue('campaign', dashboardData.request.campaign);
+        setValue('ageGroup', dashboardData.request.minimalAgeGroup);
+        setQuestionListStepTwo(dashboardData.request.questionsTwo);
+        setStepTwo(true);
+      }
+    }
+  }, [dashboardData, setValue]);
+
+  useEffect(() => {
+    if (dashboardData) {
+      if (dashboardData.request && dashboardData.request.stepTwoAnswers) {
+        questionListStepTwo?.forEach(questionList => {
+          questionList.questions.forEach(question => {
+            setValue(question.fieldName, dashboardData.request.stepTwoAnswers[question.fieldName]);
+          });
+        });
+      }
+    }
+  }, [dashboardData, questionListStepTwo, setValue]);
+
   return (
     <Container className="mt-4">
       <>
@@ -138,19 +182,19 @@ const InputsTab = () => {
             <Controller
               control={control}
               name="campaign"
-              rules={{ required: { value: true, message: 'Selecting an answer is required.' }, minLength: 1 }}
-              render={({ field: { onChange, onBlur, ref } }) => (
-                <Select
-                  options={campaignList.map(el => {
-                    return {
-                      value: el.identifier,
-                      label: el.name
-                    };
-                  })}
-                  onBlur={onBlur}
-                  ref={ref}
-                  onChange={el => onChange(el?.value)}
-                />
+              rules={{
+                required: { value: true, message: 'Selecting an answer is required.' },
+                minLength: 1
+              }}
+              render={({ field: { onChange, onBlur, ref, value } }) => (
+                <Form.Select onChange={onChange} ref={ref} value={value} onBlur={onBlur}>
+                  <option>Select...</option>
+                  {campaignList.map(el => (
+                    <option key={el.name} value={el.identifier}>
+                      {el.name}
+                    </option>
+                  ))}
+                </Form.Select>
               )}
             />
             {errors['campaign'] && <Form.Label className="text-danger">{errors['campaign'].message}</Form.Label>}

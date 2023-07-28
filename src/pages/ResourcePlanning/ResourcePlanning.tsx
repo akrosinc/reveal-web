@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Tab, Tabs } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import AuthGuard from '../../components/AuthGuard';
 import PageWrapper from '../../components/PageWrapper';
 import { PLAN_VIEW, RESOURCE_PLANNING_PAGE } from '../../constants';
@@ -43,12 +42,7 @@ const ResourcePlanning = () => {
         className="mb-3"
         activeKey={activeKey}
         onSelect={tabName => {
-          if (tabName !== 'config' && tabName !== 'history' && configValue === undefined) {
-            toast.warning('You need to save config first');
-          } else {
-            navigate(RESOURCE_PLANNING_PAGE + '/' + tabName);
-            setActiveKey(tabName ?? '');
-          }
+          setActiveKey(tabName ?? '');
         }}
       >
         <Tab eventKey="config" title="Config">
@@ -66,7 +60,7 @@ const ResourcePlanning = () => {
             <DashboardTab />
           </AuthGuard>
         </Tab>
-        <Tab eventKey="history" title="History">
+        <Tab eventKey="history" title="History" unmountOnExit={true}>
           <AuthGuard roles={[PLAN_VIEW]}>
             <HistoryTab />
           </AuthGuard>

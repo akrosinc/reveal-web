@@ -35,10 +35,13 @@ const resourcePlanningConfigSlice = createSlice({
     },
     setDashboard: (state, action: PayloadAction<DashboardResource>) => {
       state.dashboardData = action.payload;
+    },
+    removeDashboard: state => {
+      state.dashboardData = undefined;
     }
   }
 });
 
-export const { setConfig, removeConfig, setDashboard } = resourcePlanningConfigSlice.actions;
+export const { setConfig, removeConfig, setDashboard, removeDashboard } = resourcePlanningConfigSlice.actions;
 
 export default resourcePlanningConfigSlice.reducer;

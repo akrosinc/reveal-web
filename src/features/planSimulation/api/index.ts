@@ -1,5 +1,5 @@
 import api from '../../../api/axios';
-import { LOCATION_HIERARCHY } from '../../../constants';
+import { GENERATED_LOCATION_HIERARCHY } from '../../../constants';
 import { EntityTag, LookupEntityType, PersonMeta, PlanningLocationResponse } from '../providers/types';
 import { SimulationCountResponse, SimulationRequestData } from '../components/Simulation';
 import { SaveHierarchyRequest, SaveHierarchyResponse } from '../components/modals/SaveHierarchyModal';
@@ -31,10 +31,13 @@ export const getImportableEntityTags = async (): Promise<EntityTag[]> => {
 
 export const getLocationList = async (
   HierarchyId: string,
+  type: string,
   geographicLevel: string
 ): Promise<{ identifier: string; name: string }[]> => {
   const data = await api
-    .get<{ identifier: string; name: string }[]>(LOCATION_HIERARCHY + `/${HierarchyId}/${geographicLevel}`)
+    .get<{ identifier: string; name: string }[]>(
+      GENERATED_LOCATION_HIERARCHY + `/${HierarchyId}/${type}/${geographicLevel}`
+    )
     .then(res => res.data);
   return data;
 };
@@ -150,7 +153,7 @@ export const getPersonMetadata = async (personId: string): Promise<PersonMeta> =
 
 export const saveHierarchy = async (saveHierarchyRequest: SaveHierarchyRequest): Promise<SaveHierarchyResponse> => {
   const data = await api
-    .post<SaveHierarchyResponse>(`entityTag/saveSimulationHierarchy`, saveHierarchyRequest)
+    .post<SaveHierarchyResponse>(GENERATED_LOCATION_HIERARCHY + `/saveSimulationHierarchy`, saveHierarchyRequest)
     .then(res => res.data);
   return data;
 };

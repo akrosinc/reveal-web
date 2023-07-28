@@ -13,17 +13,25 @@ import { LocationHierarchyModel } from '../../../location/providers/types';
 import { getCountryResource } from '../../api';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { ActionDialog } from '../../../../components/Dialogs';
+import SimulationModal from '../../../planSimulation/components/SimulationModal';
 
 const ConfigTab = () => {
-  const configValue = useSelector((state: RootState) => state.resourceConfig.value);
+  const dashboardData = useSelector((state: RootState) => state.resourceConfig.dashboardData);
+
   const dispatch = useDispatch();
-  const [oldConfig, setOldConfig] = useState<ResourcePlanningConfig | undefined>(configValue);
   const [entityTags, setEntityTags] = useState<EntityTag[]>([]);
   const [selectedHierarchy, setSelectedHierarchy] = useState<LocationHierarchyModel | undefined>();
   const [selectedNodeList, setSelectedNodeList] = useState<string[]>();
   const [countryResourceList, setCountryResourceList] = useState<ResourceCountry[]>([]);
   const [combinedHierarchyList, setCombinedHierarchyList] = useState<LocationHierarchyModel[]>();
+  const [disableResourcePlanName, setDisableResourcePlanName] = useState(false);
   const navigate = useNavigate();
+  const [showStructureTagModal, setShowStructureTagModal] = useState(false);
+  const [showPopulationTagModal, setShowPopulationTagModal] = useState(false);
+
+  const [structureCountTag, setStructureCountTag] = useState<EntityTag>();
+  const [populationCountTag, setPopulationCountTag] = useState<EntityTag>();
 
   const {
     register,
@@ -87,41 +95,104 @@ const ConfigTab = () => {
     );
   }, [selectedHierarchy]);
 
+  useEffect(() => {
+    if (dashboardData && dashboardData.request) {
+      if (dashboardData.request.resourcePlanningConfig) {
+        setValue('country', dashboardData.request.resourcePlanningConfig.country);
+        setValue('hierarchy', dashboardData.request.resourcePlanningConfig.hierarchy);
+        setSelectedHierarchy({
+          name: dashboardData.request.resourcePlanningConfig.hierarchy.label,
+          nodeOrder: dashboardData.request.resourcePlanningConfig.hierarchy.nodeOrder
+            ? dashboardData.request.resourcePlanningConfig.hierarchy.nodeOrder
+            : [],
+          type: dashboardData.request.resourcePlanningConfig.hierarchy.type,
+          identifier: dashboardData.request.resourcePlanningConfig.hierarchy.value
+        });
+        setSelectedNodeList(dashboardData.request.resourcePlanningConfig.hierarchy.nodeOrder);
+        setValue('lowestLocation', dashboardData.request.resourcePlanningConfig.lowestLocation);
+        setValue('populationTag.label', dashboardData.request.resourcePlanningConfig.populationTag.label);
+        setValue('populationTag.value', dashboardData.request.resourcePlanningConfig.populationTag.value);
+        setValue('structureCount', dashboardData.request.resourcePlanningConfig.structureCount);
+        setValue('structureCountTag.label', dashboardData.request.resourcePlanningConfig.structureCountTag.label);
+        setValue('structureCountTag.value', dashboardData.request.resourcePlanningConfig.structureCountTag.value);
+
+        let config: ResourcePlanningConfig = {
+          resourcePlanName: dashboardData.request.name,
+          country: dashboardData.request.resourcePlanningConfig.country,
+          hierarchy: dashboardData.request.resourcePlanningConfig.hierarchy,
+          lowestLocation: dashboardData.request.resourcePlanningConfig.lowestLocation,
+          populationTag: dashboardData.request.resourcePlanningConfig.populationTag,
+          structureCount: dashboardData.request.resourcePlanningConfig.structureCount,
+          structureCountTag: dashboardData.request.resourcePlanningConfig.structureCountTag
+        };
+
+        dispatch(setConfig(config));
+      }
+      setValue('resourcePlanName', dashboardData.request.name);
+      setDisableResourcePlanName(true);
+    }
+  }, [dashboardData, dispatch, setValue]);
+
+  const selectStructureTag = (entityCondition: EntityTag | undefined) => {
+    setStructureCountTag(entityCondition);
+  };
+  const selectPopulationTag = (entityCondition: EntityTag | undefined) => {
+    setPopulationCountTag(entityCondition);
+  };
+
+  const structureTagClickHandler = () => {
+    if (structureCountTag) {
+      setValue('structureCountTag', {
+        label: structureCountTag.tag,
+        value: structureCountTag.identifier
+      });
+    }
+    setShowStructureTagModal(false);
+  };
+
+  const populationTagClickHandler = () => {
+    if (populationCountTag) {
+      setValue('populationTag', {
+        label: populationCountTag.tag,
+        value: populationCountTag.identifier
+      });
+    }
+    setShowPopulationTagModal(false);
+  };
+
+  const getActionDialog = (
+    title: string,
+    selectTag: (entityCondition: EntityTag | undefined) => void,
+    clickHandler: () => void,
+    closeHandler: () => void
+  ) => {
+    return (
+      <ActionDialog
+        closeHandler={() => {
+          closeHandler();
+        }}
+        title={title}
+        element={<SimulationModal selectedEntityCondition={selectTag} entityTags={entityTags} />}
+        footer={
+          <Button
+            onClick={() => {
+              clickHandler();
+            }}
+          >
+            Select
+          </Button>
+        }
+      />
+    );
+  };
+
   return (
     <>
-      {oldConfig && (
-        <div className="bg-warning rounded py-2 px-3">
-          <label>Found old config: </label>
-          <span
-            role="button"
-            className="link-light float-end"
-            onClick={() => {
-              dispatch(setConfig(oldConfig));
-              setValue('country', oldConfig.country);
-              setValue('hierarchy', oldConfig.hierarchy);
-              setValue('lowestLocation', oldConfig.lowestLocation);
-              setValue('populationTag', oldConfig.populationTag);
-              setValue('structureCount', oldConfig.structureCount);
-              setOldConfig(undefined);
-            }}
-          >
-            Apply
-          </span>
-          <span
-            role="button"
-            className="link-danger float-end me-2 me-md-4"
-            onClick={() => {
-              setOldConfig(undefined);
-            }}
-          >
-            Discard
-          </span>
-        </div>
-      )}
       <Form className="container py-2" onSubmit={handleSubmit(submitHandler)}>
         <Form.Group className="mt-2">
           <Form.Label>Resource plan name</Form.Label>
           <Form.Control
+            disabled={disableResourcePlanName}
             placeholder="Enter resource plan name..."
             type="text"
             {...register('resourcePlanName', {
@@ -250,40 +321,22 @@ const ConfigTab = () => {
             </Form.Label>
           )}
         </Form.Group>
-        <Form.Group className="mt-2">
-          <Form.Label>Population Tag</Form.Label>
-          <Controller
-            control={control}
-            name="populationTag"
-            rules={{
-              required: { value: true, message: 'Population tag is required.' },
-              minLength: 1
-            }}
-            render={({ field: { onChange, onBlur, ref, value } }) => (
-              <Select
-                className="custom-react-select-container"
-                classNamePrefix="custom-react-select"
-                menuPosition="fixed"
-                isClearable
-                options={entityTags.map(el => {
-                  return {
-                    value: el.identifier,
-                    label: el.tag
-                  };
-                })}
-                onChange={el => onChange(el)}
-                onBlur={onBlur}
-                ref={ref}
-                value={value}
-              />
-            )}
-          />
-          {errors.populationTag && (
-            <Form.Label className="text-danger mt-2">
-              {errors.populationTag && (errors.populationTag as any).message}
-            </Form.Label>
-          )}
-        </Form.Group>
+
+        {selectedHierarchy && (
+          <Form.Group className="mt-2">
+            <Form.Label>Population Tag</Form.Label>
+
+            <Form.Control
+              placeholder="Enter resource plan name..."
+              type="text"
+              onClick={e => {
+                setShowPopulationTagModal(true);
+              }}
+              {...register('populationTag.label')}
+            />
+          </Form.Group>
+        )}
+
         {selectedHierarchy && selectedHierarchy.type === 'saved' && (
           <Form.Group className="mt-2">
             <Form.Label className="me-3 my-3">Structure count based on imported location?</Form.Label>
@@ -303,46 +356,32 @@ const ConfigTab = () => {
           </Form.Group>
         )}
 
-        {!watch().structureCount && (
+        {!watch().structureCount && selectedHierarchy && (
           <Form.Group className="mt-2">
             <Form.Label>Structure Count Tag</Form.Label>
-            <Controller
-              control={control}
-              name="structureCountTag"
-              rules={{
-                required: { value: true, message: 'Structure Count Tag is required.' },
-                minLength: 1
+
+            <Form.Control
+              placeholder="Enter resource plan name..."
+              type="text"
+              onClick={e => {
+                setShowStructureTagModal(true);
               }}
-              render={({ field: { onChange, onBlur, ref, value } }) => (
-                <Select
-                  className="custom-react-select-container"
-                  classNamePrefix="custom-react-select"
-                  menuPosition="fixed"
-                  isClearable
-                  options={entityTags.map(el => {
-                    return {
-                      value: el.identifier,
-                      label: el.tag
-                    };
-                  })}
-                  onChange={el => onChange(el)}
-                  onBlur={onBlur}
-                  ref={ref}
-                  value={value}
-                />
-              )}
+              {...register('structureCountTag.label')}
             />
-            {errors.structureCountTag && (
-              <Form.Label className="text-danger mt-2">
-                {errors.structureCountTag && (errors.structureCountTag as any).message}
-              </Form.Label>
-            )}
           </Form.Group>
         )}
         <Button className="w-25 my-4 float-end" type="submit">
           Save
         </Button>
       </Form>
+      {showStructureTagModal &&
+        getActionDialog('Structure Tag', selectStructureTag, structureTagClickHandler, () =>
+          setShowStructureTagModal(false)
+        )}
+      {showPopulationTagModal &&
+        getActionDialog('Population Tag', selectPopulationTag, populationTagClickHandler, () =>
+          setShowPopulationTagModal(false)
+        )}
     </>
   );
 };
