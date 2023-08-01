@@ -19,9 +19,9 @@ export const LOCATION_PAGE = '/admin/location';
 //ASSIGMENT PAGES
 export const ASSIGNMENT_PAGE = '/plans/assign';
 
-export const SIMULATION_PAGE = '/plans/simulation'
+export const SIMULATION_PAGE = '/plans/simulation';
 
-export const RESOURCE_PLANNING_PAGE = '/plans/resource-planning'
+export const RESOURCE_PLANNING_PAGE = '/plans/resource-planning';
 
 //REPORTING PAGES
 export const REPORTING_PAGE = '/reports';
@@ -29,3 +29,5 @@ export const REPORTING_PAGE = '/reports';
 export const TAG_MANAGEMENT = '/admin/tag-management';
 
 export const METADATA_IMPORT = '/admin/metadata-import';
+
+export const DATA_PROCESSING_PROGRESS = '/admin/kafka-messaging';

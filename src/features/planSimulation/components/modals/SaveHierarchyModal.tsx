@@ -49,6 +49,7 @@ export interface SaveHierarchyRequest {
 export interface SaveHierarchyResponse {
   identifier: string;
   name: string;
+  type: string;
   nodeOrder: string[];
 }
 
@@ -156,6 +157,7 @@ const SaveHierarchyModal = ({
 
           updateHierarchyLists({
             name: data.name,
+            type: data.type,
             identifier: data.identifier,
             nodeOrder: data.nodeOrder
           });

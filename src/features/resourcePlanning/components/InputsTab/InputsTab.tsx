@@ -71,9 +71,11 @@ const InputsTab = () => {
           countBasedOnImportedLocations: configValue.structureCount,
           locationHierarchy: {
             identifier: configValue.hierarchy.value,
+            name: configValue.hierarchy.label,
             type: configValue.hierarchy.type,
             nodeOrder: configValue.hierarchy.nodeOrder
           },
+
           lowestGeography: configValue.lowestLocation.value,
           populationTag: configValue.populationTag.value,
           structureCountTag: configValue.structureCountTag ? configValue.structureCountTag.value : undefined,

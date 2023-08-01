@@ -7,7 +7,7 @@ import { removeConfig, setConfig } from '../../../reducers/resourcePlanningConfi
 import { ResourceCountry, ResourcePlanningConfig } from '../../providers/types';
 import Select from 'react-select';
 import { getDataAssociatedEntityTags } from '../../../planSimulation/api';
-import { EntityTag } from '../../../planSimulation/providers/types';
+import { EntityTag, HierarchyType } from '../../../planSimulation/providers/types';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../../location/api';
 import { LocationHierarchyModel } from '../../../location/providers/types';
 import { getCountryResource } from '../../api';
@@ -76,7 +76,7 @@ const ConfigTab = () => {
             identifier: generatedHierarchy.identifier,
             name: generatedHierarchy.name,
             nodeOrder: generatedHierarchy.nodeOrder,
-            type: 'generated'
+            type: HierarchyType.GENERATED
           };
         });
 
@@ -85,7 +85,7 @@ const ConfigTab = () => {
             identifier: savedHierarchy.identifier,
             name: savedHierarchy.name,
             nodeOrder: savedHierarchy.nodeOrder,
-            type: 'saved'
+            type: HierarchyType.SAVED
           };
         });
 
@@ -337,7 +337,7 @@ const ConfigTab = () => {
           </Form.Group>
         )}
 
-        {selectedHierarchy && selectedHierarchy.type === 'saved' && (
+        {selectedHierarchy && selectedHierarchy.type === HierarchyType.SAVED && (
           <Form.Group className="mt-2">
             <Form.Label className="me-3 my-3">Structure count based on imported location?</Form.Label>
             <Form.Check

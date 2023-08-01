@@ -20,7 +20,8 @@
     "Simulation": "Simulation",
     "TagManagement": "Tag Management",
     "MetaDataImport": "Metadata Import",
-    "Resource Planning": "Resource Planning"
+    "Resource Planning": "Resource Planning",
+    "dataProcessingProgress":"Data Processing Progress"
   },
   "publicPage": {
     "supportedBy": "supported by",

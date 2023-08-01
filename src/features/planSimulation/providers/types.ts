@@ -1,6 +1,11 @@
 import { Feature, MultiPolygon, Polygon, Properties, Point } from '@turf/turf';
 import { LngLatBounds } from 'mapbox-gl';
 
+export enum HierarchyType {
+  GENERATED = 'generated',
+  SAVED = 'saved'
+}
+
 export interface EntityTag {
   identifier: string;
   tag: string;

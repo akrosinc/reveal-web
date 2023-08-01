@@ -21,6 +21,7 @@ import {
 } from '../api';
 import {
   EntityTag,
+  HierarchyType,
   LocationMetadataObj,
   Metadata,
   MetadataDefinition,
@@ -156,7 +157,7 @@ const Simulation = () => {
             identifier: generatedHierarchy.identifier,
             name: generatedHierarchy.name,
             nodeOrder: generatedHierarchy.nodeOrder,
-            type: 'generated'
+            type: HierarchyType.GENERATED
           };
         });
 
@@ -165,7 +166,7 @@ const Simulation = () => {
             identifier: savedHierarchy.identifier,
             name: savedHierarchy.name,
             nodeOrder: savedHierarchy.nodeOrder,
-            type: 'saved'
+            type: HierarchyType.SAVED
           };
         });
 

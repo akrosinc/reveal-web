@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import {
   ASSIGNMENT_PAGE,
   HOME_PAGE,
+  DATA_PROCESSING_PROGRESS,
   LOCATION_PAGE,
   MANAGEMENT,
   METADATA_IMPORT,
@@ -25,6 +26,7 @@ import PlanSimulation from '../pages/PlanSimulationPage';
 import TagManagement from '../pages/TagManagement';
 import MetaDataImport from '../pages/MetaDataImport';
 import ResourcePlanning from '../pages/ResourcePlanning';
+import DataProcessingProgress from '../features/technical/components/DataProcessingProgress';
 
 const Router = () => {
   const { keycloak, initialized } = useKeycloak();
@@ -46,6 +48,7 @@ const Router = () => {
           <Route path={REPORTING_PAGE + '/*'} element={<Reporting />} />
           <Route path={SIMULATION_PAGE + '/*'} element={<PlanSimulation />} />
           <Route path={TAG_MANAGEMENT + '/*'} element={<TagManagement />} />
+          <Route path={DATA_PROCESSING_PROGRESS + '/*'} element={<DataProcessingProgress />} />
           <Route path={METADATA_IMPORT + '/*'} element={<MetaDataImport />}>
             <Route path=":tab" element={<MetaDataImport />} />
           </Route>
@@ -66,6 +69,6 @@ const Router = () => {
   } else {
     return null;
   }
-}
+};
 
 export default Router;

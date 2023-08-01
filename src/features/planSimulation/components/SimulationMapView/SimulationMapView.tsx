@@ -50,6 +50,14 @@ interface PlanningLocationResponseGeoContainer {
   data: PlanningLocationResponse;
 }
 
+const lineParameters: any = {
+  country: { col: 'red', num: 1, offset: 2.2 },
+  county: { col: 'blue', num: 1, offset: 2 },
+  subcounty: { col: 'darkblue', num: 1, offset: 1.8 },
+  ward: { col: 'yellow', num: 1, offset: 1.5 },
+  catchment: { col: 'purple', num: 1, offset: 1 }
+};
+
 const SimulationMapView = ({
   fullScreenHandler,
   fullScreen,
@@ -106,6 +114,14 @@ const SimulationMapView = ({
 
   const [heatMapRadius, setHeatmapRadius] = useState(INITIAL_HEAT_MAP_RADIUS);
   const [heatMapOpacity, setHeatMapOpacity] = useState(INITIAL_HEAT_MAP_OPACITY);
+
+  const getLineParameters = (level: string) => {
+    if (lineParameters[level]) {
+      return lineParameters[level];
+    } else {
+      return { col: 'black', num: 1, offset: 1 };
+    }
+  };
 
   useEffect(() => {
     if (map.current) return;
@@ -259,8 +275,9 @@ const SimulationMapView = ({
                     type: 'line',
                     source: geo,
                     paint: {
-                      'line-color': 'black',
-                      'line-width': 4
+                      'line-color': getLineParameters(geo).col,
+                      'line-width': getLineParameters(geo).num,
+                      'line-offset': getLineParameters(geo).offset
                     }
                   },
                   'label-layer'
@@ -730,7 +747,7 @@ const SimulationMapView = ({
               } else {
                 percentage = element.value / tagStats.max[tag];
               }
-              feature.properties[percentageField] = percentage;
+              feature.properties[percentageField] = percentage * 0.8;
 
               feature.properties.selectedTagValueMin = tagStats.min[tag];
               feature.properties.selectedTagValueMax = tagStats.max[tag];

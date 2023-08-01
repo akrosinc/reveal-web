@@ -76,6 +76,13 @@ export const getGeneratedLocationHierarchyList = async (): Promise<LocationHiera
   return data;
 };
 
+export const getGenericHierarchyById = async (id: string, type?: string): Promise<LocationHierarchyModel> => {
+  const data = await api
+    .get<LocationHierarchyModel>(GENERATED_LOCATION_HIERARCHY + '/simulationHierarchy/' + id + '/' + type)
+    .then(response => response.data);
+  return data;
+};
+
 export const getHierarchyById = async (id: string): Promise<LocationHierarchyModel> => {
   const data = await api.get<LocationHierarchyModel>(LOCATION_HIERARCHY + `/${id}`).then(response => response.data);
   return data;

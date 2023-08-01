@@ -13,7 +13,8 @@ import {
   METADATA_IMPORT,
   PLAN_MANAGEMENT,
   REVEAL_MANAGE,
-  RESOURCE_PLANNING_PAGE
+  RESOURCE_PLANNING_PAGE,
+  DATA_PROCESSING_PROGRESS
 } from '../../../constants';
 
 export const MAIN_MENU = [
@@ -94,6 +95,11 @@ export const MAIN_MENU = [
       {
         pageTitle: 'MetaDataImport',
         route: METADATA_IMPORT,
+        roles: ['metadata_import']
+      },
+      {
+        pageTitle: 'dataProcessingProgress',
+        route: DATA_PROCESSING_PROGRESS,
         roles: ['metadata_import']
       }
     ]

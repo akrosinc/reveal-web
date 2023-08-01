@@ -69,6 +69,7 @@ export interface ResourceDashboardRequest {
   locationHierarchy: {
     identifier: string;
     nodeOrder?: string[];
+    name?: string;
     type?: string;
   };
   lowestGeography?: string;

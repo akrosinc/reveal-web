@@ -5,7 +5,7 @@ import Paginator from '../../../../components/Pagination';
 import DefaultTable from '../../../../components/Table/DefaultTable';
 import { PAGINATION_DEFAULT_SIZE, RESOURCE_PLANNING_HISTORY_TABLE_COLUMNS } from '../../../../constants';
 import { useAppDispatch } from '../../../../store/hooks';
-import { getHierarchyById } from '../../../location/api';
+import { getGenericHierarchyById } from '../../../location/api';
 import { setConfig, setDashboard } from '../../../reducers/resourcePlanningConfig';
 import { getResourceDashboard, getResourceHistory, getResourceHistoryById } from '../../api';
 import { ResourcePlanningHistory } from '../../providers/types';
@@ -41,7 +41,7 @@ const HistoryTab = () => {
 
   const loadHistoryHandler = (id: string) => {
     getResourceHistoryById(id).then(res => {
-      getHierarchyById(res.locationHierarchy.identifier).then(hierarchyList => {
+      getGenericHierarchyById(res.locationHierarchy.identifier, res.locationHierarchy.type).then(hierarchyList => {
         const allowedPath: string[] = [];
         hierarchyList.nodeOrder.some(el => {
           if (el === res.lowestGeography) {
