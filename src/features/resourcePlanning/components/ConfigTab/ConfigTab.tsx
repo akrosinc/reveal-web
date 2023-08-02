@@ -3,7 +3,7 @@ import { Button, Form } from 'react-bootstrap';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../../store/store';
-import { removeConfig, setConfig } from '../../../reducers/resourcePlanningConfig';
+import { removeConfig, removeDashboard, setConfig } from '../../../reducers/resourcePlanningConfig';
 import { ResourceCountry, ResourcePlanningConfig } from '../../providers/types';
 import Select from 'react-select';
 import { getDataAssociatedEntityTags } from '../../../planSimulation/api';
@@ -26,6 +26,7 @@ const ConfigTab = () => {
   const [countryResourceList, setCountryResourceList] = useState<ResourceCountry[]>([]);
   const [combinedHierarchyList, setCombinedHierarchyList] = useState<LocationHierarchyModel[]>();
   const [disableResourcePlanName, setDisableResourcePlanName] = useState(false);
+  const [countrySubmitted, setCountrySubmitted] = useState(false);
   const navigate = useNavigate();
   const [showStructureTagModal, setShowStructureTagModal] = useState(false);
   const [showPopulationTagModal, setShowPopulationTagModal] = useState(false);
@@ -40,25 +41,36 @@ const ConfigTab = () => {
     control,
     setValue,
     resetField,
+    reset,
     watch
   } = useForm<ResourcePlanningConfig>();
 
-  useEffect(() => {
-    dispatch(removeConfig());
-  }, [dispatch]);
-
   const submitHandler = (form: any) => {
-    navigate('/plans/resource-planning/inputs', {
+    const options = {
       state: {
         shouldReset: true
       }
-    });
+    };
+    navigate('/plans/resource-planning/inputs', !countrySubmitted ? options : {});
+    setCountrySubmitted(true);
     dispatch(setConfig(form));
   };
 
   useEffect(() => {
-    getCountryResource().then(res => setCountryResourceList(res));
+    getCountryResource().then(res => {
+      setCountryResourceList(res);
+    });
   }, []);
+
+  useEffect(() => {
+    if (countryResourceList.length === 1) {
+      setValue('country', {
+        label: countryResourceList[0].name,
+        value: countryResourceList[0].identifier,
+        ageGroups: countryResourceList[0].ageGroups
+      });
+    }
+  }, [countryResourceList, setValue]);
 
   useEffect(() => {
     if (selectedHierarchy && selectedHierarchy.identifier) {
@@ -97,38 +109,42 @@ const ConfigTab = () => {
 
   useEffect(() => {
     if (dashboardData && dashboardData.request) {
-      if (dashboardData.request.resourcePlanningConfig) {
-        setValue('country', dashboardData.request.resourcePlanningConfig.country);
-        setValue('hierarchy', dashboardData.request.resourcePlanningConfig.hierarchy);
-        setSelectedHierarchy({
-          name: dashboardData.request.resourcePlanningConfig.hierarchy.label,
-          nodeOrder: dashboardData.request.resourcePlanningConfig.hierarchy.nodeOrder
-            ? dashboardData.request.resourcePlanningConfig.hierarchy.nodeOrder
-            : [],
-          type: dashboardData.request.resourcePlanningConfig.hierarchy.type,
-          identifier: dashboardData.request.resourcePlanningConfig.hierarchy.value
+      if (dashboardData.request.country) {
+        setValue('country', {
+          label: dashboardData.request.country.name,
+          value: dashboardData.request.country.identifier,
+          ageGroups: dashboardData.request.country.ageGroups
         });
-        setSelectedNodeList(dashboardData.request.resourcePlanningConfig.hierarchy.nodeOrder);
-        setValue('lowestLocation', dashboardData.request.resourcePlanningConfig.lowestLocation);
-        setValue('populationTag.label', dashboardData.request.resourcePlanningConfig.populationTag.label);
-        setValue('populationTag.value', dashboardData.request.resourcePlanningConfig.populationTag.value);
-        setValue('structureCount', dashboardData.request.resourcePlanningConfig.structureCount);
-        setValue('structureCountTag.label', dashboardData.request.resourcePlanningConfig.structureCountTag.label);
-        setValue('structureCountTag.value', dashboardData.request.resourcePlanningConfig.structureCountTag.value);
+        setCountrySubmitted(true);
+        setValue('hierarchy', {
+          label: dashboardData.request.locationHierarchy.name,
+          value: dashboardData.request.locationHierarchy.identifier,
+          type: dashboardData.request.locationHierarchy.type,
+          nodeOrder: dashboardData.request.locationHierarchy.nodeOrder
+        });
+        setSelectedHierarchy(dashboardData.request.locationHierarchy);
+        setSelectedNodeList(dashboardData.request.locationHierarchy.nodeOrder);
+        if (dashboardData.request.lowestGeography) {
+          setValue('lowestGeography', {
+            label: dashboardData.request.lowestGeography,
+            value: dashboardData.request.lowestGeography
+          });
+        }
 
-        let config: ResourcePlanningConfig = {
-          resourcePlanName: dashboardData.request.name,
-          country: dashboardData.request.resourcePlanningConfig.country,
-          hierarchy: dashboardData.request.resourcePlanningConfig.hierarchy,
-          lowestLocation: dashboardData.request.resourcePlanningConfig.lowestLocation,
-          populationTag: dashboardData.request.resourcePlanningConfig.populationTag,
-          structureCount: dashboardData.request.resourcePlanningConfig.structureCount,
-          structureCountTag: dashboardData.request.resourcePlanningConfig.structureCountTag
-        };
+        setValue('populationTag', {
+          label: dashboardData.request.populationTag.name,
+          value: dashboardData.request.populationTag.identifier
+        });
+        setValue('structureCountTag', {
+          label: dashboardData.request.structureCountTag.name,
+          value: dashboardData.request.structureCountTag.identifier
+        });
 
-        dispatch(setConfig(config));
+        setValue('countBasedOnImportedLocations', dashboardData.request.countBasedOnImportedLocations);
       }
       setValue('resourcePlanName', dashboardData.request.name);
+      setValue('baseName', dashboardData.request.baseName);
+
       setDisableResourcePlanName(true);
     }
   }, [dashboardData, dispatch, setValue]);
@@ -224,7 +240,10 @@ const ConfigTab = () => {
                     ageGroups: el.ageGroups
                   };
                 })}
-                onChange={el => onChange(el)}
+                onChange={el => {
+                  onChange(el);
+                  setCountrySubmitted(false);
+                }}
                 onBlur={onBlur}
                 ref={ref}
                 value={value}
@@ -260,7 +279,7 @@ const ConfigTab = () => {
                 })}
                 onChange={el => {
                   onChange(el);
-                  resetField('lowestLocation');
+                  resetField('lowestGeography');
                   setSelectedNodeList(
                     combinedHierarchyList?.find(hierarchy => hierarchy.identifier === el?.value)?.nodeOrder
                   );
@@ -271,7 +290,7 @@ const ConfigTab = () => {
                       type: el.type,
                       identifier: el.value
                     });
-                    setValue('structureCount', false);
+                    setValue('countBasedOnImportedLocations', false);
                   }
                 }}
                 onBlur={onBlur}
@@ -290,7 +309,7 @@ const ConfigTab = () => {
           <Form.Label>Lowest Geography</Form.Label>
           <Controller
             control={control}
-            name="lowestLocation"
+            name="lowestGeography"
             rules={{
               required: { value: true, message: 'Select hierarchy first.' },
               minLength: 1
@@ -329,11 +348,16 @@ const ConfigTab = () => {
             <Form.Control
               placeholder="Enter resource plan name..."
               type="text"
-              onClick={e => {
+              onClick={_ => {
                 setShowPopulationTagModal(true);
               }}
-              {...register('populationTag.label')}
+              {...register('populationTag.label', { required: { value: true, message: 'Select population tag.' } })}
             />
+            {errors.populationTag?.label && (
+              <Form.Label className="text-danger mt-2">
+                {errors.populationTag?.label && (errors.populationTag?.label as any).message}
+              </Form.Label>
+            )}
           </Form.Group>
         )}
 
@@ -342,35 +366,53 @@ const ConfigTab = () => {
             <Form.Label className="me-3 my-3">Structure count based on imported location?</Form.Label>
             <Form.Check
               inline
-              {...register('structureCount', {
+              {...register('countBasedOnImportedLocations', {
                 onChange: _ => {
                   resetField('structureCountTag');
                 }
               })}
             />
-            {errors.structureCount && (
+            {errors.countBasedOnImportedLocations && (
               <Form.Label className="text-danger mt-2">
-                {errors.structureCount && (errors.structureCount as any).message}
+                {errors.countBasedOnImportedLocations && (errors.countBasedOnImportedLocations as any).message}
               </Form.Label>
             )}
           </Form.Group>
         )}
 
-        {!watch().structureCount && selectedHierarchy && (
+        {!watch().countBasedOnImportedLocations && selectedHierarchy && (
           <Form.Group className="mt-2">
             <Form.Label>Structure Count Tag</Form.Label>
 
             <Form.Control
               placeholder="Enter resource plan name..."
               type="text"
-              onClick={e => {
+              onClick={_ => {
                 setShowStructureTagModal(true);
               }}
-              {...register('structureCountTag.label')}
+              {...register('structureCountTag.label', {
+                required: { value: true, message: 'Select structure count tag.' }
+              })}
             />
+            {errors.structureCountTag?.label && (
+              <Form.Label className="text-danger mt-2">
+                {errors.structureCountTag?.label && (errors.structureCountTag?.label as any).message}
+              </Form.Label>
+            )}
           </Form.Group>
         )}
-        <Button className="w-25 my-4 float-end" type="submit">
+        <Button
+          className="w-25 my-4 mx-2 float-end"
+          onClick={() => {
+            reset();
+            dispatch(removeConfig());
+            dispatch(removeDashboard());
+            setDisableResourcePlanName(false);
+          }}
+        >
+          Clear
+        </Button>
+        <Button className="w-25 my-4 mx-2 float-end" type="submit">
           Save
         </Button>
       </Form>

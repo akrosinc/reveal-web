@@ -2,11 +2,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Col, Container, Row } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
-import ResourcePlanningTable from '../../../../components/Table/ResourcePlanningTable';
 import { RootState } from '../../../../store/store';
 import { getResourceDashboard, submitDashboard } from '../../api';
 import { ResourceDashboardRequest } from '../../providers/types';
 import { toast } from 'react-toastify';
+import ResourcePlanningTable from '../../../../components/Table/ResourcePlanningTable';
 
 const DashboardTab = () => {
   const dashboardData = useSelector((state: RootState) => state.resourceConfig.dashboardData);
@@ -14,6 +14,7 @@ const DashboardTab = () => {
   const [tableData, setTableData] = useState<any>();
   const [path, setPath] = useState<string[]>([]);
   const [currentLevel, setCurrentLevel] = useState<string | undefined>('');
+  const [dataSubmitted, setDataSubmitted] = useState(false);
 
   const tableColumns = useMemo(() => {
     return columns.map(el => {
@@ -26,20 +27,24 @@ const DashboardTab = () => {
   }, [columns]);
 
   useEffect(() => {
-    if (dashboardData && dashboardData.response.length) {
-      setPath(dashboardData.path);
-      setCurrentLevel(dashboardData.request?.lowestGeography);
-      const cols = ['name', ...Object.keys(dashboardData.response[0].columnDataMap)];
-      setColumns(cols);
-      setTableData(
-        dashboardData.response.map(el => {
-          return {
-            ...el.columnDataMap,
-            name: el.name,
-            id: el.identifier
-          };
-        })
-      );
+    if (dashboardData) {
+      if (dashboardData && dashboardData.response.length) {
+        setPath(dashboardData.path);
+        setCurrentLevel(dashboardData.request?.lowestGeography);
+        const cols = ['name', ...Object.keys(dashboardData.response[0].columnDataMap)];
+        setColumns(cols);
+        setTableData(
+          dashboardData.response.map(el => {
+            return {
+              ...el.columnDataMap,
+              name: el.name,
+              id: el.identifier
+            };
+          })
+        );
+      }
+    } else {
+      setTableData(undefined);
     }
   }, [dashboardData]);
 
@@ -66,13 +71,14 @@ const DashboardTab = () => {
   const submitDashboardData = () => {
     if (dashboardData && dashboardData.request) {
       let newRequest: ResourceDashboardRequest = {
-        baseName: dashboardData.request.name,
+        baseName: dashboardData.request.baseName,
         name: dashboardData.request.name,
         country: dashboardData.request.country,
         campaign: dashboardData.request.campaign,
         locationHierarchy: {
           identifier: dashboardData.request.locationHierarchy.identifier,
           nodeOrder: dashboardData.request.locationHierarchy.nodeOrder,
+          name: dashboardData.request.locationHierarchy.name,
           type: dashboardData.request.locationHierarchy.type
         },
         lowestGeography: path[path.length - 1],
@@ -81,8 +87,10 @@ const DashboardTab = () => {
         countBasedOnImportedLocations: dashboardData.request.countBasedOnImportedLocations,
         stepOneAnswers: dashboardData.request.stepOneAnswers,
         stepTwoAnswers: dashboardData.request.stepTwoAnswers,
-        minimalAgeGroup: dashboardData.request.minimalAgeGroup
+        minimalAgeGroup: dashboardData.request.minimalAgeGroup,
+        dataSubmittedToSimulation: true
       };
+      setDataSubmitted(true);
       submitDashboard(newRequest).then(_ => toast.success('saved data'));
     }
   };
@@ -115,9 +123,18 @@ const DashboardTab = () => {
             </p>
           </Col>
           <Col>
-            <Button variant={'primary'} className={'float-end position-relative'} onClick={() => submitDashboardData()}>
-              Save Data
-            </Button>
+            {!dataSubmitted &&
+              dashboardData &&
+              dashboardData.request &&
+              !dashboardData.request.dataSubmittedToSimulation && (
+                <Button
+                  variant={'primary'}
+                  className={'float-end position-relative'}
+                  onClick={() => submitDashboardData()}
+                >
+                  Save Data
+                </Button>
+              )}
           </Col>
         </Row>
       </Container>

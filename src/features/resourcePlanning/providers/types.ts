@@ -1,10 +1,13 @@
+import { LocationHierarchyModel } from '../../location/providers/types';
+
 export interface ResourcePlanningConfig {
+  baseName: string;
   resourcePlanName: string;
   country: { label: string; value: string; ageGroups: AgeGroups[] };
-  hierarchy: { label: string; value: string; type?: string; nodeOrder?: string[] };
-  lowestLocation: { label: string; value: string };
+  hierarchy: { label: string; value: string; type: string; nodeOrder: string[] };
+  lowestGeography: { label: string; value: string };
   populationTag: { label: string; value: string };
-  structureCount: boolean;
+  countBasedOnImportedLocations: boolean;
   structureCountTag: { label: string; value: string };
 }
 
@@ -64,24 +67,19 @@ interface SkipPattern {
 export interface ResourceDashboardRequest {
   name: string;
   baseName: string;
-  country: string;
+  country: ResourceCountry;
   campaign: string;
-  locationHierarchy: {
-    identifier: string;
-    nodeOrder?: string[];
-    name?: string;
-    type?: string;
-  };
-  lowestGeography?: string;
-  populationTag: string;
-  structureCountTag: string | undefined;
+  locationHierarchy: LocationHierarchyModel;
+  lowestGeography: string;
+  populationTag: { identifier: string; name: string };
+  structureCountTag: { identifier: string; name: string };
   countBasedOnImportedLocations: boolean;
   stepOneAnswers: any;
   stepTwoAnswers: any;
   minimalAgeGroup: string;
-  resourcePlanningConfig?: ResourcePlanningConfig;
   questionsOne?: ResourceQuestion[];
   questionsTwo?: ResourceQuestionStepTwo[];
+  dataSubmittedToSimulation: boolean;
 }
 
 export interface ResourceDashboardResponse {

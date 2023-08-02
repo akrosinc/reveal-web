@@ -7,7 +7,7 @@ import { PAGINATION_DEFAULT_SIZE, RESOURCE_PLANNING_HISTORY_TABLE_COLUMNS } from
 import { useAppDispatch } from '../../../../store/hooks';
 import { getGenericHierarchyById } from '../../../location/api';
 import { setConfig, setDashboard } from '../../../reducers/resourcePlanningConfig';
-import { getResourceDashboard, getResourceHistory, getResourceHistoryById } from '../../api';
+import { getResourceDashboard, getResourceHistory, getResourceHistoryIncrementedCopyById } from '../../api';
 import { ResourcePlanningHistory } from '../../providers/types';
 
 const HistoryTab = () => {
@@ -40,7 +40,7 @@ const HistoryTab = () => {
   };
 
   const loadHistoryHandler = (id: string) => {
-    getResourceHistoryById(id).then(res => {
+    getResourceHistoryIncrementedCopyById(id).then(res => {
       getGenericHierarchyById(res.locationHierarchy.identifier, res.locationHierarchy.type).then(hierarchyList => {
         const allowedPath: string[] = [];
         hierarchyList.nodeOrder.some(el => {
@@ -52,7 +52,7 @@ const HistoryTab = () => {
           }
           return false;
         });
-        res.lowestGeography = hierarchyList.nodeOrder.length ? hierarchyList.nodeOrder[0] : res.lowestGeography;
+
         getResourceDashboard(res).then(dashboardData => {
           dispatch(
             setDashboard({
@@ -61,8 +61,37 @@ const HistoryTab = () => {
               path: allowedPath
             })
           );
-          if (res.resourcePlanningConfig) {
-            dispatch(setConfig(res.resourcePlanningConfig));
+          if (res) {
+            dispatch(
+              setConfig({
+                resourcePlanName: res.name,
+                baseName: res.baseName,
+                country: {
+                  label: res.country.name,
+                  value: res.country.identifier,
+                  ageGroups: res.country.ageGroups
+                },
+                hierarchy: {
+                  label: res.locationHierarchy.name,
+                  value: res.locationHierarchy.identifier,
+                  nodeOrder: res.locationHierarchy.nodeOrder,
+                  type: res.locationHierarchy.type
+                },
+                lowestGeography: {
+                  label: res.lowestGeography,
+                  value: res.lowestGeography
+                },
+                populationTag: {
+                  label: res.populationTag.name,
+                  value: res.populationTag.identifier
+                },
+                countBasedOnImportedLocations: res.countBasedOnImportedLocations,
+                structureCountTag: {
+                  label: res.structureCountTag.name,
+                  value: res.structureCountTag.identifier
+                }
+              })
+            );
           }
           navigate('dashboard');
         });

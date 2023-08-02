@@ -25,8 +25,8 @@ const DataProcessingProgress = () => {
           <Col>
             <Table hover responsive bordered variant={isDarkMode ? 'dark' : 'white'}>
               <thead className="border border-2">
-                <td>topics</td>
-                <td>number</td>
+                <td>Process</td>
+                <td>Outstanding Items</td>
               </thead>
               <tbody>
                 {topics &&

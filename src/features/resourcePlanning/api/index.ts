@@ -75,3 +75,10 @@ export const getResourceHistoryById = async (id: string): Promise<ResourceDashbo
   const data = await api.get<ResourceDashboardRequest>(`resource-planning/history/${id}`).then(res => res.data);
   return data;
 };
+
+export const getResourceHistoryIncrementedCopyById = async (id: string): Promise<ResourceDashboardRequest> => {
+  const data = await api
+    .get<ResourceDashboardRequest>(`resource-planning/historyIncrementedCopy/${id}`)
+    .then(res => res.data);
+  return data;
+};

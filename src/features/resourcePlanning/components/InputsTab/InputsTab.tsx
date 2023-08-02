@@ -28,6 +28,7 @@ const InputsTab = () => {
   const configValue = useSelector((state: RootState) => state.resourceConfig.value);
   const dashboardData = useSelector((state: RootState) => state.resourceConfig.dashboardData);
   const [campaignList, setCampaignList] = useState<ResourceCampaign[]>([]);
+  const [hasAgeGroupChanged, setHasAgeGroupChanged] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
@@ -63,32 +64,42 @@ const InputsTab = () => {
       });
       if (configValue) {
         const dashboardRequest: ResourceDashboardRequest = {
-          baseName: configValue.resourcePlanName,
+          baseName: configValue.baseName ? configValue.baseName : configValue.resourcePlanName,
           name: configValue.resourcePlanName,
-          country: configValue.country.value,
+          country: {
+            identifier: configValue.country.value,
+            name: configValue.country.label,
+            ageGroups: configValue.country.ageGroups
+          },
           campaign: form.campaign,
           minimalAgeGroup: form.ageGroup,
-          countBasedOnImportedLocations: configValue.structureCount,
+          countBasedOnImportedLocations: configValue.countBasedOnImportedLocations,
           locationHierarchy: {
             identifier: configValue.hierarchy.value,
             name: configValue.hierarchy.label,
             type: configValue.hierarchy.type,
             nodeOrder: configValue.hierarchy.nodeOrder
           },
-
-          lowestGeography: configValue.lowestLocation.value,
-          populationTag: configValue.populationTag.value,
-          structureCountTag: configValue.structureCountTag ? configValue.structureCountTag.value : undefined,
+          lowestGeography: configValue.lowestGeography.value,
+          populationTag: {
+            identifier: configValue.populationTag.value,
+            name: configValue.populationTag.label
+          },
+          structureCountTag: {
+            identifier: configValue.structureCountTag.value,
+            name: configValue.structureCountTag.label
+          },
           stepOneAnswers: Object.fromEntries(stepOneAnswers.entries()),
           stepTwoAnswers: Object.fromEntries(stepTwoAnswers.entries()),
-          resourcePlanningConfig: configValue,
+          // resourcePlanningConfig: configValue,
           questionsOne: questionList,
-          questionsTwo: questionListStepTwo
+          questionsTwo: questionListStepTwo,
+          dataSubmittedToSimulation: false
         };
 
         const allowedPath: string[] = [];
         configValue.hierarchy.nodeOrder?.some(el => {
-          if (el === configValue.lowestLocation.value) {
+          if (el === configValue.lowestGeography.value) {
             allowedPath.push(el);
             return true;
           } else {
@@ -159,8 +170,11 @@ const InputsTab = () => {
         setQuestionListStepTwo(dashboardData.request.questionsTwo);
         setStepTwo(true);
       }
+    } else {
+      reset();
+      setStepTwo(false);
     }
-  }, [dashboardData, setValue]);
+  }, [dashboardData, setValue, reset]);
 
   useEffect(() => {
     if (dashboardData) {
@@ -173,6 +187,12 @@ const InputsTab = () => {
       }
     }
   }, [dashboardData, questionListStepTwo, setValue]);
+
+  useEffect(() => {
+    if (hasAgeGroupChanged) {
+      setQuestionListStepTwo([]);
+    }
+  }, [hasAgeGroupChanged]);
 
   return (
     <Container className="mt-4">
@@ -211,7 +231,13 @@ const InputsTab = () => {
           <hr className="mt-4" />
           <Form.Group>
             <Form.Label>What is the first Age Group targeted with this campaign?</Form.Label>
-            <Form.Select {...register('ageGroup', { required: 'This field is required' })}>
+            <Form.Select
+              {...register('ageGroup', { required: 'This field is required' })}
+              onChange={() => {
+                setHasAgeGroupChanged(true);
+                setStepTwo(false);
+              }}
+            >
               <option>Select...</option>
               {configValue?.country.ageGroups.map(el => (
                 <option key={el.key} value={el.key}>

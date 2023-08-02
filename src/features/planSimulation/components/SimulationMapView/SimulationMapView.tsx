@@ -1049,8 +1049,16 @@ const SimulationMapView = ({
         true &&
         geographicLevelResultLayerIds.filter(geographicLevelResultLayerId => geographicLevelResultLayerId.active)
           .length > 0 && (
-          <div
-            style={{ right: '2%', bottom: '3%', position: 'absolute', zIndex: 2, width: '15%' }}
+          <Container
+            style={{
+              right: '2%',
+              bottom: '3%',
+              position: 'absolute',
+              zIndex: 2,
+              minWidth: '15%',
+              width: '15%',
+              maxWidth: '30%'
+            }}
             className="sidebar-adjust-list text-dark bg-light p-2 rounded"
             onClick={() => setShowStats(!showStats)}
           >
@@ -1063,7 +1071,7 @@ const SimulationMapView = ({
             {showStats &&
               geographicLevelMapStateData.current?.map(stateData => {
                 return (
-                  <p>
+                  <p key={stateData.key}>
                     <b>{stateData.key}:</b> {stateData.data.features.length}
                   </p>
                 );
@@ -1071,16 +1079,20 @@ const SimulationMapView = ({
 
             {showStats &&
               entityTags
+                .filter(entityTag => {
+                  console.log(entityTag);
+                  return true;
+                })
                 .filter(entityTag => entityTag.simulationDisplay)
                 .map(entityTag => {
                   return (
-                    <p>
+                    <p key={entityTag.identifier}>
                       <b>{entityTag.tag}:</b>
                       {stats[entityTag.tag]}
                     </p>
                   );
                 })}
-          </div>
+          </Container>
         )}
 
       <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '95vh' : '75vh', width: '100%' }} />
