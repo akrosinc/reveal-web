@@ -1,4 +1,4 @@
-import { Button, Form, FormGroup, FormLabel, ListGroup } from 'react-bootstrap';
+import { Button, Form, FormGroup, FormLabel, ListGroup, Row } from 'react-bootstrap';
 import React, { useEffect, useState } from 'react';
 import {
   LocationMetadataObj,
@@ -8,7 +8,7 @@ import {
 } from '../../providers/types';
 import { ActionDialog } from '../../../../components/Dialogs';
 import { useTranslation } from 'react-i18next';
-import { SimulationRequestData } from '../Simulation';
+import { MarkedLocation, SimulationRequestData } from '../Simulation';
 import { useForm } from 'react-hook-form';
 import { saveHierarchy } from '../../api';
 import { toast } from 'react-toastify';
@@ -22,6 +22,8 @@ interface Props {
   aggregationSummaryDefinition: MetadataDefinition;
   selectedHierarchy: LocationHierarchyModel | undefined;
   updateHierarchyLists: (locationHierarchy: LocationHierarchyModel) => void;
+  markedLocations: MarkedLocation[];
+  markedParents: Set<string>;
 }
 
 interface FormValues {
@@ -60,7 +62,9 @@ const SaveHierarchyModal = ({
   aggregationSummary,
   selectedHierarchy,
   updateHierarchyLists,
-  aggregationSummaryDefinition
+  aggregationSummaryDefinition,
+  markedLocations,
+  markedParents
 }: Props) => {
   const { t } = useTranslation();
   const {
@@ -69,6 +73,7 @@ const SaveHierarchyModal = ({
     formState: { errors }
   } = useForm<FormValues>();
   const [allTags, setAllTags] = useState<Set<string>>();
+  const [onlySubmitMarked, setOnlySubmitMarked] = useState(false);
 
   useEffect(() => {
     let tags = new Set<string>();
@@ -82,6 +87,12 @@ const SaveHierarchyModal = ({
   const getIdObjectFromParent = (mapdata: PlanningLocationResponseTagged): SaveHierarchyRequestMapData[] => {
     return Object.keys(mapdata.parents)
       .filter(key => mapdata.parents[key] && mapdata.parents[key].properties && mapdata.parents[key].properties != null)
+      .filter(
+        key =>
+          (onlySubmitMarked && markedLocations.map(markedLocation => markedLocation.identifier).includes(key)) ||
+          markedParents.has(key) ||
+          !onlySubmitMarked
+      )
       .map(key => {
         let metadata: Metadata[];
         if (aggregationSummary[key]) {
@@ -184,46 +195,62 @@ const SaveHierarchyModal = ({
       element={
         <>
           <Form>
-            <FormGroup>
-              <FormLabel className="py-3">{t('simulationPage.hierarchyName')}</FormLabel>
-              <Form.Control
-                className="p-3"
-                type={'text'}
-                placeholder={'enter name of hierarchy...'}
-                {...register('name', {
-                  required: 'Hierarchy name must not be empty.',
-                  minLength: {
-                    value: 5,
-                    message: 'min 5 characters long'
-                  },
-                  validate: (value: string) => {
-                    if (value.includes(' ')) {
-                      return 'should not include spaces';
+            <Row className="my-3">
+              <FormGroup>
+                <FormLabel>{t('simulationPage.hierarchyName')}</FormLabel>
+                <Form.Control
+                  type={'text'}
+                  placeholder={'enter name of hierarchy...'}
+                  {...register('name', {
+                    required: 'Hierarchy name must not be empty.',
+                    minLength: {
+                      value: 5,
+                      message: 'min 5 characters long'
+                    },
+                    validate: (value: string) => {
+                      if (value.includes(' ')) {
+                        return 'should not include spaces';
+                      }
+                      return true;
                     }
-                    return true;
-                  }
-                })}
-              />
-              {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
-              <Form.Label className="mt-4">{t('simulationPage.tagsSelected')}</Form.Label>
-
-              {allTags && allTags.size > 0 ? (
-                <ListGroup as="ol">
-                  {Array.from(allTags).map(item => {
-                    return (
-                      <ListGroup.Item as="li" variant="dark" className={'w-50'}>
-                        {item}
-                      </ListGroup.Item>
-                    );
                   })}
-                </ListGroup>
-              ) : (
-                <>
-                  <br />
-                  <Form.Label className="mt-4"> {t('simulationPage.noTagsSelected')}</Form.Label>
-                </>
-              )}
-            </FormGroup>
+                />
+                {errors.name && <Form.Label className="text-danger">{errors.name.message}</Form.Label>}
+              </FormGroup>
+            </Row>
+            <Row className="my-3">
+              <FormGroup>
+                <Form.Check
+                  type="switch"
+                  id="custom-switch"
+                  label="Submit only marked Locations?"
+                  defaultChecked={false}
+                  onChange={e => setOnlySubmitMarked(e.target.checked)}
+                />
+              </FormGroup>
+            </Row>
+
+            <Row className="my-3">
+              <FormGroup>
+                <Form.Label>{t('simulationPage.tagsSelected')}</Form.Label>
+                {allTags && allTags.size > 0 ? (
+                  <ListGroup as="ol">
+                    {Array.from(allTags).map(item => {
+                      return (
+                        <ListGroup.Item as="li" variant="dark" className={'w-50'}>
+                          {item}
+                        </ListGroup.Item>
+                      );
+                    })}
+                  </ListGroup>
+                ) : (
+                  <>
+                    <br />
+                    <Form.Label> {t('simulationPage.noTagsSelected')}</Form.Label>
+                  </>
+                )}
+              </FormGroup>
+            </Row>
           </Form>
         </>
       }

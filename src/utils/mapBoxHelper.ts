@@ -1,17 +1,6 @@
-import {
-  bbox,
-  center,
-  Feature,
-  FeatureCollection,
-  MultiPolygon,
-  Point,
-  pointsWithinPolygon,
-  Polygon,
-  Properties
-} from '@turf/turf';
+import { bbox, center, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
 import mapboxgl, {
   EventData,
-  GeoJSONSource,
   GeolocateControl,
   LngLatBoundsLike,
   Map,
@@ -19,7 +8,6 @@ import mapboxgl, {
   NavigationControl,
   Popup
 } from 'mapbox-gl';
-// import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { MutableRefObject } from 'react';
 import { toast } from 'react-toastify';
 import {
@@ -134,56 +122,17 @@ export const initSimulationMap = (
     mapboxInstance.on('contextmenu', listener);
 
     // let mapboxDraw = new MapboxDraw({
-    //   displayControlsDefault: true
+    //   controls: {
+    //     trash: true,
+    //     polygon: true,
+    //     point: false,
+    //     uncombine_features: false,
+    //     combine_features: false,
+    //     line_string: false
+    //   }
     // });
-
+    //
     // mapboxInstance.addControl(mapboxDraw, 'bottom-left');
-    mapboxInstance.on('mouseover', 'gl-draw-polygon-fill-inactive.hot', e => {
-      let sourceCentres: any = mapboxInstance.getSource('catchment-centers');
-
-      let sourceData: FeatureCollection<Point> = {
-        type: (sourceCentres._data as any)['type'],
-        features: (sourceCentres._data as any)['features']
-        // parents: (sourceCentres._data as any)['parents'],
-        // identifier: undefined
-      };
-
-      e.features?.forEach((feature: any) => {
-        if (feature != null && feature['properties'] && feature['properties']['id']) {
-          let drawFeature: FeatureCollection<Polygon> = {
-            type: 'FeatureCollection',
-            features: [
-              {
-                type: 'Feature',
-                geometry: feature.geometry,
-                properties: null,
-                id: undefined
-              }
-            ]
-          };
-
-          let a = pointsWithinPolygon(sourceData, drawFeature)
-            .features.filter(feature => feature.properties && feature.properties.identifier)
-            .map(feature => feature?.properties?.identifier);
-
-          sourceData.features.forEach(feature => {
-            if (feature.properties && feature.properties.identifier) {
-              if (a.includes(feature.properties.identifier)) {
-                feature.properties['mark'] = true;
-              }
-            }
-          });
-
-          if (mapboxInstance.getSource('catchment-centers')) {
-            (mapboxInstance.getSource('catchment-centers') as GeoJSONSource).setData(sourceData);
-          }
-        }
-      });
-
-      // if (e && e.features) {
-      //   pointsWithinPolygon(e.features, sourceData);
-      // }
-    });
   });
 
   return mapboxInstance;
@@ -279,6 +228,8 @@ export const getFeatureCentresFromLocation = (
           coordinates: [element.properties.xcentroid, element.properties.ycentroid]
         };
       }
+
+      element.properties.ancestry = (element as any).ancestry;
 
       let point: Feature<Point, Properties> = {
         id: element.id,

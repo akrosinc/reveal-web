@@ -123,7 +123,7 @@ const SimulationModal = ({
       {fieldTypes.length > 0 ? (
         <Container fluid className="my-4">
           {fieldTypes.map(fieldType => (
-            <Row>
+            <Row key={fieldType}>
               <Col>
                 <Form.Check
                   className="float-left"

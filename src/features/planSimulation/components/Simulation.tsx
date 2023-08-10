@@ -10,8 +10,8 @@ import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
 import {
-  getEntityList,
   getDataAssociatedEntityTags,
+  getEntityList,
   getEventBasedEntityTags,
   getFullLocationsSSE,
   getLocationList,
@@ -39,7 +39,7 @@ import SimulationModal from './SimulationModal';
 import Select, { MultiValue, SingleValue } from 'react-select';
 import PeopleDetailsModal from './PeopleDetailsModal';
 import { bbox, Feature, MultiPolygon, Point, Polygon } from '@turf/turf';
-import { LngLatBounds } from 'mapbox-gl';
+import { LngLatBounds, Map as MapBoxMap } from 'mapbox-gl';
 
 import SimulationResultExpandingTable from '../../../components/Table/SimulationResultExpandingTable';
 import DownloadSimulationResultsModal from './modals/DownloadSimulationResultsModal';
@@ -84,6 +84,15 @@ export interface SimulationRequestData {
   filterGeographicLevelList: string[] | undefined;
   inactiveGeographicLevelList: string[] | undefined;
   includeInactive: boolean;
+}
+
+export interface MarkedLocation {
+  identifier: string;
+  ancestry: string[] | undefined;
+}
+export interface Children {
+  level: string;
+  childrenList: string[];
 }
 
 const Simulation = () => {
@@ -148,6 +157,11 @@ const Simulation = () => {
   const [aggregationSummaryDefinition, setAggregationSummaryDefinition] = useState<MetadataDefinition>({});
   const [submitSimulationRequestData, setSubmitSimulationRequestData] = useState<SimulationRequestData>();
   const [showSaveHierarchyPanel, setShowSaveHierarchyPanel] = useState(false);
+  const map = useRef<MapBoxMap>();
+  const [markedLocations, setMarkedLocations] = useState<MarkedLocation[]>([]);
+  const [showOnlyMarkedLocations, setShowOnlyMarkedLocations] = useState(false);
+  const [markedParents, setMarkedParents] = useState<Set<string>>(new Set<string>());
+  const [parentChild, setParentChild] = useState<{ [parent: string]: Children }>({});
 
   useEffect(() => {
     Promise.all([getLocationHierarchyList(50, 0, true), getEntityList(), getGeneratedLocationHierarchyList()])
@@ -205,12 +219,64 @@ const Simulation = () => {
     formState: { errors }
   } = useForm();
 
+  const updateMarkedLocations = (identifier: string, ancestry: string[] | undefined, marked: boolean) => {
+    setMarkedLocations(markedLocations => {
+      let newMarkedLocations: MarkedLocation[] = [];
+      // let markedLocationsSet = new Set<string>();
+      //
+      // if (markedLocations) {
+      //   markedLocations.forEach(markedLocation => markedLocationsSet.add(markedLocation.identifier));
+      // }
+
+      if (markedLocations) {
+        markedLocations.forEach(markedLocation => {
+          // if (!markedLocationsSet.has(markedLocation.identifier)) {
+          newMarkedLocations.push({
+            identifier: markedLocation.identifier,
+            ancestry: markedLocation.ancestry
+          });
+          // }
+        });
+        if (!marked) {
+          newMarkedLocations = newMarkedLocations?.filter(markedLocation => markedLocation.identifier !== identifier);
+        } else {
+          if (!newMarkedLocations.map(markedLocation => markedLocation.identifier).includes(identifier)) {
+            newMarkedLocations.push({
+              identifier: identifier,
+              ancestry: ancestry
+            });
+          }
+        }
+      }
+      return newMarkedLocations;
+    });
+  };
+
+  useEffect(() => {
+    if (markedLocations.length > 0) {
+      let newMarkedParents = new Set<string>();
+      markedLocations.forEach(markedLocation => {
+        markedLocation.ancestry?.forEach(ancestor => {
+          if (ancestor !== markedLocation.identifier) {
+            newMarkedParents.add(ancestor);
+          }
+        });
+      });
+      setMarkedParents(newMarkedParents);
+    } else {
+      setMarkedParents(new Set<string>());
+    }
+  }, [markedLocations]);
+
   const submitHandlerCount = (form: any) => {
     setShowResult(false);
     setMapData(undefined);
     setToLocation(undefined);
     setResetMap(true);
     setParentMapData(undefined);
+    setMarkedLocations([]);
+    setMarkedParents(new Set<string>());
+
     levelsLoaded.current = [];
 
     const arr: SubmitValue[] = [];
@@ -538,6 +604,17 @@ const Simulation = () => {
           );
         }
       }
+
+      if (
+        !parent.properties.hasOwnProperty('hasMarkedChild') ||
+        (parent.properties.hasOwnProperty('hasMarkedChild') && !parent.properties.hasMarkedChild)
+      ) {
+        if (lowestLocation.properties != null) {
+          parent.properties.hasMarkedChild = !!(
+            lowestLocation.properties?.mark || lowestLocation.properties?.hasMarkedChild
+          );
+        }
+      }
     }
   };
 
@@ -547,6 +624,26 @@ const Simulation = () => {
 
       if (parent) {
         updateParentAsHasResultOrIsResult(parent, lowestLocation, mapDataClone);
+        setParentChild(parentChild => {
+          let newParentChild = structuredClone(parentChild);
+
+          if (lowestLocation?.identifier) {
+            if (parent.identifier) {
+              if (newParentChild[parent.identifier] && newParentChild[parent.identifier].childrenList.length > 0) {
+                if (!newParentChild[parent.identifier].childrenList.includes(lowestLocation?.identifier)) {
+                  newParentChild[parent.identifier].childrenList.push(lowestLocation?.identifier);
+                }
+              } else {
+                newParentChild[parent.identifier] = {
+                  level: lowestLocation.properties?.geographicLevel,
+                  childrenList: [lowestLocation.identifier]
+                };
+              }
+              newParentChild[parent.identifier].level = lowestLocation.properties?.geographicLevel;
+            }
+          }
+          return newParentChild;
+        });
         getLocationHierarchyFromLowestLocation(parent, mapDataClone);
       }
     },
@@ -603,7 +700,7 @@ const Simulation = () => {
         setHighestLocations(highestLocations);
       }
     }
-  }, [mapData, resultsLoaded, parentsLoaded, getLocationHierarchyFromLowestLocation]);
+  }, [mapData, resultsLoaded, parentsLoaded, getLocationHierarchyFromLowestLocation, markedLocations]);
 
   useEffect(() => {
     if (selectedHierarchy) {
@@ -728,6 +825,8 @@ const Simulation = () => {
 
   return (
     <>
+      {/*{markedLocations &&*/}
+      {/*  markedLocations.map(markedLocation => <p key={markedLocation.identifier}>{markedLocation.identifier}</p>)}*/}
       <Container fluid ref={divRef}>
         <Row>
           {!mapFullScreen && (
@@ -1075,6 +1174,10 @@ const Simulation = () => {
               stats={statsMetadata}
               resultsLoadingState={resultsLoadingState}
               parentsLoadingState={parentsLoadingState}
+              map={map}
+              setMapData={setMapData}
+              updateMarkedLocations={updateMarkedLocations}
+              parentChild={parentChild}
             />
           </Col>
         </Row>
@@ -1101,6 +1204,7 @@ const Simulation = () => {
               <Button className="float-end my-3 ms-2" variant="secondary" onClick={() => setShowUploadModal(true)}>
                 {t('simulationPage.uploadData')}
               </Button>
+
               {highestLocations && showResult && (
                 <>
                   <Button
@@ -1119,9 +1223,18 @@ const Simulation = () => {
                   >
                     {t('simulationPage.downloadData')}
                   </Button>
+
                   <Button className="float-end my-3 " variant="secondary" onClick={clearHandler}>
                     {t('simulationPage.clearAll')}
                   </Button>
+                  <Form.Check
+                    className="float-right my-3 "
+                    type="switch"
+                    id="custom-switch"
+                    label="Show only marked Locations?"
+                    defaultChecked={false}
+                    onChange={e => setShowOnlyMarkedLocations(e.target.checked)}
+                  />
                 </>
               )}
             </Col>
@@ -1134,6 +1247,9 @@ const Simulation = () => {
                   data={highestLocations}
                   detailsClickHandler={showDetailsClickHandler}
                   summaryClickHandler={summaryDetailsClickHandler}
+                  markedLocations={markedLocations}
+                  showOnlyMarkedLocations={showOnlyMarkedLocations}
+                  markedParents={markedParents}
                 />
               )}
             </Col>
@@ -1214,6 +1330,8 @@ const Simulation = () => {
           selectedHierarchy={selectedHierarchy}
           updateHierarchyLists={updateHierarchyLists}
           aggregationSummaryDefinition={aggregationSummaryDefinition}
+          markedLocations={markedLocations}
+          markedParents={markedParents}
         />
       )}
     </>

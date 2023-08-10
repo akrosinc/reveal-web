@@ -1,7 +1,7 @@
-import { Expression, GeoJSONSource, LngLatBounds, Map, Popup } from 'mapbox-gl';
+import { EventData, Expression, GeoJSONSource, LngLatBounds, Map, MapLayerEventType, Popup } from 'mapbox-gl';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Container, Form } from 'react-bootstrap';
+import React, { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { MAPBOX_STYLE_STREETS } from '../../../../constants';
 import {
   disableMapInteractions,
@@ -21,11 +21,13 @@ import {
   PlanningParentLocationResponse,
   RevealFeature
 } from '../../providers/types';
-import { Feature, MultiPolygon, Point, Polygon } from '@turf/turf';
+import { Feature, FeatureCollection, MultiPolygon, Point, pointsWithinPolygon, Polygon } from '@turf/turf';
 import { ColorPicker, useColor } from 'react-color-palette';
 import 'react-color-palette/lib/css/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Stats } from '../Simulation';
+import { Children, Stats } from '../Simulation';
+import ActionDialog from '../../../../components/Dialogs/ActionDialog';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
 
 interface Props {
   fullScreenHandler: () => void;
@@ -43,6 +45,10 @@ interface Props {
   resultsLoadingState: 'notstarted' | 'error' | 'started' | 'complete';
   parentsLoadingState: 'notstarted' | 'error' | 'started' | 'complete';
   stats: Stats;
+  map: MutableRefObject<Map | undefined>;
+  setMapData: (data: PlanningLocationResponseTagged | undefined) => void;
+  updateMarkedLocations: (identifier: string, ancestry: string[], marked: boolean) => void;
+  parentChild: { [parent: string]: Children };
 }
 
 interface PlanningLocationResponseGeoContainer {
@@ -66,21 +72,24 @@ const SimulationMapView = ({
   openModalHandler,
   entityTags,
   parentMapData,
-  setMapDataLoad,
+  setMapData,
   chunkedData,
   updateLevelsLoaded,
   resetMap,
   setResetMap,
   resultsLoadingState,
   parentsLoadingState,
-  stats
+  stats,
+  map,
+  updateMarkedLocations,
+  parentChild
 }: Props) => {
   const INITIAL_HEAT_MAP_RADIUS = 50;
   const INITIAL_HEAT_MAP_OPACITY = 0.2;
   const INITIAL_FILL_COLOR = '#005512';
 
   const mapContainer = useRef<any>();
-  const map = useRef<Map>();
+
   const [lng, setLng] = useState(28.33);
   const [lat, setLat] = useState(-15.44);
   const [zoom, setZoom] = useState(10);
@@ -114,6 +123,11 @@ const SimulationMapView = ({
 
   const [heatMapRadius, setHeatmapRadius] = useState(INITIAL_HEAT_MAP_RADIUS);
   const [heatMapOpacity, setHeatMapOpacity] = useState(INITIAL_HEAT_MAP_OPACITY);
+  const [showMapDrawnModal, setShowMapDrawnModal] = useState(false);
+  const [mapDrawMouseOverEvent, setMapDrawMouseOverEvent] = useState<MapLayerEventType['mouseover'] & EventData>();
+  const mapBoxDraw = useRef<MapboxDraw>();
+  const [drawnMapLevel, setDrawnMapLevel] = useState<string>();
+  const [shouldApplyToChildren, setShouldApplyToChildren] = useState(true);
 
   const getLineParameters = (level: string) => {
     if (lineParameters[level]) {
@@ -141,13 +155,107 @@ const SimulationMapView = ({
         disableMapInteractions(map.current, true);
       }
     }
-  }, [resultsLoadingState, parentsLoadingState]);
+  }, [resultsLoadingState, parentsLoadingState, map]);
+
+  useEffect(() => {
+    console.log('parentChild', parentChild);
+  }, [parentChild]);
+
+  const updateChildrenOfSelectedLocation = useCallback(
+    (identifier: string) => {
+      let children: Children = parentChild[identifier];
+      if (children && children.childrenList) {
+        let sourceCentres: any = map.current?.getSource(children.level + '-centers');
+
+        if (sourceCentres && sourceCentres._data) {
+          let sourceData: FeatureCollection<Point> = {
+            type: (sourceCentres._data as any)['type'],
+            features: (sourceCentres._data as any)['features']
+          };
+
+          sourceData.features.forEach(feature => {
+            if (
+              feature.properties &&
+              feature.properties.identifier &&
+              children.childrenList.includes(feature.properties.identifier)
+            ) {
+              feature.properties['mark'] = true;
+              if (feature.properties.identifier) {
+                updateMarkedLocations(feature.properties.identifier, feature.properties.ancestry, true);
+                updateChildrenOfSelectedLocation(feature.properties.identifier);
+              }
+            }
+          });
+          if (map.current?.getSource(children.level + '-centers')) {
+            (map.current?.getSource(children.level + '-centers') as GeoJSONSource).setData(sourceData);
+          }
+        } else {
+          children.childrenList.forEach(child => updateChildrenOfSelectedLocation(child));
+        }
+      }
+    },
+    [map, parentChild, updateMarkedLocations]
+  );
+
+  const updateSelectedLocations = (e: (MapLayerEventType['mouseover'] & EventData) | undefined) => {
+    if (e) {
+      let sourceCentres: any = map.current?.getSource(drawnMapLevel + '-centers');
+
+      if (sourceCentres && sourceCentres._data) {
+        let sourceData: FeatureCollection<Point> = {
+          type: (sourceCentres._data as any)['type'],
+          features: (sourceCentres._data as any)['features']
+        };
+
+        e.features?.forEach((feature: any) => {
+          if (feature != null && feature['properties'] && feature['properties']['id']) {
+            let drawFeature: FeatureCollection<Polygon> = {
+              type: 'FeatureCollection',
+              features: [
+                {
+                  type: 'Feature',
+                  geometry: feature.geometry,
+                  properties: null,
+                  id: undefined
+                }
+              ]
+            };
+
+            let a = pointsWithinPolygon(sourceData, drawFeature)
+              .features.filter(feature => feature.properties && feature.properties.identifier)
+              .map(feature => feature?.properties?.identifier);
+
+            sourceData.features.forEach(feature => {
+              if (feature.properties && feature.properties.identifier) {
+                if (a.includes(feature.properties.identifier)) {
+                  feature.properties['mark'] = true;
+                  if (feature.properties.identifier) {
+                    updateMarkedLocations(feature.properties.identifier, feature.properties.ancestry, true);
+                    if (shouldApplyToChildren) {
+                      updateChildrenOfSelectedLocation(feature.properties.identifier);
+                    }
+                  }
+                }
+              }
+            });
+
+            if (map.current?.getSource(drawnMapLevel + '-centers')) {
+              (map.current?.getSource(drawnMapLevel + '-centers') as GeoJSONSource).setData(sourceData);
+            }
+          }
+        });
+      }
+      if (mapBoxDraw.current) {
+        mapBoxDraw.current?.deleteAll();
+      }
+    }
+  };
 
   const initializeMap = useCallback(() => {
     map.current = initSimulationMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_STREETS, e => {
       if (map.current) {
         const features = map.current.queryRenderedFeatures(e.point);
-        let filteredfeatures = features.filter(feature => feature.layer.id.includes('-fill'));
+        let filteredfeatures = features.filter(feature => feature.layer.id.endsWith('-fill'));
 
         let filteredfeature = filteredfeatures[0];
 
@@ -178,9 +286,18 @@ const SimulationMapView = ({
               .setHTML(
                 `<h4 class="bg-success text-center">Location Action</h4>
               <div class="m-0 p-0 text-center">
+              <ul>
+              <li>
               <button class="btn btn-primary mx-2 mt-2 mb-4" style="min-width: 200px" id="simulationpopup" >` +
-                  (labelMarked ? `unmark` : `mark`) +
+                  (labelMarked ? `De-Select` : `Select`) +
                   `</button>
+              </li>
+              <li>      
+                <span>Should Selection apply to children locations?</span>       
+                <input type="checkbox" id="updateChildrenWithSelected" checked />
+                </li>
+                </ul>
+              
               <script>        
               </script>
               </div>`
@@ -196,6 +313,15 @@ const SimulationMapView = ({
                     .forEach(feat => {
                       if (feat.properties) {
                         feat.properties['mark'] = !labelMarked;
+                        if (feat.properties.identifier) {
+                          updateMarkedLocations(feat.properties.identifier, feat.properties.ancestry, !labelMarked);
+                          if (
+                            document.getElementById('updateChildrenWithSelected') &&
+                            (document.getElementById('updateChildrenWithSelected') as HTMLInputElement).checked
+                          ) {
+                            updateChildrenOfSelectedLocation(feat.properties.identifier);
+                          }
+                        }
                       }
                     });
 
@@ -211,7 +337,30 @@ const SimulationMapView = ({
         }
       }
     });
-  }, [lng, lat, zoom]);
+
+    mapBoxDraw.current = new MapboxDraw({
+      controls: {
+        trash: true,
+        polygon: true,
+        point: false,
+        uncombine_features: false,
+        combine_features: false,
+        line_string: false
+      }
+    });
+
+    map.current.addControl(mapBoxDraw.current, 'bottom-left');
+
+    map.current?.on('mouseover', 'gl-draw-polygon-fill-inactive.hot', e => {
+      setShowMapDrawnModal(true);
+      // updateSelectedLocations(e);
+      setMapDrawMouseOverEvent(e);
+
+      // if (e && e.features) {
+      //   pointsWithinPolygon(e.features, sourceData);
+      // }
+    });
+  }, [lat, lng, map, updateChildrenOfSelectedLocation, zoom, updateMarkedLocations]);
 
   useEffect(() => {
     if (resetMap) {
@@ -225,7 +374,7 @@ const SimulationMapView = ({
 
   useEffect(() => {
     if (toLocation && map && map.current) map.current?.fitBounds(toLocation);
-  }, [toLocation]);
+  }, [toLocation, map]);
 
   useEffect(() => {
     if (chunkedData) {
@@ -363,10 +512,10 @@ const SimulationMapView = ({
                         'format',
                         ['get', 'name'],
                         {
-                          'font-scale': 0.8,
                           'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']]
                         }
                       ],
+                      'text-size': ['interpolate', ['linear'], ['zoom'], 10, 7, 18, 20],
                       'text-anchor': 'bottom',
                       'text-justify': 'center'
                     },
@@ -564,7 +713,8 @@ const SimulationMapView = ({
     chunkedData,
     openModalHandler,
     updateLevelsLoaded,
-    geographicLevelResultLayerIds
+    geographicLevelResultLayerIds,
+    map
   ]);
 
   useEffect(() => {
@@ -642,7 +792,7 @@ const SimulationMapView = ({
         }
       }
     });
-  }, [selectedHeatMapMetadata, selectedMetadata, geographicLevelResultLayerIds]);
+  }, [selectedHeatMapMetadata, selectedMetadata, geographicLevelResultLayerIds, map]);
 
   useEffect(() => {
     if (map !== undefined && map.current !== undefined) {
@@ -685,36 +835,51 @@ const SimulationMapView = ({
         }
       }
     });
-  }, [color, geographicLevelResultLayerIds]);
+  }, [color, geographicLevelResultLayerIds, map]);
+
+  const showLayer = useCallback(
+    (show: any, layer: string) => {
+      if (map.current?.getLayer(layer.concat('-fill'))) {
+        map.current?.setLayoutProperty(layer.concat('-fill'), 'visibility', show ? 'visible' : 'none');
+        map.current?.setLayoutProperty(layer.concat('-line'), 'visibility', show ? 'visible' : 'none');
+        map.current?.setLayoutProperty(layer.concat('-symbol'), 'visibility', show ? 'visible' : 'none');
+        map.current?.setLayoutProperty(layer.concat('-points'), 'visibility', show ? 'visible' : 'none');
+      }
+    },
+    [map]
+  );
 
   useEffect(() => {
     geographicLevelResultLayerIds.forEach(geographicLevelResultLayerId => {
       showLayer(geographicLevelResultLayerId.active, geographicLevelResultLayerId.layer);
     });
-  }, [geographicLevelResultLayerIds]);
+  }, [geographicLevelResultLayerIds, showLayer]);
 
-  function addParentMapData(filteredData: PlanningParentLocationResponse) {
-    if (map.current) {
-      if (map.current?.getSource(PARENT_SOURCE)) {
-        if (map.current?.getSource(PARENT_SOURCE).type === 'geojson') {
-          (map.current?.getSource(PARENT_SOURCE) as GeoJSONSource).setData(filteredData);
+  const addParentMapData = useCallback(
+    (filteredData: PlanningParentLocationResponse) => {
+      if (map.current) {
+        if (map.current?.getSource(PARENT_SOURCE)) {
+          if (map.current?.getSource(PARENT_SOURCE).type === 'geojson') {
+            (map.current?.getSource(PARENT_SOURCE) as GeoJSONSource).setData(filteredData);
+          }
+        }
+        if (map.current?.getSource(PARENT_LABEL_SOURCE)) {
+          if (map.current?.getSource(PARENT_LABEL_SOURCE).type === 'geojson') {
+            let centers = getFeatureCentresFromLocation(filteredData);
+
+            let centreFeatureCollection: PlanningLocationResponse = {
+              identifier: undefined,
+              features: centers,
+              type: 'FeatureCollection',
+              parents: []
+            };
+            (map.current?.getSource(PARENT_LABEL_SOURCE) as GeoJSONSource).setData(centreFeatureCollection);
+          }
         }
       }
-      if (map.current?.getSource(PARENT_LABEL_SOURCE)) {
-        if (map.current?.getSource(PARENT_LABEL_SOURCE).type === 'geojson') {
-          let centers = getFeatureCentresFromLocation(filteredData);
-
-          let centreFeatureCollection: PlanningLocationResponse = {
-            identifier: undefined,
-            features: centers,
-            type: 'FeatureCollection',
-            parents: []
-          };
-          (map.current?.getSource(PARENT_LABEL_SOURCE) as GeoJSONSource).setData(centreFeatureCollection);
-        }
-      }
-    }
-  }
+    },
+    [map]
+  );
 
   useEffect(() => {
     setParentMapStateData(parentMapData);
@@ -724,7 +889,7 @@ const SimulationMapView = ({
     if (parentMapStateData && parentMapStateData.features.length > 0) {
       addParentMapData(parentMapStateData);
     }
-  }, [parentMapStateData]);
+  }, [parentMapStateData, addParentMapData]);
 
   const updateFeaturesWithTagStats = (
     feature: RevealFeature | Feature<Point | MultiPolygon | Polygon>,
@@ -781,14 +946,11 @@ const SimulationMapView = ({
     return feature;
   };
 
-  const showLayer = (show: any, layer: string) => {
-    if (map.current?.getLayer(layer.concat('-fill'))) {
-      map.current?.setLayoutProperty(layer.concat('-fill'), 'visibility', show ? 'visible' : 'none');
-      map.current?.setLayoutProperty(layer.concat('-line'), 'visibility', show ? 'visible' : 'none');
-      map.current?.setLayoutProperty(layer.concat('-symbol'), 'visibility', show ? 'visible' : 'none');
-      map.current?.setLayoutProperty(layer.concat('-points'), 'visibility', show ? 'visible' : 'none');
+  useEffect(() => {
+    if (geographicLevelResultLayerIds && geographicLevelResultLayerIds.length > 0) {
+      setDrawnMapLevel(geographicLevelResultLayerIds[0].layer);
     }
-  };
+  }, [geographicLevelResultLayerIds]);
 
   return (
     <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
@@ -1079,10 +1241,6 @@ const SimulationMapView = ({
 
             {showStats &&
               entityTags
-                .filter(entityTag => {
-                  console.log(entityTag);
-                  return true;
-                })
                 .filter(entityTag => entityTag.simulationDisplay)
                 .map(entityTag => {
                   return (
@@ -1094,6 +1252,80 @@ const SimulationMapView = ({
                 })}
           </Container>
         )}
+      {showMapDrawnModal && (
+        <ActionDialog
+          closeHandler={() => setShowMapDrawnModal(false)}
+          title={'Selected Locations'}
+          footer={
+            <>
+              <Button
+                onClick={() => {
+                  if (mapBoxDraw.current) {
+                    mapBoxDraw.current?.deleteAll();
+                  }
+                  setShowMapDrawnModal(false);
+                }}
+              >
+                <FontAwesomeIcon className="mx-1" icon="trash" />
+              </Button>
+              <Button
+                onClick={_ => {
+                  updateSelectedLocations(mapDrawMouseOverEvent);
+                  setShowMapDrawnModal(false);
+                }}
+              >
+                update
+              </Button>
+              <Button onClick={() => setShowMapDrawnModal(false)}>close</Button>
+            </>
+          }
+          element={
+            <Container fluid>
+              <Row className="my-3">
+                <Col>
+                  <Form.Group>
+                    <Form.Label>{'Select Level for which the Drawn Polygon to apply to'}</Form.Label>
+
+                    <Form.Select
+                      style={{ display: 'inline-block' }}
+                      onChange={e => {
+                        setDrawnMapLevel(e.target.value);
+                      }}
+                    >
+                      <option key="selectDrawLayer" value={'select layer'}>
+                        {'Select layer...'}
+                      </option>
+                      {geographicLevelResultLayerIds &&
+                        geographicLevelResultLayerIds.map(geographicLevelResultLayerId => {
+                          return (
+                            <option key={geographicLevelResultLayerId.layer} value={geographicLevelResultLayerId.layer}>
+                              {geographicLevelResultLayerId.layer}
+                            </option>
+                          );
+                        })}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="my-3">
+                <Col>
+                  <Form.Group>
+                    <Form.Check
+                      className="float-left"
+                      type="switch"
+                      id="custom-switch"
+                      label="Should the selection apply to children locations?"
+                      defaultChecked={true}
+                      onChange={e => setShouldApplyToChildren(e.target.checked)}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            </Container>
+          }
+          size={'lg'}
+        />
+      )}
 
       <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '95vh' : '75vh', width: '100%' }} />
     </Container>

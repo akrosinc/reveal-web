@@ -10,15 +10,27 @@ import {
 } from '../../constants';
 import { useAppSelector } from '../../store/hooks';
 import { useTranslation } from 'react-i18next';
+import { MarkedLocation } from '../../features/planSimulation/components/Simulation';
 
 interface Props {
   data: any;
   clickHandler: (id: string) => void;
   detailsClickHandler: (id: string) => void;
   summaryClickHandler: (mapData: any) => void;
+  markedLocations: MarkedLocation[];
+  showOnlyMarkedLocations: boolean;
+  markedParents: Set<string>;
 }
 
-const SimulationResultExpandingTable = ({ data, clickHandler, detailsClickHandler, summaryClickHandler }: Props) => {
+const SimulationResultExpandingTable = ({
+  data,
+  clickHandler,
+  detailsClickHandler,
+  summaryClickHandler,
+  markedLocations,
+  showOnlyMarkedLocations,
+  markedParents
+}: Props) => {
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const getColorLevel = (depth: number) => {
@@ -137,84 +149,110 @@ const SimulationResultExpandingTable = ({ data, clickHandler, detailsClickHandle
           return (
             //row.depth is not existing in react table types for some reason, casting to any type solves the issue
             <tr {...row.getRowProps()} style={{ backgroundColor: getColorLevel((row as any).depth) }}>
-              {row.cells.map(cell => {
-                const cellData = cell.row.original as any;
-
-                if (cellData.properties?.hasResultChild || cellData.properties?.result) {
-                  if (cell.column.id === 'resultName') {
-                    return (
-                      <td
-                        id={cell.column.id + 'click-handler'}
-                        // style={{color:cellData.properties?.result?'black':'lightgray'}}
-                        style={{
-                          color: cellData.properties?.result ? 'black' : 'grey',
-                          fontWeight: cellData.properties?.result ? 'bold' : 'normal'
-                        }}
-                        {...cell.getCellProps()}
-                        onClick={() => {
-                          if (cell.column.id !== 'expander') {
-                            clickHandler(cellData.identifier);
-                          }
-                        }}
-                      >
-                        {cell.render('Cell')} {cellData.properties?.hasResultChild ? '*' : ''}
-                      </td>
-                    );
-                  } else if (cell.column.id === 'details') {
-                    return (
-                      <td
-                        id={cell.column.id + 'click-handler'}
-                        style={{
-                          color: 'black',
-                          fontWeight: cellData.properties?.result ? 'bold' : 'normal'
-                        }}
-                        {...cell.getCellProps()}
-                        onClick={() => {
-                          if (cell.column.id !== 'expander') {
-                            clickHandler(cellData.identifier);
-                          }
-                        }}
-                      >
-                        {/*{*/}
-                        {/*  cellData.properties?.result?(*/}
-                        <Button
-                          className={'mx-2'}
+              {row.cells
+                .filter(cell => {
+                  const cellData = cell.row.original as any;
+                  return (
+                    (showOnlyMarkedLocations &&
+                      (markedParents.has(cellData.identifier) ||
+                        markedLocations
+                          .map(markedLocation => markedLocation.identifier)
+                          .includes(cellData.identifier))) ||
+                    !showOnlyMarkedLocations
+                  );
+                })
+                .map(cell => {
+                  const cellData = cell.row.original as any;
+                  console.log(cellData);
+                  if (cellData.properties?.hasResultChild || cellData.properties?.result) {
+                    if (cell.column.id === 'resultName') {
+                      return (
+                        <td
+                          id={cell.column.id + 'click-handler'}
+                          {...cell.getCellProps()}
                           onClick={() => {
-                            detailsClickHandler(cellData.identifier);
+                            if (cell.column.id !== 'expander') {
+                              clickHandler(cellData.identifier);
+                            }
                           }}
                         >
-                          {t('simulationPage.details')}
-                        </Button>
-                        <Button
-                          className={'mx-2'}
+                          {
+                            <span
+                              style={{
+                                color: !markedLocations
+                                  .map(markedLocation => markedLocation.identifier)
+                                  .includes(cellData.identifier)
+                                  ? cellData.properties?.result
+                                    ? 'black'
+                                    : 'grey'
+                                  : 'red',
+                                fontWeight: cellData.properties?.result ? 'bold' : 'normal'
+                              }}
+                            >
+                              {cell.render('Cell')}
+                            </span>
+                          }{' '}
+                          {cellData.properties?.hasResultChild ? '*' : ''}
+                          {markedParents.has(cellData.identifier) ? <span style={{ color: 'red' }}>*</span> : ''}
+                        </td>
+                      );
+                    } else if (cell.column.id === 'details') {
+                      return (
+                        <td
+                          id={cell.column.id + 'click-handler'}
+                          style={{
+                            color: 'black',
+                            fontWeight: cellData.properties?.result ? 'bold' : 'normal'
+                          }}
+                          {...cell.getCellProps()}
                           onClick={() => {
-                            summaryClickHandler(cellData);
+                            if (cell.column.id !== 'expander') {
+                              clickHandler(cellData.identifier);
+                            }
                           }}
                         >
-                          {t('simulationPage.summary')}
-                        </Button>
-                      </td>
-                    );
-                  } else {
-                    return (
-                      <td
-                        id={cell.column.id + 'click-handler'}
-                        {...cell.getCellProps()}
-                        onClick={() => {
-                          if (cell.column.id !== 'expander') {
-                            let col = row.original as any;
-                            clickHandler(col.identifier);
-                          }
-                        }}
-                      >
-                        {cell.render('Cell')}
-                      </td>
-                    );
+                          {/*{*/}
+                          {/*  cellData.properties?.result?(*/}
+                          <Button
+                            className={'mx-2'}
+                            onClick={() => {
+                              detailsClickHandler(cellData.identifier);
+                            }}
+                          >
+                            {t('simulationPage.details')}
+                          </Button>
+                          {!showOnlyMarkedLocations && (
+                            <Button
+                              className={'mx-2'}
+                              onClick={() => {
+                                summaryClickHandler(cellData);
+                              }}
+                            >
+                              {t('simulationPage.summary')}
+                            </Button>
+                          )}
+                        </td>
+                      );
+                    } else {
+                      return (
+                        <td
+                          id={cell.column.id + 'click-handler'}
+                          {...cell.getCellProps()}
+                          onClick={() => {
+                            if (cell.column.id !== 'expander') {
+                              let col = row.original as any;
+                              clickHandler(col.identifier);
+                            }
+                          }}
+                        >
+                          {cell.render('Cell')}
+                        </td>
+                      );
+                    }
                   }
-                }
 
-                return null;
-              })}
+                  return null;
+                })}
             </tr>
           );
         })}
