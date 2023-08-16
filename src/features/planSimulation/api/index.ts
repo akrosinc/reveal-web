@@ -4,6 +4,8 @@ import { EntityTag, LookupEntityType, PersonMeta, PlanningLocationResponse } fro
 import { SimulationCountResponse, SimulationRequestData } from '../components/Simulation';
 import { SaveHierarchyRequest, SaveHierarchyResponse } from '../components/modals/SaveHierarchyModal';
 
+import { ComplexTagRequest, ComplexTagResponse } from '../../tagging/components/ComplexTagging';
+
 export const getEntityList = async (): Promise<LookupEntityType[]> => {
   const data = await api.get<LookupEntityType[]>(`entityTag/entityType`).then(res => res.data);
   return data;
@@ -155,5 +157,15 @@ export const saveHierarchy = async (saveHierarchyRequest: SaveHierarchyRequest):
   const data = await api
     .post<SaveHierarchyResponse>(GENERATED_LOCATION_HIERARCHY + `/saveSimulationHierarchy`, saveHierarchyRequest)
     .then(res => res.data);
+  return data;
+};
+
+export const saveComplexTag = async (complexTag: ComplexTagRequest): Promise<ComplexTagResponse> => {
+  const data = await api.post<ComplexTagResponse>('entityTag/complex', complexTag).then(res => res.data);
+  return data;
+};
+
+export const getComplexTagReponses = async (): Promise<ComplexTagResponse[]> => {
+  const data = await api.get('entityTag/complex').then(res => res.data);
   return data;
 };

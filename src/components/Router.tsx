@@ -23,10 +23,10 @@ import Location from '../pages/Location';
 import Assignment from '../pages/AssignmentPage';
 import Reporting from '../pages/Reporting';
 import PlanSimulation from '../pages/PlanSimulationPage';
-import TagManagement from '../pages/TagManagement';
 import MetaDataImport from '../pages/MetaDataImport';
 import ResourcePlanning from '../pages/ResourcePlanning';
 import DataProcessingProgress from '../features/technical/components/DataProcessingProgress';
+import TagManagement2 from '../pages/TagManagement/TagManagement2';
 
 const Router = () => {
   const { keycloak, initialized } = useKeycloak();
@@ -47,7 +47,7 @@ const Router = () => {
           <Route path={ASSIGNMENT_PAGE + '/*'} element={<Assignment />} />
           <Route path={REPORTING_PAGE + '/*'} element={<Reporting />} />
           <Route path={SIMULATION_PAGE + '/*'} element={<PlanSimulation />} />
-          <Route path={TAG_MANAGEMENT + '/*'} element={<TagManagement />} />
+          <Route path={TAG_MANAGEMENT + '/*'} element={<TagManagement2 />} />
           <Route path={DATA_PROCESSING_PROGRESS + '/*'} element={<DataProcessingProgress />} />
           <Route path={METADATA_IMPORT + '/*'} element={<MetaDataImport />}>
             <Route path=":tab" element={<MetaDataImport />} />

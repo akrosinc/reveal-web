@@ -318,5 +318,12 @@
   "locationHierarchyPage": {
     "name": "Name",
     "nodeOrder": "Node Order"
+  },
+  "entityTags": {
+    "simpleTags": "Simple Tags",
+    "complexTags": "Complex Tags",
+    "complexTagName": "Name",
+    "complexTagFormula": "Formula",
+    "complexTagVariables": "Variables"
   }
 }

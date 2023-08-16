@@ -9,7 +9,9 @@ import { ActionDialog } from '../../../components/Dialogs';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
+import { evaluate } from 'mathjs';
 import {
+  getComplexTagReponses,
   getDataAssociatedEntityTags,
   getEntityList,
   getEventBasedEntityTags,
@@ -47,6 +49,8 @@ import UploadSimulationData from './modals/UploadSimulationData';
 import SearchResultCountModal from './modals/SearchResultCountModal';
 import TableSummaryModal from './Summary/TableSummaryModal';
 import SaveHierarchyModal from './modals/SaveHierarchyModal';
+import MetadataFormulaPanel from './MetadataFormula/MetadataFormulaPanel';
+import { ComplexTagResponse } from '../../tagging/components/ComplexTagging';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -162,10 +166,16 @@ const Simulation = () => {
   const [showOnlyMarkedLocations, setShowOnlyMarkedLocations] = useState(false);
   const [markedParents, setMarkedParents] = useState<Set<string>>(new Set<string>());
   const [parentChild, setParentChild] = useState<{ [parent: string]: Children }>({});
+  const [complexTags, setComplexTags] = useState<ComplexTagResponse[]>();
 
   useEffect(() => {
-    Promise.all([getLocationHierarchyList(50, 0, true), getEntityList(), getGeneratedLocationHierarchyList()])
-      .then(([locationHierarchyList, entityList, generatedHierarchyList]) => {
+    Promise.all([
+      getLocationHierarchyList(50, 0, true),
+      getEntityList(),
+      getGeneratedLocationHierarchyList(),
+      getComplexTagReponses()
+    ])
+      .then(([locationHierarchyList, entityList, generatedHierarchyList, complexTagResponses]) => {
         let generatedHierarchyItems = generatedHierarchyList?.map(generatedHierarchy => {
           return {
             identifier: generatedHierarchy.identifier,
@@ -189,6 +199,8 @@ const Simulation = () => {
 
         let entityObj = entityList.find(entity => entity.code === 'Location');
         setSelectedEntity(entityObj?.identifier);
+
+        setComplexTags(complexTagResponses);
       })
       .catch(err => toast.error(err));
   }, []);
@@ -502,7 +514,46 @@ const Simulation = () => {
           mapDataLoad.features.forEach((newFeature: any) => {
             let found = newMapData.features[newFeature.identifier];
 
+            let newMeta: any[] = [];
+
             if (!found) {
+              if (complexTags) {
+                if (newFeature.properties.metadata) {
+                  complexTags.forEach(complexTag => {
+                    let a: { [val: string]: number } = {};
+                    complexTag.tags.forEach(tag => {
+                      newFeature.properties.metadata.forEach((metaItem: any) => {
+                        if (metaItem.type === tag.name) {
+                          a[tag.symbol] = metaItem.value;
+                        }
+                      });
+                    });
+                    // console.log('formulaVariables', a);
+                    let val = 0;
+                    try {
+                      val = evaluate(complexTag.formula, a);
+                    } catch (ex) {
+                      console.error('eerro with formula');
+                    }
+
+                    let meta = {
+                      type: complexTag.tagName,
+                      value: val,
+                      fieldType: 'generated'
+                    };
+                    newMeta.push(meta);
+                  });
+                }
+              }
+              if (newMeta.length > 0) {
+                if (
+                  newFeature.properties.metadata &&
+                  Array.isArray(newFeature.properties.metadata) &&
+                  newFeature.properties.metadata.length > 0
+                ) {
+                  newMeta.forEach((newM: any) => newFeature.properties.metadata.push(newM));
+                }
+              }
               newMapData.features[newFeature.identifier] = {
                 identifier: newFeature.identifier,
                 properties: newFeature.properties,
@@ -535,7 +586,7 @@ const Simulation = () => {
         return newMapData;
       });
     }
-  }, [mapDataLoad]);
+  }, [mapDataLoad, complexTags]);
 
   useEffect(() => {
     if (parentMapDataLoad) {
@@ -1204,7 +1255,15 @@ const Simulation = () => {
               <Button className="float-end my-3 ms-2" variant="secondary" onClick={() => setShowUploadModal(true)}>
                 {t('simulationPage.uploadData')}
               </Button>
-
+              {/*<Button*/}
+              {/*  className="float-end ms-2 my-3"*/}
+              {/*  variant="secondary"*/}
+              {/*  onClick={() => {*/}
+              {/*    setShowFormulaPanel(true);*/}
+              {/*  }}*/}
+              {/*>*/}
+              {/*  metaformula*/}
+              {/*</Button>*/}
               {highestLocations && showResult && (
                 <>
                   <Button
@@ -1334,6 +1393,13 @@ const Simulation = () => {
           markedParents={markedParents}
         />
       )}
+      {/*{showFormulaPanel && (*/}
+      {/*  <MetadataFormulaPanel*/}
+      {/*    entityTags={entityTags}*/}
+      {/*    showModal={showFormulaPanel}*/}
+      {/*    closeHandler={() => setShowFormulaPanel(false)}*/}
+      {/*  />*/}
+      {/*)}*/}
     </>
   );
 };
