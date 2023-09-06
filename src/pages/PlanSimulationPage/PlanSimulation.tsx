@@ -4,10 +4,11 @@ import AuthGuard from '../../components/AuthGuard';
 import { ErrorPage } from '../../components/pages';
 import PageWrapper from '../../components/PageWrapper';
 import { PLAN_VIEW } from '../../constants';
-import Simulation from '../../features/planSimulation/components';
+import Simulation from '../../features/planSimulation/components/Simulation';
 
 const PlanSimulation = () => {
   const { t } = useTranslation();
+
   return (
     <PageWrapper title={t('simulationPage.title')}>
       <Routes>

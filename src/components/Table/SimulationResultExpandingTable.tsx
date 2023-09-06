@@ -11,6 +11,8 @@ import {
 import { useAppSelector } from '../../store/hooks';
 import { useTranslation } from 'react-i18next';
 import { MarkedLocation } from '../../features/planSimulation/components/Simulation';
+import { AnalysisLayer } from '../../features/planSimulation/components/Simulation';
+import { getBackgroundStyle } from '../../features/planSimulation/components/SimulationMapView/SimulationMapView';
 
 interface Props {
   data: any;
@@ -61,6 +63,7 @@ const SimulationResultExpandingTable = ({
         return {
           identifier: el.identifier,
           children: el.children,
+          method: el.method,
           properties: {
             name: el.properties.name,
             status: el.properties.status,
@@ -163,7 +166,6 @@ const SimulationResultExpandingTable = ({
                 })
                 .map(cell => {
                   const cellData = cell.row.original as any;
-                  console.log(cellData);
                   if (cellData.properties?.hasResultChild || cellData.properties?.result) {
                     if (cell.column.id === 'resultName') {
                       return (
@@ -190,6 +192,20 @@ const SimulationResultExpandingTable = ({
                               }}
                             >
                               {cell.render('Cell')}
+                              {cellData.method?.map((methodItem: AnalysisLayer) => (
+                                <div
+                                  className={'mx-1'}
+                                  title={methodItem.labelName}
+                                  style={{
+                                    background: getBackgroundStyle(methodItem.color.rgb),
+                                    float: 'right',
+                                    width: '50px',
+                                    height: '25px'
+                                  }}
+                                >
+                                  {'  '}
+                                </div>
+                              ))}
                             </span>
                           }{' '}
                           {cellData.properties?.hasResultChild ? '*' : ''}

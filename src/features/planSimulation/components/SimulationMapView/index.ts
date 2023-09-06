@@ -1,3 +1,3 @@
-import SimulationMapView from "./SimulationMapView";
+import SimulationMapView from './SimulationMapView';
 
 export default SimulationMapView;

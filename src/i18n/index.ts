@@ -40,10 +40,6 @@ i18n.use(initReactI18next).init({
   debug: true,
   resources
 });
-// .then(_ => {
-//   // i18n.addResourceBundle('pt', 'translation', { colTest: 'hello' }, true);
-//   console.log('data', i18n.store);
-// });
 
 export const $t = (key: string, params = {}) => {
   return i18n.t(key, params);

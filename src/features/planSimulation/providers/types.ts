@@ -1,5 +1,6 @@
 import { Feature, MultiPolygon, Polygon, Properties, Point } from '@turf/turf';
 import { LngLatBounds } from 'mapbox-gl';
+import { AnalysisLayer } from '../components/Simulation';
 
 export enum HierarchyType {
   GENERATED = 'generated',
@@ -52,6 +53,7 @@ export interface PlanningLocationResponse {
   type: 'FeatureCollection';
   features: Feature<Point | Polygon | MultiPolygon, Properties>[];
   parents: Feature<Point | Polygon | MultiPolygon, Properties>[];
+  method?: AnalysisLayer;
 }
 
 export interface RevealFeature {
@@ -62,6 +64,7 @@ export interface RevealFeature {
   children: any[] | undefined;
   aggregates: any[] | undefined;
   ancestry: any[] | undefined;
+  method?: AnalysisLayer[];
 }
 
 export interface PlanningLocationResponseTagged {
@@ -69,6 +72,7 @@ export interface PlanningLocationResponseTagged {
   type: 'FeatureCollection';
   features: RevealFeatureTagged;
   parents: RevealFeatureTagged;
+  method?: AnalysisLayer[];
 }
 
 export interface PlanningParentLocationResponse {

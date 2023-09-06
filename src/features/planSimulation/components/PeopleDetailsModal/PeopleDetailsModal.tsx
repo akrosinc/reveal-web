@@ -27,19 +27,30 @@ const PeopleDetailsModal = ({ locationProps }: Props) => {
           let baseTag = metadata.type;
 
           let basTagSett = new Set<string>();
-          let numArr = NUMBER_AGGREGATION;
-          numArr.push(...BOOLEAN_STRING_AGGREGATION);
-          numArr.forEach(agg => {
-            if (baseTag.match(new RegExp('-' + agg + '$', 'g'))) {
-              let newTag = baseTag.replaceAll(new RegExp('-' + agg + '$', 'g'), '');
-              basTagSett.add(newTag);
-            }
-          });
+          if (metadata.fieldType !== 'generated') {
+            let numArr = NUMBER_AGGREGATION;
+            numArr.push(...BOOLEAN_STRING_AGGREGATION);
+            numArr.forEach(agg => {
+              if (baseTag.match(new RegExp('-' + agg + '$', 'g'))) {
+                let newTag = baseTag.replaceAll(new RegExp('-' + agg + '$', 'g'), '');
+                basTagSett.add(newTag);
+              }
+            });
+          } else {
+            basTagSett.add(baseTag);
+          }
 
           Array.from(basTagSett).forEach(baseTag => {
-            let metaItem = {
+            let metaItem;
+            let type;
+            if (metadata.fieldType !== 'generated') {
+              type = metadata.type.replaceAll(new RegExp('^' + baseTag + '-', 'g'), '');
+            } else {
+              type = 'value';
+            }
+            metaItem = {
               fieldType: metadata.fieldType,
-              type: metadata.type.replaceAll(new RegExp('^' + baseTag + '-', 'g'), ''),
+              type: type,
               value: metadata.value
             };
             if (baseMap) {

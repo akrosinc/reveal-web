@@ -1,6 +1,5 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import moment from 'moment';
-import { useState } from 'react';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import { useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useAppSelector } from '../../store/hooks';
 import { t } from 'i18next';
@@ -12,9 +11,10 @@ interface Props {
   clickHandler: (identifier: any) => void;
 }
 
+//TODO: Complete sorting
 const ComplexTagTable = ({ columns, data, clickHandler }: Props) => {
-  const [sortDirection, setSortDirection] = useState(false);
-  const [activeSortField, setActiveSortField] = useState('');
+  // const [sortDirection, setSortDirection] = useState(false);
+  // const [activeSortField, setActiveSortField] = useState('');
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   return (
@@ -33,15 +33,15 @@ const ComplexTagTable = ({ columns, data, clickHandler }: Props) => {
               }}
             >
               {t('entityTags.' + el.name)}
-              {activeSortField === el.name ? (
-                sortDirection ? (
-                  <FontAwesomeIcon className="ms-2" icon="sort-up" />
-                ) : (
-                  <FontAwesomeIcon className="ms-2" icon="sort-down" />
-                )
-              ) : el.sortValue ? (
-                <FontAwesomeIcon className="ms-2" icon="sort" />
-              ) : null}
+              {/*{activeSortField === el.name ? (*/}
+              {/*  sortDirection ? (*/}
+              {/*    <FontAwesomeIcon className="ms-2" icon="sort-up" />*/}
+              {/*  ) : (*/}
+              {/*    <FontAwesomeIcon className="ms-2" icon="sort-down" />*/}
+              {/*  )*/}
+              {/*) : el.sortValue ? (*/}
+              {/*  <FontAwesomeIcon className="ms-2" icon="sort" />*/}
+              {/*) : null}*/}
             </th>
           ))}
         </tr>

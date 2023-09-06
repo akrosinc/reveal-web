@@ -4,7 +4,7 @@ import { getComplexTagReponses, getEntityList } from '../../planSimulation/api';
 import { HierarchyType } from '../../planSimulation/providers/types';
 import { toast } from 'react-toastify';
 import { LocationHierarchyModel } from '../../location/providers/types';
-import { Button, Col, Form, Row } from 'react-bootstrap';
+import { Button, Col, Row } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { DebounceInput } from 'react-debounce-input';
 import MetadataFormulaPanel, {
@@ -19,6 +19,7 @@ export interface ComplexTagResponse {
   tagName: string;
   tags: TagWithFormulaSymbol[];
   formula: string;
+  calculateValue?: number;
 }
 
 export interface ComplexTagRequest {

@@ -101,8 +101,9 @@ const SimulationModal = ({
     filteredGroups?.forEach(group => {
       let newGroup: Group = {
         options: group.options.filter(option => {
-          return !!selectedAggregationTypes.find(selectedAggregationType =>
-            option.label.endsWith(selectedAggregationType)
+          return !!selectedAggregationTypes.find(
+            selectedAggregationType =>
+              option.label.endsWith(selectedAggregationType) || option.entityTag?.fieldType === 'generated'
           );
         }),
         label: group.label

@@ -2,7 +2,7 @@ name: Reveal Web test, build and deploy
 
 on:
   push:
-    branches: [ main, zambia-aggregation, zam-agg ]
+    branches: [ main, zambia-aggregation, zam-agg, nih-simulation ]
 
 jobs:
 

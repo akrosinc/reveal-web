@@ -1,9 +1,9 @@
-import { Button, Col, Form, FormLabel, Modal, Row, Table } from 'react-bootstrap';
+import { Button, Col, Form, Modal, Row, Table } from 'react-bootstrap';
 import { EntityTag } from '../../providers/types';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
-import { evaluate, compile } from 'mathjs';
+import { compile } from 'mathjs';
 import SimulationModal from '../SimulationModal';
 import { ActionDialog } from '../../../../components/Dialogs';
 import { LocationHierarchyModel } from '../../../location/providers/types';
@@ -43,9 +43,7 @@ const MetadataFormulaPanel = ({ showModal, closeHandler, combinedHierarchyList, 
       })
       .catch(err => toast.error('Error saving complex tag'));
   };
-  const handleError = (err: any) => {
-    console.log(err);
-  };
+  const handleError = (err: any) => {};
 
   const {
     control,
@@ -95,7 +93,8 @@ const MetadataFormulaPanel = ({ showModal, closeHandler, combinedHierarchyList, 
         append({ name: tag.name, symbol: tag.symbol });
       });
     }
-  }, [currentTag]);
+  }, [currentTag, append, fields, remove, setValue]);
+
   return (
     <>
       <Modal show={showModal} onHide={closeHandler} size={'xl'} onBackdropClick={closeHandler}>

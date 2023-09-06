@@ -29,7 +29,10 @@ import {
   faSun,
   faMoon,
   faSearch,
-  faExclamationTriangle
+  faExclamationTriangle,
+  faCog,
+  faUnlock,
+  faLock
 } from '@fortawesome/free-solid-svg-icons';
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
@@ -58,7 +61,10 @@ library.add(
   faSun,
   faMoon,
   faSearch,
-  faExclamationTriangle
+  faExclamationTriangle,
+  faCog,
+  faUnlock,
+  faLock
 );
 
 function App() {

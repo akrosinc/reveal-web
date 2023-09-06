@@ -63,7 +63,7 @@ export const initSimulationMap = (
   center: [number, number],
   zoom: number,
   position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left',
-  style: string,
+  style: string | undefined,
   listener: (e: MapMouseEvent & EventData) => void
 ): Map => {
   const mapboxInstance = new Map({
@@ -104,6 +104,23 @@ export const initSimulationMap = (
       id: 'label-layer',
       type: 'line',
       source: 'label-source'
+    });
+
+    mapboxInstance.addSource('mark-source', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: []
+      }
+    });
+    mapboxInstance.addLayer({
+      id: 'mark-layer',
+      type: 'fill',
+      source: 'mark-source',
+      paint: {
+        'fill-color': 'blue',
+        'fill-opacity': 0.1
+      }
     });
 
     // mapboxInstance.on('mouseover', 'draw-layer', e => {

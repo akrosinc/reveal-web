@@ -9,7 +9,7 @@ import { ActionDialog } from '../../../components/Dialogs';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
-import { evaluate } from 'mathjs';
+import { evaluate, isNumeric } from 'mathjs';
 import {
   getComplexTagReponses,
   getDataAssociatedEntityTags,
@@ -36,8 +36,8 @@ import {
 } from '../providers/types';
 import FormField from './FormField/FormField';
 import MultiFormField from './FormField/MultiFormField';
-import SimulationMapView from './SimulationMapView';
 import SimulationModal from './SimulationModal';
+
 import Select, { MultiValue, SingleValue } from 'react-select';
 import PeopleDetailsModal from './PeopleDetailsModal';
 import { bbox, Feature, MultiPolygon, Point, Polygon } from '@turf/turf';
@@ -49,8 +49,10 @@ import UploadSimulationData from './modals/UploadSimulationData';
 import SearchResultCountModal from './modals/SearchResultCountModal';
 import TableSummaryModal from './Summary/TableSummaryModal';
 import SaveHierarchyModal from './modals/SaveHierarchyModal';
-import MetadataFormulaPanel from './MetadataFormula/MetadataFormulaPanel';
 import { ComplexTagResponse } from '../../tagging/components/ComplexTagging';
+import SimulationMapView from './SimulationMapView/SimulationMapView';
+import SimulationAnalysisPanel2 from './modals/SimulationAnalysisPanel';
+import { Color } from 'react-color-palette';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -63,6 +65,11 @@ interface SubmitValue {
     minValue: number;
     maxValue: number;
   };
+}
+
+export interface AnalysisLayer {
+  labelName: string;
+  color: Color;
 }
 
 interface SearchValue {
@@ -117,7 +124,8 @@ const Simulation = () => {
     features: [],
     parents: [],
     type: 'FeatureCollection',
-    identifier: undefined
+    identifier: undefined,
+    method: undefined
   });
   const [parentMapDataLoad, setParentMapDataLoad] = useState<PlanningParentLocationResponse>();
   const [nodeList, setNodeList] = useState<string[]>([]);
@@ -167,6 +175,10 @@ const Simulation = () => {
   const [markedParents, setMarkedParents] = useState<Set<string>>(new Set<string>());
   const [parentChild, setParentChild] = useState<{ [parent: string]: Children }>({});
   const [complexTags, setComplexTags] = useState<ComplexTagResponse[]>();
+  const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
+  const [isAnalysisSearch] = useState(true);
+  const [analysisLayerDetails, setAnalysisLayerDetails] = useState<AnalysisLayer[]>([]);
+  const [analysisResultEntityTags, setAnalysisResultEntityTags] = useState<EntityTag[]>();
 
   useEffect(() => {
     Promise.all([
@@ -281,13 +293,19 @@ const Simulation = () => {
   }, [markedLocations]);
 
   const submitHandlerCount = (form: any) => {
-    setShowResult(false);
-    setMapData(undefined);
-    setToLocation(undefined);
-    setResetMap(true);
-    setParentMapData(undefined);
-    setMarkedLocations([]);
-    setMarkedParents(new Set<string>());
+    if (!isAnalysisSearch) {
+      setMapData(undefined);
+      setToLocation(undefined);
+      setResetMap(true);
+      setParentMapData(undefined);
+      setShowResult(false);
+
+      setMarkedLocations([]);
+      setMarkedParents(new Set<string>());
+      setSubmitSimulationRequestData(undefined);
+      setSelectedEntityConditionList([]);
+      setSelectedFilterGeographicLevelList([]);
+    }
 
     levelsLoaded.current = [];
 
@@ -394,6 +412,40 @@ const Simulation = () => {
       });
   };
 
+  const subithandlerAfterAnalysis = (resultEntityTags: EntityTag[] | undefined, analysisLayer: AnalysisLayer) => {
+    setParentsLoadingState('notstarted');
+    setResultsLoadingState('notstarted');
+    const requestData = {
+      simulationRequestId: simulationRequestId
+    };
+    updateSimulationRequest(simulationRequestId, resultEntityTags)
+      .then(() => {
+        getLocationsSSE(
+          requestData,
+          (e: any) => messageHandlerAfterAnalysis(e, analysisLayer),
+          closeConnHandler,
+          openHandler,
+          (e: any) => parentHandlerAfterAnalysis(e, analysisLayer),
+          statsHandler,
+          locationAggregationHandler,
+          locationAggregationDefinitionHandler,
+          resultsErrorHandler
+        );
+        if (loadParentsToggle) {
+          getFullLocationsSSE(
+            requestData,
+            parentMessageHandler,
+            closeParentConnHandler,
+            openParentHandler,
+            parentResultsErrorHandler
+          );
+        }
+      })
+      .catch(() => {
+        toast.error('Cannot get result set - refresh page');
+      });
+  };
+
   const closeConnHandler = () => {
     setResultsLoaded(true);
     setResultsLoadingState('complete');
@@ -435,36 +487,214 @@ const Simulation = () => {
     setMapDataLoad(mapDataSave);
   };
 
-  const statsHandler = (message: MessageEvent) => {
-    setStatsMetadata(JSON.parse(message.data));
-  };
-
-  const locationAggregationHandler = (message: MessageEvent) => {
-    setAggregationSummary(JSON.parse(message.data));
-  };
-
-  const locationAggregationDefinitionHandler = (message: MessageEvent) => {
-    setAggregationSummaryDefinition(JSON.parse(message.data));
-  };
-
-  const messageHandler = (message: MessageEvent) => {
-    const res: any = JSON.parse(message.data);
+  const parentHandlerAfterAnalysis = (message: MessageEvent, analysisLayer: AnalysisLayer) => {
+    const parents: any = JSON.parse(message.data);
     let mapDataSave: PlanningLocationResponse = {
-      features: res.features,
-      parents: res.parents,
-      type: res.type,
-      identifier: res.identifier
+      features: [],
+      parents: parents,
+      type: 'FeatureCollection',
+      identifier: undefined,
+      method: analysisLayer
     };
-    if (mapDataSave.features && mapDataSave.features.length > 0) {
-      mapDataSave.features.forEach((el: any) => {
-        if (el.properties) {
-          el.properties['identifier'] = (el as any).identifier;
+
+    setMapDataLoad(mapDataSave);
+  };
+
+  const statsHandler = (message: MessageEvent) => {
+    const statsIncoming = JSON.parse(message.data);
+    setStatsMetadata(statsMetadata => {
+      let newStats: Stats = {};
+      Object.keys(statsMetadata).forEach(key => {
+        newStats[key] = statsMetadata[key];
+      });
+      Object.keys(statsIncoming).forEach(key => {
+        if (!newStats[key]) {
+          newStats[key] = statsIncoming[key];
         }
       });
-
-      setMapDataLoad(mapDataSave);
-    }
+      return newStats;
+    });
   };
+
+  const locationAggregationHandler = useCallback(
+    (message: MessageEvent) => {
+      const locationList = JSON.parse(message.data);
+      Object.keys(locationList).forEach(locationIdentifier => {
+        if (complexTags) {
+          complexTags.forEach(complexTag => {
+            let a: { [val: string]: number } = {};
+            complexTag.tags.forEach(tag => {
+              Object.keys(locationList[locationIdentifier]).forEach(metadataTag => {
+                if (metadataTag === tag.name) {
+                  a[tag.symbol] = locationList[locationIdentifier][metadataTag];
+                }
+              });
+              let val = 0;
+              try {
+                val = evaluate(complexTag.formula, a);
+                if (isNumeric(val)) {
+                  complexTag.calculateValue = val;
+                  locationList[locationIdentifier][complexTag.tagName] = val;
+                }
+              } catch (ex) {
+                console.warn('eerro with formula');
+              }
+            });
+          });
+        }
+      });
+      setAggregationSummary((aggregationSummary: LocationMetadataObj) => {
+        let newAggregationSummary: LocationMetadataObj = {};
+        Object.keys(aggregationSummary).forEach(key => {
+          newAggregationSummary[key] = aggregationSummary[key];
+        });
+        Object.keys(locationList).forEach(key => {
+          if (!newAggregationSummary[key]) {
+            newAggregationSummary[key] = locationList[key];
+          } else {
+            Object.keys(locationList[key]).forEach(metakey => {
+              if (!newAggregationSummary[key][metakey]) {
+                newAggregationSummary[key][metakey] = locationList[key][metakey];
+              }
+            });
+          }
+        });
+        return newAggregationSummary;
+      });
+    },
+    [complexTags]
+  );
+
+  const locationAggregationDefinitionHandler = useCallback(
+    (message: MessageEvent) => {
+      const tagTypes = JSON.parse(message.data);
+      complexTags?.forEach(complexTag => {
+        tagTypes[complexTag.tagName] = 'generated';
+      });
+      setAggregationSummaryDefinition((aggregationSummaryDefinition: MetadataDefinition) => {
+        let newAggregationSummaryDefinition: MetadataDefinition = {};
+
+        Object.keys(aggregationSummaryDefinition).forEach(
+          key => (newAggregationSummaryDefinition[key] = aggregationSummaryDefinition[key])
+        );
+
+        Object.keys(tagTypes).forEach(key => {
+          if (!newAggregationSummaryDefinition[key]) {
+            newAggregationSummaryDefinition[key] = tagTypes[key];
+          }
+        });
+        return newAggregationSummaryDefinition;
+      });
+    },
+    [complexTags]
+  );
+
+  const messageHandler = useCallback(
+    (message: MessageEvent) => {
+      const res: any = JSON.parse(message.data);
+      let mapDataSave: PlanningLocationResponse = {
+        features: res.features,
+        parents: res.parents,
+        type: res.type,
+        identifier: res.identifier
+      };
+      if (mapDataSave.features && mapDataSave.features.length > 0) {
+        mapDataSave.features.forEach((el: any) => {
+          if (el.properties) {
+            el.properties['identifier'] = (el as any).identifier;
+
+            if (complexTags) {
+              if (el.properties.metadata) {
+                complexTags?.forEach(complexTag => {
+                  let a: { [val: string]: number } = {};
+                  complexTag.tags.forEach(tag => {
+                    el.properties.metadata.forEach((metaItem: any) => {
+                      if (metaItem.type === tag.name) {
+                        a[tag.symbol] = metaItem.value;
+                      }
+                    });
+                  });
+                  let val = 0;
+                  try {
+                    val = evaluate(complexTag.formula, a);
+
+                    if (isNumeric(val)) {
+                      let meta = {
+                        type: complexTag.tagName,
+                        value: val,
+                        fieldType: 'generated'
+                      };
+                      complexTag.calculateValue = val;
+                      el.properties.metadata.push(meta);
+                    }
+                  } catch (ex) {
+                    console.warn('eerro with formula');
+                  }
+                });
+              }
+            }
+          }
+        });
+
+        setMapDataLoad(mapDataSave);
+      }
+    },
+    [complexTags]
+  );
+
+  const messageHandlerAfterAnalysis = useCallback(
+    (message: MessageEvent, analysis: AnalysisLayer) => {
+      const res: any = JSON.parse(message.data);
+      let mapDataSave: PlanningLocationResponse = {
+        features: res.features,
+        parents: res.parents,
+        type: res.type,
+        identifier: res.identifier,
+        method: analysis
+      };
+      if (mapDataSave.features && mapDataSave.features.length > 0) {
+        mapDataSave.features.forEach((el: any) => {
+          if (el.properties) {
+            el.properties['identifier'] = (el as any).identifier;
+
+            if (complexTags) {
+              if (el.properties.metadata) {
+                complexTags?.forEach(complexTag => {
+                  let a: { [val: string]: number } = {};
+                  complexTag.tags.forEach(tag => {
+                    el.properties.metadata.forEach((metaItem: any) => {
+                      if (metaItem.type === tag.name) {
+                        a[tag.symbol] = metaItem.value;
+                      }
+                    });
+                  });
+                  let val = 0;
+                  try {
+                    val = evaluate(complexTag.formula, a);
+
+                    if (isNumeric(val)) {
+                      let meta = {
+                        type: complexTag.tagName,
+                        value: val,
+                        fieldType: 'generated'
+                      };
+                      complexTag.calculateValue = val;
+                      el.properties.metadata.push(meta);
+                    }
+                  } catch (ex) {
+                    console.warn('eerro with formula');
+                  }
+                });
+              }
+            }
+          }
+        });
+
+        setMapDataLoad(mapDataSave);
+      }
+    },
+    [complexTags]
+  );
 
   const parentMessageHandler = (message: any) => {
     const res: any = JSON.parse(message.data);
@@ -492,7 +722,8 @@ const Simulation = () => {
         features: mapData.features,
         parents: mapData.parents,
         type: mapData.type,
-        identifier: mapData?.identifier
+        identifier: mapData?.identifier,
+        method: mapData?.method
       };
     } else {
       newVar = {
@@ -528,20 +759,21 @@ const Simulation = () => {
                         }
                       });
                     });
-                    // console.log('formulaVariables', a);
                     let val = 0;
                     try {
                       val = evaluate(complexTag.formula, a);
-                    } catch (ex) {
-                      console.error('eerro with formula');
-                    }
 
-                    let meta = {
-                      type: complexTag.tagName,
-                      value: val,
-                      fieldType: 'generated'
-                    };
-                    newMeta.push(meta);
+                      if (isNumeric(val)) {
+                        let meta = {
+                          type: complexTag.tagName,
+                          value: val,
+                          fieldType: 'generated'
+                        };
+                        newMeta.push(meta);
+                      }
+                    } catch (ex) {
+                      console.warn('eerro with formula');
+                    }
                   });
                 }
               }
@@ -554,6 +786,7 @@ const Simulation = () => {
                   newMeta.forEach((newM: any) => newFeature.properties.metadata.push(newM));
                 }
               }
+
               newMapData.features[newFeature.identifier] = {
                 identifier: newFeature.identifier,
                 properties: newFeature.properties,
@@ -561,7 +794,46 @@ const Simulation = () => {
                 geometry: newFeature.geometry,
                 children: undefined,
                 aggregates: undefined,
-                ancestry: newFeature?.ancestry
+                ancestry: newFeature.ancestry,
+                method: mapDataLoad.method ? [mapDataLoad.method] : undefined
+              };
+            } else {
+              if (newFeature.properties && newFeature.properties.metadata) {
+                if (found.properties && found.properties.metadata) {
+                  let currentMetadata = found.properties.metadata;
+                  let toAddMetadata = newFeature.properties.metadata;
+                  let accumulator: any[] = [];
+
+                  toAddMetadata.forEach((meta: any) => {
+                    if (!currentMetadata.map((curMeta: any) => curMeta.type).includes(meta.type)) {
+                      accumulator.push(meta);
+                    }
+                  });
+
+                  found.properties.metadata.push(...accumulator);
+                }
+              }
+
+              let method;
+              if (found.method) {
+                if (mapDataLoad.method) {
+                  method = [...found.method];
+                  if (!found.method.map(methodItem => methodItem.labelName).includes(mapDataLoad.method.labelName)) {
+                    if (mapDataLoad.method) {
+                      method.push(mapDataLoad.method);
+                    }
+                  }
+                }
+              }
+              newMapData.features[newFeature.identifier] = {
+                identifier: found.identifier,
+                properties: found.properties,
+                type: found.type,
+                geometry: found.geometry,
+                children: undefined,
+                aggregates: undefined,
+                ancestry: found.ancestry,
+                method: method
               };
             }
           });
@@ -571,6 +843,48 @@ const Simulation = () => {
           mapDataLoad.parents.forEach((newFeature: any) => {
             let found = newMapData.parents[newFeature.identifier];
             if (!found) {
+              let newMeta: any[] = [];
+
+              if (complexTags) {
+                if (newFeature.properties.metadata) {
+                  complexTags.forEach(complexTag => {
+                    let a: { [val: string]: number } = {};
+                    complexTag.tags.forEach(tag => {
+                      newFeature.properties.metadata.forEach((metaItem: any) => {
+                        if (metaItem.type === tag.name) {
+                          a[tag.symbol] = metaItem.value;
+                        }
+                      });
+                    });
+                    let val = 0;
+                    try {
+                      val = evaluate(complexTag.formula, a);
+
+                      if (isNumeric(val)) {
+                        let meta = {
+                          type: complexTag.tagName,
+                          value: val,
+                          fieldType: 'generated'
+                        };
+                        newMeta.push(meta);
+                      }
+                    } catch (ex) {
+                      console.warn('eerro with formula');
+                    }
+                  });
+                }
+              }
+
+              if (newMeta.length > 0) {
+                if (
+                  newFeature.properties.metadata &&
+                  Array.isArray(newFeature.properties.metadata) &&
+                  newFeature.properties.metadata.length > 0
+                ) {
+                  newMeta.forEach((newM: any) => newFeature.properties.metadata.push(newM));
+                }
+              }
+
               newMapData.parents[newFeature.identifier] = {
                 identifier: newFeature.identifier,
                 properties: newFeature.properties,
@@ -578,7 +892,47 @@ const Simulation = () => {
                 geometry: newFeature.geometry,
                 children: undefined,
                 aggregates: undefined,
-                ancestry: newFeature?.ancestry
+                ancestry: newFeature?.ancestry,
+                method: mapDataLoad.method ? [mapDataLoad.method] : undefined
+              };
+            } else {
+              if (newFeature.properties && newFeature.properties.metadata) {
+                if (found.properties && found.properties.metadata) {
+                  let currentMetadata = found.properties.metadata;
+                  let toAddMetadata = newFeature.properties.metadata;
+                  let accumulator: any[] = [];
+
+                  toAddMetadata.forEach((meta: any) => {
+                    if (!currentMetadata.map((curMeta: any) => curMeta.type).includes(meta.type)) {
+                      accumulator.push(meta);
+                    }
+                  });
+
+                  found.properties.metadata.push(...accumulator);
+                }
+              }
+
+              let method;
+              if (found.method) {
+                if (mapDataLoad.method) {
+                  method = [...found.method];
+                  if (!found.method.map(methodItem => methodItem.labelName).includes(mapDataLoad.method.labelName)) {
+                    if (mapDataLoad.method) {
+                      method.push(mapDataLoad.method);
+                    }
+                  }
+                }
+              }
+
+              newMapData.parents[newFeature.identifier] = {
+                identifier: found.identifier,
+                properties: found.properties,
+                type: found.type,
+                geometry: found.geometry,
+                children: undefined,
+                aggregates: undefined,
+                ancestry: found.ancestry,
+                method: method
               };
             }
           });
@@ -839,6 +1193,19 @@ const Simulation = () => {
     setShowCountResponseModal(false);
   };
 
+  const proceedToSearchAfterAnalysis = (
+    loadInactiveLocations: boolean,
+    resultEntityTags: EntityTag[] | undefined,
+    analysisLayer: AnalysisLayer
+  ) => {
+    subithandlerAfterAnalysis(resultEntityTags, analysisLayer);
+    setResultsLoadingState('started');
+    if (loadInactiveLocations) {
+      setParentsLoadingState('started');
+    }
+    setShowCountResponseModal(false);
+  };
+
   const updateLoadedLevels = (levels: string[]) => {
     levelsLoaded.current = levels;
   };
@@ -876,8 +1243,6 @@ const Simulation = () => {
 
   return (
     <>
-      {/*{markedLocations &&*/}
-      {/*  markedLocations.map(markedLocation => <p key={markedLocation.identifier}>{markedLocation.identifier}</p>)}*/}
       <Container fluid ref={divRef}>
         <Row>
           {!mapFullScreen && (
@@ -1086,6 +1451,25 @@ const Simulation = () => {
                     </Row>
                   )}
                 </Form.Group>
+                {/*<Form.Group className="my-3">*/}
+                {/*  <Row className="align-items-center">*/}
+                {/*    <Col md={5} lg={5}>*/}
+                {/*      <OverlayTrigger placement="top" overlay={<Tooltip id="meta-tooltip">{'analysis'}</Tooltip>}>*/}
+                {/*        <Form.Label>{'analysis'}:</Form.Label>*/}
+                {/*      </OverlayTrigger>*/}
+                {/*    </Col>*/}
+                {/*    <Col>*/}
+                {/*      <Form.Check*/}
+                {/*        className="float-left"*/}
+                {/*        type="switch"*/}
+                {/*        id="custom-switch"*/}
+                {/*        label="analysis"*/}
+                {/*        defaultChecked={false}*/}
+                {/*        onChange={e => setIsAnalysisSearch(e.target.checked)}*/}
+                {/*      />*/}
+                {/*    </Col>*/}
+                {/*  </Row>*/}
+                {/*</Form.Group>*/}
                 <Form.Group className="my-3">
                   <Row>
                     <Col xs={9}>
@@ -1121,8 +1505,11 @@ const Simulation = () => {
                               )
                             }
                           >
+                            {/*{isAnalysisSearch ? (*/}
+                            {/*  <Button onClick={_ => setShowAnalysisPanel(true)}>analyse</Button>*/}
+                            {/*) : (*/}
                             <Button
-                              type="submit"
+                              type={'submit'}
                               disabled={
                                 selectedHierarchy === undefined ||
                                 resultsLoadingState === 'started' ||
@@ -1152,6 +1539,7 @@ const Simulation = () => {
                                 </>
                               )}
                             </Button>
+                            {/*)}*/}
                           </OverlayTrigger>
                         </Col>
                       </Row>
@@ -1229,6 +1617,8 @@ const Simulation = () => {
               setMapData={setMapData}
               updateMarkedLocations={updateMarkedLocations}
               parentChild={parentChild}
+              isAnalysis={isAnalysisSearch}
+              analysisLayerDetails={analysisLayerDetails}
             />
           </Col>
         </Row>
@@ -1255,15 +1645,6 @@ const Simulation = () => {
               <Button className="float-end my-3 ms-2" variant="secondary" onClick={() => setShowUploadModal(true)}>
                 {t('simulationPage.uploadData')}
               </Button>
-              {/*<Button*/}
-              {/*  className="float-end ms-2 my-3"*/}
-              {/*  variant="secondary"*/}
-              {/*  onClick={() => {*/}
-              {/*    setShowFormulaPanel(true);*/}
-              {/*  }}*/}
-              {/*>*/}
-              {/*  metaformula*/}
-              {/*</Button>*/}
               {highestLocations && showResult && (
                 <>
                   <Button
@@ -1362,9 +1743,14 @@ const Simulation = () => {
         <SearchResultCountModal
           setShowCountModal={setShowCountResponseModal}
           simulationCountData={simulationCountData}
-          proceedToSearch={(resultEntityTags: EntityTag[] | undefined) =>
-            proceedToSearch(loadParentsToggle, resultEntityTags)
-          }
+          proceedToSearch={(resultEntityTags: EntityTag[] | undefined) => {
+            if (isAnalysisSearch) {
+              setShowAnalysisPanel(true);
+              setAnalysisResultEntityTags(resultEntityTags);
+            } else {
+              proceedToSearch(loadParentsToggle, resultEntityTags);
+            }
+          }}
           selectedEntityCondition={setSelectedEntityCondition}
           entityTags={entityTags}
         />
@@ -1393,13 +1779,25 @@ const Simulation = () => {
           markedParents={markedParents}
         />
       )}
-      {/*{showFormulaPanel && (*/}
-      {/*  <MetadataFormulaPanel*/}
-      {/*    entityTags={entityTags}*/}
-      {/*    showModal={showFormulaPanel}*/}
-      {/*    closeHandler={() => setShowFormulaPanel(false)}*/}
-      {/*  />*/}
-      {/*)}*/}
+      {showAnalysisPanel && (
+        <SimulationAnalysisPanel2
+          setLayerDetail={(detail: AnalysisLayer) => {
+            setAnalysisLayerDetails(details => {
+              let newDetail: AnalysisLayer[] = [];
+              details.forEach(existingDetail => newDetail.push(existingDetail));
+              newDetail.push(detail);
+              return newDetail;
+            });
+            setShowAnalysisPanel(false);
+          }}
+          submitHandler={(layers: AnalysisLayer) => {
+            proceedToSearchAfterAnalysis(loadParentsToggle, analysisResultEntityTags, layers);
+          }}
+          closeHandler={() => {
+            setShowAnalysisPanel(false);
+          }}
+        />
+      )}
     </>
   );
 };

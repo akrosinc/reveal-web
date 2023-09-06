@@ -294,7 +294,8 @@
     "tagsSelected": "The following tags will be saved with this hierarchy",
     "noTagsSelected": "No Tags Selected!",
     "selectToLoad": "Select to Load",
-    "tagFilters": "Tag Filters"
+    "tagFilters": "Tag Filters",
+    "analysis" :"Perform analysis"
   },
   "label": {
     "layerOpacity": "Layer opacity"

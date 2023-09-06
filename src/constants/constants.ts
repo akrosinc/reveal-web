@@ -35,6 +35,9 @@ export const PAGINATION_DEFAULT_SIZE = 10;
 export const MAPBOX_STYLE_SATELLITE = 'mapbox://styles/mapbox/satellite-v9';
 export const MAPBOX_STYLE_STREETS = 'mapbox://styles/mapbox/streets-v11';
 export const MAPBOX_STYLE_SATELLITE_STREETS = 'mapbox://styles/mapbox/satellite-streets-v11';
+export const MAPBOX_STYLE_OUTDOOR = 'mapbox://styles/mapbox/outdoors-v12';
+export const MAPBOX_STYLE_DARK = 'mapbox://styles/mapbox/dark-v10';
+export const MAPBOX_STYLE_NAV_NIGHT = 'mapbox://styles/mapbox/navigation-night-v1';
 
 export const ORGANIZATION_TABLE_COLUMNS = [
   { Header: 'name', accessor: 'name' },

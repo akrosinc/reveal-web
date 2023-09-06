@@ -1,14 +1,21 @@
-import { EventData, Expression, GeoJSONSource, LngLatBounds, Map, MapLayerEventType, Popup } from 'mapbox-gl';
-
+import {
+  EventData,
+  Expression,
+  GeoJSONSource,
+  LngLatBounds,
+  Map as MapBoxMap,
+  MapLayerEventType,
+  Popup
+} from 'mapbox-gl';
+import Draggable from 'react-draggable';
 import React, { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Col, Container, Form, Row } from 'react-bootstrap';
+import { Accordion, Button, Col, Container, Form, FormGroup, Row, Tab, Tabs } from 'react-bootstrap';
 import { MAPBOX_STYLE_STREETS } from '../../../../constants';
 import {
   disableMapInteractions,
   fitCollectionToBounds,
   getFeatureCentresFromLocation,
   getGeoListFromMapData,
-  getMetadataListFromMapData,
   getTagStats,
   initSimulationMap,
   PARENT_LABEL_SOURCE,
@@ -21,13 +28,24 @@ import {
   PlanningParentLocationResponse,
   RevealFeature
 } from '../../providers/types';
-import { Feature, FeatureCollection, MultiPolygon, Point, pointsWithinPolygon, Polygon } from '@turf/turf';
-import { ColorPicker, useColor } from 'react-color-palette';
+import { hex, hsv } from 'color-convert';
+import {
+  Feature,
+  FeatureCollection,
+  MultiPoint,
+  MultiPolygon,
+  Point,
+  pointsWithinPolygon,
+  Polygon,
+  Properties
+} from '@turf/turf';
+import { Color, useColor } from 'react-color-palette';
 import 'react-color-palette/lib/css/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Children, Stats } from '../Simulation';
 import ActionDialog from '../../../../components/Dialogs/ActionDialog';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import { AnalysisLayer } from '../Simulation';
 
 interface Props {
   fullScreenHandler: () => void;
@@ -45,10 +63,12 @@ interface Props {
   resultsLoadingState: 'notstarted' | 'error' | 'started' | 'complete';
   parentsLoadingState: 'notstarted' | 'error' | 'started' | 'complete';
   stats: Stats;
-  map: MutableRefObject<Map | undefined>;
+  map: MutableRefObject<MapBoxMap | undefined>;
   setMapData: (data: PlanningLocationResponseTagged | undefined) => void;
   updateMarkedLocations: (identifier: string, ancestry: string[], marked: boolean) => void;
   parentChild: { [parent: string]: Children };
+  isAnalysis: boolean;
+  analysisLayerDetails: AnalysisLayer[];
 }
 
 interface PlanningLocationResponseGeoContainer {
@@ -57,11 +77,33 @@ interface PlanningLocationResponseGeoContainer {
 }
 
 const lineParameters: any = {
-  country: { col: 'red', num: 1, offset: 2.2 },
-  county: { col: 'blue', num: 1, offset: 2 },
-  subcounty: { col: 'darkblue', num: 1, offset: 1.8 },
-  ward: { col: 'yellow', num: 1, offset: 1.5 },
-  catchment: { col: 'purple', num: 1, offset: 1 }
+  country: { col: 'red', num: 1, offset: 2.5 },
+  county: { col: 'blue', num: 1, offset: 2.5 },
+  subcounty: { col: 'darkblue', num: 1, offset: 6 },
+  ward: { col: 'yellow', num: 2, offset: 3 },
+  catchment: { col: 'purple', num: 3, offset: 1 }
+};
+
+export const getBackgroundStyle = (value: { r: number; g: number; b: number } | null) => {
+  if (value != null) {
+    return (
+      'linear-gradient(to right, rgba(' +
+      value.r +
+      ', ' +
+      value.g +
+      ', ' +
+      value.b +
+      ', 0), rgba(' +
+      value.r +
+      ',' +
+      value.g +
+      ', ' +
+      value.b +
+      ', 1)'
+    );
+  } else {
+    return 'linear-gradient(to right, rgba(255,255,255, 0.5), rgba(255,255,255, 0.5)';
+  }
 };
 
 const SimulationMapView = ({
@@ -82,20 +124,24 @@ const SimulationMapView = ({
   stats,
   map,
   updateMarkedLocations,
-  parentChild
+  parentChild,
+  isAnalysis,
+  analysisLayerDetails
 }: Props) => {
   const INITIAL_HEAT_MAP_RADIUS = 50;
   const INITIAL_HEAT_MAP_OPACITY = 0.2;
   const INITIAL_FILL_COLOR = '#005512';
+
+  const [defColor] = useColor('hex', INITIAL_FILL_COLOR);
 
   const mapContainer = useRef<any>();
 
   const [lng, setLng] = useState(28.33);
   const [lat, setLat] = useState(-15.44);
   const [zoom, setZoom] = useState(10);
-  const [metadataList, setMetadataList] = useState<Set<string>>();
   const [selectedMetadata, setSelectedMetadata] = useState<string>();
-  const [selectedHeatMapMetadata, setSelectedHeatMapMetadata] = useState<string>();
+  const [showUserDefineLayerSelector, setShowUserDefineLayerSelector] = useState(false);
+
   const hoverPopup = useRef<Popup>(
     new Popup({
       closeOnClick: false,
@@ -104,37 +150,86 @@ const SimulationMapView = ({
     })
   );
   const [showMapControls, setShowMapControls] = useState<boolean>(true);
-  const [showMetaStyle, setShowMetaStyle] = useState<Boolean>(false);
-  const [showGeoLevelStyle, setShowGeoLevelStyle] = useState<Boolean>(false);
-  const [showHeatMapStyle, setShowHeatMapStyle] = useState<Boolean>(false);
+  const [showUserDefinedLayerStyle, setShowUserDefinedLayerStyle] = useState<Boolean>(false);
   const [parentMapStateData, setParentMapStateData] = useState<PlanningParentLocationResponse>();
-  const [color, setColor] = useColor('hex', INITIAL_FILL_COLOR);
+  const [color] = useColor('hex', INITIAL_FILL_COLOR);
 
-  const [showColorPicker, setShowColorPicker] = useState(false);
   const [showStats, setShowStats] = useState(true);
-  const [showHeatMapToggles, setShowHeatMapToggles] = useState(false);
   const [geographicLevelResultLayerIds, setGeographicLevelResultLayerIds] = useState<
-    { layer: string; active: boolean }[]
+    { layer: string; key: string; geo: string; layerName: string; active: boolean }[]
+  >([]);
+  const [userDefinedLayers, setUserDefinedLayers] = useState<
+    {
+      layer: string;
+      key: string;
+      geo: string;
+      layerName: string;
+      active: boolean;
+      col: Color;
+      tagList?: Set<any>;
+      selectedTag?: string;
+      transparency?: number;
+      size?: number;
+    }[]
+  >([]);
+  const [userDefinedNames, setUserDefinedNames] = useState<
+    {
+      layer: string;
+      key: string;
+      layerName: string;
+      active: boolean;
+      col: Color;
+      tagList?: Set<any>;
+      selectedTag?: string;
+    }[]
   >([]);
   const geographicLevelMapStateData = useRef<PlanningLocationResponseGeoContainer[]>([]);
   const geographicLevelMapStateDataIds = useRef<Set<string>>(new Set());
-
-  const [showLayerSelector, setShowLayerSelector] = useState(false);
-
-  const [heatMapRadius, setHeatmapRadius] = useState(INITIAL_HEAT_MAP_RADIUS);
-  const [heatMapOpacity, setHeatMapOpacity] = useState(INITIAL_HEAT_MAP_OPACITY);
   const [showMapDrawnModal, setShowMapDrawnModal] = useState(false);
-  const [mapDrawMouseOverEvent, setMapDrawMouseOverEvent] = useState<MapLayerEventType['mouseover'] & EventData>();
+
+  const [markedMapBoxFeatures, setMarkedMapBoxFeatures] = useState<Feature<Polygon | MultiPolygon, Properties>[]>([]);
   const mapBoxDraw = useRef<MapboxDraw>();
   const [drawnMapLevel, setDrawnMapLevel] = useState<string>();
   const [shouldApplyToChildren, setShouldApplyToChildren] = useState(true);
-
+  const [shouldApplyToAll, setShouldApplyToAll] = useState(false);
+  const [selectedUserDefinedLayer, setSelectedUserDefinedLayer] = useState<
+    { key: string; col: Color; transparency?: number } | undefined
+  >();
+  const [showUserDefinedSettingsPanel, setShowUserDefinedSettingsPanel] = useState(false);
   const getLineParameters = (level: string) => {
-    if (lineParameters[level]) {
-      return lineParameters[level];
+    let newlevel = level
+      .split('-')
+      .filter((item, index) => index > 0)
+      .join('-');
+    if (lineParameters[newlevel]) {
+      return lineParameters[newlevel];
     } else {
       return { col: 'black', num: 1, offset: 1 };
     }
+  };
+
+  const getTransparencyValue = (
+    value: {
+      layer: string;
+      key: string;
+      geo: string;
+      layerName: string;
+      active: boolean;
+      col: Color;
+      tagList?: Set<any>;
+      selectedTag?: string;
+      transparency?: number;
+    }[],
+    selectedValue: { key: string; col: Color; transparency?: number } | undefined
+  ) => {
+    let transparency = 10;
+    if (value) {
+      const filterElement = value.filter(userDefinedLayer => userDefinedLayer.layerName === selectedValue?.key)[0];
+      if (filterElement && filterElement.transparency !== undefined && filterElement.transparency !== null) {
+        transparency = filterElement.transparency;
+      }
+    }
+    return transparency;
   };
 
   useEffect(() => {
@@ -156,10 +251,6 @@ const SimulationMapView = ({
       }
     }
   }, [resultsLoadingState, parentsLoadingState, map]);
-
-  useEffect(() => {
-    console.log('parentChild', parentChild);
-  }, [parentChild]);
 
   const updateChildrenOfSelectedLocation = useCallback(
     (identifier: string) => {
@@ -197,142 +288,138 @@ const SimulationMapView = ({
     [map, parentChild, updateMarkedLocations]
   );
 
-  const updateSelectedLocations = (e: (MapLayerEventType['mouseover'] & EventData) | undefined) => {
-    if (e) {
-      let sourceCentres: any = map.current?.getSource(drawnMapLevel + '-centers');
+  const updateSelectedLocations3 = useCallback(() => {
+    let selectedLocations: Feature<Polygon | MultiPolygon, Properties>[] = [];
 
-      if (sourceCentres && sourceCentres._data) {
-        let sourceData: FeatureCollection<Point> = {
-          type: (sourceCentres._data as any)['type'],
-          features: (sourceCentres._data as any)['features']
-        };
-
-        e.features?.forEach((feature: any) => {
-          if (feature != null && feature['properties'] && feature['properties']['id']) {
-            let drawFeature: FeatureCollection<Polygon> = {
-              type: 'FeatureCollection',
-              features: [
-                {
-                  type: 'Feature',
-                  geometry: feature.geometry,
-                  properties: null,
-                  id: undefined
-                }
-              ]
-            };
-
-            let a = pointsWithinPolygon(sourceData, drawFeature)
-              .features.filter(feature => feature.properties && feature.properties.identifier)
-              .map(feature => feature?.properties?.identifier);
-
-            sourceData.features.forEach(feature => {
-              if (feature.properties && feature.properties.identifier) {
-                if (a.includes(feature.properties.identifier)) {
-                  feature.properties['mark'] = true;
-                  if (feature.properties.identifier) {
-                    updateMarkedLocations(feature.properties.identifier, feature.properties.ancestry, true);
-                    if (shouldApplyToChildren) {
-                      updateChildrenOfSelectedLocation(feature.properties.identifier);
-                    }
-                  }
-                }
-              }
-            });
-
-            if (map.current?.getSource(drawnMapLevel + '-centers')) {
-              (map.current?.getSource(drawnMapLevel + '-centers') as GeoJSONSource).setData(sourceData);
-            }
-          }
-        });
-      }
-      if (mapBoxDraw.current) {
-        mapBoxDraw.current?.deleteAll();
-      }
+    if (markedMapBoxFeatures) {
+      selectedLocations = markedMapBoxFeatures.filter((feature: any) => {
+        if (feature != null && feature['properties'] && feature['properties']['identifier']) {
+          return (
+            (drawnMapLevel !== undefined && feature['properties']['identifier'] === drawnMapLevel) || shouldApplyToAll
+          );
+        }
+        return false;
+      });
     }
-  };
 
-  const initializeMap = useCallback(() => {
-    map.current = initSimulationMap(mapContainer, [lng, lat], zoom, 'bottom-left', MAPBOX_STYLE_STREETS, e => {
-      if (map.current) {
-        const features = map.current.queryRenderedFeatures(e.point);
-        let filteredfeatures = features.filter(feature => feature.layer.id.endsWith('-fill'));
+    if (markedMapBoxFeatures) {
+      userDefinedLayers.forEach(layer => {
+        let sourceCentres: any = map.current?.getSource(layer.layer + '-centers');
 
-        let filteredfeature = filteredfeatures[0];
+        if (sourceCentres && sourceCentres._data) {
+          let sourceFeatures = (sourceCentres._data as any)['features'];
 
-        if (filteredfeature) {
-          let sourceCentres: any = map.current.getSource(filteredfeature.layer.id.split('-')[0].concat('-centers'));
-
-          let sourceData: PlanningLocationResponse = {
-            type: (sourceCentres._data as any)['type'],
-            features: (sourceCentres._data as any)['features'],
-            parents: (sourceCentres._data as any)['parents'],
-            identifier: undefined
+          let sourceData: FeatureCollection<Point, Properties> = {
+            type: 'FeatureCollection',
+            features: sourceFeatures
           };
 
-          let featureSource = sourceData.features.filter(
-            feat => feat.properties?.identifier === filteredfeature?.properties?.identifier
-          );
-
-          let feature = featureSource[0];
-          if (feature) {
-            let labelMarked = false;
-            if (feature.properties) {
-              if (feature.properties['mark']) {
-                labelMarked = true;
-              }
+          let sourceFeaturesBelow: Feature<Point, Properties>[] = [];
+          let featuresToMark: string[] = [];
+          selectedLocations.forEach(feature => {
+            if (feature && feature.properties && feature.properties.identifier) {
+              featuresToMark.push(feature.properties.identifier);
             }
 
-            let popup = new Popup({ focusAfterOpen: true, closeOnMove: true, closeButton: true })
-              .setHTML(
-                `<h4 class="bg-success text-center">Location Action</h4>
-              <div class="m-0 p-0 text-center">
-              <ul>
-              <li>
-              <button class="btn btn-primary mx-2 mt-2 mb-4" style="min-width: 200px" id="simulationpopup" >` +
-                  (labelMarked ? `De-Select` : `Select`) +
-                  `</button>
-              </li>
-              <li>      
-                <span>Should Selection apply to children locations?</span>       
-                <input type="checkbox" id="updateChildrenWithSelected" checked />
-                </li>
-                </ul>
-              
-              <script>        
-              </script>
-              </div>`
-              )
-              .setLngLat(e.lngLat)
-              .addTo(map.current);
+            if (shouldApplyToChildren) {
+              sourceFeaturesBelow.push(
+                ...sourceFeatures.filter((sourceDataFeature: any) => {
+                  if (sourceDataFeature.properties && sourceDataFeature.properties.geographicLevelNodeNumber) {
+                    return (
+                      sourceDataFeature.properties.geographicLevelNodeNumber >=
+                      feature?.properties?.geographicLevelNodeNumber
+                    );
+                  }
+                  return false;
+                })
+              );
+            }
+          });
+          let sourceDataBelow: FeatureCollection<Point, Properties> = {
+            type: 'FeatureCollection',
+            features: sourceFeaturesBelow
+          };
 
-            document.getElementById('simulationpopup')?.addEventListener('click', () => {
-              if (feature !== null) {
-                if (map.current) {
-                  sourceData.features
-                    .filter(feat => feat.properties?.identifier === filteredfeature?.properties?.identifier)
-                    .forEach(feat => {
-                      if (feat.properties) {
-                        feat.properties['mark'] = !labelMarked;
-                        if (feat.properties.identifier) {
-                          updateMarkedLocations(feat.properties.identifier, feat.properties.ancestry, !labelMarked);
-                          if (
-                            document.getElementById('updateChildrenWithSelected') &&
-                            (document.getElementById('updateChildrenWithSelected') as HTMLInputElement).checked
-                          ) {
-                            updateChildrenOfSelectedLocation(feat.properties.identifier);
-                          }
-                        }
-                      }
-                    });
+          selectedLocations.forEach(selectedLocation => {
+            let featuresToMarkArr = pointsWithinPolygon(sourceDataBelow, selectedLocation);
+            if (featuresToMarkArr && featuresToMarkArr.features) {
+              const markedFeatureIds = featuresToMarkArr.features
+                .filter(markedFeature => markedFeature.properties && markedFeature.properties.identifier)
+                .map(markedFeature => markedFeature.properties?.identifier);
+              if (markedFeatureIds) {
+                featuresToMark.push(...markedFeatureIds);
+              }
+            }
+          });
 
-                  (
-                    map.current?.getSource(filteredfeature.layer.id.split('-')[0].concat('-centers')) as GeoJSONSource
-                  ).setData(sourceData);
+          sourceData.features?.forEach(sourceDataFeature => {
+            if (sourceDataFeature.properties && sourceDataFeature.properties.identifier) {
+              if (featuresToMark.includes(sourceDataFeature.properties.identifier)) {
+                sourceDataFeature.properties['mark'] = true;
+                if (sourceDataFeature.properties.identifier) {
+                  updateMarkedLocations(
+                    sourceDataFeature.properties.identifier,
+                    sourceDataFeature.properties.ancestry,
+                    true
+                  );
                 }
               }
+            }
+          });
+          if (map.current?.getSource(layer.layer + '-centers')) {
+            (map.current?.getSource(layer.layer + '-centers') as GeoJSONSource).setData(sourceData);
+          }
+        }
+      });
+    }
 
-              popup.remove();
+    //
+  }, [
+    userDefinedLayers,
+    shouldApplyToChildren,
+    drawnMapLevel,
+    markedMapBoxFeatures,
+    shouldApplyToAll,
+    updateMarkedLocations,
+    map
+  ]);
+
+  const initializeMap = useCallback(() => {
+    map.current = initSimulationMap(mapContainer, [lng, lat], zoom, 'bottom-left', undefined, e => {
+      if (map.current) {
+        let source: any = map.current?.getSource('mark-source') as GeoJSONSource;
+
+        if (source._data) {
+          if (source._data.features?.length > 0) {
+            (map.current?.getSource('mark-source') as GeoJSONSource).setData({
+              type: 'FeatureCollection',
+              features: []
             });
+          } else {
+            const features = map.current.queryRenderedFeatures(e.point);
+            let filteredfeatures = features.filter(feature => feature.layer.id.endsWith('-fill'));
+
+            let acc: any[] = [];
+            filteredfeatures.forEach(feature => {
+              const source: any = map.current?.getSource(feature.source) as GeoJSONSource;
+
+              let data = source._data as any;
+              let layerFeatures = data['features'];
+
+              if (feature && feature.properties) {
+                const items = layerFeatures.filter(
+                  (layerFeature: any) =>
+                    feature &&
+                    feature.properties &&
+                    feature.properties.identifier &&
+                    layerFeature.identifier === feature.properties.identifier
+                );
+                acc.push(...items);
+              }
+            });
+
+            setMarkedMapBoxFeatures(acc);
+            setShowMapDrawnModal(true);
           }
         }
       }
@@ -351,16 +438,74 @@ const SimulationMapView = ({
 
     map.current.addControl(mapBoxDraw.current, 'bottom-left');
 
-    map.current?.on('mouseover', 'gl-draw-polygon-fill-inactive.hot', e => {
-      setShowMapDrawnModal(true);
-      // updateSelectedLocations(e);
-      setMapDrawMouseOverEvent(e);
+    map.current?.on(
+      'mouseover',
+      'gl-draw-polygon-fill-inactive.hot',
+      (e: MapLayerEventType['mouseover'] & EventData) => {
+        if (e.features) {
+          let acc: Feature<Polygon | MultiPolygon, Properties>[] = [];
+          userDefinedLayers
+            .filter(layer => layer.active)
+            .forEach(layer => {
+              let sourceCentres: any = map.current?.getSource(layer.layer + '-centers');
+              let sourceFill: any = map.current?.getSource(layer.layer);
 
-      // if (e && e.features) {
-      //   pointsWithinPolygon(e.features, sourceData);
-      // }
-    });
-  }, [lat, lng, map, updateChildrenOfSelectedLocation, zoom, updateMarkedLocations]);
+              if (sourceCentres && sourceCentres._data) {
+                let sourceData: FeatureCollection<Point> = {
+                  type: (sourceCentres._data as any)['type'],
+                  features: (sourceCentres._data as any)['features']
+                };
+
+                e.features?.forEach((feature: any) => {
+                  if (feature != null && feature['properties'] && feature['properties']['id']) {
+                    let drawFeature: FeatureCollection<Polygon> = {
+                      type: 'FeatureCollection',
+                      features: [
+                        {
+                          type: 'Feature',
+                          geometry: feature.geometry,
+                          properties: null,
+                          id: undefined
+                        }
+                      ]
+                    };
+
+                    let a: Feature<Point | MultiPoint, Properties>[] = pointsWithinPolygon(
+                      sourceData,
+                      drawFeature
+                    ).features.filter(feature => feature.properties && feature.properties.identifier);
+
+                    a.forEach(point => {
+                      let polygon = (sourceFill._data as any)['features'].filter(
+                        (polygonFeature: Feature<Polygon | MultiPolygon, Properties>) => {
+                          if (
+                            polygonFeature &&
+                            polygonFeature.properties &&
+                            polygonFeature.properties.identifier &&
+                            point &&
+                            point.properties &&
+                            point.properties.identifier
+                          ) {
+                            return point.properties.identifier === polygonFeature.properties.identifier;
+                          }
+                          return false;
+                        }
+                      );
+                      if (polygon && polygon.length && polygon.length > 0) {
+                        acc.push(...polygon);
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          setMarkedMapBoxFeatures(acc);
+          setShowMapDrawnModal(true);
+        }
+      }
+    );
+    map.current?.setStyle(MAPBOX_STYLE_STREETS);
+  }, [lat, lng, map, zoom, userDefinedLayers]);
 
   useEffect(() => {
     if (resetMap) {
@@ -379,13 +524,19 @@ const SimulationMapView = ({
   useEffect(() => {
     if (chunkedData) {
       if (chunkedData?.features.length > 0) {
-        let geoListArr = getGeoListFromMapData(chunkedData);
+        let layerList: Set<string>;
 
-        geoListArr.forEach(geo => {
-          setGeographicLevelResultLayerIds(geoLayerList => {
-            if (!geoLayerList.map(geoLayer => geoLayer.layer).includes(geo)) {
-              geoLayerList.push({ layer: geo, active: true });
+        if (isAnalysis) {
+          layerList = new Set<string>();
+          analysisLayerDetails.forEach(analysisLayerDetail => layerList.add(analysisLayerDetail.labelName));
+          let layer: string = analysisLayerDetails[analysisLayerDetails.length - 1].labelName;
+          let geoColor = analysisLayerDetails[analysisLayerDetails.length - 1].color;
+          let geoList: Set<string>;
+          geoList = getGeoListFromMapData(chunkedData);
+          geoList.forEach(geo => {
+            let finalLayer = layer.concat('-').concat(geo);
 
+            if (!userDefinedLayers.map(userDefinedLayer => userDefinedLayer.key).includes(finalLayer)) {
               let initData: PlanningLocationResponse = {
                 parents: [],
                 features: [],
@@ -393,63 +544,63 @@ const SimulationMapView = ({
                 identifier: undefined
               };
 
-              if (!map.current?.getSource(geo)) {
-                map.current?.addSource(geo, {
+              if (!map.current?.getSource(finalLayer)) {
+                map.current?.addSource(finalLayer, {
                   type: 'geojson',
                   data: initData,
                   tolerance: 0.75
                 });
               }
 
-              if (!map.current?.getSource(geo.concat('-points'))) {
-                map.current?.addSource(geo.concat('-points'), {
+              if (!map.current?.getSource(finalLayer.concat('-points'))) {
+                map.current?.addSource(finalLayer.concat('-points'), {
                   type: 'geojson',
                   data: initData,
                   tolerance: 0.75
                 });
               }
 
-              if (!map.current?.getSource(geo.concat('-centers'))) {
-                map.current?.addSource(geo.concat('-centers'), {
+              if (!map.current?.getSource(finalLayer.concat('-centers'))) {
+                map.current?.addSource(finalLayer.concat('-centers'), {
                   type: 'geojson',
                   data: initData,
                   tolerance: 0.75
                 });
               }
 
-              if (!map.current?.getLayer(geo.concat('-line'))) {
+              if (!map.current?.getLayer(finalLayer.concat('-line'))) {
                 map.current?.addLayer(
                   {
-                    id: geo.concat('-line'),
+                    id: finalLayer.concat('-line'),
                     type: 'line',
-                    source: geo,
+                    source: finalLayer,
                     paint: {
-                      'line-color': getLineParameters(geo).col,
-                      'line-width': getLineParameters(geo).num,
-                      'line-offset': getLineParameters(geo).offset
+                      'line-color': getLineParameters(finalLayer).col,
+                      'line-width': getLineParameters(finalLayer).num,
+                      'line-offset': getLineParameters(finalLayer).offset
                     }
                   },
                   'label-layer'
                 );
               }
 
-              if (!map.current?.getLayer(geo.concat('-points'))) {
+              if (!map.current?.getLayer(finalLayer.concat('-points'))) {
                 map.current?.addLayer(
                   {
-                    id: geo.concat('-points'),
+                    id: finalLayer.concat('-points'),
                     type: 'circle',
-                    source: geo,
+                    source: finalLayer,
                     filter: ['==', ['geometry-type'], 'Point'],
                     paint: {
                       'circle-color': [
                         'case',
                         ['==', ['get', 'selectedTagValue'], null],
-                        'red',
+                        geoColor.hex,
                         ['<', ['get', 'selectedTagValue'], 0],
-                        'brown',
+                        geoColor.hex,
                         ['==', ['get', 'selectedTagValue'], 0],
-                        'blue',
-                        INITIAL_FILL_COLOR
+                        geoColor.hex,
+                        ['get', 'colorField']
                       ],
                       'circle-opacity': [
                         'case',
@@ -469,44 +620,78 @@ const SimulationMapView = ({
                 );
               }
 
-              if (!map.current?.getLayer(geo.concat('-fill'))) {
+              if (!map.current?.getLayer(finalLayer.concat('-fill'))) {
                 map.current?.addLayer(
                   {
-                    id: geo.concat('-fill'),
+                    id: finalLayer.concat('-fill'),
                     type: 'fill',
-                    source: geo,
+                    source: finalLayer,
                     filter: ['!=', ['geometry-type'], 'Point'],
                     paint: {
                       'fill-color': [
                         'case',
                         ['==', ['get', 'selectedTagValue'], null],
-                        'red',
+                        geoColor.hex,
                         ['<', ['get', 'selectedTagValue'], 0],
-                        'brown',
+                        geoColor.hex,
                         ['==', ['get', 'selectedTagValue'], 0],
-                        'blue',
-                        INITIAL_FILL_COLOR
+                        geoColor.hex,
+                        ['get', 'selectedColor']
                       ],
                       'fill-opacity': [
                         'case',
-                        ['==', ['get', 'selectedTagValuePercent'], null],
+                        ['==', ['get', 'selectedTransparency'], null],
                         0.1,
-                        ['==', ['get', 'selectedTagValuePercent'], 0],
-                        0.1,
-                        ['get', 'selectedTagValuePercent']
+                        ['/', ['get', 'selectedTransparency'], 100]
                       ]
                     }
                   },
-                  geo.concat('-line')
+                  finalLayer.concat('-line')
                 );
               }
 
-              if (!map.current?.getLayer(geo.concat('-symbol'))) {
+              // if (!map.current?.getLayer(finalLayer.concat('-fill-extrusion'))) {
+              //   map.current?.addLayer(
+              //     {
+              //       id: finalLayer.concat('-fill-extrusion'),
+              //       type: 'fill-extrusion',
+              //       source: finalLayer,
+              //       filter: ['!=', ['geometry-type'], 'Point'],
+              //       paint: {
+              //         'fill-extrusion-color': [
+              //           'case',
+              //           ['==', ['get', 'selectedTagValue'], null],
+              //           geoColor.hex,
+              //           ['<', ['get', 'selectedTagValue'], 0],
+              //           geoColor.hex,
+              //           ['==', ['get', 'selectedTagValue'], 0],
+              //           geoColor.hex,
+              //           ['get', 'selectedColor']
+              //         ],
+              //         'fill-extrusion-base': 0,
+              //         'fill-extrusion-height': [
+              //           'case',
+              //           ['==', ['get', 'selectedTagValuePercent'], null],
+              //           0,
+              //           ['<', ['get', 'selectedTagValuePercent'], 0],
+              //           0,
+              //           ['==', ['get', 'selectedTagValuePercent'], 0],
+              //           0,
+              //           ['*', ['get', 'selectedTagValuePercent'], 10000]
+              //         ],
+              //         'fill-extrusion-opacity': 1
+              //       }
+              //     },
+              //     finalLayer.concat('-line')
+              //   );
+              // }
+
+              if (!map.current?.getLayer(finalLayer.concat('-symbol'))) {
                 map.current?.addLayer(
                   {
-                    id: geo.concat('-symbol'),
+                    id: finalLayer.concat('-symbol'),
                     type: 'symbol',
-                    source: geo.concat('-centers'),
+                    source: finalLayer.concat('-centers'),
                     layout: {
                       'text-field': [
                         'format',
@@ -530,15 +715,15 @@ const SimulationMapView = ({
                       ]
                     }
                   },
-                  geo.concat('-line')
+                  finalLayer.concat('-line')
                 );
               }
-              if (!map.current?.getLayer(geo.concat('-heatmap'))) {
+              if (!map.current?.getLayer(finalLayer.concat('-heatmap'))) {
                 map.current?.addLayer(
                   {
-                    id: geo.concat('-heatmap'),
+                    id: finalLayer.concat('-heatmap'),
                     type: 'heatmap',
-                    source: geo.concat('-centers'),
+                    source: finalLayer.concat('-centers'),
                     paint: {
                       'heatmap-radius': [
                         'case',
@@ -555,16 +740,16 @@ const SimulationMapView = ({
                       'heatmap-opacity': INITIAL_HEAT_MAP_OPACITY
                     }
                   },
-                  geo.concat('-symbol')
+                  finalLayer.concat('-symbol')
                 );
               }
 
-              if (!map.current?.getLayer(geo.concat('-structure-heatmap'))) {
+              if (!map.current?.getLayer(finalLayer.concat('-structure-heatmap'))) {
                 map.current?.addLayer(
                   {
-                    id: geo.concat('-structure-heatmap'),
+                    id: finalLayer.concat('-structure-heatmap'),
                     type: 'heatmap',
-                    source: geo.concat('-centers'),
+                    source: finalLayer.concat('-centers'),
                     paint: {
                       'heatmap-radius': ['case', ['==', ['get', 'geographicLevel'], 'structure'], 15, 0],
                       'heatmap-weight': ['case', ['==', ['get', 'geographicLevel'], 'structure'], 3, 0],
@@ -588,211 +773,380 @@ const SimulationMapView = ({
                       ]
                     }
                   },
-                  geo.concat('-symbol')
+                  finalLayer.concat('-symbol')
                 );
               }
+            }
 
-              if (map.current) {
-                map.current.on('mouseover', geo.concat('-symbol'), e => {
-                  const features = map.current?.queryRenderedFeatures(e.point);
-                  let filteredFeatures = features?.filter(feature => feature.layer.id === geo.concat('-symbol'));
-                  const feature = filteredFeatures ? filteredFeatures[0] : undefined;
-                  if (feature) {
-                    const properties = feature.properties;
-                    if (properties && (properties['selectedTagValue'] === 0 || properties['selectedTagValue'])) {
-                      const selectedValue: any[] = JSON.parse(properties['selectedTagValue']);
-                      let selectedTag = properties.selectedTag;
-                      let selectedTagPercentageValue = properties.selectedTagValuePercent;
-                      let htmlText = `<p class="text-success"><b>Location Name:</b> ${feature.properties?.name}
-                                            <br> Tag: ${selectedTag} 
-                                            <br> Value: ${selectedValue}
-                                            <br> Percentage: ${selectedTagPercentageValue} 
-                                      </p > `;
+            let filter = chunkedData.features?.filter(feature => feature.properties?.geographicLevel === geo);
+
+            layerList.forEach(lay => {
+              setUserDefinedLayers(userDefinedLayerList => {
+                let finLayer = lay.concat('-').concat(geo);
+                if (
+                  !userDefinedLayerList.map(userDefinedLayer => userDefinedLayer.layer).includes(finLayer) &&
+                  layer === lay
+                ) {
+                  userDefinedLayerList.push({
+                    layer: finLayer,
+                    key: finLayer,
+                    geo: geo,
+                    layerName: lay,
+                    active: true,
+                    col: geoColor,
+                    size: filter ? filter.length : 0
+                    // tagList: uniqueTags
+                  });
+
+                  if (map.current) {
+                    map.current.on('mouseover', finLayer.concat('-symbol'), e => {
+                      const features = map.current?.queryRenderedFeatures(e.point);
+                      let filteredFeatures = features?.filter(feature => feature.layer.id.endsWith('-fill'));
+                      const feature = filteredFeatures ? filteredFeatures[0] : undefined;
+                      let tagData = filteredFeatures
+                        ?.map(feature => {
+                          const properties = feature.properties;
+                          let htmlText = '';
+                          if (properties && (properties['selectedTagValue'] === 0 || properties['selectedTagValue'])) {
+                            const selectedValue: any[] = JSON.parse(properties['selectedTagValue']);
+                            let selectedTag = properties.selectedTag;
+                            let selectedTagPercentageValue = properties.selectedTagValuePercent;
+                            let percDisplay = 0;
+                            try {
+                              let perc = parseFloat(selectedTagPercentageValue);
+                              percDisplay = Math.trunc(Math.round(perc * 100));
+                            } catch (e) {}
+                            htmlText = `  
+                                              <br> Layer: ${feature.layer.id?.split('-')[0]}
+                                              <br> Tag: ${selectedTag}
+                                              <br> Value: ${selectedValue}
+                                              <br> Percentile: ${percDisplay}%
+                                    
+                                        `;
+                          }
+                          return htmlText;
+                        })
+                        .reverse()
+                        .join('<br>');
+                      if (feature) {
+                        const properties = feature.properties;
+                        if (properties && (properties['selectedTagValue'] === 0 || properties['selectedTagValue'])) {
+                          let htmlText = `<p class="text-success"><b>Location Name:</b> ${feature.properties?.name}
+                                              ${tagData}
+                                        </p > `;
+                          if (map.current) {
+                            map.current.getCanvas().style.cursor = 'pointer';
+                            hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(map.current);
+                          }
+                        }
+                      }
+                    });
+
+                    map.current.on('mouseleave', finLayer.concat('-symbol'), () => {
                       if (map.current) {
-                        map.current.getCanvas().style.cursor = 'pointer';
-                        hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(map.current);
+                        map.current.getCanvas().style.cursor = '';
+                        hoverPopup.current.remove();
                       }
-                    }
+                    });
                   }
-                });
 
-                map.current.on('mouseleave', geo.concat('-symbol'), () => {
-                  if (map.current) {
-                    map.current.getCanvas().style.cursor = '';
-                    hoverPopup.current.remove();
-                  }
-                });
+                  return userDefinedLayerList;
+                } else {
+                  return userDefinedLayerList;
+                }
+              });
+            });
 
-                map.current.on('click', e => {
+            let filteredData: PlanningLocationResponse = {
+              features: filter,
+              type: 'FeatureCollection',
+              parents: [],
+              identifier: undefined
+            };
+
+            if (filteredData.features.length > 0) {
+              let planningLocationResponseGeoContainer = { key: finalLayer, data: filteredData };
+
+              if (map.current?.getSource(finalLayer)) {
+                if (planningLocationResponseGeoContainer) {
+                  (map.current?.getSource(finalLayer) as GeoJSONSource).setData(
+                    planningLocationResponseGeoContainer.data
+                  );
+
                   if (map.current) {
-                    const features = map.current.queryRenderedFeatures(e.point);
-                    if (features.length) {
-                      //convert to location properties feature
-                      const feature = features[0];
-                      if (
-                        feature &&
-                        feature.properties &&
-                        (feature.source === geo.concat('-centers') || feature.source === geo)
-                      ) {
-                        openModalHandler(feature.properties['identifier']);
-                      }
-                    }
+                    fitCollectionToBounds(map.current, planningLocationResponseGeoContainer.data);
                   }
-                });
+                }
               }
+              if (map.current?.getSource(finalLayer.concat('-centers'))) {
+                if (planningLocationResponseGeoContainer) {
+                  let centers = getFeatureCentresFromLocation(planningLocationResponseGeoContainer.data);
 
-              return geoLayerList;
-            } else {
-              return geoLayerList;
-            }
-          });
-
-          updateLevelsLoaded(geographicLevelResultLayerIds.map(value => value.layer));
-
-          let filter = chunkedData.features?.filter(feature => feature.properties?.geographicLevel === geo);
-
-          let filteredData: PlanningLocationResponse = {
-            features: filter,
-            type: 'FeatureCollection',
-            parents: [],
-            identifier: undefined
-          };
-
-          if (filteredData.features.length > 0) {
-            let planningLocationResponseGeoContainer = geographicLevelMapStateData.current.find(
-              geoMapData => geoMapData.key === geo
-            );
-
-            if (planningLocationResponseGeoContainer) {
-              let notAlreadyAdded = filteredData.features.filter(feature => {
-                return !geographicLevelMapStateDataIds.current.has(feature.properties?.identifier);
-              });
-              planningLocationResponseGeoContainer.data.features =
-                planningLocationResponseGeoContainer.data.features.concat(notAlreadyAdded);
-              notAlreadyAdded.forEach(feature => {
-                geographicLevelMapStateDataIds.current.add(feature.properties?.identifier);
-              });
-            } else {
-              planningLocationResponseGeoContainer = { key: geo, data: filteredData };
-
-              geographicLevelMapStateData.current.push(planningLocationResponseGeoContainer);
-              planningLocationResponseGeoContainer.data.features.forEach(feature => {
-                geographicLevelMapStateDataIds.current.add(feature.properties?.identifier);
-              });
-            }
-
-            if (map.current?.getSource(geo)) {
-              if (planningLocationResponseGeoContainer) {
-                (map.current?.getSource(geo) as GeoJSONSource).setData(planningLocationResponseGeoContainer.data);
-
-                if (map.current) {
-                  fitCollectionToBounds(map.current, planningLocationResponseGeoContainer.data);
+                  let centreFeatureCollection: PlanningLocationResponse = {
+                    identifier: undefined,
+                    features: centers,
+                    type: 'FeatureCollection',
+                    parents: []
+                  };
+                  (map.current?.getSource(finalLayer.concat('-centers')) as GeoJSONSource).setData(
+                    centreFeatureCollection
+                  );
                 }
               }
             }
-            if (map.current?.getSource(geo.concat('-centers'))) {
-              if (planningLocationResponseGeoContainer) {
-                let centers = getFeatureCentresFromLocation(planningLocationResponseGeoContainer.data);
+          });
 
-                let centreFeatureCollection: PlanningLocationResponse = {
-                  identifier: undefined,
-                  features: centers,
-                  type: 'FeatureCollection',
-                  parents: []
-                };
-                (map.current?.getSource(geo.concat('-centers')) as GeoJSONSource).setData(centreFeatureCollection);
+          let uniqueTags: Set<string> = new Set<string>();
+          chunkedData.features?.forEach(feature => {
+            if (feature.properties && feature.properties.metadata) {
+              let metaList = feature.properties.metadata;
+              if (metaList) {
+                metaList.forEach((meta: any) => uniqueTags.add(meta.type));
               }
             }
-          }
-        });
+          });
+
+          setUserDefinedNames(userDefinedNames => {
+            let finLayer = layer;
+
+            let newUserDefinedLayerNames: {
+              layer: string;
+              key: string;
+              layerName: string;
+              active: boolean;
+              col: Color;
+              tagList?: Set<any>;
+            }[] = [];
+
+            userDefinedNames.forEach(userDefinedLayerName => {
+              newUserDefinedLayerNames.push(userDefinedLayerName);
+            });
+
+            if (!userDefinedNames.map(userDefinedLayer => userDefinedLayer.layer).includes(finLayer)) {
+              newUserDefinedLayerNames.push({
+                layer: finLayer,
+                key: finLayer,
+                layerName: finLayer,
+                active: true,
+                col: geoColor,
+                tagList: uniqueTags
+              });
+            }
+            return newUserDefinedLayerNames;
+          });
+        }
       }
     }
   }, [
     selectedMetadata,
-    selectedHeatMapMetadata,
     chunkedData,
     openModalHandler,
     updateLevelsLoaded,
     geographicLevelResultLayerIds,
-    map
+    map,
+    analysisLayerDetails,
+    isAnalysis,
+    userDefinedLayers
   ]);
 
-  useEffect(() => {
-    setMetadataList(getMetadataListFromMapData(mapData));
-  }, [mapData]);
-
-  useEffect(() => {
-    geographicLevelResultLayerIds.forEach(geoObj => {
-      if (map.current) {
-        let geo = geoObj.layer;
-
-        let sourceCentres: any = map.current.getSource(geo.concat('-centers'));
-
-        let sourceData: PlanningLocationResponse = {
-          type: (sourceCentres._data as any)['type'],
-          features: (sourceCentres._data as any)['features'],
-          parents: (sourceCentres._data as any)['parents'],
-          identifier: undefined
-        };
-
-        let tagStats: any;
-        tagStats = getTagStats(sourceData);
-        sourceData.features.forEach(feature => {
-          feature = updateFeaturesWithTagStats(
-            feature,
-            tagStats,
-            selectedMetadata,
-            'selectedTagValuePercent',
-            'selectedTagValue',
-            'selectedTag'
-          );
-          updateFeaturesWithTagStats(
-            feature,
-            tagStats,
-            selectedHeatMapMetadata,
-            'selectedTagHeatMapValuePercent',
-            'selectedTagHeatMapValue',
-            'selectedHeatMapTag'
-          );
-        });
-
-        if (map.current?.getSource(geo.concat('-centers'))) {
-          (map.current?.getSource(geo.concat('-centers')) as GeoJSONSource).setData(sourceData);
-        }
-
-        let source: any = map.current.getSource(geo);
-
-        let fillSourceData: PlanningLocationResponse = {
-          type: (source._data as any)['type'],
-          features: (source._data as any)['features'],
-          parents: (source._data as any)['parents'],
-          identifier: undefined
-        };
-        fillSourceData.features.forEach(feature => {
-          feature = updateFeaturesWithTagStats(
-            feature,
-            tagStats,
-            selectedMetadata,
-            'selectedTagValuePercent',
-            'selectedTagValue',
-            'selectedTag'
-          );
-          updateFeaturesWithTagStats(
-            feature,
-            tagStats,
-            selectedHeatMapMetadata,
-            'selectedTagHeatMapValuePercent',
-            'selectedTagHeatMapValue',
-            'selectedHeatMapTag'
-          );
-        });
-
-        if (map.current?.getSource(geo)) {
-          (map.current?.getSource(geo) as GeoJSONSource).setData(fillSourceData);
+  const getProcessedUserDefinedLayers = (
+    userDefinedLayers: {
+      layer: string;
+      key: string;
+      geo: string;
+      layerName: string;
+      active: boolean;
+      col: Color;
+      size?: number;
+    }[]
+  ): {
+    list:
+      | { layer: string; key: string; geo: string; layerName: string; active: boolean; col: Color; size?: number }[]
+      | undefined;
+    key: string;
+    color: Color;
+  }[] => {
+    let processedUserDefinedLayerSet = new Map<
+      string,
+      { layer: string; key: string; geo: string; layerName: string; active: boolean; col: Color; size?: number }[]
+    >();
+    userDefinedLayers.forEach(layer => {
+      let arr;
+      let arr2: {
+        layer: string;
+        key: string;
+        geo: string;
+        layerName: string;
+        active: boolean;
+        col: Color;
+        size?: number;
+      }[] = [];
+      if (processedUserDefinedLayerSet.has(layer.layerName) && processedUserDefinedLayerSet.get(layer.layerName)) {
+        arr = processedUserDefinedLayerSet.get(layer.layerName);
+        if (arr) {
+          arr.forEach(item => arr2.push(item));
         }
       }
+
+      arr2.push(layer);
+      processedUserDefinedLayerSet.set(layer.layerName, arr2);
     });
-  }, [selectedHeatMapMetadata, selectedMetadata, geographicLevelResultLayerIds, map]);
+
+    const map1 = Array.from(processedUserDefinedLayerSet.keys())
+      .filter(key => processedUserDefinedLayerSet.has(key))
+      .map((key: string) => {
+        let col: Color = defColor;
+        // @ts-ignore
+        let item = processedUserDefinedLayerSet.get(key) ? processedUserDefinedLayerSet.get(key)[0] : undefined;
+        if (item) {
+          col = item.col;
+        }
+        return {
+          key: key,
+          list: processedUserDefinedLayerSet.get(key),
+          color: col
+        };
+      });
+    return map1;
+  };
+
+  const getProcessedUserDefinedLayersReact = useCallback((): {
+    list:
+      | {
+          layer: string;
+          key: string;
+          geo: string;
+          layerName: string;
+          active: boolean;
+          col: Color;
+          size?: number;
+          tagList?: Set<any>;
+        }[]
+      | undefined;
+    key: string;
+    color: Color;
+  }[] => {
+    let processedUserDefinedLayerSet = new Map<
+      string,
+      { layer: string; key: string; geo: string; layerName: string; active: boolean; col: Color; size?: number }[]
+    >();
+
+    userDefinedLayers.forEach(layer => {
+      let arra;
+      let arr2: {
+        layer: string;
+        key: string;
+        geo: string;
+        layerName: string;
+        active: boolean;
+        col: Color;
+        size?: number;
+        tagList?: Set<any>;
+      }[] = [];
+      if (processedUserDefinedLayerSet.has(layer.layerName) && processedUserDefinedLayerSet.get(layer.layerName)) {
+        arra = processedUserDefinedLayerSet.get(layer.layerName);
+        if (arra) {
+          arra.forEach(item => arr2.push(item));
+        }
+      }
+
+      arr2.push(layer);
+      processedUserDefinedLayerSet.set(layer.layerName, arr2);
+    });
+
+    const map1 = Array.from(processedUserDefinedLayerSet.keys())
+      .filter(key => processedUserDefinedLayerSet.has(key))
+      .map((key: string) => {
+        let col: Color = defColor;
+        // @ts-ignore
+        let item = processedUserDefinedLayerSet.get(key) ? processedUserDefinedLayerSet.get(key)[0] : undefined;
+        if (item) {
+          col = item.col;
+        }
+        return {
+          key: key,
+          list: processedUserDefinedLayerSet.get(key),
+          color: col
+        };
+      });
+    return map1;
+  }, [userDefinedLayers, defColor]);
+
+  useEffect(() => {
+    if (map.current) {
+      if (selectedUserDefinedLayer) {
+        userDefinedLayers
+          .filter(userDefinedLayer => userDefinedLayer.layerName === selectedUserDefinedLayer.key)
+          .forEach(userDefinedLayer => {
+            let geo = userDefinedLayer.layer;
+            let sourceCentres: any = map.current?.getSource(geo.concat('-centers'));
+
+            let sourceData: PlanningLocationResponse = {
+              type: (sourceCentres._data as any)['type'],
+              features: (sourceCentres._data as any)['features'],
+              parents: (sourceCentres._data as any)['parents'],
+              identifier: undefined
+            };
+
+            let tagStats: any;
+            tagStats = getTagStats(sourceData);
+            sourceData.features.forEach(feature => {
+              if (feature && feature.properties) {
+                feature.properties['selectedTransparency'] =
+                  userDefinedLayer.transparency !== undefined && userDefinedLayer.transparency !== null
+                    ? userDefinedLayer.transparency
+                    : 10;
+              }
+            });
+            if (userDefinedLayer.selectedTag) {
+              sourceData.features.forEach(feature => {
+                updateFeaturesWithTagStatsAndColorAndTransparency(
+                  feature,
+                  tagStats,
+                  userDefinedLayer.selectedTag,
+                  'selectedTagValuePercent',
+                  'selectedTagValue',
+                  'selectedTag',
+                  'selectedColor',
+
+                  selectedUserDefinedLayer.col
+                );
+              });
+            }
+
+            if (map.current?.getSource(geo.concat('-centers'))) {
+              (map.current?.getSource(geo.concat('-centers')) as GeoJSONSource).setData(sourceData);
+            }
+
+            let source: any = map.current?.getSource(geo);
+
+            let fillSourceData: PlanningLocationResponse = {
+              type: (source._data as any)['type'],
+              features: (source._data as any)['features'],
+              parents: (source._data as any)['parents'],
+              identifier: undefined
+            };
+            fillSourceData.features.forEach(feature => {
+              updateFeaturesWithTagStatsAndColorAndTransparency(
+                feature,
+                tagStats,
+                userDefinedLayer.selectedTag,
+                'selectedTagValuePercent',
+                'selectedTagValue',
+                'selectedTag',
+                'selectedColor',
+
+                selectedUserDefinedLayer.col
+              );
+            });
+
+            if (map.current?.getSource(geo)) {
+              (map.current?.getSource(geo) as GeoJSONSource).setData(fillSourceData);
+            }
+          });
+      }
+    }
+  }, [selectedUserDefinedLayer, userDefinedLayers, map, userDefinedNames]);
 
   useEffect(() => {
     if (map !== undefined && map.current !== undefined) {
@@ -807,35 +1161,42 @@ const SimulationMapView = ({
   });
 
   useEffect(() => {
-    geographicLevelResultLayerIds.forEach(geographicLevelResultLayerId => {
-      if (map.current?.getSource(geographicLevelResultLayerId.layer)) {
-        if (map.current?.getLayer(geographicLevelResultLayerId.layer.concat('-fill'))) {
-          if (map.current?.getPaintProperty(geographicLevelResultLayerId.layer.concat('-fill'), 'fill-color')) {
-            let expression: Expression = map.current?.getPaintProperty(
-              geographicLevelResultLayerId.layer.concat('-fill'),
-              'fill-color'
-            );
-            expression[7] = color.hex;
-            map.current?.setPaintProperty(geographicLevelResultLayerId.layer.concat('-fill'), 'fill-color', expression);
+    if (!isAnalysis) {
+      geographicLevelResultLayerIds.forEach(geographicLevelResultLayerId => {
+        if (map.current?.getSource(geographicLevelResultLayerId.layer)) {
+          if (map.current?.getLayer(geographicLevelResultLayerId.layer.concat('-fill'))) {
+            if (map.current?.getPaintProperty(geographicLevelResultLayerId.layer.concat('-fill'), 'fill-color')) {
+              let expression: Expression = map.current?.getPaintProperty(
+                geographicLevelResultLayerId.layer.concat('-fill'),
+                'fill-color'
+              );
+
+              expression[7] = color.hex;
+              map.current?.setPaintProperty(
+                geographicLevelResultLayerId.layer.concat('-fill'),
+                'fill-color',
+                expression
+              );
+            }
+          }
+          if (map.current?.getLayer(geographicLevelResultLayerId.layer.concat('-points'))) {
+            if (map.current?.getPaintProperty(geographicLevelResultLayerId.layer.concat('-points'), 'circle-color')) {
+              let expression: Expression = map.current?.getPaintProperty(
+                geographicLevelResultLayerId.layer.concat('-points'),
+                'circle-color'
+              );
+              expression[7] = color.hex;
+              map.current?.setPaintProperty(
+                geographicLevelResultLayerId.layer.concat('-points'),
+                'circle-color',
+                expression
+              );
+            }
           }
         }
-        if (map.current?.getLayer(geographicLevelResultLayerId.layer.concat('-points'))) {
-          if (map.current?.getPaintProperty(geographicLevelResultLayerId.layer.concat('-points'), 'circle-color')) {
-            let expression: Expression = map.current?.getPaintProperty(
-              geographicLevelResultLayerId.layer.concat('-points'),
-              'circle-color'
-            );
-            expression[7] = color.hex;
-            map.current?.setPaintProperty(
-              geographicLevelResultLayerId.layer.concat('-points'),
-              'circle-color',
-              expression
-            );
-          }
-        }
-      }
-    });
-  }, [color, geographicLevelResultLayerIds, map]);
+      });
+    }
+  }, [color, geographicLevelResultLayerIds, map, isAnalysis]);
 
   const showLayer = useCallback(
     (show: any, layer: string) => {
@@ -854,6 +1215,12 @@ const SimulationMapView = ({
       showLayer(geographicLevelResultLayerId.active, geographicLevelResultLayerId.layer);
     });
   }, [geographicLevelResultLayerIds, showLayer]);
+
+  useEffect(() => {
+    userDefinedLayers.forEach(userDefinedLayers => {
+      showLayer(userDefinedLayers.active, userDefinedLayers.layer);
+    });
+  }, [userDefinedLayers, showLayer]);
 
   const addParentMapData = useCallback(
     (filteredData: PlanningParentLocationResponse) => {
@@ -891,13 +1258,15 @@ const SimulationMapView = ({
     }
   }, [parentMapStateData, addParentMapData]);
 
-  const updateFeaturesWithTagStats = (
+  const updateFeaturesWithTagStatsAndColorAndTransparency = (
     feature: RevealFeature | Feature<Point | MultiPolygon | Polygon>,
     tagStats: any,
     tag: string | undefined,
     percentageField: string,
     valueField: string,
-    tagField: string
+    tagField: string,
+    colorField: string,
+    color: Color
   ) => {
     if (feature) {
       feature.properties?.metadata?.forEach((element: any) => {
@@ -912,10 +1281,17 @@ const SimulationMapView = ({
               } else {
                 percentage = element.value / tagStats.max[tag];
               }
-              feature.properties[percentageField] = percentage * 0.8;
+              feature.properties[percentageField] = percentage;
 
               feature.properties.selectedTagValueMin = tagStats.min[tag];
               feature.properties.selectedTagValueMax = tagStats.max[tag];
+
+              let [h, s, v] = hex.hsv(color.hex);
+              const colorField1 = s * feature.properties[percentageField];
+
+              let hexVal = hsv.hex([h, colorField1, v]);
+
+              feature.properties[colorField] = '#'.concat(hexVal);
             }
           } else {
             delete feature.properties[valueField];
@@ -923,6 +1299,7 @@ const SimulationMapView = ({
             delete feature.properties[percentageField];
             delete feature.properties.selectedTagValueMin;
             delete feature.properties.selectedTagValueMax;
+            delete feature.properties[colorField];
           }
         }
       });
@@ -952,6 +1329,23 @@ const SimulationMapView = ({
     }
   }, [geographicLevelResultLayerIds]);
 
+  const getOptions = useCallback(() => {
+    return (
+      <>
+        {markedMapBoxFeatures &&
+          markedMapBoxFeatures
+            .filter((feature: any) => feature.properties !== undefined)
+            .map((feature: any) => {
+              return (
+                <option key={feature.properties?.name} value={feature.properties?.identifier}>
+                  {feature.properties?.name} - {feature.properties?.geographicLevel}
+                </option>
+              );
+            })}
+      </>
+    );
+  }, [markedMapBoxFeatures]);
+
   return (
     <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
       <div style={{ position: 'absolute', zIndex: 2, width: '100%' }} className="mx-0 px-0">
@@ -971,43 +1365,16 @@ const SimulationMapView = ({
           </div>
           {showMapControls && (
             <>
-              {geographicLevelResultLayerIds.length > 0 && (
+              {userDefinedLayers.length > 0 && (
                 <div style={{ paddingTop: '1em' }}>
                   <Button
                     style={{ width: '75px', fontSize: 'smaller' }}
-                    onClick={() => setShowGeoLevelStyle(!showGeoLevelStyle)}
+                    onClick={() => setShowUserDefinedLayerStyle(!showUserDefinedLayerStyle)}
                     className="rounded"
                     size="sm"
                     variant="success"
                   >
-                    {(showGeoLevelStyle ? 'Hide' : '') + ' Level'}{' '}
-                  </Button>
-                </div>
-              )}
-
-              {metadataList && (
-                <div style={{ paddingTop: '1em' }}>
-                  <Button
-                    style={{ width: '75px', fontSize: 'smaller' }}
-                    onClick={() => setShowMetaStyle(!showMetaStyle)}
-                    className="rounded"
-                    size="sm"
-                    variant="success"
-                  >
-                    {(showMetaStyle ? 'Hide' : '') + ' Meta'}{' '}
-                  </Button>
-                </div>
-              )}
-              {metadataList && (
-                <div style={{ paddingTop: '1em' }}>
-                  <Button
-                    style={{ width: '75px', fontSize: 'smaller' }}
-                    onClick={() => setShowHeatMapStyle(!showHeatMapStyle)}
-                    className="rounded"
-                    size="sm"
-                    variant="success"
-                  >
-                    {(showHeatMapStyle ? 'Hide' : '') + ' Heatmap'}{' '}
+                    {(showUserDefinedLayerStyle ? 'Hide' : '') + ' Result Sets'}{' '}
                   </Button>
                 </div>
               )}
@@ -1017,172 +1384,224 @@ const SimulationMapView = ({
 
         {showMapControls && (
           <div>
-            {showGeoLevelStyle && geographicLevelResultLayerIds.length > 0 && (
-              <div style={{ float: 'left' }} className="sidebar-adjust-list text-dark bg-light p-2 rounded">
-                <p
-                  className="lead mb-1"
-                  onClick={() => {
-                    setShowLayerSelector(!showLayerSelector);
-                  }}
-                >
-                  Geographic Levels{' '}
-                  {showLayerSelector ? (
-                    <FontAwesomeIcon className="ms-2" icon="sort-up" />
-                  ) : (
-                    <FontAwesomeIcon className="ms-2" icon="sort-down" />
-                  )}
-                </p>
-
-                {showLayerSelector && (
-                  <div>
-                    {geographicLevelResultLayerIds.map(layer => {
-                      return (
-                        <Form.Check
-                          key={layer.layer}
-                          label={layer.layer}
-                          value={layer.layer}
-                          type="checkbox"
-                          checked={layer.active}
-                          onChange={e =>
-                            setGeographicLevelResultLayerIds(layerItems => {
-                              let newItems: { layer: string; active: boolean }[] = [];
-                              layerItems.forEach(newItem => {
-                                newItems.push(newItem);
-                              });
-                              let item = newItems.find(layerItem => layerItem.layer === layer.layer);
-                              if (item) {
-                                item.active = e.target.checked;
-                              }
-                              return newItems;
-                            })
-                          }
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {showMetaStyle && metadataList && (
-              <div style={{ float: 'left' }} className="sidebar-adjust-list text-dark bg-light p-2 rounded">
-                <p
-                  className="lead mb-1"
-                  onClick={() => {
-                    setShowColorPicker(!showColorPicker);
-                  }}
-                >
-                  Metadata
-                </p>
-
-                <div>
-                  <Form.Select
-                    style={{ display: 'inline-block' }}
-                    onChange={e => setSelectedMetadata(e.target.value)}
-                    value={selectedMetadata}
+            {showUserDefinedLayerStyle && userDefinedLayers.length > 0 && (
+              <Draggable>
+                <div style={{ float: 'left' }} className="sidebar-adjust-list text-dark bg-light p-2 rounded">
+                  <p
+                    className="lead mb-1"
+                    onClick={() => {
+                      setShowUserDefineLayerSelector(!showUserDefineLayerSelector);
+                    }}
                   >
-                    <option value={''}>Select Metadata Tag...</option>
-                    {metadataList &&
-                      Array.from(metadataList).map(metaDataItem => {
+                    ResultSets{' '}
+                    {showUserDefineLayerSelector ? (
+                      <FontAwesomeIcon className="ms-2" icon="sort-up" />
+                    ) : (
+                      <FontAwesomeIcon className="ms-2" icon="sort-down" />
+                    )}
+                  </p>
+
+                  {showUserDefineLayerSelector && (
+                    <div>
+                      {getProcessedUserDefinedLayers(userDefinedLayers).map(layerObj => {
                         return (
-                          <option key={metaDataItem} value={metaDataItem}>
-                            {metaDataItem}
-                          </option>
+                          <Accordion flush>
+                            <Accordion.Item eventKey={layerObj.key}>
+                              <Accordion.Header>
+                                <>
+                                  <div>{layerObj.key}</div>
+                                  <div
+                                    className={'mx-4'}
+                                    style={{
+                                      width: '30px',
+                                      height: '15px', //, backgroundColor: layerObj.color
+                                      background: getBackgroundStyle(layerObj.color.rgb)
+                                    }}
+                                  />
+                                </>
+                              </Accordion.Header>
+                              <Accordion.Body>
+                                <>
+                                  {layerObj?.list?.map(layer => {
+                                    return (
+                                      <Form.Check
+                                        key={layer.key}
+                                        label={
+                                          <p className="figure-caption mb-1" onContextMenu={() => alert('hello')}>
+                                            {layer.geo}
+                                          </p>
+                                        }
+                                        value={layer.layer}
+                                        type="checkbox"
+                                        checked={layer.active}
+                                        onChange={e => {
+                                          setUserDefinedLayers(layerItems => {
+                                            let newItems: {
+                                              layer: string;
+                                              active: boolean;
+                                              layerName: string;
+                                              geo: string;
+                                              key: string;
+                                              col: Color;
+                                            }[] = [];
+                                            layerItems.forEach(newItem => {
+                                              newItems.push(newItem);
+                                            });
+                                            let item = newItems.find(layerItem => layerItem.layer === layer.layer);
+                                            if (item) {
+                                              item.active = e.target.checked;
+                                            }
+                                            return newItems;
+                                          });
+                                        }}
+                                      />
+                                    );
+                                  })}
+                                  <hr />
+                                  <FormGroup>
+                                    <Button
+                                      className={'mx-2'}
+                                      size={'sm'}
+                                      onClick={() => {
+                                        setShowUserDefinedSettingsPanel(
+                                          !showUserDefinedSettingsPanel ||
+                                            selectedUserDefinedLayer?.key !== layerObj.key
+                                        );
+                                        if (selectedUserDefinedLayer?.key !== layerObj.key) {
+                                          setSelectedUserDefinedLayer({
+                                            key: layerObj.key,
+                                            col: layerObj.color
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <FontAwesomeIcon icon={'cog'} inverse />
+                                    </Button>
+                                    <Form.Label>
+                                      {!showUserDefinedSettingsPanel || selectedUserDefinedLayer?.key !== layerObj.key
+                                        ? ''
+                                        : 'Hide '}
+                                      Settings
+                                    </Form.Label>
+                                  </FormGroup>
+                                </>
+                              </Accordion.Body>
+                            </Accordion.Item>
+                          </Accordion>
                         );
                       })}
-                  </Form.Select>
-                  {showColorPicker && (
-                    <div>
-                      <ColorPicker
-                        width={fullScreen ? 287 : 190}
-                        color={color}
-                        onChange={setColor}
-                        hideHEX={true}
-                        hideHSV={true}
-                        hideRGB={true}
-                      />
                     </div>
                   )}
                 </div>
-              </div>
+              </Draggable>
             )}
 
-            {/* enable when needed by setting false to true */}
-            {showHeatMapStyle && metadataList && true && (
+            {showUserDefinedSettingsPanel && selectedUserDefinedLayer && (
               <div style={{ float: 'left' }} className="sidebar-adjust-list text-dark bg-light p-2 rounded">
-                <p className="lead mb-1" onClick={() => setShowHeatMapToggles(!showHeatMapToggles)}>
-                  HeatMap
-                </p>
+                <p className="lead mb-1">Settings - {selectedUserDefinedLayer.key}</p>
+
+                <div
+                  className={'mx-4'}
+                  style={{
+                    width: 'auto',
+                    height: '15px', //, backgroundColor: layerObj.color
+                    background: getBackgroundStyle(selectedUserDefinedLayer.col.rgb)
+                  }}
+                />
 
                 <div>
-                  <Form.Select
-                    style={{ display: 'inline-block' }}
-                    onChange={e => setSelectedHeatMapMetadata(e.target.value)}
-                    value={selectedHeatMapMetadata}
-                  >
-                    <option value={''}>Select Metadata Tag...</option>
-                    {metadataList &&
-                      Array.from(metadataList).map(metaDataItem => {
-                        return (
-                          <option key={metaDataItem} value={metaDataItem}>
-                            {metaDataItem}
-                          </option>
-                        );
-                      })}
-                  </Form.Select>
-                  {showHeatMapToggles && (
-                    <>
-                      <b>Opacity</b>
-                      <Form.Range
-                        min={0}
-                        max={100}
-                        value={heatMapOpacity * 100}
-                        onChange={e => {
-                          geographicLevelResultLayerIds.forEach(layer => {
-                            if (map.current?.getLayer(layer.layer.concat('-heatmap'))) {
-                              if (
-                                map.current?.getPaintProperty(layer.layer.concat('-heatmap'), 'heatmap-opacity') !==
-                                null
-                              ) {
-                                setHeatMapOpacity(Number(e.target.value) / 100);
-                                map.current?.setPaintProperty(
-                                  layer.layer.concat('-heatmap'),
-                                  'heatmap-opacity',
-                                  Number(e.target.value) / 100
-                                );
-                              }
-                            }
-                          });
-                        }}
-                      />
-                      <b>Radius</b>
-                      <Form.Range
-                        min={0}
-                        value={heatMapRadius}
-                        max={100}
-                        onChange={e => {
-                          geographicLevelResultLayerIds.forEach(layer => {
-                            if (map.current?.getLayer(layer.layer.concat('-heatmap'))) {
-                              if (map.current?.getPaintProperty(layer.layer.concat('-heatmap'), 'heatmap-radius')) {
-                                setHeatmapRadius(Number(e.target.value));
-                                let expression: Expression = map.current?.getPaintProperty(
-                                  layer.layer.concat('-heatmap'),
-                                  'heatmap-radius'
-                                );
-                                expression[3][2] = Number(e.target.value);
-                                map.current?.setPaintProperty(
-                                  layer.layer.concat('-heatmap'),
-                                  'heatmap-radius',
-                                  expression
-                                );
-                              }
-                            }
-                          });
-                        }}
-                      />
-                    </>
-                  )}
+                  {userDefinedNames
+                    ?.filter(layer => layer.layerName === selectedUserDefinedLayer.key)
+                    .map(layer => (
+                      <>
+                        <Form.Select
+                          style={{ display: 'inline-block' }}
+                          value={layer.selectedTag}
+                          className={'my-2'}
+                          onChange={e => {
+                            setSelectedMetadata(e.target.value);
+                            setUserDefinedNames(userDefinedNames => {
+                              let newUserDefinedNames: {
+                                layer: string;
+                                key: string;
+                                layerName: string;
+                                active: boolean;
+                                col: Color;
+                                tagList?: Set<any>;
+                                selectedTag?: string;
+                              }[] = [];
+                              userDefinedNames.forEach(userDefinedName => {
+                                if (userDefinedName.layerName === layer.layerName) {
+                                  userDefinedName.selectedTag = e.target.value;
+                                }
+                                newUserDefinedNames.push(userDefinedName);
+                              });
+                              return newUserDefinedNames;
+                            });
+                            setUserDefinedLayers(userDefinedLayers => {
+                              let newUserDefinedNames: {
+                                layer: string;
+                                key: string;
+                                geo: string;
+                                layerName: string;
+                                active: boolean;
+                                col: Color;
+                                tagList?: Set<any>;
+                                selectedTag?: string;
+                              }[] = [];
+                              userDefinedLayers.forEach(userDefinedName => {
+                                if (userDefinedName.layerName === layer.layerName) {
+                                  userDefinedName.selectedTag = e.target.value;
+                                }
+                                newUserDefinedNames.push(userDefinedName);
+                              });
+                              return newUserDefinedNames;
+                            });
+                          }}
+                        >
+                          <option value={''}>Select Metadata Tag...</option>
+                          {layer.tagList &&
+                            Array.from(layer.tagList).map(metaDataItem => {
+                              return (
+                                <option key={metaDataItem} value={metaDataItem}>
+                                  {metaDataItem}
+                                </option>
+                              );
+                            })}
+                        </Form.Select>
+                      </>
+                    ))}
                 </div>
+                <b>Opacity ({getTransparencyValue(userDefinedLayers, selectedUserDefinedLayer)})</b>
+                <Form.Range
+                  min={0}
+                  max={100}
+                  value={getTransparencyValue(userDefinedLayers, selectedUserDefinedLayer)}
+                  onChange={e => {
+                    setUserDefinedLayers(userDefinedLayers => {
+                      let newUserDefinedLayers: {
+                        layer: string;
+                        key: string;
+                        geo: string;
+                        layerName: string;
+                        active: boolean;
+                        col: Color;
+                        tagList?: Set<any>;
+                        selectedTag?: string;
+                        transparency?: number;
+                      }[] = [];
+                      userDefinedLayers.forEach(userDefinedLayer => {
+                        if (userDefinedLayer.layerName === selectedUserDefinedLayer.key) {
+                          userDefinedLayer.transparency = Number(e.target.value);
+                        }
+
+                        newUserDefinedLayers.push(userDefinedLayer);
+                      });
+                      return newUserDefinedLayers;
+                    });
+                  }}
+                />
+                {/*</OffcanvasBody>*/}
               </div>
             )}
           </div>
@@ -1207,6 +1626,72 @@ const SimulationMapView = ({
         </div>
       </div>
       {/* enable when needed by setting false to true */}
+
+      {userDefinedLayers && userDefinedLayers.length > 0 && (
+        <Container
+          style={{
+            right: '2%',
+            bottom: '3%',
+            position: 'absolute',
+            zIndex: 2,
+            minWidth: '15%',
+            width: '15%',
+            maxWidth: '30%'
+          }}
+          className="sidebar-adjust-list text-dark bg-light p-2 rounded"
+          onClick={() => {
+            if (!showStats) {
+              setShowStats(!showStats);
+            }
+          }}
+        >
+          {userDefinedLayers.length && !showStats && 'Show Stats'}
+          <Tabs unmountOnExit={true}>
+            {showStats &&
+              getProcessedUserDefinedLayersReact()?.map(userDefinedLayer => {
+                return (
+                  <Tab unmountOnExit={true} eventKey={userDefinedLayer.key} title={userDefinedLayer.key}>
+                    <>
+                      {userDefinedLayer &&
+                        userDefinedLayer.list &&
+                        userDefinedLayer.list.map(item => (
+                          <p key={item.key}>
+                            <b>{item.geo}:</b> {item.size}
+                          </p>
+                        ))}
+
+                      {userDefinedNames &&
+                        userDefinedNames
+                          .filter(layer => layer.key === userDefinedLayer.key)
+
+                          .map(locItem => {
+                            return Array.from(locItem.tagList ? locItem.tagList : new Set<any>())
+                              .filter((meta: any) => {
+                                let tagItem = entityTags.filter(tag => tag.tag === meta);
+                                if (tagItem && tagItem[0]) {
+                                  return tagItem[0].simulationDisplay;
+                                }
+                                return false;
+                              })
+                              .map((meta: any) => (
+                                <p key={meta}>
+                                  <b>{meta}:</b> {stats[meta]}
+                                </p>
+                              ));
+                          })}
+                    </>
+                  </Tab>
+                );
+              })}
+          </Tabs>
+          {showStats && (
+            <Button variant={'secondary'} size={'sm'} onClick={() => setShowStats(!showStats)}>
+              {showStats ? 'Close' : 'Open'}
+            </Button>
+          )}
+        </Container>
+      )}
+
       {geographicLevelResultLayerIds &&
         true &&
         geographicLevelResultLayerIds.filter(geographicLevelResultLayerId => geographicLevelResultLayerId.active)
@@ -1253,78 +1738,85 @@ const SimulationMapView = ({
           </Container>
         )}
       {showMapDrawnModal && (
-        <ActionDialog
-          closeHandler={() => setShowMapDrawnModal(false)}
-          title={'Selected Locations'}
-          footer={
-            <>
-              <Button
-                onClick={() => {
-                  if (mapBoxDraw.current) {
-                    mapBoxDraw.current?.deleteAll();
-                  }
-                  setShowMapDrawnModal(false);
-                }}
-              >
-                <FontAwesomeIcon className="mx-1" icon="trash" />
-              </Button>
-              <Button
-                onClick={_ => {
-                  updateSelectedLocations(mapDrawMouseOverEvent);
-                  setShowMapDrawnModal(false);
-                }}
-              >
-                update
-              </Button>
-              <Button onClick={() => setShowMapDrawnModal(false)}>close</Button>
-            </>
-          }
-          element={
-            <Container fluid>
-              <Row className="my-3">
-                <Col>
-                  <Form.Group>
-                    <Form.Label>{'Select Level for which the Drawn Polygon to apply to'}</Form.Label>
+        <Draggable>
+          <ActionDialog
+            closeHandler={() => setShowMapDrawnModal(false)}
+            title={'Selected Locations'}
+            footer={
+              <>
+                <Button
+                  onClick={() => {
+                    if (mapBoxDraw.current) {
+                      mapBoxDraw.current?.deleteAll();
+                    }
+                    setShowMapDrawnModal(false);
+                  }}
+                >
+                  <FontAwesomeIcon className="mx-1" icon="trash" />
+                </Button>
+                <Button
+                  onClick={_ => {
+                    updateSelectedLocations3();
+                    setShowMapDrawnModal(false);
+                  }}
+                >
+                  update
+                </Button>
+                <Button onClick={() => setShowMapDrawnModal(false)}>close</Button>
+              </>
+            }
+            element={
+              <Container fluid>
+                <Row className="my-3">
+                  <Col>
+                    <Form.Group>
+                      <Form.Check
+                        className="float-left"
+                        type="switch"
+                        id="custom-switch"
+                        label="Should the selection apply to all locations?"
+                        defaultChecked={false}
+                        onChange={e => setShouldApplyToAll(e.target.checked)}
+                      />
+                    </Form.Group>
+                    {!shouldApplyToAll && (
+                      <Form.Group>
+                        <Form.Label>{'Select Location for which the Drawn Polygon to apply to'}</Form.Label>
 
-                    <Form.Select
-                      style={{ display: 'inline-block' }}
-                      onChange={e => {
-                        setDrawnMapLevel(e.target.value);
-                      }}
-                    >
-                      <option key="selectDrawLayer" value={'select layer'}>
-                        {'Select layer...'}
-                      </option>
-                      {geographicLevelResultLayerIds &&
-                        geographicLevelResultLayerIds.map(geographicLevelResultLayerId => {
-                          return (
-                            <option key={geographicLevelResultLayerId.layer} value={geographicLevelResultLayerId.layer}>
-                              {geographicLevelResultLayerId.layer}
-                            </option>
-                          );
-                        })}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row className="my-3">
-                <Col>
-                  <Form.Group>
-                    <Form.Check
-                      className="float-left"
-                      type="switch"
-                      id="custom-switch"
-                      label="Should the selection apply to children locations?"
-                      defaultChecked={true}
-                      onChange={e => setShouldApplyToChildren(e.target.checked)}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-            </Container>
-          }
-          size={'lg'}
-        />
+                        <Form.Select
+                          style={{ display: 'inline-block' }}
+                          onChange={e => {
+                            setDrawnMapLevel(e.target.value);
+                          }}
+                        >
+                          <option key="selectDrawLayer" value={'select layer'}>
+                            {'Select layer...'}
+                          </option>
+                          {getOptions()}
+                        </Form.Select>
+                      </Form.Group>
+                    )}
+                  </Col>
+                </Row>
+                <Row className="my-3">
+                  <Col>
+                    <Form.Group>
+                      <Form.Check
+                        className="float-left"
+                        type="switch"
+                        id="custom-switch"
+                        label="Should the selection apply to children locations?"
+                        defaultChecked={true}
+                        onChange={e => setShouldApplyToChildren(e.target.checked)}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </Container>
+            }
+            size={'lg'}
+          />
+        </Draggable>
       )}
 
       <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '95vh' : '75vh', width: '100%' }} />
