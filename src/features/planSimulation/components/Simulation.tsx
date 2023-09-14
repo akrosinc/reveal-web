@@ -246,20 +246,13 @@ const Simulation = () => {
   const updateMarkedLocations = (identifier: string, ancestry: string[] | undefined, marked: boolean) => {
     setMarkedLocations(markedLocations => {
       let newMarkedLocations: MarkedLocation[] = [];
-      // let markedLocationsSet = new Set<string>();
-      //
-      // if (markedLocations) {
-      //   markedLocations.forEach(markedLocation => markedLocationsSet.add(markedLocation.identifier));
-      // }
 
       if (markedLocations) {
         markedLocations.forEach(markedLocation => {
-          // if (!markedLocationsSet.has(markedLocation.identifier)) {
           newMarkedLocations.push({
             identifier: markedLocation.identifier,
             ancestry: markedLocation.ancestry
           });
-          // }
         });
         if (!marked) {
           newMarkedLocations = newMarkedLocations?.filter(markedLocation => markedLocation.identifier !== identifier);
@@ -299,6 +292,7 @@ const Simulation = () => {
       setResetMap(true);
       setParentMapData(undefined);
       setShowResult(false);
+      setStatsMetadata({});
 
       setMarkedLocations([]);
       setMarkedParents(new Set<string>());
@@ -378,40 +372,6 @@ const Simulation = () => {
       .catch(err => toast.error(err));
   };
 
-  const subithandler = (resultEntityTags: EntityTag[] | undefined) => {
-    setParentsLoadingState('notstarted');
-    setResultsLoadingState('notstarted');
-    const requestData = {
-      simulationRequestId: simulationRequestId
-    };
-    updateSimulationRequest(simulationRequestId, resultEntityTags)
-      .then(() => {
-        getLocationsSSE(
-          requestData,
-          messageHandler,
-          closeConnHandler,
-          openHandler,
-          parentHandler,
-          statsHandler,
-          locationAggregationHandler,
-          locationAggregationDefinitionHandler,
-          resultsErrorHandler
-        );
-        if (loadParentsToggle) {
-          getFullLocationsSSE(
-            requestData,
-            parentMessageHandler,
-            closeParentConnHandler,
-            openParentHandler,
-            parentResultsErrorHandler
-          );
-        }
-      })
-      .catch(() => {
-        toast.error('Cannot get result set - refresh page');
-      });
-  };
-
   const subithandlerAfterAnalysis = (resultEntityTags: EntityTag[] | undefined, analysisLayer: AnalysisLayer) => {
     setParentsLoadingState('notstarted');
     setResultsLoadingState('notstarted');
@@ -473,18 +433,6 @@ const Simulation = () => {
 
   const openParentHandler = () => {
     setParentsLoaded(false);
-  };
-
-  const parentHandler = (message: MessageEvent) => {
-    const parents: any = JSON.parse(message.data);
-    let mapDataSave: PlanningLocationResponse = {
-      features: [],
-      parents: parents,
-      type: 'FeatureCollection',
-      identifier: undefined
-    };
-
-    setMapDataLoad(mapDataSave);
   };
 
   const parentHandlerAfterAnalysis = (message: MessageEvent, analysisLayer: AnalysisLayer) => {
@@ -589,59 +537,6 @@ const Simulation = () => {
     [complexTags]
   );
 
-  const messageHandler = useCallback(
-    (message: MessageEvent) => {
-      const res: any = JSON.parse(message.data);
-      let mapDataSave: PlanningLocationResponse = {
-        features: res.features,
-        parents: res.parents,
-        type: res.type,
-        identifier: res.identifier
-      };
-      if (mapDataSave.features && mapDataSave.features.length > 0) {
-        mapDataSave.features.forEach((el: any) => {
-          if (el.properties) {
-            el.properties['identifier'] = (el as any).identifier;
-
-            if (complexTags) {
-              if (el.properties.metadata) {
-                complexTags?.forEach(complexTag => {
-                  let a: { [val: string]: number } = {};
-                  complexTag.tags.forEach(tag => {
-                    el.properties.metadata.forEach((metaItem: any) => {
-                      if (metaItem.type === tag.name) {
-                        a[tag.symbol] = metaItem.value;
-                      }
-                    });
-                  });
-                  let val = 0;
-                  try {
-                    val = evaluate(complexTag.formula, a);
-
-                    if (isNumeric(val)) {
-                      let meta = {
-                        type: complexTag.tagName,
-                        value: val,
-                        fieldType: 'generated'
-                      };
-                      complexTag.calculateValue = val;
-                      el.properties.metadata.push(meta);
-                    }
-                  } catch (ex) {
-                    console.warn('eerro with formula');
-                  }
-                });
-              }
-            }
-          }
-        });
-
-        setMapDataLoad(mapDataSave);
-      }
-    },
-    [complexTags]
-  );
-
   const messageHandlerAfterAnalysis = useCallback(
     (message: MessageEvent, analysis: AnalysisLayer) => {
       const res: any = JSON.parse(message.data);
@@ -649,7 +544,7 @@ const Simulation = () => {
         features: res.features,
         parents: res.parents,
         type: res.type,
-        identifier: res.identifier,
+        identifier: message.lastEventId,
         method: analysis
       };
       if (mapDataSave.features && mapDataSave.features.length > 0) {
@@ -974,7 +869,9 @@ const Simulation = () => {
     setParentMapData(undefined);
     setParentsLoadingState('notstarted');
     setResultsLoadingState('notstarted');
+    setSelectedFilterGeographicLevelList([]);
     levelsLoaded.current = [];
+    setGeoFilterList([]);
     reset();
   };
 
@@ -1029,9 +926,7 @@ const Simulation = () => {
 
       if (parent) {
         updateParentAsHasResultOrIsResult(parent, lowestLocation, mapDataClone);
-        setParentChild(parentChild => {
-          let newParentChild = structuredClone(parentChild);
-
+        setParentChild(newParentChild => {
           if (lowestLocation?.identifier) {
             if (parent.identifier) {
               if (newParentChild[parent.identifier] && newParentChild[parent.identifier].childrenList.length > 0) {
@@ -1056,10 +951,7 @@ const Simulation = () => {
   );
 
   useEffect(() => {
-    let mapDataClone: PlanningLocationResponseTagged;
     if (resultsLoaded && parentsLoaded && mapData && mapData?.features && Object.keys(mapData?.features).length > 0) {
-      mapDataClone = structuredClone(mapData);
-
       let max = Number.MIN_VALUE;
 
       if (max != null) {
@@ -1082,7 +974,7 @@ const Simulation = () => {
           });
 
         lowestLocations.forEach(lowestLocation => {
-          getLocationHierarchyFromLowestLocation(lowestLocation, mapDataClone);
+          getLocationHierarchyFromLowestLocation(lowestLocation, mapData);
         });
       }
 
@@ -1095,14 +987,16 @@ const Simulation = () => {
           }
         });
 
-        let highestLocations: any[] = Object.keys(mapDataClone.parents)
-          .filter(
-            key =>
-              mapDataClone.parents[key].properties !== null &&
-              mapDataClone.parents[key].properties?.geographicLevelNodeNumber === min
-          )
-          .map(key => mapDataClone.parents[key]);
-        setHighestLocations(highestLocations);
+        if (mapData.parents) {
+          let highestLocations: any[] = Object.keys(mapData.parents)
+            .filter(
+              key =>
+                mapData.parents[key].properties !== null &&
+                mapData.parents[key].properties?.geographicLevelNodeNumber === min
+            )
+            .map(key => mapData.parents[key]);
+          setHighestLocations(highestLocations);
+        }
       }
     }
   }, [mapData, resultsLoaded, parentsLoaded, getLocationHierarchyFromLowestLocation, markedLocations]);
@@ -1129,7 +1023,7 @@ const Simulation = () => {
   const loadLocationHandler = (locationId: string) => {
     let feature = mapData?.features[locationId] || mapData?.parents[locationId];
 
-    if (feature) {
+    if (feature && feature.geometry) {
       setToLocation(JSON.parse(JSON.stringify(bbox(feature))));
     } else {
     }
@@ -1141,7 +1035,7 @@ const Simulation = () => {
     if (feature) {
       let val: any = feature;
       let valProps: SearchLocationProperties = {
-        bounds: bbox(val.geometry) as any,
+        bounds: feature.geometry ? (bbox(val.geometry) as any) : undefined,
         identifier: val.identifier,
         metadata: val.properties?.metadata,
         name: val.properties?.name,
@@ -1184,15 +1078,6 @@ const Simulation = () => {
     setSelectedMapData(mapDataClone);
   };
 
-  const proceedToSearch = (loadInactiveLocations: boolean, resultEntityTags: EntityTag[] | undefined) => {
-    subithandler(resultEntityTags);
-    setResultsLoadingState('started');
-    if (loadInactiveLocations) {
-      setParentsLoadingState('started');
-    }
-    setShowCountResponseModal(false);
-  };
-
   const proceedToSearchAfterAnalysis = (
     loadInactiveLocations: boolean,
     resultEntityTags: EntityTag[] | undefined,
@@ -1204,10 +1089,6 @@ const Simulation = () => {
       setParentsLoadingState('started');
     }
     setShowCountResponseModal(false);
-  };
-
-  const updateLoadedLevels = (levels: string[]) => {
-    levelsLoaded.current = levels;
   };
 
   const uploadDataHandler = (data: PlanningLocationResponse) => {
@@ -1505,9 +1386,6 @@ const Simulation = () => {
                               )
                             }
                           >
-                            {/*{isAnalysisSearch ? (*/}
-                            {/*  <Button onClick={_ => setShowAnalysisPanel(true)}>analyse</Button>*/}
-                            {/*) : (*/}
                             <Button
                               type={'submit'}
                               disabled={
@@ -1599,25 +1477,20 @@ const Simulation = () => {
               fullScreenHandler={() => {
                 setMapFullScreen(!mapFullScreen);
               }}
-              openModalHandler={showDetailsClickHandler}
               fullScreen={mapFullScreen}
-              mapData={mapData}
               toLocation={toLocation}
               entityTags={entityTags}
               parentMapData={parentMapData}
               setMapDataLoad={setMapDataLoad}
               chunkedData={mapDataLoad}
-              updateLevelsLoaded={updateLoadedLevels}
               resetMap={resetMap}
               setResetMap={setResetMap}
               stats={statsMetadata}
               resultsLoadingState={resultsLoadingState}
               parentsLoadingState={parentsLoadingState}
               map={map}
-              setMapData={setMapData}
               updateMarkedLocations={updateMarkedLocations}
               parentChild={parentChild}
-              isAnalysis={isAnalysisSearch}
               analysisLayerDetails={analysisLayerDetails}
             />
           </Col>
@@ -1744,12 +1617,8 @@ const Simulation = () => {
           setShowCountModal={setShowCountResponseModal}
           simulationCountData={simulationCountData}
           proceedToSearch={(resultEntityTags: EntityTag[] | undefined) => {
-            if (isAnalysisSearch) {
-              setShowAnalysisPanel(true);
-              setAnalysisResultEntityTags(resultEntityTags);
-            } else {
-              proceedToSearch(loadParentsToggle, resultEntityTags);
-            }
+            setShowAnalysisPanel(true);
+            setAnalysisResultEntityTags(resultEntityTags);
           }}
           selectedEntityCondition={setSelectedEntityCondition}
           entityTags={entityTags}

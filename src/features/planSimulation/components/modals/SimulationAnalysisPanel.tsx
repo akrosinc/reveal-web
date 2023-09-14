@@ -72,7 +72,29 @@ const SimulationAnalysisPanel = ({ closeHandler, setLayerDetail, submitHandler }
                   })
                 }
               >
-                <div style={{ backgroundColor: '#' + col.hex }}> </div>
+                {color && color.hex === '#' + col.hex ? (
+                  <div
+                    style={{
+                      backgroundColor: '#' + col.hex,
+                      borderStyle: 'solid',
+                      borderColor: 'black',
+                      borderWidth: '1px'
+                    }}
+                  >
+                    {' '}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      backgroundColor: '#' + col.hex,
+                      borderStyle: 'solid',
+                      borderColor: 'white',
+                      borderWidth: '1px'
+                    }}
+                  >
+                    {' '}
+                  </div>
+                )}
               </td>
             ))}
           </tr>

@@ -16,11 +16,13 @@ interface Option {
   label: string;
   value: string;
   entityTag: EntityTag;
+  key: string;
 }
 
 interface Group {
   options: Option[];
   label?: string;
+  key: string;
 }
 const aggregationTypes = ['sum', 'min', 'max', 'average', 'median'];
 
@@ -67,7 +69,7 @@ const SimulationModal = ({
     setSelectedAggregationTypes(aggregationTypes);
 
     let groups: Group[] = [];
-    fieldTypesArr.forEach(fieldType => {
+    fieldTypesArr.forEach((fieldType, groupIndex) => {
       groups.push({
         options: entityTags
           .filter(entityTag =>
@@ -75,14 +77,16 @@ const SimulationModal = ({
               ? entityTag.fieldType + ' - ' + entityTag.subType === fieldType
               : entityTag.fieldType === fieldType
           )
-          .map(entityTag => {
+          .map((entityTag, index) => {
             return {
               label: entityTag.tag,
               value: entityTag.identifier,
-              entityTag: entityTag
+              entityTag: entityTag,
+              key: entityTag.identifier.concat(index.toString())
             };
           }),
-        label: fieldType
+        label: fieldType,
+        key: fieldType.concat(groupIndex.toString())
       });
     });
     setGroups(groups);
@@ -106,7 +110,8 @@ const SimulationModal = ({
               option.label.endsWith(selectedAggregationType) || option.entityTag?.fieldType === 'generated'
           );
         }),
-        label: group.label
+        label: group.label,
+        key: group.key
       };
       newGroupList.push(newGroup);
     });
@@ -123,13 +128,13 @@ const SimulationModal = ({
       )}
       {fieldTypes.length > 0 ? (
         <Container fluid className="my-4">
-          {fieldTypes.map(fieldType => (
-            <Row key={fieldType}>
+          {fieldTypes.map((fieldType, index) => (
+            <Row key={index}>
               <Col>
                 <Form.Check
                   className="float-left"
                   type="switch"
-                  key={fieldType}
+                  key={fieldType.concat(index.toString())}
                   // id="custom-switch"
                   label={
                     <span>
@@ -155,14 +160,15 @@ const SimulationModal = ({
               </Col>
             </Row>
           ))}
+
           <hr />
           <Row className={'y-3'}>
-            {aggregationTypes.map(aggregationType => (
+            {aggregationTypes.map((aggregationType, index) => (
               <Col md={2}>
                 <Form.Check
                   className={'flex-row'}
                   type="switch"
-                  key={aggregationType}
+                  key={aggregationType.concat(index.toString())}
                   label={<b> {aggregationType} </b>}
                   defaultChecked={true}
                   onChange={e => {
