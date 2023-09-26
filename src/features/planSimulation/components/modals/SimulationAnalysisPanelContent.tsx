@@ -1,15 +1,13 @@
-import { ActionDialog } from '../../../../components/Dialogs';
-import { Button, Container, Form, Row, Table } from 'react-bootstrap';
+import { Container, Form, Row, Table } from 'react-bootstrap';
 
-import React, { BaseSyntheticEvent, useCallback, useState } from 'react';
-import { useForm, UseFormHandleSubmit } from 'react-hook-form';
-import { AnalysisLayer } from '../Simulation';
+import React, { useState } from 'react';
+import { UseFormHandleSubmit } from 'react-hook-form';
+
 import { hex, hsl } from 'color-convert';
 import { Color } from 'react-color-palette';
 import { getBackgroundStyle } from '../SimulationMapView/SimulationMapView';
-import { FormState, UseFormRegister, UseFormSetValue } from 'react-hook-form/dist/types/form';
+import { UseFormRegister, UseFormSetValue } from 'react-hook-form/dist/types/form';
 import { FieldErrors } from 'react-hook-form/dist/types/errors';
-import { FieldValues } from 'react-hook-form/dist/types/fields';
 const INITIAL_FILL_COLOR_STR = '#00FF00';
 const INITIAL_FILL_COLOR: Color = {
   hex: INITIAL_FILL_COLOR_STR,
