@@ -255,7 +255,7 @@ export const KEY_INDICATOR_LEVELS: any[string] = {
       highest: false
     },
     EXCELLENT: {
-      colorName: 'orange',
+      colorName: 'green',
       min: 75,
       max: 100,
       class: 'bg-success',

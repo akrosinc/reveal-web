@@ -51,7 +51,8 @@ import TableSummaryModal from './Summary/TableSummaryModal';
 import SaveHierarchyModal from './modals/SaveHierarchyModal';
 import { ComplexTagResponse } from '../../tagging/components/ComplexTagging';
 import SimulationMapView from './SimulationMapView/SimulationMapView';
-import SimulationAnalysisPanel2 from './modals/SimulationAnalysisPanel';
+
+import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
 
 interface SubmitValue {
@@ -70,6 +71,7 @@ interface SubmitValue {
 export interface AnalysisLayer {
   labelName: string;
   color: Color;
+  colorHex: string;
 }
 
 interface SearchValue {
@@ -125,7 +127,8 @@ const Simulation = () => {
     parents: [],
     type: 'FeatureCollection',
     identifier: undefined,
-    method: undefined
+    method: undefined,
+    source: undefined
   });
   const [parentMapDataLoad, setParentMapDataLoad] = useState<PlanningParentLocationResponse>();
   const [nodeList, setNodeList] = useState<string[]>([]);
@@ -442,7 +445,8 @@ const Simulation = () => {
       parents: parents,
       type: 'FeatureCollection',
       identifier: undefined,
-      method: analysisLayer
+      method: analysisLayer,
+      source: 'parentHandler'
     };
 
     setMapDataLoad(mapDataSave);
@@ -545,7 +549,8 @@ const Simulation = () => {
         parents: res.parents,
         type: res.type,
         identifier: message.lastEventId,
-        method: analysis
+        method: analysis,
+        source: 'messageHandler'
       };
       if (mapDataSave.features && mapDataSave.features.length > 0) {
         mapDataSave.features.forEach((el: any) => {
@@ -1099,6 +1104,7 @@ const Simulation = () => {
     setResultsLoadingState('complete');
     setShowResult(true);
   };
+
   const conditionalRender = (el: EntityTag, index: number) => {
     if (el.more && el.more.length) {
       return (
@@ -1634,7 +1640,21 @@ const Simulation = () => {
           hierarchyIdentifier={selectedHierarchy?.identifier}
         />
       )}
-      {showUploadModal && <UploadSimulationData dataFunction={uploadDataHandler} closeHandler={setShowUploadModal} />}
+      {showUploadModal && (
+        <UploadSimulationData
+          dataFunction={uploadDataHandler}
+          closeHandler={setShowUploadModal}
+          setLayerDetail={(detail: AnalysisLayer) => {
+            setAnalysisLayerDetails(details => {
+              let newDetail: AnalysisLayer[] = [];
+              details.forEach(existingDetail => newDetail.push(existingDetail));
+              newDetail.push(detail);
+              return newDetail;
+            });
+            setShowAnalysisPanel(false);
+          }}
+        />
+      )}
       {showSaveHierarchyPanel && (
         <SaveHierarchyModal
           submitSimulationRequestData={submitSimulationRequestData}
@@ -1649,7 +1669,7 @@ const Simulation = () => {
         />
       )}
       {showAnalysisPanel && (
-        <SimulationAnalysisPanel2
+        <SimulationAnalysisPanel
           setLayerDetail={(detail: AnalysisLayer) => {
             setAnalysisLayerDetails(details => {
               let newDetail: AnalysisLayer[] = [];

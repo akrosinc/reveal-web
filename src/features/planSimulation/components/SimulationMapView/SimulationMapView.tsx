@@ -3,6 +3,7 @@ import Draggable from 'react-draggable';
 import React, { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { Accordion, Button, Col, Container, Form, FormGroup, Row, Tab, Tabs } from 'react-bootstrap';
 import { MAPBOX_STYLE_STREETS } from '../../../../constants';
+
 import {
   disableMapInteractions,
   fitCollectionToBounds,
@@ -30,7 +31,7 @@ import {
   Polygon,
   Properties
 } from '@turf/turf';
-import { Color, useColor } from 'react-color-palette';
+import { ColorPicker, Color, useColor } from 'react-color-palette';
 import 'react-color-palette/lib/css/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Children, Stats } from '../Simulation';
@@ -107,10 +108,13 @@ const SimulationMapView = ({
   const INITIAL_HEAT_MAP_RADIUS = 50;
   const INITIAL_HEAT_MAP_OPACITY = 0.2;
   const INITIAL_FILL_COLOR = '#005512';
+  const INITIAL_LINE_COLOR = '#000000';
 
   const [defColor] = useColor('hex', INITIAL_FILL_COLOR);
 
   const mapContainer = useRef<any>();
+  const [color, setColor] = useColor('hex', INITIAL_FILL_COLOR);
+  const [initialLineColor] = useColor('hex', INITIAL_LINE_COLOR);
 
   const [lng, setLng] = useState(28.33);
   const [lat, setLat] = useState(-15.44);
@@ -141,6 +145,8 @@ const SimulationMapView = ({
       selectedTag?: string;
       transparency?: number;
       size?: number;
+      lineWidth?: number;
+      lineColor?: string;
     }[]
   >([]);
   const [userDefinedNames, setUserDefinedNames] = useState<
@@ -163,7 +169,7 @@ const SimulationMapView = ({
   const [shouldApplyToChildren, setShouldApplyToChildren] = useState(true);
   const [shouldApplyToAll, setShouldApplyToAll] = useState(false);
   const [selectedUserDefinedLayer, setSelectedUserDefinedLayer] = useState<
-    { key: string; col: Color; transparency?: number } | undefined
+    { key: string; col: Color; transparency?: number; lineColor: Color } | undefined
   >();
   const [showUserDefinedSettingsPanel, setShowUserDefinedSettingsPanel] = useState(false);
   const getLineParameters = (level: string) => {
@@ -200,6 +206,31 @@ const SimulationMapView = ({
       }
     }
     return transparency;
+  };
+
+  const getLineWidthValue = (
+    value: {
+      layer: string;
+      key: string;
+      geo: string;
+      layerName: string;
+      active: boolean;
+      col: Color;
+      tagList?: Set<any>;
+      selectedTag?: string;
+      transparency?: number;
+      lineWidth?: number;
+    }[],
+    selectedValue: { key: string; col: Color; transparency?: number } | undefined
+  ) => {
+    let lineWidth = 1;
+    if (value) {
+      const filterElement = value.filter(userDefinedLayer => userDefinedLayer.layerName === selectedValue?.key)[0];
+      if (filterElement && filterElement.lineWidth !== undefined && filterElement.lineWidth !== null) {
+        lineWidth = filterElement.lineWidth;
+      }
+    }
+    return lineWidth;
   };
 
   useEffect(() => {
@@ -500,7 +531,12 @@ const SimulationMapView = ({
   useEffect(() => {
     if (chunkedData) {
       console.log('chunkedData', chunkedData.identifier);
-      if (chunkedData?.features.length > 0 && (!chunkedData?.parents || chunkedData?.parents.length === 0)) {
+      if (
+        chunkedData?.features.length > 0 &&
+        (!chunkedData?.parents ||
+          chunkedData?.parents.length === 0 ||
+          (chunkedData.source && chunkedData.source === 'uploadHandler'))
+      ) {
         let layerList: Set<string>;
 
         layerList = new Set<string>();
@@ -550,8 +586,13 @@ const SimulationMapView = ({
                 type: 'line',
                 source: finalLayer,
                 paint: {
-                  'line-color': getLineParameters(finalLayer).col,
-                  'line-width': getLineParameters(finalLayer).num,
+                  'line-color': [
+                    'case',
+                    ['==', ['get', 'selectedLineColor'], null],
+                    'black',
+                    ['get', 'selectedLineColor']
+                  ],
+                  'line-width': ['case', ['==', ['get', 'selectedLineWidth'], null], 1, ['get', 'selectedLineWidth']],
                   'line-offset': getLineParameters(finalLayer).offset
                 }
               },
@@ -1142,6 +1183,16 @@ const SimulationMapView = ({
                   userDefinedLayer.transparency !== undefined && userDefinedLayer.transparency !== null
                     ? userDefinedLayer.transparency
                     : 10;
+
+                feature.properties['selectedLineWidth'] =
+                  userDefinedLayer.lineWidth !== undefined && userDefinedLayer.lineWidth !== null
+                    ? userDefinedLayer.lineWidth
+                    : 1;
+
+                feature.properties['selectedLineColor'] =
+                  userDefinedLayer.lineColor !== undefined && userDefinedLayer.lineColor !== null
+                    ? userDefinedLayer.lineColor
+                    : INITIAL_FILL_COLOR;
               }
             });
             if (userDefinedLayer.selectedTag) {
@@ -1344,6 +1395,31 @@ const SimulationMapView = ({
     );
   }, [markedMapBoxFeatures]);
 
+  // useEffect(() => {
+  //   setUserDefinedLayers(userDefinedLayers => {
+  //     let newUserDefinedLayers: {
+  //       layer: string;
+  //       key: string;
+  //       geo: string;
+  //       layerName: string;
+  //       active: boolean;
+  //       col: Color;
+  //       tagList?: Set<any>;
+  //       selectedTag?: string;
+  //       transparency?: number;
+  //       lineColor?: string;
+  //     }[] = [];
+  //     userDefinedLayers.forEach(userDefinedLayer => {
+  //       if (selectedUserDefinedLayer && userDefinedLayer.layerName === selectedUserDefinedLayer.key) {
+  //         userDefinedLayer.lineColor = color.hex;
+  //       }
+  //
+  //       newUserDefinedLayers.push(userDefinedLayer);
+  //     });
+  //     return newUserDefinedLayers;
+  //   });
+  // }, [color, selectedUserDefinedLayer]);
+
   return (
     <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
       <div style={{ position: 'absolute', zIndex: 2, width: '100%' }} className="mx-0 px-0">
@@ -1468,8 +1544,12 @@ const SimulationMapView = ({
                                         if (selectedUserDefinedLayer?.key !== layerObj.key) {
                                           setSelectedUserDefinedLayer({
                                             key: layerObj.key,
-                                            col: layerObj.color
+                                            col: layerObj.color,
+                                            lineColor: selectedUserDefinedLayer
+                                              ? selectedUserDefinedLayer.lineColor
+                                              : initialLineColor
                                           });
+                                          setColor(layerObj.color);
                                         }
                                       }}
                                     >
@@ -1598,6 +1678,97 @@ const SimulationMapView = ({
                     });
                   }}
                 />
+
+                {false && (
+                  <Accordion flush>
+                    <Accordion.Item eventKey={'lineControl'}>
+                      <Accordion.Header>Line Control</Accordion.Header>
+                      <Accordion.Body>
+                        <b>Line Width ({getLineWidthValue(userDefinedLayers, selectedUserDefinedLayer)})</b>
+                        <Form.Range
+                          min={0}
+                          max={10}
+                          value={getLineWidthValue(userDefinedLayers, selectedUserDefinedLayer)}
+                          onChange={e => {
+                            setUserDefinedLayers(userDefinedLayers => {
+                              let newUserDefinedLayers: {
+                                layer: string;
+                                key: string;
+                                geo: string;
+                                layerName: string;
+                                active: boolean;
+                                col: Color;
+                                tagList?: Set<any>;
+                                selectedTag?: string;
+                                transparency?: number;
+                                lineWidth?: number;
+                              }[] = [];
+                              userDefinedLayers.forEach(userDefinedLayer => {
+                                if (userDefinedLayer.layerName === selectedUserDefinedLayer?.key) {
+                                  userDefinedLayer.lineWidth = Number(e.target.value);
+                                }
+
+                                newUserDefinedLayers.push(userDefinedLayer);
+                              });
+                              return newUserDefinedLayers;
+                            });
+                          }}
+                        />
+
+                        <ColorPicker
+                          width={fullScreen ? 287 : 190}
+                          color={color}
+                          onChange={color => {
+                            setUserDefinedLayers(userDefinedLayers => {
+                              let newUserDefinedLayers: {
+                                layer: string;
+                                key: string;
+                                geo: string;
+                                layerName: string;
+                                active: boolean;
+                                col: Color;
+                                tagList?: Set<any>;
+                                selectedTag?: string;
+                                transparency?: number;
+                                lineColor?: string;
+                              }[] = [];
+                              userDefinedLayers.forEach(userDefinedLayer => {
+                                if (
+                                  selectedUserDefinedLayer &&
+                                  userDefinedLayer.layerName === selectedUserDefinedLayer.key
+                                ) {
+                                  userDefinedLayer.lineColor = color.hex;
+                                }
+
+                                newUserDefinedLayers.push(userDefinedLayer);
+                              });
+                              return newUserDefinedLayers;
+                            });
+
+                            setSelectedUserDefinedLayer(selectedUserDefinedLayer => {
+                              if (selectedUserDefinedLayer) {
+                                return {
+                                  key: selectedUserDefinedLayer?.key,
+                                  col: selectedUserDefinedLayer.col,
+                                  transparency: selectedUserDefinedLayer.transparency,
+                                  lineColor: color
+                                };
+                              } else {
+                                return undefined;
+                              }
+                            });
+
+                            setColor(color);
+                          }}
+                          hideHEX={true}
+                          hideHSV={true}
+                          hideRGB={true}
+                        />
+                      </Accordion.Body>
+                    </Accordion.Item>
+                  </Accordion>
+                )}
+
                 {/*</OffcanvasBody>*/}
               </div>
             )}

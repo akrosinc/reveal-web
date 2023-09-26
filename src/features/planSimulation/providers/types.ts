@@ -54,6 +54,7 @@ export interface PlanningLocationResponse {
   features: Feature<Point | Polygon | MultiPolygon, Properties>[];
   parents: Feature<Point | Polygon | MultiPolygon, Properties>[];
   method?: AnalysisLayer;
+  source?: 'messageHandler' | 'parentHandler' | 'uploadHandler';
 }
 
 export interface RevealFeature {

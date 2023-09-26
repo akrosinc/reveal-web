@@ -6,6 +6,8 @@ import { useForm } from 'react-hook-form';
 import { AnalysisLayer } from '../Simulation';
 import { hex, hsl } from 'color-convert';
 import { Color } from 'react-color-palette';
+import { getBackgroundStyle } from '../SimulationMapView/SimulationMapView';
+import SimulationAnalysisPanelContent from './SimulationAnalysisPanelContent';
 
 interface Props {
   closeHandler: (close: boolean) => void;
@@ -19,23 +21,28 @@ const INITIAL_FILL_COLOR: Color = {
 };
 
 const SimulationAnalysisPanel = ({ closeHandler, setLayerDetail, submitHandler }: Props) => {
-  const [color, setColor] = useState<Color>(INITIAL_FILL_COLOR);
+  const [color] = useState<Color>(INITIAL_FILL_COLOR);
   const {
-    register,
     handleSubmit,
+    register,
+    setValue,
     formState: { errors }
   } = useForm<AnalysisLayer>();
 
   const setLayerDetailSubmit = useCallback(
     (formData: AnalysisLayer, e: BaseSyntheticEvent | undefined) => {
-      let hexValue = color?.hex;
-      let rgbArr = color?.rgb;
-      let hsvArr = color.hsv;
-      formData.color = {
-        hex: hexValue,
-        rgb: { r: rgbArr?.r, g: rgbArr.g, b: rgbArr.b },
-        hsv: { h: hsvArr.h, s: hsvArr.s, v: hsvArr.v }
+      let formVal: any = formData;
+
+      let rgb = hex.rgb(formVal['colorHex'].replace('#', ''));
+      let hsv = hex.hsv(formVal['colorHex'].replace('#', ''));
+
+      let color: Color = {
+        hex: formVal['colorHex'],
+        rgb: { r: rgb[0], g: rgb[1], b: rgb[2] },
+        hsv: { h: hsv[0], s: hsv[1], v: hsv[2] }
       };
+
+      formData.color = color;
 
       setLayerDetail(formData);
 
@@ -44,93 +51,20 @@ const SimulationAnalysisPanel = ({ closeHandler, setLayerDetail, submitHandler }
     },
     [color, closeHandler, setLayerDetail, submitHandler]
   );
-  const getButtons = () => {
-    let stacks = [];
-    for (let i = 0; i < 6; i++) {
-      let colors = [];
-      for (let j = i * 60; j <= i * 60 + 60; j = j + 6) {
-        let hexValue = hsl.hex([j, 100, 50]);
-
-        let rgbArr = hex.rgb(hexValue);
-        let hsvArr = hex.hsv(hexValue);
-
-        colors.push({ colr: j, hex: hexValue, rgb: rgbArr, hsv: hsvArr });
-      }
-      stacks.push({ stack: i, col: colors });
-    }
-    return (
-      <Table>
-        {stacks.map((stack, index) => (
-          <tr>
-            {stack.col.map(col => (
-              <td
-                onClick={_ =>
-                  setColor({
-                    hex: '#' + col.hex,
-                    rgb: { r: col.rgb[0], g: col.rgb[1], b: col.rgb[2] },
-                    hsv: { h: col.hsv[0], s: col.hsv[1], v: col.hsv[2] }
-                  })
-                }
-              >
-                {color && color.hex === '#' + col.hex ? (
-                  <div
-                    style={{
-                      backgroundColor: '#' + col.hex,
-                      borderStyle: 'solid',
-                      borderColor: 'black',
-                      borderWidth: '1px'
-                    }}
-                  >
-                    {' '}
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      backgroundColor: '#' + col.hex,
-                      borderStyle: 'solid',
-                      borderColor: 'white',
-                      borderWidth: '1px'
-                    }}
-                  >
-                    {' '}
-                  </div>
-                )}
-              </td>
-            ))}
-          </tr>
-        ))}
-      </Table>
-    );
-  };
 
   return (
     <ActionDialog
       title={'Analysis'}
       closeHandler={closeHandler}
       element={
-        <>
-          <Container>
-            <Row className={'py-2'}>
-              <Form.Group>
-                <Form.Label>Layer Name</Form.Label>
-                <Form.Control type={'text'} {...register('labelName', { required: 'Layer Label is required' })} />
-                {errors.labelName && <Form.Label className="text-danger">{errors.labelName.message}</Form.Label>}
-              </Form.Group>
-            </Row>
-
-            <Row className={'py-3'}>
-              <Form.Label>Choose color</Form.Label>
-            </Row>
-            <Row>{getButtons()}</Row>
-
-            <Row>
-              <Form.Label>Outcome</Form.Label>
-            </Row>
-            <Row>
-              <div style={{ width: 100, height: 100, backgroundColor: color.hex }} />
-            </Row>
-          </Container>
-        </>
+        <SimulationAnalysisPanelContent
+          formControls={{
+            handleSubmit,
+            register,
+            setValue,
+            formState: { errors }
+          }}
+        />
       }
       footer={
         <Button type={'submit'} onClick={handleSubmit(setLayerDetailSubmit)}>
