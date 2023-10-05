@@ -171,7 +171,7 @@ const Simulation = () => {
     useState<string[]>();
   const levelsLoaded = useRef<string[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [statsMetadata, setStatsMetadata] = useState<Stats>({});
+  // const [statsMetadata, setStatsMetadata] = useState<Stats>({});
 
   const [statsLayerMetadata, setStatsLayerMetadata] = useState<StatsLayer>({});
 
@@ -302,7 +302,7 @@ const Simulation = () => {
       setResetMap(true);
       setParentMapData(undefined);
       setShowResult(false);
-      setStatsMetadata({});
+      // setStatsMetadata({});
 
       setMarkedLocations([]);
       setMarkedParents(new Set<string>());
@@ -459,21 +459,21 @@ const Simulation = () => {
     setMapDataLoad(mapDataSave);
   };
 
-  const statsHandler = (message: MessageEvent) => {
-    const statsIncoming = JSON.parse(message.data);
-    setStatsMetadata(statsMetadata => {
-      let newStats: Stats = {};
-      Object.keys(statsMetadata).forEach(key => {
-        newStats[key] = statsMetadata[key];
-      });
-      Object.keys(statsIncoming).forEach(key => {
-        if (!newStats[key]) {
-          newStats[key] = statsIncoming[key];
-        }
-      });
-      return newStats;
-    });
-  };
+  // const statsHandler = (message: MessageEvent) => {
+  //   const statsIncoming = JSON.parse(message.data);
+  //   setStatsMetadata(statsMetadata => {
+  //     let newStats: Stats = {};
+  //     Object.keys(statsMetadata).forEach(key => {
+  //       newStats[key] = statsMetadata[key];
+  //     });
+  //     Object.keys(statsIncoming).forEach(key => {
+  //       if (!newStats[key]) {
+  //         newStats[key] = statsIncoming[key];
+  //       }
+  //     });
+  //     return newStats;
+  //   });
+  // };
 
   const statsHandlerAfterAnalysis = (message: MessageEvent, analysisLayer: AnalysisLayer) => {
     // const statsIncoming = JSON.parse(message.data);

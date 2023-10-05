@@ -34,7 +34,7 @@ import {
 import { ColorPicker, Color, useColor } from 'react-color-palette';
 import 'react-color-palette/lib/css/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Children, Stats, StatsLayer } from '../Simulation';
+import { Children, StatsLayer } from '../Simulation';
 import ActionDialog from '../../../../components/Dialogs/ActionDialog';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { AnalysisLayer } from '../Simulation';
