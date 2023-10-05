@@ -34,7 +34,7 @@ import {
 import { ColorPicker, Color, useColor } from 'react-color-palette';
 import 'react-color-palette/lib/css/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Children, Stats } from '../Simulation';
+import { Children, Stats, StatsLayer } from '../Simulation';
 import ActionDialog from '../../../../components/Dialogs/ActionDialog';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { AnalysisLayer } from '../Simulation';
@@ -51,7 +51,7 @@ interface Props {
   setResetMap: (resetMap: boolean) => void;
   resultsLoadingState: 'notstarted' | 'error' | 'started' | 'complete';
   parentsLoadingState: 'notstarted' | 'error' | 'started' | 'complete';
-  stats: Stats;
+  stats: StatsLayer;
   map: MutableRefObject<MapBoxMap | undefined>;
   updateMarkedLocations: (identifier: string, ancestry: string[], marked: boolean) => void;
   parentChild: { [parent: string]: Children };
@@ -621,7 +621,7 @@ const SimulationMapView = ({
                   'circle-opacity': [
                     'case',
                     ['==', ['get', 'selectedTagValuePercent'], null],
-                    0.1,
+                    0,
                     ['==', ['get', 'selectedTagValuePercent'], 0],
                     0.1,
                     ['get', 'selectedTagValuePercent']
@@ -646,8 +646,10 @@ const SimulationMapView = ({
                 paint: {
                   'fill-color': [
                     'case',
+                    ['>', ['length', ['get', 'metadata']], 0],
+                    ['case', ['==', ['get', 'selectedColor'], null], geoColor.hex, ['get', 'selectedColor']],
                     ['==', ['get', 'selectedTagValue'], null],
-                    geoColor.hex,
+                    'black',
                     ['<', ['get', 'selectedTagValue'], 0],
                     geoColor.hex,
                     ['==', ['get', 'selectedTagValue'], 0],
@@ -656,6 +658,10 @@ const SimulationMapView = ({
                   ],
                   'fill-opacity': [
                     'case',
+                    ['==', ['get', 'selectedTagValue'], null],
+                    0.2,
+                    ['==', ['get', 'selectedTagValue'], 0],
+                    0,
                     ['==', ['get', 'selectedTransparency'], null],
                     0.1,
                     ['/', ['get', 'selectedTransparency'], 100]
@@ -1841,9 +1847,10 @@ const SimulationMapView = ({
                                 }
                                 return false;
                               })
+                              .filter((meta: any) => stats[userDefinedLayer.key] && stats[userDefinedLayer.key][meta])
                               .map((meta: any) => (
                                 <p key={meta}>
-                                  <b>{meta}:</b> {stats[meta]}
+                                  <b>{meta}:</b> {stats[userDefinedLayer.key] ? stats[userDefinedLayer.key][meta] : ''}
                                 </p>
                               ));
                           })}

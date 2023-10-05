@@ -89,6 +89,10 @@ export interface Stats {
   [key: string]: Metadata;
 }
 
+export interface StatsLayer {
+  [layer: string]: Stats;
+}
+
 export interface SimulationRequestData {
   hierarchyIdentifier: string | undefined;
   hierarchyType: string | undefined;
@@ -168,6 +172,9 @@ const Simulation = () => {
   const levelsLoaded = useRef<string[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [statsMetadata, setStatsMetadata] = useState<Stats>({});
+
+  const [statsLayerMetadata, setStatsLayerMetadata] = useState<StatsLayer>({});
+
   const [aggregationSummary, setAggregationSummary] = useState<LocationMetadataObj>({});
   const [aggregationSummaryDefinition, setAggregationSummaryDefinition] = useState<MetadataDefinition>({});
   const [submitSimulationRequestData, setSubmitSimulationRequestData] = useState<SimulationRequestData>();
@@ -389,7 +396,7 @@ const Simulation = () => {
           closeConnHandler,
           openHandler,
           (e: any) => parentHandlerAfterAnalysis(e, analysisLayer),
-          statsHandler,
+          (e: any) => statsHandlerAfterAnalysis(e, analysisLayer),
           locationAggregationHandler,
           locationAggregationDefinitionHandler,
           resultsErrorHandler
@@ -463,6 +470,40 @@ const Simulation = () => {
         if (!newStats[key]) {
           newStats[key] = statsIncoming[key];
         }
+      });
+      return newStats;
+    });
+  };
+
+  const statsHandlerAfterAnalysis = (message: MessageEvent, analysisLayer: AnalysisLayer) => {
+    // const statsIncoming = JSON.parse(message.data);
+    // setStatsMetadata(statsMetadata => {
+    //   let newStats: Stats = {};
+    //   Object.keys(statsMetadata).forEach(key => {
+    //     newStats[key] = statsMetadata[key];
+    //   });
+    //   Object.keys(statsIncoming).forEach(key => {
+    //     if (!newStats[key]) {
+    //       newStats[key] = statsIncoming[key];
+    //     }
+    //   });
+    //   return newStats;
+    // });
+
+    const statsIncoming = JSON.parse(message.data);
+    setStatsLayerMetadata(statsLayerMetadata => {
+      let newStats: StatsLayer = {};
+      Object.keys(statsLayerMetadata).forEach(layer => {
+        // Object.keys(statsLayerMetadata[layer]).forEach(key => {
+        newStats[layer] = statsLayerMetadata[layer];
+        // });
+      });
+      Object.keys(statsIncoming).forEach(key => {
+        let newStatsIncoming: Stats = {};
+        if (!newStats[key]) {
+          newStatsIncoming[key] = statsIncoming[key];
+        }
+        newStats[analysisLayer.labelName] = newStatsIncoming;
       });
       return newStats;
     });
@@ -1491,7 +1532,7 @@ const Simulation = () => {
               chunkedData={mapDataLoad}
               resetMap={resetMap}
               setResetMap={setResetMap}
-              stats={statsMetadata}
+              stats={statsLayerMetadata}
               resultsLoadingState={resultsLoadingState}
               parentsLoadingState={parentsLoadingState}
               map={map}
