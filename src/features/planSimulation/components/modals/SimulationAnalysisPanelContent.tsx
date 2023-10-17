@@ -34,13 +34,17 @@ const SimulationAnalysisPanelContent = ({ formControls }: Props<any>) => {
     let stacks = [];
     for (let i = 0; i < 6; i++) {
       let colors = [];
+      let skipFirst = false;
       for (let j = i * 60; j <= i * 60 + 60; j = j + 6) {
-        let hexValue = hsl.hex([j, 100, 50]);
+        if (skipFirst) {
+          let hexValue = hsl.hex([j, 100, 50]);
 
-        let rgbArr = hex.rgb(hexValue);
-        let hsvArr = hex.hsv(hexValue);
+          let rgbArr = hex.rgb(hexValue);
+          let hsvArr = hex.hsv(hexValue);
 
-        colors.push({ colr: j, hex: hexValue, rgb: rgbArr, hsv: hsvArr });
+          colors.push({ colr: j, hex: hexValue, rgb: rgbArr, hsv: hsvArr });
+        }
+        skipFirst = true;
       }
       stacks.push({ stack: i, col: colors });
     }

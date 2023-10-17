@@ -1580,7 +1580,7 @@ const SimulationMapView = ({
               </Draggable>
             )}
 
-            {showUserDefinedSettingsPanel && selectedUserDefinedLayer && (
+            {showUserDefinedSettingsPanel && analysisLayerDetails.length > 0 && selectedUserDefinedLayer && (
               <div style={{ float: 'left' }} className="sidebar-adjust-list text-dark bg-light p-2 rounded">
                 <p className="lead mb-1">Settings - {selectedUserDefinedLayer.key}</p>
 
@@ -1795,7 +1795,7 @@ const SimulationMapView = ({
             }}
             className="mb-2 float-end"
           >
-            Full Screen
+            {fullScreen ? 'Show Controls' : 'Full Screen'}
           </Button>
         </div>
       </div>

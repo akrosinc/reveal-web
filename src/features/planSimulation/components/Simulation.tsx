@@ -908,6 +908,7 @@ const Simulation = () => {
 
   const clearHandler = () => {
     setSelectedEntityConditionList([]);
+    setAnalysisLayerDetails([]);
     setShowResult(false);
     setMapData(undefined);
     setToLocation(undefined);
@@ -916,6 +917,14 @@ const Simulation = () => {
     setParentsLoadingState('notstarted');
     setResultsLoadingState('notstarted');
     setSelectedFilterGeographicLevelList([]);
+    setSelectedHierarchy(undefined);
+    setSelectedLocation(undefined);
+    setLocationList([]);
+    setHighestLocations(undefined);
+    setInactiveGeoFilterList([]);
+    setSelectedFilterInactiveGeographicLevelList(undefined);
+    setStatsLayerMetadata({});
+    setAnalysisResultEntityTags(undefined);
     levelsLoaded.current = [];
     setGeoFilterList([]);
     reset();
