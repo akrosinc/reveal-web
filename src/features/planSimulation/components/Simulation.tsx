@@ -189,6 +189,7 @@ const Simulation = () => {
   const [isAnalysisSearch] = useState(true);
   const [analysisLayerDetails, setAnalysisLayerDetails] = useState<AnalysisLayer[]>([]);
   const [analysisResultEntityTags, setAnalysisResultEntityTags] = useState<EntityTag[]>();
+  const [tooLargeOrSmall, setTooLargeOrSmall] = useState(0);
 
   useEffect(() => {
     Promise.all([
@@ -703,14 +704,17 @@ const Simulation = () => {
                     let val = 0;
                     try {
                       val = evaluate(complexTag.formula, a);
-
                       if (isNumeric(val)) {
-                        let meta = {
-                          type: complexTag.tagName,
-                          value: val,
-                          fieldType: 'generated'
-                        };
-                        newMeta.push(meta);
+                        if (val >= 0x10000000000000000 || val < -0x10000000000000000) {
+                          setTooLargeOrSmall(tooLargeOrSmall => tooLargeOrSmall + 1);
+                        } else {
+                          let meta = {
+                            type: complexTag.tagName,
+                            value: val,
+                            fieldType: 'generated'
+                          };
+                          newMeta.push(meta);
+                        }
                       }
                     } catch (ex) {
                       console.warn('eerro with formula');
@@ -800,17 +804,20 @@ const Simulation = () => {
                     let val = 0;
                     try {
                       val = evaluate(complexTag.formula, a);
-
                       if (isNumeric(val)) {
-                        let meta = {
-                          type: complexTag.tagName,
-                          value: val,
-                          fieldType: 'generated'
-                        };
-                        newMeta.push(meta);
+                        if (val >= 0x10000000000000000 || val < -0x10000000000000000) {
+                          setTooLargeOrSmall(tooLargeOrSmall => tooLargeOrSmall + 1);
+                        } else {
+                          let meta = {
+                            type: complexTag.tagName,
+                            value: val,
+                            fieldType: 'generated'
+                          };
+                          newMeta.push(meta);
+                        }
                       }
                     } catch (ex) {
-                      console.warn('eerro with formula');
+                      console.warn('eerro with formula', ex);
                     }
                   });
                 }
@@ -882,6 +889,13 @@ const Simulation = () => {
       });
     }
   }, [mapDataLoad, complexTags]);
+
+  useEffect(() => {
+    if (tooLargeOrSmall > 0) {
+      toast.warn('complex function generating too large or too small values');
+      setTooLargeOrSmall(0);
+    }
+  }, [tooLargeOrSmall]);
 
   useEffect(() => {
     if (parentMapDataLoad) {

@@ -1,45 +1,27 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Map, Popup } from 'mapbox-gl';
 import { Button, Container } from 'react-bootstrap';
-import {
-  createChildLocationLabel,
-  disableMapInteractions,
-  getPolygonCenter,
-  initMap
-} from '../../../../../utils';
+import { createChildLocationLabel, disableMapInteractions, getPolygonCenter, initMap } from '../../../../../utils';
 import PopoverComponent from '../../../../../components/Popover';
-import {
-  bbox,
-  Feature,
-  FeatureCollection,
-  MultiPolygon,
-  Point,
-  Polygon,
-  Properties
-} from '@turf/turf';
+import { bbox, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
 import {
   MAPBOX_STYLE_SATELLITE,
   MAP_DEFAULT_FILL_OPACITY,
   MAP_IRS_STRUCTURE_LEGEND_COLORS,
-  MAP_MDA_STRUCTURE_LEGEND_COLORS,
+  MAP_MDA_STRUCTURE_LEGEND_COLORS
 } from '../../../../../constants';
-import {
-  IrsStructureStatus,
-  MdaStructureStatus,
-  ReportLocationProperties,
-  ReportType
-} from '../../../providers/types';
+import { IrsStructureStatus, MdaStructureStatus, ReportLocationProperties, ReportType } from '../../../providers/types';
 import { useParams } from 'react-router-dom';
-import { t } from "i18next";
+import { t } from 'i18next';
 
 interface Props {
   featureSet:
-  | [
-    location: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>,
-    parentId: string,
-    path: string[]
-  ]
-  | undefined;
+    | [
+        location: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>,
+        parentId: string,
+        path: string[]
+      ]
+    | undefined;
   clearMap: () => void;
   doubleClickEvent: (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => void;
   showModal: (show: boolean, feature?: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => void;
@@ -52,13 +34,13 @@ const AGE_COVERAGE_LEGEND = [
   { label: 'Female 1-4 years', key: 'Female 1-4 years' },
   { label: 'Female 5-14 years', key: 'Female 5-14 years' },
   { label: 'Female 15 years and above', key: 'Female 15+ years' }
-]
+];
 
 const ONCHO_COVERAGE_LEGEND = [
   { label: 'Field Verified Pop Treatment Coverage', key: 'Field Verified Pop Treatment Coverage' },
   { label: 'Coverage Of Structures Completed', key: 'Coverage Of Structures Completed' },
   { label: 'Coverage Of Structures Visited', key: 'Coverage Of Structures Visited' }
-]
+];
 
 const MapViewDetail = React.forwardRef<any, Props>(
   ({ featureSet, clearMap, doubleClickEvent, showModal, defaultColumn }, ref) => {
@@ -67,16 +49,20 @@ const MapViewDetail = React.forwardRef<any, Props>(
     const [lng, setLng] = useState(20);
     const [lat, setLat] = useState(10);
     const [zoom, setZoom] = useState(4);
-    let contextMenuPopup = useRef<Popup>(new Popup({
-      focusAfterOpen: true,
-      closeOnMove: true,
-      closeButton: false
-    }));
-    let hoverPopup = useRef<Popup>(new Popup({
-      closeOnClick: false,
-      closeButton: false,
-      offset: 20
-    }));
+    let contextMenuPopup = useRef<Popup>(
+      new Popup({
+        focusAfterOpen: true,
+        closeOnMove: true,
+        closeButton: false
+      })
+    );
+    let hoverPopup = useRef<Popup>(
+      new Popup({
+        closeOnClick: false,
+        closeButton: false,
+        offset: 20
+      })
+    );
     const opacity = useRef(MAP_DEFAULT_FILL_OPACITY);
     const { reportType } = useParams();
 
@@ -123,7 +109,6 @@ const MapViewDetail = React.forwardRef<any, Props>(
       });
     });
 
-
     // main function to load and draw locations to the map
     // logic for displaying borders and fill colors
     const loadLocationSet = useCallback(
@@ -143,6 +128,21 @@ const MapViewDetail = React.forwardRef<any, Props>(
             tolerance: 1
           });
 
+          let centreData: FeatureCollection<Polygon | MultiPolygon | Point> = {
+            features: data.features.map(feature => {
+              let val = getPolygonCenter(feature);
+              return val.center;
+            }),
+            type: 'FeatureCollection',
+            bbox: undefined
+          };
+
+          currentMap.addSource(parentLocationIdentifier + '-center', {
+            type: 'geojson',
+            data: centreData,
+            tolerance: 1
+          });
+
           currentMap.addLayer(
             {
               id:
@@ -154,13 +154,13 @@ const MapViewDetail = React.forwardRef<any, Props>(
               source: parentLocationIdentifier,
               layout: {},
               paint: {
-                'fill-color':
-                  ['match',
-                    ['get', 'geographicLevel'], 'structure',
-                    ['get', 'statusColor'],
-                    ['get', 'evaluatedColor']
-                  ]
-                ,
+                'fill-color': [
+                  'match',
+                  ['get', 'geographicLevel'],
+                  'structure',
+                  ['get', 'statusColor'],
+                  ['get', 'evaluatedColor']
+                ],
                 'fill-opacity': opacity.current
               }
             },
@@ -182,6 +182,25 @@ const MapViewDetail = React.forwardRef<any, Props>(
             'label-layer'
           );
 
+          currentMap.addLayer({
+            id: parentLocationIdentifier + '-label',
+            type: 'symbol',
+            source: parentLocationIdentifier + '-center',
+            layout: {
+              'text-field': [
+                'format',
+                'test',
+                {
+                  'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']]
+                }
+              ],
+              // 'text-size': ['interpolate', ['linear'], ['zoom'], 10, 7, 18, 20],
+              'text-anchor': 'bottom',
+              'text-justify': 'center'
+            }
+            // filter: ['!=', 'geographicLevel', 'structure']
+          });
+
           currentMap.on('mouseover', parentLocationIdentifier + '-label', e => {
             const feature = currentMap.queryRenderedFeatures(e.point)[0];
             const properties = feature.properties;
@@ -189,50 +208,59 @@ const MapViewDetail = React.forwardRef<any, Props>(
               //mapbox strigifies objects inside properties, parsing columnDataMap back to object
               properties['columnDataMap'] = JSON.parse(properties['columnDataMap']);
               let htmlText = 'Data not parsed correctly.';
-              const defaultColumnName = defaultColumn;//(data as any).defaultDisplayColumn;
-              if (reportType === ReportType.MDA_LITE_COVERAGE && (defaultColumnName === 'SCH Treatment Coverage' || defaultColumnName === 'STH Treatment Coverage')) {
-
+              const defaultColumnName = defaultColumn; //(data as any).defaultDisplayColumn;
+              if (
+                reportType === ReportType.MDA_LITE_COVERAGE &&
+                (defaultColumnName === 'SCH Treatment Coverage' || defaultColumnName === 'STH Treatment Coverage')
+              ) {
                 let filteredAgeCoverage;
                 if (defaultColumnName === 'SCH Treatment Coverage') {
-                  filteredAgeCoverage = AGE_COVERAGE_LEGEND.filter(e => e.key !== 'Male 1-4 years' && e.key !== 'Female 1-4 years');
+                  filteredAgeCoverage = AGE_COVERAGE_LEGEND.filter(
+                    e => e.key !== 'Male 1-4 years' && e.key !== 'Female 1-4 years'
+                  );
                 } else {
-                  filteredAgeCoverage = AGE_COVERAGE_LEGEND
+                  filteredAgeCoverage = AGE_COVERAGE_LEGEND;
                 }
 
-                let ageCoverageLegend = filteredAgeCoverage?.map(e => {
-                  return (`<div className='p-2'><span className="my-3">${e.label}: ${properties['columnDataMap'][e.key].value}</span></div>`)
-                }).join(" ");
+                let ageCoverageLegend = filteredAgeCoverage
+                  ?.map(e => {
+                    return `<div className='p-2'><span className="my-3">${e.label}: ${
+                      properties['columnDataMap'][e.key].value
+                    }</span></div>`;
+                  })
+                  .join(' ');
 
-                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4> ${ageCoverageLegend}`
-              } else if (reportType === ReportType.ONCHOCERCIASIS_SURVEY && properties["reportLevel"] !== 'Structure') {
-
+                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4> ${ageCoverageLegend}`;
+              } else if (reportType === ReportType.ONCHOCERCIASIS_SURVEY && properties['reportLevel'] !== 'Structure') {
                 let onchoCoverageLegend = ONCHO_COVERAGE_LEGEND.map(e => {
-                  return (`<div className='p-2'><span className="my-3">${e.label}: ${properties['columnDataMap'][e.key]?.value}</span></div>`)
-                }).join(" ");
+                  return `<div className='p-2'><span className="my-3">${e.label}: ${
+                    properties['columnDataMap'][e.key]?.value
+                  }</span></div>`;
+                }).join(' ');
 
-                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4> ${onchoCoverageLegend}`
-              }
-              else if (defaultColumnName) {
+                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4> ${onchoCoverageLegend}`;
+              } else if (defaultColumnName) {
                 htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4>
             <div class='p-2'>
-              ${`<small class='my-3'>${defaultColumnName ?? "Data not parsed correctly"}: ${properties['columnDataMap'][defaultColumnName] !== undefined
-                    ? properties['columnDataMap'][defaultColumnName].isPercentage
-                      ? properties['columnDataMap'][defaultColumnName].value.toFixed(3) + '%'
-                      : properties['columnDataMap'][defaultColumnName].value
-                    : ''
-                  }</small>`}
+              ${`<small class='my-3'>${defaultColumnName ?? 'Data not parsed correctly'}: ${
+                properties['columnDataMap'][defaultColumnName] !== undefined
+                  ? properties['columnDataMap'][defaultColumnName].isPercentage
+                    ? properties['columnDataMap'][defaultColumnName].value.toFixed(3) + '%'
+                    : properties['columnDataMap'][defaultColumnName].value
+                  : ''
+              }</small>`}
             </div>`;
-
               } else if (properties['businessStatus']) {
                 htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4>
             <div class='p-2'>
-              ${`<small class='my-3'>Business Status: ${(reportType === ReportType.IRS_FULL_COVERAGE ||
-                    reportType === ReportType.IRS_LITE_COVERAGE ||
-                    reportType === ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL) &&
-                    properties['businessStatus'] === 'Complete'
-                    ? 'Sprayed'
-                    : properties['businessStatus']
-                  }
+              ${`<small class='my-3'>Business Status: ${
+                (reportType === ReportType.IRS_FULL_COVERAGE ||
+                  reportType === ReportType.IRS_LITE_COVERAGE ||
+                  reportType === ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL) &&
+                properties['businessStatus'] === 'Complete'
+                  ? 'Sprayed'
+                  : properties['businessStatus']
+              }
               </small>`}
             </div>`;
               }
@@ -305,43 +333,40 @@ const MapViewDetail = React.forwardRef<any, Props>(
           if (path.length) {
             //reload existing location or if breadcrumb event to delete all child locations and reload
             if (path[path.length - 1] === parentLocationIdentifier) {
-              if (currentMap.getLayer(parentLocationIdentifier + '-fill')) {
-                currentMap.removeLayer(parentLocationIdentifier + '-fill');
-              }
-              currentMap.removeLayer(parentLocationIdentifier + '-border');
-              if (currentMap.getLayer(parentLocationIdentifier + '-structure'))
-                currentMap.removeLayer(parentLocationIdentifier + '-structure');
-              if (currentMap.getLayer(parentLocationIdentifier + '-label')) {
-                currentMap.removeLayer(parentLocationIdentifier + '-label');
-                currentMap.removeSource(parentLocationIdentifier + '-label');
-              }
-              currentMap.removeSource(parentLocationIdentifier);
+              // if (currentMap.getLayer(parentLocationIdentifier + '-fill')) {
+              //   currentMap.removeLayer(parentLocationIdentifier + '-fill');
+              // }
+              // currentMap.removeLayer(parentLocationIdentifier + '-border');
+              // if (currentMap.getLayer(parentLocationIdentifier + '-structure')) {
+              //   currentMap.removeLayer(parentLocationIdentifier + '-structure');
+              // }
+              // if (currentMap.getLayer(parentLocationIdentifier + '-label')) {
+              //   currentMap.removeLayer(parentLocationIdentifier + '-label');
+              //   // currentMap.removeSource(parentLocationIdentifier + '-label');
+              // }
+              // currentMap.removeSource(parentLocationIdentifier);
               loadLocationSet(currentMap, data, parentLocationIdentifier, path);
             } else {
               path.forEach(el => {
-                if (currentMap.getLayer(el + '-fill')) {
-                  currentMap.removeLayer(el + '-fill');
-                }
-                if (currentMap.getLayer(el + '-border')) {
-                  currentMap.removeLayer(el + '-border');
-
-                }
-                if (currentMap.getSource(el + '-border')) {
-                  currentMap.removeSource(el + '-border');
-                }
-                if (currentMap.getSource(el + '-label')) {
-                  currentMap.removeLayer(el + '-label');
-
-                }
-                if (currentMap.getSource(el + '-label')) {
-                  currentMap.removeSource(el + '-label')
-                }
-
-                if (currentMap.getLayer(el + '-structure')) currentMap.removeLayer(el + '-structure');
-                if (currentMap.getSource(el)) {
-                  currentMap.removeSource(el);
-                }
-
+                // if (currentMap.getLayer(el + '-fill')) {
+                //   currentMap.removeLayer(el + '-fill');
+                // }
+                // if (currentMap.getLayer(el + '-border')) {
+                //   currentMap.removeLayer(el + '-border');
+                // }
+                // if (currentMap.getSource(el + '-border')) {
+                //   currentMap.removeSource(el + '-border');
+                // }
+                // if (currentMap.getSource(el + '-label')) {
+                //   currentMap.removeLayer(el + '-label');
+                // }
+                // if (currentMap.getSource(el + '-label')) {
+                //   currentMap.removeSource(el + '-label');
+                // }
+                // if (currentMap.getLayer(el + '-structure')) currentMap.removeLayer(el + '-structure');
+                // if (currentMap.getSource(el)) {
+                //   currentMap.removeSource(el);
+                // }
               });
               currentMap.fitBounds(bbox(data) as any);
             }
@@ -409,23 +434,23 @@ const MapViewDetail = React.forwardRef<any, Props>(
               <ul style={{ listStyle: 'none' }}>
                 {reportType === ReportType.MDA_FULL_COVERAGE || reportType === ReportType.MDA_LITE_COVERAGE
                   ? Object.keys(MdaStructureStatus).map((el, index) => (
-                    <li key={index}>
-                      <span
-                        className="sidebar-legend"
-                        style={{ backgroundColor: MAP_MDA_STRUCTURE_LEGEND_COLORS[index] }}
-                      ></span>
-                      {el}
-                    </li>
-                  ))
+                      <li key={index}>
+                        <span
+                          className="sidebar-legend"
+                          style={{ backgroundColor: MAP_MDA_STRUCTURE_LEGEND_COLORS[index] }}
+                        ></span>
+                        {el}
+                      </li>
+                    ))
                   : Object.keys(IrsStructureStatus).map((el, index) => (
-                    <li key={index}>
-                      <span
-                        className="sidebar-legend"
-                        style={{ backgroundColor: MAP_IRS_STRUCTURE_LEGEND_COLORS[index] }}
-                      ></span>
-                      {el}
-                    </li>
-                  ))}
+                      <li key={index}>
+                        <span
+                          className="sidebar-legend"
+                          style={{ backgroundColor: MAP_IRS_STRUCTURE_LEGEND_COLORS[index] }}
+                        ></span>
+                        {el}
+                      </li>
+                    ))}
               </ul>
             </PopoverComponent>
           )}
@@ -467,6 +492,5 @@ const MapViewDetail = React.forwardRef<any, Props>(
     );
   }
 );
-
 
 export default React.memo(MapViewDetail);

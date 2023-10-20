@@ -3,7 +3,6 @@ import Draggable from 'react-draggable';
 import React, { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { Accordion, Button, Col, Container, Form, FormGroup, Row, Tab, Tabs } from 'react-bootstrap';
 import { MAPBOX_STYLE_STREETS } from '../../../../constants';
-
 import {
   disableMapInteractions,
   fitCollectionToBounds,
@@ -59,11 +58,11 @@ interface Props {
 }
 
 const lineParameters: any = {
-  country: { col: 'red', num: 1, offset: 2.5 },
-  county: { col: 'blue', num: 1, offset: 2.5 },
-  subcounty: { col: 'darkblue', num: 1, offset: 6 },
-  ward: { col: 'yellow', num: 2, offset: 3 },
-  catchment: { col: 'purple', num: 3, offset: 1 }
+  countryx: { col: 'red', num: 1, offset: 2.5 },
+  countyx: { col: 'blue', num: 1, offset: 2.5 },
+  subcountyx: { col: 'darkblue', num: 1, offset: 6 },
+  wardx: { col: 'yellow', num: 2, offset: 3 },
+  catchmentx: { col: 'purple', num: 3, offset: 1 }
 };
 
 export const getBackgroundStyle = (value: { r: number; g: number; b: number } | null) => {
@@ -180,7 +179,7 @@ const SimulationMapView = ({
     if (lineParameters[newlevel]) {
       return lineParameters[newlevel];
     } else {
-      return { col: 'black', num: 1, offset: 1 };
+      return { col: 'black', num: 1, offset: 0 };
     }
   };
 
@@ -530,7 +529,6 @@ const SimulationMapView = ({
 
   useEffect(() => {
     if (chunkedData) {
-      console.log('chunkedData', chunkedData.identifier);
       if (
         chunkedData?.features.length > 0 &&
         (!chunkedData?.parents ||
@@ -646,25 +644,38 @@ const SimulationMapView = ({
                 paint: {
                   'fill-color': [
                     'case',
-                    ['>', ['length', ['get', 'metadata']], 0],
-                    ['case', ['==', ['get', 'selectedColor'], null], geoColor.hex, ['get', 'selectedColor']],
-                    ['==', ['get', 'selectedTagValue'], null],
-                    'black',
-                    ['<', ['get', 'selectedTagValue'], 0],
-                    geoColor.hex,
-                    ['==', ['get', 'selectedTagValue'], 0],
+                    ['all', ['==', ['get', 'selectedTag'], null], ['==', ['get', 'selectedColor'], null]],
                     geoColor.hex,
                     ['get', 'selectedColor']
                   ],
+
+                  // 'fill-color': [
+                  //   'case',
+                  //   ['>', ['length', ['get', 'metadata']], 0],
+                  //   ['case', ['==', ['get', 'selectedColor'], null], geoColor.hex, ['get', 'selectedColor']],
+                  //   ['all', ['==', ['get', 'selectedTagValue'], null], ['!=', ['get', 'selectedTag'], null]],
+                  //   'black',
+                  //   ['<', ['get', 'selectedTagValue'], 0],
+                  //   geoColor.hex,
+                  //   ['==', ['get', 'selectedTagValue'], 0],
+                  //   geoColor.hex,
+                  //   ['get', 'selectedColor']
+                  // ],
                   'fill-opacity': [
                     'case',
-                    ['==', ['get', 'selectedTagValue'], null],
-                    0.2,
-                    ['==', ['get', 'selectedTagValue'], 0],
-                    0,
-                    ['==', ['get', 'selectedTransparency'], null],
+
+                    ['all', ['==', ['get', 'selectedTag'], null], ['==', ['get', 'selectedColor'], null]],
                     0.1,
+                    ['any', ['==', ['get', 'selectedTagValue'], null], ['==', ['get', 'selectedTagValue'], 0]],
+                    0,
                     ['/', ['get', 'selectedTransparency'], 100]
+                    // ['all', ['==', ['get', 'selectedTagValue'], null], ['<=', ['length', ['get', 'metadata']], 0]],
+                    // 0,
+                    // ['==', ['get', 'selectedTagValue'], 0],
+                    // 0,
+                    // ['==', ['get', 'selectedTransparency'], null],
+                    // 0,
+                    // ['/', ['get', 'selectedTransparency'], 100]
                   ]
                 }
               },
@@ -708,11 +719,44 @@ const SimulationMapView = ({
           //   );
           // }
 
+          // if (!map.current?.getLayer(finalLayer.concat('-null-symbol'))) {
+          //   map.current?.loadImage(logo, (error: any, image: any) => {
+          //     map.current?.addImage('store-icon', image);
+          //     map.current?.addLayer(
+          //       {
+          //         id: finalLayer.concat('-null-symbol'),
+          //         type: 'symbol',
+          //         filter: ['==', ['get', 'selectedTagValue'], null],
+          //         source: finalLayer.concat('-centers'),
+          //         layout: {
+          //           'text-field': [
+          //             'format',
+          //             ['get', 'name'],
+          //             {
+          //               'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']]
+          //             }
+          //           ],
+          //           'text-size': ['interpolate', ['linear'], ['zoom'], 5, 5, 7, 10, 10, 12, 18, 20],
+          //           'text-anchor': 'top',
+          //           'text-justify': 'center',
+          //           'icon-image': 'store-icon',
+          //           'icon-size': 0.1,
+          //           'icon-anchor': 'bottom'
+          //         },
+          //         paint: {
+          //           'icon-color': ['case', ['==', ['get', 'selectedColor'], null], 'blue', 'red']
+          //         }
+          //       },
+          //       finalLayer.concat('-line')
+          //     );
+          //   });
+          // }
           if (!map.current?.getLayer(finalLayer.concat('-symbol'))) {
             map.current?.addLayer(
               {
                 id: finalLayer.concat('-symbol'),
                 type: 'symbol',
+                filter: ['all', ['!=', ['get', 'selectedTagValue'], null], ['==', ['get', 'reachedMax'], null]],
                 source: finalLayer.concat('-centers'),
                 layout: {
                   'text-field': [
@@ -722,12 +766,13 @@ const SimulationMapView = ({
                       'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']]
                     }
                   ],
-                  'text-size': ['interpolate', ['linear'], ['zoom'], 10, 7, 18, 20],
-                  'text-anchor': 'bottom',
+                  'text-size': ['interpolate', ['linear'], ['zoom'], 5, 2, 7, 10, 10, 12, 18, 20],
+                  'text-anchor': 'top',
                   'text-justify': 'center'
                 },
                 paint: {
                   'text-color': ['case', ['==', ['get', 'mark'], true], 'red', 'black'],
+
                   'text-opacity': [
                     'step',
                     ['zoom'],
@@ -740,6 +785,53 @@ const SimulationMapView = ({
               finalLayer.concat('-line')
             );
           }
+          if (!map.current?.getLayer(finalLayer.concat('-null-symbol'))) {
+            map.current?.addLayer(
+              {
+                id: finalLayer.concat('-null-symbol'),
+                type: 'symbol',
+                filter: [
+                  'any',
+                  ['==', ['get', 'selectedTagValue'], null],
+                  ['==', ['get', 'selectedTagValue'], 0],
+                  ['==', ['get', 'reachedMax'], 'true']
+                ],
+                source: finalLayer.concat('-centers'),
+                layout: {
+                  'text-field': [
+                    'format',
+                    ['get', 'name'],
+                    {
+                      'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']]
+                    }
+                  ],
+                  'text-size': ['interpolate', ['linear'], ['zoom'], 5, 5, 7, 10, 10, 12, 18, 20],
+                  'text-anchor': 'top',
+                  'text-justify': 'center'
+                },
+                paint: {
+                  'text-color': ['case', ['==', ['get', 'mark'], true], 'red', 'black'],
+
+                  'text-opacity': [
+                    'step',
+                    ['zoom'],
+                    ['case', ['==', ['get', 'geographicLevel'], 'structure'], 0.1, 1],
+                    15,
+                    ['case', ['==', ['get', 'geographicLevel'], 'structure'], 1, 1]
+                  ],
+                  'text-halo-color': [
+                    'case',
+                    ['==', ['get', 'reachedMax'], 'true'],
+                    '#e8ad89',
+                    ['case', ['==', ['get', 'selectedTagValue'], null], '#d9c1c1', '#bbd3f1']
+                  ],
+                  'text-halo-width': 100
+                }
+              },
+              finalLayer.concat('-line')
+            );
+          }
+
           if (!map.current?.getLayer(finalLayer.concat('-heatmap'))) {
             map.current?.addLayer(
               {
@@ -834,7 +926,6 @@ const SimulationMapView = ({
           if (map.current) {
             if (map.current?.getLayer(finalLayer.concat('-symbol'))) {
               map.current.on('mouseover', finalLayer.concat('-symbol'), e => {
-                console.log('mouse over');
                 const features = map.current?.queryRenderedFeatures(e.point);
                 let filteredFeatures = features?.filter(feature => feature.layer.id.endsWith('-fill'));
                 const feature = filteredFeatures ? filteredFeatures[0] : undefined;
@@ -842,22 +933,25 @@ const SimulationMapView = ({
                   ?.map(feature => {
                     const properties = feature.properties;
                     let htmlText = '';
-                    if (properties && (properties['selectedTagValue'] === 0 || properties['selectedTagValue'])) {
-                      const selectedValue: any[] = JSON.parse(properties['selectedTagValue']);
+                    if (properties) {
                       let selectedTag = properties.selectedTag;
-                      let selectedTagPercentageValue = properties.selectedTagValuePercent;
-                      let percDisplay = 0;
-                      try {
-                        let perc = parseFloat(selectedTagPercentageValue);
-                        percDisplay = Math.trunc(Math.round(perc * 100));
-                      } catch (e) {}
-                      htmlText = `  
+                      if (properties['selectedTagValue'] === 0 || properties['selectedTagValue']) {
+                        const selectedValue: any[] = JSON.parse(properties['selectedTagValue']);
+
+                        let selectedTagPercentageValue = properties.selectedTagValuePercent;
+                        let percDisplay = 0;
+                        try {
+                          let perc = parseFloat(selectedTagPercentageValue);
+                          percDisplay = Math.trunc(Math.round(perc * 100));
+                        } catch (e) {}
+                        htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}
                                               <br> Value: ${selectedValue}
                                               <br> Percentile: ${percDisplay}%
-                                    
+
                                         `;
+                      }
                     }
                     return htmlText;
                   })
@@ -1198,7 +1292,7 @@ const SimulationMapView = ({
                 feature.properties['selectedLineColor'] =
                   userDefinedLayer.lineColor !== undefined && userDefinedLayer.lineColor !== null
                     ? userDefinedLayer.lineColor
-                    : INITIAL_FILL_COLOR;
+                    : INITIAL_LINE_COLOR;
               }
             });
             if (userDefinedLayer.selectedTag) {
@@ -1271,6 +1365,7 @@ const SimulationMapView = ({
         map.current?.setLayoutProperty(layer.concat('-fill'), 'visibility', show ? 'visible' : 'none');
         map.current?.setLayoutProperty(layer.concat('-line'), 'visibility', show ? 'visible' : 'none');
         map.current?.setLayoutProperty(layer.concat('-symbol'), 'visibility', show ? 'visible' : 'none');
+        map.current?.setLayoutProperty(layer.concat('-null-symbol'), 'visibility', show ? 'visible' : 'none');
         map.current?.setLayoutProperty(layer.concat('-points'), 'visibility', show ? 'visible' : 'none');
       }
     },
@@ -1333,19 +1428,31 @@ const SimulationMapView = ({
       feature.properties?.metadata?.forEach((element: any) => {
         if (feature?.properties) {
           if (tag) {
+            feature.properties[tagField] = element.type;
             if (element.type === tag && tagStats.max && tagStats.max[tag]) {
-              feature.properties[valueField] = element.value;
-              feature.properties[tagField] = element.type;
-              let percentage;
+              delete feature.properties['reachedMax'];
+              if (!(element.value >= 0x10000000000000000 || element.value < -0x10000000000000000)) {
+                feature.properties[valueField] = element.value;
+              } else {
+                feature.properties['reachedMax'] = 'true';
+              }
+
+              let percentage: any;
               if (element.value < 0) {
                 percentage = (-1 * element.value) / (-1 * tagStats.min[tag]);
               } else {
                 percentage = element.value / tagStats.max[tag];
               }
+
               feature.properties[percentageField] = percentage;
 
-              feature.properties.selectedTagValueMin = tagStats.min[tag];
-              feature.properties.selectedTagValueMax = tagStats.max[tag];
+              if (!(tagStats.min[tag] >= 0x10000000000000000 || tagStats.min[tag] < -0x10000000000000000)) {
+                feature.properties.selectedTagValueMin = tagStats.min[tag];
+              }
+
+              if (!(tagStats.max[tag] >= 0x10000000000000000 || tagStats.max[tag] < -0x10000000000000000)) {
+                feature.properties.selectedTagValueMax = tagStats.min[tag];
+              }
 
               let [h, s, v] = hex.hsv(color.hex);
               const colorField1 = s * feature.properties[percentageField];
@@ -1378,6 +1485,7 @@ const SimulationMapView = ({
           delete feature.properties[percentageField];
           delete feature.properties.selectedTagValueMin;
           delete feature.properties.selectedTagValueMax;
+          feature['properties'][tagField] = tag;
         }
       }
     }
