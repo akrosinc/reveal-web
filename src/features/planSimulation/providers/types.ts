@@ -74,6 +74,7 @@ export interface PlanningLocationResponseTagged {
   features: RevealFeatureTagged;
   parents: RevealFeatureTagged;
   method?: AnalysisLayer[];
+  source?: 'messageHandler' | 'parentHandler' | 'uploadHandler';
 }
 
 export interface PlanningParentLocationResponse {

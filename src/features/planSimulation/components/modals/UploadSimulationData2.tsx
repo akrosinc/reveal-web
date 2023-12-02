@@ -30,7 +30,7 @@ const ELASTIC_FILE_TYPE = { key: 'elasticFile', val: 'Elastic File' };
 const REVEAL_FILE_TYPE = { key: 'revealFile', val: 'Reveal File' };
 const fileTypes: FileType[] = [REVEAL_FILE_TYPE, ELASTIC_FILE_TYPE];
 
-const UploadSimulationData = ({ closeHandler, dataFunction, setLayerDetail }: Props) => {
+const UploadSimulationData2 = ({ closeHandler, dataFunction, setLayerDetail }: Props) => {
   const {
     handleSubmit,
     register,
@@ -58,82 +58,46 @@ const UploadSimulationData = ({ closeHandler, dataFunction, setLayerDetail }: Pr
     setLayerDetail(analysisLayer);
     if (formValues.fileType === REVEAL_FILE_TYPE.key) {
       let file: File = formValues.bulk[0];
+      const reader = new FileReader();
+      let data: any;
+      reader.addEventListener('load', e => {
+        data = e.target?.result;
+        let jsData = JSON.parse(data);
 
-      let chunkSizeToUse = 1024 * 1024 * 10; // 1 MB chunks
-      let offset = 0 - chunkSizeToUse;
-      let data = '';
+        let length = jsData.features.length;
 
-      let readInterval = setInterval(() => {
-        if (offset < file.size) {
-          offset += chunkSizeToUse;
+        const batchSize = 1500;
 
-          let fileReader = new FileReader();
-
-          fileReader.onload = () => {
-            let arrayBuffer = fileReader.result;
-            data += arrayBuffer;
-            //further chunk processing
-          };
-
-          fileReader.onerror = err => {
-            console.log(err); // WebkitBlobResource error 1 exactly after 60 seconds of processing
-          };
-
-          fileReader.readAsText(file.slice(offset, offset + chunkSizeToUse));
-        } else {
-          clearInterval(readInterval);
-
-          let jsData = JSON.parse(data);
-
-          let length = jsData.features.length;
-
-          const batchSize = 5000;
-
-          let featureListArray: any[] = [];
-          for (let i = 0; i < length; i += batchSize) {
-            const chunk = jsData.features.slice(i, i + batchSize);
-            featureListArray.push(chunk);
-            // do whatever
-          }
-
-          // for (let j = 0; j < featureListArray.length; j++) {
-          //   setTimeout(() => {
-          //     featureListArray[j].forEach((feature: Feature<Polygon | MultiPolygon | Point, Properties>) => {
-          //       if (feature.properties) {
-          //         let polygonCenter = getPolygonCenter(feature);
-          //         feature.properties.point = polygonCenter.center;
-          //       }
-          //     });
-          //
-          //     let upplaodMap: PlanningLocationResponse | undefined = {
-          //       type: 'FeatureCollection',
-          //       features: featureListArray[j].filter(
-          //         (feature: any) => !feature.properties.hasOwnProperty('isParent') || !feature.properties.isParent
-          //       ),
-          //       parents: featureListArray[j],
-          //       identifier: undefined,
-          //       source: 'uploadHandler',
-          //       method: analysisLayer
-          //     };
-          //
-          //     dataFunction(upplaodMap);
-          //   }, 3000);
-          // }
-
-          loop(featureListArray, analysisLayer);
-          // featureListArray.forEach(featureList => {
-
-          // });
+        let featureListArray = [];
+        for (let i = 0; i < length; i += batchSize) {
+          const chunk = jsData.features.slice(i, i + batchSize);
+          featureListArray.push(chunk);
+          // do whatever
         }
-      }, 1000);
 
-      // const reader = new FileReader();
-      //
-      // reader.addEventListener('load', e => {
-      //   data = e.target?.result;
-      //
-      // });
-      // reader.readAsText(file);
+        featureListArray.forEach(featureList => {
+          featureList.forEach((feature: Feature<Polygon | MultiPolygon | Point, Properties>) => {
+            if (feature.properties) {
+              let polygonCenter = getPolygonCenter(feature);
+              feature.properties.point = polygonCenter.center;
+            }
+          });
+
+          let upplaodMap: PlanningLocationResponse | undefined = {
+            type: 'FeatureCollection',
+            features: featureList.filter(
+              (feature: any) => !feature.properties.hasOwnProperty('isParent') || !feature.properties.isParent
+            ),
+            parents: featureList,
+            identifier: undefined,
+            source: 'uploadHandler',
+            method: analysisLayer
+          };
+
+          dataFunction(upplaodMap);
+        });
+      });
+      reader.readAsText(file);
     } else {
       let file: File = formValues.bulk[0];
       const reader = new FileReader();
@@ -177,32 +141,6 @@ const UploadSimulationData = ({ closeHandler, dataFunction, setLayerDetail }: Pr
     closeHandler(false);
   };
 
-  let loop = (featureListArray: any[], analysisLayer: AnalysisLayer) => {
-    setTimeout(() => {
-      featureListArray[0]?.forEach((feature: Feature<Polygon | MultiPolygon | Point, Properties>) => {
-        if (feature.properties) {
-          let polygonCenter = getPolygonCenter(feature);
-          feature.properties.point = polygonCenter.center;
-        }
-      });
-
-      let upplaodMap: PlanningLocationResponse | undefined = {
-        type: 'FeatureCollection',
-        features: featureListArray[0]?.filter(
-          (feature: any) => !feature.properties.hasOwnProperty('isParent') || !feature.properties.isParent
-        ),
-        parents: [],
-        identifier: undefined,
-        source: 'uploadHandler',
-        method: analysisLayer
-      };
-
-      dataFunction(upplaodMap);
-      featureListArray.shift();
-      loop(featureListArray, analysisLayer);
-    }, 3000);
-  };
-
   return (
     <Modal size="xl" show centered scrollable backdrop="static" keyboard={false} onHide={() => closeHandler(false)}>
       <Modal.Header closeButton>
@@ -243,4 +181,4 @@ const UploadSimulationData = ({ closeHandler, dataFunction, setLayerDetail }: Pr
     </Modal>
   );
 };
-export default UploadSimulationData;
+export default UploadSimulationData2;

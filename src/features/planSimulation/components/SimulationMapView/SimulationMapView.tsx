@@ -530,9 +530,9 @@ const SimulationMapView = ({
   useEffect(() => {
     if (chunkedData) {
       if (
-        chunkedData?.features.length > 0 &&
+        chunkedData?.features?.length > 0 &&
         (!chunkedData?.parents ||
-          chunkedData?.parents.length === 0 ||
+          chunkedData?.parents?.length === 0 ||
           (chunkedData.source && chunkedData.source === 'uploadHandler'))
       ) {
         let layerList: Set<string>;

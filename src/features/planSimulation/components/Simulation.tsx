@@ -667,6 +667,9 @@ const Simulation = () => {
         identifier: mapData?.identifier,
         method: mapData?.method
       };
+      if (mapData.source) {
+        newVar.source = mapData.source;
+      }
     } else {
       newVar = {
         features: {},
@@ -681,6 +684,9 @@ const Simulation = () => {
   useEffect(() => {
     if (mapDataLoad) {
       setMapData(mapData => {
+        if (mapData) {
+          mapData.source = mapDataLoad.source;
+        }
         let newMapData: PlanningLocationResponseTagged = initializeNewMapData(mapData);
 
         if (mapDataLoad.features) {
@@ -1042,9 +1048,11 @@ const Simulation = () => {
             return val;
           });
 
-        lowestLocations.forEach(lowestLocation => {
-          getLocationHierarchyFromLowestLocation(lowestLocation, mapData);
-        });
+        if (!mapData.source || mapData.source !== 'uploadHandler') {
+          lowestLocations.forEach(lowestLocation => {
+            getLocationHierarchyFromLowestLocation(lowestLocation, mapData);
+          });
+        }
       }
 
       let min = Number.MAX_VALUE;
@@ -1230,69 +1238,97 @@ const Simulation = () => {
                     </Col>
                   </Row>
                 </Form.Group>
-                <Form.Group className="my-3">
-                  <Row className="align-items-center">
-                    <Col md={5} lg={5}>
-                      <OverlayTrigger
-                        placement="top"
-                        overlay={<Tooltip id="meta-tooltip">{t('simulationPage.selectParentToSearchWithin')}</Tooltip>}
-                      >
-                        <Form.Label>{t('simulationPage.geographicLevel')}:</Form.Label>
-                      </OverlayTrigger>
-                    </Col>
+                <Container
+                  as={'div'}
+                  color={'grey'}
+                  style={{ border: '1px', borderColor: 'grey' }}
+                  className="rounded-1 border"
+                >
+                  <Row>
                     <Col>
-                      <Form.Select
-                        onChange={e => {
-                          if (e.target.value && selectedHierarchy && selectedHierarchy.type) {
-                            getLocationList(selectedHierarchy.identifier, selectedHierarchy.type, e.target.value).then(
-                              res => {
-                                setLocationList(res);
+                      <div className=" my-3 ">
+                        Filter locations by a Parent Location{' '}
+                        <span style={{ color: 'lightgray' }} className={'small'}>
+                          (Search results will be locations within this parent location)
+                        </span>
+                      </div>
+                      <Form.Group className="my-3">
+                        <Row className="align-items-center">
+                          <Col md={5} lg={5}>
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={
+                                <Tooltip id="meta-tooltip">{t('simulationPage.selectParentToSearchWithin')}</Tooltip>
                               }
-                            );
-                          } else {
-                            setLocationList([]);
-                          }
-                          setSelectedLocation(null);
-                        }}
-                      >
-                        <option value={''}>{t('simulationPage.selectGeographicLevel')}...</option>
-                        {nodeList.map(el => (
-                          <option key={el} value={el}>
-                            {el}
-                          </option>
-                        ))}
-                      </Form.Select>
+                            >
+                              <Form.Label>{t('simulationPage.geographicLevel')}:</Form.Label>
+                            </OverlayTrigger>
+                          </Col>
+                          <Col>
+                            <Form.Select
+                              onChange={e => {
+                                if (e.target.value && selectedHierarchy && selectedHierarchy.type) {
+                                  getLocationList(
+                                    selectedHierarchy.identifier,
+                                    selectedHierarchy.type,
+                                    e.target.value
+                                  ).then(res => {
+                                    setLocationList(res);
+                                  });
+                                } else {
+                                  setLocationList([]);
+                                }
+                                setSelectedLocation(null);
+                              }}
+                            >
+                              <option value={''}>
+                                {selectedHierarchy
+                                  ? t('simulationPage.selectGeographicLevel')
+                                  : t('simulationPage.selectHierarchy')}
+                                ...
+                              </option>
+                              {nodeList.map(el => (
+                                <option key={el} value={el}>
+                                  {el}
+                                </option>
+                              ))}
+                            </Form.Select>
+                          </Col>
+                        </Row>
+                      </Form.Group>
+                      <Form.Group className="my-3">
+                        <Row className="align-items-center">
+                          <Col md={5} lg={5}>
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={
+                                <Tooltip id="meta-tooltip">
+                                  {t('simulationPage.selectParentLocationToSearchWithin')}
+                                </Tooltip>
+                              }
+                            >
+                              <Form.Label>{t('simulationPage.location')}:</Form.Label>
+                            </OverlayTrigger>
+                          </Col>
+                          <Col>
+                            <Select
+                              placeholder="Select Location..."
+                              className="custom-react-select-container "
+                              classNamePrefix="custom-react-select"
+                              id="team-assign-select"
+                              isClearable
+                              value={selectedLocation}
+                              options={locationList.reduce((prev, current) => {
+                                return [...prev, { label: current.name, value: current.identifier }];
+                              }, [])}
+                              onChange={newValue => setSelectedLocation(newValue)}
+                            />
+                          </Col>
+                        </Row>
+                      </Form.Group>
                     </Col>
                   </Row>
-                </Form.Group>
-                <Form.Group className="my-3">
-                  <Row className="align-items-center">
-                    <Col md={5} lg={5}>
-                      <OverlayTrigger
-                        placement="top"
-                        overlay={
-                          <Tooltip id="meta-tooltip">{t('simulationPage.selectParentLocationToSearchWithin')}</Tooltip>
-                        }
-                      >
-                        <Form.Label>{t('simulationPage.location')}:</Form.Label>
-                      </OverlayTrigger>
-                    </Col>
-                    <Col>
-                      <Select
-                        placeholder="Select Location..."
-                        className="custom-react-select-container "
-                        classNamePrefix="custom-react-select"
-                        id="team-assign-select"
-                        isClearable
-                        value={selectedLocation}
-                        options={locationList.reduce((prev, current) => {
-                          return [...prev, { label: current.name, value: current.identifier }];
-                        }, [])}
-                        onChange={newValue => setSelectedLocation(newValue)}
-                      />
-                    </Col>
-                  </Row>
-                </Form.Group>
+                </Container>
                 <Form.Group className="my-3">
                   <Row className="align-items-center">
                     <Col md={5} lg={5}>

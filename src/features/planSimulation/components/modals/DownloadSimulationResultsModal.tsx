@@ -120,24 +120,24 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
   ): Promise<string> => {
     let features = Object.keys(mapDataCurrent.features).map(key => mapDataCurrent.features[key]);
 
-    let parents = Object.keys(mapDataCurrent.parents).map(key => mapDataCurrent.parents[key]);
-
-    parents.forEach(parentFeature => {
-      if (parentFeature && parentFeature.identifier) {
-        if (
-          !mapDataCurrent.features[parentFeature.identifier] ||
-          mapDataCurrent.features[parentFeature.identifier] == null
-        ) {
-          if (parentFeature.properties) {
-            parentFeature.properties['isParent'] = true;
-          }
-        }
-      }
-    });
-
-    if (!includeParentData) {
-      parents = parents.filter(parentFeature => !parentFeature.properties?.isParent);
-    }
+    // let parents = Object.keys(mapDataCurrent.parents).map(key => mapDataCurrent.parents[key]);
+    //
+    // parents.forEach(parentFeature => {
+    //   if (parentFeature && parentFeature.identifier) {
+    //     if (
+    //       !mapDataCurrent.features[parentFeature.identifier] ||
+    //       mapDataCurrent.features[parentFeature.identifier] == null
+    //     ) {
+    //       if (parentFeature.properties) {
+    //         parentFeature.properties['isParent'] = true;
+    //       }
+    //     }
+    //   }
+    // });
+    //
+    // if (!includeParentData) {
+    //   parents = parents.filter(parentFeature => !parentFeature.properties?.isParent);
+    // }
 
     if (fileTypeSelector === 'FeatureCollection') {
       let featureCollection: {
@@ -145,7 +145,7 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
         identifier: string;
         features: Feature<Point | Polygon | MultiPolygon, Properties>[];
       } = {
-        features: parents,
+        features: features,
         type: 'FeatureCollection',
         identifier: 'simulation-data'
       };
@@ -374,8 +374,8 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
                       <Form.Label className="text-danger">{errors.filenameJSON.message}</Form.Label>
                     )}
                   </Form.Group>
-                  {getIncludeParentSlider()}
-                  {getFullHierarchySlider()}
+                  {/*{getIncludeParentSlider()}*/}
+                  {/*{getFullHierarchySlider()}*/}
                   <Form.Group className="my-3">
                     <Form.Label>GeoJson file type</Form.Label>
                     <Form.Select {...register('fileTypeSelector')} defaultValue={'FeatureCollection'}>
