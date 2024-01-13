@@ -91,7 +91,7 @@
     "search": "Search"
   },
   "locationsPage": {
-    "geographicLevels": "Geographic Levels",
+    "geographicLevels": "Geographic Level",
     "locationHierarchy": "Location Hierarchy",
     "locations": "Location Inspector",
     "locationsBulk": "Location Import",
@@ -236,8 +236,8 @@
     "country": "Country",
     "entity": "Entity",
     "hierarchy": "Hierarchy",
-    "location": "Location",
-    "geographicLevel": "Geographic Level",
+    "location": "Parent Location",
+    "geographicLevel": "Geographic Level of Parent Location",
     "filterGeographicLevel": "Geographic Level Filter",
     "loadInactiveLocations": "Load inactive locations",
     "selectToLoadInactiveLocations": "Select to Load Inactive Locations",

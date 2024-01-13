@@ -28,15 +28,13 @@ export const getOrganizationCount = async (): Promise<{ count: number }> => {
 
 export const getOrganizationListSummary = async (): Promise<PageableModel<OrganizationModel>> => {
   const data = await api
-    .get<PageableModel<OrganizationModel>>(ORGANIZATION + '?_summary=TRUE&root=false&size=100&page=0')
+    .get<PageableModel<OrganizationModel>>(ORGANIZATION + '?_summary=TRUE&root=false&size=500&page=0')
     .then(response => response.data);
   return data;
 };
 
 export const getOrganizationById = async (id: string): Promise<OrganizationModel> => {
-  const data = await api
-    .get<OrganizationModel>(ORGANIZATION + `/${id}`)
-    .then(response => response.data);
+  const data = await api.get<OrganizationModel>(ORGANIZATION + `/${id}`).then(response => response.data);
   return data;
 };
 
@@ -58,8 +56,6 @@ export const deleteOrganizationById = async (id: string): Promise<OrganizationMo
 };
 
 export const getSecurityGroups = async (): Promise<Groups[]> => {
-  const data = await api
-    .get<Groups[]>(KEYCLOAK_SECURITY_GROUPS)
-    .then(response => response.data);
+  const data = await api.get<Groups[]>(KEYCLOAK_SECURITY_GROUPS).then(response => response.data);
   return data;
 };
