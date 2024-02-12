@@ -187,7 +187,6 @@ const Simulation = () => {
   const [parentChild, setParentChild] = useState<{ [parent: string]: Children }>({});
   const [complexTags, setComplexTags] = useState<ComplexTagResponse[]>();
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
-  const [isAnalysisSearch] = useState(true);
   const [analysisLayerDetails, setAnalysisLayerDetails] = useState<AnalysisLayer[]>([]);
   const [analysisResultEntityTags, setAnalysisResultEntityTags] = useState<EntityTag[]>();
   const [tooLargeOrSmall, setTooLargeOrSmall] = useState(0);
