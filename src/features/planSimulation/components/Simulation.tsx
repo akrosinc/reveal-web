@@ -54,6 +54,7 @@ import SimulationMapView from './SimulationMapView/SimulationMapView';
 
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
+import { hex } from 'color-convert';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -190,6 +191,7 @@ const Simulation = () => {
   const [analysisLayerDetails, setAnalysisLayerDetails] = useState<AnalysisLayer[]>([]);
   const [analysisResultEntityTags, setAnalysisResultEntityTags] = useState<EntityTag[]>();
   const [tooLargeOrSmall, setTooLargeOrSmall] = useState(0);
+  const [omitLayers, setOmitLayers] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -297,19 +299,20 @@ const Simulation = () => {
   }, [markedLocations]);
 
   const submitHandlerCount = (form: any) => {
-    if (!isAnalysisSearch) {
-      setMapData(undefined);
-      setToLocation(undefined);
-      setResetMap(true);
-      setParentMapData(undefined);
-      setShowResult(false);
-      // setStatsMetadata({});
-
-      setMarkedLocations([]);
-      setMarkedParents(new Set<string>());
-      setSubmitSimulationRequestData(undefined);
-      setSelectedEntityConditionList([]);
-      setSelectedFilterGeographicLevelList([]);
+    if (omitLayers) {
+      // setMapData(undefined);
+      // setToLocation(undefined);
+      // setResetMap(true);
+      // setParentMapData(undefined);
+      // setShowResult(false);
+      // // setStatsMetadata({});
+      //
+      // setMarkedLocations([]);
+      // setMarkedParents(new Set<string>());
+      // setSubmitSimulationRequestData(undefined);
+      // setSelectedEntityConditionList([]);
+      // setSelectedFilterGeographicLevelList([]);
+      clearSomeHandler();
     }
 
     levelsLoaded.current = [];
@@ -460,50 +463,16 @@ const Simulation = () => {
     setMapDataLoad(mapDataSave);
   };
 
-  // const statsHandler = (message: MessageEvent) => {
-  //   const statsIncoming = JSON.parse(message.data);
-  //   setStatsMetadata(statsMetadata => {
-  //     let newStats: Stats = {};
-  //     Object.keys(statsMetadata).forEach(key => {
-  //       newStats[key] = statsMetadata[key];
-  //     });
-  //     Object.keys(statsIncoming).forEach(key => {
-  //       if (!newStats[key]) {
-  //         newStats[key] = statsIncoming[key];
-  //       }
-  //     });
-  //     return newStats;
-  //   });
-  // };
-
   const statsHandlerAfterAnalysis = (message: MessageEvent, analysisLayer: AnalysisLayer) => {
-    // const statsIncoming = JSON.parse(message.data);
-    // setStatsMetadata(statsMetadata => {
-    //   let newStats: Stats = {};
-    //   Object.keys(statsMetadata).forEach(key => {
-    //     newStats[key] = statsMetadata[key];
-    //   });
-    //   Object.keys(statsIncoming).forEach(key => {
-    //     if (!newStats[key]) {
-    //       newStats[key] = statsIncoming[key];
-    //     }
-    //   });
-    //   return newStats;
-    // });
-
     const statsIncoming = JSON.parse(message.data);
     setStatsLayerMetadata(statsLayerMetadata => {
       let newStats: StatsLayer = {};
       Object.keys(statsLayerMetadata).forEach(layer => {
-        // Object.keys(statsLayerMetadata[layer]).forEach(key => {
         newStats[layer] = statsLayerMetadata[layer];
-        // });
       });
       Object.keys(statsIncoming).forEach(key => {
-        let newStatsIncoming: Stats = {};
-        if (!newStats[key]) {
-          newStatsIncoming[key] = statsIncoming[key];
-        }
+        let newStatsIncoming: Stats = newStats[analysisLayer.labelName] ? newStats[analysisLayer.labelName] : {};
+        newStatsIncoming[key] = statsIncoming[key];
         newStats[analysisLayer.labelName] = newStatsIncoming;
       });
       return newStats;
@@ -927,7 +896,21 @@ const Simulation = () => {
   }, [parentMapDataLoad]);
 
   const clearHandler = () => {
+    clearSomeHandler();
+
     setSelectedEntityConditionList([]);
+    setSelectedFilterGeographicLevelList([]);
+    setSelectedHierarchy(undefined);
+    setSelectedLocation(null);
+    setLocationList([]);
+    setInactiveGeoFilterList([]);
+    setSelectedFilterInactiveGeographicLevelList(undefined);
+    levelsLoaded.current = [];
+    setGeoFilterList([]);
+    reset();
+  };
+
+  const clearSomeHandler = () => {
     setAnalysisLayerDetails([]);
     setShowResult(false);
     setMapData(undefined);
@@ -936,18 +919,14 @@ const Simulation = () => {
     setParentMapData(undefined);
     setParentsLoadingState('notstarted');
     setResultsLoadingState('notstarted');
-    setSelectedFilterGeographicLevelList([]);
-    setSelectedHierarchy(undefined);
-    setSelectedLocation(undefined);
-    setLocationList([]);
     setHighestLocations(undefined);
-    setInactiveGeoFilterList([]);
-    setSelectedFilterInactiveGeographicLevelList(undefined);
     setStatsLayerMetadata({});
     setAnalysisResultEntityTags(undefined);
+    setSelectedMapData(undefined);
+    setSummary({});
+    setAggregationSummary({});
+    setAggregationSummaryDefinition({});
     levelsLoaded.current = [];
-    setGeoFilterList([]);
-    reset();
   };
 
   const updateParentAsHasResultOrIsResult = (
@@ -1207,6 +1186,25 @@ const Simulation = () => {
           {!mapFullScreen && (
             <Col xs={12} sm={12} md={4} style={{ position: 'relative' }}>
               <Form>
+                <Form.Group className="my-3">
+                  <Row className="align-items-center">
+                    <Col md={5} lg={5}>
+                      <OverlayTrigger placement="top" overlay={<Tooltip id="meta-tooltip">Use Layers</Tooltip>}>
+                        <Form.Label>Omit Layers:</Form.Label>
+                      </OverlayTrigger>
+                    </Col>
+                    <Col>
+                      <Form.Check
+                        className="float-left"
+                        type="switch"
+                        id="custom-switch"
+                        label="Select to Omit Layers"
+                        defaultChecked={omitLayers}
+                        onChange={e => setOmitLayers(!omitLayers)}
+                      />
+                    </Col>
+                  </Row>
+                </Form.Group>
                 <Form.Group className="my-3">
                   <Row className="align-items-center">
                     <Col md={5} lg={5}>
@@ -1646,6 +1644,9 @@ const Simulation = () => {
                   <Button className="float-end my-3 " variant="secondary" onClick={clearHandler}>
                     {t('simulationPage.clearAll')}
                   </Button>
+                  <Button className="float-end my-3 " variant="secondary" onClick={clearSomeHandler}>
+                    Clear Some
+                  </Button>
                   <Form.Check
                     className="float-right my-3 "
                     type="switch"
@@ -1723,7 +1724,31 @@ const Simulation = () => {
           setShowCountModal={setShowCountResponseModal}
           simulationCountData={simulationCountData}
           proceedToSearch={(resultEntityTags: EntityTag[] | undefined) => {
-            setShowAnalysisPanel(true);
+            if (!omitLayers) {
+              setShowAnalysisPanel(true);
+            } else {
+              let hexValue = '#009900';
+              let rgbArr = hex.rgb(hexValue);
+              let hsvArr = hex.hsv(hexValue);
+
+              let color: Color = {
+                hex: '#009900',
+                rgb: { r: rgbArr[0], g: rgbArr[1], b: rgbArr[2] },
+                hsv: { h: hsvArr[0], s: hsvArr[1], v: hsvArr[2] }
+              };
+              let layers: AnalysisLayer = {
+                color: color,
+                labelName: 'default',
+                colorHex: '#009900'
+              };
+              setAnalysisLayerDetails(details => {
+                let newDetail: AnalysisLayer[] = [];
+                details.forEach(existingDetail => newDetail.push(existingDetail));
+                newDetail.push(layers);
+                return newDetail;
+              });
+              proceedToSearchAfterAnalysis(loadParentsToggle, resultEntityTags, layers);
+            }
             setAnalysisResultEntityTags(resultEntityTags);
           }}
           selectedEntityCondition={setSelectedEntityCondition}

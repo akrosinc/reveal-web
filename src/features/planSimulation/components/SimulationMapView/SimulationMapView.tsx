@@ -1296,7 +1296,7 @@ const SimulationMapView = ({
               }
             });
             if (userDefinedLayer.selectedTag) {
-              sourceData.features.forEach(feature => {
+              sourceData.features = sourceData.features.map(feature =>
                 updateFeaturesWithTagStatsAndColorAndTransparency(
                   feature,
                   tagStats,
@@ -1307,8 +1307,8 @@ const SimulationMapView = ({
                   'selectedColor',
 
                   selectedUserDefinedLayer.col
-                );
-              });
+                )
+              );
             }
 
             if (map.current?.getSource(geo.concat('-centers'))) {
@@ -1323,7 +1323,7 @@ const SimulationMapView = ({
               parents: (source._data as any)['parents'],
               identifier: undefined
             };
-            fillSourceData.features.forEach(feature => {
+            fillSourceData.features = fillSourceData.features.map(feature =>
               updateFeaturesWithTagStatsAndColorAndTransparency(
                 feature,
                 tagStats,
@@ -1334,8 +1334,8 @@ const SimulationMapView = ({
                 'selectedColor',
 
                 selectedUserDefinedLayer.col
-              );
-            });
+              )
+            );
 
             if (map.current?.getSource(geo)) {
               (map.current?.getSource(geo) as GeoJSONSource).setData(fillSourceData);
@@ -1428,8 +1428,8 @@ const SimulationMapView = ({
       feature.properties?.metadata?.forEach((element: any) => {
         if (feature?.properties) {
           if (tag) {
-            feature.properties[tagField] = element.type;
             if (element.type === tag && tagStats.max && tagStats.max[tag]) {
+              feature.properties[tagField] = element.type;
               delete feature.properties['reachedMax'];
               if (!(element.value >= 0x10000000000000000 || element.value < -0x10000000000000000)) {
                 feature.properties[valueField] = element.value;
@@ -1956,11 +1956,14 @@ const SimulationMapView = ({
                                 return false;
                               })
                               .filter((meta: any) => stats[userDefinedLayer.key] && stats[userDefinedLayer.key][meta])
-                              .map((meta: any) => (
-                                <p key={meta}>
-                                  <b>{meta}:</b> {stats[userDefinedLayer.key] ? stats[userDefinedLayer.key][meta] : ''}
-                                </p>
-                              ));
+                              .map((meta: any) => {
+                                return (
+                                  <p key={meta}>
+                                    <b>{meta}:</b>{' '}
+                                    {stats[userDefinedLayer.key] ? stats[userDefinedLayer.key][meta] : ''}
+                                  </p>
+                                );
+                              });
                           })}
                     </>
                   </Tab>
