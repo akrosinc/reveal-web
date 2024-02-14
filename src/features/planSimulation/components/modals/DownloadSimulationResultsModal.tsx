@@ -26,8 +26,8 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
   const mapData = useRef<PlanningLocationResponseTagged>();
   let link = useRef<HTMLAnchorElement>(null);
   const [activeTab, setActiveTab] = useState<string>('CSV');
-  const [includeParent, setIncludeParent] = useState<boolean>();
-  const [downLoadFullHierarchy, setDownLoadFullHierarchy] = useState<boolean>();
+  // const [includeParent, setIncludeParent] = useState<boolean>();
+  // const [downLoadFullHierarchy, setDownLoadFullHierarchy] = useState<boolean>();
 
   const {
     register,
@@ -267,44 +267,44 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
     );
   }
 
-  const getFullHierarchySlider = () => {
-    return (
-      <Form.Group className="my-3">
-        <Form.Label>{t('simulationPage.downloadFullHierarchy')}</Form.Label>
-        <Form.Check
-          {...register('downloadFullHierarchy')}
-          type="switch"
-          id="custom-switch-full-hierarchy"
-          label={t('simulationPage.selectToDownloadFullHierarchy')}
-          defaultChecked={false}
-          checked={downLoadFullHierarchy}
-          onChange={e => {
-            setIncludeParent(false);
-            setDownLoadFullHierarchy(e.target.checked);
-          }}
-        />
-      </Form.Group>
-    );
-  };
-  const getIncludeParentSlider = () => {
-    return (
-      <Form.Group className="my-3">
-        <Form.Label>{t('simulationPage.includeParentData')}</Form.Label>
-        <Form.Check
-          {...register('includeParentData')}
-          type="switch"
-          id="custom-switch-parent"
-          label={t('simulationPage.selectToIncludeParentData')}
-          defaultChecked={false}
-          checked={includeParent}
-          onChange={e => {
-            setIncludeParent(e.target.checked);
-            setDownLoadFullHierarchy(false);
-          }}
-        />
-      </Form.Group>
-    );
-  };
+  // const getFullHierarchySlider = () => {
+  //   return (
+  //     <Form.Group className="my-3">
+  //       <Form.Label>{t('simulationPage.downloadFullHierarchy')}</Form.Label>
+  //       <Form.Check
+  //         {...register('downloadFullHierarchy')}
+  //         type="switch"
+  //         id="custom-switch-full-hierarchy"
+  //         label={t('simulationPage.selectToDownloadFullHierarchy')}
+  //         defaultChecked={false}
+  //         checked={downLoadFullHierarchy}
+  //         onChange={e => {
+  //           setIncludeParent(false);
+  //           setDownLoadFullHierarchy(e.target.checked);
+  //         }}
+  //       />
+  //     </Form.Group>
+  //   );
+  // };
+  // const getIncludeParentSlider = () => {
+  //   return (
+  //     <Form.Group className="my-3">
+  //       <Form.Label>{t('simulationPage.includeParentData')}</Form.Label>
+  //       <Form.Check
+  //         {...register('includeParentData')}
+  //         type="switch"
+  //         id="custom-switch-parent"
+  //         label={t('simulationPage.selectToIncludeParentData')}
+  //         defaultChecked={false}
+  //         checked={includeParent}
+  //         onChange={e => {
+  //           setIncludeParent(e.target.checked);
+  //           setDownLoadFullHierarchy(false);
+  //         }}
+  //       />
+  //     </Form.Group>
+  //   );
+  // };
 
   return (
     <Modal size="lg" show centered scrollable backdrop="static" keyboard={false} onHide={closeHandler}>
