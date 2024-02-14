@@ -1643,9 +1643,6 @@ const Simulation = () => {
                   <Button className="float-end my-3 " variant="secondary" onClick={clearHandler}>
                     {t('simulationPage.clearAll')}
                   </Button>
-                  <Button className="float-end my-3 " variant="secondary" onClick={clearSomeHandler}>
-                    Clear Some
-                  </Button>
                   <Form.Check
                     className="float-right my-3 "
                     type="switch"

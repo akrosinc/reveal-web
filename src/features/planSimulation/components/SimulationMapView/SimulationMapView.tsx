@@ -37,6 +37,7 @@ import { Children, StatsLayer } from '../Simulation';
 import ActionDialog from '../../../../components/Dialogs/ActionDialog';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { AnalysisLayer } from '../Simulation';
+import { isNumeric } from 'mathjs';
 
 interface Props {
   fullScreenHandler: () => void;
@@ -1957,10 +1958,15 @@ const SimulationMapView = ({
                               })
                               .filter((meta: any) => stats[userDefinedLayer.key] && stats[userDefinedLayer.key][meta])
                               .map((meta: any) => {
+                                let num: any = stats[userDefinedLayer.key][meta];
+                                let val = isNumeric(num)
+                                  ? (num as number) > 0
+                                    ? Math.round(num as number).toLocaleString('en-US')
+                                    : num
+                                  : stats[userDefinedLayer.key][meta];
                                 return (
                                   <p key={meta}>
-                                    <b>{meta}:</b>{' '}
-                                    {stats[userDefinedLayer.key] ? stats[userDefinedLayer.key][meta] : ''}
+                                    <b>{meta}:</b> {stats[userDefinedLayer.key] ? val : ''}
                                   </p>
                                 );
                               });

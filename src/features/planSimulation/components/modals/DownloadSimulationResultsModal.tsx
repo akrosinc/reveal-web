@@ -1,6 +1,6 @@
 import { Button, Col, Form, Modal, Row, Tab, Tabs } from 'react-bootstrap';
 import React, { useEffect, useRef, useState } from 'react';
-import { PlanningLocationResponseTagged } from '../../providers/types';
+import { Metadata, PlanningLocationResponseTagged } from '../../providers/types';
 import { useForm } from 'react-hook-form';
 import { Feature, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
 import { getFullHierarchyJSON } from '../../api';
@@ -162,57 +162,76 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
   ): Promise<string> => {
     let metaList: any = {};
     let metaCols: string[] = [];
-    let rowHeader: string[] = ['Identifier', 'Type', 'Name', 'Geographic Level', 'Type', 'Parent', 'isResult'];
+    let rowHeader: string[] = ['Identifier', 'Type', 'Name', 'Geographic Level', 'Parent'];
 
     let csv = '';
 
-    if (mapDataCurrent.parents) {
+    if (mapDataCurrent.features) {
+      let allParentArr: any = {};
       let rows = Object.keys(mapDataCurrent.parents)
         .filter(key => mapDataCurrent.features[key] !== undefined || includeParentData)
         .map(key => mapDataCurrent.parents[key])
         .map((feature: any) => {
+          let parentArr: { name: any | undefined; id: string | undefined; geographicLevel: string | undefined }[] = [];
+
+          let checkKey = feature.identifier;
+          do {
+            if (mapDataCurrent.parents[checkKey]) {
+              parentArr.push({
+                name: mapDataCurrent.parents[checkKey].properties?.name,
+                geographicLevel: mapDataCurrent.parents[checkKey].properties?.geographicLevel,
+                id: mapDataCurrent.parents[checkKey].identifier
+              });
+              checkKey = mapDataCurrent.parents[checkKey].properties?.parent;
+            }
+          } while (checkKey && mapDataCurrent.parents[checkKey] !== null);
+
+          allParentArr[feature.identifier] = parentArr;
+
           let col = [];
           col.push(feature.identifier);
           col.push(feature.type);
           col.push(feature.properties?.name);
           col.push(feature.properties?.geographicLevel);
-          col.push(feature.geometry.type);
           col.push(feature.properties?.parent);
-          col.push(
-            mapDataCurrent.features[feature.identifier] !== null &&
-              mapDataCurrent.features[feature.identifier] !== undefined
-          );
-
           let metaItem: any = {};
-          if (feature.aggregates) {
-            Object.keys(feature.aggregates)
-              .map(key => {
+          if (feature.properties && feature.properties.metadata) {
+            feature.properties.metadata
+              .map((metaV: Metadata) => {
                 return {
-                  key: key,
-                  value: feature.aggregates[key]
+                  key: metaV.type,
+                  value: metaV.value
                 };
               })
               .forEach((meta: any) => {
                 metaItem[meta.key] = meta.value;
-                let includes = mapDataCurrent.features[feature.identifier]?.properties?.metadata
-                  ?.map((metaItem: any) => metaItem.type)
-                  .includes(meta.key);
-                metaItem[meta.key.concat('-isAggregate')] = !(includes !== undefined && includes);
-
                 metaList[feature.identifier] = metaItem;
                 if (!metaCols.includes(meta.key)) {
                   metaCols.push(meta.key);
                 }
-                if (!metaCols.includes(meta.key.concat('-isAggregate'))) {
-                  metaCols.push(meta.key.concat('-isAggregate'));
-                }
               });
           }
-
           return col;
         });
 
+      let maxParents = 0;
+      Object.keys(allParentArr).forEach(
+        parentArrKey =>
+          (maxParents = allParentArr[parentArrKey].length > maxParents ? allParentArr[parentArrKey].length : maxParents)
+      );
+
+      for (let i = 0; i < maxParents - 1; i++) {
+        rowHeader.push('Parent Id');
+        rowHeader.push('Parent Name');
+        rowHeader.push('Parent Level');
+      }
+
       rows?.forEach(row => {
+        for (let i = maxParents - 1; i > 0; i--) {
+          row.push(allParentArr[row[0]][i].id);
+          row.push(allParentArr[row[0]][i].name);
+          row.push(allParentArr[row[0]][i].geographicLevel);
+        }
         metaCols.forEach(metaCol => {
           if (!rowHeader.includes(metaCol)) {
             rowHeader.push(metaCol);
@@ -320,8 +339,7 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
                       <Form.Label className="text-danger">{errors.filenameCSV.message}</Form.Label>
                     )}
                   </Form.Group>
-                  {getIncludeParentSlider()}
-                  {getFullHierarchySlider()}
+
                   <Form.Group className="my-3">
                     <Form.Label>{t('simulationPage.fieldDelimiter')}</Form.Label>
                     <Form.Select {...register('fieldSelector')}>
