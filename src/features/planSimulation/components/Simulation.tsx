@@ -55,6 +55,8 @@ import SimulationMapView from './SimulationMapView/SimulationMapView';
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
 import { hex } from 'color-convert';
+import { REVEAL_SIMULATION_EDIT } from '../../../constants';
+import AuthorizedElement from '../../../components/AuthorizedElement';
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -1623,13 +1625,15 @@ const Simulation = () => {
               </Button>
               {highestLocations && showResult && (
                 <>
-                  <Button
-                    className="float-end my-3 ms-2"
-                    variant="secondary"
-                    onClick={() => setShowSaveHierarchyPanel(true)}
-                  >
-                    {t('simulationPage.saveHierarchy')}
-                  </Button>
+                  <AuthorizedElement roles={[REVEAL_SIMULATION_EDIT]}>
+                    <Button
+                      className="float-end my-3 ms-2"
+                      variant="secondary"
+                      onClick={() => setShowSaveHierarchyPanel(true)}
+                    >
+                      {t('simulationPage.saveHierarchy')}
+                    </Button>
+                  </AuthorizedElement>
                   <Button
                     className="float-end ms-2 my-3"
                     variant="secondary"

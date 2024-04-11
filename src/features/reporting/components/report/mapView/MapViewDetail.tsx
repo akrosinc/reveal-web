@@ -130,8 +130,12 @@ const MapViewDetail = React.forwardRef<any, Props>(
 
           let centreData: FeatureCollection<Polygon | MultiPolygon | Point> = {
             features: data.features.map(feature => {
+              let properties = feature.properties;
+
               let val = getPolygonCenter(feature);
-              return val.center;
+              let newFeature = val.center;
+              newFeature.properties = properties;
+              return newFeature;
             }),
             type: 'FeatureCollection',
             bbox: undefined
@@ -189,16 +193,27 @@ const MapViewDetail = React.forwardRef<any, Props>(
             layout: {
               'text-field': [
                 'format',
-                'test',
+                ['get', 'name'],
                 {
                   'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']]
                 }
               ],
-              // 'text-size': ['interpolate', ['linear'], ['zoom'], 10, 7, 18, 20],
-              'text-anchor': 'bottom',
+              'text-size': ['interpolate', ['linear'], ['zoom'], 5, 2, 7, 10, 10, 12, 18, 20],
+              'text-anchor': 'top',
               'text-justify': 'center'
-            }
-            // filter: ['!=', 'geographicLevel', 'structure']
+            },
+            paint: {
+              'text-color': ['case', ['==', ['get', 'mark'], true], 'red', 'black'],
+
+              'text-opacity': [
+                'step',
+                ['zoom'],
+                ['case', ['==', ['get', 'geographicLevel'], 'structure'], 0.1, 1],
+                15,
+                ['case', ['==', ['get', 'geographicLevel'], 'structure'], 1, 1]
+              ]
+            },
+            filter: ['all', ['!=', 'geographicLevel', 'structure'], ['!=', 'geographicLevel', 'operational']]
           });
 
           currentMap.on('mouseover', parentLocationIdentifier + '-label', e => {

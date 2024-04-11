@@ -1,14 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Button, Col, Row } from 'react-bootstrap';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Button, Col, Modal, Row } from 'react-bootstrap';
 import { DebounceInput } from 'react-debounce-input';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
 import EntityTagTable from '../../../components/Table/EntityTagTable';
-import { PAGINATION_DEFAULT_SIZE } from '../../../constants';
+import { PAGINATION_DEFAULT_SIZE, REVEAL_SIMULATION_EDIT } from '../../../constants';
 import { getAllGlobalTags, updateTag } from '../api';
 import { Tag, TagUpdateRequest } from '../providers/types';
 import CreateTag from './createModal';
+import AuthorizedElement from '../../../components/AuthorizedElement';
+import TagAccess from '../../access/TagAccess';
 
 const columnsNotForDisplay = [
   'valueType',
@@ -27,6 +29,7 @@ const Tagging = () => {
   const [currentSortDirection, setCurrentSortDirection] = useState<boolean>();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSearchInput, setCurrentSearchInput] = useState('');
+  const [showTagAccess, setShowTagAccess] = useState(false);
 
   const loadData = useCallback((size: number, page: number, filter?: string, field?: string, direction?: boolean) => {
     getAllGlobalTags(size, page, filter, field, direction)
@@ -59,15 +62,30 @@ const Tagging = () => {
     updateTag(tag).then(() => loadData(PAGINATION_DEFAULT_SIZE, 0));
   };
 
+  const getColumns = (tagList: PageableModel<Tag>) => {
+    const columns = Object.keys(tagList.content[0])
+      .filter(el => !columnsNotForDisplay.includes(el))
+      .map(el => {
+        return {
+          name: el,
+          accessor: el,
+          sortValue: el
+        };
+      });
+    return columns;
+  };
+
   return (
     <>
       <h2>
         Tags({tagList?.totalElements})
         <Row className="my-4">
           <Col md={8} className="mb-2">
-            <Button className="float-end" onClick={() => setShowCreate(true)}>
-              Create Tag
-            </Button>
+            <AuthorizedElement roles={[REVEAL_SIMULATION_EDIT]}>
+              <Button className="float-end" onClick={() => setShowCreate(true)}>
+                Create Tag
+              </Button>
+            </AuthorizedElement>
           </Col>
           <Col sm={12} md={4} className="order-md-first">
             <DebounceInput
@@ -86,17 +104,10 @@ const Tagging = () => {
         <>
           <EntityTagTable
             sortHandler={sortHandler}
-            columns={Object.keys(tagList.content[0])
-              .filter(el => !columnsNotForDisplay.includes(el))
-              .map(el => {
-                return {
-                  name: el,
-                  accessor: el,
-                  sortValue: el
-                };
-              })}
+            columns={getColumns(tagList)}
             data={tagList?.content}
             updateTag={updateSimulationDisplay}
+            showAccessPanelHandler={setShowTagAccess}
           />
           <Paginator
             page={tagList.pageable.pageNumber}
@@ -116,6 +127,19 @@ const Tagging = () => {
             setShowCreate(false);
           }}
         />
+      )}
+      {showTagAccess && (
+        <Modal show={showTagAccess} centered size={'lg'} onHide={() => setShowTagAccess(false)}>
+          <Modal.Header closeButton>Tag Access</Modal.Header>
+          <Modal.Body>
+            <TagAccess />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button id="close-button" variant="secondary" onClick={() => setShowTagAccess(false)}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
       )}
     </>
   );

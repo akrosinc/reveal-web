@@ -4,11 +4,12 @@ import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
 import Paginator from '../../../../components/Pagination';
 import DefaultTable from '../../../../components/Table/DefaultTable';
-import { META_IMPORT_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
+import { META_IMPORT_TABLE_COLUMNS, METADATA_FILE_IMPORT, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import { getMetadataImportList } from '../../api';
 import DetailsModal from './detailsModal';
 import UploadModal from './uploadModal';
 import { useTranslation } from 'react-i18next';
+import AuthorizedElement from '../../../../components/AuthorizedElement';
 
 const MetaFileImport = () => {
   const [open, setOpen] = useState(false);
@@ -41,7 +42,9 @@ const MetaFileImport = () => {
     <>
       <div className="d-flex justify-content-between my-4">
         <h2>Metadata Imports({metadataList?.totalElements})</h2>
-        <Button onClick={() => setOpen(!open)}>{t('metadataImport.uploadFile')}</Button>
+        <AuthorizedElement roles={[METADATA_FILE_IMPORT]}>
+          <Button onClick={() => setOpen(!open)}>{t('metadataImport.uploadFile')}</Button>
+        </AuthorizedElement>
       </div>
       {metadataList && metadataList.content.length ? (
         <>

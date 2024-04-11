@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useAppSelector } from '../../store/hooks';
 import { formatDate } from '../../utils';
-import { t } from "i18next";
+import { t } from 'i18next';
 import { TagUpdateRequest } from '../../features/tagging/providers/types';
 
 interface Props {
@@ -14,6 +14,7 @@ interface Props {
   clickHandler?: (identifier: any) => void;
   clickAccessor?: string;
   updateTag: (tag: TagUpdateRequest) => void;
+  showAccessPanelHandler: (showPanel: boolean) => void;
 }
 
 const DATE_FORMATS = [
@@ -27,7 +28,15 @@ const DATE_FORMATS = [
   'LL'
 ];
 
-const EntityTagTable = ({ columns, data, sortHandler, clickHandler, clickAccessor, updateTag }: Props) => {
+const EntityTagTable = ({
+  columns,
+  data,
+  sortHandler,
+  clickHandler,
+  clickAccessor,
+  updateTag,
+  showAccessPanelHandler
+}: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
   const isDarkMode = useAppSelector(state => state.darkMode.value);
@@ -92,12 +101,34 @@ const EntityTagTable = ({ columns, data, sortHandler, clickHandler, clickAccesso
                       return <td key={index}>{formatDate(dataEl[el.accessor])}</td>;
                     }
                     if (el.accessor === 'simulationDisplay') {
-                      return <td key={index}><Button onClick={() => {
-                        if (el.accessor) {
-                          dataEl[el.accessor] = !dataEl[el.accessor];
-                          updateTag(dataEl);
-                        }
-                      }}>{dataEl[el.accessor]?.toString()}</Button></td>;
+                      return (
+                        <td key={index}>
+                          <Button
+                            onClick={() => {
+                              if (el.accessor) {
+                                dataEl[el.accessor] = !dataEl[el.accessor];
+                                updateTag(dataEl);
+                              }
+                            }}
+                          >
+                            {dataEl[el.accessor]?.toString()}
+                          </Button>
+                        </td>
+                      );
+                    } else if (el.accessor === 'access') {
+                      return (
+                        <td key={index}>
+                          <Button
+                            onClick={() => {
+                              if (el.accessor) {
+                                showAccessPanelHandler(true);
+                              }
+                            }}
+                          >
+                            {'Tag Access'}
+                          </Button>
+                        </td>
+                      );
                     } else {
                       return <td key={index}>{dataEl[el.accessor]?.toString()}</td>;
                     }

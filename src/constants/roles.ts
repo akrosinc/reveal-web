@@ -56,3 +56,10 @@ export const ASSIGNMENT_DELETE = 'assignment_delete';
 
 //ADMIN
 export const REVEAL_MANAGE = 'reveal_manage';
+
+//ADMIN
+export const REVEAL_SIMULATION = 'reveal_simulation';
+export const REVEAL_SIMULATION_EDIT = 'reveal_simulation_edit';
+
+//METADATA IMPORT
+export const METADATA_FILE_IMPORT = 'metadata_file_import';

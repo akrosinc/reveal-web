@@ -11,6 +11,8 @@ import MetadataFormulaPanel, {
   TagWithFormulaSymbol
 } from '../../planSimulation/components/MetadataFormula/MetadataFormulaPanel';
 import ComplexTagTable from '../../../components/Table/ComplexTagTable';
+import { REVEAL_SIMULATION_EDIT } from '../../../constants';
+import AuthorizedElement from '../../../components/AuthorizedElement';
 
 export interface ComplexTagResponse {
   id: string;
@@ -80,9 +82,11 @@ const ComplexTagging = () => {
             />
           </Col>
           <Col className="mb-2" md={8}>
-            <Button className="float-end" onClick={() => setShowCreateComplexTagPanel(true)}>
-              {t('buttons.create')}
-            </Button>
+            <AuthorizedElement roles={[REVEAL_SIMULATION_EDIT]}>
+              <Button className="float-end" onClick={() => setShowCreateComplexTagPanel(true)}>
+                {t('buttons.create')}
+              </Button>
+            </AuthorizedElement>
           </Col>
         </Row>
       </h2>

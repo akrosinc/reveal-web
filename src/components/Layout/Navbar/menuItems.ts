@@ -14,7 +14,8 @@ import {
   PLAN_MANAGEMENT,
   REVEAL_MANAGE,
   RESOURCE_PLANNING_PAGE,
-  DATA_PROCESSING_PROGRESS
+  DATA_PROCESSING_PROGRESS,
+  REVEAL_SIMULATION
 } from '../../../constants';
 
 export const MAIN_MENU = [
@@ -41,7 +42,7 @@ export const MAIN_MENU = [
       {
         pageTitle: 'Simulation',
         route: SIMULATION_PAGE,
-        roles: [PLAN_VIEW]
+        roles: [REVEAL_SIMULATION]
       },
       {
         pageTitle: 'Resource Planning',
@@ -100,7 +101,7 @@ export const MAIN_MENU = [
       {
         pageTitle: 'dataProcessingProgress',
         route: DATA_PROCESSING_PROGRESS,
-        roles: ['metadata_import']
+        roles: ['data_processing_progress']
       }
     ]
   }
