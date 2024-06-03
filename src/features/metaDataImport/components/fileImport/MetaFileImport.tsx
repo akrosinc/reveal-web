@@ -164,7 +164,7 @@ const MetaFileImport = () => {
                 sortHandler={sortHandler}
                 setMetadataList={setMetadataImportList}
               />
-              {!metadataImportPaged !== null && metadataImportPaged?.empty ? (
+              {!metadataImportPaged.empty ? (
                 <Paginator
                   page={metadataImportPaged.pageable.pageNumber}
                   size={metadataImportPaged.size}
