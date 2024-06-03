@@ -2,6 +2,7 @@ import { OrganizationModel } from '../../organization/providers/types';
 
 export interface UserModel {
   identifier: string;
+  sid: string;
   username: string;
   firstName: string;
   lastName: string;
@@ -10,6 +11,7 @@ export interface UserModel {
   tempPassword?: boolean;
   organizations: OrganizationModel[];
   securityGroups: string[];
+  selectedAll?: boolean;
 }
 
 export interface CreateUserModel {
@@ -44,7 +46,7 @@ export interface UserBulk {
 
 export enum BulkStatus {
   PROCESSING = 'PROCESSING',
-  COMPLETE = 'COMPLETE',
+  COMPLETE = 'COMPLETE'
 }
 
 export interface BulkDetailsModel {

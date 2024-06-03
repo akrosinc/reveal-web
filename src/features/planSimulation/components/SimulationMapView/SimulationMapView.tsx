@@ -1,5 +1,4 @@
 import { EventData, GeoJSONSource, LngLatBounds, Map as MapBoxMap, MapLayerEventType, Popup } from 'mapbox-gl';
-import Draggable from 'react-draggable';
 import React, { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { Accordion, Button, Col, Container, Form, FormGroup, Row, Tab, Tabs } from 'react-bootstrap';
 import { MAPBOX_STYLE_STREETS } from '../../../../constants';
@@ -129,7 +128,6 @@ const SimulationMapView = ({
     })
   );
   const [showMapControls, setShowMapControls] = useState<boolean>(true);
-  const [showUserDefinedLayerStyle, setShowUserDefinedLayerStyle] = useState<Boolean>(false);
   const [parentMapStateData, setParentMapStateData] = useState<PlanningParentLocationResponse>();
 
   const [showStats, setShowStats] = useState(true);
@@ -1510,386 +1508,341 @@ const SimulationMapView = ({
     );
   }, [markedMapBoxFeatures]);
 
-  // useEffect(() => {
-  //   setUserDefinedLayers(userDefinedLayers => {
-  //     let newUserDefinedLayers: {
-  //       layer: string;
-  //       key: string;
-  //       geo: string;
-  //       layerName: string;
-  //       active: boolean;
-  //       col: Color;
-  //       tagList?: Set<any>;
-  //       selectedTag?: string;
-  //       transparency?: number;
-  //       lineColor?: string;
-  //     }[] = [];
-  //     userDefinedLayers.forEach(userDefinedLayer => {
-  //       if (selectedUserDefinedLayer && userDefinedLayer.layerName === selectedUserDefinedLayer.key) {
-  //         userDefinedLayer.lineColor = color.hex;
-  //       }
-  //
-  //       newUserDefinedLayers.push(userDefinedLayer);
-  //     });
-  //     return newUserDefinedLayers;
-  //   });
-  // }, [color, selectedUserDefinedLayer]);
-
   return (
     <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
-      <div style={{ position: 'absolute', zIndex: 2, width: '100%' }} className="mx-0 px-0">
+      <div style={{ position: 'absolute', zIndex: 2, width: 'fit-content' }} className="mx-0 px-0">
         <div style={{ float: 'left', position: 'relative' }} className="sidebar-adjust ">
-          <div>
-            <Button
-              style={{ width: '75px' }}
-              onClick={() => {
-                setShowMapControls(!showMapControls);
-              }}
-              className="rounded"
-              size="sm"
-              variant="primary"
-            >
-              {showMapControls ? 'Hide' : 'Show'}{' '}
-            </Button>
-          </div>
-          {showMapControls && (
-            <>
-              {userDefinedLayers.length > 0 && (
-                <div style={{ paddingTop: '1em' }}>
-                  <Button
-                    style={{ width: '75px', fontSize: 'smaller' }}
-                    onClick={() => setShowUserDefinedLayerStyle(!showUserDefinedLayerStyle)}
-                    className="rounded"
-                    size="sm"
-                    variant="success"
-                  >
-                    {(showUserDefinedLayerStyle ? 'Hide' : '') + ' Result Sets'}{' '}
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
+          {/*<div>*/}
+          <Button
+            style={{ width: '75px' }}
+            onClick={() => {
+              setShowMapControls(!showMapControls);
+            }}
+            className="rounded"
+            size="sm"
+            variant="primary"
+          >
+            {showMapControls ? 'Hide' : 'Show'}{' '}
+          </Button>
         </div>
+        {showMapControls && userDefinedLayers.length > 0 && (
+          <div style={{ float: 'left', width: '220px' }} className="sidebar-adjust-list text-dark bg-light p-2 rounded">
+            <p
+              className="lead mb-1"
+              onClick={() => {
+                setShowUserDefineLayerSelector(!showUserDefineLayerSelector);
+              }}
+            >
+              ResultSets{' '}
+              {showUserDefineLayerSelector ? (
+                <FontAwesomeIcon className="ms-2" icon="sort-up" />
+              ) : (
+                <FontAwesomeIcon className="ms-2" icon="sort-down" />
+              )}
+            </p>
 
-        {showMapControls && (
-          <div>
-            {showUserDefinedLayerStyle && userDefinedLayers.length > 0 && (
-              <Draggable>
-                <div style={{ float: 'left' }} className="sidebar-adjust-list text-dark bg-light p-2 rounded">
-                  <p
-                    className="lead mb-1"
-                    onClick={() => {
-                      setShowUserDefineLayerSelector(!showUserDefineLayerSelector);
-                    }}
-                  >
-                    ResultSets{' '}
-                    {showUserDefineLayerSelector ? (
-                      <FontAwesomeIcon className="ms-2" icon="sort-up" />
-                    ) : (
-                      <FontAwesomeIcon className="ms-2" icon="sort-down" />
-                    )}
-                  </p>
-
-                  {showUserDefineLayerSelector && (
-                    <div>
-                      {getProcessedUserDefinedLayers(userDefinedLayers).map(layerObj => {
-                        return (
-                          <Accordion flush>
-                            <Accordion.Item eventKey={layerObj.key}>
-                              <Accordion.Header>
-                                <>
-                                  <div>{layerObj.key}</div>
-                                  <div
-                                    className={'mx-4'}
-                                    style={{
-                                      width: '30px',
-                                      height: '15px', //, backgroundColor: layerObj.color
-                                      background: getBackgroundStyle(layerObj.color.rgb)
-                                    }}
-                                  />
-                                </>
-                              </Accordion.Header>
-                              <Accordion.Body>
-                                <>
-                                  {layerObj?.list?.map(layer => {
-                                    return (
-                                      <Form.Check
-                                        key={layer.key}
-                                        label={
-                                          <p className="figure-caption mb-1" onContextMenu={() => alert('hello')}>
-                                            {layer.geo}
-                                          </p>
-                                        }
-                                        value={layer.layer}
-                                        type="checkbox"
-                                        checked={layer.active}
-                                        onChange={e => {
-                                          setUserDefinedLayers(layerItems => {
-                                            let newItems: {
-                                              layer: string;
-                                              active: boolean;
-                                              layerName: string;
-                                              geo: string;
-                                              key: string;
-                                              col: Color;
-                                            }[] = [];
-                                            layerItems.forEach(newItem => {
-                                              newItems.push(newItem);
-                                            });
-                                            let item = newItems.find(layerItem => layerItem.layer === layer.layer);
-                                            if (item) {
-                                              item.active = e.target.checked;
-                                            }
-                                            return newItems;
-                                          });
-                                        }}
-                                      />
-                                    );
-                                  })}
-                                  <hr />
-                                  <FormGroup>
-                                    <Button
-                                      className={'mx-2'}
-                                      size={'sm'}
-                                      onClick={() => {
-                                        setShowUserDefinedSettingsPanel(
-                                          !showUserDefinedSettingsPanel ||
-                                            selectedUserDefinedLayer?.key !== layerObj.key
-                                        );
-                                        if (selectedUserDefinedLayer?.key !== layerObj.key) {
-                                          setSelectedUserDefinedLayer({
-                                            key: layerObj.key,
-                                            col: layerObj.color,
-                                            lineColor: selectedUserDefinedLayer
-                                              ? selectedUserDefinedLayer.lineColor
-                                              : initialLineColor
-                                          });
-                                          setColor(layerObj.color);
-                                        }
-                                      }}
-                                    >
-                                      <FontAwesomeIcon icon={'cog'} inverse />
-                                    </Button>
-                                    <Form.Label>
-                                      {!showUserDefinedSettingsPanel || selectedUserDefinedLayer?.key !== layerObj.key
-                                        ? ''
-                                        : 'Hide '}
-                                      Settings
-                                    </Form.Label>
-                                  </FormGroup>
-                                </>
-                              </Accordion.Body>
-                            </Accordion.Item>
-                          </Accordion>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </Draggable>
-            )}
-
-            {showUserDefinedSettingsPanel && analysisLayerDetails.length > 0 && selectedUserDefinedLayer && (
-              <div style={{ float: 'left' }} className="sidebar-adjust-list text-dark bg-light p-2 rounded">
-                <p className="lead mb-1">Settings - {selectedUserDefinedLayer.key}</p>
-
-                <div
-                  className={'mx-4'}
-                  style={{
-                    width: 'auto',
-                    height: '15px', //, backgroundColor: layerObj.color
-                    background: getBackgroundStyle(selectedUserDefinedLayer.col.rgb)
-                  }}
-                />
-
-                <div>
-                  {userDefinedNames
-                    ?.filter(layer => layer.layerName === selectedUserDefinedLayer.key)
-                    .map(layer => (
-                      <>
-                        <Form.Select
-                          style={{ display: 'inline-block' }}
-                          value={layer.selectedTag}
-                          className={'my-2'}
-                          onChange={e => {
-                            setUserDefinedNames(userDefinedNames => {
-                              let newUserDefinedNames: {
-                                layer: string;
-                                key: string;
-                                layerName: string;
-                                active: boolean;
-                                col: Color;
-                                tagList?: Set<any>;
-                                selectedTag?: string;
-                              }[] = [];
-                              userDefinedNames.forEach(userDefinedName => {
-                                if (userDefinedName.layerName === layer.layerName) {
-                                  userDefinedName.selectedTag = e.target.value;
-                                }
-                                newUserDefinedNames.push(userDefinedName);
-                              });
-                              return newUserDefinedNames;
-                            });
-                            setUserDefinedLayers(userDefinedLayers => {
-                              let newUserDefinedNames: {
-                                layer: string;
-                                key: string;
-                                geo: string;
-                                layerName: string;
-                                active: boolean;
-                                col: Color;
-                                tagList?: Set<any>;
-                                selectedTag?: string;
-                              }[] = [];
-                              userDefinedLayers.forEach(userDefinedName => {
-                                if (userDefinedName.layerName === layer.layerName) {
-                                  userDefinedName.selectedTag = e.target.value;
-                                }
-                                newUserDefinedNames.push(userDefinedName);
-                              });
-                              return newUserDefinedNames;
-                            });
-                          }}
-                        >
-                          <option value={''}>Select Metadata Tag...</option>
-                          {layer.tagList &&
-                            Array.from(layer.tagList).map(metaDataItem => {
+            {showUserDefineLayerSelector && (
+              <div>
+                {getProcessedUserDefinedLayers(userDefinedLayers).map(layerObj => {
+                  return (
+                    <Accordion flush>
+                      <Accordion.Item eventKey={layerObj.key}>
+                        <Accordion.Header>
+                          <>
+                            <div>{layerObj.key}</div>
+                            <div
+                              className={'mx-4'}
+                              style={{
+                                width: '30px',
+                                height: '15px', //, backgroundColor: layerObj.color
+                                background: getBackgroundStyle(layerObj.color.rgb)
+                              }}
+                            />
+                          </>
+                        </Accordion.Header>
+                        <Accordion.Body>
+                          <>
+                            {layerObj?.list?.map(layer => {
                               return (
-                                <option key={metaDataItem} value={metaDataItem}>
-                                  {metaDataItem}
-                                </option>
+                                <Form.Check
+                                  key={layer.key}
+                                  label={
+                                    <p className="figure-caption mb-1" onContextMenu={() => alert('hello')}>
+                                      {layer.geo}
+                                    </p>
+                                  }
+                                  value={layer.layer}
+                                  type="checkbox"
+                                  checked={layer.active}
+                                  onChange={e => {
+                                    setUserDefinedLayers(layerItems => {
+                                      let newItems: {
+                                        layer: string;
+                                        active: boolean;
+                                        layerName: string;
+                                        geo: string;
+                                        key: string;
+                                        col: Color;
+                                      }[] = [];
+                                      layerItems.forEach(newItem => {
+                                        newItems.push(newItem);
+                                      });
+                                      let item = newItems.find(layerItem => layerItem.layer === layer.layer);
+                                      if (item) {
+                                        item.active = e.target.checked;
+                                      }
+                                      return newItems;
+                                    });
+                                  }}
+                                />
                               );
                             })}
-                        </Form.Select>
-                      </>
-                    ))}
-                </div>
-                <b>Opacity ({getTransparencyValue(userDefinedLayers, selectedUserDefinedLayer)})</b>
-                <Form.Range
-                  min={0}
-                  max={100}
-                  value={getTransparencyValue(userDefinedLayers, selectedUserDefinedLayer)}
-                  onChange={e => {
-                    setUserDefinedLayers(userDefinedLayers => {
-                      let newUserDefinedLayers: {
-                        layer: string;
-                        key: string;
-                        geo: string;
-                        layerName: string;
-                        active: boolean;
-                        col: Color;
-                        tagList?: Set<any>;
-                        selectedTag?: string;
-                        transparency?: number;
-                      }[] = [];
-                      userDefinedLayers.forEach(userDefinedLayer => {
-                        if (userDefinedLayer.layerName === selectedUserDefinedLayer.key) {
-                          userDefinedLayer.transparency = Number(e.target.value);
-                        }
-
-                        newUserDefinedLayers.push(userDefinedLayer);
-                      });
-                      return newUserDefinedLayers;
-                    });
-                  }}
-                />
-
-                {false && (
-                  <Accordion flush>
-                    <Accordion.Item eventKey={'lineControl'}>
-                      <Accordion.Header>Line Control</Accordion.Header>
-                      <Accordion.Body>
-                        <b>Line Width ({getLineWidthValue(userDefinedLayers, selectedUserDefinedLayer)})</b>
-                        <Form.Range
-                          min={0}
-                          max={10}
-                          value={getLineWidthValue(userDefinedLayers, selectedUserDefinedLayer)}
-                          onChange={e => {
-                            setUserDefinedLayers(userDefinedLayers => {
-                              let newUserDefinedLayers: {
-                                layer: string;
-                                key: string;
-                                geo: string;
-                                layerName: string;
-                                active: boolean;
-                                col: Color;
-                                tagList?: Set<any>;
-                                selectedTag?: string;
-                                transparency?: number;
-                                lineWidth?: number;
-                              }[] = [];
-                              userDefinedLayers.forEach(userDefinedLayer => {
-                                if (userDefinedLayer.layerName === selectedUserDefinedLayer?.key) {
-                                  userDefinedLayer.lineWidth = Number(e.target.value);
-                                }
-
-                                newUserDefinedLayers.push(userDefinedLayer);
-                              });
-                              return newUserDefinedLayers;
-                            });
-                          }}
-                        />
-
-                        <ColorPicker
-                          width={fullScreen ? 287 : 190}
-                          color={color}
-                          onChange={color => {
-                            setUserDefinedLayers(userDefinedLayers => {
-                              let newUserDefinedLayers: {
-                                layer: string;
-                                key: string;
-                                geo: string;
-                                layerName: string;
-                                active: boolean;
-                                col: Color;
-                                tagList?: Set<any>;
-                                selectedTag?: string;
-                                transparency?: number;
-                                lineColor?: string;
-                              }[] = [];
-                              userDefinedLayers.forEach(userDefinedLayer => {
-                                if (
-                                  selectedUserDefinedLayer &&
-                                  userDefinedLayer.layerName === selectedUserDefinedLayer.key
-                                ) {
-                                  userDefinedLayer.lineColor = color.hex;
-                                }
-
-                                newUserDefinedLayers.push(userDefinedLayer);
-                              });
-                              return newUserDefinedLayers;
-                            });
-
-                            setSelectedUserDefinedLayer(selectedUserDefinedLayer => {
-                              if (selectedUserDefinedLayer) {
-                                return {
-                                  key: selectedUserDefinedLayer?.key,
-                                  col: selectedUserDefinedLayer.col,
-                                  transparency: selectedUserDefinedLayer.transparency,
-                                  lineColor: color
-                                };
-                              } else {
-                                return undefined;
-                              }
-                            });
-
-                            setColor(color);
-                          }}
-                          hideHEX={true}
-                          hideHSV={true}
-                          hideRGB={true}
-                        />
-                      </Accordion.Body>
-                    </Accordion.Item>
-                  </Accordion>
-                )}
-
-                {/*</OffcanvasBody>*/}
+                            <hr />
+                            <FormGroup>
+                              <Button
+                                className={'mx-2'}
+                                size={'sm'}
+                                onClick={() => {
+                                  setShowUserDefinedSettingsPanel(
+                                    !showUserDefinedSettingsPanel || selectedUserDefinedLayer?.key !== layerObj.key
+                                  );
+                                  if (selectedUserDefinedLayer?.key !== layerObj.key) {
+                                    setSelectedUserDefinedLayer({
+                                      key: layerObj.key,
+                                      col: layerObj.color,
+                                      lineColor: selectedUserDefinedLayer
+                                        ? selectedUserDefinedLayer.lineColor
+                                        : initialLineColor
+                                    });
+                                    setColor(layerObj.color);
+                                  }
+                                }}
+                              >
+                                <FontAwesomeIcon icon={'cog'} inverse />
+                              </Button>
+                              <Form.Label>
+                                {!showUserDefinedSettingsPanel || selectedUserDefinedLayer?.key !== layerObj.key
+                                  ? ''
+                                  : 'Hide '}
+                                Settings
+                              </Form.Label>
+                            </FormGroup>
+                          </>
+                        </Accordion.Body>
+                      </Accordion.Item>
+                    </Accordion>
+                  );
+                })}
               </div>
             )}
           </div>
         )}
 
+        {showMapControls &&
+          userDefinedLayers.length > 0 &&
+          showUserDefinedSettingsPanel &&
+          analysisLayerDetails.length > 0 &&
+          selectedUserDefinedLayer && (
+            <div
+              style={{ float: 'left', width: '230px' }}
+              className="sidebar-adjust-list text-dark bg-light p-2 rounded"
+            >
+              <p className="lead mb-1">Settings - {selectedUserDefinedLayer.key}</p>
+
+              <div
+                className={'mx-4'}
+                style={{
+                  width: 'auto',
+                  height: '15px', //, backgroundColor: layerObj.color
+                  background: getBackgroundStyle(selectedUserDefinedLayer.col.rgb)
+                }}
+              />
+
+              <div>
+                {userDefinedNames
+                  ?.filter(layer => layer.layerName === selectedUserDefinedLayer.key)
+                  .map(layer => (
+                    <>
+                      <Form.Select
+                        style={{ display: 'inline-block' }}
+                        value={layer.selectedTag}
+                        className={'my-2'}
+                        onChange={e => {
+                          setUserDefinedNames(userDefinedNames => {
+                            let newUserDefinedNames: {
+                              layer: string;
+                              key: string;
+                              layerName: string;
+                              active: boolean;
+                              col: Color;
+                              tagList?: Set<any>;
+                              selectedTag?: string;
+                            }[] = [];
+                            userDefinedNames.forEach(userDefinedName => {
+                              if (userDefinedName.layerName === layer.layerName) {
+                                userDefinedName.selectedTag = e.target.value;
+                              }
+                              newUserDefinedNames.push(userDefinedName);
+                            });
+                            return newUserDefinedNames;
+                          });
+                          setUserDefinedLayers(userDefinedLayers => {
+                            let newUserDefinedNames: {
+                              layer: string;
+                              key: string;
+                              geo: string;
+                              layerName: string;
+                              active: boolean;
+                              col: Color;
+                              tagList?: Set<any>;
+                              selectedTag?: string;
+                            }[] = [];
+                            userDefinedLayers.forEach(userDefinedName => {
+                              if (userDefinedName.layerName === layer.layerName) {
+                                userDefinedName.selectedTag = e.target.value;
+                              }
+                              newUserDefinedNames.push(userDefinedName);
+                            });
+                            return newUserDefinedNames;
+                          });
+                        }}
+                      >
+                        <option value={''}>Select Metadata Tag...</option>
+                        {layer.tagList &&
+                          Array.from(layer.tagList).map(metaDataItem => {
+                            return (
+                              <option key={metaDataItem} value={metaDataItem}>
+                                {metaDataItem}
+                              </option>
+                            );
+                          })}
+                      </Form.Select>
+                    </>
+                  ))}
+              </div>
+              <b>Opacity ({getTransparencyValue(userDefinedLayers, selectedUserDefinedLayer)})</b>
+              <Form.Range
+                min={0}
+                max={100}
+                value={getTransparencyValue(userDefinedLayers, selectedUserDefinedLayer)}
+                onChange={e => {
+                  setUserDefinedLayers(userDefinedLayers => {
+                    let newUserDefinedLayers: {
+                      layer: string;
+                      key: string;
+                      geo: string;
+                      layerName: string;
+                      active: boolean;
+                      col: Color;
+                      tagList?: Set<any>;
+                      selectedTag?: string;
+                      transparency?: number;
+                    }[] = [];
+                    userDefinedLayers.forEach(userDefinedLayer => {
+                      if (userDefinedLayer.layerName === selectedUserDefinedLayer.key) {
+                        userDefinedLayer.transparency = Number(e.target.value);
+                      }
+
+                      newUserDefinedLayers.push(userDefinedLayer);
+                    });
+                    return newUserDefinedLayers;
+                  });
+                }}
+              />
+
+              {
+                <Accordion flush>
+                  <Accordion.Item eventKey={'lineControl'}>
+                    <Accordion.Header>Line Control</Accordion.Header>
+                    <Accordion.Body>
+                      <b>Line Width ({getLineWidthValue(userDefinedLayers, selectedUserDefinedLayer)})</b>
+                      <Form.Range
+                        min={0}
+                        max={10}
+                        value={getLineWidthValue(userDefinedLayers, selectedUserDefinedLayer)}
+                        onChange={e => {
+                          setUserDefinedLayers(userDefinedLayers => {
+                            let newUserDefinedLayers: {
+                              layer: string;
+                              key: string;
+                              geo: string;
+                              layerName: string;
+                              active: boolean;
+                              col: Color;
+                              tagList?: Set<any>;
+                              selectedTag?: string;
+                              transparency?: number;
+                              lineWidth?: number;
+                            }[] = [];
+                            userDefinedLayers.forEach(userDefinedLayer => {
+                              if (userDefinedLayer.layerName === selectedUserDefinedLayer?.key) {
+                                userDefinedLayer.lineWidth = Number(e.target.value);
+                              }
+
+                              newUserDefinedLayers.push(userDefinedLayer);
+                            });
+                            return newUserDefinedLayers;
+                          });
+                        }}
+                      />
+
+                      <ColorPicker
+                        width={fullScreen ? 180 : 180}
+                        color={color}
+                        onChange={color => {
+                          setUserDefinedLayers(userDefinedLayers => {
+                            let newUserDefinedLayers: {
+                              layer: string;
+                              key: string;
+                              geo: string;
+                              layerName: string;
+                              active: boolean;
+                              col: Color;
+                              tagList?: Set<any>;
+                              selectedTag?: string;
+                              transparency?: number;
+                              lineColor?: string;
+                            }[] = [];
+                            userDefinedLayers.forEach(userDefinedLayer => {
+                              if (
+                                selectedUserDefinedLayer &&
+                                userDefinedLayer.layerName === selectedUserDefinedLayer.key
+                              ) {
+                                userDefinedLayer.lineColor = color.hex;
+                              }
+
+                              newUserDefinedLayers.push(userDefinedLayer);
+                            });
+                            return newUserDefinedLayers;
+                          });
+
+                          setSelectedUserDefinedLayer(selectedUserDefinedLayer => {
+                            if (selectedUserDefinedLayer) {
+                              return {
+                                key: selectedUserDefinedLayer?.key,
+                                col: selectedUserDefinedLayer.col,
+                                transparency: selectedUserDefinedLayer.transparency,
+                                lineColor: color
+                              };
+                            } else {
+                              return undefined;
+                            }
+                          });
+
+                          setColor(color);
+                        }}
+                        hideHEX={true}
+                        hideHSV={true}
+                        hideRGB={true}
+                      />
+                    </Accordion.Body>
+                  </Accordion.Item>
+                </Accordion>
+              }
+            </div>
+          )}
+      </div>
+      <div style={{ position: 'absolute', zIndex: 2, width: '100%' }} className="mx-0 px-0">
         <div className="clearButton">
           <p className="small text-dark bg-white p-2 rounded">
             Lat: {lat} Lng: {lng} Zoom: {zoom}

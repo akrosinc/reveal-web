@@ -1,4 +1,5 @@
 export const ORGANIZATION = 'organization';
+export const ENTITY_TAG = 'entityTag';
 export const USER = 'user';
 export const KEYCLOAK_SECURITY_GROUPS = process.env.REACT_APP_KEYCLOAK_URL + 'auth/admin/realms/reveal/groups';
 export const DOWNLOAD_USER_BULK_TEMPLATE = process.env.REACT_APP_API_URL + '/user/bulk/csv';

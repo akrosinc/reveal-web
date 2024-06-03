@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
 import { getComplexTagReponses, getEntityList } from '../../planSimulation/api';
-import { HierarchyType } from '../../planSimulation/providers/types';
+import { ComplexTagResponse, HierarchyType } from '../../planSimulation/providers/types';
 import { toast } from 'react-toastify';
 import { LocationHierarchyModel } from '../../location/providers/types';
 import { Button, Col, Row } from 'react-bootstrap';
@@ -13,16 +13,8 @@ import MetadataFormulaPanel, {
 import ComplexTagTable from '../../../components/Table/ComplexTagTable';
 import { REVEAL_SIMULATION_EDIT } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
-
-export interface ComplexTagResponse {
-  id: string;
-  hierarchyId: string;
-  hierarchyType: string;
-  tagName: string;
-  tags: TagWithFormulaSymbol[];
-  formula: string;
-  calculateValue?: number;
-}
+import TagAccess from '../../access/TagAccess';
+import MetadataFormulaPanelViewOnly from '../../planSimulation/components/MetadataFormula/MetadataFormulaPanelViewOnly';
 
 export interface ComplexTagRequest {
   hierarchyId: string;
@@ -36,8 +28,12 @@ const ComplexTagging = () => {
   const [combinedHierarchyList, setCombinedHierarchyList] = useState<LocationHierarchyModel[]>();
   const { t } = useTranslation();
   const [showCreateComplexTagPanel, setShowCreateComplexTagPanel] = useState(false);
+  const [showViewComplexTagPanel, setViewCreateComplexTagPanel] = useState(false);
   const [complexTags, setComplexTags] = useState<ComplexTagResponse[]>();
   const [selectedComplexTag, setSelectedComplexTag] = useState<ComplexTagResponse>();
+  const [showTagAccess, setShowTagAccess] = useState(false);
+  const [selectedMetadata, setSelectedMetadata] = useState<ComplexTagResponse[]>([]);
+
   useEffect(() => {
     Promise.all([getLocationHierarchyList(50, 0, true), getEntityList(), getGeneratedLocationHierarchyList()])
       .then(([locationHierarchyList, entityList, generatedHierarchyList]) => {
@@ -66,6 +62,32 @@ const ComplexTagging = () => {
 
     getComplexTagReponses().then(data => setComplexTags(data));
   }, []);
+
+  const setShowTagAccessWithSelectedTag = (tag: ComplexTagResponse) => {
+    setShowTagAccess(true);
+
+    const complexTag = new ComplexTagResponse(
+      tag.id,
+      tag.hierarchyId,
+      tag.hierarchyType,
+      tag.tagName,
+      tag.tags,
+      tag.formula,
+      tag.calculateValue,
+      tag.public,
+      tag.tagAccGrantsOrganization,
+      tag.tagAccGrantsUser,
+      tag.selected,
+      tag.resultingOrgs,
+      tag.resultingUsers
+    );
+    setSelectedMetadata([complexTag]);
+  };
+
+  const setTagGrantsUpdated = () => {
+    setShowTagAccess(false);
+    getComplexTagReponses().then(data => setComplexTags(data));
+  };
 
   return (
     <>
@@ -96,13 +118,15 @@ const ComplexTagging = () => {
         columns={[
           { name: 'complexTagName', accessor: 'tagName', sortValue: 'tagName', key: 'tagName' },
           { name: 'complexTagFormula', accessor: 'formula', sortValue: 'formula', key: 'formula' },
-          { name: 'complexTagVariables', accessor: 'tags', sortValue: 'tags', key: 'tags' }
+          { name: 'complexTagVariables', accessor: 'tags', sortValue: 'tags', key: 'tags' },
+          { name: 'access', accessor: 'access', sortValue: 'access', key: 'access' }
         ]}
         data={complexTags}
         clickHandler={dataEl => {
           setSelectedComplexTag(dataEl);
-          setShowCreateComplexTagPanel(true);
+          setViewCreateComplexTagPanel(true);
         }}
+        showAccessPanelHandler={setShowTagAccessWithSelectedTag}
       />
       {showCreateComplexTagPanel && (
         <MetadataFormulaPanel
@@ -111,8 +135,31 @@ const ComplexTagging = () => {
             setShowCreateComplexTagPanel(false);
             setSelectedComplexTag(undefined);
           }}
+          submitHandler={() => {
+            getComplexTagReponses().then(data => setComplexTags(data));
+          }}
           combinedHierarchyList={combinedHierarchyList}
           currentTag={selectedComplexTag}
+        />
+      )}
+      {showViewComplexTagPanel && (
+        <MetadataFormulaPanelViewOnly
+          showModal={showViewComplexTagPanel}
+          closeHandler={() => {
+            setViewCreateComplexTagPanel(false);
+            setSelectedComplexTag(undefined);
+          }}
+          combinedHierarchyList={combinedHierarchyList}
+          currentTag={selectedComplexTag}
+        />
+      )}
+      {showTagAccess && (
+        <TagAccess
+          showTagAccess={showTagAccess}
+          setShowTagAccess={setShowTagAccess}
+          selectedMetadata={selectedMetadata}
+          setTagGrantsUpdated={setTagGrantsUpdated}
+          type={'complexTag'}
         />
       )}
     </>

@@ -1,7 +1,8 @@
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
-import { EntityTag } from '../../planSimulation/providers/types';
+import { EntityTag, EntityTagMap } from '../../planSimulation/providers/types';
 import { MetaImportTag } from '../providers/types';
+import { MetadataFileImportResponse } from '../type';
 
 export const downloadLocations = async (
   hierarchyIdentifier: string,
@@ -21,8 +22,9 @@ export const getEntityTagList = async (): Promise<PageableModel<EntityTag>> => {
   return data;
 };
 
-export const uploadMetaData = async (file: FormData): Promise<string> => {
-  const data = await api.post<string>('metaImport', file).then(res => res.data);
+export const uploadMetaData = async (file: FormData): Promise<EntityTagMap> => {
+  const data = await api.post<EntityTagMap>('metaImport', file).then(res => res.data);
+
   return data;
 };
 
@@ -31,9 +33,9 @@ export const getMetadataImportList = async (
   page: number,
   sortField?: string,
   direction?: boolean
-): Promise<PageableModel<any>> => {
+): Promise<PageableModel<MetadataFileImportResponse>> => {
   const data = await api
-    .get<PageableModel<any>>(
+    .get<PageableModel<MetadataFileImportResponse>>(
       `metaImport?size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField !== undefined ? sortField : ''},${
         direction ? 'asc' : 'desc'
       }`

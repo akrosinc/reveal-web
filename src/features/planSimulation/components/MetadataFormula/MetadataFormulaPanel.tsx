@@ -1,5 +1,5 @@
 import { Button, Col, Form, Modal, Row, Table } from 'react-bootstrap';
-import { EntityTag } from '../../providers/types';
+import { ComplexTagResponse, EntityTag } from '../../providers/types';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
@@ -11,13 +11,14 @@ import { useTranslation } from 'react-i18next';
 import { getDataAssociatedEntityTags, getEventBasedEntityTags, saveComplexTag } from '../../api';
 import { DATA_AGGREGATION, NUMBER_AGGREGATION } from '../../../../constants';
 import { toast } from 'react-toastify';
-import { ComplexTagRequest, ComplexTagResponse } from '../../../tagging/components/ComplexTagging';
+import { ComplexTagRequest } from '../../../tagging/components/ComplexTagging';
 
 interface Props {
   showModal: boolean;
   closeHandler: () => void;
   combinedHierarchyList: LocationHierarchyModel[] | undefined;
   currentTag?: ComplexTagResponse;
+  submitHandler: () => void;
 }
 
 export interface TagWithFormulaSymbol {
@@ -25,7 +26,7 @@ export interface TagWithFormulaSymbol {
   symbol: string;
 }
 
-const MetadataFormulaPanel = ({ showModal, closeHandler, combinedHierarchyList, currentTag }: Props) => {
+const MetadataFormulaPanel = ({ showModal, closeHandler, combinedHierarchyList, currentTag, submitHandler }: Props) => {
   const [showTagModal, setShowTagModal] = useState(false);
   const [selectedTagField, setSelectedTagField] = useState<string>();
   const [selectedTagSymbol, setSelectedTagSymbol] = useState<string>();
@@ -39,6 +40,7 @@ const MetadataFormulaPanel = ({ showModal, closeHandler, combinedHierarchyList, 
     saveComplexTag(formValues)
       .then(data => {
         toast.info('SavedComplex Tag');
+        submitHandler();
         closeHandler();
       })
       .catch(err => toast.error('Error saving complex tag'));

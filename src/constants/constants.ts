@@ -24,6 +24,10 @@ export const ROW_DEPTH_COLOR_1 = '#F5F5F5';
 export const ROW_DEPTH_COLOR_2 = '#E8E8E8';
 export const ROW_DEPTH_COLOR_3 = '#DCDCDC';
 
+export const USER_ROW_DEPTH_COLOR_1 = 'rgba(144,185,231,0.31)';
+export const USER_ROW_DEPTH_COLOR_2 = 'rgba(202,236,255,0.8)';
+export const USER_ROW_DEPTH_COLOR_3 = 'rgba(202,236,255,0.6)';
+
 //REGEX
 export const REGEX_NAME_VALIDATION = new RegExp('^[-\\a-zA-Z0-9][ a-zA-Z0-9_.-]*[^- _]$');
 export const REGEX_TITLE_VALIDATION = new RegExp('^[^-\\s][a-zA-Z0-9._\\s-]*$');
@@ -100,10 +104,11 @@ export const PLAN_TABLE_COLUMNS = [
 ];
 
 export const META_IMPORT_TABLE_COLUMNS = [
-  { name: 'fileName', sortValue: 'filename', accessor: 'filename' },
-  { name: 'uploadDate', sortValue: 'uploadedDatetime', accessor: 'uploadDatetime' },
-  { name: 'status', sortValue: 'status', accessor: 'status' },
-  { name: 'uploadedBy', sortValue: 'uploadedBy', accessor: 'uploadedBy' }
+  { Header: 'fileName', accessor: 'filename' },
+  { Header: 'uploadDate', accessor: 'uploadDatetime' },
+  { Header: 'status', accessor: 'status' },
+  { Header: 'uploadedBy', accessor: 'uploadedBy' },
+  { Header: 'selected', accessor: 'selected' }
 ];
 
 export const RESOURCE_PLANNING_HISTORY_TABLE_COLUMNS = [

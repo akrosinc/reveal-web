@@ -1,10 +1,16 @@
 import api from '../../../api/axios';
 import { GENERATED_LOCATION_HIERARCHY } from '../../../constants';
-import { EntityTag, LookupEntityType, PersonMeta, PlanningLocationResponse } from '../providers/types';
+import {
+  ComplexTagResponse,
+  EntityTag,
+  LookupEntityType,
+  PersonMeta,
+  PlanningLocationResponse
+} from '../providers/types';
 import { SimulationCountResponse, SimulationRequestData } from '../components/Simulation';
 import { SaveHierarchyRequest, SaveHierarchyResponse } from '../components/modals/SaveHierarchyModal';
 
-import { ComplexTagRequest, ComplexTagResponse } from '../../tagging/components/ComplexTagging';
+import { ComplexTagRequest } from '../../tagging/components/ComplexTagging';
 
 export const getEntityList = async (): Promise<LookupEntityType[]> => {
   const data = await api.get<LookupEntityType[]>(`entityTag/entityType`).then(res => res.data);

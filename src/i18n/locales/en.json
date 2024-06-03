@@ -232,6 +232,12 @@
     "populationCoverage": "Population coverage"
   },
   "simulationPage": {
+    "tag":"tag",
+    "isPublic":"Is public",
+    "orgGrants":"Current Organizations",
+    "userGrants":"Current Users",
+    "resultingOrgGrants":"Resulting Organizations",
+    "resultingUserGrants":"Resulting Users",
     "title": "Plan Simulation",
     "country": "Country",
     "entity": "Entity",

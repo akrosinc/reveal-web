@@ -14,7 +14,7 @@ interface Props {
   clickHandler?: (identifier: any) => void;
   clickAccessor?: string;
   updateTag: (tag: TagUpdateRequest) => void;
-  showAccessPanelHandler: (showPanel: boolean) => void;
+  showAccessPanelHandler: (tag: any) => void;
 }
 
 const DATE_FORMATS = [
@@ -115,20 +115,20 @@ const EntityTagTable = ({
                           </Button>
                         </td>
                       );
-                    } else if (el.accessor === 'access') {
-                      return (
+                    } else if (el.name === 'access') {
+                      return dataEl['aggregate'] ? (
                         <td key={index}>
                           <Button
                             onClick={() => {
                               if (el.accessor) {
-                                showAccessPanelHandler(true);
+                                showAccessPanelHandler(dataEl);
                               }
                             }}
                           >
-                            {'Tag Access'}
+                            {'Grant Access'}
                           </Button>
                         </td>
-                      );
+                      ) : null;
                     } else {
                       return <td key={index}>{dataEl[el.accessor]?.toString()}</td>;
                     }

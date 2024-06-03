@@ -75,10 +75,6 @@ const UploadSimulationData = ({ closeHandler, dataFunction, setLayerDetail }: Pr
             //further chunk processing
           };
 
-          fileReader.onerror = err => {
-            console.log(err); // WebkitBlobResource error 1 exactly after 60 seconds of processing
-          };
-
           fileReader.readAsText(file.slice(offset, offset + chunkSizeToUse));
         } else {
           clearInterval(readInterval);

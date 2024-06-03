@@ -2,12 +2,14 @@ import React, { ChangeEvent, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { uploadMetaData } from '../../../api';
+import { EntityTag } from '../../../../planSimulation/providers/types';
 
 interface Props {
   closeHandler: () => void;
+  setTagsCreated: (tags: EntityTag[]) => void;
 }
 
-const UploadModal = ({ closeHandler }: Props) => {
+const UploadModal = ({ closeHandler, setTagsCreated }: Props) => {
   const [selectedFile, setSelectedFile] = useState<File>();
   const [isError, setIsError] = useState(false);
 
@@ -19,7 +21,14 @@ const UploadModal = ({ closeHandler }: Props) => {
         uploadMetaData(formData)
           .then(res => {
             closeHandler();
-            toast.success(res);
+
+            let tagsCreated = Object.keys(res).map(value => {
+              return res[value];
+            });
+
+            setTagsCreated(tagsCreated);
+
+            toast.success('File uploaded successfully');
           })
           .catch(err => {
             setSelectedFile(undefined);

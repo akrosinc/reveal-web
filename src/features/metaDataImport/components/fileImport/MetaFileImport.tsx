@@ -1,33 +1,66 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Button } from 'react-bootstrap';
+import { Button, Col, Row } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
-import Paginator from '../../../../components/Pagination';
-import DefaultTable from '../../../../components/Table/DefaultTable';
-import { META_IMPORT_TABLE_COLUMNS, METADATA_FILE_IMPORT, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
+import { METADATA_FILE_IMPORT, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import { getMetadataImportList } from '../../api';
 import DetailsModal from './detailsModal';
 import UploadModal from './uploadModal';
 import { useTranslation } from 'react-i18next';
 import AuthorizedElement from '../../../../components/AuthorizedElement';
+import { EntityTagResponse } from '../../../planSimulation/providers/types';
+import MetadataImportTable from '../../../../components/Table/MetadataImportTable';
+import { MetadataFileImportResponse } from '../../type';
+import Paginator from '../../../../components/Pagination';
+import TagAccess from '../../../access/TagAccess';
 
 const MetaFileImport = () => {
   const [open, setOpen] = useState(false);
-  const [metadataList, setMetadataList] = useState<PageableModel<any>>();
+  const [openAccess, setOpenAccess] = useState(false);
+  const [metadataImportPaged, setMetadataImportPaged] = useState<PageableModel<MetadataFileImportResponse>>();
+  const [metadataImportList, setMetadataImportList] = useState<MetadataFileImportResponse[]>([]);
+  const [selectedMetadata, setSelectedMetadata] = useState<EntityTagResponse[]>([]);
   const [selectedMetaImport, setSelectedMetaImport] = useState<any>();
+  // const [setEntityTagsCreated] = useState<EntityTag[]>();
 
   const { t } = useTranslation();
 
   const loadData = useCallback((size: number, page: number, field?: string, direction?: boolean) => {
     getMetadataImportList(size, page, field, direction)
       .then(res => {
-        setMetadataList(res);
+        let transformedMetadataList: MetadataFileImportResponse[] = res.content.map(fileImport => {
+          let entityTagsNotAggregate: EntityTagResponse[] | undefined = fileImport.entityTagEvents?.filter(
+            entityTag => !entityTag.aggregate
+          );
+
+          let entityTagWithChildren = entityTagsNotAggregate?.map(entityTag => {
+            entityTag.children = fileImport.entityTagEvents?.filter(entityTagEvent => {
+              return entityTagEvent.aggregate && entityTagEvent.referencedTag === entityTag.identifier;
+            });
+            return entityTag;
+          });
+
+          let newFileImport: MetadataFileImportResponse = {
+            selected: fileImport.selected,
+            entityTagEvents: entityTagWithChildren,
+            filename: fileImport.filename,
+            status: fileImport.status,
+            identifier: fileImport.identifier,
+            uploadDatetime: fileImport.uploadDatetime,
+            uploadedBy: fileImport.uploadedBy
+          };
+
+          return newFileImport;
+        });
+
+        setMetadataImportList(transformedMetadataList);
+        setMetadataImportPaged(res);
       })
       .catch(err => toast.error(err));
   }, []);
 
   useEffect(() => {
-    loadData(PAGINATION_DEFAULT_SIZE, 0);
+    loadData(10, 0);
   }, [loadData]);
 
   const paginationHandler = (size: number, page: number) => {
@@ -38,39 +71,122 @@ const MetaFileImport = () => {
     loadData(PAGINATION_DEFAULT_SIZE, 0, field, direction);
   };
 
+  useEffect(() => {
+    let selectedMetadata: EntityTagResponse[] = [];
+    metadataImportList?.forEach(metadataItem =>
+      metadataItem.entityTagEvents
+        ?.filter(metaEvent => metaEvent.selected)
+        .forEach(metaEvent => {
+          const meta = new EntityTagResponse(
+            metaEvent.identifier,
+            metaEvent.tag,
+            metaEvent.definition,
+            metaEvent.valueType,
+            metaEvent.aggregate,
+            metaEvent.created,
+            metaEvent.metadataImportId,
+            metaEvent.referencedTag,
+            metaEvent.tagAccGrantsOrganization,
+            metaEvent.tagAccGrantsUser,
+            metaEvent.public,
+            metaEvent.children,
+            metaEvent.selected,
+            metaEvent.resultingOrgs,
+            metaEvent.resultingUsers
+          );
+          selectedMetadata.push(meta);
+          if (metaEvent.children && metaEvent.children.length > 0) {
+            metaEvent.children
+              .filter(metaChild => metaChild.selected)
+              .forEach(metaChild => {
+                const metaChildObj = new EntityTagResponse(
+                  metaChild.identifier,
+                  metaChild.tag,
+                  metaChild.definition,
+                  metaChild.valueType,
+                  metaChild.aggregate,
+                  metaChild.created,
+                  metaChild.metadataImportId,
+                  metaChild.referencedTag,
+                  metaChild.tagAccGrantsOrganization,
+                  metaChild.tagAccGrantsUser,
+                  metaChild.public,
+                  metaChild.children,
+                  metaChild.selected,
+                  metaChild.resultingOrgs,
+                  metaChild.resultingUsers
+                );
+
+                selectedMetadata.push(metaChildObj);
+              });
+          }
+        })
+    );
+    setSelectedMetadata(selectedMetadata);
+  }, [metadataImportList]);
+
+  const setTagGrantsUpdated = () => {
+    setOpenAccess(false);
+    loadData(PAGINATION_DEFAULT_SIZE, 0);
+  };
+
   return (
     <>
-      <div className="d-flex justify-content-between my-4">
-        <h2>Metadata Imports({metadataList?.totalElements})</h2>
-        <AuthorizedElement roles={[METADATA_FILE_IMPORT]}>
-          <Button onClick={() => setOpen(!open)}>{t('metadataImport.uploadFile')}</Button>
-        </AuthorizedElement>
+      <div className=" my-4">
+        <Row>
+          <Col>
+            <h2>Metadata Imports({metadataImportPaged?.content?.length})</h2>
+          </Col>
+          <Col>
+            <AuthorizedElement roles={[METADATA_FILE_IMPORT]}>
+              <Button onClick={() => setOpen(!open)} className={''} style={{ float: 'right' }}>
+                {t('metadataImport.uploadFile')}
+              </Button>
+            </AuthorizedElement>
+            <AuthorizedElement roles={[METADATA_FILE_IMPORT]}>
+              <Button
+                disabled={selectedMetadata.length === 0}
+                onClick={() => setOpenAccess(!openAccess)}
+                className={'mx-2'}
+                style={{ float: 'right' }}
+              >
+                Grant Access
+              </Button>
+            </AuthorizedElement>
+          </Col>
+        </Row>
+        <Row>
+          {metadataImportPaged && metadataImportPaged.content.length ? (
+            <>
+              <MetadataImportTable
+                data={metadataImportList}
+                clickHandler={el => setSelectedMetaImport(el)}
+                sortHandler={sortHandler}
+                setMetadataList={setMetadataImportList}
+              />
+              {!metadataImportPaged !== null && metadataImportPaged?.empty ? (
+                <Paginator
+                  page={metadataImportPaged.pageable.pageNumber}
+                  size={metadataImportPaged.size}
+                  totalElements={metadataImportPaged.totalElements}
+                  totalPages={metadataImportPaged.totalPages}
+                  paginationHandler={paginationHandler}
+                />
+              ) : null}
+            </>
+          ) : (
+            'No data found.'
+          )}
+        </Row>
       </div>
-      {metadataList && metadataList.content.length ? (
-        <>
-          <DefaultTable
-            columns={META_IMPORT_TABLE_COLUMNS}
-            data={metadataList.content}
-            clickHandler={el => setSelectedMetaImport(el)}
-            sortHandler={sortHandler}
-          />
-          <Paginator
-            page={metadataList.pageable.pageNumber}
-            size={metadataList.size}
-            totalElements={metadataList.totalElements}
-            totalPages={metadataList.totalPages}
-            paginationHandler={paginationHandler}
-          />
-        </>
-      ) : (
-        'No data found.'
-      )}
       {open && (
         <UploadModal
           closeHandler={() => {
             loadData(PAGINATION_DEFAULT_SIZE, 0);
             setOpen(false);
           }}
+          setTagsCreated={() => {}}
+          // setTagsCreated={setEntityTagsCreated}
         />
       )}
       {selectedMetaImport && (
@@ -80,6 +196,15 @@ const MetaFileImport = () => {
             setSelectedMetaImport(undefined);
           }}
           selectedFile={selectedMetaImport}
+        />
+      )}
+      {openAccess && (
+        <TagAccess
+          showTagAccess={openAccess}
+          setShowTagAccess={setOpenAccess}
+          setTagGrantsUpdated={setTagGrantsUpdated}
+          selectedMetadata={selectedMetadata}
+          type={'tag'}
         />
       )}
     </>

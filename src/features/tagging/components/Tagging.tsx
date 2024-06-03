@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Button, Col, Modal, Row } from 'react-bootstrap';
+import { Button, Col, Row } from 'react-bootstrap';
 import { DebounceInput } from 'react-debounce-input';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
@@ -10,10 +10,18 @@ import { getAllGlobalTags, updateTag } from '../api';
 import { Tag, TagUpdateRequest } from '../providers/types';
 import CreateTag from './createModal';
 import AuthorizedElement from '../../../components/AuthorizedElement';
+
+import { EntityTagResponse } from '../../planSimulation/providers/types';
 import TagAccess from '../../access/TagAccess';
 
 const columnsNotForDisplay = [
-  'valueType',
+  'identifier',
+  'definition',
+  'metadataImportId',
+  'referencedTag',
+  'tagAccGrantsOrganization',
+  'aggregationMethod',
+  'tagAccGrantsUser',
   'resultLiteral',
   'resultExpression',
   'generated',
@@ -30,6 +38,7 @@ const Tagging = () => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [showTagAccess, setShowTagAccess] = useState(false);
+  const [selectedMetadata, setSelectedMetadata] = useState<EntityTagResponse[]>([]);
 
   const loadData = useCallback((size: number, page: number, filter?: string, field?: string, direction?: boolean) => {
     getAllGlobalTags(size, page, filter, field, direction)
@@ -72,7 +81,39 @@ const Tagging = () => {
           sortValue: el
         };
       });
+    columns.push({
+      name: 'access',
+      accessor: 'tag',
+      sortValue: 'access'
+    });
+    // columns.unshift({
+    //   name: 'expander',
+    //   accessor: 'expander',
+    //   sortValue: 'expander'
+    // });
     return columns;
+  };
+  const setShowTagAccessWithSelectedTag = (tag: any) => {
+    setShowTagAccess(true);
+
+    setSelectedMetadata([
+      {
+        identifier: tag.identifier,
+        tag: tag.tag,
+        definition: tag.definition,
+        valueType: tag.valueType,
+        aggregate: tag.aggregate,
+        created: tag.created,
+        metadataImportId: tag.metadataImportId,
+        tagAccGrantsUser: tag.tagAccGrantsUser,
+        tagAccGrantsOrganization: tag.tagAccGrantsOrganization
+      }
+    ]);
+  };
+
+  const setTagGrantsUpdated = () => {
+    setShowTagAccess(false);
+    loadData(PAGINATION_DEFAULT_SIZE, 0);
   };
 
   return (
@@ -107,7 +148,7 @@ const Tagging = () => {
             columns={getColumns(tagList)}
             data={tagList?.content}
             updateTag={updateSimulationDisplay}
-            showAccessPanelHandler={setShowTagAccess}
+            showAccessPanelHandler={setShowTagAccessWithSelectedTag}
           />
           <Paginator
             page={tagList.pageable.pageNumber}
@@ -129,17 +170,13 @@ const Tagging = () => {
         />
       )}
       {showTagAccess && (
-        <Modal show={showTagAccess} centered size={'lg'} onHide={() => setShowTagAccess(false)}>
-          <Modal.Header closeButton>Tag Access</Modal.Header>
-          <Modal.Body>
-            <TagAccess />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button id="close-button" variant="secondary" onClick={() => setShowTagAccess(false)}>
-              Close
-            </Button>
-          </Modal.Footer>
-        </Modal>
+        <TagAccess
+          showTagAccess={showTagAccess}
+          setShowTagAccess={setShowTagAccess}
+          selectedMetadata={selectedMetadata}
+          setTagGrantsUpdated={setTagGrantsUpdated}
+          type={'tag'}
+        />
       )}
     </>
   );

@@ -99,7 +99,7 @@ export const TemplateCreation = () => {
         <Col md={6}>
           <Button
             onClick={() => {
-              if (selectedHierarchy && selectedGegraphichLevel && selectedEntityTags.length) {
+              if (selectedHierarchy && selectedGegraphichLevel) {
                 toast.info('Download template starting now...');
                 downloadLocations(selectedHierarchy, selectedGegraphichLevel, selectedEntityTags)
                   .then(res => {

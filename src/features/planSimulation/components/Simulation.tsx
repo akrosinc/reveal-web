@@ -22,6 +22,7 @@ import {
   updateSimulationRequest
 } from '../api';
 import {
+  ComplexTagResponse,
   EntityTag,
   HierarchyType,
   LocationMetadataObj,
@@ -49,7 +50,6 @@ import UploadSimulationData from './modals/UploadSimulationData';
 import SearchResultCountModal from './modals/SearchResultCountModal';
 import TableSummaryModal from './Summary/TableSummaryModal';
 import SaveHierarchyModal from './modals/SaveHierarchyModal';
-import { ComplexTagResponse } from '../../tagging/components/ComplexTagging';
 import SimulationMapView from './SimulationMapView/SimulationMapView';
 
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
@@ -174,8 +174,6 @@ const Simulation = () => {
     useState<string[]>();
   const levelsLoaded = useRef<string[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  // const [statsMetadata, setStatsMetadata] = useState<Stats>({});
-
   const [statsLayerMetadata, setStatsLayerMetadata] = useState<StatsLayer>({});
 
   const [aggregationSummary, setAggregationSummary] = useState<LocationMetadataObj>({});
@@ -301,18 +299,6 @@ const Simulation = () => {
 
   const submitHandlerCount = (form: any) => {
     if (omitLayers) {
-      // setMapData(undefined);
-      // setToLocation(undefined);
-      // setResetMap(true);
-      // setParentMapData(undefined);
-      // setShowResult(false);
-      // // setStatsMetadata({});
-      //
-      // setMarkedLocations([]);
-      // setMarkedParents(new Set<string>());
-      // setSubmitSimulationRequestData(undefined);
-      // setSelectedEntityConditionList([]);
-      // setSelectedFilterGeographicLevelList([]);
       clearSomeHandler();
     }
 
@@ -1437,25 +1423,6 @@ const Simulation = () => {
                     </Row>
                   )}
                 </Form.Group>
-                {/*<Form.Group className="my-3">*/}
-                {/*  <Row className="align-items-center">*/}
-                {/*    <Col md={5} lg={5}>*/}
-                {/*      <OverlayTrigger placement="top" overlay={<Tooltip id="meta-tooltip">{'analysis'}</Tooltip>}>*/}
-                {/*        <Form.Label>{'analysis'}:</Form.Label>*/}
-                {/*      </OverlayTrigger>*/}
-                {/*    </Col>*/}
-                {/*    <Col>*/}
-                {/*      <Form.Check*/}
-                {/*        className="float-left"*/}
-                {/*        type="switch"*/}
-                {/*        id="custom-switch"*/}
-                {/*        label="analysis"*/}
-                {/*        defaultChecked={false}*/}
-                {/*        onChange={e => setIsAnalysisSearch(e.target.checked)}*/}
-                {/*      />*/}
-                {/*    </Col>*/}
-                {/*  </Row>*/}
-                {/*</Form.Group>*/}
                 <Form.Group className="my-3">
                   <Row>
                     <Col xs={9}>

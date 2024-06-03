@@ -3,18 +3,17 @@
 import { Button, Table } from 'react-bootstrap';
 import { useAppSelector } from '../../store/hooks';
 import { t } from 'i18next';
-import { ComplexTagResponse } from '../../features/tagging/components/ComplexTagging';
+import { ComplexTagResponse } from '../../features/planSimulation/providers/types';
 
 interface Props {
   columns: { name: string; sortValue?: string; accessor: string; key: string }[];
   data: ComplexTagResponse[] | undefined;
   clickHandler: (identifier: any) => void;
+  showAccessPanelHandler: (tag: any) => void;
 }
 
 //TODO: Complete sorting
-const ComplexTagTable = ({ columns, data, clickHandler }: Props) => {
-  // const [sortDirection, setSortDirection] = useState(false);
-  // const [activeSortField, setActiveSortField] = useState('');
+const ComplexTagTable = ({ columns, data, clickHandler, showAccessPanelHandler }: Props) => {
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   return (
@@ -22,26 +21,8 @@ const ComplexTagTable = ({ columns, data, clickHandler }: Props) => {
       <thead className="border border-2">
         <tr>
           {columns.map((el, index) => (
-            <th
-              key={index}
-              onClick={() => {
-                // if (el.sortValue && sortHandler) {
-                //   setSortDirection(!sortDirection);
-                //   setActiveSortField(el.name);
-                //   sortHandler(el.sortValue, sortDirection);
-                // }
-              }}
-            >
+            <th key={index} onClick={() => {}}>
               {t('entityTags.' + el.name)}
-              {/*{activeSortField === el.name ? (*/}
-              {/*  sortDirection ? (*/}
-              {/*    <FontAwesomeIcon className="ms-2" icon="sort-up" />*/}
-              {/*  ) : (*/}
-              {/*    <FontAwesomeIcon className="ms-2" icon="sort-down" />*/}
-              {/*  )*/}
-              {/*) : el.sortValue ? (*/}
-              {/*  <FontAwesomeIcon className="ms-2" icon="sort" />*/}
-              {/*) : null}*/}
             </th>
           ))}
         </tr>
@@ -59,6 +40,20 @@ const ComplexTagTable = ({ columns, data, clickHandler }: Props) => {
                       return (
                         <td key={index}>
                           <Button onClick={() => clickHandler(dataEl)}>{'View Variables'}</Button>
+                        </td>
+                      );
+                    } else if (el.accessor === 'access') {
+                      return (
+                        <td key={index}>
+                          <Button
+                            onClick={() => {
+                              if (el.accessor) {
+                                showAccessPanelHandler(dataEl);
+                              }
+                            }}
+                          >
+                            {'Grant Access'}
+                          </Button>
                         </td>
                       );
                     } else {
