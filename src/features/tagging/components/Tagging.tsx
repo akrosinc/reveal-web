@@ -13,6 +13,9 @@ import AuthorizedElement from '../../../components/AuthorizedElement';
 
 import { EntityTagResponse } from '../../planSimulation/providers/types';
 import TagAccess from '../../access/TagAccess';
+import { TagToDelete } from './ComplexTagging';
+import DeleteTag from './DeleteTag';
+import { deleteSimpleTags } from '../../planSimulation/api';
 
 const columnsNotForDisplay = [
   'identifier',
@@ -28,7 +31,8 @@ const columnsNotForDisplay = [
   'addToMetadata',
   'fieldType',
   'referenceFields',
-  'generationFormula'
+  'generationFormula',
+  'owner'
 ];
 
 const Tagging = () => {
@@ -39,6 +43,9 @@ const Tagging = () => {
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [showTagAccess, setShowTagAccess] = useState(false);
   const [selectedMetadata, setSelectedMetadata] = useState<EntityTagResponse[]>([]);
+  const [showDeleteTagPanel, setShowDeleteTagPanel] = useState(false);
+  const [selectedTagToDelete, setSelectedTagToDelete] = useState<TagToDelete>();
+  const [selectedTagsToDelete, setSelectedTagsToDelete] = useState<TagToDelete[]>();
 
   const loadData = useCallback((size: number, page: number, filter?: string, field?: string, direction?: boolean) => {
     getAllGlobalTags(size, page, filter, field, direction)
@@ -51,6 +58,23 @@ const Tagging = () => {
   useEffect(() => {
     loadData(PAGINATION_DEFAULT_SIZE, 0);
   }, [loadData]);
+
+  useEffect(() => {
+    console.log(selectedTagToDelete);
+    let tags = tagList?.content
+      .filter(tag => {
+        return tag.referencedTag === selectedTagToDelete?.id;
+      })
+      .map(tag => {
+        return {
+          id: tag.identifier,
+          type: 'Simple',
+          tag: tag.tag
+        };
+      });
+    console.log(tags);
+    setSelectedTagsToDelete(tags);
+  }, [selectedTagToDelete, tagList]);
 
   const paginationHandler = (size: number, page: number) => {
     loadData(size, page, currentSearchInput, currentSortField, currentSortDirection);
@@ -86,11 +110,11 @@ const Tagging = () => {
       accessor: 'tag',
       sortValue: 'access'
     });
-    // columns.unshift({
-    //   name: 'expander',
-    //   accessor: 'expander',
-    //   sortValue: 'expander'
-    // });
+    columns.push({
+      name: 'delete',
+      accessor: 'delete',
+      sortValue: 'delete'
+    });
     return columns;
   };
   const setShowTagAccessWithSelectedTag = (tag: any) => {
@@ -106,7 +130,9 @@ const Tagging = () => {
         created: tag.created,
         metadataImportId: tag.metadataImportId,
         tagAccGrantsUser: tag.tagAccGrantsUser,
-        tagAccGrantsOrganization: tag.tagAccGrantsOrganization
+        tagAccGrantsOrganization: tag.tagAccGrantsOrganization,
+        owner: tag.owner,
+        owners: tag.owners
       }
     ]);
   };
@@ -114,6 +140,15 @@ const Tagging = () => {
   const setTagGrantsUpdated = () => {
     setShowTagAccess(false);
     loadData(PAGINATION_DEFAULT_SIZE, 0);
+  };
+
+  const proceedToDeleteSimpleTag = (tags?: TagToDelete[]) => {
+    if (tags) {
+      deleteSimpleTags(tags).then(() => {
+        setShowDeleteTagPanel(false);
+        loadData(PAGINATION_DEFAULT_SIZE, 0);
+      });
+    }
   };
 
   return (
@@ -149,6 +184,8 @@ const Tagging = () => {
             data={tagList?.content}
             updateTag={updateSimulationDisplay}
             showAccessPanelHandler={setShowTagAccessWithSelectedTag}
+            setShowDeleteTagPanel={setShowDeleteTagPanel}
+            setSelectedTagToDelete={setSelectedTagToDelete}
           />
           <Paginator
             page={tagList.pageable.pageNumber}
@@ -176,6 +213,14 @@ const Tagging = () => {
           selectedMetadata={selectedMetadata}
           setTagGrantsUpdated={setTagGrantsUpdated}
           type={'tag'}
+        />
+      )}
+      {showDeleteTagPanel && (
+        <DeleteTag
+          showDeleteTagPanel={showDeleteTagPanel}
+          setShowDeleteTagPanel={setShowDeleteTagPanel}
+          proceedToDeleteTags={proceedToDeleteSimpleTag}
+          selectedTagsToDelete={selectedTagsToDelete}
         />
       )}
     </>

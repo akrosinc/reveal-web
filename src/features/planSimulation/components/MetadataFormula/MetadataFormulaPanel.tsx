@@ -69,7 +69,7 @@ const MetadataFormulaPanel = ({ showModal, closeHandler, combinedHierarchyList, 
     if (selectedHierarchy) {
       let tagsMeta: EntityTag[] = [];
       getDataAssociatedEntityTags(selectedHierarchy.identifier).then(res => {
-        tagsMeta = res;
+        tagsMeta = res.entityTagResponses;
         setEntityTags(tagsMeta);
         let tagsEvent: EntityTag[] = [];
         getEventBasedEntityTags().then(result => {

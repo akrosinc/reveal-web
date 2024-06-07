@@ -1,3 +1,5 @@
+import { Owners } from '../../metaDataImport/type';
+
 export interface Tag {
   identifier: string;
   tag: string;
@@ -6,6 +8,9 @@ export interface Tag {
   fieldType: string;
   addToMetadata: boolean;
   simulationDisplay: boolean;
+  owner: boolean;
+  owners: Owners[];
+  referencedTag: String;
 }
 
 export interface TagCreateRequest {

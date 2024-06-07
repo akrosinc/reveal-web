@@ -424,7 +424,7 @@ const TagAccessOrgUserExpandingTable = ({
               <tr {...row.getRowProps()} style={{ backgroundColor: getColorLevelFromRow(row) }}>
                 {row.cells.map(cell => {
                   const cellData = cell.row.original as any;
-                  if (cell.column.id === 'select') {
+                  if (cell.column.id === 'select' && cell.row.original.identifier !== 'unassigned') {
                     return (
                       <td>
                         <ReactRow>
@@ -458,7 +458,6 @@ const TagAccessOrgUserExpandingTable = ({
           })}
         </tbody>
       </Table>
-      <p>makePublic: {String(makePublic)}</p>
     </>
   );
 };

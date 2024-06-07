@@ -60,6 +60,8 @@ const MetadataEntityTagTable = ({ data, setMetadataList, metadataList, columns }
             tagAccGrantsUser: entityTag.tagAccGrantsUser,
             tagAccGrantsOrganization: entityTag.tagAccGrantsOrganization,
             public: entityTag.public,
+            owners: entityTag.owners,
+            owner: entityTag.owner,
             children: entityTag.children?.map(child => {
               return {
                 tag: child.tag,
@@ -74,7 +76,9 @@ const MetadataEntityTagTable = ({ data, setMetadataList, metadataList, columns }
                 created: child.created,
                 tagAccGrantsUser: child.tagAccGrantsUser,
                 tagAccGrantsOrganization: child.tagAccGrantsOrganization,
-                public: child.public
+                public: child.public,
+                owners: child.owners,
+                owner: child.owner
               };
             })
           });
@@ -95,7 +99,7 @@ const MetadataEntityTagTable = ({ data, setMetadataList, metadataList, columns }
     <Table bordered responsive hover {...getTableProps()} variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="border border-2">
         {headerGroups.map(headerGroup => (
-          <tr {...headerGroup.getHeaderGroupProps()}>
+          <tr {...headerGroup.getHeaderGroupProps()} style={{ backgroundColor: '#edf4fc' }}>
             {headerGroup.headers.map(column => {
               return (
                 <th
@@ -116,17 +120,18 @@ const MetadataEntityTagTable = ({ data, setMetadataList, metadataList, columns }
         {rows.map(row => {
           prepareRow(row);
           return (
-            <tr {...row.getRowProps()}>
+            <tr {...row.getRowProps()} style={{ backgroundColor: '#edf4fc' }}>
               {row.cells.map(cell => {
                 const cellData = cell.row.original;
                 return cell.column.id === 'selected' ? (
                   <td {...cell.getCellProps()}>
-                    {' '}
-                    <FormCheck
-                      checked={cellData.selected}
-                      disabled={cellData.aggregate}
-                      onChange={evt => setSelected(evt, row.original.identifier)}
-                    />
+                    {cellData.owner ? (
+                      <FormCheck
+                        checked={cellData.selected}
+                        disabled={cellData.aggregate}
+                        onChange={evt => setSelected(evt, row.original.identifier)}
+                      />
+                    ) : null}
                   </td>
                 ) : cell.column.id === 'orgGrants' ? (
                   <td {...cell.getCellProps()}>
@@ -172,6 +177,14 @@ const MetadataEntityTagTable = ({ data, setMetadataList, metadataList, columns }
                   <td {...cell.getCellProps()}>{cellData.public ? 'true' : 'false'}</td>
                 ) : cell.column.id === 'aggregate' ? (
                   <td {...cell.getCellProps()}>{cellData.aggregate ? 'true' : 'false'}</td>
+                ) : cell.column.id === 'owner' ? (
+                  <td {...cell.getCellProps()}>{cellData.owner ? 'true' : 'false'}</td>
+                ) : cell.column.id === 'owners' ? (
+                  <td {...cell.getCellProps()}>
+                    {cellData.owners.map(owner => (
+                      <p>{owner.username}</p>
+                    ))}
+                  </td>
                 ) : (
                   <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
                 );

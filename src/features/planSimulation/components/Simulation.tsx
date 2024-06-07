@@ -11,7 +11,6 @@ import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../
 import { LocationHierarchyModel } from '../../location/providers/types';
 import { evaluate, isNumeric } from 'mathjs';
 import {
-  getComplexTagReponses,
   getDataAssociatedEntityTags,
   getEntityList,
   getEventBasedEntityTags,
@@ -196,10 +195,10 @@ const Simulation = () => {
     Promise.all([
       getLocationHierarchyList(50, 0, true),
       getEntityList(),
-      getGeneratedLocationHierarchyList(),
-      getComplexTagReponses()
+      getGeneratedLocationHierarchyList()
+      // getComplexTagReponses()
     ])
-      .then(([locationHierarchyList, entityList, generatedHierarchyList, complexTagResponses]) => {
+      .then(([locationHierarchyList, entityList, generatedHierarchyList]) => {
         let generatedHierarchyItems = generatedHierarchyList?.map(generatedHierarchy => {
           return {
             identifier: generatedHierarchy.identifier,
@@ -224,7 +223,7 @@ const Simulation = () => {
         let entityObj = entityList.find(entity => entity.code === 'Location');
         setSelectedEntity(entityObj?.identifier);
 
-        setComplexTags(complexTagResponses);
+        // setComplexTags(complexTagResponses);
       })
       .catch(err => toast.error(err));
   }, []);
@@ -1048,7 +1047,7 @@ const Simulation = () => {
     if (selectedHierarchy) {
       let tagsMeta: EntityTag[] = [];
       getDataAssociatedEntityTags(selectedHierarchy.identifier).then(res => {
-        tagsMeta = res;
+        tagsMeta = res.entityTagResponses;
         setEntityTags(tagsMeta);
         let tagsEvent: EntityTag[] = [];
         getEventBasedEntityTags().then(result => {
@@ -1059,6 +1058,7 @@ const Simulation = () => {
             setEntityTags(allTags);
           }
         });
+        setComplexTags(res.complexTagDtos);
       });
     }
   }, [selectedHierarchy]);

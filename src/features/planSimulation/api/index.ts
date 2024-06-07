@@ -5,12 +5,13 @@ import {
   EntityTag,
   LookupEntityType,
   PersonMeta,
-  PlanningLocationResponse
+  PlanningLocationResponse,
+  TagResponse
 } from '../providers/types';
 import { SimulationCountResponse, SimulationRequestData } from '../components/Simulation';
 import { SaveHierarchyRequest, SaveHierarchyResponse } from '../components/modals/SaveHierarchyModal';
 
-import { ComplexTagRequest } from '../../tagging/components/ComplexTagging';
+import { ComplexTagRequest, TagToDelete } from '../../tagging/components/ComplexTagging';
 
 export const getEntityList = async (): Promise<LookupEntityType[]> => {
   const data = await api.get<LookupEntityType[]>(`entityTag/entityType`).then(res => res.data);
@@ -22,8 +23,8 @@ export const getEntityTags = async (): Promise<EntityTag[]> => {
   return data;
 };
 
-export const getDataAssociatedEntityTags = async (hierarchyIdentifier: string): Promise<EntityTag[]> => {
-  const data = await api.get<EntityTag[]>('entityTag/dataAssociated/' + hierarchyIdentifier).then(res => res.data);
+export const getDataAssociatedEntityTags = async (hierarchyIdentifier: string): Promise<TagResponse> => {
+  const data = await api.get<TagResponse>('entityTag/dataAssociated/' + hierarchyIdentifier).then(res => res.data);
   return data;
 };
 
@@ -173,5 +174,14 @@ export const saveComplexTag = async (complexTag: ComplexTagRequest): Promise<Com
 
 export const getComplexTagReponses = async (): Promise<ComplexTagResponse[]> => {
   const data = await api.get('entityTag/complex').then(res => res.data);
+  return data;
+};
+export const deleteComplexTag = async (tag: TagToDelete): Promise<string> => {
+  const data = await api.post<string>(`entityTag/complex/delete`, tag).then(res => res.data);
+  return data;
+};
+
+export const deleteSimpleTags = async (tag: TagToDelete[]): Promise<string> => {
+  const data = await api.post<string>(`entityTag/delete`, tag).then(res => res.data);
   return data;
 };

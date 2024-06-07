@@ -47,7 +47,9 @@ const MetaFileImport = () => {
             status: fileImport.status,
             identifier: fileImport.identifier,
             uploadDatetime: fileImport.uploadDatetime,
-            uploadedBy: fileImport.uploadedBy
+            uploadedBy: fileImport.uploadedBy,
+            owner: fileImport.owner,
+            owners: fileImport.owners
           };
 
           return newFileImport;
@@ -80,6 +82,8 @@ const MetaFileImport = () => {
           const meta = new EntityTagResponse(
             metaEvent.identifier,
             metaEvent.tag,
+            metaEvent.owner,
+            metaEvent.owners,
             metaEvent.definition,
             metaEvent.valueType,
             metaEvent.aggregate,
@@ -102,6 +106,8 @@ const MetaFileImport = () => {
                 const metaChildObj = new EntityTagResponse(
                   metaChild.identifier,
                   metaChild.tag,
+                  metaChild.owner,
+                  metaChild.owners,
                   metaChild.definition,
                   metaChild.valueType,
                   metaChild.aggregate,

@@ -6,6 +6,9 @@ import { useAppSelector } from '../../store/hooks';
 import { formatDate } from '../../utils';
 import { t } from 'i18next';
 import { TagUpdateRequest } from '../../features/tagging/providers/types';
+import { TagToDelete } from '../../features/tagging/components/ComplexTagging';
+import { TAG_ACCESS_OVERRIDE } from '../../constants';
+import { useKeycloak } from '@react-keycloak/web';
 
 interface Props {
   columns: { name: string; sortValue?: string; accessor?: string; key?: string }[];
@@ -15,6 +18,8 @@ interface Props {
   clickAccessor?: string;
   updateTag: (tag: TagUpdateRequest) => void;
   showAccessPanelHandler: (tag: any) => void;
+  setShowDeleteTagPanel: (show: boolean) => void;
+  setSelectedTagToDelete: (tag: TagToDelete) => void;
 }
 
 const DATE_FORMATS = [
@@ -35,12 +40,14 @@ const EntityTagTable = ({
   clickHandler,
   clickAccessor,
   updateTag,
-  showAccessPanelHandler
+  showAccessPanelHandler,
+  setShowDeleteTagPanel,
+  setSelectedTagToDelete
 }: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
   const isDarkMode = useAppSelector(state => state.darkMode.value);
-
+  const { keycloak } = useKeycloak();
   return (
     <Table bordered responsive hover variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="border border-2">
@@ -116,7 +123,7 @@ const EntityTagTable = ({
                         </td>
                       );
                     } else if (el.name === 'access') {
-                      return dataEl['aggregate'] ? (
+                      return dataEl['owner'] || keycloak.hasRealmRole(TAG_ACCESS_OVERRIDE) ? (
                         <td key={index}>
                           <Button
                             onClick={() => {
@@ -129,6 +136,36 @@ const EntityTagTable = ({
                           </Button>
                         </td>
                       ) : null;
+                    } else if (el.name === 'owners') {
+                      return (
+                        <td key={index}>
+                          {dataEl['owners'].map((owner: any) => (
+                            <p>{owner.username}</p>
+                          ))}
+                        </td>
+                      );
+                    } else if (el.accessor === 'delete') {
+                      return (
+                        <td key={index}>
+                          {(dataEl['owner'] && !dataEl['aggregate']) || keycloak.hasRealmRole(TAG_ACCESS_OVERRIDE) ? (
+                            <Button
+                              onClick={() => {
+                                if (el.accessor) {
+                                  console.log('dataEl', dataEl);
+                                  setSelectedTagToDelete({
+                                    id: dataEl['identifier'] as string,
+                                    type: 'ComplexTag',
+                                    tag: dataEl['tag'] as string
+                                  });
+                                  setShowDeleteTagPanel(true);
+                                }
+                              }}
+                            >
+                              {'Delete Tag'}
+                            </Button>
+                          ) : null}
+                        </td>
+                      );
                     } else {
                       return <td key={index}>{dataEl[el.accessor]?.toString()}</td>;
                     }

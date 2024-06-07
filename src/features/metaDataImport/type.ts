@@ -8,4 +8,11 @@ export interface MetadataFileImportResponse {
   uploadedBy: string;
   selected?: boolean;
   entityTagEvents?: EntityTagResponse[];
+  owner: boolean;
+  owners: Owners[];
+}
+
+export interface Owners {
+  id: string;
+  username: string;
 }

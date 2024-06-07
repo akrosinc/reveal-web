@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
-import { getComplexTagReponses, getEntityList } from '../../planSimulation/api';
+import { deleteComplexTag, getComplexTagReponses, getEntityList } from '../../planSimulation/api';
 import { ComplexTagResponse, HierarchyType } from '../../planSimulation/providers/types';
 import { toast } from 'react-toastify';
 import { LocationHierarchyModel } from '../../location/providers/types';
@@ -15,6 +15,7 @@ import { REVEAL_SIMULATION_EDIT } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import TagAccess from '../../access/TagAccess';
 import MetadataFormulaPanelViewOnly from '../../planSimulation/components/MetadataFormula/MetadataFormulaPanelViewOnly';
+import DeleteTag from './DeleteTag';
 
 export interface ComplexTagRequest {
   hierarchyId: string;
@@ -24,6 +25,11 @@ export interface ComplexTagRequest {
   formula: string;
 }
 
+export interface TagToDelete {
+  id: string;
+  type: string;
+  tag: string;
+}
 const ComplexTagging = () => {
   const [combinedHierarchyList, setCombinedHierarchyList] = useState<LocationHierarchyModel[]>();
   const { t } = useTranslation();
@@ -32,6 +38,8 @@ const ComplexTagging = () => {
   const [complexTags, setComplexTags] = useState<ComplexTagResponse[]>();
   const [selectedComplexTag, setSelectedComplexTag] = useState<ComplexTagResponse>();
   const [showTagAccess, setShowTagAccess] = useState(false);
+  const [showDeleteTagPanel, setShowDeleteTagPanel] = useState(false);
+  const [selectedTagToDelete, setSelectedTagToDelete] = useState<TagToDelete>();
   const [selectedMetadata, setSelectedMetadata] = useState<ComplexTagResponse[]>([]);
 
   useEffect(() => {
@@ -73,6 +81,8 @@ const ComplexTagging = () => {
       tag.tagName,
       tag.tags,
       tag.formula,
+      tag.owner,
+      tag.owners,
       tag.calculateValue,
       tag.public,
       tag.tagAccGrantsOrganization,
@@ -87,6 +97,15 @@ const ComplexTagging = () => {
   const setTagGrantsUpdated = () => {
     setShowTagAccess(false);
     getComplexTagReponses().then(data => setComplexTags(data));
+  };
+
+  const proceedToDeleteComplexTag = (tag?: TagToDelete) => {
+    if (tag) {
+      deleteComplexTag(tag).then(() => {
+        setShowDeleteTagPanel(false);
+        getComplexTagReponses().then(data => setComplexTags(data));
+      });
+    }
   };
 
   return (
@@ -114,20 +133,28 @@ const ComplexTagging = () => {
       </h2>
 
       <hr className="mb-4" />
-      <ComplexTagTable
-        columns={[
-          { name: 'complexTagName', accessor: 'tagName', sortValue: 'tagName', key: 'tagName' },
-          { name: 'complexTagFormula', accessor: 'formula', sortValue: 'formula', key: 'formula' },
-          { name: 'complexTagVariables', accessor: 'tags', sortValue: 'tags', key: 'tags' },
-          { name: 'access', accessor: 'access', sortValue: 'access', key: 'access' }
-        ]}
-        data={complexTags}
-        clickHandler={dataEl => {
-          setSelectedComplexTag(dataEl);
-          setViewCreateComplexTagPanel(true);
-        }}
-        showAccessPanelHandler={setShowTagAccessWithSelectedTag}
-      />
+      {complexTags && complexTags?.length > 0 ? (
+        <ComplexTagTable
+          columns={[
+            { name: 'complexTagName', accessor: 'tagName', sortValue: 'tagName', key: 'tagName' },
+            { name: 'complexTagFormula', accessor: 'formula', sortValue: 'formula', key: 'formula' },
+            { name: 'complexTagVariables', accessor: 'complexTagVariables', sortValue: 'tags', key: 'tags' },
+            { name: 'owners', accessor: 'owners', sortValue: 'owners', key: 'owners' },
+            { name: 'access', accessor: 'access', sortValue: 'access', key: 'access' },
+            { name: 'delete', accessor: 'delete', sortValue: 'delete', key: 'delete' }
+          ]}
+          data={complexTags}
+          clickHandler={dataEl => {
+            setSelectedComplexTag(dataEl);
+            setViewCreateComplexTagPanel(true);
+          }}
+          showAccessPanelHandler={setShowTagAccessWithSelectedTag}
+          setShowDeleteTagPanel={setShowDeleteTagPanel}
+          setSelectedTagToDelete={setSelectedTagToDelete}
+        />
+      ) : (
+        <p>No data found.</p>
+      )}
       {showCreateComplexTagPanel && (
         <MetadataFormulaPanel
           showModal={showCreateComplexTagPanel}
@@ -160,6 +187,14 @@ const ComplexTagging = () => {
           selectedMetadata={selectedMetadata}
           setTagGrantsUpdated={setTagGrantsUpdated}
           type={'complexTag'}
+        />
+      )}
+      {showDeleteTagPanel && (
+        <DeleteTag
+          showDeleteTagPanel={showDeleteTagPanel}
+          setShowDeleteTagPanel={setShowDeleteTagPanel}
+          proceedToDeleteTag={proceedToDeleteComplexTag}
+          selectedTagToDelete={selectedTagToDelete}
         />
       )}
     </>

@@ -2,10 +2,16 @@ import { Feature, MultiPolygon, Polygon, Properties, Point } from '@turf/turf';
 import { LngLatBounds } from 'mapbox-gl';
 import { AnalysisLayer } from '../components/Simulation';
 import { TagWithFormulaSymbol } from '../components/MetadataFormula/MetadataFormulaPanel';
+import { Owners } from '../../metaDataImport/type';
 
 export enum HierarchyType {
   GENERATED = 'generated',
   SAVED = 'saved'
+}
+
+export interface TagResponse {
+  entityTagResponses: EntityTag[];
+  complexTagDtos: ComplexTagResponse[];
 }
 
 export interface EntityTag {
@@ -38,10 +44,14 @@ export class BaseTag {
   resultingOrgs?: OrgGrant[];
   resultingUsers?: UserGrant[];
   selected?: boolean;
+  owner: boolean;
+  owners: Owners[];
 
   constructor(
     identifier: string,
     tag: string,
+    owner: boolean,
+    owners: Owners[],
     publicval?: boolean,
     tagAccGrantsOrganization?: OrgGrant[],
     tagAccGrantsUser?: UserGrant[],
@@ -57,6 +67,8 @@ export class BaseTag {
     this.resultingUsers = resultingUsers;
     this.resultingOrgs = resultingOrgs;
     this.selected = selected;
+    this.owner = owner;
+    this.owners = owners;
   }
 }
 
@@ -72,6 +84,8 @@ export class EntityTagResponse extends BaseTag {
   constructor(
     identifier: string,
     tag: string,
+    owner: boolean,
+    owners: Owners[],
     definition: string,
     valueType: string,
     aggregate: boolean,
@@ -89,6 +103,8 @@ export class EntityTagResponse extends BaseTag {
     super(
       identifier,
       tag,
+      owner,
+      owners,
       publicVal,
       tagAccGrantsOrganization,
       tagAccGrantsUser,
@@ -122,6 +138,8 @@ export class ComplexTagResponse extends BaseTag {
     tagName: string,
     tags: TagWithFormulaSymbol[],
     formula: string,
+    owner: boolean,
+    owners: Owners[],
     calculateValue?: number,
     publicVal?: boolean,
     tagAccGrantsOrganization?: OrgGrant[],
@@ -130,7 +148,18 @@ export class ComplexTagResponse extends BaseTag {
     resultingOrgs?: OrgGrant[],
     resultingUsers?: UserGrant[]
   ) {
-    super(id, tagName, publicVal, tagAccGrantsOrganization, tagAccGrantsUser, resultingOrgs, resultingUsers, selected);
+    super(
+      id,
+      tagName,
+      owner,
+      owners,
+      publicVal,
+      tagAccGrantsOrganization,
+      tagAccGrantsUser,
+      resultingOrgs,
+      resultingUsers,
+      selected
+    );
     this.id = id;
     this.hierarchyId = hierarchyId;
     this.hierarchyType = hierarchyType;

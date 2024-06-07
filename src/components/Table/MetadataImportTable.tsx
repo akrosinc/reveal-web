@@ -7,6 +7,8 @@ import { Column, Row, useExpanded, useTable } from 'react-table';
 import { MetadataFileImportResponse } from '../../features/metaDataImport/type';
 import MetadataEntityTagTable from './MetadataEntityTagTable';
 import { EntityTagResponse } from '../../features/planSimulation/providers/types';
+import { TAG_ACCESS_OVERRIDE } from '../../constants';
+import { useKeycloak } from '@react-keycloak/web';
 
 interface Props {
   data: MetadataFileImportResponse[];
@@ -18,7 +20,7 @@ interface Props {
 
 const MetadataImportTable = ({ data, setMetadataList }: Props) => {
   const isDarkMode = useAppSelector(state => state.darkMode.value);
-
+  const { keycloak } = useKeycloak();
   const columnsForMetadataTables = React.useMemo<Column<EntityTagResponse>[]>(
     () => [
       {
@@ -54,7 +56,8 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
       { Header: 'tag', accessor: 'tag' },
       { Header: 'type', accessor: 'valueType' },
       { Header: 'aggregate', accessor: 'aggregate' },
-
+      { Header: 'owner', accessor: 'owner' },
+      { Header: 'owners', accessor: 'owners' },
       { Header: 'isPublic', accessor: 'public' },
       { Header: 'orgGrants' },
       { Header: 'userGrants' },
@@ -114,6 +117,8 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
       { Header: 'uploadDate', accessor: 'uploadDatetime' },
       { Header: 'status', accessor: 'status' },
       { Header: 'uploadedBy', accessor: 'uploadedBy' },
+      { Header: 'owner', accessor: 'owner' },
+      { Header: 'owners', accessor: 'owners' },
       { Header: 'selected', accessor: 'selected' }
     ],
     []
@@ -152,6 +157,8 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
               tagAccGrantsUser: entityTag.tagAccGrantsUser,
               tagAccGrantsOrganization: entityTag.tagAccGrantsOrganization,
               public: entityTag.public,
+              owners: entityTag.owners,
+              owner: entityTag.owner,
               children: entityTag.children?.map(child => {
                 return {
                   tag: child.tag,
@@ -166,7 +173,9 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
                   created: child.created,
                   tagAccGrantsUser: child.tagAccGrantsUser,
                   tagAccGrantsOrganization: child.tagAccGrantsOrganization,
-                  public: child.public
+                  public: child.public,
+                  owners: child.owners,
+                  owner: child.owner
                 };
               })
             });
@@ -210,22 +219,40 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
             <>
               <tr {...row.getRowProps()}>
                 {row.cells.map(cell => {
-                  return cell.column.id === 'selected' ? (
-                    <td {...cell.getCellProps()}>
-                      <FormCheck
-                        checked={cell.row.original.selected}
-                        onChange={evt => setSelected(evt, row.original.identifier)}
-                      />
-                    </td>
-                  ) : (
-                    <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                  );
+                  if (cell.column.id === 'selected') {
+                    return (
+                      <td {...cell.getCellProps()}>
+                        {cell.row.original.owner || keycloak.hasRealmRole(TAG_ACCESS_OVERRIDE) ? (
+                          <FormCheck
+                            checked={cell.row.original.selected}
+                            onChange={evt => setSelected(evt, row.original.identifier)}
+                          />
+                        ) : (
+                          ''
+                        )}
+                      </td>
+                    );
+                  } else if (cell.column.id === 'owner') {
+                    return <td {...cell.getCellProps()}>{cell.row.original.owner ? 'true' : 'false'}</td>;
+                  } else if (cell.column.id === 'owners') {
+                    return (
+                      <td {...cell.getCellProps()}>
+                        {cell.row.original.owners.map(owner => (
+                          <p>{owner.username}</p>
+                        ))}
+                      </td>
+                    );
+                  } else {
+                    return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>;
+                  }
                 })}
               </tr>
 
               {(row as any).isExpanded ? (
                 <tr>
-                  <td colSpan={row.cells?.length}>{renderRowSubComponent(row)}</td>
+                  <td colSpan={row.cells?.length} style={{ backgroundColor: '#f3f8fc' }}>
+                    {renderRowSubComponent(row)}
+                  </td>
                 </tr>
               ) : (
                 ''

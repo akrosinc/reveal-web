@@ -63,3 +63,6 @@ export const REVEAL_SIMULATION_EDIT = 'reveal_simulation_edit';
 
 //METADATA IMPORT
 export const METADATA_FILE_IMPORT = 'metadata_file_import';
+
+//METADATA IMPORT
+export const TAG_ACCESS_OVERRIDE = 'tag_access_override';

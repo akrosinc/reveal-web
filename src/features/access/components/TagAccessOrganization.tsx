@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { Accordion, Col, FormCheck, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
 import { getOrganizationCount, getOrganizationList, getUserList } from '../api';
-import { OrganizationModel } from '../providers/types';
+import { Code, OrganizationModel } from '../providers/types';
 import Paginator from '../../../components/Pagination';
 import { PAGINATION_DEFAULT_SIZE } from '../../../constants';
 import { DebounceInput } from 'react-debounce-input';
@@ -97,7 +97,21 @@ const TagAccessOrganization = ({ metadata, updatedMetadata, setUpdatedMetadata }
             }
           });
 
-          let orgListAdapted: OrganizationModelAdapted[] = organizations.content.map(org => {
+          let orgListAmended: OrganizationModel[] = [
+            ...organizations.content,
+            {
+              active: true,
+              headOf: [],
+              type: {
+                code: Code.Team,
+                valueCodableConcept: 'Users'
+              },
+              name: 'Unassigned Users',
+              identifier: 'unassigned',
+              partOf: 'unassigned'
+            }
+          ];
+          let orgListAdapted: OrganizationModelAdapted[] = orgListAmended.map(org => {
             return {
               active: org.active,
               headOf: addUserToHeadOf(org.headOf, orgUserList),
@@ -294,7 +308,6 @@ const TagAccessOrganization = ({ metadata, updatedMetadata, setUpdatedMetadata }
         }}
       />
       <hr className="my-4" />
-      <p>makePublic: {String(makePublic)}</p>
       <h5>
         {t('organizationPage.organization')} ({organizationCount})
       </h5>

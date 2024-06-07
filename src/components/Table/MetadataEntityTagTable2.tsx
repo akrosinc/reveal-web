@@ -62,6 +62,8 @@ const MetadataEntityTagTable2 = ({ data, setMetadataList, metadataList, columns 
             tagAccGrantsUser: entityTag.tagAccGrantsUser,
             tagAccGrantsOrganization: entityTag.tagAccGrantsOrganization,
             public: entityTag.public,
+            owners: entityTag.owners,
+            owner: entityTag.owner,
             children: entityTag.children?.map(child => {
               return {
                 tag: child.tag,
@@ -76,7 +78,9 @@ const MetadataEntityTagTable2 = ({ data, setMetadataList, metadataList, columns 
                 created: child.created,
                 tagAccGrantsUser: child.tagAccGrantsUser,
                 tagAccGrantsOrganization: child.tagAccGrantsOrganization,
-                public: child.public
+                public: child.public,
+                owners: child.owners,
+                owner: child.owner
               };
             })
           });

@@ -4,16 +4,29 @@ import { Button, Table } from 'react-bootstrap';
 import { useAppSelector } from '../../store/hooks';
 import { t } from 'i18next';
 import { ComplexTagResponse } from '../../features/planSimulation/providers/types';
+import { TagToDelete } from '../../features/tagging/components/ComplexTagging';
+import { useKeycloak } from '@react-keycloak/web';
+import { TAG_ACCESS_OVERRIDE } from '../../constants';
 
 interface Props {
   columns: { name: string; sortValue?: string; accessor: string; key: string }[];
   data: ComplexTagResponse[] | undefined;
   clickHandler: (identifier: any) => void;
   showAccessPanelHandler: (tag: any) => void;
+  setShowDeleteTagPanel: (show: boolean) => void;
+  setSelectedTagToDelete: (tag: TagToDelete) => void;
 }
 
 //TODO: Complete sorting
-const ComplexTagTable = ({ columns, data, clickHandler, showAccessPanelHandler }: Props) => {
+const ComplexTagTable = ({
+  columns,
+  data,
+  clickHandler,
+  showAccessPanelHandler,
+  setShowDeleteTagPanel,
+  setSelectedTagToDelete
+}: Props) => {
+  const { keycloak } = useKeycloak();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   return (
@@ -36,7 +49,7 @@ const ComplexTagTable = ({ columns, data, clickHandler, showAccessPanelHandler }
                   if (el.accessor) {
                     let val = dataEl[el.accessor];
 
-                    if (Array.isArray(val) && val.length) {
+                    if (el.accessor === 'complexTagVariables') {
                       return (
                         <td key={index}>
                           <Button onClick={() => clickHandler(dataEl)}>{'View Variables'}</Button>
@@ -45,19 +58,52 @@ const ComplexTagTable = ({ columns, data, clickHandler, showAccessPanelHandler }
                     } else if (el.accessor === 'access') {
                       return (
                         <td key={index}>
-                          <Button
-                            onClick={() => {
-                              if (el.accessor) {
-                                showAccessPanelHandler(dataEl);
-                              }
-                            }}
-                          >
-                            {'Grant Access'}
-                          </Button>
+                          {dataEl['owner'] || keycloak.hasRealmRole(TAG_ACCESS_OVERRIDE) ? (
+                            <Button
+                              onClick={() => {
+                                if (el.accessor) {
+                                  showAccessPanelHandler(dataEl);
+                                }
+                              }}
+                            >
+                              {'Grant Access'}
+                            </Button>
+                          ) : null}
+                        </td>
+                      );
+                    } else if (el.accessor === 'delete') {
+                      return (
+                        <td key={index}>
+                          {dataEl['owner'] || keycloak.hasRealmRole(TAG_ACCESS_OVERRIDE) ? (
+                            <Button
+                              onClick={() => {
+                                if (el.accessor) {
+                                  console.log('dataEl', dataEl);
+                                  setSelectedTagToDelete({
+                                    id: dataEl['id'] as string,
+                                    type: 'ComplexTag',
+                                    tag: dataEl['tagName'] as string
+                                  });
+                                  setShowDeleteTagPanel(true);
+                                }
+                              }}
+                            >
+                              {'Delete Tag'}
+                            </Button>
+                          ) : null}
+                        </td>
+                      );
+                    }
+                    if (el.accessor === 'owners') {
+                      return (
+                        <td key={index}>
+                          {dataEl['owners'].map((owner: any) => (
+                            <p>{owner.username}</p>
+                          ))}
                         </td>
                       );
                     } else {
-                      return <td key={index}>{val.toString()}</td>;
+                      return <td key={index}>{val?.toString()}</td>;
                     }
                   }
                   return null;

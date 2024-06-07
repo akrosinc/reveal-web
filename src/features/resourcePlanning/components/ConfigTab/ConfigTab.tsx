@@ -76,7 +76,7 @@ const ConfigTab = () => {
     if (selectedHierarchy && selectedHierarchy.identifier) {
       getDataAssociatedEntityTags(selectedHierarchy.identifier)
         .then(res => {
-          setEntityTags(res);
+          setEntityTags(res.entityTagResponses);
         })
         .catch(err => toast.error(err));
     }
