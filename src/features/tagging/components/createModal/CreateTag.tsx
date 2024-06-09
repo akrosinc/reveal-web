@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { BOOLEAN_STRING_AGGREGATION, DATA_AGGREGATION, NUMBER_AGGREGATION } from '../../../../constants';
 import { createTag } from '../../api';
 import { TagCreateRequest } from '../../providers/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -15,7 +14,6 @@ const CreateTag = ({ closeHandler }: Props) => {
   const {
     register,
     handleSubmit,
-    watch,
     control,
     formState: { errors }
   } = useForm<TagCreateRequest>({
@@ -27,26 +25,6 @@ const CreateTag = ({ closeHandler }: Props) => {
     control,
     name: 'tags'
   });
-
-  const selectedValueType = watch('valueType');
-
-  useEffect(() => {
-    let selected: string[] = [];
-    switch (selectedValueType) {
-      case 'number':
-        selected = NUMBER_AGGREGATION;
-        break;
-      case 'string':
-        selected = BOOLEAN_STRING_AGGREGATION;
-        break;
-      case 'date':
-        selected = DATA_AGGREGATION;
-        break;
-      case 'boolean':
-        selected = BOOLEAN_STRING_AGGREGATION;
-        break;
-    }
-  }, [selectedValueType]);
 
   const submitHandler = (form: TagCreateRequest) => {
     form.tags.forEach(tag => {

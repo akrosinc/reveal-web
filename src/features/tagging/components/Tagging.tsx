@@ -16,6 +16,7 @@ import TagAccess from '../../access/TagAccess';
 import { TagToDelete } from './ComplexTagging';
 import DeleteTag from './DeleteTag';
 import { deleteSimpleTags } from '../../planSimulation/api';
+import RemoveTagAccess from '../../access/RemoveTagAccess';
 
 const columnsNotForDisplay = [
   'identifier',
@@ -32,7 +33,8 @@ const columnsNotForDisplay = [
   'fieldType',
   'referenceFields',
   'generationFormula',
-  'owner'
+  'owner',
+  'children'
 ];
 
 const Tagging = () => {
@@ -42,6 +44,7 @@ const Tagging = () => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [showTagAccess, setShowTagAccess] = useState(false);
+  const [showRemoveAccess, setShowRemoveAccess] = useState(false);
   const [selectedMetadata, setSelectedMetadata] = useState<EntityTagResponse[]>([]);
   const [showDeleteTagPanel, setShowDeleteTagPanel] = useState(false);
   const [selectedTagToDelete, setSelectedTagToDelete] = useState<TagToDelete>();
@@ -50,6 +53,15 @@ const Tagging = () => {
   const loadData = useCallback((size: number, page: number, filter?: string, field?: string, direction?: boolean) => {
     getAllGlobalTags(size, page, filter, field, direction)
       .then(res => {
+        let entityTagsNotAggregate: Tag[] | undefined = res.content?.filter(entityTag => !entityTag.aggregate);
+
+        let entityTagWithChildren = entityTagsNotAggregate?.map(entityTag => {
+          entityTag.children = res.content?.filter(entityTagEvent => {
+            return entityTagEvent.aggregate && entityTagEvent.referencedTag === entityTag.identifier;
+          });
+          return entityTag;
+        });
+        res.content = entityTagWithChildren;
         setTagList(res);
       })
       .catch(err => toast.error(err));
@@ -60,21 +72,15 @@ const Tagging = () => {
   }, [loadData]);
 
   useEffect(() => {
-    console.log(selectedTagToDelete);
-    let tags = tagList?.content
-      .filter(tag => {
-        return tag.referencedTag === selectedTagToDelete?.id;
-      })
-      .map(tag => {
-        return {
-          id: tag.identifier,
-          type: 'Simple',
-          tag: tag.tag
-        };
-      });
-    console.log(tags);
-    setSelectedTagsToDelete(tags);
-  }, [selectedTagToDelete, tagList]);
+    if (selectedTagToDelete) {
+      let tags = [];
+      tags.push(selectedTagToDelete);
+      if (selectedTagToDelete.children) {
+        tags.push(...selectedTagToDelete.children);
+      }
+      setSelectedTagsToDelete(tags);
+    }
+  }, [selectedTagToDelete]);
 
   const paginationHandler = (size: number, page: number) => {
     loadData(size, page, currentSearchInput, currentSortField, currentSortDirection);
@@ -111,34 +117,40 @@ const Tagging = () => {
       sortValue: 'access'
     });
     columns.push({
+      name: 'removeAccess',
+      accessor: 'removeAccess',
+      sortValue: 'removeAccess'
+    });
+    columns.push({
       name: 'delete',
       accessor: 'delete',
       sortValue: 'delete'
     });
+
     return columns;
   };
-  const setShowTagAccessWithSelectedTag = (tag: any) => {
+  const setShowTagAccessWithSelectedTag = (tag: EntityTagResponse) => {
     setShowTagAccess(true);
 
-    setSelectedMetadata([
-      {
-        identifier: tag.identifier,
-        tag: tag.tag,
-        definition: tag.definition,
-        valueType: tag.valueType,
-        aggregate: tag.aggregate,
-        created: tag.created,
-        metadataImportId: tag.metadataImportId,
-        tagAccGrantsUser: tag.tagAccGrantsUser,
-        tagAccGrantsOrganization: tag.tagAccGrantsOrganization,
-        owner: tag.owner,
-        owners: tag.owners
-      }
-    ]);
+    console.log('is it here', tag instanceof EntityTagResponse);
+
+    setSelectedMetadata([tag]);
   };
+
+  const setShowRemoveAccessWithSelectedTag = (tag: EntityTagResponse) => {
+    setShowRemoveAccess(true);
+
+    setSelectedMetadata([tag]);
+  };
+
+  useEffect(() => {
+    console.log('selectedMetadata', selectedMetadata);
+    console.log('selectedMetadata', selectedMetadata);
+  }, [selectedMetadata]);
 
   const setTagGrantsUpdated = () => {
     setShowTagAccess(false);
+    setShowRemoveAccess(false);
     loadData(PAGINATION_DEFAULT_SIZE, 0);
   };
 
@@ -186,6 +198,7 @@ const Tagging = () => {
             showAccessPanelHandler={setShowTagAccessWithSelectedTag}
             setShowDeleteTagPanel={setShowDeleteTagPanel}
             setSelectedTagToDelete={setSelectedTagToDelete}
+            showRemoveAccessPanelHandler={setShowRemoveAccessWithSelectedTag}
           />
           <Paginator
             page={tagList.pageable.pageNumber}
@@ -209,7 +222,16 @@ const Tagging = () => {
       {showTagAccess && (
         <TagAccess
           showTagAccess={showTagAccess}
-          setShowTagAccess={setShowTagAccess}
+          setShowTagAccess={setTagGrantsUpdated}
+          selectedMetadata={selectedMetadata}
+          setTagGrantsUpdated={setTagGrantsUpdated}
+          type={'tag'}
+        />
+      )}
+      {showRemoveAccess && (
+        <RemoveTagAccess
+          showRemoveAccess={showRemoveAccess}
+          setShowRemoveAccess={setTagGrantsUpdated}
           selectedMetadata={selectedMetadata}
           setTagGrantsUpdated={setTagGrantsUpdated}
           type={'tag'}

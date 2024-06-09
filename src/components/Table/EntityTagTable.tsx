@@ -9,6 +9,7 @@ import { TagUpdateRequest } from '../../features/tagging/providers/types';
 import { TagToDelete } from '../../features/tagging/components/ComplexTagging';
 import { TAG_ACCESS_OVERRIDE } from '../../constants';
 import { useKeycloak } from '@react-keycloak/web';
+import { EntityTagResponse } from '../../features/planSimulation/providers/types';
 
 interface Props {
   columns: { name: string; sortValue?: string; accessor?: string; key?: string }[];
@@ -17,7 +18,8 @@ interface Props {
   clickHandler?: (identifier: any) => void;
   clickAccessor?: string;
   updateTag: (tag: TagUpdateRequest) => void;
-  showAccessPanelHandler: (tag: any) => void;
+  showAccessPanelHandler: (tag: EntityTagResponse) => void;
+  showRemoveAccessPanelHandler: (tag: any) => void;
   setShowDeleteTagPanel: (show: boolean) => void;
   setSelectedTagToDelete: (tag: TagToDelete) => void;
 }
@@ -42,12 +44,14 @@ const EntityTagTable = ({
   updateTag,
   showAccessPanelHandler,
   setShowDeleteTagPanel,
-  setSelectedTagToDelete
+  setSelectedTagToDelete,
+  showRemoveAccessPanelHandler
 }: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
   const isDarkMode = useAppSelector(state => state.darkMode.value);
   const { keycloak } = useKeycloak();
+
   return (
     <Table bordered responsive hover variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="border border-2">
@@ -128,11 +132,73 @@ const EntityTagTable = ({
                           <Button
                             onClick={() => {
                               if (el.accessor) {
-                                showAccessPanelHandler(dataEl);
+                                console.log(dataEl);
+                                let entityTag = dataEl as EntityTagResponse;
+
+                                let entitYobj = new EntityTagResponse(
+                                  entityTag.identifier,
+                                  entityTag.tag,
+                                  entityTag.owner,
+                                  entityTag.owners,
+                                  entityTag.definition,
+                                  entityTag.valueType,
+                                  entityTag.aggregate,
+                                  entityTag.created,
+                                  entityTag.metadataImportId,
+                                  entityTag.referencedTag,
+                                  entityTag.tagAccGrantsOrganization,
+                                  entityTag.tagAccGrantsUser,
+                                  entityTag.public,
+                                  entityTag.children,
+                                  entityTag.selected,
+                                  entityTag.resultingOrgs,
+                                  entityTag.resultingUsers
+                                );
+
+                                console.log('is it?', entitYobj instanceof EntityTagResponse);
+                                showAccessPanelHandler(entitYobj);
                               }
                             }}
                           >
                             {'Grant Access'}
+                          </Button>
+                        </td>
+                      ) : null;
+                    } else if (el.name === 'removeAccess') {
+                      return dataEl['owner'] || keycloak.hasRealmRole(TAG_ACCESS_OVERRIDE) ? (
+                        <td key={index}>
+                          <Button
+                            variant={'outline-primary'}
+                            onClick={() => {
+                              if (el.accessor) {
+                                console.log(dataEl);
+                                let entityTag = dataEl as EntityTagResponse;
+
+                                let entitYobj = new EntityTagResponse(
+                                  entityTag.identifier,
+                                  entityTag.tag,
+                                  entityTag.owner,
+                                  entityTag.owners,
+                                  entityTag.definition,
+                                  entityTag.valueType,
+                                  entityTag.aggregate,
+                                  entityTag.created,
+                                  entityTag.metadataImportId,
+                                  entityTag.referencedTag,
+                                  entityTag.tagAccGrantsOrganization,
+                                  entityTag.tagAccGrantsUser,
+                                  entityTag.public,
+                                  entityTag.children,
+                                  entityTag.selected,
+                                  entityTag.resultingOrgs,
+                                  entityTag.resultingUsers
+                                );
+
+                                showRemoveAccessPanelHandler(entitYobj);
+                              }
+                            }}
+                          >
+                            {'Remove Access'}
                           </Button>
                         </td>
                       ) : null;
@@ -147,21 +213,30 @@ const EntityTagTable = ({
                     } else if (el.accessor === 'delete') {
                       return (
                         <td key={index}>
-                          {(dataEl['owner'] && !dataEl['aggregate']) || keycloak.hasRealmRole(TAG_ACCESS_OVERRIDE) ? (
+                          {(dataEl['owner'] || keycloak.hasRealmRole(TAG_ACCESS_OVERRIDE)) && !dataEl['aggregate'] ? (
                             <Button
+                              disabled={dataEl['deleting']}
                               onClick={() => {
                                 if (el.accessor) {
                                   console.log('dataEl', dataEl);
+
                                   setSelectedTagToDelete({
                                     id: dataEl['identifier'] as string,
-                                    type: 'ComplexTag',
-                                    tag: dataEl['tag'] as string
+                                    type: 'SimpleTag',
+                                    tag: dataEl['tag'] as string,
+                                    children: (dataEl['children'] as EntityTagResponse[]).map(tag => {
+                                      return {
+                                        id: tag['identifier'] as string,
+                                        type: 'SimpleTag',
+                                        tag: tag['tag'] as string
+                                      };
+                                    })
                                   });
                                   setShowDeleteTagPanel(true);
                                 }
                               }}
                             >
-                              {'Delete Tag'}
+                              {dataEl['deleting'] ? 'Deleting Tag' : 'Delete Tag'}
                             </Button>
                           ) : null}
                         </td>

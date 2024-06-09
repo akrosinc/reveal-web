@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Table, FormCheck, Col, Row as ReactRow } from 'react-bootstrap';
 import { useTable, useExpanded, Column, Row } from 'react-table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -32,8 +32,6 @@ const TagAccessOrgUserExpandingTable = ({
   setSelectedUsers,
   makePublic
 }: Props) => {
-  const [sortDirection, setSortDirection] = useState(false);
-  const [activeSortField, setActiveSortField] = useState('');
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const expandAll = useRef<HTMLSpanElement>();
@@ -387,30 +385,10 @@ const TagAccessOrgUserExpandingTable = ({
           {headerGroups.map(headerGroup => (
             <tr {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
-                <th
-                  id={column.id + '-sort'}
-                  style={{ width: column.id === 'expander' ? '37px' : 'auto' }}
-                  onClick={() => {
-                    if (column.id !== 'expander') {
-                      setSortDirection(!sortDirection);
-                      setActiveSortField(column.Header?.toString() ?? '');
-                      sortHandler(column.id, sortDirection);
-                    }
-                  }}
-                  {...column.getHeaderProps()}
-                >
+                <th {...column.getHeaderProps()}>
                   {checkColumn(column)
                     ? t('reportPage.table.' + column.Header?.toString(), column.Header?.toString())
                     : ''}
-                  {activeSortField === column.render('Header') ? (
-                    sortDirection ? (
-                      <FontAwesomeIcon className="ms-1" icon="sort-up" />
-                    ) : (
-                      <FontAwesomeIcon className="ms-1" icon="sort-down" />
-                    )
-                  ) : column.id !== 'expander' ? (
-                    <FontAwesomeIcon className="ms-1" icon="sort" />
-                  ) : null}
                 </th>
               ))}
             </tr>

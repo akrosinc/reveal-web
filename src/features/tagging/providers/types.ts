@@ -11,6 +11,9 @@ export interface Tag {
   owner: boolean;
   owners: Owners[];
   referencedTag: String;
+  aggregate: boolean;
+  children?: Tag[];
+  deleting: boolean;
 }
 
 export interface TagCreateRequest {

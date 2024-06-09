@@ -13,6 +13,7 @@ import MetadataImportTable from '../../../../components/Table/MetadataImportTabl
 import { MetadataFileImportResponse } from '../../type';
 import Paginator from '../../../../components/Pagination';
 import TagAccess from '../../../access/TagAccess';
+import RemoveTagAccess from '../../../access/RemoveTagAccess';
 
 const MetaFileImport = () => {
   const [open, setOpen] = useState(false);
@@ -21,6 +22,7 @@ const MetaFileImport = () => {
   const [metadataImportList, setMetadataImportList] = useState<MetadataFileImportResponse[]>([]);
   const [selectedMetadata, setSelectedMetadata] = useState<EntityTagResponse[]>([]);
   const [selectedMetaImport, setSelectedMetaImport] = useState<any>();
+  const [showRemoveAccess, setShowRemoveAccess] = useState(false);
   // const [setEntityTagsCreated] = useState<EntityTag[]>();
 
   const { t } = useTranslation();
@@ -133,6 +135,7 @@ const MetaFileImport = () => {
 
   const setTagGrantsUpdated = () => {
     setOpenAccess(false);
+    setShowRemoveAccess(false);
     loadData(PAGINATION_DEFAULT_SIZE, 0);
   };
 
@@ -157,6 +160,17 @@ const MetaFileImport = () => {
                 style={{ float: 'right' }}
               >
                 Grant Access
+              </Button>
+            </AuthorizedElement>
+            <AuthorizedElement roles={[METADATA_FILE_IMPORT]}>
+              <Button
+                variant={'outline-primary'}
+                disabled={selectedMetadata.length === 0}
+                onClick={() => setShowRemoveAccess(!showRemoveAccess)}
+                className={'mx-2'}
+                style={{ float: 'right' }}
+              >
+                Remove Access
               </Button>
             </AuthorizedElement>
           </Col>
@@ -204,10 +218,19 @@ const MetaFileImport = () => {
           selectedFile={selectedMetaImport}
         />
       )}
+      {showRemoveAccess && (
+        <RemoveTagAccess
+          showRemoveAccess={showRemoveAccess}
+          setShowRemoveAccess={setTagGrantsUpdated}
+          selectedMetadata={selectedMetadata}
+          setTagGrantsUpdated={setTagGrantsUpdated}
+          type={'tag'}
+        />
+      )}
       {openAccess && (
         <TagAccess
           showTagAccess={openAccess}
-          setShowTagAccess={setOpenAccess}
+          setShowTagAccess={setTagGrantsUpdated}
           setTagGrantsUpdated={setTagGrantsUpdated}
           selectedMetadata={selectedMetadata}
           type={'tag'}

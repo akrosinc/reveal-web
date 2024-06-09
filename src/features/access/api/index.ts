@@ -23,6 +23,25 @@ export const getOrganizationList = async (
   return data;
 };
 
+export const searchOrganizationList = async (
+  size: number,
+  page: number,
+  search?: string,
+  sortField?: string,
+  direction?: boolean
+): Promise<PageableModel<OrganizationModel>> => {
+  const data = await api
+    .get<PageableModel<OrganizationModel>>(
+      ORGANIZATION +
+        '/search' +
+        `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${
+          sortField !== undefined ? sortField : ''
+        },${direction ? 'asc' : 'desc'}`
+    )
+    .then(response => response.data);
+  return data;
+};
+
 export const getOrganizationCount = async (): Promise<{ count: number }> => {
   const data = await api.get<{ count: number }>(ORGANIZATION + '?_summary=COUNT').then(response => response.data);
   return data;
@@ -32,10 +51,21 @@ export const updateEntityTagGrants = async (tags: EntityTagAccessRequest[]): Pro
   const data = await api.post<EntityTagResponse[]>(ENTITY_TAG + `/updateGrants`, tags).then(response => response.data);
   return data;
 };
+export const removeEntityTagGrants = async (tags: EntityTagAccessRequest[]): Promise<EntityTagResponse[]> => {
+  const data = await api.post<EntityTagResponse[]>(ENTITY_TAG + `/removeGrants`, tags).then(response => response.data);
+  return data;
+};
 
 export const updateComplexTagGrants = async (tags: ComplexTagAccessRequest[]): Promise<EntityTagResponse[]> => {
   const data = await api
     .post<EntityTagResponse[]>(ENTITY_TAG + `/updateComplexTagGrants`, tags)
+    .then(response => response.data);
+  return data;
+};
+
+export const removeComplexTagGrants = async (tags: ComplexTagAccessRequest[]): Promise<EntityTagResponse[]> => {
+  const data = await api
+    .post<EntityTagResponse[]>(ENTITY_TAG + `/removeComplexTagGrants`, tags)
     .then(response => response.data);
   return data;
 };

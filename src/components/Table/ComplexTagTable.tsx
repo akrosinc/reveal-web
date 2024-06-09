@@ -13,6 +13,7 @@ interface Props {
   data: ComplexTagResponse[] | undefined;
   clickHandler: (identifier: any) => void;
   showAccessPanelHandler: (tag: any) => void;
+  showRemoveAccessPanelHandler: (tag: any) => void;
   setShowDeleteTagPanel: (show: boolean) => void;
   setSelectedTagToDelete: (tag: TagToDelete) => void;
 }
@@ -24,7 +25,8 @@ const ComplexTagTable = ({
   clickHandler,
   showAccessPanelHandler,
   setShowDeleteTagPanel,
-  setSelectedTagToDelete
+  setSelectedTagToDelete,
+  showRemoveAccessPanelHandler
 }: Props) => {
   const { keycloak } = useKeycloak();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
@@ -67,6 +69,23 @@ const ComplexTagTable = ({
                               }}
                             >
                               {'Grant Access'}
+                            </Button>
+                          ) : null}
+                        </td>
+                      );
+                    } else if (el.accessor === 'removeAccess') {
+                      return (
+                        <td key={index}>
+                          {dataEl['owner'] || keycloak.hasRealmRole(TAG_ACCESS_OVERRIDE) ? (
+                            <Button
+                              variant={'outline-primary'}
+                              onClick={() => {
+                                if (el.accessor) {
+                                  showRemoveAccessPanelHandler(dataEl);
+                                }
+                              }}
+                            >
+                              {'Remove Access'}
                             </Button>
                           ) : null}
                         </td>

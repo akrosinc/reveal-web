@@ -1,19 +1,25 @@
 import { Button, Modal } from 'react-bootstrap';
 import React, { useEffect, useState } from 'react';
 import { BaseTag, EntityTagResponse } from '../planSimulation/providers/types';
-import { updateComplexTagGrants, updateEntityTagGrants } from './api';
+import { removeComplexTagGrants, removeEntityTagGrants } from './api';
 
 import TagAccessOrganization from './components/TagAccessOrganization';
 
 interface Props {
-  showTagAccess: boolean;
-  setShowTagAccess: (val: boolean) => void;
+  showRemoveAccess: boolean;
+  setShowRemoveAccess: (val: boolean) => void;
   selectedMetadata: BaseTag[];
   setTagGrantsUpdated: () => void;
   type: 'tag' | 'complexTag';
 }
 
-const TagAccess = ({ showTagAccess, setShowTagAccess, selectedMetadata, setTagGrantsUpdated, type }: Props) => {
+const RemoveTagAccess = ({
+  showRemoveAccess,
+  setShowRemoveAccess,
+  selectedMetadata,
+  setTagGrantsUpdated,
+  type
+}: Props) => {
   const [updatedMetadata, setUpdatedMetadata] = useState<BaseTag[]>([]);
 
   useEffect(() => {
@@ -21,14 +27,14 @@ const TagAccess = ({ showTagAccess, setShowTagAccess, selectedMetadata, setTagGr
   }, [selectedMetadata]);
 
   return (
-    <Modal show={showTagAccess} centered size={'xl'} onHide={() => setShowTagAccess(false)}>
-      <Modal.Header closeButton>Grant Access To Tags</Modal.Header>
+    <Modal show={showRemoveAccess} centered size={'xl'} onHide={() => setShowRemoveAccess(false)}>
+      <Modal.Header closeButton>Remove Access To Tags</Modal.Header>
       <Modal.Body>
         <TagAccessOrganization
           metadata={selectedMetadata}
           updatedMetadata={updatedMetadata}
           setUpdatedMetadata={setUpdatedMetadata}
-          addAccess={true}
+          addAccess={false}
         />
       </Modal.Body>
       <Modal.Footer>
@@ -64,11 +70,11 @@ const TagAccess = ({ showTagAccess, setShowTagAccess, selectedMetadata, setTagGr
                   });
                 });
 
-              updateEntityTagGrants(tags).then(() => {
+              removeEntityTagGrants(tags).then(() => {
                 setTagGrantsUpdated();
               });
             } else if (type === 'complexTag') {
-              updateComplexTagGrants(
+              removeComplexTagGrants(
                 updatedMetadata.map(meta => {
                   return {
                     id: meta.identifier,
@@ -85,11 +91,11 @@ const TagAccess = ({ showTagAccess, setShowTagAccess, selectedMetadata, setTagGr
         >
           submit
         </Button>
-        <Button id="close-button" variant="secondary" onClick={() => setShowTagAccess(false)}>
+        <Button id="close-button" variant="secondary" onClick={() => setShowRemoveAccess(false)}>
           Close
         </Button>
       </Modal.Footer>
     </Modal>
   );
 };
-export default TagAccess;
+export default RemoveTagAccess;

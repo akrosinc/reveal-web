@@ -11,9 +11,10 @@ interface Props {
   setMetadataList: (list: MetadataFileImportResponse[]) => void;
   metadataList: MetadataFileImportResponse[];
   columns: Column<BaseTag>[];
+  addAccess: boolean;
 }
 
-const MetadataEntityTagTable2 = ({ data, setMetadataList, metadataList, columns }: Props) => {
+const MetadataEntityTagTable2 = ({ data, setMetadataList, metadataList, columns, addAccess }: Props) => {
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const mapRows = useCallback((row: BaseTag): EntityTagResponse[] => {
@@ -154,22 +155,66 @@ const MetadataEntityTagTable2 = ({ data, setMetadataList, metadataList, columns 
                       </Row>
                     ))}
                   </td>
-                ) : cell.column.id === 'resultingOrgGrants' ? (
+                ) : cell.column.id === 'resultingOrgGrants' || cell.column.id === 'removeOrgGrants' ? (
                   <td {...cell.getCellProps()}>
                     {cellData.resultingOrgs?.map(org => (
                       <Row>
                         <Col>
-                          <div>{org.name}</div>
+                          {!addAccess ? (
+                            <div
+                              style={{
+                                color: cellData.tagAccGrantsOrganization?.map(user => user.name).includes(org.name)
+                                  ? 'red'
+                                  : ''
+                              }}
+                            >
+                              {org.name}
+                            </div>
+                          ) : (
+                            <div
+                              style={{
+                                color: !cellData.tagAccGrantsOrganization?.map(user => user.name).includes(org.name)
+                                  ? 'green'
+                                  : ''
+                              }}
+                            >
+                              {org.name}
+                            </div>
+                          )}
                         </Col>
                       </Row>
                     ))}
                   </td>
-                ) : cell.column.id === 'resultingUserGrants' ? (
+                ) : cell.column.id === 'resultingUserGrants' || cell.column.id === 'removeUserGrants' ? (
                   <td {...cell.getCellProps()}>
                     {cellData.resultingUsers?.map(org => (
                       <Row>
                         <Col>
-                          <div>{org.username}</div>
+                          {/*<div>{org.username}</div>*/}
+
+                          {/*{addAccess ?  } */}
+
+                          {!addAccess ? (
+                            <div
+                              style={{
+                                color: cellData.tagAccGrantsUser?.map(user => user.username).includes(org.username)
+                                  ? 'red'
+                                  : ''
+                              }}
+                            >
+                              {org.username}
+                            </div>
+                          ) : (
+                            <div
+                              style={{
+                                color: !cellData.tagAccGrantsUser?.map(user => user.username).includes(org.username)
+                                  ? 'green'
+                                  : ''
+                              }}
+                            >
+                              {org.username}
+                            </div>
+                          )}
                         </Col>
                       </Row>
                     ))}

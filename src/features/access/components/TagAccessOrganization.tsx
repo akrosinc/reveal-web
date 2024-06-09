@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { Accordion, Col, FormCheck, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
-import { getOrganizationCount, getOrganizationList, getUserList } from '../api';
+import { getOrganizationCount, getUserList, searchOrganizationList } from '../api';
 import { Code, OrganizationModel } from '../providers/types';
 import Paginator from '../../../components/Pagination';
 import { PAGINATION_DEFAULT_SIZE } from '../../../constants';
@@ -35,9 +35,10 @@ interface Props {
   metadata: BaseTag[];
   updatedMetadata: BaseTag[];
   setUpdatedMetadata: React.Dispatch<React.SetStateAction<BaseTag[]>>;
+  addAccess: boolean;
 }
 
-const TagAccessOrganization = ({ metadata, updatedMetadata, setUpdatedMetadata }: Props) => {
+const TagAccessOrganization = ({ metadata, updatedMetadata, setUpdatedMetadata, addAccess }: Props) => {
   const [organizationAdaptedList, setOrganizationAdaptedList] = useState<OrganizationModelAdapted[]>([]);
   const [organizationAdaptedListPaged, setOrganizationAdaptedListPaged] =
     useState<PageableModel<OrganizationModelAdapted>>();
@@ -72,12 +73,70 @@ const TagAccessOrganization = ({ metadata, updatedMetadata, setUpdatedMetadata }
     return newList;
   }, []);
 
+  const columnsForMetadataTables = React.useMemo<Column<BaseTag>[]>(
+    () => [
+      {
+        // Build our expander column
+        id: 'expander', // Make sure it has an ID
+        Cell: ({ row }: { row: any }) =>
+          // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
+          // to build the toggle for expanding a row
+          {
+            return row.canExpand ? (
+              <span
+                {...row.getToggleRowExpandedProps({
+                  style: {
+                    // Use the row.depth property
+                    // and paddingLeft to indicate the depth
+                    // of the row
+                    paddingLeft: `${row.depth}rem`,
+                    paddingTop: '15px',
+                    paddingBottom: '15px',
+                    paddingRight: '15px'
+                  }
+                })}
+              >
+                {row.isExpanded ? (
+                  <FontAwesomeIcon className="ms-1" icon="chevron-down" />
+                ) : (
+                  <FontAwesomeIcon className="ms-1" icon="chevron-right" />
+                )}
+              </span>
+            ) : null;
+          }
+      },
+      { Header: 'tag', accessor: 'tag' },
+      { Header: 'isPublic', accessor: 'public' },
+      { Header: 'orgGrants' },
+      { Header: 'userGrants' },
+      { Header: addAccess ? 'resultingOrgGrants' : 'removeOrgGrants' },
+      { Header: addAccess ? 'resultingUserGrants' : 'removeUserGrants' }
+    ],
+    [addAccess]
+  );
+  const columnsForMetadataTablesWithoutChildren = React.useMemo<Column<BaseTag>[]>(
+    () => [
+      { Header: 'tag', accessor: 'tag' },
+      { Header: 'isPublic', accessor: 'public' },
+      { Header: 'orgGrants' },
+      { Header: 'userGrants' },
+      { Header: addAccess ? 'resultingOrgGrants' : 'removeOrgGrants' },
+      { Header: addAccess ? 'resultingUserGrants' : 'removeUserGrants' }
+    ],
+    [addAccess]
+  );
+  const getColumns = useCallback(() => {
+    return updatedMetadata != null && updatedMetadata.length === 1 && !(updatedMetadata[0] instanceof EntityTagResponse)
+      ? columnsForMetadataTablesWithoutChildren
+      : columnsForMetadataTables;
+  }, [updatedMetadata, columnsForMetadataTables, columnsForMetadataTablesWithoutChildren]);
+
   const loadData = useCallback(
     (size: number, page: number, searchData?: string, field?: string, sortDirection?: boolean) => {
       Promise.all([
-        getOrganizationList(size, page, searchData !== undefined ? searchData : '', field, sortDirection),
+        searchOrganizationList(size, page, searchData !== undefined ? searchData : '', field, sortDirection),
         getOrganizationCount(),
-        getUserList(1000, 0, '', 'username')
+        getUserList(1000, 0, searchData !== undefined ? searchData : '', 'username')
       ])
         .then(async ([organizations, { count }, userModels]) => {
           let orgUserList: OrgUserList = {};
@@ -241,69 +300,15 @@ const TagAccessOrganization = ({ metadata, updatedMetadata, setUpdatedMetadata }
     });
   }, [makePublic, metadata, setUpdatedMetadata]);
 
-  const columnsForMetadataTables = React.useMemo<Column<BaseTag>[]>(
-    () => [
-      {
-        // Build our expander column
-        id: 'expander', // Make sure it has an ID
-        Cell: ({ row }: { row: any }) =>
-          // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
-          // to build the toggle for expanding a row
-          {
-            return row.canExpand ? (
-              <span
-                {...row.getToggleRowExpandedProps({
-                  style: {
-                    // Use the row.depth property
-                    // and paddingLeft to indicate the depth
-                    // of the row
-                    paddingLeft: `${row.depth}rem`,
-                    paddingTop: '15px',
-                    paddingBottom: '15px',
-                    paddingRight: '15px'
-                  }
-                })}
-              >
-                {row.isExpanded ? (
-                  <FontAwesomeIcon className="ms-1" icon="chevron-down" />
-                ) : (
-                  <FontAwesomeIcon className="ms-1" icon="chevron-right" />
-                )}
-              </span>
-            ) : null;
-          }
-      },
-      { Header: 'tag', accessor: 'tag' },
-      { Header: 'isPublic', accessor: 'public' },
-      { Header: 'orgGrants' },
-      { Header: 'userGrants' },
-      { Header: 'resultingOrgGrants' },
-      { Header: 'resultingUserGrants' }
-    ],
-    []
-  );
-
-  const columnsForMetadataTablesWithoutChildren = React.useMemo<Column<BaseTag>[]>(
-    () => [
-      { Header: 'tag', accessor: 'tag' },
-      { Header: 'isPublic', accessor: 'public' },
-      { Header: 'orgGrants' },
-      { Header: 'userGrants' },
-      { Header: 'resultingOrgGrants' },
-      { Header: 'resultingUserGrants' }
-    ],
-    []
-  );
-
   return (
     <>
       <FormCheck
-        label={'Public Access'}
+        label={addAccess ? 'Public Access' : 'Make Private'}
         onChange={evt => {
           // setUpdatedMetadata([]);
           setSelectedOrganizations([]);
           setSelectedUsers([]);
-          setMakePublic(evt.currentTarget.checked);
+          setMakePublic(addAccess ? evt.currentTarget.checked : !evt.currentTarget.checked);
           loadData(PAGINATION_DEFAULT_SIZE, 0);
         }}
       />
@@ -382,11 +387,8 @@ const TagAccessOrganization = ({ metadata, updatedMetadata, setUpdatedMetadata }
               }
               setMetadataList={() => {}}
               metadataList={[]}
-              columns={
-                updatedMetadata != null && updatedMetadata.length === 1
-                  ? columnsForMetadataTablesWithoutChildren
-                  : columnsForMetadataTables
-              }
+              columns={getColumns()}
+              addAccess={addAccess}
             />
           </Accordion.Body>
         </Accordion.Item>
