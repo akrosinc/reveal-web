@@ -331,15 +331,15 @@ const TagAccessOrganization = ({ metadata, updatedMetadata, setUpdatedMetadata, 
         </Col>
         <Col sm={12} md={4} className="order-md-first"></Col>
         <Col sm={12} md={4} className="order-md-first">
-          <div style={{ float: 'right' }}>
-            Select All{' '}
-            <FormCheck
-              checked={makePublic.valueOf()}
-              onChange={evt => {
-                setMakePublic(evt.currentTarget.checked);
-              }}
-            />
-          </div>
+          {/*<div style={{ float: 'right' }}>*/}
+          {/*  Select All{' '}*/}
+          {/*  <FormCheck*/}
+          {/*    checked={makePublic.valueOf()}*/}
+          {/*    onChange={evt => {*/}
+          {/*      setMakePublic(evt.currentTarget.checked);*/}
+          {/*    }}*/}
+          {/*  />*/}
+          {/*</div>*/}
         </Col>
       </Row>
 

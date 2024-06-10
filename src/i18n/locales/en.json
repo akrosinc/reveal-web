@@ -21,7 +21,7 @@
     "TagManagement": "Tag Management",
     "MetaDataImport": "Metadata Import",
     "Resource Planning": "Resource Planning",
-    "dataProcessingProgress":"Data Processing Progress"
+    "dataProcessingProgress": "Data Processing Progress"
   },
   "publicPage": {
     "supportedBy": "supported by",
@@ -232,12 +232,12 @@
     "populationCoverage": "Population coverage"
   },
   "simulationPage": {
-    "tag":"tag",
-    "isPublic":"Is public",
-    "orgGrants":"Current Organizations",
-    "userGrants":"Current Users",
-    "resultingOrgGrants":"Resulting Organizations",
-    "resultingUserGrants":"Resulting Users",
+    "tag": "tag",
+    "isPublic": "Is public",
+    "orgGrants": "Current Organizations",
+    "userGrants": "Current Users",
+    "resultingOrgGrants": "Resulting Organizations",
+    "resultingUserGrants": "Resulting Users",
     "title": "Plan Simulation",
     "country": "Country",
     "entity": "Entity",
@@ -255,7 +255,7 @@
     "selectParentToSearchWithin": "Select Parent Geographic Level to Search Within",
     "selectParentLocationToSearchWithin": "Select Parent Location to Search Within",
     "filterSearchByLevel": "Filter search result by Level",
-    "search":"Search",
+    "search": "Search",
     "filterInactiveLocationsByLevel": "Filter inactive locations by Level",
     "delete": "Delete",
     "more": "More",
@@ -271,7 +271,7 @@
     "proceed": "Proceed",
     "add": "Add",
     "uploadData": "Upload Data",
-    "downloadData":"Download Data",
+    "downloadData": "Download Data",
     "clearAll": "Clear All",
     "details": "Details",
     "summary": "Summary",
@@ -301,7 +301,9 @@
     "noTagsSelected": "No Tags Selected!",
     "selectToLoad": "Select to Load",
     "tagFilters": "Tag Filters",
-    "analysis" :"Perform analysis"
+    "analysis": "Perform analysis",
+    "removeOrgGrants": "Remove Organization Access",
+    "removeUserGrants": "Remove User Access"
   },
   "label": {
     "layerOpacity": "Layer opacity"
@@ -319,8 +321,17 @@
   "metadataImport": {
     "templateCreation": "Template Creation",
     "fileImport": "File Import",
-    "uploadFile": "Upload File"
+    "uploadFile": "Upload File",
+    "table": {
+      "fileName": "Filename",
+      "uploadDate": "Upload Date",
+      "status": "Status",
+      "uploadedBy": "Uploaded By",
+      "owner": "I am the owner",
+      "owners": "Current Owners",
+      "selected": "Selection"
 
+    }
   },
   "locationHierarchyPage": {
     "name": "Name",
@@ -332,5 +343,31 @@
     "complexTagName": "Name",
     "complexTagFormula": "Formula",
     "complexTagVariables": "Variables"
+  },
+  "entity": {
+    "table": {
+      "tag": "Tag Name",
+      "valueType": "Data Type",
+      "owners": "Current Owners",
+      "public": "Publicly Available",
+      "aggregate": "Is an aggregate",
+      "deleting": "Is deleting",
+      "access": "Grant Access",
+      "removeAccess": "Remove Access",
+      "delete": "Delete Tag"
+    }
+  },
+  "complexTag": {
+    "table": {
+      "complexTagName": "Tag Name",
+      "complexTagFormula": "Formula",
+      "complexTagVariables": "Formula Variables",
+      "owners": "Current Owners",
+      "access": "Grant Access",
+      "public": "Publicly Available",
+      "deleting": "Is deleting",
+      "removeAccess": "Remove Access",
+      "delete": "Delete Tag"
+    }
   }
 }

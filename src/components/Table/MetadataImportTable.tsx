@@ -204,7 +204,7 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
                   {...column.getHeaderProps()}
                 >
                   {column.Header !== undefined && column.Header !== null && column.id !== 'expander'
-                    ? t('simulationPage.' + column.Header.toString())
+                    ? t('metadataImport.table.' + column.Header.toString())
                     : ''}
                 </th>
               );

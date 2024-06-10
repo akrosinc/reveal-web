@@ -34,7 +34,9 @@ const columnsNotForDisplay = [
   'referenceFields',
   'generationFormula',
   'owner',
-  'children'
+  'children',
+  'created',
+  'deleting'
 ];
 
 const Tagging = () => {
@@ -142,11 +144,6 @@ const Tagging = () => {
 
     setSelectedMetadata([tag]);
   };
-
-  useEffect(() => {
-    console.log('selectedMetadata', selectedMetadata);
-    console.log('selectedMetadata', selectedMetadata);
-  }, [selectedMetadata]);
 
   const setTagGrantsUpdated = () => {
     setShowTagAccess(false);

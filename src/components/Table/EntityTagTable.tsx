@@ -1,6 +1,6 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import moment from 'moment';
-import { useState } from 'react';
+// import { useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useAppSelector } from '../../store/hooks';
 import { formatDate } from '../../utils';
@@ -47,8 +47,8 @@ const EntityTagTable = ({
   setSelectedTagToDelete,
   showRemoveAccessPanelHandler
 }: Props) => {
-  const [sortDirection, setSortDirection] = useState(false);
-  const [activeSortField, setActiveSortField] = useState('');
+  // const [sortDirection, setSortDirection] = useState(false);
+  // const [activeSortField, setActiveSortField] = useState('');
   const isDarkMode = useAppSelector(state => state.darkMode.value);
   const { keycloak } = useKeycloak();
 
@@ -59,24 +59,24 @@ const EntityTagTable = ({
           {columns.map((el, index) => (
             <th
               key={index}
-              onClick={() => {
-                if (el.sortValue && sortHandler) {
-                  setSortDirection(!sortDirection);
-                  setActiveSortField(el.name);
-                  sortHandler(el.sortValue, sortDirection);
-                }
-              }}
+              // onClick={() => {
+              //   if (el.sortValue && sortHandler) {
+              //     setSortDirection(!sortDirection);
+              //     setActiveSortField(el.name);
+              //     sortHandler(el.sortValue, sortDirection);
+              //   }
+              // }}
             >
-              {t('reportPage.table.' + el.name)}
-              {activeSortField === el.name ? (
-                sortDirection ? (
-                  <FontAwesomeIcon className="ms-2" icon="sort-up" />
-                ) : (
-                  <FontAwesomeIcon className="ms-2" icon="sort-down" />
-                )
-              ) : el.sortValue ? (
-                <FontAwesomeIcon className="ms-2" icon="sort" />
-              ) : null}
+              {t('entity.table.' + el.name)}
+              {/*{activeSortField === el.name ? (*/}
+              {/*  sortDirection ? (*/}
+              {/*    <FontAwesomeIcon className="ms-2" icon="sort-up" />*/}
+              {/*  ) : (*/}
+              {/*    <FontAwesomeIcon className="ms-2" icon="sort-down" />*/}
+              {/*  )*/}
+              {/*) : el.sortValue ? (*/}
+              {/*  <FontAwesomeIcon className="ms-2" icon="sort" />*/}
+              {/*) : null}*/}
             </th>
           ))}
         </tr>
@@ -163,7 +163,9 @@ const EntityTagTable = ({
                             {'Grant Access'}
                           </Button>
                         </td>
-                      ) : null;
+                      ) : (
+                        <td key={index}>{''}</td>
+                      );
                     } else if (el.name === 'removeAccess') {
                       return dataEl['owner'] || keycloak.hasRealmRole(TAG_ACCESS_OVERRIDE) ? (
                         <td key={index}>
@@ -201,7 +203,9 @@ const EntityTagTable = ({
                             {'Remove Access'}
                           </Button>
                         </td>
-                      ) : null;
+                      ) : (
+                        <td key={index}>{''}</td>
+                      );
                     } else if (el.name === 'owners') {
                       return (
                         <td key={index}>
@@ -238,7 +242,9 @@ const EntityTagTable = ({
                             >
                               {dataEl['deleting'] ? 'Deleting Tag' : 'Delete Tag'}
                             </Button>
-                          ) : null}
+                          ) : (
+                            ''
+                          )}
                         </td>
                       );
                     } else {

@@ -37,7 +37,7 @@ const ComplexTagTable = ({
         <tr>
           {columns.map((el, index) => (
             <th key={index} onClick={() => {}}>
-              {t('entityTags.' + el.name)}
+              {t('complexTag.table.' + el.name)}
             </th>
           ))}
         </tr>

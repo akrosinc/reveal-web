@@ -167,6 +167,7 @@ const ComplexTagging = () => {
             { name: 'complexTagFormula', accessor: 'formula', sortValue: 'formula', key: 'formula' },
             { name: 'complexTagVariables', accessor: 'complexTagVariables', sortValue: 'tags', key: 'tags' },
             { name: 'owners', accessor: 'owners', sortValue: 'owners', key: 'owners' },
+            { name: 'public', accessor: 'public', sortValue: 'public', key: 'public' },
             { name: 'access', accessor: 'access', sortValue: 'access', key: 'access' },
             { name: 'removeAccess', accessor: 'removeAccess', sortValue: 'removeAccess', key: 'removeAccess' },
             { name: 'delete', accessor: 'delete', sortValue: 'delete', key: 'delete' }
