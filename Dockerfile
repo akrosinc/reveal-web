@@ -4,8 +4,10 @@ WORKDIR /usr/local/app
 ADD . .
 RUN chmod +x deploy.sh
 
-RUN yarn && \
-    yarn global add serve
+RUN yarn global add serve
+#
+#RUN yarn && \
+#    yarn global add serve
 
 EXPOSE 3000
 
