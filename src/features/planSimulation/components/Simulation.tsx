@@ -898,8 +898,6 @@ const Simulation = () => {
   };
 
   useEffect(() => {
-    console.log('geoFilterList', geoFilterList);
-
     if (geoFilterList != null && geoFilterList?.length != null && geoFilterList?.length > 0) {
       setEntityTags(_ => {
         let newTags: EntityTag[] = [];
