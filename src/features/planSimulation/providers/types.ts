@@ -33,6 +33,7 @@ export interface EntityTag {
   public?: boolean;
   children?: EntityTag[];
   selected?: boolean;
+  levels?: string[];
 }
 
 export class BaseTag {

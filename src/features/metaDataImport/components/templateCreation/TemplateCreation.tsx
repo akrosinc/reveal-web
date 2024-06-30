@@ -105,7 +105,16 @@ export const TemplateCreation = () => {
                   .then(res => {
                     const link = document.createElement('a');
                     link.href = window.URL.createObjectURL(new Blob([res], { type: 'application/vnd.ms-excel' }));
-                    link.setAttribute('download', `LocationMeta_${+new Date()}.xlsx`);
+
+                    let todayDateMs = Date.now();
+                    let todayDate = new Date();
+
+                    let dateString = new Date(todayDateMs - todayDate.getTimezoneOffset() * 60000)
+                      .toISOString()
+                      .replaceAll(':', '_')
+                      .replace('Z', '');
+
+                    link.setAttribute('download', `LocationMeta_${dateString}.xlsx`);
                     link.click();
                     link.remove();
                   })

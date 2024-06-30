@@ -211,12 +211,13 @@ const SimulationModal = ({
         />
       ) : (
         <Select
-          placeholder={t('simulationPage.selectProperty') + '...'}
+          placeholder={entityTags?.length > 0 ? t('simulationPage.selectProperty') + '...' : 'no tags available'}
           className="custom-react-select-container w-100"
           classNamePrefix="custom-react-select"
           menuShouldScrollIntoView={true}
           isClearable
           isMulti
+          isDisabled={entityTags?.length <= 0}
           closeMenuOnSelect={false}
           options={getOptions()}
           onChange={newValue => {

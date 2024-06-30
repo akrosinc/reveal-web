@@ -146,6 +146,7 @@ const Simulation = () => {
   const [toLocation, setToLocation] = useState<LngLatBounds>();
   const [resetMap, setResetMap] = useState<boolean>(false);
   const [entityTags, setEntityTags] = useState<EntityTag[]>([]);
+  const [entityTagsOriginal, setEntityTagsOriginal] = useState<EntityTag[]>([]);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [highestLocations, setHighestLocations] = useState<Feature<Point | Polygon | MultiPolygon>[]>();
   const [summary, setSummary] = useState<any>({});
@@ -896,6 +897,24 @@ const Simulation = () => {
     reset();
   };
 
+  useEffect(() => {
+    console.log('geoFilterList', geoFilterList);
+
+    if (geoFilterList != null && geoFilterList?.length != null && geoFilterList?.length > 0) {
+      setEntityTags(_ => {
+        let newTags: EntityTag[] = [];
+        entityTagsOriginal
+          .filter(tag => {
+            return geoFilterList?.find(geo => tag.levels?.includes(geo.label));
+          })
+          .forEach(tag => newTags.push(tag));
+        return newTags;
+      });
+    } else {
+      setEntityTags(entityTagsOriginal);
+    }
+  }, [geoFilterList, setEntityTags, entityTagsOriginal]);
+
   const clearSomeHandler = () => {
     setAnalysisLayerDetails([]);
     setShowResult(false);
@@ -1049,6 +1068,7 @@ const Simulation = () => {
       getDataAssociatedEntityTags(selectedHierarchy.identifier).then(res => {
         tagsMeta = res.entityTagResponses;
         setEntityTags(tagsMeta);
+        setEntityTagsOriginal(tagsMeta);
         let tagsEvent: EntityTag[] = [];
         getEventBasedEntityTags().then(result => {
           tagsEvent = result;
@@ -1056,6 +1076,7 @@ const Simulation = () => {
           let allTags = tagsMeta.concat(tagsEvent);
           if (allTags.length > 0) {
             setEntityTags(allTags);
+            setEntityTagsOriginal(allTags);
           }
         });
         setComplexTags(res.complexTagDtos);
