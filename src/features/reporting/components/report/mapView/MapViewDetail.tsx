@@ -165,7 +165,10 @@ const MapViewDetail = React.forwardRef<any, Props>(
                   ['get', 'statusColor'],
                   ['get', 'evaluatedColor']
                 ],
-                'fill-opacity': opacity.current
+                'fill-opacity':
+                  data.features.length && data.features[0].properties.geographicLevel === 'structure'
+                    ? 1
+                    : opacity.current
               }
             },
             'label-layer'
