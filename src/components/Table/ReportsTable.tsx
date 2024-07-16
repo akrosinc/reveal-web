@@ -54,6 +54,15 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
   });
   const { t } = useTranslation();
 
+  const getS = (el: number) => {
+    let num = Number(el);
+    if (isNaN(num)) {
+      return el;
+    }
+    let numFloor = Math.floor(num);
+    return numFloor.toLocaleString();
+  };
+
   return (
     <Table bordered hover {...getTableProps()} className="mt-2" variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="bg-white" style={{ position: 'sticky', top: '0' }}>
@@ -117,7 +126,12 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
                     let color = '';
                     if (rowData.columnDataMap[cellName].isPercentage || rowData.columnDataMap[cellName].meta) {
                       let percentage = rowData.columnDataMap[cellName].value;
-                      percentage = Number(percentage.toFixed(percentage > 1 ? 2 : 3));
+                      if (rowData.columnDataMap[cellName].isPercentage) {
+                        percentage = Number(percentage.toFixed(percentage > 1 ? 2 : 3));
+                      } else {
+                        let num = Math.floor(percentage);
+                        percentage = num.toLocaleString();
+                      }
 
                       return (
                         <OverlayTrigger
@@ -173,7 +187,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
               <b>{t('reportPage.table.total')}</b>
             </td>
             {totalValue.map((el, index) => {
-              return <td key={index}>{el.toLocaleString()}</td>;
+              return <td key={index}>{getS(el)}</td>;
             })}
           </tr>
         )}
