@@ -32,13 +32,25 @@ import {
 import { ColorPicker, Color, useColor } from 'react-color-palette';
 import 'react-color-palette/lib/css/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCaretRight, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
+import { library } from '@fortawesome/fontawesome-svg-core';
 import { Children, StatsLayer } from '../Simulation';
 import ActionDialog from '../../../../components/Dialogs/ActionDialog';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { AnalysisLayer } from '../Simulation';
 import { isNumeric } from 'mathjs';
+import styles from './SimulationMapView.module.css';
+import Spinner from 'react-bootstrap/Spinner';
+import DatasetLayer from '../DatasetLayer/DatasetLayer';
+
+library.add(faCaretRight, faCaretLeft);
 
 interface Props {
+  loading: string;
+  leftOpenHandler: () => void;
+  rightOpenHandler: () => void;
+  leftOpenState: boolean;
+  rightOpenState: boolean;
   fullScreenHandler: () => void;
   fullScreen: boolean;
   toLocation: LngLatBounds | undefined;
@@ -88,7 +100,12 @@ export const getBackgroundStyle = (value: { r: number; g: number; b: number } | 
 };
 
 const SimulationMapView = ({
+  loading,
   fullScreenHandler,
+  leftOpenHandler,
+  rightOpenHandler,
+  leftOpenState,
+  rightOpenState,
   fullScreen,
   toLocation,
   entityTags,
@@ -115,9 +132,9 @@ const SimulationMapView = ({
   const [color, setColor] = useColor('hex', INITIAL_FILL_COLOR);
   const [initialLineColor] = useColor('hex', INITIAL_LINE_COLOR);
 
-  const [lng, setLng] = useState(28.33);
-  const [lat, setLat] = useState(-15.44);
-  const [zoom, setZoom] = useState(10);
+  const [lng, setLng] = useState(20.33);
+  const [lat, setLat] = useState(4.44);
+  const [zoom, setZoom] = useState(2.5);
   const [showUserDefineLayerSelector, setShowUserDefineLayerSelector] = useState(false);
 
   const hoverPopup = useRef<Popup>(
@@ -170,6 +187,7 @@ const SimulationMapView = ({
     { key: string; col: Color; transparency?: number; lineColor: Color } | undefined
   >();
   const [showUserDefinedSettingsPanel, setShowUserDefinedSettingsPanel] = useState(false);
+
   const getLineParameters = (level: string) => {
     let newlevel = level
       .split('-')
@@ -383,7 +401,7 @@ const SimulationMapView = ({
   ]);
 
   const initializeMap = useCallback(() => {
-    map.current = initSimulationMap(mapContainer, [lng, lat], zoom, 'bottom-left', undefined, e => {
+    map.current = initSimulationMap(mapContainer, [lng, lat], zoom, 'bottom-right', undefined, e => {
       if (map.current) {
         let source: any = map.current?.getSource('mark-source') as GeoJSONSource;
 
@@ -442,7 +460,7 @@ const SimulationMapView = ({
       }
     });
 
-    map.current.addControl(mapBoxDraw.current, 'bottom-left');
+    map.current.addControl(mapBoxDraw.current, 'bottom-right');
 
     map.current?.on(
       'mouseover',
@@ -1080,6 +1098,7 @@ const SimulationMapView = ({
                 size: layerSize
               });
 
+              console.log('userDefinedLayers', userDefinedLayers);
               return userDefinedLayers;
             } else {
               userDefinedLayers.forEach(userDefinedLayer => {
@@ -1509,11 +1528,21 @@ const SimulationMapView = ({
   }, [markedMapBoxFeatures]);
 
   return (
-    <Container fluid style={{ position: 'relative' }} className="mx-0 px-0">
+    <Container fluid style={{ position: 'relative' }} className={`mx-0 px-0 ${styles.mapContainer}`}>
+      {loading === 'started' && (
+        <div className={styles.backDrop}>
+          <Spinner animation="grow" variant="success" className={styles.spinner} />
+        </div>
+      )}
+      <button className={`${styles.buttonDrawer} ${styles.left}`} style={{}} onClick={leftOpenHandler}>
+        <FontAwesomeIcon className={`${styles.customIcon}`} icon={leftOpenState ? faCaretLeft : faCaretRight} />
+      </button>
+      <button className={`${styles.buttonDrawer} ${styles.right}`} style={{}} onClick={rightOpenHandler}>
+        <FontAwesomeIcon className={`${styles.customIcon}`} icon={rightOpenState ? faCaretRight : faCaretLeft} />
+      </button>
       <div style={{ position: 'absolute', zIndex: 2, width: 'fit-content' }} className="mx-0 px-0">
         <div style={{ float: 'left', position: 'relative' }} className="sidebar-adjust ">
-          {/*<div>*/}
-          <Button
+          {/* <Button
             style={{ width: '75px' }}
             onClick={() => {
               setShowMapControls(!showMapControls);
@@ -1523,8 +1552,10 @@ const SimulationMapView = ({
             variant="primary"
           >
             {showMapControls ? 'Hide' : 'Show'}{' '}
-          </Button>
+          </Button> */}
         </div>
+
+        {/* DATA SETS RESULT PANEL */}
         {showMapControls && userDefinedLayers.length > 0 && (
           <div style={{ float: 'left', width: '220px' }} className="sidebar-adjust-list text-dark bg-light p-2 rounded">
             <p
@@ -1561,6 +1592,7 @@ const SimulationMapView = ({
                           </>
                         </Accordion.Header>
                         <Accordion.Body>
+                          {/* CHECK BOX LAYERS */}
                           <>
                             {layerObj?.list?.map(layer => {
                               return (
@@ -1599,6 +1631,7 @@ const SimulationMapView = ({
                             })}
                             <hr />
                             <FormGroup>
+                              {/* SETTINGS BUTTON */}
                               <Button
                                 className={'mx-2'}
                                 size={'sm'}
@@ -1636,7 +1669,24 @@ const SimulationMapView = ({
               </div>
             )}
           </div>
+          // <DatasetLayer
+          //   showUserDefineLayerSelector={showUserDefineLayerSelector}
+          //   userDefinedLayers={userDefinedLayers}
+          //   selectedUserDefinedLayer={selectedUserDefinedLayer}
+          //   setShowUserDefineLayerSelector={setShowUserDefineLayerSelector}
+          //   setUserDefinedLayers={setUserDefinedLayers}
+          //   setShowUserDefinedSettingsPanel={setShowUserDefinedSettingsPanel}
+          //   setSelectedUserDefinedLayer={setSelectedUserDefinedLayer}
+          //   getProcessedUserDefinedLayers={getProcessedUserDefinedLayers}
+          //   getBackgroundStyle={getBackgroundStyle}
+          //   initialLineColor={initialLineColor}
+          //   setColor={setColor}
+          // />
         )}
+
+        {/* SETTINGS PANEL WITH LINE AND OPACITY  */}
+
+        {console.log(selectedUserDefinedLayer)}
 
         {showMapControls &&
           userDefinedLayers.length > 0 &&
@@ -1842,27 +1892,15 @@ const SimulationMapView = ({
             </div>
           )}
       </div>
-      <div style={{ position: 'absolute', zIndex: 2, width: '100%' }} className="mx-0 px-0">
-        <div className="clearButton">
-          <p className="small text-dark bg-white p-2 rounded">
-            Lat: {lat} Lng: {lng} Zoom: {zoom}
-          </p>
-          <Button
-            onClick={() => {
-              fullScreenHandler();
-              setTimeout(() => {
-                map.current?.resize();
-                document.getElementById('mapRow')?.scrollIntoView({ behavior: 'smooth' });
-              }, 0);
-            }}
-            className="mb-2 float-end"
-          >
-            {fullScreen ? 'Show Controls' : 'Full Screen'}
-          </Button>
+
+      {/* LANG LAT ZOOM */}
+      <div className={`mx-0 px-0 ${styles.langLatContainer}`}>
+        <div className={`${styles.langLatContent}`}>
+          <p>Lat: {lat}</p> <p>Lng: {lng}</p> <p>Zoom: {zoom}</p>
         </div>
       </div>
-      {/* enable when needed by setting false to true */}
 
+      {/* STATISTICS PANEL ON THE LEFT */}
       {userDefinedLayers && userDefinedLayers.length > 0 && (
         <Container
           style={{
@@ -1937,6 +1975,7 @@ const SimulationMapView = ({
         </Container>
       )}
 
+      {/* LEFT CLICK FORM */}
       {showMapDrawnModal && (
         <ActionDialog
           closeHandler={() => setShowMapDrawnModal(false)}
@@ -2022,7 +2061,7 @@ const SimulationMapView = ({
         />
       )}
 
-      <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '95vh' : '75vh', width: '100%' }} />
+      <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '90vh' : '75vh', width: '100%' }} />
     </Container>
   );
 };

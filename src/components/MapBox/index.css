@@ -8,16 +8,16 @@
 
 .sidebar-adjust {
   z-index: 1;
-  margin: 1em;
+  /* margin: 1em; */
 }
 
 .sidebar-adjust-list {
   z-index: 1;
   margin: 1em;
-  width:18%
+  width: 18%;
 }
 
-.span-header{
+.span-header {
   font-size: medium;
   text-decoration-line: underline;
   font-weight: bold;
@@ -102,10 +102,10 @@ ul {
   color: black !important;
 }
 
-.mapboxgl-popup-anchor-top>.mapboxgl-popup-content {
+.mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
   margin-top: 15px;
 }
 
-.mapboxgl-popup-anchor-top>.mapboxgl-popup-tip {
+.mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
   border-bottom-color: #91c949;
 }

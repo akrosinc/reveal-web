@@ -1,0 +1,74 @@
+.backDrop {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -1.5rem;
+}
+
+.buttonDrawer {
+  background-color: white;
+  border: 1px solid #0000001a;
+  z-index: 2000;
+  padding: 1rem 0.5rem 1rem 0.5rem;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 50%;
+}
+
+.left {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  left: 11.1px;
+}
+
+.right {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  right: -12px;
+}
+
+.customIcon {
+  color: rgba(0, 0, 0, 0.623);
+  font-size: 1.5rem;
+}
+
+.langLatContainer {
+  position: absolute;
+  z-index: 2;
+  bottom: 15px;
+  left: 15px;
+  text-align: center;
+}
+
+.langLatContent {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem 0.7rem;
+  margin: 0;
+  background-color: #606060da;
+  color: white;
+  border-radius: 5px;
+  font-size: 0.8rem;
+}
+
+.langLatContent p {
+  margin: 0;
+}
+
+.mapboxgl-ctrl-bottom-left {
+  top: 0;
+  right: 0;
+}

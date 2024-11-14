@@ -10,7 +10,7 @@ const PlanSimulation = () => {
   const { t } = useTranslation();
 
   return (
-    <PageWrapper title={t('simulationPage.title')}>
+    <PageWrapper>
       <Routes>
         <Route
           path="/"

@@ -1,0 +1,84 @@
+.planSimulationForm {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.customReactSelect {
+  font-size: 0.8rem;
+}
+
+/* Filter locations by a Parent Location */
+
+.customSwitchWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  grid-gap: 0;
+  gap: 1rem;
+  font-size: 1rem;
+  border: 1px solid #0000001a;
+  border-radius: 5px;
+  padding: 1rem;
+}
+
+.filterLoactionsWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.customSwitchForm {
+}
+
+.filterLoactionsWrapper__infoContainer {
+}
+
+.filterLoactionsWrapper__label {
+  color: black;
+  margin: 0;
+}
+
+.filterLoactionsWrapper__subLabel {
+  color: #73737398;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.loadInactiveWrapper {
+}
+
+.parentLocationSelects {
+  border: 1px solid #0000001a;
+  border-radius: 5px;
+  padding: 1rem;
+  font-size: 0.8rem;
+}
+
+.parentLocationSelects select {
+  font-size: 0.8rem;
+}
+
+.formSubmitWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.formControlsWrapper label {
+  margin: 0;
+}
+
+.formControlsWrapper {
+  width: 100%;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.searchButton {
+  width: 100%;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}

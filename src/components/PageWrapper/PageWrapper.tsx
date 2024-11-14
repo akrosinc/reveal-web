@@ -8,7 +8,7 @@ interface Props {
 
 const PageWrapper = ({ title, children }: Props) => {
   return (
-    <Container fluid className="my-4 px-2">
+    <Container fluid className="px-2">
       {title ? (
         <>
           <h2>{title}</h2>

@@ -1,0 +1,39 @@
+.methodItemWrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  border-radius: 5px;
+  width: 100%;
+}
+
+.methodItem {
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+}
+
+.name {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  padding-right: 1rem;
+}
+
+.expander {
+  cursor: pointer;
+  padding-right: 1rem;
+}
+
+.details {
+  display: flex;
+  align-items: center;
+}

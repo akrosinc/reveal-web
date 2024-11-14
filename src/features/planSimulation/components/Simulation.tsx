@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Col, Container, Form, Modal, OverlayTrigger, Row, Spinner, Tooltip } from 'react-bootstrap';
-import { useForm } from 'react-hook-form';
+import { set, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import 'simplebar/dist/simplebar.min.css';
@@ -10,6 +10,8 @@ import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
 import { evaluate, isNumeric } from 'mathjs';
+import simulationStyle from './Simulation.module.css';
+
 import {
   getDataAssociatedEntityTags,
   getEntityList,
@@ -37,12 +39,10 @@ import {
 import FormField from './FormField/FormField';
 import MultiFormField from './FormField/MultiFormField';
 import SimulationModal from './SimulationModal';
-
 import Select, { MultiValue, SingleValue } from 'react-select';
 import PeopleDetailsModal from './PeopleDetailsModal';
 import { bbox, Feature, MultiPolygon, Point, Polygon } from '@turf/turf';
 import { LngLatBounds, Map as MapBoxMap } from 'mapbox-gl';
-
 import SimulationResultExpandingTable from '../../../components/Table/SimulationResultExpandingTable';
 import DownloadSimulationResultsModal from './modals/DownloadSimulationResultsModal';
 import UploadSimulationData from './modals/UploadSimulationData';
@@ -56,7 +56,15 @@ import { Color } from 'react-color-palette';
 import { hex } from 'color-convert';
 import { REVEAL_SIMULATION_EDIT } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
+import { Drawer } from '../../location/components/drawer/Drawer';
+import Accordion from '../../location/components/accordion/Accordion';
+import { ChartData } from 'chart.js';
+import { faUsers, faSitemap, faHouseUser, faDiceD20 } from '@fortawesome/free-solid-svg-icons';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { Switch } from '../../../components/Switch/Switch';
+import Dashboard from '../components/Dashboard/Dashboard';
 
+library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 interface SubmitValue {
   fieldIdentifier: string;
   fieldType: string;
@@ -125,7 +133,7 @@ const Simulation = () => {
   const [selectedEntityConditionList, setSelectedEntityConditionList] = useState<EntityTag[]>([]);
   const divRef = useRef<HTMLDivElement>(null);
   const divHeight = useWindowResize(divRef.current);
-  const [mapFullScreen, setMapFullScreen] = useState(false);
+  const [mapFullScreen, setMapFullScreen] = useState(true);
   const [mapData, setMapData] = useState<PlanningLocationResponseTagged>();
   const [parentMapData, setParentMapData] = useState<PlanningParentLocationResponse>();
   const [mapDataLoad, setMapDataLoad] = useState<PlanningLocationResponse>({
@@ -191,6 +199,9 @@ const Simulation = () => {
   const [analysisResultEntityTags, setAnalysisResultEntityTags] = useState<EntityTag[]>();
   const [tooLargeOrSmall, setTooLargeOrSmall] = useState(0);
   const [omitLayers, setOmitLayers] = useState(false);
+
+  const [leftOpen, setLeftOpen] = useState(false);
+  const [rightOpen, setRightOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -1185,173 +1196,241 @@ const Simulation = () => {
     return <FormField range={false} entityTag={el} register={register} index={index} errors={errors} />;
   };
 
+  const selectStyles = {
+    dropdownIndicator: (baseStyles: object) => ({
+      ...baseStyles,
+      scale: '0.8'
+    }),
+    clearIndicator: (baseStyles: object) => ({
+      ...baseStyles,
+      scale: '0.8'
+    })
+  };
+
+  // const canvasRef = useRef(null);
+
+  // useEffect(() => {
+  //   if (canvasRef.current) {
+  //     const canvas = canvasRef.current as any;
+  //     canvas.canvas.style.width = '100%';
+  //   }
+  // }, [canvasRef]);
+
   return (
     <>
       <Container fluid ref={divRef}>
-        <Row>
-          {!mapFullScreen && (
-            <Col xs={12} sm={12} md={4} style={{ position: 'relative' }}>
-              <Form>
-                <Form.Group className="my-3">
-                  <Row className="align-items-center">
-                    <Col md={5} lg={5}>
-                      <OverlayTrigger placement="top" overlay={<Tooltip id="meta-tooltip">Use Layers</Tooltip>}>
-                        <Form.Label>Omit Layers:</Form.Label>
-                      </OverlayTrigger>
-                    </Col>
-                    <Col>
-                      <Form.Check
-                        className="float-left"
-                        type="switch"
-                        id="custom-switch"
-                        label="Select to Omit Layers"
-                        defaultChecked={omitLayers}
-                        onChange={e => setOmitLayers(!omitLayers)}
-                      />
-                    </Col>
-                  </Row>
+        <div style={{ display: 'flex', position: 'relative' }}>
+          <Drawer open={leftOpen} anchor="left" heading="Plan Simulation">
+            <Accordion title="Search" open={resultsLoadingState === 'started'}>
+              <Form className={`${simulationStyle.planSimulationForm}`}>
+                {/* select hierarchy */}
+                <Form.Group>
+                  <Form.Label className={`${simulationStyle.formLabel}`}>{t('simulationPage.hierarchy')}</Form.Label>
+
+                  <Select
+                    styles={selectStyles}
+                    components={{
+                      IndicatorSeparator: () => null
+                    }}
+                    placeholder={`${t('simulationPage.selectHierarchy')}...`}
+                    className={`custom-react-select-container ${simulationStyle.customReactSelect}`}
+                    classNamePrefix="custom-react-select"
+                    isClearable
+                    options={combinedHierarchyList?.map(el => ({
+                      label: el.name,
+                      value: el.identifier
+                    }))}
+                    onChange={selectedOption => {
+                      const selectedValue = selectedOption ? selectedOption.value : null;
+                      const selectedHierarchy = combinedHierarchyList?.find(el => el.identifier === selectedValue);
+
+                      if (selectedHierarchy) {
+                        setSelectedHierarchy(selectedHierarchy);
+                        setNodeList(selectedHierarchy.nodeOrder.filter(el => el !== 'structure'));
+                        setCompleteGeographicList(selectedHierarchy.nodeOrder);
+                      } else {
+                        setSelectedHierarchy(undefined);
+                        setNodeList([]);
+                        setSelectedLocation(null);
+                        setCompleteGeographicList([]);
+                      }
+                    }}
+                  />
                 </Form.Group>
-                <Form.Group className="my-3">
-                  <Row className="align-items-center">
-                    <Col md={5} lg={5}>
-                      <Form.Label>{t('simulationPage.hierarchy')}:</Form.Label>
-                    </Col>
-                    <Col>
-                      <Form.Select
-                        onChange={e => {
-                          const selectedHierarchy = combinedHierarchyList?.find(el => el.identifier === e.target.value);
-                          if (selectedHierarchy) {
-                            setSelectedHierarchy(selectedHierarchy);
-                            setNodeList(selectedHierarchy.nodeOrder.filter(el => el !== 'structure'));
-                            setCompleteGeographicList(selectedHierarchy.nodeOrder);
-                          } else {
-                            setSelectedHierarchy(undefined);
-                            setNodeList([]);
-                            setSelectedLocation(null);
-                            setCompleteGeographicList([]);
-                          }
-                        }}
-                      >
-                        <option value={''}>{t('simulationPage.selectHierarchy')}...</option>
-                        {combinedHierarchyList?.map(el => (
-                          <option key={el.identifier} value={el.identifier}>
-                            {el.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Col>
-                  </Row>
-                </Form.Group>
-                <Container
-                  as={'div'}
-                  color={'grey'}
-                  style={{ border: '1px', borderColor: 'grey' }}
-                  className="rounded-1 border"
-                >
-                  <Row>
-                    <Col>
-                      <div className=" my-3 ">
-                        Filter locations by a Parent Location{' '}
-                        <span style={{ color: 'lightgray' }} className={'small'}>
-                          (Search results will be locations within this parent location)
-                        </span>
-                      </div>
-                      <Form.Group className="my-3">
-                        <Row className="align-items-center">
-                          <Col md={5} lg={5}>
-                            <OverlayTrigger
-                              placement="top"
-                              overlay={
-                                <Tooltip id="meta-tooltip">{t('simulationPage.selectParentToSearchWithin')}</Tooltip>
-                              }
-                            >
-                              <Form.Label>{t('simulationPage.geographicLevel')}:</Form.Label>
-                            </OverlayTrigger>
-                          </Col>
-                          <Col>
-                            <Form.Select
-                              onChange={e => {
-                                if (e.target.value && selectedHierarchy && selectedHierarchy.type) {
-                                  getLocationList(
-                                    selectedHierarchy.identifier,
-                                    selectedHierarchy.type,
-                                    e.target.value
-                                  ).then(res => {
-                                    setLocationList(res);
-                                  });
-                                } else {
-                                  setLocationList([]);
-                                }
-                                setSelectedLocation(null);
-                              }}
-                            >
-                              <option value={''}>
-                                {selectedHierarchy
-                                  ? t('simulationPage.selectGeographicLevel')
-                                  : t('simulationPage.selectHierarchy')}
-                                ...
-                              </option>
-                              {nodeList.map(el => (
-                                <option key={el} value={el}>
-                                  {el}
-                                </option>
-                              ))}
-                            </Form.Select>
-                          </Col>
-                        </Row>
-                      </Form.Group>
-                      <Form.Group className="my-3">
-                        <Row className="align-items-center">
-                          <Col md={5} lg={5}>
-                            <OverlayTrigger
-                              placement="top"
-                              overlay={
-                                <Tooltip id="meta-tooltip">
-                                  {t('simulationPage.selectParentLocationToSearchWithin')}
-                                </Tooltip>
-                              }
-                            >
-                              <Form.Label>{t('simulationPage.location')}:</Form.Label>
-                            </OverlayTrigger>
-                          </Col>
-                          <Col>
-                            <Select
-                              placeholder="Select Location..."
-                              className="custom-react-select-container "
-                              classNamePrefix="custom-react-select"
-                              id="team-assign-select"
-                              isClearable
-                              value={selectedLocation}
-                              options={locationList.reduce((prev, current) => {
-                                return [...prev, { label: current.name, value: current.identifier }];
-                              }, [])}
-                              onChange={newValue => setSelectedLocation(newValue)}
-                            />
-                          </Col>
-                        </Row>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                </Container>
-                <Form.Group className="my-3">
-                  <Row className="align-items-center">
-                    <Col md={5} lg={5}>
+                {/* select hierarchy */}
+                {/* Filter locations by a Parent Location */}
+
+                <div className={`${simulationStyle.filterLoactionsWrapper}`}>
+                  <div className={`${simulationStyle.filterLoactionsWrapper__infoContainer}`}>
+                    <p className={`${simulationStyle.filterLoactionsWrapper__label}`}>
+                      Filter locations by a Parent Location{' '}
+                    </p>
+                    <p className={`${simulationStyle.filterLoactionsWrapper__subLabel}`}>
+                      (Search results will be locations within this parent location)
+                    </p>
+                  </div>
+                  <div className={`${simulationStyle.parentLocationSelects}`}>
+                    <Form.Group>
                       <OverlayTrigger
                         placement="top"
-                        overlay={<Tooltip id="meta-tooltip">{t('simulationPage.filterSearchByLevel')}</Tooltip>}
+                        overlay={
+                          <Tooltip id="meta-tooltip">{t('simulationPage.selectParentLocationToSearchWithin')}</Tooltip>
+                        }
+                      >
+                        <Form.Label>{t('simulationPage.selectGeographicLevel')}:</Form.Label>
+                      </OverlayTrigger>
+
+                      <Select
+                        styles={selectStyles}
+                        components={{
+                          IndicatorSeparator: () => null
+                        }}
+                        placeholder={
+                          selectedHierarchy
+                            ? t('simulationPage.selectGeographicLevel')
+                            : t('simulationPage.selectHierarchy')
+                        }
+                        className="custom-react-select-container"
+                        classNamePrefix="custom-react-select"
+                        isClearable
+                        options={nodeList.map(el => {
+                          return { label: el, value: el };
+                        })}
+                        onChange={selectedOption => {
+                          const selectedValue = selectedOption ? selectedOption.value : null;
+                          if (selectedValue && selectedHierarchy && selectedHierarchy.type) {
+                            getLocationList(selectedHierarchy.identifier, selectedHierarchy.type, selectedValue).then(
+                              res => {
+                                setLocationList(res);
+                              }
+                            );
+                          } else {
+                            setLocationList([]);
+                          }
+                          setSelectedLocation(null);
+                        }}
+                      />
+                    </Form.Group>
+
+                    <Form.Group>
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={
+                          <Tooltip id="meta-tooltip">{t('simulationPage.selectParentLocationToSearchWithin')}</Tooltip>
+                        }
+                      >
+                        <Form.Label>{t('simulationPage.location')}:</Form.Label>
+                      </OverlayTrigger>
+                      <Select
+                        styles={selectStyles}
+                        components={{
+                          IndicatorSeparator: () => null
+                        }}
+                        placeholder="Select Location..."
+                        className="custom-react-select-container "
+                        classNamePrefix="custom-react-select"
+                        id="team-assign-select"
+                        isClearable
+                        value={selectedLocation}
+                        options={locationList.reduce((prev, current) => {
+                          return [...prev, { label: current.name, value: current.identifier }];
+                        }, [])}
+                        onChange={newValue => setSelectedLocation(newValue)}
+                      />
+                    </Form.Group>
+                  </div>
+                  <Form.Group>
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={<Tooltip id="meta-tooltip">{t('simulationPage.filterSearchByLevel')}</Tooltip>}
+                    >
+                      <Form.Label>{t('simulationPage.filterGeographicLevel')}:</Form.Label>
+                    </OverlayTrigger>
+
+                    <Select
+                      className={`${simulationStyle.customReactSelect}`}
+                      components={{
+                        IndicatorSeparator: () => null
+                      }}
+                      styles={selectStyles}
+                      isMulti
+                      options={completeGeographicList
+                        .map((geo: any) => {
+                          return { value: geo, label: geo };
+                        })
+                        .filter((geo: any) => !levelsLoaded.current.includes(geo.label))}
+                      value={geoFilterList}
+                      noOptionsMessage={obj => {
+                        if (obj.inputValue === '') {
+                          return 'Enter at least 1 char to display the results...';
+                        } else {
+                          return 'No location found.';
+                        }
+                      }}
+                      placeholder={
+                        completeGeographicList.length > 0
+                          ? t('simulationPage.search') + '...'
+                          : t('simulationPage.selectHierarchyFirst')
+                      }
+                      onInputChange={e => {}}
+                      onChange={newValues => {
+                        setGeoFilterList(newValues);
+                        if (newValues) {
+                          setSelectedFilterGeographicLevelList(newValues.map(value => value.label));
+                        }
+                      }}
+                    />
+                  </Form.Group>
+                </div>
+
+                {/* Filter locations by a Parent Location */}
+
+                {/* Custom Switches */}
+                <div className={`${simulationStyle.customSwitchWrapper}`}>
+                  {/* Omit Layers */}
+                  <Form.Group>
+                    <Form.Check
+                      className={`${simulationStyle.customSwitchForm}`}
+                      type="switch"
+                      id="omit-layers"
+                      label="Select to Omit Layers"
+                      defaultChecked={omitLayers}
+                      onChange={e => setOmitLayers(!omitLayers)}
+                    />
+                  </Form.Group>
+                  {/* Omit Layers */}
+                  {/* Select to Load Inactive Locations */}
+                  <Form.Group>
+                    <Form.Check
+                      className={`${simulationStyle.customSwitchForm}`}
+                      type="switch"
+                      id="inactive-locations"
+                      label="Select to Load Inactive Locations"
+                      defaultChecked={false}
+                      onChange={e => setLoadParentsToggle(e.target.checked)}
+                    />
+                  </Form.Group>
+                  {loadParentsToggle && (
+                    <Form.Group>
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={
+                          <Tooltip id="meta-tooltip">{t('simulationPage.filterInactiveLocationsByLevel')}</Tooltip>
+                        }
                       >
                         <Form.Label>{t('simulationPage.filterGeographicLevel')}:</Form.Label>
                       </OverlayTrigger>
-                    </Col>
-                    <Col>
                       <Select
                         isMulti
-                        options={completeGeographicList
-                          .map((geo: any) => {
-                            return { value: geo, label: geo };
-                          })
-                          .filter((geo: any) => !levelsLoaded.current.includes(geo.label))}
-                        value={geoFilterList}
+                        styles={selectStyles}
+                        className={`custom-react-select-container ${simulationStyle.customReactSelect}`}
+                        components={{
+                          IndicatorSeparator: () => null
+                        }}
+                        options={completeGeographicList.map((geo: any) => {
+                          return { value: geo, label: geo };
+                        })}
+                        value={inactiveGeoFilterList}
                         noOptionsMessage={obj => {
                           if (obj.inputValue === '') {
                             return 'Enter at least 1 char to display the results...';
@@ -1364,157 +1443,75 @@ const Simulation = () => {
                             ? t('simulationPage.search') + '...'
                             : t('simulationPage.selectHierarchyFirst')
                         }
-                        onInputChange={e => {}}
                         onChange={newValues => {
-                          setGeoFilterList(newValues);
+                          setInactiveGeoFilterList(newValues);
                           if (newValues) {
-                            setSelectedFilterGeographicLevelList(newValues.map(value => value.label));
+                            setSelectedFilterInactiveGeographicLevelList(newValues.map(value => value.label));
                           }
                         }}
                       />
-                    </Col>
-                  </Row>
-                </Form.Group>
-                <Form.Group className="my-3">
-                  <Row className="align-items-center">
-                    <Col md={5} lg={5}>
-                      <OverlayTrigger
-                        placement="top"
-                        overlay={
-                          <Tooltip id="meta-tooltip">{t('simulationPage.selectToLoadInactiveLocations')}</Tooltip>
-                        }
-                      >
-                        <Form.Label>{t('simulationPage.loadInactiveLocations')}:</Form.Label>
-                      </OverlayTrigger>
-                    </Col>
-                    <Col>
-                      <Form.Check
-                        className="float-left"
-                        type="switch"
-                        id="custom-switch"
-                        label="Select to Load Inactive Locations"
-                        defaultChecked={false}
-                        onChange={e => setLoadParentsToggle(e.target.checked)}
-                      />
-                    </Col>
-                  </Row>
-                </Form.Group>
-                <Form.Group className="my-3">
-                  {loadParentsToggle && (
-                    <Row className="align-items-center">
-                      <Col md={5} lg={5}>
-                        <OverlayTrigger
-                          placement="top"
-                          overlay={
-                            <Tooltip id="meta-tooltip">{t('simulationPage.filterInactiveLocationsByLevel')}</Tooltip>
-                          }
-                        >
-                          <Form.Label>{t('simulationPage.filterGeographicLevel')}:</Form.Label>
-                        </OverlayTrigger>
-                      </Col>
-                      <Col>
-                        <Select
-                          isMulti
-                          options={completeGeographicList.map((geo: any) => {
-                            return { value: geo, label: geo };
-                          })}
-                          value={inactiveGeoFilterList}
-                          noOptionsMessage={obj => {
-                            if (obj.inputValue === '') {
-                              return 'Enter at least 1 char to display the results...';
-                            } else {
-                              return 'No location found.';
-                            }
-                          }}
-                          placeholder={
-                            completeGeographicList.length > 0
-                              ? t('simulationPage.search') + '...'
-                              : t('simulationPage.selectHierarchyFirst')
-                          }
-                          onChange={newValues => {
-                            setInactiveGeoFilterList(newValues);
-                            if (newValues) {
-                              setSelectedFilterInactiveGeographicLevelList(newValues.map(value => value.label));
-                            }
-                          }}
-                        />
-                      </Col>
-                    </Row>
+                    </Form.Group>
                   )}
+                </div>
+                {/* Submit Controls */}
+                <Form.Group className={`${simulationStyle.formSubmitWrapper}`}>
+                  <Form.Group className={`${simulationStyle.formControlsWrapper}`}>
+                    <Button disabled={selectedEntity === undefined} onClick={() => openModalHandler(true)}>
+                      <FontAwesomeIcon icon="plus" />
+                    </Button>
+                    <Form.Label>{t('simulationPage.addQueryAttribute')} </Form.Label>
+                  </Form.Group>
+
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={
+                      resultsLoadingState === 'error' || parentsLoadingState === 'error' ? (
+                        <Tooltip>
+                          {resultsLoadingState === 'error' && parentsLoadingState === 'error'
+                            ? 'Error loading active and inactive locations'
+                            : resultsLoadingState === 'error' && parentsLoadingState !== 'error'
+                            ? 'Error loading active locations'
+                            : 'Error loading inactive locations'}
+                        </Tooltip>
+                      ) : (
+                        <></>
+                      )
+                    }
+                  >
+                    <Button
+                      type={'submit'}
+                      className={`${simulationStyle.searchButton}`}
+                      disabled={
+                        selectedHierarchy === undefined ||
+                        resultsLoadingState === 'started' ||
+                        parentsLoadingState === 'started'
+                      }
+                      onClick={handleSubmit(submitHandlerCount)}
+                    >
+                      {(resultsLoadingState === 'notstarted' ||
+                        resultsLoadingState === 'complete' ||
+                        resultsLoadingState === 'error') &&
+                      (parentsLoadingState === 'notstarted' ||
+                        parentsLoadingState === 'complete' ||
+                        parentsLoadingState === 'error') ? (
+                        <>
+                          {resultsLoadingState === 'error' || parentsLoadingState === 'error' ? (
+                            <FontAwesomeIcon icon="exclamation-triangle" />
+                          ) : (
+                            <FontAwesomeIcon icon="search" />
+                          )}
+                          <span className={'p-2'}>{t('simulationPage.search')}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Spinner animation="border" size="sm" role="status" />
+                          <span className={'p-2'}>Loading</span>
+                        </>
+                      )}
+                    </Button>
+                  </OverlayTrigger>
                 </Form.Group>
-                <Form.Group className="my-3">
-                  <Row>
-                    <Col xs={9}>
-                      <Form.Group>
-                        <Form.Label className="pe-3">{t('simulationPage.addQueryAttribute')} </Form.Label>
-                      </Form.Group>
-                    </Col>
-                    <Col xs={3}>
-                      <Row>
-                        <Col md={3}>
-                          <Button
-                            disabled={selectedEntity === undefined}
-                            className="rounded float-end"
-                            onClick={() => openModalHandler(true)}
-                          >
-                            <FontAwesomeIcon icon="plus" />
-                          </Button>
-                        </Col>
-                        <Col md={9}>
-                          <OverlayTrigger
-                            placement="top"
-                            overlay={
-                              resultsLoadingState === 'error' || parentsLoadingState === 'error' ? (
-                                <Tooltip>
-                                  {resultsLoadingState === 'error' && parentsLoadingState === 'error'
-                                    ? 'Error loading active and inactive locations'
-                                    : resultsLoadingState === 'error' && parentsLoadingState !== 'error'
-                                    ? 'Error loading active locations'
-                                    : 'Error loading inactive locations'}
-                                </Tooltip>
-                              ) : (
-                                <></>
-                              )
-                            }
-                          >
-                            <Button
-                              type={'submit'}
-                              disabled={
-                                selectedHierarchy === undefined ||
-                                resultsLoadingState === 'started' ||
-                                parentsLoadingState === 'started'
-                              }
-                              className="float-end"
-                              onClick={handleSubmit(submitHandlerCount)}
-                            >
-                              {(resultsLoadingState === 'notstarted' ||
-                                resultsLoadingState === 'complete' ||
-                                resultsLoadingState === 'error') &&
-                              (parentsLoadingState === 'notstarted' ||
-                                parentsLoadingState === 'complete' ||
-                                parentsLoadingState === 'error') ? (
-                                <>
-                                  {resultsLoadingState === 'error' || parentsLoadingState === 'error' ? (
-                                    <FontAwesomeIcon icon="exclamation-triangle" />
-                                  ) : (
-                                    <FontAwesomeIcon icon="search" />
-                                  )}
-                                  <span className={'p-2'}>{t('simulationPage.search')}</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Spinner animation="border" size="sm" role="status" />
-                                  <span className={'p-2'}>Loading</span>
-                                </>
-                              )}
-                            </Button>
-                            {/*)}*/}
-                          </OverlayTrigger>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                </Form.Group>
+
                 <div
                   style={{ position: 'relative', maxHeight: divHeight > 900 ? '51vh' : '44vh' }}
                   className="border rounded overflow-auto"
@@ -1561,31 +1558,77 @@ const Simulation = () => {
                   })}
                 </div>
               </Form>
-            </Col>
-          )}
-          <Col xs={12} sm={12} md={mapFullScreen ? 12 : 8} id="mapRow" className={mapFullScreen ? 'pt-4' : ''}>
-            <SimulationMapView
-              fullScreenHandler={() => {
-                setMapFullScreen(!mapFullScreen);
-              }}
-              fullScreen={mapFullScreen}
-              toLocation={toLocation}
-              entityTags={entityTags}
-              parentMapData={parentMapData}
-              setMapDataLoad={setMapDataLoad}
-              chunkedData={mapDataLoad}
-              resetMap={resetMap}
-              setResetMap={setResetMap}
-              stats={statsLayerMetadata}
-              resultsLoadingState={resultsLoadingState}
-              parentsLoadingState={parentsLoadingState}
-              map={map}
-              updateMarkedLocations={updateMarkedLocations}
-              parentChild={parentChild}
-              analysisLayerDetails={analysisLayerDetails}
-            />
-          </Col>
-        </Row>
+            </Accordion>
+            {highestLocations && showResult && (
+              <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
+                <SimulationResultExpandingTable
+                  clickHandler={loadLocationHandler}
+                  data={highestLocations}
+                  detailsClickHandler={showDetailsClickHandler}
+                  summaryClickHandler={summaryDetailsClickHandler}
+                  markedLocations={markedLocations}
+                  showOnlyMarkedLocations={showOnlyMarkedLocations}
+                  markedParents={markedParents}
+                />
+              </Accordion>
+            )}
+          </Drawer>
+          <SimulationMapView
+            loading={resultsLoadingState}
+            leftOpenHandler={() => setLeftOpen(!leftOpen)}
+            leftOpenState={leftOpen}
+            rightOpenState={rightOpen}
+            rightOpenHandler={() => setRightOpen(!rightOpen)}
+            fullScreenHandler={() => {
+              setMapFullScreen(!mapFullScreen);
+            }}
+            fullScreen={mapFullScreen}
+            toLocation={toLocation}
+            entityTags={entityTags}
+            parentMapData={parentMapData}
+            setMapDataLoad={setMapDataLoad}
+            chunkedData={mapDataLoad}
+            resetMap={resetMap}
+            setResetMap={setResetMap}
+            stats={statsLayerMetadata}
+            resultsLoadingState={resultsLoadingState}
+            parentsLoadingState={parentsLoadingState}
+            map={map}
+            updateMarkedLocations={updateMarkedLocations}
+            parentChild={parentChild}
+            analysisLayerDetails={analysisLayerDetails}
+          />
+          <Drawer open={rightOpen} anchor="left">
+            <Accordion title="Statistics" open>
+              <Switch
+                leftOption="Overview"
+                rightOption="Performance"
+                leftContent={
+                  <Dashboard
+                    chartData={{
+                      summary: [15, 35, 60, 25],
+                      male: [40, 10, 55, 30],
+                      female: [25, 50, 15, 45]
+                    }}
+                  />
+                }
+                rightContent={
+                  <div>
+                    <div>
+                      <div>
+                        <h3>Performance Panel</h3>
+                        <p>
+                          Lorem ipsum dolor sit amet consectetur adipisicing elit. Amet tenetur nam consequuntur animi
+                          expedita ipsa dolorem, omnis impedit ad tempora eum! Molestias laudantium suscipit impedit?
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                }
+              />
+            </Accordion>
+          </Drawer>
+        </div>
       </Container>
       <>
         <hr className="my-4" />
@@ -1645,7 +1688,7 @@ const Simulation = () => {
               )}
             </Col>
           </Row>
-          <Row>
+          {/* <Row>
             <Col>
               {highestLocations && showResult && (
                 <SimulationResultExpandingTable
@@ -1659,7 +1702,7 @@ const Simulation = () => {
                 />
               )}
             </Col>
-          </Row>
+          </Row> */}
         </Container>
       </>
       {showModal && selectedEntity && (

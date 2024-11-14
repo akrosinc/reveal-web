@@ -1,5 +1,6 @@
 import { bbox, center, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
 import mapboxgl, {
+  AttributionControl,
   EventData,
   GeolocateControl,
   LngLatBoundsLike,
@@ -71,7 +72,8 @@ export const initSimulationMap = (
     style: style,
     center: center,
     zoom: zoom,
-    doubleClickZoom: false
+    doubleClickZoom: false,
+    logoPosition: 'top-left'
   });
 
   mapboxInstance.addControl(
@@ -167,8 +169,16 @@ export const initMap = (
     style: style,
     center: center,
     zoom: zoom,
+    logoPosition: 'top-right',
+    attributionControl: false,
     doubleClickZoom: false
   });
+  mapboxInstance.addControl(
+    new AttributionControl({
+      compact: true
+    }),
+    'bottom-left'
+  );
   mapboxInstance.addControl(
     new GeolocateControl({
       positionOptions: {
@@ -188,6 +198,7 @@ export const initMap = (
   //initialize an empty top layer for all labels
   //this layer is used to prevent labels getting behind fill and border layers on loading of locations
   mapboxInstance.on('load', () => {
+    mapboxInstance.resize();
     mapboxInstance.addSource('label-source', {
       type: 'geojson',
       data: {
