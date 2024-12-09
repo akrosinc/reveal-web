@@ -6,9 +6,10 @@ interface AccordionProps {
   title: string;
   children: React.ReactNode;
   open?: boolean;
+  parent?: boolean;
 }
 
-function Accordion({ title, open = false, children }: AccordionProps) {
+function Accordion({ title, open = false, children, parent = true }: AccordionProps) {
   const [isOpen, setOpen] = useState(open);
 
   useEffect(() => {
@@ -17,11 +18,23 @@ function Accordion({ title, open = false, children }: AccordionProps) {
 
   return (
     <div className={`${styles.accordion_Wrapper}`}>
-      <div className={`${styles.accordion_title} ${isOpen ? styles.open : ''}`} onClick={() => setOpen(!isOpen)}>
-        {title}
-        <FontAwesomeIcon icon={isOpen ? 'chevron-down' : 'chevron-right'} />
+      <div
+        className={`${styles.accordion_title} ${isOpen ? styles.open : ''}`}
+        onClick={() => setOpen(!isOpen)}
+        style={{ position: 'relative' }}
+      >
+        <span>{title}</span>
+        <FontAwesomeIcon
+          style={{ width: '0.9rem', height: '0.9rem' }}
+          className={styles.icon}
+          icon={isOpen ? 'chevron-down' : 'chevron-right'}
+        />
       </div>
-      <div className={`${styles.accordion_item} ${!isOpen ? `${styles.collapsed}` : ''}`}>
+      <div
+        className={`${styles.accordion_item} ${parent && styles.parrentAccordion} ${
+          !isOpen ? `${styles.collapsed}` : ''
+        }`}
+      >
         <div className={`${styles.accordion_content}`}>{children}</div>
       </div>
     </div>

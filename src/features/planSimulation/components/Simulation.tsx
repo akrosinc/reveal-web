@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Col, Container, Form, Modal, OverlayTrigger, Row, Spinner, Tooltip } from 'react-bootstrap';
-import { set, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import 'simplebar/dist/simplebar.min.css';
@@ -58,11 +58,18 @@ import { REVEAL_SIMULATION_EDIT } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import { Drawer } from '../../location/components/drawer/Drawer';
 import Accordion from '../../location/components/accordion/Accordion';
-import { ChartData } from 'chart.js';
 import { faUsers, faSitemap, faHouseUser, faDiceD20 } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { Switch } from '../../../components/Switch/Switch';
 import Dashboard from '../components/Dashboard/Dashboard';
+import Dataset from './Dataset/Dataset';
+import DrawerButton from '../../../components/DrawerButton/DrawerButton';
+
+import { useModal } from '../../../hooks/useModal';
+import { CustomPopup } from '../../../components/CustomPopup/CustomPopup';
+import DatasetsAccordion from '../../location/components/DatasetsAccordion/DatasetsAccordion';
+import CustomStepper from '../../../components/CustomStepper/CustomStepper';
+import AddTargetAreaForm from './SimulationMapView/components/AddTargetAreaForm/AddTargetAreaForm';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 interface SubmitValue {
@@ -124,7 +131,7 @@ export interface Children {
 
 const Simulation = () => {
   const { t } = useTranslation();
-  const [showModal, setShowModal] = useState(false);
+  // const [showModal, setShowModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [combinedHierarchyList, setCombinedHierarchyList] = useState<LocationHierarchyModel[]>();
@@ -202,6 +209,10 @@ const Simulation = () => {
 
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
+
+  const [showModal, setShowModal] = useState(false);
+
+  const [openCustomModal, setOpenCustomModal] = useState<number>();
 
   useEffect(() => {
     Promise.all([
@@ -1207,14 +1218,62 @@ const Simulation = () => {
     })
   };
 
-  // const canvasRef = useRef(null);
+  const convertColor = (color: any) => {
+    if (!color) return;
+    let hexValue = color.toString();
+    let rgbArr = hex.rgb(hexValue);
+    let hsvArr = hex.hsv(hexValue);
 
-  // useEffect(() => {
-  //   if (canvasRef.current) {
-  //     const canvas = canvasRef.current as any;
-  //     canvas.canvas.style.width = '100%';
-  //   }
-  // }, [canvasRef]);
+    let convertedColor = {
+      hex: '#009900',
+      rgb: { r: rgbArr[0], g: rgbArr[1], b: rgbArr[2] },
+      hsv: { h: hsvArr[0], s: hsvArr[1], v: hsvArr[2] }
+    };
+
+    return convertedColor as Color;
+  };
+
+  const dataset = [
+    {
+      name: 'Dataset 1',
+      borderColor: {
+        hex: '#000000',
+        rgb: { r: 0, g: 0, b: 0 },
+        hsv: { h: 0, s: 27, v: 6 }
+      },
+      color: {
+        hex: '#ff0008',
+        rgb: { r: 255, g: 0, b: 8 },
+        hsv: { h: 358, s: 100, v: 100 }
+      }
+    },
+    {
+      name: 'Dataset 2',
+      borderColor: {
+        hex: '#000000',
+        rgb: { r: 0, g: 0, b: 0 },
+        hsv: { h: 0, s: 27, v: 6 }
+      },
+      color: {
+        hex: '#21c445',
+        rgb: { r: 33, g: 196, b: 69 },
+        hsv: { h: 120, s: 83, v: 77 }
+      }
+    },
+    {
+      name: 'Dataset 3',
+      borderColor: {
+        hex: '#000000',
+        rgb: { r: 0, g: 0, b: 0 },
+        hsv: { h: 0, s: 27, v: 6 }
+      },
+      color: {
+        hex: '#06e7d0',
+        rgb: { r: 27, g: 127, b: 121 },
+        hsv: { h: 174, s: 79, v: 50 }
+      }
+    }
+  ];
 
   return (
     <>
@@ -1570,6 +1629,28 @@ const Simulation = () => {
                   showOnlyMarkedLocations={showOnlyMarkedLocations}
                   markedParents={markedParents}
                 />
+                <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Target Area</DrawerButton>
+                <CustomPopup isOpen={openCustomModal === 0} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
+                  <AddTargetAreaForm onClose={() => setOpenCustomModal(undefined)} />
+                </CustomPopup>
+              </Accordion>
+            )}
+            {highestLocations && showResult && (
+              <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
+                {dataset.map((dataset, index) => (
+                  <DatasetsAccordion index={index} dataset={dataset} />
+                ))}
+                <DrawerButton onClick={() => setOpenCustomModal(1)}>Add dataset</DrawerButton>
+                <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
+                  <div className="p-6">
+                    <button
+                      onClick={() => setOpenCustomModal(undefined)}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    >
+                      Got it
+                    </button>
+                  </div>
+                </CustomPopup>
               </Accordion>
             )}
           </Drawer>

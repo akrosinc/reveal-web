@@ -1,5 +1,5 @@
 .container {
-  width: 100%;
+  /* width: 100%; */
   max-width: 28rem;
   margin: 0 auto;
 }
@@ -53,7 +53,7 @@
 
 .contentArea {
   position: relative;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   overflow: hidden;
   border-radius: 0.5rem;
 }

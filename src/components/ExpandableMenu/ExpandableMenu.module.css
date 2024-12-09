@@ -1,0 +1,91 @@
+.menuContainer {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  /* background-color: #ffffff;
+  border: 1px solid #e2e8f0; */
+  border-radius: 7px;
+  height: 22px;
+  width: 22px;
+  padding: 4px;
+  right: 28px;
+  gap: 2px;
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menuContainer.left {
+  flex-direction: row-reverse;
+  /* right: auto; */
+  /* left: 28px; */
+}
+
+.menuContainer:hover {
+  width: 103px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.kebabIcon {
+  min-width: 12px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #64748b;
+}
+
+.menuContainer:hover .kebabIcon {
+  transform: rotate(90deg);
+}
+
+.menuItems {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menuContainer:hover .menuItems {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.menuContainer.left .menuItems {
+  transform: translateX(10px);
+}
+
+.menuContainer.left:hover .menuItems {
+  transform: translateX(0);
+  padding-right: 3px;
+  padding-left: 3px;
+}
+
+.menuItem {
+  min-width: 20px;
+  height: 20px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  opacity: 0.6;
+}
+
+.menuItem:hover {
+  transition: all 0.3s;
+  opacity: 1;
+}
+
+.menuItem.active {
+  color: #3b82f6;
+}

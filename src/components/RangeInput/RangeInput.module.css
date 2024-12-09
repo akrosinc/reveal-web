@@ -1,0 +1,115 @@
+.rangeContainer {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.rangeWrapper {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  margin: 10px 0;
+}
+
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.range::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: transparent;
+  border-radius: 2px;
+}
+
+.range::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  background: transparent;
+  border-radius: 2px;
+}
+
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background-color: var(--thumb-color, #3b82f6);
+  /* border: 2px solid #fff; */
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  margin-top: -5px;
+  transition: transform 0.15s ease-in-out;
+}
+
+.range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--thumb-color, #3b82f6);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.15s ease-in-out;
+}
+
+.range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.range::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+
+.trackBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #e2e8f0;
+  border-radius: 2px;
+  z-index: 1;
+}
+
+.trackProgress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 2px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.valueContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.value {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}

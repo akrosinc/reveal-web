@@ -1,0 +1,34 @@
+.popupWrapper {
+  padding-top: 1rem;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+  width: 242px;
+}
+
+.datasetInput {
+  width: 7rem;
+}
+
+.datasetInput:focus,
+input:focus {
+  outline: none;
+}
+
+.switchPanel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
+.iconPen {
+  width: 14px;
+  height: 14px;
+}
