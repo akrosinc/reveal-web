@@ -5,10 +5,11 @@ interface CustomStepperProps {
   children: React.ReactNode;
   stepLabels: string[];
   stepperHeader?: string;
+  onFinish?: { label: string; onClick: () => void };
   onClose?: () => void;
 }
 
-function CustomStepper({ children, stepLabels, stepperHeader, onClose }: CustomStepperProps) {
+function CustomStepper({ children, stepLabels, stepperHeader, onClose, onFinish }: CustomStepperProps) {
   const [activeStep, setActiveStep] = useState(0);
 
   const sections = React.Children.toArray(children).filter(
@@ -74,14 +75,24 @@ function CustomStepper({ children, stepLabels, stepperHeader, onClose }: CustomS
         {/* Navigation Controls */}
         <div className={styles.navigation}>
           <button
-            className={`${styles.nextButton}  ${activeStep === 0 ? styles.cancelButton : ''}`}
+            className={`${styles.controlButton}  ${activeStep === 0 ? styles.cancelButton : styles.nextButton}`}
             onClick={activeStep === 0 ? onClose : goToPreviousStep}
           >
             {activeStep === 0 ? 'Cancel' : 'Previous'}
           </button>
-          <button className={styles.nextButton} onClick={goToNextStep} disabled={activeStep === totalSteps - 1}>
-            Next
-          </button>
+          {activeStep === totalSteps - 1 && onFinish ? (
+            <button className={`${styles.controlButton} ${styles.nextButton}`} onClick={onFinish.onClick}>
+              {onFinish.label}
+            </button>
+          ) : (
+            <button
+              className={`${styles.controlButton} ${styles.nextButton}`}
+              onClick={goToNextStep}
+              disabled={activeStep === totalSteps - 1}
+            >
+              Next
+            </button>
+          )}
         </div>
       </div>
     </div>

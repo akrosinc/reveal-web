@@ -101,8 +101,7 @@
   max-width: 400px;
 }
 
-.prevButton,
-.nextButton {
+.controlButton {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
@@ -113,6 +112,7 @@
 .nextButton {
   background-color: #4e8ce9;
   color: white;
+  transition: all 0.3s;
 }
 
 .cancelButton {
@@ -124,4 +124,8 @@
 .nextButton:disabled {
   background-color: #e0e0e0;
   cursor: not-allowed;
+}
+
+.nextButton:hover {
+  background-color: #3f7bd5;
 }

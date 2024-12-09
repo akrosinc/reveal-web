@@ -5,7 +5,12 @@ import styles from './AddTargetAreaForm.module.css';
 
 function AddTargetAreaForm({ onClose }: { onClose: () => void }) {
   return (
-    <CustomStepper onClose={onClose} stepperHeader={'Add Target Area'} stepLabels={['Template dowload', 'File upload']}>
+    <CustomStepper
+      onClose={onClose}
+      stepperHeader={'Add Target Area'}
+      stepLabels={['Template dowload', 'File upload']}
+      onFinish={{ label: 'Add Target Area', onClick: () => {} }}
+    >
       <section className={styles.step}>
         <div className={styles.templateDowloadWrapper}>
           <DrawerButton onClick={() => {}}>Export Template</DrawerButton>

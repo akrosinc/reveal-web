@@ -70,6 +70,7 @@ import { CustomPopup } from '../../../components/CustomPopup/CustomPopup';
 import DatasetsAccordion from '../../location/components/DatasetsAccordion/DatasetsAccordion';
 import CustomStepper from '../../../components/CustomStepper/CustomStepper';
 import AddTargetAreaForm from './SimulationMapView/components/AddTargetAreaForm/AddTargetAreaForm';
+import AddDatasetForm from './SimulationMapView/components/AddDatasetForm/AddDatasetForm';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 interface SubmitValue {
@@ -1643,12 +1644,7 @@ const Simulation = () => {
                 <DrawerButton onClick={() => setOpenCustomModal(1)}>Add dataset</DrawerButton>
                 <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <div className="p-6">
-                    <button
-                      onClick={() => setOpenCustomModal(undefined)}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                    >
-                      Got it
-                    </button>
+                    <AddDatasetForm onClose={() => setOpenCustomModal(undefined)} />
                   </div>
                 </CustomPopup>
               </Accordion>
