@@ -9,7 +9,7 @@ import { ActionDialog } from '../../../components/Dialogs';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
-import { evaluate, isNumeric } from 'mathjs';
+import { evaluate, isNumeric, sum } from 'mathjs';
 import simulationStyle from './Simulation.module.css';
 
 import {
@@ -71,6 +71,8 @@ import DatasetsAccordion from '../../location/components/DatasetsAccordion/Datas
 import CustomStepper from '../../../components/CustomStepper/CustomStepper';
 import AddTargetAreaForm from './SimulationMapView/components/AddTargetAreaForm/AddTargetAreaForm';
 import AddDatasetForm from './SimulationMapView/components/AddDatasetForm/AddDatasetForm';
+import CampaignTotals from './SimulationMapView/components/CampaignTotalsAccordion/CampaignTotalsAccordion';
+import CampaignTotalsAccordion from './SimulationMapView/components/CampaignTotalsAccordion/CampaignTotalsAccordion';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 interface SubmitValue {
@@ -1276,6 +1278,99 @@ const Simulation = () => {
     }
   ];
 
+  const campaignTotals = [
+    {
+      label: 'Target Areas',
+      total: 80,
+      targetAreasList: [
+        {
+          name: 'Target Area 1',
+          sum: 20
+        },
+        {
+          name: 'Target Area 2',
+          sum: 30
+        },
+        {
+          name: 'Target Area 3',
+          sum: 30
+        }
+      ]
+    },
+    {
+      label: 'Total Population',
+      total: 1000,
+      targetAreasList: [
+        {
+          name: 'Target Area 1',
+          sum: 200
+        },
+        {
+          name: 'Target Area 2',
+          sum: 300
+        },
+        {
+          name: 'Target Area 3',
+          sum: 500
+        }
+      ]
+    },
+    {
+      label: 'Total Structures',
+      total: 200,
+      targetAreasList: [
+        {
+          name: 'Target Area 1',
+          sum: 50
+        },
+        {
+          name: 'Target Area 2',
+          sum: 100
+        },
+        {
+          name: 'Target Area 3',
+          sum: 50
+        }
+      ]
+    },
+    {
+      label: 'Total Facilities',
+      total: 50,
+      targetAreasList: [
+        {
+          name: 'Target Area 1',
+          sum: 10
+        },
+        {
+          name: 'Target Area 2',
+          sum: 20
+        },
+        {
+          name: 'Target Area 3',
+          sum: 20
+        }
+      ]
+    },
+    {
+      label: 'Total Statistics',
+      total: 100,
+      targetAreasList: [
+        {
+          name: 'Target Area 1',
+          sum: 20
+        },
+        {
+          name: 'Target Area 2',
+          sum: 30
+        },
+        {
+          name: 'Target Area 3',
+          sum: 50
+        }
+      ]
+    }
+  ];
+
   return (
     <>
       <Container fluid ref={divRef}>
@@ -1677,32 +1772,18 @@ const Simulation = () => {
           />
           <Drawer open={rightOpen} anchor="left">
             <Accordion title="Statistics" open>
-              <Switch
-                leftOption="Overview"
-                rightOption="Performance"
-                leftContent={
-                  <Dashboard
-                    chartData={{
-                      summary: [15, 35, 60, 25],
-                      male: [40, 10, 55, 30],
-                      female: [25, 50, 15, 45]
-                    }}
-                  />
-                }
-                rightContent={
-                  <div>
-                    <div>
-                      <div>
-                        <h3>Performance Panel</h3>
-                        <p>
-                          Lorem ipsum dolor sit amet consectetur adipisicing elit. Amet tenetur nam consequuntur animi
-                          expedita ipsa dolorem, omnis impedit ad tempora eum! Molestias laudantium suscipit impedit?
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                }
+              <Dashboard
+                chartData={{
+                  summary: [15, 35, 60, 25],
+                  male: [40, 10, 55, 30],
+                  female: [25, 50, 15, 45]
+                }}
               />
+            </Accordion>
+            <Accordion title="Campaign Totals" open>
+              {campaignTotals.map((item, index) => (
+                <CampaignTotalsAccordion key={index} campaignTotals={item} />
+              ))}
             </Accordion>
           </Drawer>
         </div>

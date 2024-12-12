@@ -1,15 +1,15 @@
 import { ChangeEvent, useRef, useState } from 'react';
-import styles from '../accordion/Accordion.module.css';
-import DatasetStyles from './DatasetsAccordion.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Color, ColorPicker, useColor } from 'react-color-palette';
 import { CustomPopup } from '../../../../components/CustomPopup/CustomPopup';
-import RangeInput from '../../../../components/RangeInput/RangeInput';
-import SwitchButton from '../../../../components/SwitchButton/SwitchButton';
 import { DualRangeSlider } from '../../../../components/DualRangeSlider/DualRangeSlider';
 import { Switch } from '../../../../components/Switch/Switch';
+import SwitchButton from '../../../../components/SwitchButton/SwitchButton';
+import RangeInput from '../../../../components/RangeInput/RangeInput';
 import ItemMenu from './ItemMenu';
 
+import styles from '../accordion/Accordion.module.css';
+import DatasetStyles from './DatasetsAccordion.module.css';
 interface DatasetsAccordionProps {
   open?: boolean;
   index: number;
@@ -156,24 +156,26 @@ function DatasetsAccordion({ open = false, index, dataset }: DatasetsAccordionPr
           icon={isOpen ? 'chevron-down' : 'chevron-right'}
         />
       </div>
-      <div className={`${styles.accordion_item} ${styles.parrentAccordion} ${!isOpen ? `${styles.collapsed}` : ''}`}>
+      <div className={`${styles.accordion_item} ${!isOpen ? `${styles.collapsed}` : ''}`}>
         <div className={`${styles.accordion_content}`}>
-          <SwitchButton
-            id={dataset.name}
-            isOn={checked}
-            title={'Filter'}
-            handleToggle={() => setChecked(!checked)}
-            colorOne={dataset.color && customColor.hex}
-          />
-          <DualRangeSlider
-            min={0}
-            max={100}
-            step={25}
-            defaultMinValue={25}
-            defaultMaxValue={75}
-            inactive={checked}
-            color={checked ? customColor : undefined}
-          />
+          <div className={DatasetStyles.rangeSwitchPicker}>
+            <SwitchButton
+              id={dataset.name}
+              isOn={checked}
+              title={'Filter'}
+              handleToggle={() => setChecked(!checked)}
+              colorOne={dataset.color && customColor.hex}
+            />
+            <DualRangeSlider
+              min={0}
+              max={100}
+              step={25}
+              defaultMinValue={25}
+              defaultMaxValue={75}
+              inactive={checked}
+              color={checked ? customColor : undefined}
+            />
+          </div>
         </div>
       </div>
     </div>

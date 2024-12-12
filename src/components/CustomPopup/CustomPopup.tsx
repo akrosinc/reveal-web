@@ -29,7 +29,6 @@ export function CustomPopup({ isOpen, onClose, children, referenceElement, hasBa
 
     // Adjust position if popup goes beyond the container's bottom
     if (top + popupRect.height > containerRect.bottom + scrollY - 60) {
-      // top = containerRect.top - popupRect.height + scrollY;
       top = containerRect.bottom - popupRect.height - 60;
     }
 
@@ -82,6 +81,22 @@ export function CustomPopup({ isOpen, onClose, children, referenceElement, hasBa
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, onClose, referenceElement]);
+
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscKey);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen || !position) return null;
 

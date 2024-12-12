@@ -23,6 +23,11 @@ input:focus {
   padding-right: 1rem;
 }
 
+.rangeSwitchPicker {
+  margin-top: 1rem;
+  margin-left: 1rem;
+}
+
 .icon {
   width: 20px;
   height: 20px;

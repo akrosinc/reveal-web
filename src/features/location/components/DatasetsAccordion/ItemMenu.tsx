@@ -1,6 +1,6 @@
 import ExpandableMenu from '../../../../components/ExpandableMenu/ExpandableMenu';
 import MenuButton from '../../../../components/ExpandableMenu/MenuButton';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Trash from '../../../../assets/svgs/trash-bin.svg';
 import Pen from '../../../../assets/svgs/pen-solid.svg';
 import Eye from '../../../../assets/svgs/eye-regular.svg';
 import EyeSlash from '../../../../assets/svgs/eye-slash-regular.svg';
@@ -30,7 +30,7 @@ export function ItemMenu({
         <img className={styles.icon} src={isVisible ? Eye : EyeSlash} alt="show\hide" />
       </MenuButton>
       <MenuButton onClick={onDelete} title="Delete">
-        <FontAwesomeIcon icon="trash" />
+        <img className={styles.icon} src={Trash} alt="delete" />
       </MenuButton>
     </ExpandableMenu>
   );

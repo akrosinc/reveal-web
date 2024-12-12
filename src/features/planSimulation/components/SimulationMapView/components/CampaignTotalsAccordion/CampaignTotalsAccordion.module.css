@@ -1,0 +1,59 @@
+.total {
+  margin-left: auto;
+}
+
+.targetAreaItem {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  color: #444444;
+  margin-left: 2.2rem;
+}
+
+.paragraph {
+  margin-bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  line-height: 35px;
+}
+
+.hoverButton {
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.itemDot {
+  position: absolute;
+  left: -18px;
+  width: 5px;
+  height: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background-color: #444444;
+  margin-right: 0.5rem;
+}
+
+.hoverButton img {
+  transition: width 0.2s;
+  width: 0rem;
+  opacity: 0.7;
+  height: 17px;
+}
+
+.targetAreaItem:hover .hoverButton img {
+  visibility: visible;
+  width: 17px;
+  height: 17px;
+}
+
+.targetAreaItem:hover .hoverButton {
+  margin-left: 0.5rem;
+}

@@ -7,9 +7,8 @@
   width: 100%;
   color: black;
   padding: 10px 20px;
-  /* font-size: 16px; */
   font-weight: 500;
-  display: inline-block; /* Prevent inline element issues */
+  display: inline-block;
   transition: transform 0.3s ease;
   will-change: transform;
   margin: 0;
@@ -17,4 +16,8 @@
 
 .button:hover {
   transform: scale(1.05);
+}
+
+.button:focus-visible {
+  outline: none;
 }
