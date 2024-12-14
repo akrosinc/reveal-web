@@ -101,10 +101,15 @@ export const getLocationsSSE = (
   statsHandler: (e: any) => any,
   locationAggregationHandler: (e: any) => any,
   locationAggregationDefinitionHandler: (e: any) => any,
-  resultsErrorHandler: (e: any) => any
+  resultsErrorHandler: (e: any) => any,
+  token: string
 ) => {
   const events = new EventSource(
-    process.env.REACT_APP_API_URL + '/entityTag/filter-sse?simulationRequestId=' + requestData.simulationRequestId
+    process.env.REACT_APP_API_URL +
+      '/entityTag/filter-sse?simulationRequestId=' +
+      requestData.simulationRequestId +
+      '&token=' +
+      token
   );
   events.addEventListener('message', messageHandler);
   events.addEventListener('open', _ => {

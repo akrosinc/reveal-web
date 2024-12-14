@@ -321,7 +321,15 @@ const Report = () => {
           //reset search input on new load
           if (searchInput.current) searchInput.current.value = '';
           //mapping location properties to data usable for table view
-          const tableData = res.features.map(el => el.properties);
+          const tableData = res.features
+            .filter(
+              (feature: any) =>
+                feature != null &&
+                feature.properties != null &&
+                feature.properties.businessStatus !== null &&
+                feature.properties.businessStatus !== 'No State'
+            )
+            .map(el => el.properties);
           //casting to any because of using custom geoJSON object
           const defaultDisplayColumn: string | undefined = (res as any).defaultDisplayColumn;
           if (tableData.length) {

@@ -27,6 +27,7 @@ interface Props {
   showModal: (show: boolean, feature?: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => void;
   defaultColumn: string;
 }
+
 const AGE_COVERAGE_LEGEND = [
   { label: 'Male 1-4 years', key: 'Male 1-4 years' },
   { label: 'Male 5-14 years', key: 'Male 5-14 years' },
@@ -93,10 +94,10 @@ const MapViewDetail = React.forwardRef<any, Props>(
             contextMenuPopup.current
               .setLngLat(e.lngLat)
               .setHTML(
-                `<h4 class='bg-success text-center'>Action menu</h4>
-              <div class='m-0 p-0 text-center'>
+                `<h4 class="bg-success text-center">Action menu</h4>
+              <div class="m-0 p-0 text-center">
               <p>Property name: ${feature.properties?.name}</p>
-              <button class='btn btn-primary mb-2' id='report-detail-button'>Details</button>
+              <button class="btn btn-primary mb-2" id="report-detail-button">Details</button>
               </div>`
               )
               .addTo(mapInstance);
@@ -114,11 +115,22 @@ const MapViewDetail = React.forwardRef<any, Props>(
     const loadLocationSet = useCallback(
       (
         currentMap: Map,
-        data: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>,
+        inputData: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>,
         parentLocationIdentifier: string,
         path: string[]
       ) => {
         //check if its clear map event or new location otherwise just fit to bounds
+        let dataFeatures: Feature<Polygon | MultiPolygon | Point, ReportLocationProperties>[] = (
+          inputData as any
+        ).features.filter(
+          (feature: any) =>
+            feature != null &&
+            feature.properties != null &&
+            feature.properties.businessStatus !== null &&
+            feature.properties.businessStatus !== 'No State'
+        );
+        let data = inputData;
+        data.features = dataFeatures;
         if (currentMap.getSource(parentLocationIdentifier) === undefined && data.features.length) {
           disableMapInteractions(currentMap, true);
           currentMap.addSource(parentLocationIdentifier, {
@@ -242,25 +254,25 @@ const MapViewDetail = React.forwardRef<any, Props>(
 
                 let ageCoverageLegend = filteredAgeCoverage
                   ?.map(e => {
-                    return `<div className='p-2'><span className="my-3">${e.label}: ${
+                    return `<div className="p-2"><span className="my-3">${e.label}: ${
                       properties['columnDataMap'][e.key].value
                     }</span></div>`;
                   })
                   .join(' ');
 
-                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4> ${ageCoverageLegend}`;
+                htmlText = `<h4 class="bg-success text-light text-center">${properties['name']}</h4> ${ageCoverageLegend}`;
               } else if (reportType === ReportType.ONCHOCERCIASIS_SURVEY && properties['reportLevel'] !== 'Structure') {
                 let onchoCoverageLegend = ONCHO_COVERAGE_LEGEND.map(e => {
-                  return `<div className='p-2'><span className="my-3">${e.label}: ${
+                  return `<div className="p-2"><span className="my-3">${e.label}: ${
                     properties['columnDataMap'][e.key]?.value
                   }</span></div>`;
                 }).join(' ');
 
-                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4> ${onchoCoverageLegend}`;
+                htmlText = `<h4 class="bg-success text-light text-center">${properties['name']}</h4> ${onchoCoverageLegend}`;
               } else if (defaultColumnName) {
-                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4>
-            <div class='p-2'>
-              ${`<small class='my-3'>${defaultColumnName ?? 'Data not parsed correctly'}: ${
+                htmlText = `<h4 class="bg-success text-light text-center">${properties['name']}</h4>
+            <div class="p-2">
+              ${`<small class="my-3">${defaultColumnName ?? 'Data not parsed correctly'}: ${
                 properties['columnDataMap'][defaultColumnName] !== undefined
                   ? properties['columnDataMap'][defaultColumnName].isPercentage
                     ? properties['columnDataMap'][defaultColumnName].value.toFixed(3) + '%'
@@ -269,9 +281,9 @@ const MapViewDetail = React.forwardRef<any, Props>(
               }</small>`}
             </div>`;
               } else if (properties['businessStatus']) {
-                htmlText = `<h4 class='bg-success text-light text-center'>${properties['name']}</h4>
-            <div class='p-2'>
-              ${`<small class='my-3'>Business Status: ${
+                htmlText = `<h4 class="bg-success text-light text-center">${properties['name']}</h4>
+            <div class="p-2">
+              ${`<small class="my-3">Business Status: ${
                 (reportType === ReportType.IRS_FULL_COVERAGE ||
                   reportType === ReportType.IRS_LITE_COVERAGE ||
                   reportType === ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL) &&
