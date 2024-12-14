@@ -1064,7 +1064,7 @@ const Simulation = () => {
     if (selectedHierarchy) {
       let tagsMeta: EntityTag[] = [];
       getDataAssociatedEntityTags(selectedHierarchy.identifier).then(res => {
-        tagsMeta = res.entityTagResponses;
+        tagsMeta = res.entityTagResponses || tagsMeta;
         setEntityTags(tagsMeta);
         setEntityTagsOriginal(tagsMeta);
         let tagsEvent: EntityTag[] = [];
