@@ -31,3 +31,5 @@ export const TAG_MANAGEMENT = '/admin/tag-management';
 export const METADATA_IMPORT = '/admin/metadata-import';
 
 export const DATA_PROCESSING_PROGRESS = '/admin/kafka-messaging';
+
+export const DATA_EXTRACTS = '/admin/data-extracts';

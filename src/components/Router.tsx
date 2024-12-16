@@ -11,7 +11,8 @@ import {
   REPORTING_PAGE,
   RESOURCE_PLANNING_PAGE,
   SIMULATION_PAGE,
-  TAG_MANAGEMENT
+  TAG_MANAGEMENT,
+  DATA_EXTRACTS
 } from '../constants/';
 import Home from '../pages/HomePage';
 import Plan from '../pages/Plan';
@@ -27,6 +28,7 @@ import MetaDataImport from '../pages/MetaDataImport';
 import ResourcePlanning from '../pages/ResourcePlanning';
 import DataProcessingProgress from '../features/technical/components/DataProcessingProgress';
 import TagManagement2 from '../pages/TagManagement/TagManagement2';
+import DataExtracts from '../pages/DataExtracts/DataExtracts';
 
 const Router = () => {
   const { keycloak, initialized } = useKeycloak();
@@ -54,6 +56,9 @@ const Router = () => {
           </Route>
           <Route path={RESOURCE_PLANNING_PAGE + '/*'} element={<ResourcePlanning />}>
             <Route path=":tab" element={<ResourcePlanning />} />
+          </Route>
+          <Route path={DATA_EXTRACTS + '/*'} element={<DataExtracts />}>
+            <Route path=":tab" element={<DataExtracts />} />
           </Route>
           <Route path="*" element={<ErrorPage />} />
         </Routes>

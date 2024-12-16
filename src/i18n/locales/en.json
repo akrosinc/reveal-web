@@ -21,7 +21,8 @@
     "TagManagement": "Tag Management",
     "MetaDataImport": "Metadata Import",
     "Resource Planning": "Resource Planning",
-    "dataProcessingProgress": "Data Processing Progress"
+    "dataProcessingProgress": "Data Processing Progress",
+    "extracts": "Data Extracts"
   },
   "publicPage": {
     "supportedBy": "supported by",
@@ -369,5 +370,9 @@
       "removeAccess": "Remove Access",
       "delete": "Delete Tag"
     }
+  },
+  "dataExtract": {
+    "fetchDataExtract":"Fetch Data Extract",
+    "setDataExtractQuery":"Set Data Extract Query"
   }
 }
