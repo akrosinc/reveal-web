@@ -261,13 +261,10 @@
 
 // export default SimulationResultExpandingTable;
 
-import React, { useState } from 'react';
-// import { Button } from 'react-bootstrap';
+import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// import { ROW_DEPTH_COLOR_1, ROW_DEPTH_COLOR_2, ROW_DEPTH_COLOR_3 } from '../../constants';
 import { useAppSelector } from '../../store/hooks';
-import { getBackgroundStyle } from '../../features/planSimulation/components/SimulationMapView/SimulationMapView';
-import { MarkedLocation, AnalysisLayer } from '../../features/planSimulation/components/Simulation';
+import { MarkedLocation } from '../../features/planSimulation/components/Simulation';
 import styles from './SimulationResultExpandingTable.module.css';
 
 interface Props {
@@ -283,8 +280,6 @@ interface Props {
 const SimulationResultExpandingTable = ({
   data,
   clickHandler,
-  detailsClickHandler,
-  summaryClickHandler,
   markedLocations,
   showOnlyMarkedLocations,
   markedParents
@@ -304,32 +299,8 @@ const SimulationResultExpandingTable = ({
     });
   };
 
-  // const getColorLevel = (depth: number) => {
-  //   if (depth === 0) return '';
-  //   if (depth === 1) return ROW_DEPTH_COLOR_1;
-  //   if (depth === 2) return ROW_DEPTH_COLOR_2;
-  //   return ROW_DEPTH_COLOR_3;
-  // };
-
-  const renderMethodItems = (methodItems: AnalysisLayer[]) => {
-    return methodItems.map((methodItem: AnalysisLayer, index: number) => (
-      <div className={styles.methodItemWrapper}>
-        <div
-          key={index}
-          title={methodItem.labelName}
-          className={styles.methodItem}
-          style={{
-            background: getBackgroundStyle(methodItem.color.rgb)
-          }}
-        >
-          {'  '}
-        </div>
-      </div>
-    ));
-  };
-
   const renderRow = (row: any, depth: number) => {
-    const { identifier, properties, method } = row;
+    const { identifier, properties } = row;
 
     const isMarked = markedLocations.some(location => location.identifier === identifier);
     const isMarkedParent = markedParents.has(identifier);
@@ -349,13 +320,13 @@ const SimulationResultExpandingTable = ({
           }}
         >
           <div className={styles.expander} style={{ paddingLeft: `${depth === 0 ? 0 : depth * 2}rem` }}>
-            {properties.hasResultChild && <FontAwesomeIcon icon={isExpanded ? 'chevron-down' : 'chevron-right'} />}
+            {/* {properties.hasResultChild && <FontAwesomeIcon icon={isExpanded ? 'chevron-down' : 'chevron-right'} />} */}
+            {row.children.length > 0 && <FontAwesomeIcon icon={isExpanded ? 'chevron-down' : 'chevron-right'} />}
           </div>
           <div className={styles.name}>{properties.name}</div>
           {/* <div>
             <Button onClick={() => summaryClickHandler(row)}>Summary</Button>
           </div> */}
-          <div className={styles.details}>{method && renderMethodItems(method)}</div>
         </div>
         {isExpanded && row.children && row.children.map((childRow: any) => renderRow(childRow, depth + 1))}
       </div>

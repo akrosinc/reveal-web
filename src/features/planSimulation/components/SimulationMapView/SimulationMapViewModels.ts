@@ -5,6 +5,7 @@ import { EntityTag, PlanningParentLocationResponse, PlanningLocationResponse } f
 import { StatsLayer, Children, AnalysisLayer } from '../Simulation';
 
 export interface SimulationMapViewProps {
+  polygons?: any[]; //
   loading: string;
   leftOpenHandler: () => void;
   rightOpenHandler: () => void;
@@ -26,6 +27,7 @@ export interface SimulationMapViewProps {
   updateMarkedLocations: (identifier: string, ancestry: string[], marked: boolean) => void;
   parentChild: { [parent: string]: Children };
   analysisLayerDetails: AnalysisLayer[];
+  selectedLoaction?: any;
 }
 
 export interface LineWidth {

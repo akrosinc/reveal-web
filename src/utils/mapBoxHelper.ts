@@ -26,6 +26,7 @@ import {
   PlanningLocationResponseTagged,
   PlanningParentLocationResponse
 } from '../features/planSimulation/providers/types';
+import { Color } from 'react-color-palette';
 
 export interface LocationProperties {
   id: string;
@@ -718,7 +719,7 @@ export const loadChildren = (map: Map, id: string, planId: string, opacity: numb
     });
 };
 
-export const createLocationLabel = (map: Map, data: any, center: Feature<Point, Properties>) => {
+export const createLocationLabel = (map: Map, data: any, center: Feature<Point, Properties>, color?: string) => {
   if (map.getSource(data.identifier + 'Label') === undefined) {
     map.addSource(data.identifier + 'Label', {
       type: 'geojson',
@@ -728,7 +729,8 @@ export const createLocationLabel = (map: Map, data: any, center: Feature<Point, 
 
     map.addLayer({
       id: data.identifier + 'Label',
-      minzoom: map.getZoom() - 1.0,
+      // minzoom: map.getZoom() - 1.0,
+      minzoom: map.getZoom() - 1.5,
       type: 'symbol',
       source: data.identifier + 'Label',
       layout: {
@@ -739,7 +741,7 @@ export const createLocationLabel = (map: Map, data: any, center: Feature<Point, 
         'text-anchor': 'bottom'
       },
       paint: {
-        'text-color': 'white'
+        'text-color': color ?? '#000000'
       }
     });
   }

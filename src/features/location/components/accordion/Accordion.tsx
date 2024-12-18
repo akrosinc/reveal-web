@@ -20,7 +20,9 @@ function Accordion({ title, open = false, children, parent = true }: AccordionPr
     <div className={`${styles.accordion_Wrapper}`}>
       <div
         className={`${styles.accordion_title} ${isOpen ? styles.open : ''}`}
-        onClick={() => setOpen(!isOpen)}
+        onClick={() => {
+          setOpen(!isOpen);
+        }}
         style={{ position: 'relative' }}
       >
         <span>{title}</span>

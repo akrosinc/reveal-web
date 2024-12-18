@@ -3,26 +3,19 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { MAPBOX_STYLE_STREETS } from '../../../../constants';
 import {
+  createLocationLabel,
   disableMapInteractions,
   fitCollectionToBounds,
   getFeatureCentresFromLocation,
   getGeoListFromMapData,
+  getPolygonCenter,
   getTagStats,
   initSimulationMap,
   PARENT_LABEL_SOURCE,
   PARENT_SOURCE
 } from '../../../../utils';
 import { PlanningLocationResponse, PlanningParentLocationResponse } from '../../providers/types';
-import {
-  Feature,
-  FeatureCollection,
-  MultiPoint,
-  MultiPolygon,
-  Point,
-  pointsWithinPolygon,
-  Polygon,
-  Properties
-} from '@turf/turf';
+import { bbox, Feature, MultiPoint, MultiPolygon, Point, pointsWithinPolygon, Polygon, Properties } from '@turf/turf';
 import { Color, useColor } from 'react-color-palette';
 import 'react-color-palette/lib/css/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -33,6 +26,8 @@ import ActionDialog from '../../../../components/Dialogs/ActionDialog';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import styles from './SimulationMapView.module.css';
 import Spinner from 'react-bootstrap/Spinner';
+
+import { FeatureCollection, Geometry } from 'geojson';
 
 // UTISLS
 import {
@@ -53,6 +48,7 @@ import {
 } from './SimulationMapViewConstants';
 import StatisticsPanel from './components/StatisticsPanel/StatisticsPanel';
 import DataSetPanel from './components/DataSetPanel/DataSetPanel';
+import mapboxgl from 'mapbox-gl';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -66,6 +62,7 @@ export const getBackgroundStyle = (value: { r: number; g: number; b: number } | 
 };
 
 const SimulationMapView = ({
+  polygons,
   loading,
   leftOpenHandler,
   rightOpenHandler,
@@ -84,7 +81,8 @@ const SimulationMapView = ({
   map,
   updateMarkedLocations,
   parentChild,
-  analysisLayerDetails
+  analysisLayerDetails,
+  selectedLoaction
 }: SimulationMapViewProps) => {
   const [defColor] = useColor('hex', INITIAL_FILL_COLOR);
 
@@ -334,15 +332,12 @@ const SimulationMapView = ({
 
     map.current.addControl(mapBoxDraw.current, 'bottom-right');
 
-    console.log(map.current.on);
-
     map.current?.on(
       'mouseover',
       'gl-draw-polygon-fill-inactive.hot',
       (e: MapLayerEventType['mouseover'] & EventData) => {
         if (e.features) {
           let acc: Feature<Polygon | MultiPolygon, Properties>[] = [];
-          console.log(e.features);
 
           userDefinedLayers
             .filter(layer => layer.active)
@@ -416,9 +411,180 @@ const SimulationMapView = ({
     }
   }, [resetMap, initializeMap, setResetMap]);
 
+  // useEffect(() => {
+  //   if (toLocation && map && map.current && selectedLoaction) {
+  //     map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction))));
+
+  //     if (map.current.getSource('bounds-border')) {
+  //       map.current.removeLayer('bounds-border');
+  //       map.current.removeSource('bounds-border');
+  //     }
+  //     map.current.addSource('bounds-border', {
+  //       type: 'geojson',
+  //       data: {
+  //         type: 'Feature',
+  //         geometry: selectedLoaction.geometry,
+  //         properties: {}
+  //       }
+  //     });
+
+  //     map.current?.addLayer(
+  //       {
+  //         id: 'bounds-border',
+  //         type: 'fill',
+  //         source: 'bounds-border',
+  //         paint: {
+  //           // 'line-color': '#FF0000',
+  //           // 'line-width': 2
+  //           'fill-outline-color': 'rgba(255, 000, 000, 1)',
+  //           'fill-color': 'rgba(255, 000, 000, 0.4)'
+  //         }
+  //       },
+  //       'label-layer'
+  //     );
+  //   }
+  // }, [toLocation, map, selectedLoaction]);
+
+  // useEffect(() => {
+  //   if (map && map.current && polygons && selectedLoaction) {
+  //     console.log(selectedLoaction, 'selectedLocation');
+  //     map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction))));
+
+  //     polygons.forEach(polygon => {
+  //       const { center } = getPolygonCenter(polygon.geometry);
+  //       createLocationLabel(map.current!, polygon, center);
+  //     });
+
+  //     const geoJsonData: Feature<Geometry, Properties>[] = polygons.map(polygon => ({
+  //       type: 'Feature',
+  //       geometry: polygon.geometry,
+  //       properties: {
+  //         id: polygon.identifier // Unique identifier for interactions
+  //       }
+  //     }));
+
+  //     // Update existing source or add new one
+  //     if (map.current?.getSource('polygons-source')) {
+  //       (map.current.getSource('polygons-source') as GeoJSONSource).setData({
+  //         type: 'FeatureCollection',
+  //         features: geoJsonData
+  //       });
+  //     } else {
+  //       map.current?.addSource('polygons-source', {
+  //         type: 'geojson',
+  //         data: {
+  //           type: 'FeatureCollection',
+  //           features: geoJsonData
+  //         }
+  //       });
+
+  //       // Add a single layer for all polygons
+  //       map.current?.addLayer({
+  //         id: 'polygons-layer',
+  //         type: 'fill',
+  //         source: 'polygons-source',
+  //         paint: {
+  //           'fill-outline-color': 'rgba(255, 0, 0, 1)',
+  //           'fill-color': 'rgba(189, 195, 199, 0.4)'
+  //         }
+  //       });
+  //     }
+
+  //     if (map && map.current && polygons && selectedLoaction) {
+  //       // console.log(map.current.getStyle().layers, 'Available Layers');
+  //       // Your existing logic
+  //     }
+
+  //     // Handle click event on polygons
+  //     map.current?.on('click', 'polygons-layer', e => {
+  //       const clickedPolygon = e.features ? e.features[0] : null;
+  //       if (!clickedPolygon) return;
+  //       const polygonId = clickedPolygon.properties?.id;
+
+  //       // Reset colors for all polygons
+  //       polygons.forEach(polygon => {
+  //         if (map.current?.getLayer(polygon.identifier)) {
+  //           map.current?.setPaintProperty(polygon.identifier, 'fill-color', 'rgba(189, 195, 199, 0.4)');
+  //         }
+  //       });
+
+  //       // Highlight the selected polygon
+  //       // console.log('Polygon clicked:', polygonId === map.current?.getLayer((polygonId + 'Label') as string).id);
+
+  //       // map.current?.setPaintProperty(polygonId, 'fill-color', 'rgba(255, 0, 0, 0.8)');
+  //     });
+  //   }
+  // }, [map, polygons, selectedLoaction]);
+
   useEffect(() => {
-    if (toLocation && map && map.current) map.current?.fitBounds(toLocation);
-  }, [toLocation, map]);
+    if (map && map.current && polygons && selectedLoaction) {
+      console.log(selectedLoaction, 'selectedLocation');
+      map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
+      // Iterate over all polygons
+      polygons.forEach(polygon => {
+        const { center } = getPolygonCenter(polygon.geometry);
+        createLocationLabel(map.current!, polygon, center);
+
+        // console.log('polygon', polygon);
+
+        // Add or update the polygon source
+        if (map.current?.getSource(polygon.identifier)) {
+          // Update existing source
+          (map.current.getSource(polygon.identifier) as GeoJSONSource).setData({
+            type: 'Feature',
+            geometry: polygon.geometry,
+            properties: polygon.identifier
+          });
+        } else {
+          // Add new source
+          map.current?.addSource(polygon.identifier, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              geometry: polygon.geometry,
+              properties: polygon.identifier
+            }
+          });
+
+          // Add layer for the source
+          map.current?.addLayer({
+            id: polygon.identifier,
+            type: 'fill',
+            source: polygon.identifier,
+            paint: {
+              'fill-outline-color': 'rgba(255, 0, 0, 1)', // Border color
+              'fill-color': 'rgba(189, 195, 199, 0.4)' // Fill color
+            }
+          });
+        }
+      });
+    }
+  }, [map, polygons, selectedLoaction]);
+
+  //  LISTENER
+  // useEffect(() => {
+  //   // polygons?.forEach(polygon => {
+  //   if (!selectedLoaction) {
+  //     return;
+  //   }
+  //   map.current?.on('click', selectedLoaction.identifier, e => {
+  //     map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
+
+  //     console.log('Polygon clicked:', e.features);
+
+  //     // map.current?.setPaintProperty(e.features?.[0].source as string, 'fill-color', 'rgba(147, 250, 165, 0.6)');
+
+  //     // Reset all polygons to default color
+  //     // polygons.forEach(({ identifier }) => {
+  //     //   map.current?.setPaintProperty(identifier, 'fill-color', 'rgba(189, 195, 199, 0.4)');
+  //     // });
+  //     // Highlight the clicked polygon
+  //     // console.log('Polygon clicked:', polygon.identifier, e.features);
+  //     // map.current?.setPaintProperty(polygon.identifier, 'fill-color', 'rgba(147, 250, 165, 0.6)'); // Highlight fill color
+  //     // Optionally, handle any custom logic for the selected polygon
+  //   });
+  //   // });
+  // }, [map, selectedLoaction]);
 
   useEffect(() => {
     if (chunkedData) {
