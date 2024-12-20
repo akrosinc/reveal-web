@@ -36,9 +36,9 @@ export const getHierarchy = async () => {
   }
 };
 
-export const getHierarchyPolygon = async (locationId: string) => {
+export const getHierarchyPolygon = async (locationId: string, page: number, size: number) => {
   try {
-    const response = await axios.get(`http://localhost:8080/api/v1/location/${locationId}/children-included`);
+    const response = await axios.get(`http://localhost:8080/api/v1/location/${locationId}/children-included?page=${page}&size=${size}`);
     return response.data;
   } catch (error) {
     console.error(error);

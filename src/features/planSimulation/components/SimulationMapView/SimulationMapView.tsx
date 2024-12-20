@@ -518,7 +518,6 @@ const SimulationMapView = ({
 
   useEffect(() => {
     if (map && map.current && polygons && selectedLoaction) {
-      console.log(selectedLoaction, 'selectedLocation');
       map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
       // Iterate over all polygons
       polygons.forEach(polygon => {

@@ -134,6 +134,19 @@ export interface Children {
   childrenList: string[];
 }
 
+export interface Polygondata {
+  polygonData: any;
+  childrenLoaded: boolean;
+}
+
+interface PolygonsState {
+  [key: string]: Polygondata;
+}
+
+const extractPolygonsFromPolysWithData = (polygonsWithData?: PolygonsState) => {
+  return polygonsWithData ? Object.values(polygonsWithData!).map((polygon: Polygondata) => polygon.polygonData) : []
+}
+
 const Simulation = () => {
   const { t } = useTranslation();
   // const [showModal, setShowModal] = useState(false);
@@ -223,6 +236,8 @@ const Simulation = () => {
   const [geometry, setGeometry] = useState<Geometry>();
   const [currentLocationId, setCurrentLocationId] = useState<string>();
   const [polygons, setPolygons] = useState<any[]>([]);
+  const [polygonsWithData, setPolygonsWithData] = useState<PolygonsState>();
+
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
   useEffect(() => {
@@ -1127,28 +1142,45 @@ const Simulation = () => {
     }
   }, [selectedHierarchy]);
 
-  const loadLocationHandler = (locationId: string) => {
-    getHierarchyPolygon(locationId).then((res: any) => {
-      // AAAAAAAAA
-
-      const selectedLocation = res.find((location: any) => {
-        return location.identifier === locationId;
-      });
-
-      console.log(selectedLocation, 'selectedLocation');
-
-      if (!selectedLocation) {
-        return;
-      }
-      setGeometry(selectedLocation);
-
-      setPolygons(res);
-
+  const loadLocationHandler = async (locationId: string) => {
+    if (polygonsWithData?.[locationId]?.childrenLoaded) {
       setCurrentLocationId(locationId);
+      const selectedLocation = polygonsWithData?.[locationId]?.polygonData;
+      if (selectedLocation) {
+        setGeometry(selectedLocation);
+        setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
+      }
+    } else {
+      let page = 0;
+      let totalPages = 0;
+      const size = 3;
 
-      setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
-    });
-    console.log(geometry, 'res');
+      while (totalPages + 1 >= page) {
+        const res = await getHierarchyPolygon(locationId, page, size);
+
+        setPolygonsWithData((prev) => {
+          const updatedPolygons = { ...prev };
+          res.content.forEach((location: any) => {
+            updatedPolygons[location.identifier] = {
+              polygonData: location,
+              childrenLoaded: location.identifier === locationId
+            }
+          });
+          return updatedPolygons;
+        });
+
+        totalPages = res.totalPages;
+        page++;
+        setCurrentLocationId(locationId);
+        const selectedLocation = res.content.find((location: any) => {
+          return location.identifier === locationId;
+        });
+        if (selectedLocation) {
+          setGeometry(selectedLocation);
+          setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
+        }
+      }
+    }
   };
 
   const showDetailsClickHandler = (locationId: string) => {
@@ -1445,7 +1477,7 @@ const Simulation = () => {
           </Drawer>
           <SimulationMapView
             selectedLoaction={geometry} //
-            polygons={polygons} // LIST OF POLYGONS
+            polygons={extractPolygonsFromPolysWithData(polygonsWithData)} // LIST OF POLYGONS
             loading={resultsLoadingState}
             leftOpenHandler={() => setLeftOpen(!leftOpen)}
             leftOpenState={leftOpen}
