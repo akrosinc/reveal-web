@@ -49,9 +49,10 @@ import {
 import StatisticsPanel from './components/StatisticsPanel/StatisticsPanel';
 import DataSetPanel from './components/DataSetPanel/DataSetPanel';
 import mapboxgl from 'mapbox-gl';
-import { e } from 'mathjs';
+import { e, sin } from 'mathjs';
 
 import * as turf from '@turf/turf';
+import { DrawPolygonsFeature, DrawPolygonsFeatureCollection } from './Helper/MapInteractionsHelper';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -122,6 +123,13 @@ const SimulationMapView = ({
   const [selectedUserDefinedLayer, setSelectedUserDefinedLayer] = useState<UserDefinedLayer | undefined>();
 
   const [showUserDefinedSettingsPanel, setShowUserDefinedSettingsPanel] = useState(false);
+
+  // SELECTIONS ON MAP
+  const [singleSelected, setSingleSelected] = useState([]);
+  const [multiSelected, setMultiSelected] = useState([]);
+
+  const [singleSelectedColor, setSingleSelectedColor] = useState('rgba(160, 217, 74, 0.4)');
+  const [multiSelectedColor, setMultiSelectedColor] = useState('rgba(255, 0, 0, 0.4)');
 
   useEffect(() => {
     if (map.current) return;
@@ -415,176 +423,108 @@ const SimulationMapView = ({
     }
   }, [resetMap, initializeMap, setResetMap]);
 
-  // useEffect(() => {
-  //   if (toLocation && map && map.current && selectedLoaction) {
-  //     map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction))));
-
-  //     if (map.current.getSource('bounds-border')) {
-  //       map.current.removeLayer('bounds-border');
-  //       map.current.removeSource('bounds-border');
-  //     }
-  //     map.current.addSource('bounds-border', {
-  //       type: 'geojson',
-  //       data: {
-  //         type: 'Feature',
-  //         geometry: selectedLoaction.geometry,
-  //         properties: {}
-  //       }
-  //     });
-
-  //     map.current?.addLayer(
-  //       {
-  //         id: 'bounds-border',
-  //         type: 'fill',
-  //         source: 'bounds-border',
-  //         paint: {
-  //           // 'line-color': '#FF0000',
-  //           // 'line-width': 2
-  //           'fill-outline-color': 'rgba(255, 000, 000, 1)',
-  //           'fill-color': 'rgba(255, 000, 000, 0.4)'
-  //         }
-  //       },
-  //       'label-layer'
-  //     );
-  //   }
-  // }, [toLocation, map, selectedLoaction]);
-
-  // useEffect(() => {
-  //   if (map && map.current && polygons && selectedLoaction) {
-  //     console.log(selectedLoaction, 'selectedLocation');
-  //     map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction))));
-
-  //     polygons.forEach(polygon => {
-  //       const { center } = getPolygonCenter(polygon.geometry);
-  //       createLocationLabel(map.current!, polygon, center);
-  //     });
-
-  //     const geoJsonData: Feature<Geometry, Properties>[] = polygons.map(polygon => ({
-  //       type: 'Feature',
-  //       geometry: polygon.geometry,
-  //       properties: {
-  //         id: polygon.identifier // Unique identifier for interactions
-  //       }
-  //     }));
-
-  //     // Update existing source or add new one
-  //     if (map.current?.getSource('polygons-source')) {
-  //       (map.current.getSource('polygons-source') as GeoJSONSource).setData({
-  //         type: 'FeatureCollection',
-  //         features: geoJsonData
-  //       });
-  //     } else {
-  //       map.current?.addSource('polygons-source', {
-  //         type: 'geojson',
-  //         data: {
-  //           type: 'FeatureCollection',
-  //           features: geoJsonData
-  //         }
-  //       });
-
-  //       // Add a single layer for all polygons
-  //       map.current?.addLayer({
-  //         id: 'polygons-layer',
-  //         type: 'fill',
-  //         source: 'polygons-source',
-  //         paint: {
-  //           'fill-outline-color': 'rgba(255, 0, 0, 1)',
-  //           'fill-color': 'rgba(189, 195, 199, 0.4)'
-  //         }
-  //       });
-  //     }
-
-  //     if (map && map.current && polygons && selectedLoaction) {
-  //       // console.log(map.current.getStyle().layers, 'Available Layers');
-  //       // Your existing logic
-  //     }
-
-  //     // Handle click event on polygons
-  //     map.current?.on('click', 'polygons-layer', e => {
-  //       const clickedPolygon = e.features ? e.features[0] : null;
-  //       if (!clickedPolygon) return;
-  //       const polygonId = clickedPolygon.properties?.id;
-
-  //       // Reset colors for all polygons
-  //       polygons.forEach(polygon => {
-  //         if (map.current?.getLayer(polygon.identifier)) {
-  //           map.current?.setPaintProperty(polygon.identifier, 'fill-color', 'rgba(189, 195, 199, 0.4)');
-  //         }
-  //       });
-
-  //       // Highlight the selected polygon
-  //       // console.log('Polygon clicked:', polygonId === map.current?.getLayer((polygonId + 'Label') as string).id);
-
-  //       // map.current?.setPaintProperty(polygonId, 'fill-color', 'rgba(255, 0, 0, 0.8)');
-  //     });
-  //   }
-  // }, [map, polygons, selectedLoaction]);
-
   useEffect(() => {
     if (map && map.current && currentLocationChildren && selectedLoaction) {
       map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
 
-      // Add or update the "parent-source"
+      // console.log('Children:', currentLocationChildren);
 
-      if (!map.current.getSource('parent-source')) {
-        map.current.addSource('parent-source', {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            geometry: selectedLoaction.geometry,
-            properties: selectedLoaction.identifier
-          }
-        });
-      } else {
-        const parentSource = map.current.getSource('parent-source') as mapboxgl.GeoJSONSource;
-        parentSource.setData({
-          type: 'Feature',
-          geometry: selectedLoaction.geometry,
-          properties: selectedLoaction.identifier
-        });
-      }
+      // Add or update the "parent-source"
+      // if (!map.current.getSource('parent-source')) {
+      //   map.current.addSource('parent-source', {
+      //     type: 'geojson',
+      //     data: {
+      //       type: 'Feature',
+      //       geometry: selectedLoaction.geometry,
+      //       properties: selectedLoaction
+      //     }
+      //   });
+      // } else {
+      //   const parentSource = map.current.getSource('parent-source') as mapboxgl.GeoJSONSource;
+      //   parentSource.setData({
+      //     type: 'Feature',
+      //     geometry: selectedLoaction.geometry,
+      //     properties: selectedLoaction
+      //   });
+      // }
+
+      // Add or update the "parent-source" {REFACTORED}
+      DrawPolygonsFeature(map.current, selectedLoaction, 'parent');
 
       // Add or update the "children-source"
-      if (!map.current.getSource('children-source')) {
-        map.current.addSource('children-source', {
-          type: 'geojson',
-          data: {
-            type: 'FeatureCollection',
-            features: currentLocationChildren
-          }
-        });
-      } else {
-        const childrenSource = map.current.getSource('children-source') as mapboxgl.GeoJSONSource;
-        childrenSource.setData({
-          type: 'FeatureCollection',
-          features: currentLocationChildren
-        });
-      }
+      // if (!map.current.getSource('children-source')) {
+      //   map.current.addSource('children-source', {
+      //     type: 'geojson',
+      //     data: {
+      //       type: 'FeatureCollection',
+      //       features: currentLocationChildren
+      //     }
+      //   });
+      // } else {
+      //   const childrenSource = map.current.getSource('children-source') as mapboxgl.GeoJSONSource;
+      //   childrenSource.setData({
+      //     type: 'FeatureCollection',
+      //     features: currentLocationChildren
+      //   });
+      // }
 
-      // Add or update the "parent-layer"
+      // Add or update the "children-source" {REFACTORED}
+      DrawPolygonsFeatureCollection(map.current, currentLocationChildren, 'children');
+
+      // Add or update the "parent-layer" with transparent fill and visible borders
       if (!map.current.getLayer('parent-layer')) {
         map.current.addLayer({
           id: 'parent-layer',
           type: 'fill',
           source: 'parent-source',
           paint: {
-            'fill-color': '#088',
-            'fill-opacity': 0.5
+            'fill-color': 'rgba(57, 62, 65, 0.2)',
+            'fill-outline-color': 'rgba(57, 62, 65, 0.5)'
           }
         });
       }
 
-      // Add or update the "children-layer"
+      // Add or update the "children-layer" with individual polygon colors
       if (!map.current.getLayer('children-layer')) {
         map.current.addLayer({
           id: 'children-layer',
           type: 'fill',
           source: 'children-source',
           paint: {
-            'fill-outline-color': 'rgba(57, 62, 65, 1)',
-            'fill-color': 'rgba(63, 136, 197, 0.4)'
+            'fill-color': [
+              'case',
+              ['in', ['get', 'name'], ['literal', singleSelected]],
+              singleSelectedColor,
+              ['in', ['get', 'name'], ['literal', multiSelected]],
+              multiSelectedColor,
+              'rgba((239, 239, 240, 0.3)' // Default color
+            ],
+            'fill-outline-color': 'rgba(255, 000, 000, 1)'
           }
         });
+
+        map.current.on('click', 'children-layer', e => {
+          const clickedFeature =
+            e.features && e.features[0] && e.features[0].properties ? e.features[0].properties.name : null;
+          if (e.originalEvent.ctrlKey || e.originalEvent.metaKey) {
+            setMultiSelected((prev: any) =>
+              prev.includes(clickedFeature)
+                ? prev.filter((item: any) => item !== clickedFeature)
+                : [...prev, clickedFeature]
+            );
+          } else {
+            setSingleSelected((prev: any) => (prev === clickedFeature ? null : clickedFeature));
+          }
+        });
+      } else {
+        map.current?.setPaintProperty('children-layer', 'fill-color', [
+          'case',
+          ['in', ['get', 'name'], ['literal', singleSelected]],
+          singleSelectedColor,
+          ['in', ['get', 'name'], ['literal', multiSelected]],
+          multiSelectedColor,
+          'rgba(239, 239, 240, 0.3)' // Default color
+        ]);
       }
 
       // Generate label data
@@ -640,37 +580,24 @@ const SimulationMapView = ({
             'text-anchor': 'center'
           },
           paint: {
-            'text-color': '#fff'
+            // 'text-color': '#fff'
+            'text-color': '#000', // White font color
+            'text-halo-color': '#fff', // Black border color
+            'text-halo-width': 2, // Width of the border
+            'text-halo-blur': 1 // Optional: smooth edges
           }
         });
       }
     }
-  }, [map, currentLocationChildren, selectedLoaction]);
-
-  //  LISTENER
-  // useEffect(() => {
-  //   // polygons?.forEach(polygon => {
-  //   if (!selectedLoaction) {
-  //     return;
-  //   }
-  //   map.current?.on('click', selectedLoaction.identifier, e => {
-  //     map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
-
-  //     console.log('Polygon clicked:', e.features);
-
-  //     // map.current?.setPaintProperty(e.features?.[0].source as string, 'fill-color', 'rgba(147, 250, 165, 0.6)');
-
-  //     // Reset all polygons to default color
-  //     // polygons.forEach(({ identifier }) => {
-  //     //   map.current?.setPaintProperty(identifier, 'fill-color', 'rgba(189, 195, 199, 0.4)');
-  //     // });
-  //     // Highlight the clicked polygon
-  //     // console.log('Polygon clicked:', polygon.identifier, e.features);
-  //     // map.current?.setPaintProperty(polygon.identifier, 'fill-color', 'rgba(147, 250, 165, 0.6)'); // Highlight fill color
-  //     // Optionally, handle any custom logic for the selected polygon
-  //   });
-  //   // });
-  // }, [map, selectedLoaction]);
+  }, [
+    map,
+    currentLocationChildren,
+    selectedLoaction,
+    singleSelected,
+    multiSelected,
+    singleSelectedColor,
+    multiSelectedColor
+  ]);
 
   useEffect(() => {
     if (chunkedData) {

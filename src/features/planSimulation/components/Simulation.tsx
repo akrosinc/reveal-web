@@ -1106,16 +1106,16 @@ const Simulation = () => {
           }
         });
 
-        if (mapData.parents) {
-          let highestLocations: any[] = Object.keys(mapData.parents)
-            .filter(
-              key =>
-                mapData.parents[key].properties !== null &&
-                mapData.parents[key].properties?.geographicLevelNodeNumber === min
-            )
-            .map(key => mapData.parents[key]);
-          // setHighestLocations(highestLocations);
-        }
+        // if (mapData.parents) {
+        //   let highestLocations: any[] = Object.keys(mapData.parents)
+        //     .filter(
+        //       key =>
+        //         mapData.parents[key].properties !== null &&
+        //         mapData.parents[key].properties?.geographicLevelNodeNumber === min
+        //     )
+        //     .map(key => mapData.parents[key]);
+        //   // setHighestLocations(highestLocations);
+        // }
       }
     }
   }, [mapData, resultsLoaded, parentsLoaded, getLocationHierarchyFromLowestLocation, markedLocations]);
@@ -1144,9 +1144,9 @@ const Simulation = () => {
 
   const loadLocationHandler = async (locationId: string) => {
     if (polygonsWithData?.[locationId]?.childrenLoaded) {
-
       setCurrentLocationId(locationId);
-      const k = Object.values(polygonsWithData).map(polygon => polygon.polygonData)
+      const k = Object.values(polygonsWithData)
+        .map(polygon => polygon.polygonData)
         .filter(p => p.properties.parentIdentifier === locationId);
       console.log(k);
       setSelectedLocationChildren(k);
@@ -1251,7 +1251,6 @@ const Simulation = () => {
 
   //       // Handle the current location geometry
 
-
   //       // Check for the last page
   //       if (page >= res.totalPages - 1) break;
   //       page++;
@@ -1332,54 +1331,54 @@ const Simulation = () => {
     setShowResult(true);
   };
 
-  const conditionalRender = (el: EntityTag, index: number) => {
-    if (el.more && el.more.length) {
-      return (
-        <MultiFormField
-          entityTag={el}
-          register={register}
-          index={index}
-          errors={errors}
-          deleteHandler={(i: number, range: boolean) => {
-            if (range) {
-              el.more.splice(1);
-            } else {
-              unregister((el.tag + index + 'range') as any);
-              el.more.splice(i, 1);
-            }
-            setSelectedEntityConditionList([...selectedEntityConditionList]);
-          }}
-        />
-      );
-    }
-    return <FormField range={false} entityTag={el} register={register} index={index} errors={errors} />;
-  };
+  // const conditionalRender = (el: EntityTag, index: number) => {
+  //   if (el.more && el.more.length) {
+  //     return (
+  //       <MultiFormField
+  //         entityTag={el}
+  //         register={register}
+  //         index={index}
+  //         errors={errors}
+  //         deleteHandler={(i: number, range: boolean) => {
+  //           if (range) {
+  //             el.more.splice(1);
+  //           } else {
+  //             unregister((el.tag + index + 'range') as any);
+  //             el.more.splice(i, 1);
+  //           }
+  //           setSelectedEntityConditionList([...selectedEntityConditionList]);
+  //         }}
+  //       />
+  //     );
+  //   }
+  //   return <FormField range={false} entityTag={el} register={register} index={index} errors={errors} />;
+  // };
 
-  const selectStyles = {
-    dropdownIndicator: (baseStyles: object) => ({
-      ...baseStyles,
-      scale: '0.8'
-    }),
-    clearIndicator: (baseStyles: object) => ({
-      ...baseStyles,
-      scale: '0.8'
-    })
-  };
+  // const selectStyles = {
+  //   dropdownIndicator: (baseStyles: object) => ({
+  //     ...baseStyles,
+  //     scale: '0.8'
+  //   }),
+  //   clearIndicator: (baseStyles: object) => ({
+  //     ...baseStyles,
+  //     scale: '0.8'
+  //   })
+  // };
 
-  const convertColor = (color: any) => {
-    if (!color) return;
-    let hexValue = color.toString();
-    let rgbArr = hex.rgb(hexValue);
-    let hsvArr = hex.hsv(hexValue);
+  // const convertColor = (color: any) => {
+  //   if (!color) return;
+  //   let hexValue = color.toString();
+  //   let rgbArr = hex.rgb(hexValue);
+  //   let hsvArr = hex.hsv(hexValue);
 
-    let convertedColor = {
-      hex: '#009900',
-      rgb: { r: rgbArr[0], g: rgbArr[1], b: rgbArr[2] },
-      hsv: { h: hsvArr[0], s: hsvArr[1], v: hsvArr[2] }
-    };
+  //   let convertedColor = {
+  //     hex: '#009900',
+  //     rgb: { r: rgbArr[0], g: rgbArr[1], b: rgbArr[2] },
+  //     hsv: { h: hsvArr[0], s: hsvArr[1], v: hsvArr[2] }
+  //   };
 
-    return convertedColor as Color;
-  };
+  //   return convertedColor as Color;
+  // };
 
   const dataset = [
     {
