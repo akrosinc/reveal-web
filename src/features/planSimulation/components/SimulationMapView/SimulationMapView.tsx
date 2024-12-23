@@ -49,6 +49,9 @@ import {
 import StatisticsPanel from './components/StatisticsPanel/StatisticsPanel';
 import DataSetPanel from './components/DataSetPanel/DataSetPanel';
 import mapboxgl from 'mapbox-gl';
+import { e } from 'mathjs';
+
+import * as turf from '@turf/turf';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -62,6 +65,7 @@ export const getBackgroundStyle = (value: { r: number; g: number; b: number } | 
 };
 
 const SimulationMapView = ({
+  currentLocationChildren,
   polygons,
   loading,
   leftOpenHandler,
@@ -517,48 +521,131 @@ const SimulationMapView = ({
   // }, [map, polygons, selectedLoaction]);
 
   useEffect(() => {
-    if (map && map.current && polygons && selectedLoaction) {
+    if (map && map.current && currentLocationChildren && selectedLoaction) {
       map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
-      // Iterate over all polygons
-      polygons.forEach(polygon => {
-        const { center } = getPolygonCenter(polygon.geometry);
-        createLocationLabel(map.current!, polygon, center);
 
-        // console.log('polygon', polygon);
+      // Add or update the "parent-source"
 
-        // Add or update the polygon source
-        if (map.current?.getSource(polygon.identifier)) {
-          // Update existing source
-          (map.current.getSource(polygon.identifier) as GeoJSONSource).setData({
+      if (!map.current.getSource('parent-source')) {
+        map.current.addSource('parent-source', {
+          type: 'geojson',
+          data: {
             type: 'Feature',
-            geometry: polygon.geometry,
-            properties: polygon.identifier
-          });
-        } else {
-          // Add new source
-          map.current?.addSource(polygon.identifier, {
-            type: 'geojson',
-            data: {
-              type: 'Feature',
-              geometry: polygon.geometry,
-              properties: polygon.identifier
-            }
-          });
+            geometry: selectedLoaction.geometry,
+            properties: selectedLoaction.identifier
+          }
+        });
+      } else {
+        const parentSource = map.current.getSource('parent-source') as mapboxgl.GeoJSONSource;
+        parentSource.setData({
+          type: 'Feature',
+          geometry: selectedLoaction.geometry,
+          properties: selectedLoaction.identifier
+        });
+      }
 
-          // Add layer for the source
-          map.current?.addLayer({
-            id: polygon.identifier,
-            type: 'fill',
-            source: polygon.identifier,
-            paint: {
-              'fill-outline-color': 'rgba(255, 0, 0, 1)', // Border color
-              'fill-color': 'rgba(189, 195, 199, 0.4)' // Fill color
+      // Add or update the "children-source"
+      if (!map.current.getSource('children-source')) {
+        map.current.addSource('children-source', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: currentLocationChildren
+          }
+        });
+      } else {
+        const childrenSource = map.current.getSource('children-source') as mapboxgl.GeoJSONSource;
+        childrenSource.setData({
+          type: 'FeatureCollection',
+          features: currentLocationChildren
+        });
+      }
+
+      // Add or update the "parent-layer"
+      if (!map.current.getLayer('parent-layer')) {
+        map.current.addLayer({
+          id: 'parent-layer',
+          type: 'fill',
+          source: 'parent-source',
+          paint: {
+            'fill-color': '#088',
+            'fill-opacity': 0.5
+          }
+        });
+      }
+
+      // Add or update the "children-layer"
+      if (!map.current.getLayer('children-layer')) {
+        map.current.addLayer({
+          id: 'children-layer',
+          type: 'fill',
+          source: 'children-source',
+          paint: {
+            'fill-outline-color': 'rgba(57, 62, 65, 1)',
+            'fill-color': 'rgba(63, 136, 197, 0.4)'
+          }
+        });
+      }
+
+      // Generate label data
+      const labelFeatures = (currentLocationChildren.length > 0 ? currentLocationChildren : [selectedLoaction]).map(
+        child => {
+          const center = turf.centroid(child.geometry); // Use turf.js to calculate the center
+          return {
+            type: 'Feature' as const,
+            geometry: center.geometry,
+            properties: {
+              name: child.properties.name,
+              geographicLevel: child.properties.geographicLevel,
+              childrenNumber: child.properties.childrenNumber
             }
-          });
+          };
         }
-      });
+      );
+
+      if (!map.current.getSource('labels-source')) {
+        map.current.addSource('labels-source', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: labelFeatures
+          }
+        });
+      } else {
+        const labelsSource = map.current.getSource('labels-source') as mapboxgl.GeoJSONSource;
+        labelsSource.setData({
+          type: 'FeatureCollection',
+          features: labelFeatures
+        });
+      }
+
+      if (!map.current.getLayer('labels-layer')) {
+        map.current.addLayer({
+          id: 'labels-layer',
+          type: 'symbol',
+          source: 'labels-source',
+          layout: {
+            // Dynamically set the text field
+            'text-field': [
+              'concat',
+              ['get', 'name'], // Name property
+              [
+                'case',
+                ['==', ['get', 'geographicLevel'], 'structure'], // Condition for 'structure'
+                '',
+                ['concat', ' (', ['to-string', ['get', 'childrenNumber']], ')'] // Append childrenNumber if not 'structure'
+              ]
+            ],
+            'text-size': 13,
+            'text-anchor': 'center'
+          },
+          paint: {
+            'text-color': '#fff'
+          }
+        });
+      }
     }
-  }, [map, polygons, selectedLoaction]);
+  }, [map, currentLocationChildren, selectedLoaction]);
 
   //  LISTENER
   // useEffect(() => {

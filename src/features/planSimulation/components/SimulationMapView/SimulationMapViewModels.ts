@@ -5,6 +5,7 @@ import { EntityTag, PlanningParentLocationResponse, PlanningLocationResponse } f
 import { StatsLayer, Children, AnalysisLayer } from '../Simulation';
 
 export interface SimulationMapViewProps {
+  currentLocationChildren: any[]; //
   polygons?: any[]; //
   loading: string;
   leftOpenHandler: () => void;
