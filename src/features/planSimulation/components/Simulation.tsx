@@ -1,6 +1,5 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Col, Container, Form, Modal, OverlayTrigger, Row, Spinner, Tooltip } from 'react-bootstrap';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Button, Col, Container, Form, Modal, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
@@ -9,15 +8,13 @@ import { ActionDialog } from '../../../components/Dialogs';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
-import { evaluate, isNumeric, sum } from 'mathjs';
-import simulationStyle from './Simulation.module.css';
+import { evaluate, isNumeric } from 'mathjs';
 
 import {
   getDataAssociatedEntityTags,
   getEntityList,
   getEventBasedEntityTags,
   getFullLocationsSSE,
-  getLocationList,
   getLocationsSSE,
   submitSimulationRequest,
   updateSimulationRequest
@@ -36,12 +33,10 @@ import {
   RevealFeature,
   SearchLocationProperties
 } from '../providers/types';
-import FormField from './FormField/FormField';
-import MultiFormField from './FormField/MultiFormField';
 import SimulationModal from './SimulationModal';
 import { MultiValue, SingleValue } from 'react-select';
 import PeopleDetailsModal from './PeopleDetailsModal';
-import { bbox, Feature, Geometry, MultiPolygon, Point, Polygon } from '@turf/turf';
+import { bbox, Geometry } from '@turf/turf';
 import { LngLatBounds, Map as MapBoxMap } from 'mapbox-gl';
 import SimulationResultExpandingTable from '../../../components/Table/SimulationResultExpandingTable';
 import DownloadSimulationResultsModal from './modals/DownloadSimulationResultsModal';
@@ -74,6 +69,7 @@ import AddDatasetForm from './SimulationMapView/components/AddDatasetForm/AddDat
 import CampaignTotalsAccordion from './SimulationMapView/components/CampaignTotalsAccordion/CampaignTotalsAccordion';
 
 import { getHierarchy, getHierarchyPolygon } from './SimulationMapView/api/hierarchyAPI';
+import Hierarchy from './Hierarchy/Hierarchy';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -239,7 +235,7 @@ const Simulation = () => {
   const [polygonsWithData, setPolygonsWithData] = useState<PolygonsState>();
 
   const [selectedLocationChildren, setSelectedLocationChildren] = useState<any[]>([]);
-  const [adminLevelOne, setAdminLevelOne] = useState<any[]>([]);
+
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
   useEffect(() => {
@@ -1158,7 +1154,8 @@ const Simulation = () => {
     } else {
       let page = 0;
       let totalPages = 0;
-      const size = 3;
+      // OPTIMAZE: 300 is a magic number, should be a constant
+      const size = 300;
       setSelectedLocationChildren([]);
 
       while (totalPages >= page) {
@@ -1523,7 +1520,7 @@ const Simulation = () => {
             {/* {highestLocations && showResult && ( */}
             {highestLocations && (
               <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
-                <SimulationResultExpandingTable
+                {/* <SimulationResultExpandingTable
                   clickHandler={loadLocationHandler}
                   data={highestLocations}
                   detailsClickHandler={showDetailsClickHandler}
@@ -1531,7 +1528,8 @@ const Simulation = () => {
                   markedLocations={markedLocations}
                   showOnlyMarkedLocations={showOnlyMarkedLocations}
                   markedParents={markedParents}
-                />
+                /> */}
+                <Hierarchy data={highestLocations} clickHandler={loadLocationHandler} />
                 <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Target Area</DrawerButton>
                 <CustomPopup isOpen={openCustomModal === 0} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <AddTargetAreaForm onClose={() => setOpenCustomModal(undefined)} />

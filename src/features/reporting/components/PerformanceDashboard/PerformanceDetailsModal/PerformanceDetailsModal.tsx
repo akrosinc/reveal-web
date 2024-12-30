@@ -16,7 +16,7 @@ const PerformanceDetailsModal = ({ closeHandler, data, title, darkMode }: Props)
       centered
       onHide={closeHandler}
       backdrop="static"
-      dialogClassName='modal-90w'
+      dialogClassName="modal-90w"
       contentClassName={darkMode ? 'bg-dark' : 'bg-white'}
     >
       <Modal.Header closeButton>

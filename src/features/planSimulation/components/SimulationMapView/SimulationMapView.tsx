@@ -49,10 +49,13 @@ import {
 import StatisticsPanel from './components/StatisticsPanel/StatisticsPanel';
 import DataSetPanel from './components/DataSetPanel/DataSetPanel';
 import mapboxgl from 'mapbox-gl';
-import { e, sin } from 'mathjs';
 
 import * as turf from '@turf/turf';
 import { DrawPolygonsFeature, DrawPolygonsFeatureCollection } from './Helper/MapInteractionsHelper';
+
+// CONTEXT
+
+import useSelectedPolygons from '../../../../hooks/useSelectedPolygons';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -282,6 +285,8 @@ const SimulationMapView = ({
     map
   ]);
 
+  const { selectedPolygons, setSelectedPolygons } = useSelectedPolygons();
+
   const initializeMap = useCallback(() => {
     map.current = initSimulationMap(mapContainer, [lng, lat], zoom, 'bottom-right', undefined, e => {
       if (map.current) {
@@ -504,16 +509,26 @@ const SimulationMapView = ({
         });
 
         map.current.on('click', 'children-layer', e => {
-          const clickedFeature =
+          const clickedFeatureName =
             e.features && e.features[0] && e.features[0].properties ? e.features[0].properties.name : null;
+          const clickedFeature =
+            e.features && e.features[0] && e.features[0].properties ? e.features[0].properties : null;
           if (e.originalEvent.ctrlKey || e.originalEvent.metaKey) {
             setMultiSelected((prev: any) =>
-              prev.includes(clickedFeature)
-                ? prev.filter((item: any) => item !== clickedFeature)
-                : [...prev, clickedFeature]
+              prev.includes(clickedFeatureName)
+                ? prev.filter((item: any) => item !== clickedFeatureName)
+                : [...prev, clickedFeatureName]
             );
           } else {
-            setSingleSelected((prev: any) => (prev === clickedFeature ? null : clickedFeature));
+            setSingleSelected((prev: any) => (prev === clickedFeatureName ? null : clickedFeatureName));
+
+            // CONTEXT
+            // setSelectedPolygons((prev: any) =>
+            //   prev?.externalId === clickedFeature?.externalId ? null : clickedFeature
+            // );
+            setSelectedPolygons(clickedFeature);
+
+            // setSingleSelected(clickedFeature);
           }
         });
       } else {
