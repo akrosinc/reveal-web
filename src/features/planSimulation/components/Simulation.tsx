@@ -71,6 +71,9 @@ import CampaignTotalsAccordion from './SimulationMapView/components/CampaignTota
 import { getHierarchy, getHierarchyPolygon } from './SimulationMapView/api/hierarchyAPI';
 import Hierarchy from './Hierarchy/Hierarchy';
 
+// CONTEXT
+import { usePolygonContext } from '../../../contexts/PolygonContext';
+
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
 interface SubmitValue {
@@ -238,13 +241,16 @@ const Simulation = () => {
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
+  const { dispatch } = usePolygonContext();
+
   useEffect(() => {
     getHierarchy()
       .then(res => {
         setHighestLocations(res);
+        dispatch({ type: 'SET_POLYGON', payload: res });
       })
       .catch(err => toast.error(err));
-  }, []);
+  }, [dispatch]);
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
@@ -1529,7 +1535,8 @@ const Simulation = () => {
                   showOnlyMarkedLocations={showOnlyMarkedLocations}
                   markedParents={markedParents}
                 /> */}
-                <Hierarchy data={highestLocations} clickHandler={loadLocationHandler} />
+                {/* <Hierarchy data={highestLocations} clickHandler={loadLocationHandler} /> */}
+                <Hierarchy clickHandler={loadLocationHandler} />
                 <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Target Area</DrawerButton>
                 <CustomPopup isOpen={openCustomModal === 0} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <AddTargetAreaForm onClose={() => setOpenCustomModal(undefined)} />

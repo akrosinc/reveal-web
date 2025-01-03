@@ -1,43 +1,54 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import styles from './Hierarchy.module.css';
 import search from '../../../../assets/svgs/search.svg';
 import remove from '../../../../assets/svgs/remove.svg';
 import HierarchyItem from './HierarchyItem/HierarchyItem';
-import useSelectedPolygons from '../../../../hooks/useSelectedPolygons';
-
+import { usePolygonContext } from '../../../../contexts/PolygonContext';
 export interface HierarchyItemProps {
   identifier: string;
-  properties: { name: string };
+  properties: {
+    assigned: false;
+    childrenNumber: number;
+    geographicLevel: string;
+    name: string;
+    parentIdentifier: string;
+    simulationSearchResult: boolean;
+  };
   isOpen?: boolean;
   children?: HierarchyItemProps[];
 }
 
 interface HierarchyProps {
-  data: HierarchyItemProps[];
+  // data: HierarchyItemProps[];
   clickHandler: (id: string) => void;
 }
 
-function Hierarchy({ data, clickHandler }: HierarchyProps) {
+function Hierarchy({ clickHandler }: HierarchyProps) {
+  const { state } = usePolygonContext();
+
+  const data = state.polygons;
+
   const [filteredData, setFilteredData] = useState<HierarchyItemProps[]>(data);
+
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { selectedPolygons, setSelectedPolygons } = useSelectedPolygons();
+  // const toggleExpanded = (id: string) => {
+  //   const updateIsOpen = (items: HierarchyItemProps[]): HierarchyItemProps[] => {
+  //     return items.map(item => {
+  //       if (item.identifier === id) {
+  //         return { ...item, isOpen: !item.isOpen };
+  //       }
+  //       if (item.children) {
+  //         return { ...item, children: updateIsOpen(item.children) };
+  //       }
+  //       return item;
+  //     });
+  //   };
 
-  // REAFCTOR: Use useEffect to handle selectedPolygons
-  useEffect(() => {
-    console.log('selectedPolygons', selectedPolygons);
-
-    if (selectedPolygons && selectedPolygons.externalId) {
-      toggleExpanded(selectedPolygons.externalId);
-      // handleSearch(selectedPolygons.name);
-    }
-  }, [selectedPolygons]);
+  //   setFilteredData(prevData => updateIsOpen(prevData));
+  // };
 
   const toggleExpanded = (id: string) => {
-    if (selectedPolygons) {
-      console.log(id);
-    }
-
     const updateIsOpen = (items: HierarchyItemProps[]): HierarchyItemProps[] => {
       return items.map(item => {
         if (item.identifier === id) {
@@ -52,6 +63,30 @@ function Hierarchy({ data, clickHandler }: HierarchyProps) {
 
     setFilteredData(prevData => updateIsOpen(prevData));
   };
+
+  useMemo(() => {
+    setFilteredData(data);
+  }, [data]);
+
+  useMemo(() => {
+    if (state.selected?.parentIdentifier) {
+      setFilteredData(prevData => {
+        const updateData = (items: HierarchyItemProps[]): HierarchyItemProps[] => {
+          return items.map(item => {
+            if (item.identifier === state.selected?.parentIdentifier) {
+              return { ...item, isOpen: true };
+            }
+            if (item.children) {
+              return { ...item, children: updateData(item.children) };
+            }
+            return item;
+          });
+        };
+
+        return updateData(prevData);
+      });
+    }
+  }, [state.selected?.parentIdentifier]);
 
   const filterData = (items: HierarchyItemProps[], term: string): HierarchyItemProps[] => {
     return items
@@ -88,7 +123,7 @@ function Hierarchy({ data, clickHandler }: HierarchyProps) {
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     if (term === '') {
-      setFilteredData(data.map(item => ({ ...item, isOpen: false }))); // Collapse all items
+      setFilteredData(data.map((item: any) => ({ ...item, isOpen: false }))); // Collapse all items
     } else {
       setFilteredData(filterData(data, term));
     }

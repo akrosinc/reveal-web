@@ -1,5 +1,5 @@
 import { EventData, GeoJSONSource, MapLayerEventType, Popup } from 'mapbox-gl';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { MAPBOX_STYLE_STREETS } from '../../../../constants';
 import {
@@ -51,11 +51,10 @@ import DataSetPanel from './components/DataSetPanel/DataSetPanel';
 import mapboxgl from 'mapbox-gl';
 
 import * as turf from '@turf/turf';
-import { DrawPolygonsFeature, DrawPolygonsFeatureCollection } from './Helper/MapInteractionsHelper';
+import { AddLayer, DrawPolygonsFeature, DrawPolygonsFeatureCollection } from './Helper/MapInteractionsHelper';
 
 // CONTEXT
-
-import useSelectedPolygons from '../../../../hooks/useSelectedPolygons';
+import { SelectedPolygon, usePolygonContext } from '../../../../contexts/PolygonContext';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -128,11 +127,19 @@ const SimulationMapView = ({
   const [showUserDefinedSettingsPanel, setShowUserDefinedSettingsPanel] = useState(false);
 
   // SELECTIONS ON MAP
-  const [singleSelected, setSingleSelected] = useState([]);
+  const [singleSelected, setSingleSelected] = useState<any>(null);
   const [multiSelected, setMultiSelected] = useState([]);
 
-  const [singleSelectedColor, setSingleSelectedColor] = useState('rgba(160, 217, 74, 0.4)');
+  const [singleSelectedColor, setSingleSelectedColor] = useState('rgba(3, 166, 13, 0.4)');
   const [multiSelectedColor, setMultiSelectedColor] = useState('rgba(255, 0, 0, 0.4)');
+
+  // CONTEXT
+  const { dispatch } = usePolygonContext();
+  const { state } = usePolygonContext();
+  const selectedState = state.selected;
+  useMemo(() => {
+    setSingleSelected(selectedState?.externalId ?? null);
+  }, [selectedState]);
 
   useEffect(() => {
     if (map.current) return;
@@ -285,8 +292,6 @@ const SimulationMapView = ({
     map
   ]);
 
-  const { selectedPolygons, setSelectedPolygons } = useSelectedPolygons();
-
   const initializeMap = useCallback(() => {
     map.current = initSimulationMap(mapContainer, [lng, lat], zoom, 'bottom-right', undefined, e => {
       if (map.current) {
@@ -432,109 +437,56 @@ const SimulationMapView = ({
     if (map && map.current && currentLocationChildren && selectedLoaction) {
       map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
 
-      // console.log('Children:', currentLocationChildren);
-
-      // Add or update the "parent-source"
-      // if (!map.current.getSource('parent-source')) {
-      //   map.current.addSource('parent-source', {
-      //     type: 'geojson',
-      //     data: {
-      //       type: 'Feature',
-      //       geometry: selectedLoaction.geometry,
-      //       properties: selectedLoaction
-      //     }
-      //   });
-      // } else {
-      //   const parentSource = map.current.getSource('parent-source') as mapboxgl.GeoJSONSource;
-      //   parentSource.setData({
-      //     type: 'Feature',
-      //     geometry: selectedLoaction.geometry,
-      //     properties: selectedLoaction
-      //   });
-      // }
-
       // Add or update the "parent-source" {REFACTORED}
       DrawPolygonsFeature(map.current, selectedLoaction, 'parent');
-
-      // Add or update the "children-source"
-      // if (!map.current.getSource('children-source')) {
-      //   map.current.addSource('children-source', {
-      //     type: 'geojson',
-      //     data: {
-      //       type: 'FeatureCollection',
-      //       features: currentLocationChildren
-      //     }
-      //   });
-      // } else {
-      //   const childrenSource = map.current.getSource('children-source') as mapboxgl.GeoJSONSource;
-      //   childrenSource.setData({
-      //     type: 'FeatureCollection',
-      //     features: currentLocationChildren
-      //   });
-      // }
 
       // Add or update the "children-source" {REFACTORED}
       DrawPolygonsFeatureCollection(map.current, currentLocationChildren, 'children');
 
-      // Add or update the "parent-layer" with transparent fill and visible borders
-      if (!map.current.getLayer('parent-layer')) {
-        map.current.addLayer({
-          id: 'parent-layer',
-          type: 'fill',
-          source: 'parent-source',
-          paint: {
-            'fill-color': 'rgba(57, 62, 65, 0.2)',
-            'fill-outline-color': 'rgba(57, 62, 65, 0.5)'
-          }
-        });
-      }
+      // Add or update the "parent-layer" {REFACTORED}
+      AddLayer(map.current, 'parent', 'parent', {
+        'fill-color': 'rgba(57, 62, 65, 0.2)',
+        'fill-outline-color': 'rgba(57, 62, 65, 0.5)'
+      });
+
+      // console.log(singleSelected);
 
       // Add or update the "children-layer" with individual polygon colors
       if (!map.current.getLayer('children-layer')) {
-        map.current.addLayer({
-          id: 'children-layer',
-          type: 'fill',
-          source: 'children-source',
-          paint: {
-            'fill-color': [
-              'case',
-              ['in', ['get', 'name'], ['literal', singleSelected]],
-              singleSelectedColor,
-              ['in', ['get', 'name'], ['literal', multiSelected]],
-              multiSelectedColor,
-              'rgba((239, 239, 240, 0.3)' // Default color
-            ],
-            'fill-outline-color': 'rgba(255, 000, 000, 1)'
-          }
+        // Add or update the "children-layer" {REFACTORED}
+        AddLayer(map.current, 'children', 'children', {
+          'fill-color': [
+            'case',
+            ['==', ['get', 'externalId'], singleSelected],
+            singleSelectedColor,
+            ['in', ['get', 'name'], ['literal', multiSelected]],
+            multiSelectedColor,
+            'rgba((239, 239, 240, 0.3)' // Default color
+          ],
+          'fill-outline-color': 'rgba(255, 000, 000, 1)'
         });
 
+        // Add or update the "children-layer" {REFACTORED}
+
         map.current.on('click', 'children-layer', e => {
-          const clickedFeatureName =
-            e.features && e.features[0] && e.features[0].properties ? e.features[0].properties.name : null;
           const clickedFeature =
             e.features && e.features[0] && e.features[0].properties ? e.features[0].properties : null;
           if (e.originalEvent.ctrlKey || e.originalEvent.metaKey) {
             setMultiSelected((prev: any) =>
-              prev.includes(clickedFeatureName)
-                ? prev.filter((item: any) => item !== clickedFeatureName)
-                : [...prev, clickedFeatureName]
+              prev.includes(clickedFeature)
+                ? prev.filter((item: any) => item !== clickedFeature)
+                : [...prev, clickedFeature]
             );
           } else {
-            setSingleSelected((prev: any) => (prev === clickedFeatureName ? null : clickedFeatureName));
-
-            // CONTEXT
-            // setSelectedPolygons((prev: any) =>
-            //   prev?.externalId === clickedFeature?.externalId ? null : clickedFeature
-            // );
-            setSelectedPolygons(clickedFeature);
-
-            // setSingleSelected(clickedFeature);
+            dispatch({ type: 'SELECT_SINGLE', payload: clickedFeature });
           }
         });
       } else {
+        console.log(singleSelected);
+
         map.current?.setPaintProperty('children-layer', 'fill-color', [
           'case',
-          ['in', ['get', 'name'], ['literal', singleSelected]],
+          ['==', ['get', 'externalId'], singleSelected],
           singleSelectedColor,
           ['in', ['get', 'name'], ['literal', multiSelected]],
           multiSelectedColor,
@@ -611,7 +563,8 @@ const SimulationMapView = ({
     singleSelected,
     multiSelected,
     singleSelectedColor,
-    multiSelectedColor
+    multiSelectedColor,
+    dispatch
   ]);
 
   useEffect(() => {

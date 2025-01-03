@@ -35,3 +35,14 @@ export const DrawPolygonsFeatureCollection = (mapRef: any, polygonArray: any, fe
     });
   }
 };
+
+export const AddLayer = (mapRef: any, layerName: string, sourceName: string, paintConfig: object) => {
+  if (!mapRef.getLayer(`${layerName}-layer`)) {
+    mapRef.addLayer({
+      id: `${layerName}-layer`,
+      type: 'fill',
+      source: `${sourceName}-source`,
+      paint: paintConfig
+    });
+  }
+};
