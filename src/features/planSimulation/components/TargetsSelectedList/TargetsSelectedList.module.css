@@ -1,0 +1,89 @@
+.targetsSelectedList {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  width: 250px;
+  background: rgba(255, 255, 255, 0.863);
+  border: 1px solid #ccc;
+  max-height: 500px;
+  overflow: auto;
+}
+
+.listWrapper {
+  list-style: none;
+}
+
+.listWrapper p {
+  margin: 0;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.listItemInfo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.selectedIcon {
+  filter: brightness(0) saturate(100%) invert(21%) sepia(91%) saturate(7190%) hue-rotate(358deg) brightness(109%)
+    contrast(115%);
+  width: 10px;
+  height: 10px;
+  margin-right: 0.2rem;
+}
+
+.removeLocationButton {
+  border: none;
+  padding: 0 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.removeLocationButton img {
+  width: 17px;
+  height: 17px;
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+
+.removeLocationButton:hover img {
+  opacity: 1;
+}
+
+.targetsSelectedList::-webkit-scrollbar {
+  width: 5px;
+  display: none;
+}
+
+.targetsSelectedList:hover::-webkit-scrollbar {
+  display: block;
+}
+
+.targetsSelectedList::-webkit-scrollbar-track {
+  background: #0000001a;
+  margin: 4px;
+}
+
+.targetsSelectedList::-webkit-scrollbar-thumb {
+  background-color: #949494;
+  border-radius: 10px;
+}
+
+.targetsSelectedList::-webkit-scrollbar-button {
+  display: none !important;
+}
+
+.targetsSelectedList::-webkit-scrollbar-thumb:hover {
+  background-color: #949494a1;
+}

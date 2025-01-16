@@ -6,7 +6,7 @@
 }
 
 .datasetInput {
-  width: 7rem;
+  width: 13.5rem;
 }
 
 .datasetInput:focus,
@@ -36,4 +36,8 @@ input:focus {
 .iconPen {
   width: 14px;
   height: 14px;
+}
+
+.datasetNameLabel {
+  margin-right: 1rem;
 }

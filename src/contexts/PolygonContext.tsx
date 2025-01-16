@@ -2,18 +2,22 @@ import { createContext, useContext, useReducer } from 'react';
 
 type PolygonActions =
   | { type: 'SET_POLYGON'; payload: any[] }
-  | { type: 'SELECT_SINGLE'; payload: SelectedPolygon }
-  | { type: 'TOGGLE_MULTISELECT'; payload: any[] }
+  | { type: 'SET_DATASET'; payload: any[] }
+  | { type: 'UPDATE_DATASET'; payload: any }
+  | { type: 'SELECT_SINGLE'; payload: any }
+  | { type: 'TOGGLE_MULTISELECT'; payload: any }
   | { type: 'CLEAR_SELECTION' };
 
 interface InitialStateInterface {
   polygons: any[];
-  selected: SelectedPolygon | null;
+  datasets: any[];
+  selected: any | null;
   multiselect: any[];
 }
 
 const initialState: InitialStateInterface = {
   polygons: [],
+  datasets: [],
   selected: null,
   multiselect: []
 };
@@ -29,21 +33,37 @@ export interface SelectedPolygon {
   status: string;
 }
 
+export interface PolygonContextInterface {
+  state: InitialStateInterface;
+  dispatch: React.Dispatch<PolygonActions>;
+}
+
 // Reducer
-function polygonReducer(state: any, action: PolygonActions): any {
+function polygonReducer(state: InitialStateInterface, action: PolygonActions): InitialStateInterface {
   switch (action.type) {
-    case 'SET_POLYGON':
-      return { ...state, polygons: action.payload };
+    case 'SET_DATASET':
+      console.log('SET_DATASET', action.payload);
+
+      return { ...state, datasets: action.payload };
+    case 'UPDATE_DATASET':
+      console.log('UPDATE_DATASET', action.payload);
+
+      const selectedDatasets = state.datasets.some((item: any) => item.identifier === action.payload.identifier)
+        ? state.datasets.filter((item: any) => item.identifier !== action.payload.identifier)
+        : [...state.datasets, action.payload];
+      return { ...state, datasets: selectedDatasets };
+
     case 'SELECT_SINGLE':
-      if (state.selected?.externalId === action.payload.externalId) {
+      if (JSON.stringify(state.selected) === JSON.stringify(action.payload?.properties)) {
         return { ...state, selected: null };
       } else {
-        return { ...state, selected: action.payload };
+        return { ...state, selected: action.payload?.properties };
       }
-
     case 'TOGGLE_MULTISELECT':
-      const multiselect = state.multiselect.includes(action.payload)
-        ? state.multiselect.filter((id: any) => id !== action.payload)
+      const multiselect = state.multiselect.some(
+        (item: any) => item.properties.externalId === action.payload.properties.externalId
+      )
+        ? state.multiselect.filter((item: any) => item.properties.externalId !== action.payload.properties.externalId)
         : [...state.multiselect, action.payload];
       return { ...state, multiselect };
     case 'CLEAR_SELECTION':

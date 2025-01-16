@@ -10,25 +10,28 @@ import ItemMenu from './ItemMenu';
 
 import styles from '../accordion/Accordion.module.css';
 import DatasetStyles from './DatasetsAccordion.module.css';
+import {
+  DataSetList,
+  deleteDataset,
+  updateDataset
+} from '../../../planSimulation/components/SimulationMapView/api/datasetsAPI';
+import { usePolygonContext } from '../../../../contexts/PolygonContext';
 interface DatasetsAccordionProps {
   open?: boolean;
-  index: number;
-  dataset: {
-    name: string;
-    color: Color;
-    borderColor: Color;
-  };
+  dataset: DataSetList;
+  onDataSetUpdate: (datasets: DataSetList) => void;
+  updateDatasetHandler: (datasetId: string) => void;
 }
 
-function DatasetsAccordion({ open = false, index, dataset }: DatasetsAccordionProps) {
+function DatasetsAccordion({ open = false, dataset, onDataSetUpdate, updateDatasetHandler }: DatasetsAccordionProps) {
   const [isOpen, setOpen] = useState(open);
   const [showModal, setShowModal] = useState(false);
 
-  const [customColor, setCustomColor] = useColor('hex', dataset.color.hex);
+  const [customColor, setCustomColor] = useColor('hex', dataset.hexColor);
   const [value, setValue] = useState(50);
 
-  const [borderColor, setBorderColor] = useColor('hex', dataset.borderColor.hex);
-  const [borderValue, setBorderValue] = useState(1);
+  const [borderColor, setBorderColor] = useColor('hex', '#00FF00');
+  const [borderValue, setBorderValue] = useState(dataset.lineWidth);
 
   const [checked, setChecked] = useState(false);
 
@@ -36,16 +39,58 @@ function DatasetsAccordion({ open = false, index, dataset }: DatasetsAccordionPr
   const [edit, setEdit] = useState(false);
 
   const [datasetName, setDatasetName] = useState(dataset.name);
+  const [tempName, setTempName] = useState(dataset.name);
 
   const colorPickerRef = useRef<HTMLDivElement>(null);
+
+  const { dispatch } = usePolygonContext();
+  // const { state } = usePolygonContext();
 
   const handleColorPopup = (event: any) => {
     event.stopPropagation();
     setShowModal(!showModal);
   };
 
-  const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setDatasetName(event.target.value);
+  const handleDatasetUpdate = async () => {
+    try {
+      const NewDatasetList = await updateDataset({
+        simulationId: '99ff7398-e5c2-41c6-8218-856c933aba31',
+        datasetId: dataset.identifier,
+        name: tempName,
+        hexColor: customColor.hex,
+        lineWidth: borderValue
+      });
+      updateDatasetHandler(NewDatasetList.datasets);
+    } catch (error) {
+      console.error('Failed to update dataset:', error);
+    }
+  };
+
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTempName(event.target.value);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Escape') {
+      setTempName(datasetName); // Revert to the committed value
+      setEdit(false); // Exit edit mode
+    } else if (event.key === 'Enter') {
+      setDatasetName(tempName); // Commit the new value
+      handleDatasetUpdate(); // Call the API to update the dataset
+      setEdit(false); // Exit edit mode
+    }
+  };
+
+  const removeDataset = async () => {
+    try {
+      const NewDatasetList = await deleteDataset({
+        simulationId: '99ff7398-e5c2-41c6-8218-856c933aba31',
+        datasetId: dataset.identifier
+      });
+      updateDatasetHandler(NewDatasetList.datasets);
+    } catch (error) {
+      console.error('Failed to delete dataset:', error);
+    }
   };
 
   return (
@@ -69,13 +114,14 @@ function DatasetsAccordion({ open = false, index, dataset }: DatasetsAccordionPr
             setEdit(!edit);
           }}
           onDelete={() => {
-            console.log('Delete clicked');
+            removeDataset();
           }}
         />
         <CustomPopup
           isOpen={showModal}
           onClose={() => {
             setShowModal(false);
+            handleDatasetUpdate();
           }}
           referenceElement={colorPickerRef.current}
           hasBackdrop={false}
@@ -137,18 +183,14 @@ function DatasetsAccordion({ open = false, index, dataset }: DatasetsAccordionPr
           <input
             type="text"
             className={DatasetStyles.datasetInput}
-            value={datasetName}
+            value={tempName}
             onChange={handleNameChange}
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === 'Escape') {
-                setEdit(false);
-              }
-            }}
+            onKeyDown={handleKeyDown}
             autoFocus
             onClick={e => e.stopPropagation()}
           />
         ) : (
-          <span>{datasetName}</span>
+          <span className={DatasetStyles.datasetNameLabel}>{datasetName}</span>
         )}
         <FontAwesomeIcon
           style={{ width: '0.9rem', height: '0.9rem' }}
@@ -164,7 +206,7 @@ function DatasetsAccordion({ open = false, index, dataset }: DatasetsAccordionPr
               isOn={checked}
               title={'Filter'}
               handleToggle={() => setChecked(!checked)}
-              colorOne={dataset.color && customColor.hex}
+              colorOne={dataset.hexColor && customColor.hex}
             />
             <DualRangeSlider
               min={0}

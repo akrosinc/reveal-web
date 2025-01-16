@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Col, Container, Form, Modal, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +36,7 @@ import {
 import SimulationModal from './SimulationModal';
 import { MultiValue, SingleValue } from 'react-select';
 import PeopleDetailsModal from './PeopleDetailsModal';
-import { bbox, Geometry } from '@turf/turf';
+import { bbox, Geometry, polygon } from '@turf/turf';
 import { LngLatBounds, Map as MapBoxMap } from 'mapbox-gl';
 import SimulationResultExpandingTable from '../../../components/Table/SimulationResultExpandingTable';
 import DownloadSimulationResultsModal from './modals/DownloadSimulationResultsModal';
@@ -73,6 +73,7 @@ import Hierarchy from './Hierarchy/Hierarchy';
 
 // CONTEXT
 import { usePolygonContext } from '../../../contexts/PolygonContext';
+import { DataSetList, getLocationPolygonsWithDatasets, getSimulationData } from './SimulationMapView/api/datasetsAPI';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -142,9 +143,9 @@ interface PolygonsState {
   [key: string]: Polygondata;
 }
 
-const extractPolygonsFromPolysWithData = (polygonsWithData?: PolygonsState) => {
-  return polygonsWithData ? Object.values(polygonsWithData!).map((polygon: Polygondata) => polygon.polygonData) : [];
-};
+// const extractPolygonsFromPolysWithData = (polygonsWithData?: PolygonsState) => {
+//   return polygonsWithData ? Object.values(polygonsWithData!).map((polygon: Polygondata) => polygon.polygonData) : [];
+// };
 
 const Simulation = () => {
   const { t } = useTranslation();
@@ -169,8 +170,8 @@ const Simulation = () => {
     source: undefined
   });
   const [parentMapDataLoad, setParentMapDataLoad] = useState<PlanningParentLocationResponse>();
-  const [nodeList, setNodeList] = useState<string[]>([]);
-  const [completeGeographicList, setCompleteGeographicList] = useState<string[]>([]);
+  // const [nodeList, setNodeList] = useState<string[]>([]);
+  // const [completeGeographicList, setCompleteGeographicList] = useState<string[]>([]);
   const [locationList, setLocationList] = useState<any[]>([]);
   const [selectedHierarchy, setSelectedHierarchy] = useState<LocationHierarchyModel>();
   const [selectedLocation, setSelectedLocation] = useState<SingleValue<{ label: string; value: string }>>();
@@ -234,14 +235,49 @@ const Simulation = () => {
   // const [geometry, setGeometry] = useState<Feature<Polygon | MultiPolygon | Point> | null>(null);
   const [geometry, setGeometry] = useState<Geometry>();
   const [currentLocationId, setCurrentLocationId] = useState<string>();
-  const [polygons, setPolygons] = useState<any[]>([]);
-  const [polygonsWithData, setPolygonsWithData] = useState<PolygonsState>();
+  // const [polygons, setPolygons] = useState<any[]>([]);
+  const [polygonsWithData, setPolygonsWithData] = useState<any>();
 
   const [selectedLocationChildren, setSelectedLocationChildren] = useState<any[]>([]);
+
+  const [datasetList, setDatasetList] = useState<DataSetList[]>([]);
+  const [includeGeometry, setIncludeGeometry] = useState<boolean>(true);
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
   const { dispatch } = usePolygonContext();
+  const { state } = usePolygonContext();
+
+  //! GET DATASETS
+  const fetchDatasets = async () => {
+    try {
+      const dataSetsData = await getSimulationData('15d174eb-9374-4c17-a994-d5cf7753f8f6');
+      setDatasetList([...dataSetsData.datasets]);
+      dispatch({ type: 'SET_DATASET', payload: dataSetsData.datasets });
+    } catch (error) {
+      console.error('Failed to fetch datasets:', error);
+    }
+  };
+
+  useMemo(() => {
+    setDatasetList(state.datasets);
+  }, [state.datasets]);
+
+  //! UPDATE DATASETS LIST
+  const handleAddDataset = (newDataset: any) => {
+    const updateDataSetObj: DataSetList = {
+      identifier: newDataset.datasetId,
+      name: newDataset.datasetName,
+      hexColor: newDataset.hexColor,
+      lineWidth: newDataset.lineWidth
+    };
+    setDatasetList((prev: DataSetList[]) => [...prev, updateDataSetObj]);
+    dispatch({ type: 'UPDATE_DATASET', payload: updateDataSetObj });
+  };
+
+  const updateDatasetHandler = async (newDatasetList: string) => {
+    dispatch({ type: 'SET_DATASET', payload: newDatasetList });
+  };
 
   useEffect(() => {
     getHierarchy()
@@ -250,7 +286,8 @@ const Simulation = () => {
         dispatch({ type: 'SET_POLYGON', payload: res });
       })
       .catch(err => toast.error(err));
-  }, [dispatch]);
+    fetchDatasets();
+  }, []);
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
@@ -1144,14 +1181,18 @@ const Simulation = () => {
     }
   }, [selectedHierarchy]);
 
+  //! LOADING POLYGONS ON DEMAND
   const loadLocationHandler = async (locationId: string) => {
     if (polygonsWithData?.[locationId]?.childrenLoaded) {
+      setIncludeGeometry(false);
       setCurrentLocationId(locationId);
+
       const k = Object.values(polygonsWithData)
-        .map(polygon => polygon.polygonData)
+        .map((polygon: any) => polygon.polygonData)
         .filter(p => p.properties.parentIdentifier === locationId);
-      console.log(k);
+
       setSelectedLocationChildren(k);
+
       const selectedLocation = polygonsWithData?.[locationId]?.polygonData;
       if (selectedLocation) {
         setGeometry(selectedLocation);
@@ -1161,13 +1202,38 @@ const Simulation = () => {
       let page = 0;
       let totalPages = 0;
       // OPTIMAZE: 300 is a magic number, should be a constant
-      const size = 300;
+      //! const size = 3; for polygons
+      //! const size = 300; for structures
+      const size = 3;
+
+      //!SET POLYGON DATA FOR MAP
       setSelectedLocationChildren([]);
 
-      while (totalPages >= page) {
-        const res = await getHierarchyPolygon(locationId, page, size);
+      //! UPDATE POLYGONS WITH DATASETS
+      let configObj = {
+        datasetsIds: datasetList.map(dataset => dataset.identifier),
+        includeGeometry: true,
+        parentLocationId: locationId, //current location identifier
+        simulationId: '99ff7398-e5c2-41c6-8218-856c933aba31'
+      };
 
-        setPolygonsWithData(prev => {
+      console.log('MEW POLYGONS INCOMING');
+
+      const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
+
+      while (totalPages >= page) {
+        let res = await getHierarchyPolygon(locationId, page, size);
+
+        res.content.forEach((updatedLoaction: any) => {
+          // console.log(polygonsWithDatasets.find((polygon: any) => polygon.identifier === updatedLoaction.identifier));
+
+          updatedLoaction.properties.metadata =
+            polygonsWithDatasets.find((polygon: any) => polygon.identifier === updatedLoaction.identifier)?.properties
+              .metadata ?? [];
+        });
+        console.log(res.content);
+
+        setPolygonsWithData((prev: any) => {
           const updatedPolygons = { ...prev };
           res.content.forEach((location: any) => {
             updatedPolygons[location.identifier] = {
@@ -1175,6 +1241,7 @@ const Simulation = () => {
               childrenLoaded: location.identifier === locationId
             };
           });
+
           return updatedPolygons;
         });
 
@@ -1196,89 +1263,22 @@ const Simulation = () => {
       }
     }
   };
-
-  // console.log(selectedLocationChildren);
-
-  // const loadLocationHandler = async (locationId: string) => {
-  //   if (polygonsWithData?.[locationId]?.childrenLoaded) {
-  //     setCurrentLocationId(locationId);
-  //     const selectedLocation = polygonsWithData?.[locationId]?.polygonData;
-
-  //     const k = Object.values(polygonsWithData).map(polygon => polygon.polygonData)
-  //     .filter(p => p.parentIdentifier === locationId);
-  //     console.log(k);
-  //     setSelectedLocationChildren(k);
-
-  //     if (selectedLocation) {
-  //       setGeometry(selectedLocation);
-  //       setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
-  //     }
-  //     return;
-  //   }
-
-  //   let page = 0;
-  //   const size = 3;
-
-  //   try {
-  //     while (true) {
-  //       const res = await getHierarchyPolygon(locationId, page, size);
-
-  //       // Update polygonsWithData
-  //       setPolygonsWithData(prev => {
-  //         const updatedPolygons = { ...prev };
-  //         res.content.forEach((location: any) => {
-  //           updatedPolygons[location.identifier] = {
-  //             polygonData: location,
-  //             childrenLoaded: location.identifier === locationId,
-  //             childrenIds: []
-  //           };
-  //         });
-  //         updatedPolygons[locationId].childrenIds = res.content
-  //           .filter((location: any) => locationId !== location.identifier)
-  //           .map((location: any) => location.identifier);
-  //         return updatedPolygons;
-  //       });
-
-  //       // Add children (excluding the current location itself)
-  //       setSelectedLocationChildren(prev => [
-  //         ...prev,
-  //         ...res.content.filter((location: any) => location.identifier !== locationId)
-  //       ]);
-
-  //       // if (res.length === 37) {
-  //       //   setAdminLevelOne(prev => [
-  //       //     ...prev,
-  //       //     ...res.content.filter((location: any) => location.identifier !== locationId)
-  //       //   ]);
-  //       // }
-
-  //       // Handle the current location geometry
-
-  //       // Check for the last page
-  //       if (page >= res.totalPages - 1) break;
-  //       page++;
-  //     }
-  //   } catch (error) {
-  //     console.error('Error loading location data:', error);
+  // const showDetailsClickHandler = (locationId: string) => {
+  //   let feature = mapData?.parents[locationId];
+  //   //create deep copy of bounds object for triggering bounds event every time
+  //   if (feature) {
+  //     let val: any = feature;
+  //     let valProps: SearchLocationProperties = {
+  //       bounds: feature.geometry ? (bbox(val.geometry) as any) : undefined,
+  //       identifier: val.identifier,
+  //       metadata: val.properties?.metadata,
+  //       name: val.properties?.name,
+  //       persons: []
+  //     };
+  //     setSelectedRow(valProps);
+  //     setShowDetails(true);
   //   }
   // };
-
-  const showDetailsClickHandler = (locationId: string) => {
-    let feature = mapData?.parents[locationId];
-    //create deep copy of bounds object for triggering bounds event every time
-    if (feature) {
-      let val: any = feature;
-      let valProps: SearchLocationProperties = {
-        bounds: feature.geometry ? (bbox(val.geometry) as any) : undefined,
-        identifier: val.identifier,
-        metadata: val.properties?.metadata,
-        name: val.properties?.name,
-        persons: []
-      };
-      setSelectedRow(valProps);
-      setShowDetails(true);
-    }
-  };
 
   const processChildren = useCallback(
     (mapDataClone: any) => {
@@ -1383,48 +1383,6 @@ const Simulation = () => {
   //   return convertedColor as Color;
   // };
 
-  const dataset = [
-    {
-      name: 'Dataset 1',
-      borderColor: {
-        hex: '#000000',
-        rgb: { r: 0, g: 0, b: 0 },
-        hsv: { h: 0, s: 27, v: 6 }
-      },
-      color: {
-        hex: '#ff0008',
-        rgb: { r: 255, g: 0, b: 8 },
-        hsv: { h: 358, s: 100, v: 100 }
-      }
-    },
-    {
-      name: 'Dataset 2',
-      borderColor: {
-        hex: '#000000',
-        rgb: { r: 0, g: 0, b: 0 },
-        hsv: { h: 0, s: 27, v: 6 }
-      },
-      color: {
-        hex: '#21c445',
-        rgb: { r: 33, g: 196, b: 69 },
-        hsv: { h: 120, s: 83, v: 77 }
-      }
-    },
-    {
-      name: 'Dataset 3',
-      borderColor: {
-        hex: '#000000',
-        rgb: { r: 0, g: 0, b: 0 },
-        hsv: { h: 0, s: 27, v: 6 }
-      },
-      color: {
-        hex: '#06e7d0',
-        rgb: { r: 27, g: 127, b: 121 },
-        hsv: { h: 174, s: 79, v: 50 }
-      }
-    }
-  ];
-
   const campaignTotals = [
     {
       label: 'Target Areas',
@@ -1526,32 +1484,28 @@ const Simulation = () => {
             {/* {highestLocations && showResult && ( */}
             {highestLocations && (
               <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
-                {/* <SimulationResultExpandingTable
-                  clickHandler={loadLocationHandler}
-                  data={highestLocations}
-                  detailsClickHandler={showDetailsClickHandler}
-                  summaryClickHandler={summaryDetailsClickHandler}
-                  markedLocations={markedLocations}
-                  showOnlyMarkedLocations={showOnlyMarkedLocations}
-                  markedParents={markedParents}
-                /> */}
-                {/* <Hierarchy data={highestLocations} clickHandler={loadLocationHandler} /> */}
                 <Hierarchy clickHandler={loadLocationHandler} />
-                <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Target Area</DrawerButton>
+                <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Operational Area</DrawerButton>
                 <CustomPopup isOpen={openCustomModal === 0} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <AddTargetAreaForm onClose={() => setOpenCustomModal(undefined)} />
                 </CustomPopup>
               </Accordion>
             )}
-            {highestLocations && showResult && (
+            {/* {highestLocations && showResult && ( */}
+            {highestLocations && (
               <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
-                {dataset.map((dataset, index) => (
-                  <DatasetsAccordion index={index} dataset={dataset} />
+                {datasetList.map(dataset => (
+                  <DatasetsAccordion
+                    key={dataset.identifier}
+                    dataset={dataset}
+                    onDataSetUpdate={handleAddDataset}
+                    updateDatasetHandler={updateDatasetHandler}
+                  />
                 ))}
                 <DrawerButton onClick={() => setOpenCustomModal(1)}>Add dataset</DrawerButton>
                 <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <div className="p-6">
-                    <AddDatasetForm onClose={() => setOpenCustomModal(undefined)} />
+                    <AddDatasetForm onClose={() => setOpenCustomModal(undefined)} onDatasetAdded={handleAddDataset} />
                   </div>
                 </CustomPopup>
               </Accordion>
@@ -1560,7 +1514,7 @@ const Simulation = () => {
           <SimulationMapView
             selectedLoaction={geometry} // BBBOX
             currentLocationChildren={selectedLocationChildren}
-            polygons={extractPolygonsFromPolysWithData(polygonsWithData)} // LIST OF POLYGONS
+            // polygons={extractPolygonsFromPolysWithData(polygonsWithData)} // LIST OF POLYGONS
             loading={resultsLoadingState}
             leftOpenHandler={() => setLeftOpen(!leftOpen)}
             leftOpenState={leftOpen}

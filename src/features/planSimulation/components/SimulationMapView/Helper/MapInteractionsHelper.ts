@@ -46,3 +46,4 @@ export const AddLayer = (mapRef: any, layerName: string, sourceName: string, pai
     });
   }
 };
+// export const AddPopup;

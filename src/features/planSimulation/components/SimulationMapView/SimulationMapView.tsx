@@ -29,6 +29,9 @@ import Spinner from 'react-bootstrap/Spinner';
 
 import { FeatureCollection, Geometry } from 'geojson';
 
+import locationTag from '../../../../assets/svgs/placeMarker.svg';
+import task from '../../../../assets/svgs/task.svg';
+
 // UTISLS
 import {
   getLineParameters,
@@ -55,6 +58,9 @@ import { AddLayer, DrawPolygonsFeature, DrawPolygonsFeatureCollection } from './
 
 // CONTEXT
 import { SelectedPolygon, usePolygonContext } from '../../../../contexts/PolygonContext';
+import MultiselectList from '../MultiselectList/MultiselectList';
+import Accordion from '../../../location/components/accordion/Accordion';
+import TargetsSelectedList from '../TargetsSelectedList/TargetsSelectedList';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -69,7 +75,6 @@ export const getBackgroundStyle = (value: { r: number; g: number; b: number } | 
 
 const SimulationMapView = ({
   currentLocationChildren,
-  polygons,
   loading,
   leftOpenHandler,
   rightOpenHandler,
@@ -128,18 +133,24 @@ const SimulationMapView = ({
 
   // SELECTIONS ON MAP
   const [singleSelected, setSingleSelected] = useState<any>(null);
-  const [multiSelected, setMultiSelected] = useState([]);
+  const [multiSelected, setMultiSelected] = useState<any[]>([]);
 
   const [singleSelectedColor, setSingleSelectedColor] = useState('rgba(3, 166, 13, 0.4)');
   const [multiSelectedColor, setMultiSelectedColor] = useState('rgba(255, 0, 0, 0.4)');
 
+  const [datasets, setDatasets] = useState<any>();
   // CONTEXT
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
   const selectedState = state.selected;
+  const multiselectState = state.multiselect;
+  const contextDatasets = state.datasets;
   useMemo(() => {
     setSingleSelected(selectedState?.externalId ?? null);
-  }, [selectedState]);
+    setMultiSelected(multiselectState as any[]);
+
+    console.log(contextDatasets);
+  }, [selectedState, multiselectState, contextDatasets]);
 
   useEffect(() => {
     if (map.current) return;
@@ -343,8 +354,8 @@ const SimulationMapView = ({
 
     mapBoxDraw.current = new MapboxDraw({
       controls: {
-        trash: true,
-        polygon: true,
+        trash: false,
+        polygon: false,
         point: false,
         uncombine_features: false,
         combine_features: false,
@@ -441,15 +452,16 @@ const SimulationMapView = ({
       DrawPolygonsFeature(map.current, selectedLoaction, 'parent');
 
       // Add or update the "children-source" {REFACTORED}
+
+      console.log('currentLocationChildren', currentLocationChildren);
+
       DrawPolygonsFeatureCollection(map.current, currentLocationChildren, 'children');
 
       // Add or update the "parent-layer" {REFACTORED}
       AddLayer(map.current, 'parent', 'parent', {
-        'fill-color': 'rgba(57, 62, 65, 0.2)',
-        'fill-outline-color': 'rgba(57, 62, 65, 0.5)'
+        'fill-color': 'rgba(57, 62, 65, 0)',
+        'fill-outline-color': 'rgba(57, 62, 65, 1)'
       });
-
-      // console.log(singleSelected);
 
       // Add or update the "children-layer" with individual polygon colors
       if (!map.current.getLayer('children-layer')) {
@@ -459,42 +471,148 @@ const SimulationMapView = ({
             'case',
             ['==', ['get', 'externalId'], singleSelected],
             singleSelectedColor,
-            ['in', ['get', 'name'], ['literal', multiSelected]],
-            multiSelectedColor,
-            'rgba((239, 239, 240, 0.3)' // Default color
+            'rgba(239, 239, 240, 0)' // Default color
           ],
-          'fill-outline-color': 'rgba(255, 000, 000, 1)'
+          'fill-outline-color': 'rgba(255, 000, 000, 0.5)'
         });
 
-        // Add or update the "children-layer" {REFACTORED}
+        //! Add a new source for multi-selected polygons
+        DrawPolygonsFeatureCollection(map.current, multiSelected, 'multi-selected');
+
+        //! Add a new layer for multi-selected polygons
+        AddLayer(map.current, 'multi-selected', 'multi-selected', {
+          'fill-color': multiSelectedColor,
+          'fill-outline-color': 'rgba(255, 0, 0, 1)'
+        });
 
         map.current.on('click', 'children-layer', e => {
-          const clickedFeature =
-            e.features && e.features[0] && e.features[0].properties ? e.features[0].properties : null;
+          const clickedFeature = e.features && e.features[0] ? e.features[0] : null;
+
           if (e.originalEvent.ctrlKey || e.originalEvent.metaKey) {
-            setMultiSelected((prev: any) =>
-              prev.includes(clickedFeature)
-                ? prev.filter((item: any) => item !== clickedFeature)
-                : [...prev, clickedFeature]
-            );
+            dispatch({ type: 'TOGGLE_MULTISELECT', payload: clickedFeature });
+
+            // Update multi-selected source data
+            const updatedFeatures = multiSelected.map(feature => ({
+              type: 'Feature',
+              geometry: feature.geometry,
+              properties: feature.properties
+            }));
+            (map.current?.getSource('multi-selected-source') as GeoJSONSource).setData({
+              type: 'FeatureCollection',
+              features: updatedFeatures.map(feature => ({
+                ...feature,
+                type: 'Feature'
+              }))
+            });
           } else {
             dispatch({ type: 'SELECT_SINGLE', payload: clickedFeature });
+
+            const Popup = new mapboxgl.Popup({
+              closeButton: true,
+              closeOnClick: true,
+              className: styles.paragraphPopup
+            });
+            if (map.current && clickedFeature) {
+              // Create and show popup
+              Popup.setLngLat(e.lngLat)
+                .setHTML(
+                  `<div class=${styles.popupWrapper}> 
+                      <div class=${styles.popupHeadingContainer}>
+                        <img class=${styles.locationImage} src=${locationTag} alt="location" />
+                        <p>${clickedFeature.properties?.name}</p>
+                      </div>
+                      <p>Children Number: ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
+                    </div>
+                  `
+                )
+                .setOffset([100, -20])
+                .addTo(map.current);
+            }
           }
         });
       } else {
-        console.log(singleSelected);
-
         map.current?.setPaintProperty('children-layer', 'fill-color', [
           'case',
           ['==', ['get', 'externalId'], singleSelected],
           singleSelectedColor,
-          ['in', ['get', 'name'], ['literal', multiSelected]],
-          multiSelectedColor,
-          'rgba(239, 239, 240, 0.3)' // Default color
+          'rgba(57, 62, 65, 0.05)' // Default color
         ]);
+
+        // Update multi-selected source data
+        const updatedFeatures = multiSelected.map(feature => ({
+          type: 'Feature',
+          geometry: feature.geometry,
+          properties: feature.properties
+        }));
+        (map.current?.getSource('multi-selected-source') as GeoJSONSource).setData({
+          type: 'FeatureCollection',
+          features: updatedFeatures.map(feature => ({
+            ...feature,
+            type: 'Feature'
+          }))
+        });
       }
 
-      // Generate label data
+      const multiSelectedLayerLabels = multiSelected.map((polygon: any) => {
+        const center = getPolygonCenter(polygon.geometry);
+        return {
+          type: 'Feature' as const,
+          geometry: center.center.geometry,
+          properties: {
+            name: polygon.properties.name,
+            geographicLevel: polygon.properties.geographicLevel,
+            childrenNumber: polygon.properties.childrenNumber
+          }
+        };
+      });
+
+      if (!map.current.getSource('multi-selected-labels-source')) {
+        map.current.addSource('multi-selected-labels-source', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: multiSelectedLayerLabels
+          }
+        });
+      } else {
+        const multiSelectedLabelsSource = map.current.getSource(
+          'multi-selected-labels-source'
+        ) as mapboxgl.GeoJSONSource;
+        multiSelectedLabelsSource.setData({
+          type: 'FeatureCollection',
+          features: multiSelectedLayerLabels
+        });
+
+        if (!map.current.getLayer('multi-selected-labels-layer')) {
+          map.current.addLayer({
+            id: 'multi-selected-labels-layer',
+            type: 'symbol',
+            source: 'multi-selected-labels-source',
+            layout: {
+              'text-field': [
+                'concat',
+                ['get', 'name'], // Name property
+                [
+                  'case',
+                  ['==', ['get', 'geographicLevel'], 'structure'], // Condition for 'structure'
+                  '',
+                  ['concat', ' (', ['to-string', ['get', 'childrenNumber']], ')'] // Append childrenNumber if not 'structure'
+                ]
+              ],
+              'text-size': 13,
+              'text-anchor': 'center'
+            },
+            paint: {
+              'text-color': '#FF0000', // Different color for multi-selected labels
+              'text-halo-color': '#fff', // Black border color
+              'text-halo-width': 2, // Width of the border
+              'text-halo-blur': 1 // Optional: smooth edges
+            }
+          });
+        }
+      }
+
+      // Generate label data PARENT / SHILDREN
       const labelFeatures = (currentLocationChildren.length > 0 ? currentLocationChildren : [selectedLoaction]).map(
         child => {
           const center = turf.centroid(child.geometry); // Use turf.js to calculate the center
@@ -547,8 +665,13 @@ const SimulationMapView = ({
             'text-anchor': 'center'
           },
           paint: {
-            // 'text-color': '#fff'
-            'text-color': '#000', // White font color
+            // 'text-color': '#000', // White font color
+            'text-color': [
+              'case',
+              ['in', ['get', 'name'], ['literal', multiSelected.map(p => p.properties.name)]],
+              '#FF0000', // Multi-selected label color
+              '#000000' // Default color for other labels
+            ],
             'text-halo-color': '#fff', // Black border color
             'text-halo-width': 2, // Width of the border
             'text-halo-blur': 1 // Optional: smooth edges
@@ -558,6 +681,7 @@ const SimulationMapView = ({
     }
   }, [
     map,
+    selectedState,
     currentLocationChildren,
     selectedLoaction,
     singleSelected,
@@ -1304,6 +1428,18 @@ const SimulationMapView = ({
       <button className={`${styles.buttonDrawer} ${styles.right}`} style={{}} onClick={rightOpenHandler}>
         <FontAwesomeIcon className={`${styles.customIcon}`} icon={rightOpenState ? faCaretRight : faCaretLeft} />
       </button>
+
+      {/* MULTISELECTED POLYGONS LIST */}
+      {multiselectState.length > 0 && (
+        // <div className={styles.multiselectPanel}>
+        //   <Accordion title="Selected Polygons" open={true}>
+        //     {multiselectState.map((selectedPolygon: any) => {
+        //       return <MultiselectList key={selectedPolygon.properties.externalId} selectedPolygon={selectedPolygon} />;
+        //     })}
+        //   </Accordion>
+        // </div>
+        <TargetsSelectedList />
+      )}
       <div style={{ position: 'absolute', zIndex: 2, width: 'fit-content' }} className="mx-0 px-0">
         <div style={{ float: 'left', position: 'relative' }} className="sidebar-adjust "></div>
 

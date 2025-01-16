@@ -42,14 +42,16 @@ const HierarchyItem = ({
           dispatch({
             type: 'SELECT_SINGLE',
             payload: {
-              assigned: false,
-              childrenNumber: properties.childrenNumber,
-              externalId: identifier,
-              geographicLevel: '',
-              name: properties.name,
-              parentIdentifier: properties.parentIdentifier,
-              simulationSearchResult: false,
-              status: ''
+              properties: {
+                assigned: false,
+                childrenNumber: properties.childrenNumber,
+                externalId: identifier,
+                geographicLevel: '',
+                name: properties.name,
+                parentIdentifier: properties.parentIdentifier,
+                simulationSearchResult: false,
+                status: ''
+              }
             }
           });
         }}
