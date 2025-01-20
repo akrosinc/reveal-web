@@ -453,9 +453,9 @@ const SimulationMapView = ({
 
       // Add or update the "children-source" {REFACTORED}
 
-      console.log('currentLocationChildren', currentLocationChildren);
-
       DrawPolygonsFeatureCollection(map.current, currentLocationChildren, 'children');
+
+      console.log(currentLocationChildren);
 
       // Add or update the "parent-layer" {REFACTORED}
       AddLayer(map.current, 'parent', 'parent', {

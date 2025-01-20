@@ -19,11 +19,10 @@ import { usePolygonContext } from '../../../../contexts/PolygonContext';
 interface DatasetsAccordionProps {
   open?: boolean;
   dataset: DataSetList;
-  onDataSetUpdate: (datasets: DataSetList) => void;
   updateDatasetHandler: (datasetId: string) => void;
 }
 
-function DatasetsAccordion({ open = false, dataset, onDataSetUpdate, updateDatasetHandler }: DatasetsAccordionProps) {
+function DatasetsAccordion({ open = false, dataset, updateDatasetHandler }: DatasetsAccordionProps) {
   const [isOpen, setOpen] = useState(open);
   const [showModal, setShowModal] = useState(false);
 
@@ -53,14 +52,14 @@ function DatasetsAccordion({ open = false, dataset, onDataSetUpdate, updateDatas
 
   const handleDatasetUpdate = async () => {
     try {
-      const NewDatasetList = await updateDataset({
+      const UpdatedSimulation = await updateDataset({
         simulationId: '99ff7398-e5c2-41c6-8218-856c933aba31',
         datasetId: dataset.identifier,
         name: tempName,
         hexColor: customColor.hex,
         lineWidth: borderValue
       });
-      updateDatasetHandler(NewDatasetList.datasets);
+      updateDatasetHandler(UpdatedSimulation.datasets);
     } catch (error) {
       console.error('Failed to update dataset:', error);
     }
@@ -83,11 +82,11 @@ function DatasetsAccordion({ open = false, dataset, onDataSetUpdate, updateDatas
 
   const removeDataset = async () => {
     try {
-      const NewDatasetList = await deleteDataset({
+      const UpdatedSimulation = await deleteDataset({
         simulationId: '99ff7398-e5c2-41c6-8218-856c933aba31',
         datasetId: dataset.identifier
       });
-      updateDatasetHandler(NewDatasetList.datasets);
+      updateDatasetHandler(UpdatedSimulation.datasets);
     } catch (error) {
       console.error('Failed to delete dataset:', error);
     }

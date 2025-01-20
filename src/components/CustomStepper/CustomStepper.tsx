@@ -39,8 +39,8 @@ function CustomStepper({ children, stepLabels, stepperHeader, onClose, onFinish 
         {/* Step Indicators */}
         <div className={styles.steps}>
           {sections.map((_, index) => (
-            <>
-              <div key={index} className={styles.stepWrapper}>
+            <React.Fragment key={index}>
+              <div className={styles.stepWrapper}>
                 <div className={styles.stepNumberAndLabel}>
                   {/* Step Number or Check Icon */}
                   <div
@@ -63,7 +63,7 @@ function CustomStepper({ children, stepLabels, stepperHeader, onClose, onFinish 
                   }`}
                 ></div>
               )}
-            </>
+            </React.Fragment>
           ))}
         </div>
 

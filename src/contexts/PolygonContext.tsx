@@ -1,14 +1,16 @@
 import { createContext, useContext, useReducer } from 'react';
 
 type PolygonActions =
-  | { type: 'SET_POLYGON'; payload: any[] }
+  | { type: 'SET_SIMULATION'; payload: any }
+  | { type: 'SET_HIERARCHY'; payload: any[] }
   | { type: 'SET_DATASET'; payload: any[] }
-  | { type: 'UPDATE_DATASET'; payload: any }
+  | { type: 'ADD_DATASET'; payload: any }
   | { type: 'SELECT_SINGLE'; payload: any }
   | { type: 'TOGGLE_MULTISELECT'; payload: any }
   | { type: 'CLEAR_SELECTION' };
 
 interface InitialStateInterface {
+  simulationInstance: any;
   polygons: any[];
   datasets: any[];
   selected: any | null;
@@ -16,6 +18,7 @@ interface InitialStateInterface {
 }
 
 const initialState: InitialStateInterface = {
+  simulationInstance: null,
   polygons: [],
   datasets: [],
   selected: null,
@@ -41,18 +44,14 @@ export interface PolygonContextInterface {
 // Reducer
 function polygonReducer(state: InitialStateInterface, action: PolygonActions): InitialStateInterface {
   switch (action.type) {
+    case 'SET_SIMULATION':
+      return { ...state, simulationInstance: action.payload };
+    case 'SET_HIERARCHY':
+      return { ...state, polygons: action.payload };
     case 'SET_DATASET':
-      console.log('SET_DATASET', action.payload);
-
       return { ...state, datasets: action.payload };
-    case 'UPDATE_DATASET':
-      console.log('UPDATE_DATASET', action.payload);
-
-      const selectedDatasets = state.datasets.some((item: any) => item.identifier === action.payload.identifier)
-        ? state.datasets.filter((item: any) => item.identifier !== action.payload.identifier)
-        : [...state.datasets, action.payload];
-      return { ...state, datasets: selectedDatasets };
-
+    case 'ADD_DATASET':
+      return { ...state, datasets: [...state.datasets, action.payload] };
     case 'SELECT_SINGLE':
       if (JSON.stringify(state.selected) === JSON.stringify(action.payload?.properties)) {
         return { ...state, selected: null };

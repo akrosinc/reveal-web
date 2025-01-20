@@ -5,14 +5,14 @@ import FileDrop from '../../../../../../components/FileDrop/FileDrop';
 import Select from 'react-select';
 import RangeInput from '../../../../../../components/RangeInput/RangeInput';
 import { ColorPicker, useColor } from 'react-color-palette';
-import { DataSet, getEntityTags, setDataset } from '../../api/datasetsAPI';
+import { AddDatasetResponse, DataSet, getEntityTags, setDataset } from '../../api/datasetsAPI';
 
 function AddDatasetForm({
   onClose,
   onDatasetAdded
 }: {
   onClose: () => void;
-  onDatasetAdded: (dataset: DataSet) => void;
+  onDatasetAdded: (dataset: AddDatasetResponse) => void;
 }) {
   const [datasetColor, setDatasetColor] = useColor('hex', '#000000');
   const [borderValue, setBorderValue] = useState(1);

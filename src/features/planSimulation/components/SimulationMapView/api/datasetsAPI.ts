@@ -35,6 +35,16 @@ export interface LocationData {
   simulationId: string;
 }
 
+export interface AddDatasetResponse {
+  simulationId: string;
+  datasetId: string;
+  datasetName: string;
+  hexColor: string;
+  lineWidth: number;
+  tagId: string;
+  locationWithMetadata: any;
+}
+
 export const getEntityTags = async () => {
   try {
     const response = await api.get(`/entityTag/default-hierarchy`);
@@ -45,8 +55,12 @@ export const getEntityTags = async () => {
 };
 
 export const getSimulationData = async (simulationId: string) => {
+  console.log('simulationId', simulationId);
+
   try {
     const response = await api.get(`/simulation/${simulationId}`);
+    console.log('response', response);
+
     return response.data;
   } catch (error) {
     console.error(error);
