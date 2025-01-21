@@ -80,7 +80,6 @@ import {
   getSimulationData,
   LocationData
 } from './SimulationMapView/api/datasetsAPI';
-import { get } from 'http';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -250,23 +249,24 @@ const Simulation = () => {
   const [datasetList, setDatasetList] = useState<DataSetList[]>([]);
   const [includeGeometry, setIncludeGeometry] = useState<boolean>(true);
 
+  const [chartData, setChartData] = useState<Record<string, number[]>>({});
+  const [totals, setTotals] = useState<Record<string, number>>({});
+  const [labels, setLabels] = useState<string[]>([]);
+
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
 
-  //! GET DATASETS
   const fetchSimulationAndData = async () => {
     const simulationIdentifier = await fetchPlanInfo();
 
     try {
-      const dataSetsData = await getSimulationData(simulationIdentifier);
-      dispatch(
-        { type: 'SET_DATASET', payload: dataSetsData.datasets },
-        { type: 'SET_SIMULATION', payload: dataSetsData.identifier }
-      );
+      const simulationData = await getSimulationData(simulationIdentifier);
+      dispatch({ type: 'SET_DATASET', payload: simulationData.datasets });
+      dispatch( { type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
     } catch (error) {
-      console.error('Failed to fetch datasets:', error);
+      console.error('Failed to fetch simulation:', error);
     }
   };
 
@@ -318,10 +318,6 @@ const Simulation = () => {
     }
   };
 
-  useEffect(() => {
-    const planIdentifier = fetchPlanInfo();
-  }, []);
-
   useMemo(() => {
     setDatasetList(state.datasets);
     console.log(polygonsWithData, 'polygonsWithData');
@@ -334,7 +330,6 @@ const Simulation = () => {
 
   useEffect(() => {
     if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
-      console.log('polygonsWithData', polygonsWithData);
 
       setSelectedLocationChildren(
         Object.values(polygonsWithData)
@@ -342,14 +337,17 @@ const Simulation = () => {
           .filter((polygon: any) => polygon.properties.parentIdentifier === currentLocationId)
       );
 
-      let selectedLocation = polygonsWithData[currentLocationId].polygonData;
-      console.log(selectedLocation, 'selectedLocation');
+      const selectedLocation = polygonsWithData[currentLocationId].polygonData;
 
       if (selectedLocation) {
         setGeometry(selectedLocation);
         setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
+        const { labels: ageGroupLabels, chartData, totals } = transformPopulationData(selectedLocation?.properties?.population);
+        setChartData(chartData);
+        setLabels(ageGroupLabels);
+        setTotals(totals);
       }
-    }
+     }
   }, [currentLocationId, polygonsWithData]);
 
   useEffect(() => {
@@ -1262,8 +1260,7 @@ const Simulation = () => {
   //! LOADING POLYGONS ON DEMAND
   const loadLocationHandler = async (locationId: string) => {
     setCurrentLocationId(locationId);
-    if (state.datasets.length === 0) {
-      if (polygonsWithData?.[locationId]?.childrenLoaded) {
+    if (state.datasets.length === 0 && polygonsWithData?.[locationId]?.childrenLoaded) {
         setIncludeGeometry(false);
 
         const k = Object.values(polygonsWithData)
@@ -1277,53 +1274,15 @@ const Simulation = () => {
           setGeometry(selectedLocation);
           setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
         }
-      } else {
-        let page = 0;
-        let totalPages = 0;
-        // OPTIMAZE: 300 is a magic number, should be a constant
-        //! const size = 3; for polygons
-        //! const size = 300; for structures
-        const size = 3;
 
-        //!SET POLYGON DATA FOR MAP
-        setSelectedLocationChildren([]);
-
-        while (totalPages >= page) {
-          const res = await getHierarchyPolygon(locationId, page, size);
-          setPolygonsWithData((prev: any) => {
-            const updatedPolygons = { ...prev };
-            res.content.forEach((location: any) => {
-              updatedPolygons[location.identifier] = {
-                polygonData: location,
-                childrenLoaded: location.identifier === locationId
-              };
-            });
-
-            return updatedPolygons;
-          });
-
-          totalPages = res.totalPages;
-          page++;
-          setCurrentLocationId(locationId);
-          const selectedLocation = res.content.find((location: any) => {
-            return location.identifier === locationId;
-          });
-          if (selectedLocation) {
-            setGeometry(selectedLocation);
-            setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
-          }
-        }
-      }
     } else {
       const includeGeometry: boolean = checkifChildrenLoaded(polygonsWithData, locationId);
-
-      console.log('includeGeometry', includeGeometry);
 
       let configObj: LocationData = {
         datasetsIds: datasetList.map(dataset => dataset.identifier),
         includeGeometry: includeGeometry,
         parentLocationId: locationId, //current location identifier
-        simulationId: '99ff7398-e5c2-41c6-8218-856c933aba31'
+        simulationId: state.simulationId
       };
 
       const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
@@ -1341,9 +1300,6 @@ const Simulation = () => {
           return updatedPolygons;
         });
       } else {
-        console.log('polygonsWithData', polygonsWithData);
-
-        console.log('polygonsWithDatasets', polygonsWithDatasets);
 
         setPolygonsWithData((prev: any) => {
           const updatedPolygons = { ...prev };
@@ -1598,7 +1554,7 @@ const Simulation = () => {
                 <DrawerButton onClick={() => setOpenCustomModal(1)}>Add dataset</DrawerButton>
                 <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <div className="p-6">
-                    <AddDatasetForm onClose={() => setOpenCustomModal(undefined)} onDatasetAdded={handleAddDataset} />
+                    <AddDatasetForm onClose={() => setOpenCustomModal(undefined)} onDatasetAdded={handleAddDataset} selectedLocationId={currentLocationId}/>
                   </div>
                 </CustomPopup>
               </Accordion>
@@ -1635,11 +1591,9 @@ const Simulation = () => {
           <Drawer open={rightOpen} anchor="left">
             <Accordion title="Statistics" open>
               <Dashboard
-                chartData={{
-                  summary: [15, 35, 60, 25],
-                  male: [40, 10, 55, 30],
-                  female: [25, 50, 15, 45]
-                }}
+                chartLabels={labels}
+                chartData={chartData}
+                totals={totals}
               />
             </Accordion>
             <Accordion title="Campaign Totals" open>
@@ -1865,3 +1819,47 @@ const Simulation = () => {
   );
 };
 export default Simulation;
+
+const transformPopulationData = (population: any) => {
+  const mergedPyramids = mergeAgeGroups(population?.Pyramids || []);
+  const ageGroups = mergedPyramids.map((group: any) => group.AgeGroup.replace('_', '-'));
+  const summaryData = mergedPyramids.map((group: any) => Math.round(group.TotalPop));
+  const maleData = mergedPyramids.map((group: any) => Math.round(group.MalePop));
+  const femaleData = mergedPyramids.map((group: any) => Math.round(group.FemalePop));
+
+  return {
+    labels: ageGroups,
+    chartData: {
+      summary: summaryData,
+      male: maleData,
+      female: femaleData,
+    },
+    totals: {
+      summary: Math.round(population.sum),
+      male: Math.round(population.male),
+      female: Math.round(population.female)
+    }
+  };
+};
+
+
+const mergeAgeGroups = (pyramids: any[]) => {
+  if(pyramids.length === 0) return [];
+  const mergedGroups: any[] = [];
+
+  for (let i = 0; i < pyramids.length; i += 2) {
+    const first = pyramids[i];
+    const second = pyramids[i + 1] || null;
+
+    const mergedGroup = {
+      AgeGroup: second ? `${first.AgeGroup.split('_')[0]}-${second.AgeGroup.split('_')[1]}` : first.AgeGroup.replace('_', '-'),
+      MalePop: Math.round((first.MalePop + (second?.MalePop || 0))),
+      FemalePop: Math.round((first.FemalePop + (second?.FemalePop || 0))),
+      TotalPop: Math.round((first.TotalPop + (second?.TotalPop || 0))),
+    };
+
+    mergedGroups.push(mergedGroup);
+  }
+
+  return mergedGroups;
+};

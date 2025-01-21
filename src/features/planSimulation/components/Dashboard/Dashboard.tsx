@@ -12,10 +12,13 @@ library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
 interface DashboardProps {
   chartData: Record<string, number[]>;
+  chartLabels: string[];
+  totals: Record<string, number>;
+
 }
 
-function Dashboard({ chartData }: DashboardProps) {
-  const [chartDataType, setChartDataType] = useState('summary');
+function Dashboard({ chartData, chartLabels, totals }: DashboardProps) {
+  const [chartDataType, setChartDataType] = useState<'summary' | 'male' | 'female'>('summary');
 
   const handleOptionChange = (option: string) => {
     // Update chart data based on the selected option
@@ -41,17 +44,14 @@ function Dashboard({ chartData }: DashboardProps) {
           <h3 className={style.populationHeadingH3}>Population</h3>
         </div>
         <div className={style.populationChartWrapper}>
-          <div className={style.populationChartSum}>
-            <h3 className={style.populationChartSumH3}>Total</h3>
-            <p className={style.populationChartSumP}>1,721</p>
-          </div>
+         
           <div className={style.doughnut}>
             <DoghnutChart
               data={{
-                labels: ['0-4', '5-10', '11-18', '19-25'],
+                labels: chartLabels,
                 datasets: [
                   {
-                    data: chartData[chartDataType],
+                    data: chartData[chartDataType] || [],
                     backgroundColor: ['#f1c40e', '#e77e23', '#e74d3c', '#3398db'],
                     borderColor: ['#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff'],
                     borderWidth: 1
@@ -61,6 +61,10 @@ function Dashboard({ chartData }: DashboardProps) {
               cutoutPercentage={30}
               fontSize={10.5}
             />
+          </div>
+          <div className={style.populationChartSum}>
+            <h3 className={style.populationChartSumH3}>Total:</h3>
+            <p className={style.populationChartSumP}>{(totals[chartDataType]).toLocaleString()}</p>
           </div>
         </div>
         <ChartSwitch

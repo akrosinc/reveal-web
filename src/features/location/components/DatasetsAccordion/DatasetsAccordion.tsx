@@ -1,4 +1,4 @@
-import { ChangeEvent, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Color, ColorPicker, useColor } from 'react-color-palette';
 import { CustomPopup } from '../../../../components/CustomPopup/CustomPopup';
@@ -43,7 +43,7 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler }: Data
   const colorPickerRef = useRef<HTMLDivElement>(null);
 
   const { dispatch } = usePolygonContext();
-  // const { state } = usePolygonContext();
+   const { state } = usePolygonContext();
 
   const handleColorPopup = (event: any) => {
     event.stopPropagation();
@@ -53,7 +53,7 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler }: Data
   const handleDatasetUpdate = async () => {
     try {
       const UpdatedSimulation = await updateDataset({
-        simulationId: '99ff7398-e5c2-41c6-8218-856c933aba31',
+        simulationId: state.simulationId,
         datasetId: dataset.identifier,
         name: tempName,
         hexColor: customColor.hex,
@@ -83,7 +83,7 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler }: Data
   const removeDataset = async () => {
     try {
       const UpdatedSimulation = await deleteDataset({
-        simulationId: '99ff7398-e5c2-41c6-8218-856c933aba31',
+        simulationId: state.simulationId,
         datasetId: dataset.identifier
       });
       updateDatasetHandler(UpdatedSimulation.datasets);
@@ -91,6 +91,10 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler }: Data
       console.error('Failed to delete dataset:', error);
     }
   };
+
+  useEffect(()=>{
+    setIsVisible(dataset.hidden);
+  }, [dataset]);
 
   return (
     <div className={`${styles.accordion_Wrapper}`}>
@@ -108,7 +112,10 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler }: Data
         <ItemMenu
           direction="left"
           isVisible={isVisible}
-          onToggleVisibility={() => setIsVisible(!isVisible)}
+          onToggleVisibility={() => dispatch({type: 'TOGGLE_DATASET_VISIBILITY', payload: {
+            ...dataset,
+            hidden: !isVisible
+          }})}
           onEdit={() => {
             setEdit(!edit);
           }}

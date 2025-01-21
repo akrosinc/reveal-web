@@ -83,6 +83,17 @@
   margin-right: 0.3rem;
 }
 
+.tagIcon {
+  width: 17px;
+  height: 17px;
+  margin-right: 0.2rem;
+}
+
+.tagInfo {
+  display: flex;
+  flex-direction: row;
+}
+
 .paragraphPopup p {
   margin: 0 !important;
   padding: 0 !important;

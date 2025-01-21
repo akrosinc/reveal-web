@@ -30,7 +30,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import { FeatureCollection, Geometry } from 'geojson';
 
 import locationTag from '../../../../assets/svgs/placeMarker.svg';
-import task from '../../../../assets/svgs/task.svg';
+import tagIcon from '../../../../assets/svgs/tag-icon.svg';
 
 // UTISLS
 import {
@@ -135,8 +135,8 @@ const SimulationMapView = ({
   const [singleSelected, setSingleSelected] = useState<any>(null);
   const [multiSelected, setMultiSelected] = useState<any[]>([]);
 
-  const [singleSelectedColor, setSingleSelectedColor] = useState('rgba(3, 166, 13, 0.4)');
-  const [multiSelectedColor, setMultiSelectedColor] = useState('rgba(255, 0, 0, 0.4)');
+  const [singleSelectedColor, setSingleSelectedColor] = useState('rgba(3, 166, 13, 1)');
+  const [multiSelectedColor, setMultiSelectedColor] = useState('rgba(0, 0, 102, 1)');
 
   const [datasets, setDatasets] = useState<any>();
   // CONTEXT
@@ -144,13 +144,12 @@ const SimulationMapView = ({
   const { state } = usePolygonContext();
   const selectedState = state.selected;
   const multiselectState = state.multiselect;
-  const contextDatasets = state.datasets;
-  useMemo(() => {
-    setSingleSelected(selectedState?.externalId ?? null);
-    setMultiSelected(multiselectState as any[]);
 
-    console.log(contextDatasets);
-  }, [selectedState, multiselectState, contextDatasets]);
+  useMemo(() => {
+    setSingleSelected(selectedState?.id ?? null);
+    setMultiSelected(multiselectState as any[]);
+  }, [selectedState, multiselectState]);
+
 
   useEffect(() => {
     if (map.current) return;
@@ -445,6 +444,101 @@ const SimulationMapView = ({
   }, [resetMap, initializeMap, setResetMap]);
 
   useEffect(() => {
+    if (currentLocationChildren && selectedLoaction && map && map.current && state.datasets) {
+
+      const layers = map.current?.getStyle().layers;
+      const matchingLayers = layers?.filter(layer => layer.id.startsWith('ds'));
+
+      matchingLayers?.forEach(layer => map.current?.removeLayer(layer.id));
+
+      if (map.current.getSource('datasets-source')) {
+        map.current.removeSource('datasets-source');
+      }
+
+      if (state.datasets && state.datasets.length !== 0) {
+        const processedFeatures = currentLocationChildren.flatMap(feature => {
+          const { metadata } = feature.properties;
+          return metadata.map((data: any) => ({
+            type: 'Feature',
+            properties: {
+              id: data.datasetId,
+              value: data.value
+            },
+            geometry: feature.geometry
+          }));
+        });
+        console.log(processedFeatures);
+        const metadataMaxValues: any = {};
+        processedFeatures.forEach(feature => {
+          const { id, value } = feature.properties;
+          if (!metadataMaxValues[id] || value > metadataMaxValues[id]) {
+            metadataMaxValues[id] = value;
+          }
+        });
+
+        const colors = generateColors(state.datasets);
+
+        if (!map.current.getSource('datasets-source')) {
+          map.current.addSource('datasets-source', {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: processedFeatures
+            }
+          });
+        }
+
+        console.log(processedFeatures);
+
+        processedFeatures.forEach((feature) => {
+          const layerId = feature.properties.id;
+          const maxValue = metadataMaxValues[layerId];
+          const matchingDataset = state.datasets.find((d: any) => d.identifier === layerId);
+          console.log('in this render, hidden is ', matchingDataset?.hidden);
+          if (!map.current?.getLayer(`ds-${layerId}`)) {
+            console.log('now adding ds layer ', layerId);
+            map.current?.addLayer({
+              id: `ds-${layerId}`,
+              type: 'fill',
+              source: 'datasets-source',
+              filter: ['==', ['get', 'id'], layerId],
+              paint: {
+                'fill-color': [
+                  'case',
+                  ['==', ["literal", matchingDataset?.hidden], true],
+                  'transparent',
+                  colors[layerId]
+                ],
+                'fill-opacity': [
+                  'interpolate',
+                  ['linear'],
+                  ['get', 'value'],
+                  0, 0,
+                  maxValue, 1
+                ]
+              }
+            });
+          } else {
+            map.current?.setPaintProperty(`ds-${layerId}`, 'fill-color', [
+              'case',
+              ['==', ["literal", matchingDataset?.hidden], true],
+              'transparent',
+              colors[layerId]
+            ]);
+            map.current?.setPaintProperty(`ds-${layerId}`, 'fill-opacity', [
+              'interpolate',
+              ['linear'],
+              ['get', 'value'],
+              0, 0,
+              maxValue, 1
+            ]);
+          }
+        });
+      }
+    }
+  }, [map, state.datasets, currentLocationChildren, selectedLoaction]);
+
+  useEffect(() => {
     if (map && map.current && currentLocationChildren && selectedLoaction) {
       map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
 
@@ -455,8 +549,6 @@ const SimulationMapView = ({
 
       DrawPolygonsFeatureCollection(map.current, currentLocationChildren, 'children');
 
-      console.log(currentLocationChildren);
-
       // Add or update the "parent-layer" {REFACTORED}
       AddLayer(map.current, 'parent', 'parent', {
         'fill-color': 'rgba(57, 62, 65, 0)',
@@ -466,15 +558,16 @@ const SimulationMapView = ({
       // Add or update the "children-layer" with individual polygon colors
       if (!map.current.getLayer('children-layer')) {
         // Add or update the "children-layer" {REFACTORED}
-        AddLayer(map.current, 'children', 'children', {
+        const paintConfig = {
           'fill-color': [
             'case',
-            ['==', ['get', 'externalId'], singleSelected],
+            ['==', ['get', 'id'], singleSelected],
             singleSelectedColor,
             'rgba(239, 239, 240, 0)' // Default color
           ],
           'fill-outline-color': 'rgba(255, 000, 000, 0.5)'
-        });
+        };
+        AddLayer(map.current, 'children', 'children', paintConfig);
 
         //! Add a new source for multi-selected polygons
         DrawPolygonsFeatureCollection(map.current, multiSelected, 'multi-selected');
@@ -513,29 +606,45 @@ const SimulationMapView = ({
               className: styles.paragraphPopup
             });
             if (map.current && clickedFeature) {
-              // Create and show popup
+              const tagData = clickedFeature.properties?.metadata ? JSON.parse(clickedFeature.properties.metadata) : [];
+
+              let htmlText = `<div class=${styles.popupWrapper}> 
+              <div class=${styles.popupHeadingContainer}>
+                <img class=${styles.locationImage} src=${locationTag} alt="location" />
+                <p>${clickedFeature.properties?.name}</p>
+              </div>
+              <p>Children Number: ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
+              <hr/>
+               ${tagData.map((tag: any) =>
+                `<div>
+                <p class=${styles.tagInfo}><img class=${styles.tagIcon} src=${tagIcon} alt="tag" /> ${tag.type}: ${Math.round(tag.value * 1000) / 1000}</p>
+                </div>`
+              )}
+            </div>
+          `;
               Popup.setLngLat(e.lngLat)
                 .setHTML(
-                  `<div class=${styles.popupWrapper}> 
-                      <div class=${styles.popupHeadingContainer}>
-                        <img class=${styles.locationImage} src=${locationTag} alt="location" />
-                        <p>${clickedFeature.properties?.name}</p>
-                      </div>
-                      <p>Children Number: ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
-                    </div>
-                  `
+                  htmlText
                 )
                 .setOffset([100, -20])
                 .addTo(map.current);
+
             }
           }
         });
       } else {
         map.current?.setPaintProperty('children-layer', 'fill-color', [
           'case',
-          ['==', ['get', 'externalId'], singleSelected],
+          ['==', ['get', 'id'], singleSelected],
           singleSelectedColor,
           'rgba(57, 62, 65, 0.05)' // Default color
+        ]);
+
+        map.current?.setPaintProperty('children-layer', 'fill-opacity', [
+          'case',
+          ['==', ['get', 'id'], singleSelected],
+          1,
+          0.2
         ]);
 
         // Update multi-selected source data
@@ -551,65 +660,6 @@ const SimulationMapView = ({
             type: 'Feature'
           }))
         });
-      }
-
-      const multiSelectedLayerLabels = multiSelected.map((polygon: any) => {
-        const center = getPolygonCenter(polygon.geometry);
-        return {
-          type: 'Feature' as const,
-          geometry: center.center.geometry,
-          properties: {
-            name: polygon.properties.name,
-            geographicLevel: polygon.properties.geographicLevel,
-            childrenNumber: polygon.properties.childrenNumber
-          }
-        };
-      });
-
-      if (!map.current.getSource('multi-selected-labels-source')) {
-        map.current.addSource('multi-selected-labels-source', {
-          type: 'geojson',
-          data: {
-            type: 'FeatureCollection',
-            features: multiSelectedLayerLabels
-          }
-        });
-      } else {
-        const multiSelectedLabelsSource = map.current.getSource(
-          'multi-selected-labels-source'
-        ) as mapboxgl.GeoJSONSource;
-        multiSelectedLabelsSource.setData({
-          type: 'FeatureCollection',
-          features: multiSelectedLayerLabels
-        });
-
-        if (!map.current.getLayer('multi-selected-labels-layer')) {
-          map.current.addLayer({
-            id: 'multi-selected-labels-layer',
-            type: 'symbol',
-            source: 'multi-selected-labels-source',
-            layout: {
-              'text-field': [
-                'concat',
-                ['get', 'name'], // Name property
-                [
-                  'case',
-                  ['==', ['get', 'geographicLevel'], 'structure'], // Condition for 'structure'
-                  '',
-                  ['concat', ' (', ['to-string', ['get', 'childrenNumber']], ')'] // Append childrenNumber if not 'structure'
-                ]
-              ],
-              'text-size': 13,
-              'text-anchor': 'center'
-            },
-            paint: {
-              'text-color': '#FF0000', // Different color for multi-selected labels
-              'text-halo-color': '#fff', // Black border color
-              'text-halo-width': 2, // Width of the border
-              'text-halo-blur': 1 // Optional: smooth edges
-            }
-          });
-        }
       }
 
       // Generate label data PARENT / SHILDREN
@@ -1020,7 +1070,7 @@ const SimulationMapView = ({
                         try {
                           let perc = parseFloat(selectedTagPercentageValue);
                           percDisplay = Math.trunc(Math.round(perc * 100));
-                        } catch (e) {}
+                        } catch (e) { }
                         htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}
@@ -1434,7 +1484,7 @@ const SimulationMapView = ({
         // <div className={styles.multiselectPanel}>
         //   <Accordion title="Selected Polygons" open={true}>
         //     {multiselectState.map((selectedPolygon: any) => {
-        //       return <MultiselectList key={selectedPolygon.properties.externalId} selectedPolygon={selectedPolygon} />;
+        //       return <MultiselectList key={selectedPolygon.properties.id} selectedPolygon={selectedPolygon} />;
         //     })}
         //   </Accordion>
         // </div>
@@ -1573,3 +1623,10 @@ const SimulationMapView = ({
   );
 };
 export default SimulationMapView;
+
+const generateColors = (datasets: any[]) => {
+  return datasets.reduce((acc, dataset) => {
+    acc[dataset.identifier] = dataset.hexColor;
+    return acc;
+  }, {});
+};

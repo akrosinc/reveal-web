@@ -6,23 +6,27 @@ import Select from 'react-select';
 import RangeInput from '../../../../../../components/RangeInput/RangeInput';
 import { ColorPicker, useColor } from 'react-color-palette';
 import { AddDatasetResponse, DataSet, getEntityTags, setDataset } from '../../api/datasetsAPI';
+import { usePolygonContext } from '../../../../../../contexts/PolygonContext';
 
 function AddDatasetForm({
   onClose,
-  onDatasetAdded
+  onDatasetAdded,
+  selectedLocationId
 }: {
   onClose: () => void;
   onDatasetAdded: (dataset: AddDatasetResponse) => void;
+  selectedLocationId?: string;
 }) {
+  const { state } = usePolygonContext();
   const [datasetColor, setDatasetColor] = useColor('hex', '#000000');
   const [borderValue, setBorderValue] = useState(1);
   const [entityTags, setEntityTags] = useState<any[]>([]);
   const [formValue, setFormValue] = useState<DataSet>({
-    simulationId: '99ff7398-e5c2-41c6-8218-856c933aba31',
+    simulationId: state.simulationId,
     tagId: '',
     hexColor: datasetColor.hex,
     lineWidth: borderValue,
-    parentLocationId: '627e0983-a64b-4db4-877f-d3b3ed0c3c21'
+    parentLocationId: selectedLocationId || state.admin0LocationId
   });
   const [isLoading, setIsLoading] = useState(true);
 

@@ -39,21 +39,6 @@ const HierarchyItem = ({
         }`}
         onClick={() => {
           clickHandler(identifier);
-          dispatch({
-            type: 'SELECT_SINGLE',
-            payload: {
-              properties: {
-                assigned: false,
-                childrenNumber: properties.childrenNumber,
-                externalId: identifier,
-                geographicLevel: '',
-                name: properties.name,
-                parentIdentifier: properties.parentIdentifier,
-                simulationSearchResult: false,
-                status: ''
-              }
-            }
-          });
         }}
       >
         <span>{properties.name}</span>

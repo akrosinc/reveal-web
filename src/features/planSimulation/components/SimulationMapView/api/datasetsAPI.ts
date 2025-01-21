@@ -13,6 +13,7 @@ export interface DataSetList {
   name: string;
   hexColor: string;
   lineWidth: number;
+  hidden: boolean;
 }
 
 export interface DataSetDelete {
@@ -55,8 +56,6 @@ export const getEntityTags = async () => {
 };
 
 export const getSimulationData = async (simulationId: string) => {
-  console.log('simulationId', simulationId);
-
   try {
     const response = await api.get(`/simulation/${simulationId}`);
     console.log('response', response);
