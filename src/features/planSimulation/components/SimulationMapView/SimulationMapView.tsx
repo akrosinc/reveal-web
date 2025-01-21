@@ -448,7 +448,6 @@ const SimulationMapView = ({
 
       const layers = map.current?.getStyle().layers;
       const matchingLayers = layers?.filter(layer => layer.id.startsWith('ds'));
-
       matchingLayers?.forEach(layer => map.current?.removeLayer(layer.id));
 
       if (map.current.getSource('datasets-source')) {
@@ -488,15 +487,12 @@ const SimulationMapView = ({
           });
         }
 
-        console.log(processedFeatures);
-
         processedFeatures.forEach((feature) => {
           const layerId = feature.properties.id;
           const maxValue = metadataMaxValues[layerId];
           const matchingDataset = state.datasets.find((d: any) => d.identifier === layerId);
           console.log('in this render, hidden is ', matchingDataset?.hidden);
           if (!map.current?.getLayer(`ds-${layerId}`)) {
-            console.log('now adding ds layer ', layerId);
             map.current?.addLayer({
               id: `ds-${layerId}`,
               type: 'fill',
@@ -534,6 +530,11 @@ const SimulationMapView = ({
             ]);
           }
         });
+        
+        map.current.moveLayer('children-layer');
+        map.current.moveLayer('multi-selected-layer');
+        map.current.moveLayer('labels-layer');
+
       }
     }
   }, [map, state.datasets, currentLocationChildren, selectedLoaction]);
@@ -568,6 +569,8 @@ const SimulationMapView = ({
           'fill-outline-color': 'rgba(255, 000, 000, 0.5)'
         };
         AddLayer(map.current, 'children', 'children', paintConfig);
+
+        addLabelsLayer();
 
         //! Add a new source for multi-selected polygons
         DrawPolygonsFeatureCollection(map.current, multiSelected, 'multi-selected');
@@ -647,7 +650,6 @@ const SimulationMapView = ({
           0.2
         ]);
 
-        // Update multi-selected source data
         const updatedFeatures = multiSelected.map(feature => ({
           type: 'Feature',
           geometry: feature.geometry,
@@ -659,73 +661,6 @@ const SimulationMapView = ({
             ...feature,
             type: 'Feature'
           }))
-        });
-      }
-
-      // Generate label data PARENT / SHILDREN
-      const labelFeatures = (currentLocationChildren.length > 0 ? currentLocationChildren : [selectedLoaction]).map(
-        child => {
-          const center = turf.centroid(child.geometry); // Use turf.js to calculate the center
-          return {
-            type: 'Feature' as const,
-            geometry: center.geometry,
-            properties: {
-              name: child.properties.name,
-              geographicLevel: child.properties.geographicLevel,
-              childrenNumber: child.properties.childrenNumber
-            }
-          };
-        }
-      );
-
-      if (!map.current.getSource('labels-source')) {
-        map.current.addSource('labels-source', {
-          type: 'geojson',
-          data: {
-            type: 'FeatureCollection',
-            features: labelFeatures
-          }
-        });
-      } else {
-        const labelsSource = map.current.getSource('labels-source') as mapboxgl.GeoJSONSource;
-        labelsSource.setData({
-          type: 'FeatureCollection',
-          features: labelFeatures
-        });
-      }
-
-      if (!map.current.getLayer('labels-layer')) {
-        map.current.addLayer({
-          id: 'labels-layer',
-          type: 'symbol',
-          source: 'labels-source',
-          layout: {
-            // Dynamically set the text field
-            'text-field': [
-              'concat',
-              ['get', 'name'], // Name property
-              [
-                'case',
-                ['==', ['get', 'geographicLevel'], 'structure'], // Condition for 'structure'
-                '',
-                ['concat', ' (', ['to-string', ['get', 'childrenNumber']], ')'] // Append childrenNumber if not 'structure'
-              ]
-            ],
-            'text-size': 13,
-            'text-anchor': 'center'
-          },
-          paint: {
-            // 'text-color': '#000', // White font color
-            'text-color': [
-              'case',
-              ['in', ['get', 'name'], ['literal', multiSelected.map(p => p.properties.name)]],
-              '#FF0000', // Multi-selected label color
-              '#000000' // Default color for other labels
-            ],
-            'text-halo-color': '#fff', // Black border color
-            'text-halo-width': 2, // Width of the border
-            'text-halo-blur': 1 // Optional: smooth edges
-          }
         });
       }
     }
@@ -1380,6 +1315,78 @@ const SimulationMapView = ({
       showLayer(userDefinedLayers.active, userDefinedLayers.layer);
     });
   }, [userDefinedLayers, showLayer]);
+
+  const addLabelsLayer = ()=> {
+    if(map && map.current){
+      // Generate label data PARENT / SHILDREN
+      const labelFeatures = (currentLocationChildren.length > 0 ? currentLocationChildren : [selectedLoaction]).map(
+        child => {
+          const center = turf.centroid(child.geometry); // Use turf.js to calculate the center
+          return {
+            type: 'Feature' as const,
+            geometry: center.geometry,
+            properties: {
+              name: child.properties.name,
+              geographicLevel: child.properties.geographicLevel,
+              childrenNumber: child.properties.childrenNumber
+            }
+          };
+        }
+      );
+
+      if (!map.current.getSource('labels-source')) {
+        map.current.addSource('labels-source', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: labelFeatures
+          }
+        });
+      } else {
+        const labelsSource = map.current.getSource('labels-source') as mapboxgl.GeoJSONSource;
+        labelsSource.setData({
+          type: 'FeatureCollection',
+          features: labelFeatures
+        });
+      }
+
+      if (!map.current.getLayer('labels-layer')) {
+        map.current.addLayer({
+          id: 'labels-layer',
+          type: 'symbol',
+          source: 'labels-source',
+          layout: {
+            // Dynamically set the text field
+            'text-field': [
+              'concat',
+              ['get', 'name'], // Name property
+              [
+                'case',
+                ['==', ['get', 'geographicLevel'], 'structure'], // Condition for 'structure'
+                '',
+                ['concat', ' (', ['to-string', ['get', 'childrenNumber']], ')'] // Append childrenNumber if not 'structure'
+              ]
+            ],
+            'text-size': 13,
+            'text-anchor': 'center'
+          },
+          paint: {
+            // 'text-color': '#000', // White font color
+            'text-color': [
+              'case',
+              ['in', ['get', 'name'], ['literal', multiSelected.map(p => p.properties.name)]],
+              '#FF0000', // Multi-selected label color
+              '#000000' // Default color for other labels
+            ],
+            'text-halo-color': '#fff', // Black border color
+            'text-halo-width': 2, // Width of the border
+            'text-halo-blur': 1 // Optional: smooth edges
+          }
+        });
+      }
+    } 
+  }
+
 
   const addParentMapData = useCallback(
     (filteredData: PlanningParentLocationResponse) => {

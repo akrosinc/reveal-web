@@ -64,7 +64,7 @@ function Dashboard({ chartData, chartLabels, totals }: DashboardProps) {
           </div>
           <div className={style.populationChartSum}>
             <h3 className={style.populationChartSumH3}>Total:</h3>
-            <p className={style.populationChartSumP}>{(totals[chartDataType]).toLocaleString()}</p>
+            <p className={style.populationChartSumP}>{totals[chartDataType]?.toLocaleString()}</p>
           </div>
         </div>
         <ChartSwitch
