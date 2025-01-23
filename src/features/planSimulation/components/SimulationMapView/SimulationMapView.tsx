@@ -623,8 +623,6 @@ const SimulationMapView = ({
         };
         AddLayer(map.current, 'children', 'children', paintConfig);
 
-        addLabelsLayer();
-
         //! Add a new source for multi-selected polygons
         DrawPolygonsFeatureCollection(map.current, multiSelected, 'multi-selected');
 
@@ -715,6 +713,9 @@ const SimulationMapView = ({
         });
       }
 
+      addLabelsLayer();
+
+      
       if (!selectedState) {
         polygonClickPopup.current.remove();
       }
