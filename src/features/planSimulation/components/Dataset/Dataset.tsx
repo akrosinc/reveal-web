@@ -26,7 +26,7 @@ function Dataset({ dataset, color }: DatasetProps) {
       <DualRangeSlider
         min={0}
         max={100}
-        step={25}
+        //step={25}
         defaultMinValue={25}
         defaultMaxValue={75}
         inactive={checked}

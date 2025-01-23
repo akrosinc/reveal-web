@@ -1,4 +1,4 @@
-import { EventData, GeoJSONSource, MapLayerEventType, Popup } from 'mapbox-gl';
+import { EventData, Expression, GeoJSONSource, MapLayerEventType, Popup } from 'mapbox-gl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { MAPBOX_STYLE_STREETS } from '../../../../constants';
@@ -115,6 +115,14 @@ const SimulationMapView = ({
       offset: 20
     })
   );
+
+  const polygonClickPopup = useRef<Popup>(new Popup({
+    closeOnClick: false,
+    closeButton: false,
+    offset: 20,
+    className: styles.paragraphPopup
+  }));
+
   const [parentMapStateData, setParentMapStateData] = useState<PlanningParentLocationResponse>();
 
   const [userDefinedLayers, setUserDefinedLayers] = useState<UserDefinedLayer[]>([]);
@@ -139,6 +147,7 @@ const SimulationMapView = ({
   const [multiSelectedColor, setMultiSelectedColor] = useState('rgba(0, 0, 102, 1)');
 
   const [datasets, setDatasets] = useState<any>();
+  const [datasetsDataMap, setDatasetsDataMap] = useState<any>({});
   // CONTEXT
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
@@ -444,100 +453,144 @@ const SimulationMapView = ({
   }, [resetMap, initializeMap, setResetMap]);
 
   useEffect(() => {
-    if (currentLocationChildren && selectedLoaction && map && map.current && state.datasets) {
+    if (currentLocationChildren) {
 
-      const layers = map.current?.getStyle().layers;
-      const matchingLayers = layers?.filter(layer => layer.id.startsWith('ds'));
-      matchingLayers?.forEach(layer => map.current?.removeLayer(layer.id));
-
-      if (map.current.getSource('datasets-source')) {
-        map.current.removeSource('datasets-source');
-      }
-
-      if (state.datasets && state.datasets.length !== 0) {
-        const processedFeatures = currentLocationChildren.flatMap(feature => {
-          const { metadata } = feature.properties;
-          return metadata.map((data: any) => ({
-            type: 'Feature',
+      const groupedById: any = {};
+      currentLocationChildren.forEach((location: any) => {
+        location.properties?.metadata?.forEach((meta: any) => {
+          if (!groupedById[meta.datasetId]) {
+            groupedById[meta.datasetId] = [];
+          }
+          groupedById[meta.datasetId].push({
+            type: "Feature",
             properties: {
-              id: data.datasetId,
-              value: data.value
+              locationId: location.identifier,
+              value: meta.value,
+              tagName: meta.type,
+              id: meta.datasetId
             },
-            geometry: feature.geometry
-          }));
+            geometry: location.geometry
+          });
         });
-        console.log(processedFeatures);
-        const metadataMaxValues: any = {};
-        processedFeatures.forEach(feature => {
-          const { id, value } = feature.properties;
-          if (!metadataMaxValues[id] || value > metadataMaxValues[id]) {
-            metadataMaxValues[id] = value;
+      });
+      setDatasetsDataMap(groupedById);
+    }
+  }, [currentLocationChildren]);
+
+  useEffect(() => {
+    if (datasetsDataMap) {
+      Object.entries(datasetsDataMap).forEach(([layerId, features]) => {
+        const { maxValue, minValue } = (features as any[]).reduce(
+          (acc, feature) => {
+            const value = feature.properties?.value;
+            if (typeof value === 'number' && !isNaN(value)) {
+              acc.maxValue = acc.maxValue === undefined ? value : Math.max(acc.maxValue, value);
+              acc.minValue = acc.minValue === undefined ? value : Math.min(acc.minValue, value);
+            }
+            return acc;
+          },
+          { maxValue: undefined, minValue: undefined }
+        );
+
+        dispatch({
+          type: 'UPDATE_DATASET',
+          payload: {
+            datasetId: layerId,
+            filter: {
+              maxValue: maxValue,
+              minValue: minValue
+            }
           }
         });
+      });
 
-        const colors = generateColors(state.datasets);
+    }
+  }, [datasetsDataMap]);
 
-        if (!map.current.getSource('datasets-source')) {
-          map.current.addSource('datasets-source', {
-            type: 'geojson',
+  useEffect(() => {
+    if (datasetsDataMap && map && map.current && state.datasets && state.datasets.length !== 0) {
+
+      const colors = generateColors(state.datasets);
+
+      const layers = map.current?.getStyle().layers;
+      const matchingLayers = layers?.filter(layer => layer.id.startsWith(`ds-`) && !layer.id.endsWith(selectedLoaction.properties.name));
+      matchingLayers?.forEach(layer => {
+        if (map.current?.getLayer(layer.id)) {
+          map.current?.removeLayer(layer.id);
+        }
+      });
+
+      Object.entries(datasetsDataMap).forEach(([layerId, features]) => {
+        const sourceId = `ds-${layerId}-${selectedLoaction.properties.name}`;
+        if (!map.current?.getSource(sourceId)) {
+          map.current?.addSource(sourceId, {
+            type: "geojson",
             data: {
-              type: 'FeatureCollection',
-              features: processedFeatures
+              type: "FeatureCollection",
+              features: features as any[]
             }
           });
         }
 
-        processedFeatures.forEach((feature) => {
-          const layerId = feature.properties.id;
-          const maxValue = metadataMaxValues[layerId];
-          const matchingDataset = state.datasets.find((d: any) => d.identifier === layerId);
-          console.log('in this render, hidden is ', matchingDataset?.hidden);
-          if (!map.current?.getLayer(`ds-${layerId}`)) {
-            map.current?.addLayer({
-              id: `ds-${layerId}`,
-              type: 'fill',
-              source: 'datasets-source',
-              filter: ['==', ['get', 'id'], layerId],
-              paint: {
-                'fill-color': [
-                  'case',
-                  ['==', ["literal", matchingDataset?.hidden], true],
-                  'transparent',
-                  colors[layerId]
-                ],
-                'fill-opacity': [
-                  'interpolate',
-                  ['linear'],
-                  ['get', 'value'],
-                  0, 0,
-                  maxValue, 1
-                ]
-              }
-            });
-          } else {
-            map.current?.setPaintProperty(`ds-${layerId}`, 'fill-color', [
-              'case',
-              ['==', ["literal", matchingDataset?.hidden], true],
-              'transparent',
-              colors[layerId]
-            ]);
-            map.current?.setPaintProperty(`ds-${layerId}`, 'fill-opacity', [
-              'interpolate',
-              ['linear'],
-              ['get', 'value'],
-              0, 0,
-              maxValue, 1
-            ]);
-          }
-        });
-        
-        map.current.moveLayer('children-layer');
-        map.current.moveLayer('multi-selected-layer');
-        map.current.moveLayer('labels-layer');
+        const matchingDataset = state.datasets.find((d: any) => d.identifier === layerId);
+        if (!matchingDataset && map.current?.getLayer(`ds-${layerId}-${selectedLoaction.properties.name}`)) {
+          map.current?.removeLayer(`ds-${layerId}-${selectedLoaction.properties.name}`);
+          return;
+        }
 
+        const fillColorConfig: Expression =
+          ['case',
+            ['==', ["literal", matchingDataset?.hidden], true],
+            'transparent',
+            ['<', ['get', 'value'], matchingDataset?.selectedRange?.minValue],
+            'transparent',
+            ['>', ['get', 'value'], matchingDataset?.selectedRange?.maxValue],
+            'transparent',
+            colors[layerId]
+          ];
+
+        const fillOpacityConfig: Expression =
+          [
+            'interpolate',
+            ['linear'],
+            ['get', 'value'],
+            0, 0,
+            matchingDataset?.filter?.maxValue, 1
+          ];
+
+        if (map.current?.getLayer(`ds-${layerId}-${selectedLoaction.properties.name}`)) {
+          map.current?.setPaintProperty(`ds-${layerId}-${selectedLoaction.properties.name}`, 'fill-color',
+            fillColorConfig);
+
+          map.current?.setPaintProperty(`ds-${layerId}-${selectedLoaction.properties.name}`, 'fill-opacity',
+            fillOpacityConfig);
+        } else {
+          map.current?.addLayer({
+            id: `ds-${layerId}-${selectedLoaction.properties.name}`,
+            type: "fill",
+            source: sourceId,
+            filter: ['==', ['get', 'id'], layerId],
+            paint: {
+              'fill-color': fillColorConfig
+              ,
+              'fill-opacity': fillOpacityConfig
+            }
+          });
+        }
+      });
+
+      if (map.current.getLayer('children-layer')) {
+        map.current.moveLayer('children-layer');
+
+      } if (map.current.getLayer('multi-selected-layer')) {
+        map.current.moveLayer('multi-selected-layer');
+
+      } if (map.current.getLayer('labels-layer')) {
+        map.current.moveLayer('labels-layer');
       }
     }
-  }, [map, state.datasets, currentLocationChildren, selectedLoaction]);
+  }, [map, map.current, state.datasets, datasetsDataMap]);
+
 
   useEffect(() => {
     if (map && map.current && currentLocationChildren && selectedLoaction) {
@@ -601,31 +654,29 @@ const SimulationMapView = ({
               }))
             });
           } else {
+
             dispatch({ type: 'SELECT_SINGLE', payload: clickedFeature });
 
-            const Popup = new mapboxgl.Popup({
-              closeButton: true,
-              closeOnClick: true,
-              className: styles.paragraphPopup
-            });
+
             if (map.current && clickedFeature) {
+
               const tagData = clickedFeature.properties?.metadata ? JSON.parse(clickedFeature.properties.metadata) : [];
 
               let htmlText = `<div class=${styles.popupWrapper}> 
-              <div class=${styles.popupHeadingContainer}>
-                <img class=${styles.locationImage} src=${locationTag} alt="location" />
-                <p>${clickedFeature.properties?.name}</p>
-              </div>
-              <p>Children Number: ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
-              <hr/>
-               ${tagData.map((tag: any) =>
+                      <div class=${styles.popupHeadingContainer}>
+                        <img class=${styles.locationImage} src=${locationTag} alt="location" />
+                        <p>${clickedFeature.properties?.name}</p>
+                      </div>
+                      <p>Children Number: ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
+                      ${tagData.length !== 0 ? `<hr/>` : ``}
+                      ${tagData.map((tag: any) =>
                 `<div>
-                <p class=${styles.tagInfo}><img class=${styles.tagIcon} src=${tagIcon} alt="tag" /> ${tag.type}: ${Math.round(tag.value * 1000) / 1000}</p>
-                </div>`
+                        <p class=${styles.tagInfo}><img class=${styles.tagIcon} src=${tagIcon} alt="tag" /> ${tag.type}: ${Math.round(tag.value * 1000) / 1000}</p>
+                        </div>`
               )}
-            </div>
-          `;
-              Popup.setLngLat(e.lngLat)
+                      </div>
+                `;
+              polygonClickPopup.current.setLngLat(e.lngLat)
                 .setHTML(
                   htmlText
                 )
@@ -663,6 +714,11 @@ const SimulationMapView = ({
           }))
         });
       }
+
+      if (!selectedState) {
+        polygonClickPopup.current.remove();
+      }
+
     }
   }, [
     map,
@@ -1316,8 +1372,8 @@ const SimulationMapView = ({
     });
   }, [userDefinedLayers, showLayer]);
 
-  const addLabelsLayer = ()=> {
-    if(map && map.current){
+  const addLabelsLayer = () => {
+    if (map && map.current) {
       // Generate label data PARENT / SHILDREN
       const labelFeatures = (currentLocationChildren.length > 0 ? currentLocationChildren : [selectedLoaction]).map(
         child => {
@@ -1384,7 +1440,7 @@ const SimulationMapView = ({
           }
         });
       }
-    } 
+    }
   }
 
 

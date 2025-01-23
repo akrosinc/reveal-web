@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './DualRangeSlider.module.css';
 import { Color } from 'react-color-palette';
-
 interface DualRangeSliderProps {
   min: number;
   max: number;
-  step: number;
   defaultMinValue?: number;
+  step?: number;
   defaultMaxValue?: number;
   onChange?: (minValue: number, maxValue: number) => void;
   inactive?: boolean;
@@ -16,7 +15,6 @@ interface DualRangeSliderProps {
 export const DualRangeSlider: React.FC<DualRangeSliderProps> = ({
   min,
   max,
-  step,
   defaultMinValue = min,
   defaultMaxValue = max,
   onChange,
@@ -32,14 +30,14 @@ export const DualRangeSlider: React.FC<DualRangeSliderProps> = ({
   const [isDragging, setIsDragging] = useState<'min' | 'max' | null>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  const getPercentage = useCallback((value: number) => ((value - min) / (max - min)) * 100, [min, max]);
+  useEffect(() => {
+    setMinValue(defaultMinValue);
+    setMaxValue(defaultMaxValue);
+  }, [defaultMinValue, defaultMaxValue]);
 
-  const snapToStep = useCallback(
-    (value: number) => {
-      const snappedValue = Math.round(value / step) * step;
-      return Math.min(Math.max(snappedValue, min), max);
-    },
-    [min, max, step]
+  const getPercentage = useCallback(
+    (value: number) => ((value - min) / (max - min)) * 100,
+    [min, max]
   );
 
   const handleMouseMove = useCallback(
@@ -48,21 +46,21 @@ export const DualRangeSlider: React.FC<DualRangeSliderProps> = ({
 
       const rect = sliderRef.current.getBoundingClientRect();
       const percentage = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
-      const newValue = snapToStep(min + (percentage / 100) * (max - min));
+      const newValue = min + (percentage / 100) * (max - min);
 
       if (isDragging === 'min') {
         if (newValue < maxValue) {
           setMinValue(newValue);
           onChange?.(newValue, maxValue);
         }
-      } else {
+      } else if (isDragging === 'max') {
         if (newValue > minValue) {
           setMaxValue(newValue);
           onChange?.(minValue, newValue);
         }
       }
     },
-    [isDragging, min, max, minValue, maxValue, onChange, snapToStep]
+    [isDragging, min, max, minValue, maxValue, onChange]
   );
 
   const handleMouseUp = useCallback(() => {
@@ -81,7 +79,7 @@ export const DualRangeSlider: React.FC<DualRangeSliderProps> = ({
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
   return (
-    <div className={`${styles.container} ${!inactive && styles.inactive}`}>
+    <div className={`${styles.container} ${inactive && styles.inactive}`}>
       <div ref={sliderRef} className={styles.track}>
         <div
           className={styles.selectedRange}
@@ -92,17 +90,6 @@ export const DualRangeSlider: React.FC<DualRangeSliderProps> = ({
           }}
         />
       </div>
-
-      {/* Steps */}
-      {Array.from({ length: (max - min) / step + 1 }).map((_, index, array) => {
-        const value = min + index * step;
-        const percentage = getPercentage(value);
-
-        // Skip rendering for the first and last steps
-        if (index === 0 || index === array.length - 1) return null;
-
-        return <div key={value} className={styles.step} style={{ left: `${percentage}%` }} />;
-      })}
 
       {/* Handles */}
       <div
@@ -124,8 +111,8 @@ export const DualRangeSlider: React.FC<DualRangeSliderProps> = ({
 
       {/* Values */}
       <div className={styles.values}>
-        <span>{minValue}</span>
-        <span>{maxValue}</span>
+        <span>{minValue.toFixed(2)}</span>
+        <span>{maxValue.toFixed(2)}</span>
       </div>
     </div>
   );

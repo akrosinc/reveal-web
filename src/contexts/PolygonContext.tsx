@@ -3,9 +3,13 @@ import { createContext, useContext, useReducer } from 'react';
 type PolygonActions =
   { type: 'SET_SIMULATION_ID'; payload: any }
   | { type: 'SET_HIERARCHY'; payload: any[] }
+  | { type: 'SET_NEW_DATASETS'; payload: any[] }
   | { type: 'SET_DATASET'; payload: any[] }
   | { type: 'TOGGLE_DATASET_VISIBILITY'; payload: any }
   | { type: 'ADD_DATASET'; payload: any }
+  | { type: 'UPDATE_DATASET'; payload: any }
+  | { type: 'DELETE_DATASET'; payload: any }
+  | { type: 'UPDATE_DATASET_FILTER'; payload: any }
   | { type: 'SELECT_SINGLE'; payload: any }
   | { type: 'TOGGLE_MULTISELECT'; payload: any }
   | { type: 'SET_ADMIN0_LOCATION_ID'; payload: any }
@@ -55,18 +59,72 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
       return { ...state, admin0LocationId: action.payload };
     case 'SET_HIERARCHY':
       return { ...state, polygons: action.payload };
-    case 'SET_DATASET':
+    case 'SET_NEW_DATASETS':
       return {
         ...state, datasets: action.payload.map((dataset: any) => ({
           ...dataset,
-          hidden: false
+          hidden: false,
+          selectedRange: {
+            minValue: dataset.selectedRange?.minValue || 0,
+            maxValue: dataset.selectedRange?.maxValue || 0
+          },
+          filter: {
+            minValue: dataset.filter?.minValue || 0,
+            maxValue: dataset.filter?.maxValue || 0
+          }
         }))
       };
-
+    case 'SET_DATASET':
+      return {
+        ...state, datasets: state.datasets.map((d: any) => {
+          const corresponding = action.payload.find(ud => ud.identifier === d.identifier);
+          return {
+            ...corresponding,
+            filter: d.filter,
+            selectedRange: d.selectedRange,
+            hidden: d.hidden
+          };
+        })
+      };
+    case 'DELETE_DATASET':
+      return {
+        ...state, datasets: state.datasets.filter((dataset: any) => dataset.identifier !== action.payload)
+      };
+    case 'UPDATE_DATASET':
+      return {
+        ...state,
+        datasets: state.datasets.map(dataset =>
+          dataset.identifier === action.payload.datasetId
+            ? { ...dataset, filter: action.payload.filter, selectedRange: action.payload.filter }
+            : dataset
+        )
+      };
+    case 'UPDATE_DATASET_FILTER':
+      return {
+        ...state,
+        datasets: state.datasets.map(dataset =>
+          dataset.identifier === action.payload.datasetId
+            ? { ...dataset, selectedRange: action.payload.filter || dataset.filter }
+            : dataset
+        )
+      };
     case 'TOGGLE_DATASET_VISIBILITY':
       return { ...state, datasets: state.datasets.map((dataset: any) => dataset.identifier === action.payload.identifier ? action.payload : dataset) }
     case 'ADD_DATASET':
-      return { ...state, datasets: [...state.datasets, action.payload] };
+      return {
+        ...state, datasets: [...state.datasets, {
+          ...action.payload,
+          hidden: false,
+          selectedRange: {
+            minValue: 0,
+            maxValue: 0
+          },
+          filter: {
+            minValue: 0,
+            maxValue: 0
+          }
+        }]
+      };
     case 'SELECT_SINGLE':
       if (JSON.stringify(state.selected) === JSON.stringify(action.payload?.properties)) {
         return { ...state, selected: null };

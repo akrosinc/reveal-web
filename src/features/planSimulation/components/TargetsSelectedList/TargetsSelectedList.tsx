@@ -70,6 +70,8 @@ function TargetsSelectedList() {
       {Object.entries(groupedData).map(([parentName, polygons], index) => (
         <Accordion key={`accordion-${parentName}-${index}`} title={`${parentName} (${polygons.length})`}>
           {polygons.map(polygon => renderChildren(polygon))}
+          <hr></hr>
+          <button className={styles.assignmentButton}>Add all subordinate operational areas</button>
         </Accordion>
       ))}
     </div>

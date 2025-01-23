@@ -87,3 +87,11 @@
 .targetsSelectedList::-webkit-scrollbar-thumb:hover {
   background-color: #949494a1;
 }
+
+.assignmentButton {
+  display: flex;
+  padding: 4px 8px;
+  background-color: white;
+  border-radius: 8px;
+  border-width: 0.5px;
+}

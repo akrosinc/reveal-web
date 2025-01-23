@@ -12,7 +12,6 @@ import styles from '../accordion/Accordion.module.css';
 import DatasetStyles from './DatasetsAccordion.module.css';
 import {
   DataSetList,
-  deleteDataset,
   updateDataset
 } from '../../../planSimulation/components/SimulationMapView/api/datasetsAPI';
 import { usePolygonContext } from '../../../../contexts/PolygonContext';
@@ -20,9 +19,15 @@ interface DatasetsAccordionProps {
   open?: boolean;
   dataset: DataSetList;
   updateDatasetHandler: (datasetId: string) => void;
+  removeDatasetHandler: (datasetId: string) => void;
 }
 
-function DatasetsAccordion({ open = false, dataset, updateDatasetHandler }: DatasetsAccordionProps) {
+function DatasetsAccordion({ open = false, dataset, updateDatasetHandler, removeDatasetHandler }: DatasetsAccordionProps) {
+
+  const [range, setRange] = useState({ min: dataset.filter?.minValue, max: dataset.filter?.maxValue });
+  const [currentRange, setCurrentRange] = useState({ min: dataset.selectedRange?.minValue, max: dataset.selectedRange?.minValue });
+
+
   const [isOpen, setOpen] = useState(open);
   const [showModal, setShowModal] = useState(false);
 
@@ -43,11 +48,24 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler }: Data
   const colorPickerRef = useRef<HTMLDivElement>(null);
 
   const { dispatch } = usePolygonContext();
-   const { state } = usePolygonContext();
+  const { state } = usePolygonContext();
 
   const handleColorPopup = (event: any) => {
     event.stopPropagation();
     setShowModal(!showModal);
+  };
+
+  const handleRangeChange = (minValue: number, maxValue: number) => {
+    setCurrentRange({ min: minValue, max: maxValue });
+    dispatch({
+      type: 'UPDATE_DATASET_FILTER', payload: {
+        datasetId: dataset.identifier,
+        filter: {
+          minValue,
+          maxValue
+        }
+      }
+    });
   };
 
   const handleDatasetUpdate = async () => {
@@ -82,18 +100,30 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler }: Data
 
   const removeDataset = async () => {
     try {
-      const UpdatedSimulation = await deleteDataset({
-        simulationId: state.simulationId,
-        datasetId: dataset.identifier
-      });
-      updateDatasetHandler(UpdatedSimulation.datasets);
+      removeDatasetHandler(dataset.identifier);
     } catch (error) {
       console.error('Failed to delete dataset:', error);
     }
   };
 
-  useEffect(()=>{
+  const handleChecked = () => {
+    setChecked(!checked);
+    setCurrentRange(range);
+    dispatch({
+      type: 'UPDATE_DATASET_FILTER', payload: {
+        datasetId: dataset.identifier,
+        filter: {
+          minValue: range.min,
+          maxValue: range.max
+        }
+      }
+    });
+  }
+
+  useEffect(() => {
     setIsVisible(dataset.hidden);
+    setRange({ min: dataset.filter?.minValue, max: dataset.filter?.maxValue });
+    setCurrentRange({ min: dataset.selectedRange?.minValue, max: dataset.selectedRange?.maxValue });
   }, [dataset]);
 
   return (
@@ -112,10 +142,12 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler }: Data
         <ItemMenu
           direction="left"
           isVisible={isVisible}
-          onToggleVisibility={() => dispatch({type: 'TOGGLE_DATASET_VISIBILITY', payload: {
-            ...dataset,
-            hidden: !isVisible
-          }})}
+          onToggleVisibility={() => dispatch({
+            type: 'TOGGLE_DATASET_VISIBILITY', payload: {
+              ...dataset,
+              hidden: !isVisible
+            }
+          })}
           onEdit={() => {
             setEdit(!edit);
           }}
@@ -211,17 +243,17 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler }: Data
               id={dataset.name}
               isOn={checked}
               title={'Filter'}
-              handleToggle={() => setChecked(!checked)}
+              handleToggle={handleChecked}
               colorOne={dataset.hexColor && customColor.hex}
             />
             <DualRangeSlider
-              min={0}
-              max={100}
-              step={25}
-              defaultMinValue={25}
-              defaultMaxValue={75}
-              inactive={checked}
+              min={range.min}
+              max={range.max}
+              defaultMinValue={currentRange.min}
+              defaultMaxValue={currentRange.max}
+              inactive={!checked}
               color={checked ? customColor : undefined}
+              onChange={handleRangeChange}
             />
           </div>
         </div>

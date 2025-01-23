@@ -14,6 +14,14 @@ export interface DataSetList {
   hexColor: string;
   lineWidth: number;
   hidden: boolean;
+  filter: {
+    minValue: number;
+    maxValue: number;
+  };
+  selectedRange: {
+    minValue: number;
+    maxValue: number;
+  }
 }
 
 export interface DataSetDelete {

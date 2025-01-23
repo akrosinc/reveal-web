@@ -76,6 +76,7 @@ import { usePolygonContext } from '../../../contexts/PolygonContext';
 import {
   AddDatasetResponse,
   DataSetList,
+  deleteDataset,
   getLocationPolygonsWithDatasets,
   getSimulationData,
   LocationData
@@ -263,8 +264,8 @@ const Simulation = () => {
 
     try {
       const simulationData = await getSimulationData(simulationIdentifier);
-      dispatch({ type: 'SET_DATASET', payload: simulationData.datasets });
-      dispatch( { type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
+      dispatch({ type: 'SET_NEW_DATASETS', payload: simulationData.datasets });
+      dispatch({ type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
     } catch (error) {
       console.error('Failed to fetch simulation:', error);
     }
@@ -279,10 +280,8 @@ const Simulation = () => {
     };
 
     dispatch({ type: 'ADD_DATASET', payload: dataset });
+
     //! LOOP LOCATIONS WITH METADA AND ATTACH DATASET DATA TO LOADED POLYGONS
-
-    console.log('polygonsWithData', polygonsWithData);
-
     setPolygonsWithData((prev: any) => {
       const updatedPolygons = { ...prev };
 
@@ -294,7 +293,6 @@ const Simulation = () => {
           );
         }
       });
-
       return updatedPolygons;
     });
   };
@@ -328,6 +326,14 @@ const Simulation = () => {
     dispatch({ type: 'SET_DATASET', payload: newDatasetList });
   };
 
+  const removeDatasetHandler = async (datasetId: string) => {
+    deleteDataset({
+      simulationId: state.simulationId,
+      datasetId
+    })
+    dispatch({ type: 'DELETE_DATASET', payload: datasetId });
+  };
+
   useEffect(() => {
     if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
 
@@ -342,13 +348,20 @@ const Simulation = () => {
       if (selectedLocation) {
         setGeometry(selectedLocation);
         setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
-        const { labels: ageGroupLabels, chartData, totals } = transformPopulationData(selectedLocation?.properties?.population);
-        setChartData(chartData);
-        setLabels(ageGroupLabels);
-        setTotals(totals);
+        let populationData: any;
+        if (state.selected) {
+          populationData = transformPopulationData(JSON.parse(state.selected.population));
+        } else {
+          populationData = transformPopulationData(selectedLocation?.properties?.population);
+        }
+        if (populationData !== null) {
+          setChartData(populationData.chartData);
+          setLabels(populationData.labels);
+          setTotals(populationData.totals);
+        }
       }
-     }
-  }, [currentLocationId, polygonsWithData]);
+    }
+  }, [currentLocationId, polygonsWithData, state.selected]);
 
   useEffect(() => {
     fetchHierarchy();
@@ -1261,19 +1274,19 @@ const Simulation = () => {
   const loadLocationHandler = async (locationId: string) => {
     setCurrentLocationId(locationId);
     if (state.datasets.length === 0 && polygonsWithData?.[locationId]?.childrenLoaded) {
-        setIncludeGeometry(false);
+      setIncludeGeometry(false);
 
-        const k = Object.values(polygonsWithData)
-          .map((polygon: any) => polygon.polygonData)
-          .filter(p => p.properties.parentIdentifier === locationId);
+      const k = Object.values(polygonsWithData)
+        .map((polygon: any) => polygon.polygonData)
+        .filter(p => p.properties.parentIdentifier === locationId);
 
-        setSelectedLocationChildren(k);
+      setSelectedLocationChildren(k);
 
-        const selectedLocation = polygonsWithData?.[locationId]?.polygonData;
-        if (selectedLocation) {
-          setGeometry(selectedLocation);
-          setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
-        }
+      const selectedLocation = polygonsWithData?.[locationId]?.polygonData;
+      if (selectedLocation) {
+        setGeometry(selectedLocation);
+        setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
+      }
 
     } else {
       const includeGeometry: boolean = checkifChildrenLoaded(polygonsWithData, locationId);
@@ -1544,17 +1557,18 @@ const Simulation = () => {
             {/* {highestLocations && showResult && ( */}
             {highestLocations && (
               <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
-                {datasetList.map(dataset => (
+                {state.datasets?.map(dataset => (
                   <DatasetsAccordion
                     key={dataset.identifier}
                     dataset={dataset}
                     updateDatasetHandler={updateDatasetHandler}
+                    removeDatasetHandler={removeDatasetHandler}
                   />
                 ))}
                 <DrawerButton onClick={() => setOpenCustomModal(1)}>Add dataset</DrawerButton>
                 <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <div className="p-6">
-                    <AddDatasetForm onClose={() => setOpenCustomModal(undefined)} onDatasetAdded={handleAddDataset} selectedLocationId={currentLocationId}/>
+                    <AddDatasetForm onClose={() => setOpenCustomModal(undefined)} onDatasetAdded={handleAddDataset} selectedLocationId={currentLocationId} />
                   </div>
                 </CustomPopup>
               </Accordion>
@@ -1821,7 +1835,10 @@ const Simulation = () => {
 export default Simulation;
 
 const transformPopulationData = (population: any) => {
-  const mergedPyramids = mergeAgeGroups(population?.Pyramids || []);
+  const mergedPyramids = mergeAgeGroups(population?.Pyramids) || [];
+  if (!mergedPyramids || mergedPyramids.length === 0) {
+    return null;
+  }
   const ageGroups = mergedPyramids.map((group: any) => group.AgeGroup.replace('_', '-'));
   const summaryData = mergedPyramids.map((group: any) => Math.round(group.TotalPop));
   const maleData = mergedPyramids.map((group: any) => Math.round(group.MalePop));
@@ -1844,7 +1861,7 @@ const transformPopulationData = (population: any) => {
 
 
 const mergeAgeGroups = (pyramids: any[]) => {
-  if(pyramids.length === 0) return [];
+  if (!pyramids || pyramids.length === 0) return [];
   const mergedGroups: any[] = [];
 
   for (let i = 0; i < pyramids.length; i += 2) {
