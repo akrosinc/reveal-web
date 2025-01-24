@@ -266,6 +266,7 @@ const Simulation = () => {
       const simulationData = await getSimulationData(simulationIdentifier);
       dispatch({ type: 'SET_NEW_DATASETS', payload: simulationData.datasets });
       dispatch({ type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
+      dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
     } catch (error) {
       console.error('Failed to fetch simulation:', error);
     }
@@ -1449,39 +1450,14 @@ const Simulation = () => {
   const campaignTotals = [
     {
       label: 'Target Areas',
-      total: 80,
-      targetAreasList: [
-        {
-          name: 'Target Area 1',
-          sum: 20
-        },
-        {
-          name: 'Target Area 2',
-          sum: 30
-        },
-        {
-          name: 'Target Area 3',
-          sum: 30
-        }
-      ]
+      total: state.targetAreas.length,
+      targetAreasList: state.targetAreas
     },
     {
       label: 'Total Population',
-      total: 1000,
-      targetAreasList: [
-        {
-          name: 'Target Area 1',
-          sum: 200
-        },
-        {
-          name: 'Target Area 2',
-          sum: 300
-        },
-        {
-          name: 'Target Area 3',
-          sum: 500
-        }
-      ]
+      total: Math.round(state.targetAreas?.reduce((a, b) =>
+        a + b?.properties?.population?.sum, 0)) || 0,
+      targetAreasList: state.targetAreas
     },
     {
       label: 'Total Structures',

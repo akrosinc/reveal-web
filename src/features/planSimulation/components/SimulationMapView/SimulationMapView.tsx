@@ -139,6 +139,7 @@ const SimulationMapView = ({
 
   const [showUserDefinedSettingsPanel, setShowUserDefinedSettingsPanel] = useState(false);
 
+  const [mapZoomLevel, setMapZoomLevel] = useState<number>();
   // SELECTIONS ON MAP
   const [singleSelected, setSingleSelected] = useState<any>(null);
   const [multiSelected, setMultiSelected] = useState<any[]>([]);
@@ -178,6 +179,14 @@ const SimulationMapView = ({
       }
     }
   }, [resultsLoadingState, parentsLoadingState, map]);
+
+  useEffect(() => {
+    if (map && map.current) {
+      map.current.on('zoom', () => {
+        setMapZoomLevel(map.current?.getZoom());
+      });
+    }
+  }, [map, map.current]);
 
   const updateChildrenOfSelectedLocation = useCallback(
     (identifier: string) => {
@@ -585,6 +594,9 @@ const SimulationMapView = ({
       } if (map.current.getLayer('multi-selected-layer')) {
         map.current.moveLayer('multi-selected-layer');
 
+        map.current.moveLayer('target-areas-layer');
+
+
       } if (map.current.getLayer('labels-layer')) {
         map.current.moveLayer('labels-layer');
       }
@@ -715,7 +727,6 @@ const SimulationMapView = ({
 
       addLabelsLayer();
 
-      
       if (!selectedState) {
         polygonClickPopup.current.remove();
       }
@@ -732,6 +743,82 @@ const SimulationMapView = ({
     multiSelectedColor,
     dispatch
   ]);
+
+  useEffect(() => {
+    if (map && map.current && currentLocationChildren && state.targetAreas && state.targetAreas.length !== 0) {
+      DrawPolygonsFeatureCollection(map.current, state.targetAreas, 'target-areas');
+      AddLayer(map.current, 'target-areas', 'target-areas', {
+        'fill-color': 'red',
+        'fill-outline-color': 'rgba(57, 62, 65, 1)'
+      });
+
+      const taLabelFeatures = state.targetAreas?.map(
+        child => {
+          const center = turf.centroid(child.geometry);
+          return {
+            type: 'Feature' as const,
+            geometry: center.geometry,
+            properties: {
+              name: child.properties.name,
+              geographicLevel: child.properties.geographicLevel,
+              childrenNumber: child.properties.childrenNumber
+            }
+          };
+        }
+      );
+
+      if (!map.current.getSource('ta-labels-source')) {
+        map.current.addSource('ta-labels-source', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: taLabelFeatures
+          }
+        });
+      } else {
+        const taLabelsSource = map.current.getSource('ta-labels-source') as mapboxgl.GeoJSONSource;
+        taLabelsSource.setData({
+          type: 'FeatureCollection',
+          features: taLabelFeatures
+        });
+      }
+
+      if (!map.current.getLayer('ta-labels-layer') && ((mapZoomLevel || map.current.getZoom()) >= 8)) {
+        map.current.addLayer({
+          id: 'ta-labels-layer',
+          type: 'symbol',
+          source: 'ta-labels-source',
+          layout: {
+            'text-field': [
+              'concat',
+              ['get', 'name'],
+              [
+                'case',
+                ['==', ['get', 'geographicLevel'], 'structure'],
+                '',
+                ['concat', ' (', ['to-string', ['get', 'childrenNumber']], ')']
+              ]
+            ],
+            'text-size': 13,
+            'text-anchor': 'center'
+          },
+          paint: {
+            'text-color': [
+              'case',
+              ['in', ['get', 'name'], ['literal', multiSelected?.map(p => p.properties.name)]],
+              '#FF0000', // Multi-selected label color
+              '#000000' // Default color for other labels
+            ],
+            'text-halo-color': '#fff', // Black border color
+            'text-halo-width': 2, // Width of the border
+            'text-halo-blur': 1 // Optional: smooth edges
+          }
+        });
+      } else if (map.current.getLayer('ta-labels-layer') && ((mapZoomLevel || map.current.getZoom()) < 8)) {
+        map.current.removeLayer('ta-labels-layer');
+      }
+    }
+  }, [state.targetAreas, map.current, currentLocationChildren, mapZoomLevel]);
 
   useEffect(() => {
     if (chunkedData) {

@@ -1,7 +1,8 @@
 import { createContext, useContext, useReducer } from 'react';
 
 type PolygonActions =
-  { type: 'SET_SIMULATION_ID'; payload: any }
+{ type: 'SET_SIMULATION_ID'; payload: any }
+  |{ type: 'SET_TARGET_AREAS'; payload: any[] }
   | { type: 'SET_HIERARCHY'; payload: any[] }
   | { type: 'SET_NEW_DATASETS'; payload: any[] }
   | { type: 'SET_DATASET'; payload: any[] }
@@ -22,6 +23,7 @@ interface InitialStateInterface {
   selected: any | null;
   multiselect: any[];
   admin0LocationId: string;
+  targetAreas: any[];
 }
 
 const initialState: InitialStateInterface = {
@@ -30,7 +32,8 @@ const initialState: InitialStateInterface = {
   datasets: [],
   selected: null,
   multiselect: [],
-  admin0LocationId: ''
+  admin0LocationId: '',
+  targetAreas: []
 };
 
 export interface SelectedPolygon {
@@ -55,6 +58,8 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
   switch (action.type) {
     case 'SET_SIMULATION_ID':
       return { ...state, simulationId: action.payload };
+    case 'SET_TARGET_AREAS':
+      return { ...state, targetAreas: action.payload };
     case 'SET_ADMIN0_LOCATION_ID':
       return { ...state, admin0LocationId: action.payload };
     case 'SET_HIERARCHY':

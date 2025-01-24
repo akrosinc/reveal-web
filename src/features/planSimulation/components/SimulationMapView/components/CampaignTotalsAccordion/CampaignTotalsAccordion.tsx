@@ -31,9 +31,9 @@ function CampaignTotalsAccordion({ open = false, campaignTotals }: any) {
           {campaignTotals.targetAreasList.map((area: any, index: number) => (
             <div className={CampaignStyles.targetAreaItem} key={index}>
               <div className={CampaignStyles.itemDot}></div>
-              <p className={CampaignStyles.paragraph}>{area.name}</p>
+              <p className={CampaignStyles.paragraph}>{area?.properties?.name || ''}</p>
               <div className={CampaignStyles.paragraph}>
-                <p className={CampaignStyles.paragraph}>{area.sum}</p>
+                <p className={CampaignStyles.paragraph}>{Math.round(area?.properties?.population?.sum) || ''}</p>
                 <button className={CampaignStyles.hoverButton}>
                   <img src={Delete} alt="Delete" />
                 </button>
