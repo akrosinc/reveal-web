@@ -558,14 +558,16 @@ const SimulationMapView = ({
             colors[layerId]
           ];
 
-        const fillOpacityConfig: Expression =
-          [
-            'interpolate',
-            ['linear'],
-            ['get', 'value'],
-            0, 0,
-            matchingDataset?.filter?.maxValue, 1
-          ];
+          const fillOpacityConfig: Expression | number =
+          matchingDataset?.filter?.maxValue && matchingDataset.filter.maxValue > 0
+            ? [
+                'interpolate',
+                ['linear'],
+                ['get', 'value'],
+                0, 0,
+                matchingDataset.filter.maxValue, 1
+              ]
+            : 0; 
 
         if (map.current?.getLayer(`ds-${layerId}-${selectedLoaction.properties.name}`)) {
           map.current?.setPaintProperty(`ds-${layerId}-${selectedLoaction.properties.name}`, 'fill-color',
@@ -600,6 +602,15 @@ const SimulationMapView = ({
       } if (map.current.getLayer('labels-layer')) {
         map.current.moveLayer('labels-layer');
       }
+    }
+    if (map && map.current && datasetsDataMap && Object.values(datasetsDataMap).length !== 0 && state.datasets && state.datasets.length === 0) {
+      const layers = map.current?.getStyle().layers;
+      const matchingLayers = layers?.filter(layer => layer.id.startsWith(`ds-`));
+      matchingLayers?.forEach(layer => {
+        if (map.current?.getLayer(layer.id)) {
+          map.current?.removeLayer(layer.id);
+        }
+      });
     }
   }, [map, map.current, state.datasets, datasetsDataMap]);
 

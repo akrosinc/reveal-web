@@ -1,8 +1,8 @@
 import { createContext, useContext, useReducer } from 'react';
 
 type PolygonActions =
-{ type: 'SET_SIMULATION_ID'; payload: any }
-  |{ type: 'SET_TARGET_AREAS'; payload: any[] }
+  { type: 'SET_SIMULATION_ID'; payload: any }
+  | { type: 'SET_TARGET_AREAS'; payload: any[] }
   | { type: 'SET_HIERARCHY'; payload: any[] }
   | { type: 'SET_NEW_DATASETS'; payload: any[] }
   | { type: 'SET_DATASET'; payload: any[] }
@@ -65,19 +65,20 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
     case 'SET_HIERARCHY':
       return { ...state, polygons: action.payload };
     case 'SET_NEW_DATASETS':
+      const datasets = action.payload.length === 0 ? [] : action.payload.map((dataset: any) => ({
+        ...dataset,
+        hidden: false,
+        selectedRange: {
+          minValue: dataset.selectedRange?.minValue || 0,
+          maxValue: dataset.selectedRange?.maxValue || 0
+        },
+        filter: {
+          minValue: dataset.filter?.minValue || 0,
+          maxValue: dataset.filter?.maxValue || 0
+        }
+      }));
       return {
-        ...state, datasets: action.payload.map((dataset: any) => ({
-          ...dataset,
-          hidden: false,
-          selectedRange: {
-            minValue: dataset.selectedRange?.minValue || 0,
-            maxValue: dataset.selectedRange?.maxValue || 0
-          },
-          filter: {
-            minValue: dataset.filter?.minValue || 0,
-            maxValue: dataset.filter?.maxValue || 0
-          }
-        }))
+        ...state, datasets
       };
     case 'SET_DATASET':
       return {
