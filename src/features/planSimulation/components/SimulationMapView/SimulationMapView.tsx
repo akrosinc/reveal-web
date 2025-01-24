@@ -30,7 +30,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import { FeatureCollection, Geometry } from 'geojson';
 
 import locationTag from '../../../../assets/svgs/placeMarker.svg';
-import tagIcon from '../../../../assets/svgs/tag-icon.svg';
+import tagIcon from '../../../../assets/svgs/tag-2.svg';
 
 // UTISLS
 import {
@@ -61,6 +61,7 @@ import { SelectedPolygon, usePolygonContext } from '../../../../contexts/Polygon
 import MultiselectList from '../MultiselectList/MultiselectList';
 import Accordion from '../../../location/components/accordion/Accordion';
 import TargetsSelectedList from '../TargetsSelectedList/TargetsSelectedList';
+import MapLegend from './components/MapLegend/MapLegend';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -116,12 +117,14 @@ const SimulationMapView = ({
     })
   );
 
-  const polygonClickPopup = useRef<Popup>(new Popup({
-    closeOnClick: false,
-    closeButton: false,
-    offset: 20,
-    className: styles.paragraphPopup
-  }));
+  const polygonClickPopup = useRef<Popup>(
+    new Popup({
+      closeOnClick: false,
+      closeButton: false,
+      offset: 20,
+      className: styles.paragraphPopup
+    })
+  );
 
   const [parentMapStateData, setParentMapStateData] = useState<PlanningParentLocationResponse>();
 
@@ -159,7 +162,6 @@ const SimulationMapView = ({
     setSingleSelected(selectedState?.id ?? null);
     setMultiSelected(multiselectState as any[]);
   }, [selectedState, multiselectState]);
-
 
   useEffect(() => {
     if (map.current) return;
@@ -463,7 +465,6 @@ const SimulationMapView = ({
 
   useEffect(() => {
     if (currentLocationChildren) {
-
       const groupedById: any = {};
       currentLocationChildren.forEach((location: any) => {
         location.properties?.metadata?.forEach((meta: any) => {
@@ -471,7 +472,7 @@ const SimulationMapView = ({
             groupedById[meta.datasetId] = [];
           }
           groupedById[meta.datasetId].push({
-            type: "Feature",
+            type: 'Feature',
             properties: {
               locationId: location.identifier,
               value: meta.value,
@@ -512,17 +513,17 @@ const SimulationMapView = ({
           }
         });
       });
-
     }
   }, [datasetsDataMap]);
 
   useEffect(() => {
     if (datasetsDataMap && map && map.current && state.datasets && state.datasets.length !== 0) {
-
       const colors = generateColors(state.datasets);
 
       const layers = map.current?.getStyle().layers;
-      const matchingLayers = layers?.filter(layer => layer.id.startsWith(`ds-`) && !layer.id.endsWith(selectedLoaction.properties.name));
+      const matchingLayers = layers?.filter(
+        layer => layer.id.startsWith(`ds-`) && !layer.id.endsWith(selectedLoaction.properties.name)
+      );
       matchingLayers?.forEach(layer => {
         if (map.current?.getLayer(layer.id)) {
           map.current?.removeLayer(layer.id);
@@ -533,9 +534,9 @@ const SimulationMapView = ({
         const sourceId = `ds-${layerId}-${selectedLoaction.properties.name}`;
         if (!map.current?.getSource(sourceId)) {
           map.current?.addSource(sourceId, {
-            type: "geojson",
+            type: 'geojson',
             data: {
-              type: "FeatureCollection",
+              type: 'FeatureCollection',
               features: features as any[]
             }
           });
@@ -547,16 +548,16 @@ const SimulationMapView = ({
           return;
         }
 
-        const fillColorConfig: Expression =
-          ['case',
-            ['==', ["literal", matchingDataset?.hidden], true],
-            'transparent',
-            ['<', ['get', 'value'], matchingDataset?.selectedRange?.minValue],
-            'transparent',
-            ['>', ['get', 'value'], matchingDataset?.selectedRange?.maxValue],
-            'transparent',
-            colors[layerId]
-          ];
+        const fillColorConfig: Expression = [
+          'case',
+          ['==', ['literal', matchingDataset?.hidden], true],
+          'transparent',
+          ['<', ['get', 'value'], matchingDataset?.selectedRange?.minValue],
+          'transparent',
+          ['>', ['get', 'value'], matchingDataset?.selectedRange?.maxValue],
+          'transparent',
+          colors[layerId]
+        ];
 
           const fillOpacityConfig: Expression | number =
           matchingDataset?.filter?.maxValue && matchingDataset.filter.maxValue > 0
@@ -570,20 +571,25 @@ const SimulationMapView = ({
             : 0; 
 
         if (map.current?.getLayer(`ds-${layerId}-${selectedLoaction.properties.name}`)) {
-          map.current?.setPaintProperty(`ds-${layerId}-${selectedLoaction.properties.name}`, 'fill-color',
-            fillColorConfig);
+          map.current?.setPaintProperty(
+            `ds-${layerId}-${selectedLoaction.properties.name}`,
+            'fill-color',
+            fillColorConfig
+          );
 
-          map.current?.setPaintProperty(`ds-${layerId}-${selectedLoaction.properties.name}`, 'fill-opacity',
-            fillOpacityConfig);
+          map.current?.setPaintProperty(
+            `ds-${layerId}-${selectedLoaction.properties.name}`,
+            'fill-opacity',
+            fillOpacityConfig
+          );
         } else {
           map.current?.addLayer({
             id: `ds-${layerId}-${selectedLoaction.properties.name}`,
-            type: "fill",
+            type: 'fill',
             source: sourceId,
             filter: ['==', ['get', 'id'], layerId],
             paint: {
-              'fill-color': fillColorConfig
-              ,
+              'fill-color': fillColorConfig,
               'fill-opacity': fillOpacityConfig
             }
           });
@@ -592,12 +598,13 @@ const SimulationMapView = ({
 
       if (map.current.getLayer('children-layer')) {
         map.current.moveLayer('children-layer');
-
-      } if (map.current.getLayer('multi-selected-layer')) {
+      }
+      if (map.current.getLayer('multi-selected-layer')) {
         map.current.moveLayer('multi-selected-layer');
 
+      if(map.current.getLayer('target-areas-layer')) {
         map.current.moveLayer('target-areas-layer');
-
+      }
 
       } if (map.current.getLayer('labels-layer')) {
         map.current.moveLayer('labels-layer');
@@ -613,7 +620,6 @@ const SimulationMapView = ({
       });
     }
   }, [map, map.current, state.datasets, datasetsDataMap]);
-
 
   useEffect(() => {
     if (map && map.current && currentLocationChildren && selectedLoaction) {
@@ -675,35 +681,62 @@ const SimulationMapView = ({
               }))
             });
           } else {
-
             dispatch({ type: 'SELECT_SINGLE', payload: clickedFeature });
 
-
             if (map.current && clickedFeature) {
-
               const tagData = clickedFeature.properties?.metadata ? JSON.parse(clickedFeature.properties.metadata) : [];
 
-              let htmlText = `<div class=${styles.popupWrapper}> 
-                      <div class=${styles.popupHeadingContainer}>
-                        <img class=${styles.locationImage} src=${locationTag} alt="location" />
-                        <p>${clickedFeature.properties?.name}</p>
-                      </div>
-                      <p>Children Number: ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
-                      ${tagData.length !== 0 ? `<hr/>` : ``}
-                      ${tagData.map((tag: any) =>
-                `<div>
-                        <p class=${styles.tagInfo}><img class=${styles.tagIcon} src=${tagIcon} alt="tag" /> ${tag.type}: ${Math.round(tag.value * 1000) / 1000}</p>
-                        </div>`
-              )}
-                      </div>
+              // let htmlText = `
+              // <div class=${styles.popupWrapper}>
+              //     <div class=${styles.popupHeadingContainer}>
+              //       <img class=${styles.locationImage} src=${locationTag} alt="location" />
+              //       <p>${clickedFeature.properties?.name}</p>
+              //     </div>
+              //       <p>Children Number: ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
+              //       ${tagData.length !== 0 ? `<hr/>` : ``}
+              //     ${tagData
+              //       .map(
+              //         (tag: any) =>
+              //           `<div>
+              //           <div class=${styles.tagInfo}>
+              //             <img class=${styles.tagIcon} src=${tagIcon} alt="tag" />
+              //             <span>${tag.type}: ${Math.round(tag.value * 1000) / 1000}</span>
+              //           </div>
+              //         </div>`
+              //       )
+              //       .join('')}
+              //   </div>`;
+              let htmlText = `
+      <div class=${styles.card}>
+        <div class=${styles.header}>
+          <img class=${styles.locationImage} src=${locationTag} alt="location" />
+          <h2 class=${styles.title}>${clickedFeature.properties?.name}</h2>
+        </div>
+        
+        <div class=${styles.content}>
+          <div class=${styles.populationCard}>
+            <div class=${styles.label}>Population</div>
+            <div class=${styles.value}> ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</div>
+            <div class=${styles.sublabel}>Children Number</div>
+          </div>
+          
+          <div class=${styles.scoreContainer}>
+                  ${tagData
+                    .map(
+                      (tag: any) =>
+                        ` <div class=${styles.scoreItem}>
+               <img class=${styles.tagIcon} src=${tagIcon} alt="tag" />
+              <div class=${styles.scoreInfo}>
+                <div class=${styles.scoreLabel}>
+                 ${tag.type}
+                </div>
+                <div class=${styles.scoreValue} ${styles.scoreValueMax}>${Math.round(tag.value * 1000) / 1000}</div>
+              </div>
+            </div>`
+                    )
+                    .join('')}
                 `;
-              polygonClickPopup.current.setLngLat(e.lngLat)
-                .setHTML(
-                  htmlText
-                )
-                .setOffset([100, -20])
-                .addTo(map.current);
-
+              polygonClickPopup.current.setLngLat(e.lngLat).setHTML(htmlText).setOffset([150, -25]).addTo(map.current);
             }
           }
         });
@@ -741,7 +774,6 @@ const SimulationMapView = ({
       if (!selectedState) {
         polygonClickPopup.current.remove();
       }
-
     }
   }, [
     map,
@@ -1160,7 +1192,7 @@ const SimulationMapView = ({
                         try {
                           let perc = parseFloat(selectedTagPercentageValue);
                           percDisplay = Math.trunc(Math.round(perc * 100));
-                        } catch (e) { }
+                        } catch (e) {}
                         htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}
@@ -1540,8 +1572,7 @@ const SimulationMapView = ({
         });
       }
     }
-  }
-
+  };
 
   const addParentMapData = useCallback(
     (filteredData: PlanningParentLocationResponse) => {
@@ -1642,16 +1673,9 @@ const SimulationMapView = ({
       </button>
 
       {/* MULTISELECTED POLYGONS LIST */}
-      {multiselectState.length > 0 && (
-        // <div className={styles.multiselectPanel}>
-        //   <Accordion title="Selected Polygons" open={true}>
-        //     {multiselectState.map((selectedPolygon: any) => {
-        //       return <MultiselectList key={selectedPolygon.properties.id} selectedPolygon={selectedPolygon} />;
-        //     })}
-        //   </Accordion>
-        // </div>
-        <TargetsSelectedList />
-      )}
+      {multiselectState.length > 0 && <TargetsSelectedList />}
+      {/* MAP LEGEND */}
+      <MapLegend />
       <div style={{ position: 'absolute', zIndex: 2, width: 'fit-content' }} className="mx-0 px-0">
         <div style={{ float: 'left', position: 'relative' }} className="sidebar-adjust "></div>
 
