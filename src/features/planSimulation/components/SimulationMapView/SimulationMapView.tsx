@@ -54,7 +54,12 @@ import DataSetPanel from './components/DataSetPanel/DataSetPanel';
 import mapboxgl from 'mapbox-gl';
 
 import * as turf from '@turf/turf';
-import { AddLayer, DrawPolygonsFeature, DrawPolygonsFeatureCollection } from './Helper/MapInteractionsHelper';
+import {
+  AddLayer,
+  DrawPolygonsFeature,
+  DrawPolygonsFeatureCollection,
+  findAllIdentifiersToSend
+} from './Helper/MapInteractionsHelper';
 
 // CONTEXT
 import { SelectedPolygon, usePolygonContext } from '../../../../contexts/PolygonContext';
@@ -62,6 +67,10 @@ import MultiselectList from '../MultiselectList/MultiselectList';
 import Accordion from '../../../location/components/accordion/Accordion';
 import TargetsSelectedList from '../TargetsSelectedList/TargetsSelectedList';
 import MapLegend from './components/MapLegend/MapLegend';
+import { assignLocationsToPlan } from './api/planAPI';
+import { set } from 'react-hook-form';
+import { getSimulationData } from './api/datasetsAPI';
+import { getPlanInfo } from './api/hierarchyAPI';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -147,16 +156,20 @@ const SimulationMapView = ({
   const [singleSelected, setSingleSelected] = useState<any>(null);
   const [multiSelected, setMultiSelected] = useState<any[]>([]);
 
-  const [singleSelectedColor, setSingleSelectedColor] = useState('rgba(3, 166, 13, 1)');
-  const [multiSelectedColor, setMultiSelectedColor] = useState('rgba(0, 0, 102, 1)');
+  const [singleSelectedColor, setSingleSelectedColor] = useState('rgba(3, 166, 13, 0.4)');
+  const [multiSelectedColor, setMultiSelectedColor] = useState('rgba(0, 0, 102, 0.4)');
 
   const [datasets, setDatasets] = useState<any>();
   const [datasetsDataMap, setDatasetsDataMap] = useState<any>({});
+
+  const [toggleAssignedLayer, setToggleAssignedLayer] = useState(false);
   // CONTEXT
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
   const selectedState = state.selected;
   const multiselectState = state.multiselect;
+  const locationsObject = state.polygons[0];
+  const planId = state.planid;
 
   useMemo(() => {
     setSingleSelected(selectedState?.id ?? null);
@@ -559,16 +572,10 @@ const SimulationMapView = ({
           colors[layerId]
         ];
 
-          const fillOpacityConfig: Expression | number =
+        const fillOpacityConfig: Expression | number =
           matchingDataset?.filter?.maxValue && matchingDataset.filter.maxValue > 0
-            ? [
-                'interpolate',
-                ['linear'],
-                ['get', 'value'],
-                0, 0,
-                matchingDataset.filter.maxValue, 1
-              ]
-            : 0; 
+            ? ['interpolate', ['linear'], ['get', 'value'], 0, 0, matchingDataset.filter.maxValue, 1]
+            : 0;
 
         if (map.current?.getLayer(`ds-${layerId}-${selectedLoaction.properties.name}`)) {
           map.current?.setPaintProperty(
@@ -602,15 +609,22 @@ const SimulationMapView = ({
       if (map.current.getLayer('multi-selected-layer')) {
         map.current.moveLayer('multi-selected-layer');
 
-      if(map.current.getLayer('target-areas-layer')) {
-        map.current.moveLayer('target-areas-layer');
+        if (map.current.getLayer('target-areas-layer')) {
+          map.current.moveLayer('target-areas-layer');
+        }
       }
-
-      } if (map.current.getLayer('labels-layer')) {
+      if (map.current.getLayer('labels-layer')) {
         map.current.moveLayer('labels-layer');
       }
     }
-    if (map && map.current && datasetsDataMap && Object.values(datasetsDataMap).length !== 0 && state.datasets && state.datasets.length === 0) {
+    if (
+      map &&
+      map.current &&
+      datasetsDataMap &&
+      Object.values(datasetsDataMap).length !== 0 &&
+      state.datasets &&
+      state.datasets.length === 0
+    ) {
       const layers = map.current?.getStyle().layers;
       const matchingLayers = layers?.filter(layer => layer.id.startsWith(`ds-`));
       matchingLayers?.forEach(layer => {
@@ -684,59 +698,97 @@ const SimulationMapView = ({
             dispatch({ type: 'SELECT_SINGLE', payload: clickedFeature });
 
             if (map.current && clickedFeature) {
-              const tagData = clickedFeature.properties?.metadata ? JSON.parse(clickedFeature.properties.metadata) : [];
+              const createPopupContent = () => {
+                const tagData = clickedFeature.properties?.metadata
+                  ? JSON.parse(clickedFeature.properties.metadata)
+                  : [];
 
-              // let htmlText = `
-              // <div class=${styles.popupWrapper}>
-              //     <div class=${styles.popupHeadingContainer}>
-              //       <img class=${styles.locationImage} src=${locationTag} alt="location" />
-              //       <p>${clickedFeature.properties?.name}</p>
-              //     </div>
-              //       <p>Children Number: ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
-              //       ${tagData.length !== 0 ? `<hr/>` : ``}
-              //     ${tagData
-              //       .map(
-              //         (tag: any) =>
-              //           `<div>
-              //           <div class=${styles.tagInfo}>
-              //             <img class=${styles.tagIcon} src=${tagIcon} alt="tag" />
-              //             <span>${tag.type}: ${Math.round(tag.value * 1000) / 1000}</span>
-              //           </div>
-              //         </div>`
-              //       )
-              //       .join('')}
-              //   </div>`;
-              let htmlText = `
-      <div class=${styles.card}>
-        <div class=${styles.header}>
-          <img class=${styles.locationImage} src=${locationTag} alt="location" />
-          <h2 class=${styles.title}>${clickedFeature.properties?.name}</h2>
-        </div>
-        
-        <div class=${styles.content}>
-          <div class=${styles.populationCard}>
-            <div class=${styles.label}>Population</div>
-            <div class=${styles.value}> ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</div>
-            <div class=${styles.sublabel}>Children Number</div>
-          </div>
-          
-          <div class=${styles.scoreContainer}>
-                  ${tagData
-                    .map(
-                      (tag: any) =>
-                        ` <div class=${styles.scoreItem}>
-               <img class=${styles.tagIcon} src=${tagIcon} alt="tag" />
-              <div class=${styles.scoreInfo}>
-                <div class=${styles.scoreLabel}>
-                 ${tag.type}
+                // Create the popup container
+                const container = document.createElement('div');
+                container.className = styles.card;
+
+                // Header section
+                const header = document.createElement('div');
+                header.className = styles.header;
+                const img = document.createElement('img');
+                img.className = styles.locationImage;
+                img.src = locationTag;
+                img.alt = 'location';
+                const title = document.createElement('h2');
+                title.className = styles.title;
+                title.textContent = clickedFeature.properties?.name ?? 'Unknown';
+                header.appendChild(img);
+                header.appendChild(title);
+
+                // Content section
+                const content = document.createElement('div');
+                content.className = styles.content;
+
+                // Population card
+                const populationCard = document.createElement('div');
+                populationCard.className = styles.populationCard;
+                populationCard.innerHTML = `
+                <div class="${styles.label}">Population</div>
+                <div class="${styles.value}">${
+                  Math.round(JSON.parse(clickedFeature.properties?.population).sum).toLocaleString() ?? 'Not Available'
+                }</div>
+                <div class="${styles.subtotalValueContainer}">
+                  <div class="${styles.sublabel}">Children Number</div>
+                  <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
                 </div>
-                <div class=${styles.scoreValue} ${styles.scoreValueMax}>${Math.round(tag.value * 1000) / 1000}</div>
-              </div>
-            </div>`
-                    )
-                    .join('')}
+              `;
+                content.appendChild(populationCard);
+
+                // Score container
+                const scoreContainer = document.createElement('div');
+                scoreContainer.className = styles.scoreContainer;
+
+                tagData.forEach((tag: any) => {
+                  const scoreItem = document.createElement('div');
+                  scoreItem.className = styles.scoreItem;
+
+                  scoreItem.innerHTML = `
+                  <img class="${styles.tagIcon}" src="${tagIcon}" alt="tag" />
+                  <div class="${styles.scoreInfo}">
+                    <div class="${styles.scoreLabel}">${tag.type}</div>
+                    <div class="${styles.scoreValue} ${styles.scoreValueMax}">
+                      ${Math.round(tag.value * 1000) / 1000}
+                    </div>
+                  </div>
                 `;
-              polygonClickPopup.current.setLngLat(e.lngLat).setHTML(htmlText).setOffset([150, -25]).addTo(map.current);
+                  scoreContainer.appendChild(scoreItem);
+                });
+
+                // Button with event listener
+                const button = document.createElement('a');
+                button.className = styles.addToCampaignButton;
+                button.textContent = 'Add to campaign';
+                button.addEventListener('click', () => {
+                  const identifiersToSend: Set<string> = new Set([]);
+                  findAllIdentifiersToSend(clickedFeature.properties?.id, locationsObject, identifiersToSend);
+
+                  const identifiersToSendArray = Array.from(identifiersToSend);
+                  assignLocationsToPlan(planId, identifiersToSendArray);
+                  dispatch({ type: 'SET_ASSIGNED', payload: identifiersToSendArray });
+                });
+                scoreContainer.appendChild(button);
+
+                content.appendChild(scoreContainer);
+
+                // Append header and content to the container
+                container.appendChild(header);
+                container.appendChild(content);
+
+                return container;
+              };
+
+              //! TESTING MUTIRAJUCI SET
+              // Add popup to the map
+              polygonClickPopup.current
+                .setLngLat(e.lngLat)
+                .setDOMContent(createPopupContent()) // Use DOM content instead of raw HTML
+                .setOffset([150, -25])
+                .addTo(map.current);
             }
           }
         });
@@ -771,7 +823,7 @@ const SimulationMapView = ({
 
       addLabelsLayer();
 
-      if (!selectedState) {
+      if (!selectedState && polygonClickPopup.current.isOpen()) {
         polygonClickPopup.current.remove();
       }
     }
@@ -788,27 +840,49 @@ const SimulationMapView = ({
   ]);
 
   useEffect(() => {
-    if (map && map.current && currentLocationChildren && state.targetAreas && state.targetAreas.length !== 0) {
-      DrawPolygonsFeatureCollection(map.current, state.targetAreas, 'target-areas');
-      AddLayer(map.current, 'target-areas', 'target-areas', {
-        'fill-color': 'red',
-        'fill-outline-color': 'rgba(57, 62, 65, 1)'
-      });
+    if (map.current?.getLayer('target-areas-layer') && toggleAssignedLayer) {
+      map.current?.setLayoutProperty('target-areas-layer', 'visibility', 'visible');
+    } else if (map.current?.getLayer('target-areas-layer') && !toggleAssignedLayer) {
+      map.current?.setLayoutProperty('target-areas-layer', 'visibility', 'none');
+    }
+  });
 
-      const taLabelFeatures = state.targetAreas?.map(
-        child => {
-          const center = turf.centroid(child.geometry);
-          return {
-            type: 'Feature' as const,
-            geometry: center.geometry,
-            properties: {
-              name: child.properties.name,
-              geographicLevel: child.properties.geographicLevel,
-              childrenNumber: child.properties.childrenNumber
-            }
-          };
-        }
-      );
+  useEffect(() => {
+    if (
+      map &&
+      map.current &&
+      currentLocationChildren.length > 0 &&
+      state.targetAreas &&
+      state.targetAreas.length !== 0
+    ) {
+      DrawPolygonsFeatureCollection(map.current, state.targetAreas, 'target-areas');
+
+      if (!map.current.getLayer('target-areas-layer')) {
+        map.current.addLayer({
+          id: `target-areas-layer`,
+          type: 'fill',
+          source: `target-areas-source`,
+          paint: {
+            'fill-color': 'rgba(255, 0, 74, 1)',
+            'fill-outline-color': 'rgba(57, 62, 65, 1)'
+          },
+          layout: {
+            visibility: 'visible'
+          }
+        });
+      }
+      const taLabelFeatures = state.targetAreas?.map(child => {
+        const center = turf.centroid(child.geometry);
+        return {
+          type: 'Feature' as const,
+          geometry: center.geometry,
+          properties: {
+            name: child.properties.name,
+            geographicLevel: child.properties.geographicLevel,
+            childrenNumber: child.properties.childrenNumber
+          }
+        };
+      });
 
       if (!map.current.getSource('ta-labels-source')) {
         map.current.addSource('ta-labels-source', {
@@ -826,7 +900,7 @@ const SimulationMapView = ({
         });
       }
 
-      if (!map.current.getLayer('ta-labels-layer') && ((mapZoomLevel || map.current.getZoom()) >= 8)) {
+      if (!map.current.getLayer('ta-labels-layer') && (mapZoomLevel || map.current.getZoom()) >= 8) {
         map.current.addLayer({
           id: 'ta-labels-layer',
           type: 'symbol',
@@ -857,11 +931,11 @@ const SimulationMapView = ({
             'text-halo-blur': 1 // Optional: smooth edges
           }
         });
-      } else if (map.current.getLayer('ta-labels-layer') && ((mapZoomLevel || map.current.getZoom()) < 8)) {
+      } else if (map.current.getLayer('ta-labels-layer') && (mapZoomLevel || map.current.getZoom()) < 8) {
         map.current.removeLayer('ta-labels-layer');
       }
     }
-  }, [state.targetAreas, map.current, currentLocationChildren, mapZoomLevel]);
+  }, [state.targetAreas, map.current, currentLocationChildren, mapZoomLevel, toggleAssignedLayer]);
 
   useEffect(() => {
     if (chunkedData) {
@@ -1675,7 +1749,7 @@ const SimulationMapView = ({
       {/* MULTISELECTED POLYGONS LIST */}
       {multiselectState.length > 0 && <TargetsSelectedList />}
       {/* MAP LEGEND */}
-      <MapLegend />
+      <MapLegend handleClickedSwitchOnMap={setToggleAssignedLayer} assigned={toggleAssignedLayer} />
       <div style={{ position: 'absolute', zIndex: 2, width: 'fit-content' }} className="mx-0 px-0">
         <div style={{ float: 'left', position: 'relative' }} className="sidebar-adjust "></div>
 
@@ -1719,7 +1793,7 @@ const SimulationMapView = ({
       )}
 
       {/* LEFT CLICK FORM */}
-      {showMapDrawnModal && (
+      {/* {showMapDrawnModal && (
         <ActionDialog
           closeHandler={() => setShowMapDrawnModal(false)}
           title={'Selected Locations'}
@@ -1802,7 +1876,7 @@ const SimulationMapView = ({
           }
           size={'lg'}
         />
-      )}
+      )} */}
 
       <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '90vh' : '75vh', width: '100%' }} />
     </Container>

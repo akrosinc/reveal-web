@@ -9,8 +9,8 @@
   border: 1px solid #ccc;
   right: 50px;
   bottom: 30px;
-  max-width: 250px;
-  width: 250px;
+  max-width: 320px;
+  width: 320px;
   max-height: 500px;
   overflow: auto;
 }
@@ -19,18 +19,41 @@
   margin-bottom: 0;
 }
 
+.legendTitleWrapper {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.legendTitle {
+  font-size: 1.1rem;
+}
+
+.legendList {
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 0;
+}
+
 .legendItem {
   display: flex;
   flex-direction: row;
   align-items: center;
   margin-top: 10px;
+  gap: 0.75rem;
+}
+
+.legendIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 7px;
+  opacity: 0.5;
 }
 
 .colorBox {
-  min-width: 20px;
-  min-height: 20px;
-  border-radius: 5px;
-  margin-right: 10px;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
 }
 
 .assignedItemInfo {
@@ -41,9 +64,12 @@
 }
 
 .assignedItemToggle {
-  padding: 1rem;
+  padding: 0.7rem;
   border: 1px solid #0000001a;
   border-radius: 5px;
   background-color: white;
   justify-content: space-between;
+  display: flex;
+  align-items: center;
+  list-style: none;
 }

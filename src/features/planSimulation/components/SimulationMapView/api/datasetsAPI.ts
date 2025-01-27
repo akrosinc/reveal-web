@@ -21,7 +21,7 @@ export interface DataSetList {
   selectedRange: {
     minValue: number;
     maxValue: number;
-  }
+  };
 }
 
 export interface DataSetDelete {
@@ -66,7 +66,6 @@ export const getEntityTags = async () => {
 export const getSimulationData = async (simulationId: string) => {
   try {
     const response = await api.get(`/simulation/${simulationId}`);
-    console.log('response', response);
 
     return response.data;
   } catch (error) {

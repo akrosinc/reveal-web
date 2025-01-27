@@ -34,7 +34,12 @@ function AddDatasetForm({
     const fetchEntityTags = async () => {
       try {
         const res = await getEntityTags();
-        setEntityTags(res.entityTagResponses);
+
+        const filteredEntityTags = res.entityTagResponses.filter(
+          (resTag: any) => !state.datasets.some((stateTag: any) => stateTag.name === resTag.tag)
+        );
+
+        setEntityTags(filteredEntityTags);
       } catch (error) {
         console.error('Failed to fetch entity tags:', error);
       } finally {

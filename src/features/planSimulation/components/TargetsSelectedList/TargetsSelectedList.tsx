@@ -4,10 +4,15 @@ import { usePolygonContext } from '../../../../contexts/PolygonContext';
 import Accordion from '../../../location/components/accordion/Accordion';
 import task from '../../../../assets/svgs/task.svg';
 import Delete from '../../../../assets/svgs/trash-bin.svg';
+import { findAllIdentifiersToSend } from '../SimulationMapView/Helper/MapInteractionsHelper';
+import { assignLocationsToPlan } from '../SimulationMapView/api/planAPI';
 
 function TargetsSelectedList() {
   const { state, dispatch } = usePolygonContext();
   const { multiselect, polygons } = state;
+
+  const listOfPolygonsObj = state.polygons[0];
+  const planId = state.planid;
 
   // Helper function to find a parent by its identifier
   const findParent = useCallback((data: any[], parentId: string): any => {
@@ -65,13 +70,25 @@ function TargetsSelectedList() {
     [dispatch]
   );
 
+  // Handler for logging polygon identifiers
+  const handleLogIdentifiers = (polygons: any) => {
+    const identifiersToSend: Set<string> = new Set([]);
+    polygons.forEach((polygon: any) => {
+      findAllIdentifiersToSend(polygon.properties.id, listOfPolygonsObj, identifiersToSend);
+    });
+    const identifiersArray = Array.from(identifiersToSend);
+    assignLocationsToPlan(planId, identifiersArray);
+  };
+
   return (
     <div className={styles.targetsSelectedList}>
       {Object.entries(groupedData).map(([parentName, polygons], index) => (
         <Accordion key={`accordion-${parentName}-${index}`} title={`${parentName} (${polygons.length})`}>
           {polygons.map(polygon => renderChildren(polygon))}
           <hr></hr>
-          <button className={styles.assignmentButton}>Add all subordinate operational areas</button>
+          <button onClick={() => handleLogIdentifiers(polygons)} className={styles.assignmentButton}>
+            Add all subordinate operational areas
+          </button>
         </Accordion>
       ))}
     </div>

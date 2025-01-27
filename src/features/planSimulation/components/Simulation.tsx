@@ -311,6 +311,7 @@ const Simulation = () => {
   const fetchPlanInfo = async () => {
     try {
       const planInfo = await getPlanInfo();
+      dispatch({ type: 'SET_PLANID', payload: planInfo.identifier });
       return planInfo.identifier;
     } catch (error) {
       console.error('Failed to fetch plan info:', error);
@@ -319,7 +320,6 @@ const Simulation = () => {
 
   useMemo(() => {
     setDatasetList(state.datasets);
-    console.log(polygonsWithData, 'polygonsWithData');
   }, [state.datasets]);
 
   //! UPDATE DATASETS LIST
@@ -331,13 +331,25 @@ const Simulation = () => {
     deleteDataset({
       simulationId: state.simulationId,
       datasetId
-    })
+    });
     dispatch({ type: 'DELETE_DATASET', payload: datasetId });
+    //! remove dataset update metadata
+    setPolygonsWithData((prev: any) => {
+      const updatedPolygons = { ...prev };
+
+      Object.entries(updatedPolygons).forEach(([locationId, polygonData]: any) => {
+        const updatedMetadata = polygonData.polygonData.properties.metadata.filter(
+          (metadata: any) => metadata.datasetId !== datasetId
+        );
+        updatedPolygons[locationId].polygonData.properties.metadata = updatedMetadata;
+      });
+
+      return updatedPolygons;
+    });
   };
 
   useEffect(() => {
     if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
-
       setSelectedLocationChildren(
         Object.values(polygonsWithData)
           .map((polygon: any) => polygon.polygonData)
@@ -1288,7 +1300,6 @@ const Simulation = () => {
         setGeometry(selectedLocation);
         setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
       }
-
     } else {
       const includeGeometry: boolean = checkifChildrenLoaded(polygonsWithData, locationId);
 
@@ -1314,7 +1325,6 @@ const Simulation = () => {
           return updatedPolygons;
         });
       } else {
-
         setPolygonsWithData((prev: any) => {
           const updatedPolygons = { ...prev };
           polygonsWithDatasets.forEach((location: any) => {
@@ -1455,8 +1465,7 @@ const Simulation = () => {
     },
     {
       label: 'Total Population',
-      total: Math.round(state.targetAreas?.reduce((a, b) =>
-        a + b?.properties?.population?.sum, 0)) || 0,
+      total: Math.round(state.targetAreas?.reduce((a, b) => a + b?.properties?.population?.sum, 0)) || 0,
       targetAreasList: state.targetAreas
     },
     {
@@ -1544,7 +1553,11 @@ const Simulation = () => {
                 <DrawerButton onClick={() => setOpenCustomModal(1)}>Add dataset</DrawerButton>
                 <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <div className="p-6">
-                    <AddDatasetForm onClose={() => setOpenCustomModal(undefined)} onDatasetAdded={handleAddDataset} selectedLocationId={currentLocationId} />
+                    <AddDatasetForm
+                      onClose={() => setOpenCustomModal(undefined)}
+                      onDatasetAdded={handleAddDataset}
+                      selectedLocationId={currentLocationId}
+                    />
                   </div>
                 </CustomPopup>
               </Accordion>
@@ -1580,11 +1593,7 @@ const Simulation = () => {
           />
           <Drawer open={rightOpen} anchor="left">
             <Accordion title="Statistics" open>
-              <Dashboard
-                chartLabels={labels}
-                chartData={chartData}
-                totals={totals}
-              />
+              <Dashboard chartLabels={labels} chartData={chartData} totals={totals} />
             </Accordion>
             <Accordion title="Campaign Totals" open>
               {campaignTotals.map((item, index) => (
@@ -1825,7 +1834,7 @@ const transformPopulationData = (population: any) => {
     chartData: {
       summary: summaryData,
       male: maleData,
-      female: femaleData,
+      female: femaleData
     },
     totals: {
       summary: Math.round(population.sum),
@@ -1834,7 +1843,6 @@ const transformPopulationData = (population: any) => {
     }
   };
 };
-
 
 const mergeAgeGroups = (pyramids: any[]) => {
   if (!pyramids || pyramids.length === 0) return [];
@@ -1845,10 +1853,12 @@ const mergeAgeGroups = (pyramids: any[]) => {
     const second = pyramids[i + 1] || null;
 
     const mergedGroup = {
-      AgeGroup: second ? `${first.AgeGroup.split('_')[0]}-${second.AgeGroup.split('_')[1]}` : first.AgeGroup.replace('_', '-'),
-      MalePop: Math.round((first.MalePop + (second?.MalePop || 0))),
-      FemalePop: Math.round((first.FemalePop + (second?.FemalePop || 0))),
-      TotalPop: Math.round((first.TotalPop + (second?.TotalPop || 0))),
+      AgeGroup: second
+        ? `${first.AgeGroup.split('_')[0]}-${second.AgeGroup.split('_')[1]}`
+        : first.AgeGroup.replace('_', '-'),
+      MalePop: Math.round(first.MalePop + (second?.MalePop || 0)),
+      FemalePop: Math.round(first.FemalePop + (second?.FemalePop || 0)),
+      TotalPop: Math.round(first.TotalPop + (second?.TotalPop || 0))
     };
 
     mergedGroups.push(mergedGroup);
