@@ -28,21 +28,21 @@ const HierarchyItem = ({
     setSelectedState(singleSelect);
   }, [singleSelect]);
 
-  if (selectedState?.externalId === identifier && itemRef.current) {
+  if (selectedState?.id === identifier && itemRef.current) {
     itemRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   return (
     <div ref={itemRef} className={styles.hierarchyItem}>
       <div
         className={`${styles.itemHeader} ${isOpen && itemStyle.selected} ${
-          selectedState?.externalId === identifier && itemStyle.selected
+          selectedState?.id === identifier && itemStyle.selected
         }`}
         onClick={() => {
           clickHandler(identifier);
         }}
       >
         <span>{properties.name}</span>
-        {selectedState?.externalId === identifier && <s></s>}
+        {selectedState?.id === identifier && <s></s>}
         {children && children.length > 0 && (
           <div
             onClick={e => {
