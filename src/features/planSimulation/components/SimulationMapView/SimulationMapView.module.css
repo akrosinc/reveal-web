@@ -243,6 +243,25 @@
   text-align: center;
 }
 
+.RemoveFromCampaignButton {
+  background-color: #e70101;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  text-decoration: none;
+  text-align: center;
+}
+
+.RemoveFromCampaignButton:hover {
+  background-color: #ca0303;
+  color: white;
+}
+
 .addToCampaignButton:hover {
   background-color: #047857;
   color: white;

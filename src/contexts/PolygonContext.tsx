@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer } from 'react';
 
 type PolygonActions =
+  | { type: 'UPDATE_DATASET_OPACITY'; payload: { [id: string]: number } }
   | { type: 'SET_ASSIGNED'; payload: string[] }
   | { type: 'SET_PLANID'; payload: string }
   | { type: 'SET_SIMULATION_ID'; payload: any }
@@ -19,6 +20,7 @@ type PolygonActions =
   | { type: 'CLEAR_SELECTION' };
 
 interface InitialStateInterface {
+  opacitySliderValue: { [id: string]: number };
   assingedLocations: string[];
   simulationId: string;
   planid: string;
@@ -31,6 +33,7 @@ interface InitialStateInterface {
 }
 
 const initialState: InitialStateInterface = {
+  opacitySliderValue: {},
   assingedLocations: [],
   simulationId: '',
   planid: '',
@@ -62,8 +65,10 @@ export interface PolygonContextInterface {
 // Reducer
 function polygonReducer(state: InitialStateInterface, action: PolygonActions): InitialStateInterface {
   switch (action.type) {
+    case 'UPDATE_DATASET_OPACITY':
+      return { ...state, opacitySliderValue: { ...state?.opacitySliderValue, ...action.payload } };
     case 'SET_ASSIGNED':
-      return { ...state, assingedLocations: action.payload };
+      return { ...state, assingedLocations: { ...state?.assingedLocations, ...action.payload } };
     case 'SET_PLANID':
       return { ...state, planid: action.payload };
     case 'SET_SIMULATION_ID':

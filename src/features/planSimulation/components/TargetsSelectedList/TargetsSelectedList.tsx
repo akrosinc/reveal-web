@@ -47,24 +47,22 @@ function TargetsSelectedList() {
 
   // Function to render nested children recursively (memoized)
   const renderChildren = useCallback(
-    (polygon: any) => {
+    (polygon: any, key) => {
       return (
-        <ul className={styles.listWrapper} key={polygon.properties.externalId}>
-          <li className={styles.listItem}>
-            <div className={styles.listItemInfo}>
-              <img className={styles.selectedIcon} src={task} alt="selected Polygon" />
-              <p>
-                {polygon.properties.name} ({polygon.properties.childrenNumber})
-              </p>
-            </div>
-            <button
-              className={styles.removeLocationButton}
-              onClick={() => dispatch({ type: 'TOGGLE_MULTISELECT', payload: polygon })}
-            >
-              <img src={Delete} alt="Delete" />
-            </button>
-          </li>
-        </ul>
+        <li key={key} className={styles.listItem}>
+          <div className={styles.listItemInfo}>
+            <img className={styles.selectedIcon} src={task} alt="selected Polygon" />
+            <p>
+              {polygon.properties.name} ({polygon.properties.childrenNumber})
+            </p>
+          </div>
+          <button
+            className={styles.removeLocationButton}
+            onClick={() => dispatch({ type: 'TOGGLE_MULTISELECT', payload: polygon })}
+          >
+            <img src={Delete} alt="Delete" />
+          </button>
+        </li>
       );
     },
     [dispatch]
@@ -77,18 +75,20 @@ function TargetsSelectedList() {
       findAllIdentifiersToSend(polygon.properties.id, listOfPolygonsObj, identifiersToSend);
     });
     const identifiersArray = Array.from(identifiersToSend);
-    assignLocationsToPlan(planId, identifiersArray);
+    assignLocationsToPlan(planId, identifiersArray.concat(state.assingedLocations));
   };
 
   return (
     <div className={styles.targetsSelectedList}>
       {Object.entries(groupedData).map(([parentName, polygons], index) => (
-        <Accordion key={`accordion-${parentName}-${index}`} title={`${parentName} (${polygons.length})`}>
-          {polygons.map(polygon => renderChildren(polygon))}
-          <hr></hr>
-          <button onClick={() => handleLogIdentifiers(polygons)} className={styles.assignmentButton}>
-            Add all subordinate operational areas
-          </button>
+        <Accordion key={index} title={`${parentName} (${polygons.length})`}>
+          <ul className={styles.listWrapper}>{polygons.map((polygon, index) => renderChildren(polygon, index))}</ul>
+          <hr className={styles.divider}></hr>
+          <div className={styles.buttonWrapper}>
+            <button onClick={() => handleLogIdentifiers(polygons)} className={styles.assignmentButton}>
+              Add all to campaign
+            </button>
+          </div>
         </Accordion>
       ))}
     </div>

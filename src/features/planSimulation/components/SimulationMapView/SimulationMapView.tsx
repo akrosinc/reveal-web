@@ -162,6 +162,9 @@ const SimulationMapView = ({
   const [datasets, setDatasets] = useState<any>();
   const [datasetsDataMap, setDatasetsDataMap] = useState<any>({});
 
+  // DATASET OPACITY IDS
+  const [datasetLayersId, setDatasetLayersId] = useState<string[]>([]);
+
   const [toggleAssignedLayer, setToggleAssignedLayer] = useState(false);
   // CONTEXT
   const { dispatch } = usePolygonContext();
@@ -529,11 +532,32 @@ const SimulationMapView = ({
     }
   }, [datasetsDataMap]);
 
+  // useEffect(() => {
+
+  // }, [
+  //   datasetLayersId,
+  //   datasetsDataMap,
+  //   map,
+  //   state.datasets,
+  //   state.opacitySliderValue.id,
+  //   state.opacitySliderValue.value
+  // ]);
+
   useEffect(() => {
     if (datasetsDataMap && map && map.current && state.datasets && state.datasets.length !== 0) {
       const colors = generateColors(state.datasets);
 
-      const layers = map.current?.getStyle().layers;
+      const borderWidth = generateOutlineWidths(state.datasets);
+
+      // const layers = map.current?.getStyle().layers;
+      let layers;
+
+      try {
+        layers = map.current?.getStyle().layers;
+      } catch (error) {
+        return;
+      }
+
       const matchingLayers = layers?.filter(
         layer => layer.id.startsWith(`ds-`) && !layer.id.endsWith(selectedLoaction.properties.name)
       );
@@ -545,6 +569,7 @@ const SimulationMapView = ({
 
       Object.entries(datasetsDataMap).forEach(([layerId, features]) => {
         const sourceId = `ds-${layerId}-${selectedLoaction.properties.name}`;
+
         if (!map.current?.getSource(sourceId)) {
           map.current?.addSource(sourceId, {
             type: 'geojson',
@@ -554,6 +579,14 @@ const SimulationMapView = ({
             }
           });
         }
+
+        setDatasetLayersId((pre: string[]) => {
+          const sourceIdForState = `ds@${layerId}@${selectedLoaction.properties.name}`;
+          if (!pre.includes(sourceIdForState)) {
+            return [...pre, sourceIdForState];
+          }
+          return pre;
+        });
 
         const matchingDataset = state.datasets.find((d: any) => d.identifier === layerId);
         if (!matchingDataset && map.current?.getLayer(`ds-${layerId}-${selectedLoaction.properties.name}`)) {
@@ -572,10 +605,36 @@ const SimulationMapView = ({
           colors[layerId]
         ];
 
+        const lineWidthConfig: Expression = [
+          'case',
+          ['==', ['literal', matchingDataset?.hidden], true],
+          0,
+          borderWidth[layerId]
+        ];
+
         const fillOpacityConfig: Expression | number =
           matchingDataset?.filter?.maxValue && matchingDataset.filter.maxValue > 0
             ? ['interpolate', ['linear'], ['get', 'value'], 0, 0, matchingDataset.filter.maxValue, 1]
             : 0;
+
+        if (!map.current?.getLayer(`ds-${layerId}-${selectedLoaction.properties.name}-outline`)) {
+          map.current?.addLayer({
+            id: `ds-${layerId}-${selectedLoaction.properties.name}-outline`,
+            type: 'line',
+            source: sourceId,
+            layout: {},
+            paint: {
+              'line-color': 'black',
+              'line-width': lineWidthConfig
+            }
+          });
+        } else {
+          map.current?.setPaintProperty(
+            `ds-${layerId}-${selectedLoaction.properties.name}-outline`,
+            'line-width',
+            lineWidthConfig
+          );
+        }
 
         if (map.current?.getLayer(`ds-${layerId}-${selectedLoaction.properties.name}`)) {
           map.current?.setPaintProperty(
@@ -602,6 +661,34 @@ const SimulationMapView = ({
           });
         }
       });
+
+      if (datasetsDataMap && map && map.current && state.datasets && state.datasets.length !== 0 && datasetLayersId) {
+        const datasetIds = datasetLayersId.filter((sourceId: string) => {
+          const layerId = sourceId.split('@')[1];
+
+          return Object.keys(state.opacitySliderValue).includes(layerId);
+        });
+
+        datasetIds.forEach((datasetId: string) => {
+          if (datasetId) {
+            const newSourceId = datasetId.replaceAll('@', '-');
+            const layerIdNew = datasetId.split('@')[1];
+            if (map.current?.getLayer(newSourceId) && newSourceId) {
+              const matchingDataset = state.datasets.find((d: any) => d.identifier === layerIdNew);
+
+              map.current?.setPaintProperty(newSourceId, 'fill-opacity', [
+                'interpolate',
+                ['linear'],
+                ['get', 'value'],
+                0,
+                0,
+                matchingDataset.filter.maxValue,
+                state.opacitySliderValue[layerIdNew] / 100
+              ]);
+            }
+          }
+        });
+      }
 
       if (map.current.getLayer('children-layer')) {
         map.current.moveLayer('children-layer');
@@ -633,7 +720,7 @@ const SimulationMapView = ({
         }
       });
     }
-  }, [map, map.current, state.datasets, datasetsDataMap]);
+  }, [map, map.current, state.datasets, datasetsDataMap, state.opacitySliderValue]);
 
   useEffect(() => {
     if (map && map.current && currentLocationChildren && selectedLoaction) {
@@ -662,7 +749,7 @@ const SimulationMapView = ({
             singleSelectedColor,
             'rgba(239, 239, 240, 0)' // Default color
           ],
-          'fill-outline-color': 'rgba(255, 000, 000, 0.5)'
+          'fill-outline-color': 'rgba(000, 000, 000, 0.5)'
         };
         AddLayer(map.current, 'children', 'children', paintConfig);
 
@@ -698,6 +785,8 @@ const SimulationMapView = ({
             dispatch({ type: 'SELECT_SINGLE', payload: clickedFeature });
 
             if (map.current && clickedFeature) {
+              console.log('clickedFeature', clickedFeature?.properties);
+
               const createPopupContent = () => {
                 const tagData = clickedFeature.properties?.metadata
                   ? JSON.parse(clickedFeature.properties.metadata)
@@ -761,15 +850,53 @@ const SimulationMapView = ({
 
                 // Button with event listener
                 const button = document.createElement('a');
-                button.className = styles.addToCampaignButton;
-                button.textContent = 'Add to campaign';
+                if (!clickedFeature.properties?.assigned) {
+                  button.textContent = 'Add to campaign';
+                  button.className = styles.addToCampaignButton;
+                } else {
+                  button.textContent = 'Remove from campaign';
+                  button.className = styles.RemoveFromCampaignButton;
+                }
                 button.addEventListener('click', () => {
                   const identifiersToSend: Set<string> = new Set([]);
                   findAllIdentifiersToSend(clickedFeature.properties?.id, locationsObject, identifiersToSend);
-
                   const identifiersToSendArray = Array.from(identifiersToSend);
-                  assignLocationsToPlan(planId, identifiersToSendArray);
-                  dispatch({ type: 'SET_ASSIGNED', payload: identifiersToSendArray });
+                  console.log('identifiersToSendArray', identifiersToSendArray);
+
+                  if (!clickedFeature.properties?.assigned) {
+                    dispatch({ type: 'SET_ASSIGNED', payload: identifiersToSendArray });
+                    const filtereedLocationsToSend: Set<string> = new Set([]);
+
+                    // state.targetAreas.forEach((location: any) =>
+                    //   findAllIdentifiersToSend(location.identifier, locationsObject, filtereedLocationsToSend)
+                    // );
+
+                    console.log(state.targetAreas.map(location => location.identifier).length);
+                    console.log(state.targetAreas.length);
+
+                    // for (let i = 0; i < state.targetAreas.length; i++) {
+                    //   findAllIdentifiersToSend(
+                    //     state.targetAreas[i].identifier,
+                    //     locationsObject,
+                    //     filtereedLocationsToSend
+                    //   );
+                    // }
+
+                    console.log('filtereedLocationsToSend', filtereedLocationsToSend);
+
+                    // console.log('PROSO FOR');
+
+                    // const filtereedLocationsArray = Array.from(filtereedLocationsToSend);
+                    // const mergeSets = new Set([...identifiersToSendArray, ...filtereedLocationsArray]);
+                    // const mergeSetsArray = Array.from(mergeSets);
+                    // assignLocationsToPlan(planId, identifiersToSendArray);
+                  } else {
+                    const filtereedLocations = state.targetAreas
+                      .filter((locations: any) => !identifiersToSendArray.includes(locations.identifier))
+                      .map(location => location.identifier);
+                    dispatch({ type: 'SET_ASSIGNED', payload: filtereedLocations });
+                    assignLocationsToPlan(planId, filtereedLocations);
+                  }
                 });
                 scoreContainer.appendChild(button);
 
@@ -1887,6 +2014,13 @@ export default SimulationMapView;
 const generateColors = (datasets: any[]) => {
   return datasets.reduce((acc, dataset) => {
     acc[dataset.identifier] = dataset.hexColor;
+    return acc;
+  }, {});
+};
+
+const generateOutlineWidths = (datasets: any[]) => {
+  return datasets.reduce((acc, dataset) => {
+    acc[dataset.identifier] = dataset.lineWidth;
     return acc;
   }, {});
 };
