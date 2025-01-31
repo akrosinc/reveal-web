@@ -104,7 +104,8 @@ const SimulationMapView = ({
   updateMarkedLocations,
   parentChild,
   analysisLayerDetails,
-  selectedLoaction
+  selectedLoaction,
+  showDatasetsAgainstParentLevel = false
 }: SimulationMapViewProps) => {
   const [defColor] = useColor('hex', INITIAL_FILL_COLOR);
 
@@ -134,6 +135,7 @@ const SimulationMapView = ({
       className: styles.paragraphPopup
     })
   );
+  const zoomRef = useRef(0);
 
   const [parentMapStateData, setParentMapStateData] = useState<PlanningParentLocationResponse>();
 
@@ -151,7 +153,6 @@ const SimulationMapView = ({
 
   const [showUserDefinedSettingsPanel, setShowUserDefinedSettingsPanel] = useState(false);
 
-  const [mapZoomLevel, setMapZoomLevel] = useState<number>();
   // SELECTIONS ON MAP
   const [singleSelected, setSingleSelected] = useState<any>(null);
   const [multiSelected, setMultiSelected] = useState<any[]>([]);
@@ -171,7 +172,7 @@ const SimulationMapView = ({
   const { state } = usePolygonContext();
   const selectedState = state.selected;
   const multiselectState = state.multiselect;
-  const locationsObject = state.polygons[0];
+  const locationsObject = state.polygons?.[0];
   const planId = state.planid;
 
   useMemo(() => {
@@ -197,14 +198,6 @@ const SimulationMapView = ({
       }
     }
   }, [resultsLoadingState, parentsLoadingState, map]);
-
-  useEffect(() => {
-    if (map && map.current) {
-      map.current.on('zoom', () => {
-        setMapZoomLevel(map.current?.getZoom());
-      });
-    }
-  }, [map, map.current]);
 
   const updateChildrenOfSelectedLocation = useCallback(
     (identifier: string) => {
@@ -468,6 +461,16 @@ const SimulationMapView = ({
       }
     );
     map.current?.setStyle(MAPBOX_STYLE_STREETS);
+
+    const handleZoom = () => {
+      zoomRef.current = map.current?.getZoom() || 0;
+    };
+
+    map.current?.on('zoom', handleZoom);
+
+    return () => {
+      map.current?.off('zoom', handleZoom);
+    };
   }, [lat, lng, map, zoom, userDefinedLayers]);
 
   useEffect(() => {
@@ -493,7 +496,9 @@ const SimulationMapView = ({
               locationId: location.identifier,
               value: meta.value,
               tagName: meta.type,
-              id: meta.datasetId
+              id: meta.datasetId,
+              name: location.properties.name,
+              geographicLevel: location.properties.geographicLevel || ''
             },
             geometry: location.geometry
           });
@@ -559,7 +564,9 @@ const SimulationMapView = ({
       }
 
       const matchingLayers = layers?.filter(
-        layer => layer.id.startsWith(`ds-`) && !layer.id.endsWith(selectedLoaction.properties.name)
+        layer =>
+          layer.id.startsWith(`ds-`) &&
+          (!layer.id.endsWith(selectedLoaction.properties.name) || showDatasetsAgainstParentLevel)
       );
       matchingLayers?.forEach(layer => {
         if (map.current?.getLayer(layer.id)) {
@@ -577,6 +584,12 @@ const SimulationMapView = ({
               type: 'FeatureCollection',
               features: features as any[]
             }
+          });
+        } else {
+          let source = map.current?.getSource(sourceId) as any;
+          source.setData({
+            type: 'FeatureCollection',
+            features: features as any[]
           });
         }
 
@@ -724,7 +737,8 @@ const SimulationMapView = ({
 
   useEffect(() => {
     if (map && map.current && currentLocationChildren && selectedLoaction) {
-      map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
+      if (!showDatasetsAgainstParentLevel)
+        map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
 
       // Add or update the "parent-source" {REFACTORED}
       DrawPolygonsFeature(map.current, selectedLoaction, 'parent');
@@ -948,7 +962,7 @@ const SimulationMapView = ({
         });
       }
 
-      addLabelsLayer();
+      addLabelsLayer(showDatasetsAgainstParentLevel && zoomRef.current ? zoomRef.current : null);
 
       if (!selectedState && polygonClickPopup.current.isOpen()) {
         polygonClickPopup.current.remove();
@@ -963,8 +977,13 @@ const SimulationMapView = ({
     multiSelected,
     singleSelectedColor,
     multiSelectedColor,
+    showDatasetsAgainstParentLevel,
     dispatch
   ]);
+
+  useEffect(() => {
+    addLabelsLayer(showDatasetsAgainstParentLevel && zoomRef.current ? zoomRef.current : null);
+  }, [zoomRef.current]);
 
   useEffect(() => {
     if (map.current?.getLayer('target-areas-layer') && toggleAssignedLayer) {
@@ -1027,7 +1046,7 @@ const SimulationMapView = ({
         });
       }
 
-      if (!map.current.getLayer('ta-labels-layer') && (mapZoomLevel || map.current.getZoom()) >= 8) {
+      if (!map.current.getLayer('ta-labels-layer') && (zoomRef.current || map.current.getZoom()) >= 8) {
         map.current.addLayer({
           id: 'ta-labels-layer',
           type: 'symbol',
@@ -1058,11 +1077,11 @@ const SimulationMapView = ({
             'text-halo-blur': 1 // Optional: smooth edges
           }
         });
-      } else if (map.current.getLayer('ta-labels-layer') && (mapZoomLevel || map.current.getZoom()) < 8) {
+      } else if (map.current.getLayer('ta-labels-layer') && (zoomRef.current || map.current.getZoom()) < 8) {
         map.current.removeLayer('ta-labels-layer');
       }
     }
-  }, [state.targetAreas, map.current, currentLocationChildren, mapZoomLevel, toggleAssignedLayer]);
+  }, [state.targetAreas, map.current, currentLocationChildren, toggleAssignedLayer]);
 
   useEffect(() => {
     if (chunkedData) {
@@ -1704,8 +1723,8 @@ const SimulationMapView = ({
     });
   }, [userDefinedLayers, showLayer]);
 
-  const addLabelsLayer = () => {
-    if (map && map.current) {
+  const addLabelsLayer = (zoomLevel: number | null) => {
+    if (map && map.current && selectedLoaction && currentLocationChildren) {
       // Generate label data PARENT / SHILDREN
       const labelFeatures = (currentLocationChildren.length > 0 ? currentLocationChildren : [selectedLoaction]).map(
         child => {
@@ -1737,6 +1756,8 @@ const SimulationMapView = ({
           features: labelFeatures
         });
       }
+
+      const zoom = zoomLevel && currentLocationChildren.length > 100 ? zoomLevel : Infinity;
 
       if (!map.current.getLayer('labels-layer')) {
         map.current.addLayer({
@@ -1771,6 +1792,8 @@ const SimulationMapView = ({
             'text-halo-blur': 1 // Optional: smooth edges
           }
         });
+      } else {
+        map.current.setLayoutProperty('labels-layer', 'visibility', zoom >= 7 ? 'visible' : 'none');
       }
     }
   };

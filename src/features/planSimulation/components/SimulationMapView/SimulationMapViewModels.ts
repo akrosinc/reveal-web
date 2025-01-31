@@ -29,6 +29,7 @@ export interface SimulationMapViewProps {
   parentChild: { [parent: string]: Children };
   analysisLayerDetails: AnalysisLayer[];
   selectedLoaction?: any;
+  showDatasetsAgainstParentLevel?: boolean;
 }
 
 export interface LineWidth {

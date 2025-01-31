@@ -22,3 +22,8 @@
 .button:focus-visible {
   outline: none;
 }
+
+.__disabled {
+  background-color: rgba(156, 154, 154, 0.1);
+  cursor: not-allowed;
+}

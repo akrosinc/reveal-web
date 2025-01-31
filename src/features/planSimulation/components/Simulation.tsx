@@ -9,6 +9,7 @@ import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
 import { electronMassDependencies, evaluate, isNumeric } from 'mathjs';
+import styles from './Simulation.module.css';
 
 import {
   getDataAssociatedEntityTags,
@@ -35,6 +36,7 @@ import {
 } from '../providers/types';
 import SimulationModal from './SimulationModal';
 import { MultiValue, SingleValue } from 'react-select';
+import Select from 'react-select';
 import PeopleDetailsModal from './PeopleDetailsModal';
 import { bbox, Geometry, polygon } from '@turf/turf';
 import { LngLatBounds, Map as MapBoxMap } from 'mapbox-gl';
@@ -68,18 +70,21 @@ import AddDatasetForm from './SimulationMapView/components/AddDatasetForm/AddDat
 
 import CampaignTotalsAccordion from './SimulationMapView/components/CampaignTotalsAccordion/CampaignTotalsAccordion';
 
-import { getHierarchy, getHierarchyPolygon, getPlanInfo } from './SimulationMapView/api/hierarchyAPI';
+import { getDefaultHierarchyData, getHierarchy, getHierarchyPolygon, getPlanInfo } from './SimulationMapView/api/hierarchyAPI';
 import Hierarchy from './Hierarchy/Hierarchy';
 
 // CONTEXT
 import { usePolygonContext } from '../../../contexts/PolygonContext';
 import {
   AddDatasetResponse,
+  addSearchRequest,
   DataSetList,
   deleteDataset,
+  filterDatasets,
   getLocationPolygonsWithDatasets,
   getSimulationData,
-  LocationData
+  LocationData,
+  SimulationDatasetRequest
 } from './SimulationMapView/api/datasetsAPI';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
@@ -240,7 +245,7 @@ const Simulation = () => {
   const [openCustomModal, setOpenCustomModal] = useState<number>();
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   // const [geometry, setGeometry] = useState<Feature<Polygon | MultiPolygon | Point> | null>(null);
-  const [geometry, setGeometry] = useState<Geometry>();
+  const [geometry, setGeometry] = useState<Geometry | null>();
   const [currentLocationId, setCurrentLocationId] = useState<string>();
   // const [polygons, setPolygons] = useState<any[]>([]);
   const [polygonsWithData, setPolygonsWithData] = useState<any>();
@@ -253,7 +258,10 @@ const Simulation = () => {
   const [chartData, setChartData] = useState<Record<string, number[]>>({});
   const [totals, setTotals] = useState<Record<string, number>>({});
   const [labels, setLabels] = useState<string[]>([]);
-
+  const [nodeOrderListVisible, setNodeOrderListVisible] = useState(false);
+  const [showDatasetsAgainstParentLevel, setShowDatasetsAgainstParentLevel] = useState(false);
+  const [selectedParentLevel, setSelectedParentLevel] = useState<SingleValue<{ value: string; label: string; }>>();
+  const [showingParentLevelsMenu, setShowingParentLevelsMenu] = useState(false);
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
   const { dispatch } = usePolygonContext();
@@ -318,6 +326,15 @@ const Simulation = () => {
     }
   };
 
+  const fetchDefaultHierarchyData = async () => {
+    const hierarchyData = await getDefaultHierarchyData();
+    try {
+      dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: hierarchyData });
+    } catch (error) {
+      console.error('Failed to fetch hierarchy data:', error);
+    }
+  };
+
   useMemo(() => {
     setDatasetList(state.datasets);
   }, [state.datasets]);
@@ -349,7 +366,7 @@ const Simulation = () => {
   };
 
   useEffect(() => {
-    if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
+    if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId] && !showDatasetsAgainstParentLevel) {
       setSelectedLocationChildren(
         Object.values(polygonsWithData)
           .map((polygon: any) => polygon.polygonData)
@@ -358,15 +375,10 @@ const Simulation = () => {
 
       const selectedLocation = polygonsWithData[currentLocationId].polygonData;
 
-      if (selectedLocation) {
+      if (selectedLocation && !showDatasetsAgainstParentLevel) {
         setGeometry(selectedLocation);
         setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
-        let populationData: any;
-        if (state.selected) {
-          populationData = transformPopulationData(JSON.parse(state.selected.population));
-        } else {
-          populationData = transformPopulationData(selectedLocation?.properties?.population);
-        }
+        const populationData = transformPopulationData(selectedLocation?.properties?.population);
         if (populationData !== null) {
           setChartData(populationData.chartData);
           setLabels(populationData.labels);
@@ -374,11 +386,32 @@ const Simulation = () => {
         }
       }
     }
-  }, [currentLocationId, polygonsWithData, state.selected]);
+  }, [currentLocationId, polygonsWithData, showDatasetsAgainstParentLevel]);
+
+  useEffect(() => {
+      let populationData: any;
+      if (state.selected) {
+        populationData = transformPopulationData(JSON.parse(state.selected.population));
+        if (populationData !== null) {
+          setChartData(populationData.chartData);
+          setLabels(populationData.labels);
+          setTotals(populationData.totals);
+        }
+      } else if (!state.selected && currentLocationId) {
+        const selectedLocation = polygonsWithData[currentLocationId].polygonData;
+        const populationData = transformPopulationData(selectedLocation?.properties?.population);
+        if (populationData !== null) {
+          setChartData(populationData.chartData);
+          setLabels(populationData.labels);
+          setTotals(populationData.totals);
+        }
+      }
+  }, [state.selected, showDatasetsAgainstParentLevel]);
 
   useEffect(() => {
     fetchHierarchy();
     fetchSimulationAndData();
+    fetchDefaultHierarchyData();
   }, []);
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -1285,6 +1318,10 @@ const Simulation = () => {
 
   //! LOADING POLYGONS ON DEMAND
   const loadLocationHandler = async (locationId: string) => {
+    setShowDatasetsAgainstParentLevel(false);
+    setSelectedParentLevel(null);
+    setNodeOrderListVisible(false);
+
     setCurrentLocationId(locationId);
     if (state.datasets.length === 0 && polygonsWithData?.[locationId]?.childrenLoaded) {
       setIncludeGeometry(false);
@@ -1311,6 +1348,10 @@ const Simulation = () => {
       };
 
       const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
+      if (!polygonsWithDatasets || polygonsWithDatasets.length === 0) {
+        toast.error('Cannot get results. Please try again.');
+        return;
+      }
 
       if (includeGeometry) {
         setPolygonsWithData((prev: any) => {
@@ -1524,6 +1565,50 @@ const Simulation = () => {
     }
   ];
 
+  const handleDatasetsButtonClick = () => {
+    setNodeOrderListVisible(!nodeOrderListVisible);
+  };
+
+  const filterDatasetsErrorHandler = () => {
+    //toast("An error occured. Cannot load requested data.")
+    //TODO
+  }
+  const filterDatasetsOpenHandler = () => {
+    //TODO
+  }
+  const filterDatasetsCloseHandler = () => {
+    //TODO
+  }
+
+  const filterDatasetsMessageHandler = (message: any) => {
+    const res: any = JSON.parse(message.data);
+    setSelectedLocationChildren(prev => {
+      return [...prev, ...res];
+    });
+  }
+
+
+  const handleParentSelectionChange = async (option: SingleValue<{ value: string; label: string; }>) => {
+    setSelectedParentLevel(option);
+    if (option != null && option.value !== '') {
+      const searchRequest: SimulationDatasetRequest = {
+        simulationId: state.simulationId,
+        parentAdminLevel: option.value
+      };
+      const searchId = await addSearchRequest(searchRequest);
+      setSelectedLocationChildren([]);
+      setShowDatasetsAgainstParentLevel(true);
+      filterDatasets(
+        searchId,
+        filterDatasetsMessageHandler,
+        filterDatasetsCloseHandler,
+        filterDatasetsOpenHandler,
+        filterDatasetsErrorHandler
+      );
+
+    }
+  };
+
   return (
     <>
       <Container fluid ref={divRef}>
@@ -1542,6 +1627,37 @@ const Simulation = () => {
             {/* {highestLocations && showResult && ( */}
             {highestLocations && (
               <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
+                {state.datasets?.length !== 0 && (
+                  <div>
+                    <button className={styles.dasasetsButton} onClick={handleDatasetsButtonClick} >Show datasets against a parent level</button>
+                    {nodeOrderListVisible && (
+                      <>
+                        <Select
+                          components={{
+                            IndicatorSeparator: () => null
+                          }}
+                          placeholder={'Select Parent Level'}
+                          className={styles.select}
+                          isClearable
+                          onMenuOpen={() => setShowingParentLevelsMenu(true)}
+                          onMenuClose={() => setShowingParentLevelsMenu(false)}
+                          options={state.defaultHierarchyData?.nodeOrder.map((node: string) => {
+                            return {
+                              value: node,
+                              label: node
+                            }
+                          })}
+                          value={selectedParentLevel}
+                          onChange={(selectedOption: SingleValue<{ value: string; label: string; }>) => {
+                            handleParentSelectionChange(selectedOption)
+                          }}
+                        />
+                        <br />
+                        {showingParentLevelsMenu && <><br></br><br></br><br></br></>}
+                      </>
+                    )}
+                  </div>
+                )}
                 {state.datasets?.map(dataset => (
                   <DatasetsAccordion
                     key={dataset.identifier}
@@ -1550,7 +1666,7 @@ const Simulation = () => {
                     removeDatasetHandler={removeDatasetHandler}
                   />
                 ))}
-                <DrawerButton onClick={() => setOpenCustomModal(1)}>Add dataset</DrawerButton>
+                <DrawerButton onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>Add dataset</DrawerButton>
                 <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <div className="p-6">
                     <AddDatasetForm
@@ -1564,6 +1680,7 @@ const Simulation = () => {
             )}
           </Drawer>
           <SimulationMapView
+            showDatasetsAgainstParentLevel={showDatasetsAgainstParentLevel}
             selectedLoaction={geometry} // BBBOX
             currentLocationChildren={selectedLocationChildren}
             // polygons={extractPolygonsFromPolysWithData(polygonsWithData)} // LIST OF POLYGONS

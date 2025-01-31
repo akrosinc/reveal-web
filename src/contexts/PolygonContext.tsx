@@ -17,6 +17,7 @@ type PolygonActions =
   | { type: 'SELECT_SINGLE'; payload: any }
   | { type: 'TOGGLE_MULTISELECT'; payload: any }
   | { type: 'SET_ADMIN0_LOCATION_ID'; payload: any }
+  | { type: 'SET_DEFAULT_HIERARCHY_DATA'; payload: any }
   | { type: 'CLEAR_SELECTION' };
 
 interface InitialStateInterface {
@@ -30,6 +31,7 @@ interface InitialStateInterface {
   multiselect: any[];
   admin0LocationId: string;
   targetAreas: any[];
+  defaultHierarchyData: any;
 }
 
 const initialState: InitialStateInterface = {
@@ -42,7 +44,8 @@ const initialState: InitialStateInterface = {
   selected: null,
   multiselect: [],
   admin0LocationId: '',
-  targetAreas: []
+  targetAreas: [],
+  defaultHierarchyData: null
 };
 
 export interface SelectedPolygon {
@@ -79,6 +82,8 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
       return { ...state, admin0LocationId: action.payload };
     case 'SET_HIERARCHY':
       return { ...state, polygons: action.payload };
+    case 'SET_DEFAULT_HIERARCHY_DATA':
+      return { ...state, defaultHierarchyData: action.payload };
     case 'SET_NEW_DATASETS':
       const datasets =
         action.payload.length === 0
