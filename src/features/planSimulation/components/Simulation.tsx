@@ -70,7 +70,12 @@ import AddDatasetForm from './SimulationMapView/components/AddDatasetForm/AddDat
 
 import CampaignTotalsAccordion from './SimulationMapView/components/CampaignTotalsAccordion/CampaignTotalsAccordion';
 
-import { getDefaultHierarchyData, getHierarchy, getHierarchyPolygon, getPlanInfo } from './SimulationMapView/api/hierarchyAPI';
+import {
+  getDefaultHierarchyData,
+  getHierarchy,
+  getHierarchyPolygon,
+  getPlanInfo
+} from './SimulationMapView/api/hierarchyAPI';
 import Hierarchy from './Hierarchy/Hierarchy';
 
 // CONTEXT
@@ -260,7 +265,7 @@ const Simulation = () => {
   const [labels, setLabels] = useState<string[]>([]);
   const [nodeOrderListVisible, setNodeOrderListVisible] = useState(false);
   const [showDatasetsAgainstParentLevel, setShowDatasetsAgainstParentLevel] = useState(false);
-  const [selectedParentLevel, setSelectedParentLevel] = useState<SingleValue<{ value: string; label: string; }>>();
+  const [selectedParentLevel, setSelectedParentLevel] = useState<SingleValue<{ value: string; label: string }>>();
   const [showingParentLevelsMenu, setShowingParentLevelsMenu] = useState(false);
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
@@ -366,7 +371,12 @@ const Simulation = () => {
   };
 
   useEffect(() => {
-    if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId] && !showDatasetsAgainstParentLevel) {
+    if (
+      currentLocationId &&
+      polygonsWithData &&
+      polygonsWithData[currentLocationId] &&
+      !showDatasetsAgainstParentLevel
+    ) {
       setSelectedLocationChildren(
         Object.values(polygonsWithData)
           .map((polygon: any) => polygon.polygonData)
@@ -389,23 +399,23 @@ const Simulation = () => {
   }, [currentLocationId, polygonsWithData, showDatasetsAgainstParentLevel]);
 
   useEffect(() => {
-      let populationData: any;
-      if (state.selected) {
-        populationData = transformPopulationData(JSON.parse(state.selected.population));
-        if (populationData !== null) {
-          setChartData(populationData.chartData);
-          setLabels(populationData.labels);
-          setTotals(populationData.totals);
-        }
-      } else if (!state.selected && currentLocationId) {
-        const selectedLocation = polygonsWithData[currentLocationId].polygonData;
-        const populationData = transformPopulationData(selectedLocation?.properties?.population);
-        if (populationData !== null) {
-          setChartData(populationData.chartData);
-          setLabels(populationData.labels);
-          setTotals(populationData.totals);
-        }
+    let populationData: any;
+    if (state.selected) {
+      populationData = transformPopulationData(JSON.parse(state.selected.population));
+      if (populationData !== null) {
+        setChartData(populationData.chartData);
+        setLabels(populationData.labels);
+        setTotals(populationData.totals);
       }
+    } else if (!state.selected && currentLocationId) {
+      const selectedLocation = polygonsWithData[currentLocationId].polygonData;
+      const populationData = transformPopulationData(selectedLocation?.properties?.population);
+      if (populationData !== null) {
+        setChartData(populationData.chartData);
+        setLabels(populationData.labels);
+        setTotals(populationData.totals);
+      }
+    }
   }, [state.selected, showDatasetsAgainstParentLevel]);
 
   useEffect(() => {
@@ -1572,23 +1582,22 @@ const Simulation = () => {
   const filterDatasetsErrorHandler = () => {
     //toast("An error occured. Cannot load requested data.")
     //TODO
-  }
+  };
   const filterDatasetsOpenHandler = () => {
     //TODO
-  }
+  };
   const filterDatasetsCloseHandler = () => {
     //TODO
-  }
+  };
 
   const filterDatasetsMessageHandler = (message: any) => {
     const res: any = JSON.parse(message.data);
     setSelectedLocationChildren(prev => {
       return [...prev, ...res];
     });
-  }
+  };
 
-
-  const handleParentSelectionChange = async (option: SingleValue<{ value: string; label: string; }>) => {
+  const handleParentSelectionChange = async (option: SingleValue<{ value: string; label: string }>) => {
     setSelectedParentLevel(option);
     if (option != null && option.value !== '') {
       const searchRequest: SimulationDatasetRequest = {
@@ -1605,7 +1614,6 @@ const Simulation = () => {
         filterDatasetsOpenHandler,
         filterDatasetsErrorHandler
       );
-
     }
   };
 
@@ -1628,8 +1636,10 @@ const Simulation = () => {
             {highestLocations && (
               <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
                 {state.datasets?.length !== 0 && (
-                  <div>
-                    <button className={styles.dasasetsButton} onClick={handleDatasetsButtonClick} >Show datasets against a parent level</button>
+                  <div className={styles.WrapperDasasetsButton}>
+                    <button className={styles.dasasetsButton} onClick={handleDatasetsButtonClick}>
+                      Display datasets by parent level
+                    </button>
                     {nodeOrderListVisible && (
                       <>
                         <Select
@@ -1645,15 +1655,21 @@ const Simulation = () => {
                             return {
                               value: node,
                               label: node
-                            }
+                            };
                           })}
                           value={selectedParentLevel}
-                          onChange={(selectedOption: SingleValue<{ value: string; label: string; }>) => {
-                            handleParentSelectionChange(selectedOption)
+                          onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
+                            handleParentSelectionChange(selectedOption);
                           }}
                         />
-                        <br />
-                        {showingParentLevelsMenu && <><br></br><br></br><br></br></>}
+
+                        {showingParentLevelsMenu && (
+                          <>
+                            <br></br>
+                            <br></br>
+                            <br></br>
+                          </>
+                        )}
                       </>
                     )}
                   </div>
@@ -1666,7 +1682,9 @@ const Simulation = () => {
                     removeDatasetHandler={removeDatasetHandler}
                   />
                 ))}
-                <DrawerButton onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>Add dataset</DrawerButton>
+                <DrawerButton onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>
+                  Add dataset
+                </DrawerButton>
                 <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <div className="p-6">
                     <AddDatasetForm
