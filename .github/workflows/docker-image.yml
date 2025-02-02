@@ -2,7 +2,7 @@ name: Reveal Web test, build and deploy
 
 on:
   push:
-    branches: [ main, zambia-aggregation, zam-agg, nih-simulation, nih-2024, feature/sidebar-component]
+    branches: [ main, zambia-aggregation, zam-agg, nih-simulation, nih-2024, feature/sidebar-component-build ]
 
 jobs:
 
