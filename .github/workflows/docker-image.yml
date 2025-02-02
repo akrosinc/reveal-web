@@ -33,6 +33,7 @@ jobs:
         cmd: build # will run `yarn build` command
       env:
         NODE_OPTIONS: --openssl-legacy-provider
+        CI: false
 
 
   build-and-push-docker-image:
