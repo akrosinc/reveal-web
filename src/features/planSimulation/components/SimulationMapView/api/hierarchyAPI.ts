@@ -5,36 +5,34 @@ import api from '../../../../../api/axios';
 
 export const getHierarchy = async () => {
   try {
-    const response = await axios.get(`http://localhost:8080/api/v1/locationHierarchy/default/location`);
+    const response = await api.get(`/locationHierarchy/default/location`);
     return response.data;
   } catch (error) {
     console.error(error);
   }
 };
 
-export const getLocation = async () => {
-  try {
-    const response = await axios.get('http://localhost:8080/api/v1/location/627e0983-a64b-4db4-877f-d3b3ed0c3c21');
-    return response.data;
-  } catch (error) {
-    console.error(error);
-  }
-};
+// export const getLocation = async () => {
+//   try {
+//     const response = await  api.get('/location/627e0983-a64b-4db4-877f-d3b3ed0c3c21');
+//     return response.data;
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 export const getDefaultHierarchyData = async () => {
   try {
-    const response = await axios.get(`http://localhost:8080/api/v1/locationHierarchy/default`);
+    const response = await api.get(`/locationHierarchy/default`);
     return response.data;
   } catch (error) {
     console.error(error);
   }
-}
+};
 
 export const getHierarchyPolygon = async (locationId: string, page: number, size: number) => {
   try {
-    const response = await axios.get(
-      `http://localhost:8080/api/v1/location/${locationId}/children-included?page=${page}&size=${size}`
-    );
+    const response = await api.get(`/location/${locationId}/children-included?page=${page}&size=${size}`);
     return response.data;
   } catch (error) {
     console.error(error);
