@@ -13,6 +13,7 @@ export interface DataSetList {
   name: string;
   hexColor: string;
   lineWidth: number;
+  borderColor: string;
   hidden: boolean;
   filter: {
     minValue: number;
@@ -35,6 +36,7 @@ export interface DataSetUpdate {
   name: string;
   hexColor: string;
   lineWidth: number;
+  borderColor: string;
 }
 
 export interface LocationData {
@@ -48,6 +50,7 @@ export interface AddDatasetResponse {
   simulationId: string;
   datasetId: string;
   datasetName: string;
+  borderColor: string;
   hexColor: string;
   lineWidth: number;
   tagId: string;
@@ -127,14 +130,16 @@ export const addSearchRequest = async (data: SimulationDatasetRequest) => {
 };
 
 export const filterDatasets = async (
-    searchId: string,
-    messageHandler: (e: MessageEvent<any>) => void,
-    closeHandler: () => any,
-    openHandler: () => any,
-    resultsErrorHandler: (e: any) => any
+  searchId: string,
+  messageHandler: (e: MessageEvent<any>) => void,
+  closeHandler: () => any,
+  openHandler: () => any,
+  resultsErrorHandler: (e: any) => any
 ) => {
   try {
-    const events = new EventSource(`${process.env.REACT_APP_API_URL}/simulation/datasets/filter-sse?searchId=${searchId}`);
+    const events = new EventSource(
+      `${process.env.REACT_APP_API_URL}/simulation/datasets/filter-sse?searchId=${searchId}`
+    );
     events.addEventListener('message', messageHandler);
     events.addEventListener('open', _ => {
       openHandler();

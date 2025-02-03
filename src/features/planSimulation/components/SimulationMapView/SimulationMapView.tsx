@@ -552,7 +552,7 @@ const SimulationMapView = ({
     if (datasetsDataMap && map && map.current && state.datasets && state.datasets.length !== 0) {
       const colors = generateColors(state.datasets);
 
-      const borderWidth = generateOutlineWidths(state.datasets);
+      const borderConfig = generateBorderDetails(state.datasets);
 
       // const layers = map.current?.getStyle().layers;
       let layers;
@@ -622,7 +622,14 @@ const SimulationMapView = ({
           'case',
           ['==', ['literal', matchingDataset?.hidden], true],
           0,
-          borderWidth[layerId]
+          borderConfig[layerId]?.lineWidth
+        ];
+
+        const borderColorConfig: Expression = [
+          'case',
+          ['==', ['literal', matchingDataset?.hidden], true],
+          'transparent',
+          borderConfig[layerId]?.borderColor
         ];
 
         const fillOpacityConfig: Expression | number =
@@ -637,7 +644,7 @@ const SimulationMapView = ({
             source: sourceId,
             layout: {},
             paint: {
-              'line-color': 'black',
+              'line-color': borderColorConfig,
               'line-width': lineWidthConfig
             }
           });
@@ -646,6 +653,11 @@ const SimulationMapView = ({
             `ds-${layerId}-${selectedLoaction.properties.name}-outline`,
             'line-width',
             lineWidthConfig
+          );
+          map.current?.setPaintProperty(
+            `ds-${layerId}-${selectedLoaction.properties.name}-outline`,
+            'line-color',
+            borderColorConfig
           );
         }
 
@@ -2041,9 +2053,12 @@ const generateColors = (datasets: any[]) => {
   }, {});
 };
 
-const generateOutlineWidths = (datasets: any[]) => {
+const generateBorderDetails = (datasets: any[]) => {
   return datasets.reduce((acc, dataset) => {
-    acc[dataset.identifier] = dataset.lineWidth;
+    acc[dataset.identifier] = {
+      lineWidth: dataset.lineWidth,
+      borderColor: dataset.borderColor || 'black' // Default to black if not provided
+    };
     return acc;
   }, {});
 };

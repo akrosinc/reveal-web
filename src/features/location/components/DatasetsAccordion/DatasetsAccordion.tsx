@@ -38,7 +38,7 @@ function DatasetsAccordion({
   // SLIDER
   const [opacitySliderValue, setOpacitySliderValue] = useState(100);
 
-  const [borderColor, setBorderColor] = useColor('hex', '#00FF00');
+  const [borderColor, setBorderColor] = useColor('hex', dataset?.borderColor);
   const [borderValue, setBorderValue] = useState(dataset.lineWidth);
 
   const [checked, setChecked] = useState(false);
@@ -80,7 +80,8 @@ function DatasetsAccordion({
         datasetId: dataset.identifier,
         name: tempName,
         hexColor: customColor.hex,
-        lineWidth: borderValue
+        lineWidth: borderValue,
+        borderColor: borderColor.hex
       });
       updateDatasetHandler(UpdatedSimulation.datasets);
     } catch (error) {
