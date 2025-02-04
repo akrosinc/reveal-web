@@ -7,9 +7,10 @@ interface AccordionProps {
   children: React.ReactNode;
   open?: boolean;
   parent?: boolean;
+  removeBorderBottom?: boolean;
 }
 
-function Accordion({ title, open = false, children, parent = true }: AccordionProps) {
+function Accordion({ title, open = false, children, parent = true, removeBorderBottom = false }: AccordionProps) {
   const [isOpen, setOpen] = useState(open);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ function Accordion({ title, open = false, children, parent = true }: AccordionPr
       <div
         className={`${styles.accordion_item} ${parent && styles.parrentAccordion} ${
           !isOpen ? `${styles.collapsed}` : ''
-        }`}
+        }${removeBorderBottom ? styles.noBorder : ''}`}
       >
         <div className={`${styles.accordion_content}`}>{children}</div>
       </div>

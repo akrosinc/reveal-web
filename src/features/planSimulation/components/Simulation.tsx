@@ -1522,6 +1522,7 @@ const Simulation = () => {
           <Drawer open={leftOpen} anchor="left" heading="Plan Simulation">
             {/* {highestLocations && showResult && ( */}
             {highestLocations && (
+               console.log("highestLocations", highestLocations),
               <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
                 <Hierarchy clickHandler={loadLocationHandler} />
                 <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Operational Area</DrawerButton>

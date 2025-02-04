@@ -1,0 +1,32 @@
+.container {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .targetItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px; 
+  }
+  
+  .dot {
+    width: 8px; 
+    height: 8px; 
+    border-radius: 50%; 
+    background-color: #0AC600; 
+    margin-right: 0; 
+    margin-top: 10;
+  }
+  
+  .value {
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .text{
+    display: flex;
+    gap: 10px;
+  }
+  
