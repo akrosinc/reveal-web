@@ -20,18 +20,26 @@ export const DrawPolygonsFeature = (mapRef: any, selectedLoaction: any, featureN
 
 export const DrawPolygonsFeatureCollection = (mapRef: any, polygonArray: any, featureName: any) => {
   const SourceName = `${featureName}-source`;
+  // attach ancestry to properties, as Mapbox strips down the features object to geometry and properties
+  const updatedArray = polygonArray.map((obj: any) => ({
+    ...obj, 
+    properties: {
+      ...obj.properties,
+      ancestry: obj.ancestry
+    }
+  }));
   if (!mapRef.getSource(SourceName)) {
     mapRef.addSource(SourceName, {
       type: 'geojson',
       data: {
         type: 'FeatureCollection',
-        features: polygonArray
+        features: updatedArray
       }
     });
   } else {
     mapRef.getSource(SourceName).setData({
       type: 'FeatureCollection',
-      features: polygonArray
+      features: updatedArray
     });
   }
 };

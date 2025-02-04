@@ -63,14 +63,13 @@ import {
 
 // CONTEXT
 import { SelectedPolygon, usePolygonContext } from '../../../../contexts/PolygonContext';
-import MultiselectList from '../MultiselectList/MultiselectList';
-import Accordion from '../../../location/components/accordion/Accordion';
 import TargetsSelectedList from '../TargetsSelectedList/TargetsSelectedList';
 import MapLegend from './components/MapLegend/MapLegend';
 import { assignLocationsToPlan } from './api/planAPI';
 import { set } from 'react-hook-form';
 import { getSimulationData } from './api/datasetsAPI';
 import { getPlanInfo } from './api/hierarchyAPI';
+import { findNodeById, getIdsByGeographicLevel } from './util';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -137,6 +136,10 @@ const SimulationMapView = ({
   );
   const zoomRef = useRef(0);
 
+  // we are using ref for these two, as state won't do for event listener handlers 
+  const targetAreasRef = useRef<any[]>([]);
+  const assignedLocationsRef = useRef<any>({});
+
   const [parentMapStateData, setParentMapStateData] = useState<PlanningParentLocationResponse>();
 
   const [userDefinedLayers, setUserDefinedLayers] = useState<UserDefinedLayer[]>([]);
@@ -186,6 +189,14 @@ const SimulationMapView = ({
   });
 
   useEffect(() => {
+    targetAreasRef.current = state.targetAreas;
+  }, [state.targetAreas]);
+
+  useEffect(() => {
+    assignedLocationsRef.current = state.assingedLocations;
+  }, [state.assingedLocations]);
+
+  useEffect(() => {
     if (map.current) {
       if (
         resultsLoadingState === 'notstarted' ||
@@ -198,6 +209,53 @@ const SimulationMapView = ({
       }
     }
   }, [resultsLoadingState, parentsLoadingState, map]);
+
+  const handleCampaignClick = (clickedFeature: any) => {
+    // ancestry contains a list of all ids of levels above this polygon
+    const ancestry = JSON.parse(clickedFeature.properties?.ancestry);
+    // find polygon as object from hierarchy, as it contains a list of its children
+    const currentLoc = findNodeById(state.polygons, clickedFeature.properties?.id);
+    
+    // get all children (except structures) ids
+    const results = getIdsByGeographicLevel(currentLoc.children);
+
+    // as target areas lowest possible level for operational area, we just need their id and their ancestry (children are just structures)
+    const assignedAreas = targetAreasRef.current?.flatMap(ta => [...ta.ancestry, ta.identifier]) || [];
+
+    const allLocationsIdsToBeAssigned = new Set([...results, ...ancestry, ...assignedAreas, clickedFeature.properties?.id]);
+    const identifiersToSendArray = Array.from(allLocationsIdsToBeAssigned);
+
+    // check assignment map - if there is no assignment map, use polygon's properties.assigned flag
+    // if assignment map, use the value for assigned flag thats under the key = clickedFeature.identifier
+    const condition = assignedLocationsRef.current ? !assignedLocationsRef.current?.[clickedFeature.properties?.id] : !clickedFeature.properties?.assigned;
+
+    if (condition) {
+      assignLocationsToPlan(planId, identifiersToSendArray).then(async (res: any) => {
+        // update assignment map
+        dispatch({ type: 'SET_ASSIGNED', payload: { ...assignedLocationsRef?.current, [clickedFeature.properties?.id]: true } });
+        // refetch target areas, so the map updates 
+        const simulationData = await getSimulationData(state.planid);
+        dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+        polygonClickPopup.current.remove();
+        dispatch({ type: 'CLEAR_SELECTION' });
+
+      });
+    } else {
+      // if remove, find the ids bound to the clicked property - its ancestry and children and its own id and remove from assignedAreas
+      const toExcludeSet = new Set([...results, ...ancestry, clickedFeature.properties?.id]);
+      const filtered = assignedAreas.filter(item => !toExcludeSet.has(item));
+      assignLocationsToPlan(planId, filtered).then(async () => {
+        // update assignment map
+        dispatch({ type: 'SET_ASSIGNED', payload: { ...assignedLocationsRef?.current, [clickedFeature.properties?.id]: false } });
+        // refetch target areas, so the map updates 
+        const simulationData = await getSimulationData(state.planid);
+        dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+        polygonClickPopup.current.remove();
+        dispatch({ type: 'CLEAR_SELECTION' });
+
+      })
+    }
+  };
 
   const updateChildrenOfSelectedLocation = useCallback(
     (identifier: string) => {
@@ -832,9 +890,8 @@ const SimulationMapView = ({
                 populationCard.className = styles.populationCard;
                 populationCard.innerHTML = `
                 <div class="${styles.label}">Population</div>
-                <div class="${styles.value}">${
-                  Math.round(JSON.parse(clickedFeature.properties?.population).sum).toLocaleString() ?? 'Not Available'
-                }</div>
+                <div class="${styles.value}">${Math.round(JSON.parse(clickedFeature.properties?.population).sum).toLocaleString() ?? 'Not Available'
+                  }</div>
                 <div class="${styles.subtotalValueContainer}">
                   <div class="${styles.sublabel}">Children Number</div>
                   <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
@@ -864,54 +921,15 @@ const SimulationMapView = ({
 
                 // Button with event listener
                 const button = document.createElement('a');
-                if (!clickedFeature.properties?.assigned) {
+                const condition = assignedLocationsRef.current ? !assignedLocationsRef.current?.[clickedFeature.properties?.id] : !clickedFeature.properties?.assigned;
+                if (condition) {
                   button.textContent = 'Add to campaign';
                   button.className = styles.addToCampaignButton;
                 } else {
                   button.textContent = 'Remove from campaign';
                   button.className = styles.RemoveFromCampaignButton;
                 }
-                button.addEventListener('click', () => {
-                  const identifiersToSend: Set<string> = new Set([]);
-                  findAllIdentifiersToSend(clickedFeature.properties?.id, locationsObject, identifiersToSend);
-                  const identifiersToSendArray = Array.from(identifiersToSend);
-                  console.log('identifiersToSendArray', identifiersToSendArray);
-
-                  if (!clickedFeature.properties?.assigned) {
-                    dispatch({ type: 'SET_ASSIGNED', payload: identifiersToSendArray });
-                    const filtereedLocationsToSend: Set<string> = new Set([]);
-
-                    // state.targetAreas.forEach((location: any) =>
-                    //   findAllIdentifiersToSend(location.identifier, locationsObject, filtereedLocationsToSend)
-                    // );
-
-                    console.log(state.targetAreas.map(location => location.identifier).length);
-                    console.log(state.targetAreas.length);
-
-                    // for (let i = 0; i < state.targetAreas.length; i++) {
-                    //   findAllIdentifiersToSend(
-                    //     state.targetAreas[i].identifier,
-                    //     locationsObject,
-                    //     filtereedLocationsToSend
-                    //   );
-                    // }
-
-                    console.log('filtereedLocationsToSend', filtereedLocationsToSend);
-
-                    // console.log('PROSO FOR');
-
-                    // const filtereedLocationsArray = Array.from(filtereedLocationsToSend);
-                    // const mergeSets = new Set([...identifiersToSendArray, ...filtereedLocationsArray]);
-                    // const mergeSetsArray = Array.from(mergeSets);
-                    // assignLocationsToPlan(planId, identifiersToSendArray);
-                  } else {
-                    const filtereedLocations = state.targetAreas
-                      .filter((locations: any) => !identifiersToSendArray.includes(locations.identifier))
-                      .map(location => location.identifier);
-                    dispatch({ type: 'SET_ASSIGNED', payload: filtereedLocations });
-                    assignLocationsToPlan(planId, filtereedLocations);
-                  }
-                });
+                button.addEventListener('click', () => handleCampaignClick(clickedFeature));
                 scoreContainer.appendChild(button);
 
                 content.appendChild(scoreContainer);
@@ -978,8 +996,10 @@ const SimulationMapView = ({
     singleSelectedColor,
     multiSelectedColor,
     showDatasetsAgainstParentLevel,
+    state.targetAreas,
     dispatch
   ]);
+
 
   useEffect(() => {
     addLabelsLayer(showDatasetsAgainstParentLevel && zoomRef.current ? zoomRef.current : null);
@@ -1412,7 +1432,7 @@ const SimulationMapView = ({
                         try {
                           let perc = parseFloat(selectedTagPercentageValue);
                           percDisplay = Math.trunc(Math.round(perc * 100));
-                        } catch (e) {}
+                        } catch (e) { }
                         htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}
@@ -1735,7 +1755,7 @@ const SimulationMapView = ({
             properties: {
               name: child.properties.name,
               geographicLevel: child.properties.geographicLevel,
-              childrenNumber: child.properties.childrenNumber
+              childrenNumber: child.properties.childrenNumber,
             }
           };
         }

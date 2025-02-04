@@ -370,6 +370,22 @@ const Simulation = () => {
     });
   };
 
+  // we are updating selectedLocationChildren whenever an assignment happens,
+  // because assigned flag on these locations is not updated (it is still the one we got on location fetch)
+  useEffect(() => {
+    setSelectedLocationChildren(prev =>
+      prev.map(obj => ({
+        ...obj,
+        properties: {
+          ...obj.properties,
+          assigned: state.assingedLocations[obj.identifier],
+        },
+      }))
+    );
+  }, [state.assingedLocations]);
+
+
+
   useEffect(() => {
     if (
       currentLocationId &&
@@ -377,11 +393,22 @@ const Simulation = () => {
       polygonsWithData[currentLocationId] &&
       !showDatasetsAgainstParentLevel
     ) {
-      setSelectedLocationChildren(
-        Object.values(polygonsWithData)
-          .map((polygon: any) => polygon.polygonData)
-          .filter((polygon: any) => polygon.properties.parentIdentifier === currentLocationId)
-      );
+
+      const children = Object.values(polygonsWithData)
+        .map((polygon: any) => polygon.polygonData)
+        .filter((polygon: any) => polygon.properties.parentIdentifier === currentLocationId);
+
+      setSelectedLocationChildren(children);
+
+      // when locations loaded, we are setting their assigned flag values as default values in assignment map
+      // this way, state.assignedLocations is our single source of truth 
+      const assignedMap = children.reduce((map, obj) => {
+        return {
+          ...map,
+          [obj.identifier]: map[obj.identifier] ?? obj.properties.assigned, 
+        };
+      }, { ...state.assingedLocations }); 
+      dispatch({ type: "SET_ASSIGNED", payload: assignedMap });
 
       const selectedLocation = polygonsWithData[currentLocationId].polygonData;
 
