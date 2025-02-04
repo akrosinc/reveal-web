@@ -290,7 +290,8 @@ const Simulation = () => {
       identifier: datasetResponse.datasetId,
       name: datasetResponse.datasetName,
       hexColor: datasetResponse.hexColor,
-      lineWidth: datasetResponse.lineWidth
+      lineWidth: datasetResponse.lineWidth,
+      borderColor: datasetResponse.borderColor
     };
 
     dispatch({ type: 'ADD_DATASET', payload: dataset });
