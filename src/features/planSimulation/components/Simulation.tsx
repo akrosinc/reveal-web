@@ -91,6 +91,7 @@ import {
   LocationData,
   SimulationDatasetRequest
 } from './SimulationMapView/api/datasetsAPI';
+import { assignLocationsToPlan } from '../../assignment/api';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -406,9 +407,9 @@ const Simulation = () => {
       const assignedMap = children.reduce((map, obj) => {
         return {
           ...map,
-          [obj.identifier]: map[obj.identifier] ?? obj.properties.assigned, 
+          [obj.identifier]: map[obj.identifier] ?? obj.properties.assigned,
         };
-      }, { ...state.assingedLocations }); 
+      }, { ...state.assingedLocations });
       dispatch({ type: "SET_ASSIGNED", payload: assignedMap });
 
       const selectedLocation = polygonsWithData[currentLocationId].polygonData;
@@ -1536,16 +1537,33 @@ const Simulation = () => {
   //   return convertedColor as Color;
   // };
 
+  const handleRemoveTargetArea = (id: string) => {
+    const assignedAreas = state.targetAreas?.flatMap((ta: any) => [...ta.ancestry, ta.identifier]) || [];
+    const targetArea = state.targetAreas?.find(ta => ta.identifier === id);
+    const toExcludeSet = new Set([...targetArea.ancestry, id]);
+    const filtered = assignedAreas.filter(item => !toExcludeSet.has(item));
+    assignLocationsToPlan(state.planid, filtered).then(async () => {
+      // update assignment map
+      dispatch({ type: 'SET_ASSIGNED', payload: { ...state.assingedLocations, [id]: false } });
+      // refetch target areas, so the map updates 
+      const simulationData = await getSimulationData(state.planid);
+      dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+      dispatch({ type: 'CLEAR_SELECTION' });
+    })
+
+  };
+
   const campaignTotals = [
     {
       label: 'Target Areas',
       total: state.targetAreas.length,
-      targetAreasList: state.targetAreas
+      targetAreasList: state.targetAreas,
+      remove: handleRemoveTargetArea
     },
     {
       label: 'Total Population',
       total: Math.round(state.targetAreas?.reduce((a, b) => a + b?.properties?.population?.sum, 0)) || 0,
-      targetAreasList: state.targetAreas
+      targetAreasList: state.targetAreas,
     },
     {
       label: 'Total Structures',

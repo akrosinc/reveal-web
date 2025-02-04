@@ -35,7 +35,7 @@ function CampaignTotalsAccordion({ open = false, campaignTotals }: any) {
               <div className={CampaignStyles.paragraph}>
                 <p className={CampaignStyles.paragraph}>{Math.round(area?.properties?.population?.sum) || ''}</p>
                 <button className={CampaignStyles.hoverButton}>
-                  <img src={Delete} alt="Delete" />
+                  {campaignTotals.remove && <img src={Delete} alt="Delete" onClick={()=>campaignTotals.remove(area.identifier)} />}
                 </button>
               </div>
             </div>

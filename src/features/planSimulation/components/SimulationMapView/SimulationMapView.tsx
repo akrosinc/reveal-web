@@ -252,7 +252,6 @@ const SimulationMapView = ({
         dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
         polygonClickPopup.current.remove();
         dispatch({ type: 'CLEAR_SELECTION' });
-
       })
     }
   };
