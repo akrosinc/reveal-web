@@ -4,15 +4,13 @@ import { usePolygonContext } from '../../../../contexts/PolygonContext';
 import Accordion from '../../../location/components/accordion/Accordion';
 import task from '../../../../assets/svgs/task.svg';
 import Delete from '../../../../assets/svgs/trash-bin.svg';
-import { findAllIdentifiersToSend } from '../SimulationMapView/Helper/MapInteractionsHelper';
 import { assignLocationsToPlan } from '../SimulationMapView/api/planAPI';
+import { findNodeById, getIdsByGeographicLevel } from '../SimulationMapView/util';
+import { getSimulationData } from '../SimulationMapView/api/datasetsAPI';
 
 function TargetsSelectedList() {
   const { state, dispatch } = usePolygonContext();
   const { multiselect, polygons } = state;
-
-  const listOfPolygonsObj = state.polygons[0];
-  const planId = state.planid;
 
   // Helper function to find a parent by its identifier
   const findParent = useCallback((data: any[], parentId: string): any => {
@@ -70,12 +68,29 @@ function TargetsSelectedList() {
 
   // Handler for logging polygon identifiers
   const handleLogIdentifiers = (polygons: any) => {
-    const identifiersToSend: Set<string> = new Set([]);
+    // same logic as for single select assignment, check SimulationMapView.tsx handleCampaignClick
+    const ancestry: any[] = [];
+    const results: any[] = [];
     polygons.forEach((polygon: any) => {
-      findAllIdentifiersToSend(polygon.properties.id, listOfPolygonsObj, identifiersToSend);
+      ancestry.push(...JSON.parse(polygon.properties?.ancestry) || []);
+      const currentLocWithChildren = findNodeById(state.polygons, polygon.properties?.id);
+      results.push(...getIdsByGeographicLevel(currentLocWithChildren.children));
     });
-    const identifiersArray = Array.from(identifiersToSend);
-    assignLocationsToPlan(planId, identifiersArray.concat(state.assingedLocations));
+    const assignedAreas = state.targetAreas?.flatMap(ta => [...ta.ancestry, ta.identifier]) || [];
+
+    const allLocationsIdsToBeAssigned = new Set([...results, ...ancestry, ...assignedAreas, ...polygons.map((p: any) => p.properties?.id)]);
+    const identifiersToSendArray = Array.from(allLocationsIdsToBeAssigned);
+    assignLocationsToPlan(state.planid, identifiersToSendArray).then(async () => {
+      const simulationData = await getSimulationData(state.planid);
+      dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+      dispatch({ type: 'CLEAR_SELECTION' });
+      dispatch({
+        type: 'SET_ASSIGNED', payload: {
+          ...state.assingedLocations, ...Object.fromEntries(polygons.map((p: any) => [p.properties?.id, true]))
+        }
+      });
+
+    });
   };
 
   return (

@@ -2,7 +2,7 @@ import { createContext, useContext, useReducer } from 'react';
 
 type PolygonActions =
   | { type: 'UPDATE_DATASET_OPACITY'; payload: { [id: string]: number } }
-  | { type: 'SET_ASSIGNED'; payload: string[] }
+  | { type: 'SET_ASSIGNED'; payload: { [identifier: string]: boolean } }
   | { type: 'SET_PLANID'; payload: string }
   | { type: 'SET_SIMULATION_ID'; payload: any }
   | { type: 'SET_TARGET_AREAS'; payload: any[] }
@@ -22,7 +22,9 @@ type PolygonActions =
 
 interface InitialStateInterface {
   opacitySliderValue: { [id: string]: number };
-  assingedLocations: string[];
+  // using this as a map with assigned flags for all loaded children, 
+  // as assigned flag changes and updated location data are not re-fetched from backend
+  assingedLocations: { [identifier: string]: boolean };
   simulationId: string;
   planid: string;
   polygons: any[];
@@ -36,7 +38,7 @@ interface InitialStateInterface {
 
 const initialState: InitialStateInterface = {
   opacitySliderValue: {},
-  assingedLocations: [],
+  assingedLocations: {},
   simulationId: '',
   planid: '',
   polygons: [],
@@ -71,7 +73,7 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
     case 'UPDATE_DATASET_OPACITY':
       return { ...state, opacitySliderValue: { ...state?.opacitySliderValue, ...action.payload } };
     case 'SET_ASSIGNED':
-      return { ...state, assingedLocations: { ...state?.assingedLocations, ...action.payload } };
+      return { ...state, assingedLocations: action.payload };
     case 'SET_PLANID':
       return { ...state, planid: action.payload };
     case 'SET_SIMULATION_ID':
@@ -89,17 +91,17 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
         action.payload.length === 0
           ? []
           : action.payload.map((dataset: any) => ({
-              ...dataset,
-              hidden: false,
-              selectedRange: {
-                minValue: dataset.selectedRange?.minValue || 0,
-                maxValue: dataset.selectedRange?.maxValue || 0
-              },
-              filter: {
-                minValue: dataset.filter?.minValue || 0,
-                maxValue: dataset.filter?.maxValue || 0
-              }
-            }));
+            ...dataset,
+            hidden: false,
+            selectedRange: {
+              minValue: dataset.selectedRange?.minValue || 0,
+              maxValue: dataset.selectedRange?.maxValue || 0
+            },
+            filter: {
+              minValue: dataset.filter?.minValue || 0,
+              maxValue: dataset.filter?.maxValue || 0
+            }
+          }));
       return {
         ...state,
         datasets
