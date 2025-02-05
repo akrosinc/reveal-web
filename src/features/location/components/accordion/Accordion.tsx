@@ -8,9 +8,17 @@ interface AccordionProps {
   open?: boolean;
   parent?: boolean;
   customTitle?: React.ReactNode;
+  removeBorderBottom?: boolean;
 }
 
-function Accordion({ title, open = false, children, parent = true, customTitle }: AccordionProps) {
+function Accordion({
+  title,
+  open = false,
+  children,
+  parent = true,
+  customTitle,
+  removeBorderBottom = false
+}: AccordionProps) {
   const [isOpen, setOpen] = useState(open);
 
   useEffect(() => {

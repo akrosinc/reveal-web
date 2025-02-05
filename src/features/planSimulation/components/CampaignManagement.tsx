@@ -60,7 +60,6 @@ import {
   LocationData
 } from './SimulationMapView/api/datasetsAPI';
 
-
 export interface Stats {
   [key: string]: Metadata;
 }
@@ -406,10 +405,9 @@ const CampaignManagement = () => {
                 Manage Teams
               </Button> */}
               <div className={style.modalContainer}>
-              <UserModal  className={style.modalButton} show={showModal} onHide={() => setShowModal(false)} />
+                <UserModal className={style.modalButton} show={showModal} onHide={() => setShowModal(false)} />
               </div>
             </Accordion>
-            
           </Drawer>
           <SimulationMapView
             selectedLoaction={geometry} // BBBOX
