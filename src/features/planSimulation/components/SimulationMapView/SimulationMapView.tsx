@@ -54,14 +54,22 @@ import DataSetPanel from './components/DataSetPanel/DataSetPanel';
 import mapboxgl from 'mapbox-gl';
 
 import * as turf from '@turf/turf';
-import { AddLayer, DrawPolygonsFeature, DrawPolygonsFeatureCollection } from './Helper/MapInteractionsHelper';
+import {
+  AddLayer,
+  DrawPolygonsFeature,
+  DrawPolygonsFeatureCollection,
+  findAllIdentifiersToSend
+} from './Helper/MapInteractionsHelper';
 
 // CONTEXT
 import { SelectedPolygon, usePolygonContext } from '../../../../contexts/PolygonContext';
-import MultiselectList from '../MultiselectList/MultiselectList';
-import Accordion from '../../../location/components/accordion/Accordion';
 import TargetsSelectedList from '../TargetsSelectedList/TargetsSelectedList';
 import MapLegend from './components/MapLegend/MapLegend';
+import { assignLocationsToPlan } from './api/planAPI';
+import { set } from 'react-hook-form';
+import { getSimulationData } from './api/datasetsAPI';
+import { getPlanInfo } from './api/hierarchyAPI';
+import { findNodeById, getIdsByGeographicLevel } from './util';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -95,7 +103,8 @@ const SimulationMapView = ({
   updateMarkedLocations,
   parentChild,
   analysisLayerDetails,
-  selectedLoaction
+  selectedLoaction,
+  showDatasetsAgainstParentLevel = false
 }: SimulationMapViewProps) => {
   const [defColor] = useColor('hex', INITIAL_FILL_COLOR);
 
@@ -125,6 +134,11 @@ const SimulationMapView = ({
       className: styles.paragraphPopup
     })
   );
+  const zoomRef = useRef(0);
+
+  // we are using ref for these two, as state won't do for event listener handlers 
+  const targetAreasRef = useRef<any[]>([]);
+  const assignedLocationsRef = useRef<any>({});
 
   const [parentMapStateData, setParentMapStateData] = useState<PlanningParentLocationResponse>();
 
@@ -142,21 +156,27 @@ const SimulationMapView = ({
 
   const [showUserDefinedSettingsPanel, setShowUserDefinedSettingsPanel] = useState(false);
 
-  const [mapZoomLevel, setMapZoomLevel] = useState<number>();
   // SELECTIONS ON MAP
   const [singleSelected, setSingleSelected] = useState<any>(null);
   const [multiSelected, setMultiSelected] = useState<any[]>([]);
 
-  const [singleSelectedColor, setSingleSelectedColor] = useState('rgba(3, 166, 13, 1)');
-  const [multiSelectedColor, setMultiSelectedColor] = useState('rgba(0, 0, 102, 1)');
+  const [singleSelectedColor, setSingleSelectedColor] = useState('rgba(3, 166, 13, 0.4)');
+  const [multiSelectedColor, setMultiSelectedColor] = useState('rgba(0, 0, 102, 0.4)');
 
   const [datasets, setDatasets] = useState<any>();
   const [datasetsDataMap, setDatasetsDataMap] = useState<any>({});
+
+  // DATASET OPACITY IDS
+  const [datasetLayersId, setDatasetLayersId] = useState<string[]>([]);
+
+  const [toggleAssignedLayer, setToggleAssignedLayer] = useState(false);
   // CONTEXT
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
   const selectedState = state.selected;
   const multiselectState = state.multiselect;
+  const locationsObject = state.polygons?.[0];
+  const planId = state.planid;
 
   useMemo(() => {
     setSingleSelected(selectedState?.id ?? null);
@@ -167,6 +187,14 @@ const SimulationMapView = ({
     if (map.current) return;
     initializeMap();
   });
+
+  useEffect(() => {
+    targetAreasRef.current = state.targetAreas;
+  }, [state.targetAreas]);
+
+  useEffect(() => {
+    assignedLocationsRef.current = state.assingedLocations;
+  }, [state.assingedLocations]);
 
   useEffect(() => {
     if (map.current) {
@@ -182,13 +210,51 @@ const SimulationMapView = ({
     }
   }, [resultsLoadingState, parentsLoadingState, map]);
 
-  useEffect(() => {
-    if (map && map.current) {
-      map.current.on('zoom', () => {
-        setMapZoomLevel(map.current?.getZoom());
+  const handleCampaignClick = (clickedFeature: any) => {
+    // ancestry contains a list of all ids of levels above this polygon
+    const ancestry = JSON.parse(clickedFeature.properties?.ancestry);
+    // find polygon as object from hierarchy, as it contains a list of its children
+    const currentLoc = findNodeById(state.polygons, clickedFeature.properties?.id);
+    
+    // get all children (except structures) ids
+    const results = getIdsByGeographicLevel(currentLoc.children);
+
+    // as target areas lowest possible level for operational area, we just need their id and their ancestry (children are just structures)
+    const assignedAreas = targetAreasRef.current?.flatMap(ta => [...ta.ancestry, ta.identifier]) || [];
+
+    const allLocationsIdsToBeAssigned = new Set([...results, ...ancestry, ...assignedAreas, clickedFeature.properties?.id]);
+    const identifiersToSendArray = Array.from(allLocationsIdsToBeAssigned);
+
+    // check assignment map - if there is no assignment map, use polygon's properties.assigned flag
+    // if assignment map, use the value for assigned flag thats under the key = clickedFeature.identifier
+    const condition = assignedLocationsRef.current ? !assignedLocationsRef.current?.[clickedFeature.properties?.id] : !clickedFeature.properties?.assigned;
+
+    if (condition) {
+      assignLocationsToPlan(planId, identifiersToSendArray).then(async (res: any) => {
+        // update assignment map
+        dispatch({ type: 'SET_ASSIGNED', payload: { ...assignedLocationsRef?.current, [clickedFeature.properties?.id]: true } });
+        // refetch target areas, so the map updates 
+        const simulationData = await getSimulationData(state.planid);
+        dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+        polygonClickPopup.current.remove();
+        dispatch({ type: 'CLEAR_SELECTION' });
+
       });
+    } else {
+      // if remove, find the ids bound to the clicked property - its ancestry and children and its own id and remove from assignedAreas
+      const toExcludeSet = new Set([...results, ...ancestry, clickedFeature.properties?.id]);
+      const filtered = assignedAreas.filter(item => !toExcludeSet.has(item));
+      assignLocationsToPlan(planId, filtered).then(async () => {
+        // update assignment map
+        dispatch({ type: 'SET_ASSIGNED', payload: { ...assignedLocationsRef?.current, [clickedFeature.properties?.id]: false } });
+        // refetch target areas, so the map updates 
+        const simulationData = await getSimulationData(state.planid);
+        dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+        polygonClickPopup.current.remove();
+        dispatch({ type: 'CLEAR_SELECTION' });
+      })
     }
-  }, [map, map.current]);
+  };
 
   const updateChildrenOfSelectedLocation = useCallback(
     (identifier: string) => {
@@ -452,6 +518,16 @@ const SimulationMapView = ({
       }
     );
     map.current?.setStyle(MAPBOX_STYLE_STREETS);
+
+    const handleZoom = () => {
+      zoomRef.current = map.current?.getZoom() || 0;
+    };
+
+    map.current?.on('zoom', handleZoom);
+
+    return () => {
+      map.current?.off('zoom', handleZoom);
+    };
   }, [lat, lng, map, zoom, userDefinedLayers]);
 
   useEffect(() => {
@@ -477,7 +553,9 @@ const SimulationMapView = ({
               locationId: location.identifier,
               value: meta.value,
               tagName: meta.type,
-              id: meta.datasetId
+              id: meta.datasetId,
+              name: location.properties.name,
+              geographicLevel: location.properties.geographicLevel || ''
             },
             geometry: location.geometry
           });
@@ -516,13 +594,36 @@ const SimulationMapView = ({
     }
   }, [datasetsDataMap]);
 
+  // useEffect(() => {
+
+  // }, [
+  //   datasetLayersId,
+  //   datasetsDataMap,
+  //   map,
+  //   state.datasets,
+  //   state.opacitySliderValue.id,
+  //   state.opacitySliderValue.value
+  // ]);
+
   useEffect(() => {
     if (datasetsDataMap && map && map.current && state.datasets && state.datasets.length !== 0) {
       const colors = generateColors(state.datasets);
 
-      const layers = map.current?.getStyle().layers;
+      const borderConfig = generateBorderDetails(state.datasets);
+
+      // const layers = map.current?.getStyle().layers;
+      let layers;
+
+      try {
+        layers = map.current?.getStyle().layers;
+      } catch (error) {
+        return;
+      }
+
       const matchingLayers = layers?.filter(
-        layer => layer.id.startsWith(`ds-`) && !layer.id.endsWith(selectedLoaction.properties.name)
+        layer =>
+          layer.id.startsWith(`ds-`) &&
+          (!layer.id.endsWith(selectedLoaction.properties.name) || showDatasetsAgainstParentLevel)
       );
       matchingLayers?.forEach(layer => {
         if (map.current?.getLayer(layer.id)) {
@@ -532,6 +633,7 @@ const SimulationMapView = ({
 
       Object.entries(datasetsDataMap).forEach(([layerId, features]) => {
         const sourceId = `ds-${layerId}-${selectedLoaction.properties.name}`;
+
         if (!map.current?.getSource(sourceId)) {
           map.current?.addSource(sourceId, {
             type: 'geojson',
@@ -540,7 +642,21 @@ const SimulationMapView = ({
               features: features as any[]
             }
           });
+        } else {
+          let source = map.current?.getSource(sourceId) as any;
+          source.setData({
+            type: 'FeatureCollection',
+            features: features as any[]
+          });
         }
+
+        setDatasetLayersId((pre: string[]) => {
+          const sourceIdForState = `ds@${layerId}@${selectedLoaction.properties.name}`;
+          if (!pre.includes(sourceIdForState)) {
+            return [...pre, sourceIdForState];
+          }
+          return pre;
+        });
 
         const matchingDataset = state.datasets.find((d: any) => d.identifier === layerId);
         if (!matchingDataset && map.current?.getLayer(`ds-${layerId}-${selectedLoaction.properties.name}`)) {
@@ -559,16 +675,48 @@ const SimulationMapView = ({
           colors[layerId]
         ];
 
-          const fillOpacityConfig: Expression | number =
+        const lineWidthConfig: Expression = [
+          'case',
+          ['==', ['literal', matchingDataset?.hidden], true],
+          0,
+          borderConfig[layerId]?.lineWidth
+        ];
+
+        const borderColorConfig: Expression = [
+          'case',
+          ['==', ['literal', matchingDataset?.hidden], true],
+          'transparent',
+          borderConfig[layerId]?.borderColor
+        ];
+
+        const fillOpacityConfig: Expression | number =
           matchingDataset?.filter?.maxValue && matchingDataset.filter.maxValue > 0
-            ? [
-                'interpolate',
-                ['linear'],
-                ['get', 'value'],
-                0, 0,
-                matchingDataset.filter.maxValue, 1
-              ]
-            : 0; 
+            ? ['interpolate', ['linear'], ['get', 'value'], 0, 0, matchingDataset.filter.maxValue, 1]
+            : 0;
+
+        if (!map.current?.getLayer(`ds-${layerId}-${selectedLoaction.properties.name}-outline`)) {
+          map.current?.addLayer({
+            id: `ds-${layerId}-${selectedLoaction.properties.name}-outline`,
+            type: 'line',
+            source: sourceId,
+            layout: {},
+            paint: {
+              'line-color': borderColorConfig,
+              'line-width': lineWidthConfig
+            }
+          });
+        } else {
+          map.current?.setPaintProperty(
+            `ds-${layerId}-${selectedLoaction.properties.name}-outline`,
+            'line-width',
+            lineWidthConfig
+          );
+          map.current?.setPaintProperty(
+            `ds-${layerId}-${selectedLoaction.properties.name}-outline`,
+            'line-color',
+            borderColorConfig
+          );
+        }
 
         if (map.current?.getLayer(`ds-${layerId}-${selectedLoaction.properties.name}`)) {
           map.current?.setPaintProperty(
@@ -596,21 +744,56 @@ const SimulationMapView = ({
         }
       });
 
+      if (datasetsDataMap && map && map.current && state.datasets && state.datasets.length !== 0 && datasetLayersId) {
+        const datasetIds = datasetLayersId.filter((sourceId: string) => {
+          const layerId = sourceId.split('@')[1];
+
+          return Object.keys(state.opacitySliderValue).includes(layerId);
+        });
+
+        datasetIds.forEach((datasetId: string) => {
+          if (datasetId) {
+            const newSourceId = datasetId.replaceAll('@', '-');
+            const layerIdNew = datasetId.split('@')[1];
+            if (map.current?.getLayer(newSourceId) && newSourceId) {
+              const matchingDataset = state.datasets.find((d: any) => d.identifier === layerIdNew);
+
+              map.current?.setPaintProperty(newSourceId, 'fill-opacity', [
+                'interpolate',
+                ['linear'],
+                ['get', 'value'],
+                0,
+                0,
+                matchingDataset.filter.maxValue,
+                state.opacitySliderValue[layerIdNew] / 100
+              ]);
+            }
+          }
+        });
+      }
+
       if (map.current.getLayer('children-layer')) {
         map.current.moveLayer('children-layer');
       }
       if (map.current.getLayer('multi-selected-layer')) {
         map.current.moveLayer('multi-selected-layer');
 
-      if(map.current.getLayer('target-areas-layer')) {
-        map.current.moveLayer('target-areas-layer');
+        if (map.current.getLayer('target-areas-layer')) {
+          map.current.moveLayer('target-areas-layer');
+        }
       }
-
-      } if (map.current.getLayer('labels-layer')) {
+      if (map.current.getLayer('labels-layer')) {
         map.current.moveLayer('labels-layer');
       }
     }
-    if (map && map.current && datasetsDataMap && Object.values(datasetsDataMap).length !== 0 && state.datasets && state.datasets.length === 0) {
+    if (
+      map &&
+      map.current &&
+      datasetsDataMap &&
+      Object.values(datasetsDataMap).length !== 0 &&
+      state.datasets &&
+      state.datasets.length === 0
+    ) {
       const layers = map.current?.getStyle().layers;
       const matchingLayers = layers?.filter(layer => layer.id.startsWith(`ds-`));
       matchingLayers?.forEach(layer => {
@@ -619,11 +802,12 @@ const SimulationMapView = ({
         }
       });
     }
-  }, [map, map.current, state.datasets, datasetsDataMap]);
+  }, [map, map.current, state.datasets, datasetsDataMap, state.opacitySliderValue]);
 
   useEffect(() => {
     if (map && map.current && currentLocationChildren && selectedLoaction) {
-      map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
+      if (!showDatasetsAgainstParentLevel)
+        map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
 
       // Add or update the "parent-source" {REFACTORED}
       DrawPolygonsFeature(map.current, selectedLoaction, 'parent');
@@ -648,7 +832,7 @@ const SimulationMapView = ({
             singleSelectedColor,
             'rgba(239, 239, 240, 0)' // Default color
           ],
-          'fill-outline-color': 'rgba(255, 000, 000, 0.5)'
+          'fill-outline-color': 'rgba(000, 000, 000, 0.5)'
         };
         AddLayer(map.current, 'children', 'children', paintConfig);
 
@@ -684,59 +868,97 @@ const SimulationMapView = ({
             dispatch({ type: 'SELECT_SINGLE', payload: clickedFeature });
 
             if (map.current && clickedFeature) {
-              const tagData = clickedFeature.properties?.metadata ? JSON.parse(clickedFeature.properties.metadata) : [];
+              console.log('clickedFeature', clickedFeature?.properties);
 
-              // let htmlText = `
-              // <div class=${styles.popupWrapper}>
-              //     <div class=${styles.popupHeadingContainer}>
-              //       <img class=${styles.locationImage} src=${locationTag} alt="location" />
-              //       <p>${clickedFeature.properties?.name}</p>
-              //     </div>
-              //       <p>Children Number: ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
-              //       ${tagData.length !== 0 ? `<hr/>` : ``}
-              //     ${tagData
-              //       .map(
-              //         (tag: any) =>
-              //           `<div>
-              //           <div class=${styles.tagInfo}>
-              //             <img class=${styles.tagIcon} src=${tagIcon} alt="tag" />
-              //             <span>${tag.type}: ${Math.round(tag.value * 1000) / 1000}</span>
-              //           </div>
-              //         </div>`
-              //       )
-              //       .join('')}
-              //   </div>`;
-              let htmlText = `
-      <div class=${styles.card}>
-        <div class=${styles.header}>
-          <img class=${styles.locationImage} src=${locationTag} alt="location" />
-          <h2 class=${styles.title}>${clickedFeature.properties?.name}</h2>
-        </div>
-        
-        <div class=${styles.content}>
-          <div class=${styles.populationCard}>
-            <div class=${styles.label}>Population</div>
-            <div class=${styles.value}> ${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</div>
-            <div class=${styles.sublabel}>Children Number</div>
-          </div>
-          
-          <div class=${styles.scoreContainer}>
-                  ${tagData
-                    .map(
-                      (tag: any) =>
-                        ` <div class=${styles.scoreItem}>
-               <img class=${styles.tagIcon} src=${tagIcon} alt="tag" />
-              <div class=${styles.scoreInfo}>
-                <div class=${styles.scoreLabel}>
-                 ${tag.type}
+              const createPopupContent = () => {
+                const tagData = clickedFeature.properties?.metadata
+                  ? JSON.parse(clickedFeature.properties.metadata)
+                  : [];
+
+                // Create the popup container
+                const container = document.createElement('div');
+                container.className = styles.card;
+
+                // Header section
+                const header = document.createElement('div');
+                header.className = styles.header;
+                const img = document.createElement('img');
+                img.className = styles.locationImage;
+                img.src = locationTag;
+                img.alt = 'location';
+                const title = document.createElement('h2');
+                title.className = styles.title;
+                title.textContent = clickedFeature.properties?.name ?? 'Unknown';
+                header.appendChild(img);
+                header.appendChild(title);
+
+                // Content section
+                const content = document.createElement('div');
+                content.className = styles.content;
+
+                // Population card
+                const populationCard = document.createElement('div');
+                populationCard.className = styles.populationCard;
+                populationCard.innerHTML = `
+                <div class="${styles.label}">Population</div>
+                <div class="${styles.value}">${Math.round(JSON.parse(clickedFeature.properties?.population).sum).toLocaleString() ?? 'Not Available'
+                  }</div>
+                <div class="${styles.subtotalValueContainer}">
+                  <div class="${styles.sublabel}">Children Number</div>
+                  <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
                 </div>
-                <div class=${styles.scoreValue} ${styles.scoreValueMax}>${Math.round(tag.value * 1000) / 1000}</div>
-              </div>
-            </div>`
-                    )
-                    .join('')}
+              `;
+                content.appendChild(populationCard);
+
+                // Score container
+                const scoreContainer = document.createElement('div');
+                scoreContainer.className = styles.scoreContainer;
+
+                tagData.forEach((tag: any) => {
+                  const scoreItem = document.createElement('div');
+                  scoreItem.className = styles.scoreItem;
+
+                  scoreItem.innerHTML = `
+                  <img class="${styles.tagIcon}" src="${tagIcon}" alt="tag" />
+                  <div class="${styles.scoreInfo}">
+                    <div class="${styles.scoreLabel}">${tag.type}</div>
+                    <div class="${styles.scoreValue} ${styles.scoreValueMax}">
+                      ${Math.round(tag.value * 1000) / 1000}
+                    </div>
+                  </div>
                 `;
-              polygonClickPopup.current.setLngLat(e.lngLat).setHTML(htmlText).setOffset([150, -25]).addTo(map.current);
+                  scoreContainer.appendChild(scoreItem);
+                });
+
+                // Button with event listener
+                const button = document.createElement('a');
+                const condition = assignedLocationsRef.current ? !assignedLocationsRef.current?.[clickedFeature.properties?.id] : !clickedFeature.properties?.assigned;
+                if (condition) {
+                  button.textContent = 'Add to campaign';
+                  button.className = styles.addToCampaignButton;
+                } else {
+                  button.textContent = 'Remove from campaign';
+                  button.className = styles.RemoveFromCampaignButton;
+                }
+                button.addEventListener('click', () => handleCampaignClick(clickedFeature));
+                scoreContainer.appendChild(button);
+
+                content.appendChild(scoreContainer);
+
+                // Append header and content to the container
+                container.appendChild(header);
+                container.appendChild(content);
+
+                return container;
+              };
+
+              //! TESTING MUTIRAJUCI SET
+              // Add popup to the map
+              polygonClickPopup.current
+                .setLngLat(e.lngLat)
+                .setDOMContent(createPopupContent()) // Use DOM content instead of raw HTML
+                .setOffset([150, -25])
+                .addTo(map.current);
             }
           }
         });
@@ -769,9 +991,9 @@ const SimulationMapView = ({
         });
       }
 
-      addLabelsLayer();
+      addLabelsLayer(showDatasetsAgainstParentLevel && zoomRef.current ? zoomRef.current : null);
 
-      if (!selectedState) {
+      if (!selectedState && polygonClickPopup.current.isOpen()) {
         polygonClickPopup.current.remove();
       }
     }
@@ -784,31 +1006,60 @@ const SimulationMapView = ({
     multiSelected,
     singleSelectedColor,
     multiSelectedColor,
+    showDatasetsAgainstParentLevel,
+    state.targetAreas,
     dispatch
   ]);
 
-  useEffect(() => {
-    if (map && map.current && currentLocationChildren && state.targetAreas && state.targetAreas.length !== 0) {
-      DrawPolygonsFeatureCollection(map.current, state.targetAreas, 'target-areas');
-      AddLayer(map.current, 'target-areas', 'target-areas', {
-        'fill-color': 'red',
-        'fill-outline-color': 'rgba(57, 62, 65, 1)'
-      });
 
-      const taLabelFeatures = state.targetAreas?.map(
-        child => {
-          const center = turf.centroid(child.geometry);
-          return {
-            type: 'Feature' as const,
-            geometry: center.geometry,
-            properties: {
-              name: child.properties.name,
-              geographicLevel: child.properties.geographicLevel,
-              childrenNumber: child.properties.childrenNumber
-            }
-          };
-        }
-      );
+  useEffect(() => {
+    addLabelsLayer(showDatasetsAgainstParentLevel && zoomRef.current ? zoomRef.current : null);
+  }, [zoomRef.current]);
+
+  useEffect(() => {
+    if (map.current?.getLayer('target-areas-layer') && toggleAssignedLayer) {
+      map.current?.setLayoutProperty('target-areas-layer', 'visibility', 'visible');
+    } else if (map.current?.getLayer('target-areas-layer') && !toggleAssignedLayer) {
+      map.current?.setLayoutProperty('target-areas-layer', 'visibility', 'none');
+    }
+  });
+
+  useEffect(() => {
+    if (
+      map &&
+      map.current &&
+      currentLocationChildren.length > 0 &&
+      state.targetAreas &&
+      state.targetAreas.length !== 0
+    ) {
+      DrawPolygonsFeatureCollection(map.current, state.targetAreas, 'target-areas');
+
+      if (!map.current.getLayer('target-areas-layer')) {
+        map.current.addLayer({
+          id: `target-areas-layer`,
+          type: 'fill',
+          source: `target-areas-source`,
+          paint: {
+            'fill-color': 'rgba(255, 0, 74, 1)',
+            'fill-outline-color': 'rgba(57, 62, 65, 1)'
+          },
+          layout: {
+            visibility: 'visible'
+          }
+        });
+      }
+      const taLabelFeatures = state.targetAreas?.map(child => {
+        const center = turf.centroid(child.geometry);
+        return {
+          type: 'Feature' as const,
+          geometry: center.geometry,
+          properties: {
+            name: child.properties.name,
+            geographicLevel: child.properties.geographicLevel,
+            childrenNumber: child.properties.childrenNumber
+          }
+        };
+      });
 
       if (!map.current.getSource('ta-labels-source')) {
         map.current.addSource('ta-labels-source', {
@@ -826,7 +1077,7 @@ const SimulationMapView = ({
         });
       }
 
-      if (!map.current.getLayer('ta-labels-layer') && ((mapZoomLevel || map.current.getZoom()) >= 8)) {
+      if (!map.current.getLayer('ta-labels-layer') && (zoomRef.current || map.current.getZoom()) >= 8) {
         map.current.addLayer({
           id: 'ta-labels-layer',
           type: 'symbol',
@@ -857,11 +1108,11 @@ const SimulationMapView = ({
             'text-halo-blur': 1 // Optional: smooth edges
           }
         });
-      } else if (map.current.getLayer('ta-labels-layer') && ((mapZoomLevel || map.current.getZoom()) < 8)) {
+      } else if (map.current.getLayer('ta-labels-layer') && (zoomRef.current || map.current.getZoom()) < 8) {
         map.current.removeLayer('ta-labels-layer');
       }
     }
-  }, [state.targetAreas, map.current, currentLocationChildren, mapZoomLevel]);
+  }, [state.targetAreas, map.current, currentLocationChildren, toggleAssignedLayer]);
 
   useEffect(() => {
     if (chunkedData) {
@@ -1192,7 +1443,7 @@ const SimulationMapView = ({
                         try {
                           let perc = parseFloat(selectedTagPercentageValue);
                           percDisplay = Math.trunc(Math.round(perc * 100));
-                        } catch (e) {}
+                        } catch (e) { }
                         htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}
@@ -1503,8 +1754,8 @@ const SimulationMapView = ({
     });
   }, [userDefinedLayers, showLayer]);
 
-  const addLabelsLayer = () => {
-    if (map && map.current) {
+  const addLabelsLayer = (zoomLevel: number | null) => {
+    if (map && map.current && selectedLoaction && currentLocationChildren) {
       // Generate label data PARENT / SHILDREN
       const labelFeatures = (currentLocationChildren.length > 0 ? currentLocationChildren : [selectedLoaction]).map(
         child => {
@@ -1515,7 +1766,7 @@ const SimulationMapView = ({
             properties: {
               name: child.properties.name,
               geographicLevel: child.properties.geographicLevel,
-              childrenNumber: child.properties.childrenNumber
+              childrenNumber: child.properties.childrenNumber,
             }
           };
         }
@@ -1536,6 +1787,8 @@ const SimulationMapView = ({
           features: labelFeatures
         });
       }
+
+      const zoom = zoomLevel && currentLocationChildren.length > 100 ? zoomLevel : Infinity;
 
       if (!map.current.getLayer('labels-layer')) {
         map.current.addLayer({
@@ -1570,6 +1823,8 @@ const SimulationMapView = ({
             'text-halo-blur': 1 // Optional: smooth edges
           }
         });
+      } else {
+        map.current.setLayoutProperty('labels-layer', 'visibility', zoom >= 7 ? 'visible' : 'none');
       }
     }
   };
@@ -1675,7 +1930,7 @@ const SimulationMapView = ({
       {/* MULTISELECTED POLYGONS LIST */}
       {multiselectState.length > 0 && <TargetsSelectedList />}
       {/* MAP LEGEND */}
-      <MapLegend />
+      <MapLegend handleClickedSwitchOnMap={setToggleAssignedLayer} assigned={toggleAssignedLayer} />
       <div style={{ position: 'absolute', zIndex: 2, width: 'fit-content' }} className="mx-0 px-0">
         <div style={{ float: 'left', position: 'relative' }} className="sidebar-adjust "></div>
 
@@ -1719,7 +1974,7 @@ const SimulationMapView = ({
       )}
 
       {/* LEFT CLICK FORM */}
-      {showMapDrawnModal && (
+      {/* {showMapDrawnModal && (
         <ActionDialog
           closeHandler={() => setShowMapDrawnModal(false)}
           title={'Selected Locations'}
@@ -1802,7 +2057,7 @@ const SimulationMapView = ({
           }
           size={'lg'}
         />
-      )}
+      )} */}
 
       <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '90vh' : '75vh', width: '100%' }} />
     </Container>
@@ -1813,6 +2068,16 @@ export default SimulationMapView;
 const generateColors = (datasets: any[]) => {
   return datasets.reduce((acc, dataset) => {
     acc[dataset.identifier] = dataset.hexColor;
+    return acc;
+  }, {});
+};
+
+const generateBorderDetails = (datasets: any[]) => {
+  return datasets.reduce((acc, dataset) => {
+    acc[dataset.identifier] = {
+      lineWidth: dataset.lineWidth,
+      borderColor: dataset.borderColor || 'black' // Default to black if not provided
+    };
     return acc;
   }, {});
 };

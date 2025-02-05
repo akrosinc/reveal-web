@@ -1,7 +1,10 @@
 import { createContext, useContext, useReducer } from 'react';
 
 type PolygonActions =
-  { type: 'SET_SIMULATION_ID'; payload: any }
+  | { type: 'UPDATE_DATASET_OPACITY'; payload: { [id: string]: number } }
+  | { type: 'SET_ASSIGNED'; payload: { [identifier: string]: boolean } }
+  | { type: 'SET_PLANID'; payload: string }
+  | { type: 'SET_SIMULATION_ID'; payload: any }
   | { type: 'SET_TARGET_AREAS'; payload: any[] }
   | { type: 'SET_HIERARCHY'; payload: any[] }
   | { type: 'SET_NEW_DATASETS'; payload: any[] }
@@ -14,26 +17,37 @@ type PolygonActions =
   | { type: 'SELECT_SINGLE'; payload: any }
   | { type: 'TOGGLE_MULTISELECT'; payload: any }
   | { type: 'SET_ADMIN0_LOCATION_ID'; payload: any }
+  | { type: 'SET_DEFAULT_HIERARCHY_DATA'; payload: any }
   | { type: 'CLEAR_SELECTION' };
 
 interface InitialStateInterface {
+  opacitySliderValue: { [id: string]: number };
+  // using this as a map with assigned flags for all loaded children, 
+  // as assigned flag changes and updated location data are not re-fetched from backend
+  assingedLocations: { [identifier: string]: boolean };
   simulationId: string;
+  planid: string;
   polygons: any[];
   datasets: any[];
   selected: any | null;
   multiselect: any[];
   admin0LocationId: string;
   targetAreas: any[];
+  defaultHierarchyData: any;
 }
 
 const initialState: InitialStateInterface = {
+  opacitySliderValue: {},
+  assingedLocations: {},
   simulationId: '',
+  planid: '',
   polygons: [],
   datasets: [],
   selected: null,
   multiselect: [],
   admin0LocationId: '',
-  targetAreas: []
+  targetAreas: [],
+  defaultHierarchyData: null
 };
 
 export interface SelectedPolygon {
@@ -56,6 +70,12 @@ export interface PolygonContextInterface {
 // Reducer
 function polygonReducer(state: InitialStateInterface, action: PolygonActions): InitialStateInterface {
   switch (action.type) {
+    case 'UPDATE_DATASET_OPACITY':
+      return { ...state, opacitySliderValue: { ...state?.opacitySliderValue, ...action.payload } };
+    case 'SET_ASSIGNED':
+      return { ...state, assingedLocations: action.payload };
+    case 'SET_PLANID':
+      return { ...state, planid: action.payload };
     case 'SET_SIMULATION_ID':
       return { ...state, simulationId: action.payload };
     case 'SET_TARGET_AREAS':
@@ -64,25 +84,32 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
       return { ...state, admin0LocationId: action.payload };
     case 'SET_HIERARCHY':
       return { ...state, polygons: action.payload };
+    case 'SET_DEFAULT_HIERARCHY_DATA':
+      return { ...state, defaultHierarchyData: action.payload };
     case 'SET_NEW_DATASETS':
-      const datasets = action.payload.length === 0 ? [] : action.payload.map((dataset: any) => ({
-        ...dataset,
-        hidden: false,
-        selectedRange: {
-          minValue: dataset.selectedRange?.minValue || 0,
-          maxValue: dataset.selectedRange?.maxValue || 0
-        },
-        filter: {
-          minValue: dataset.filter?.minValue || 0,
-          maxValue: dataset.filter?.maxValue || 0
-        }
-      }));
+      const datasets =
+        action.payload.length === 0
+          ? []
+          : action.payload.map((dataset: any) => ({
+            ...dataset,
+            hidden: false,
+            selectedRange: {
+              minValue: dataset.selectedRange?.minValue || 0,
+              maxValue: dataset.selectedRange?.maxValue || 0
+            },
+            filter: {
+              minValue: dataset.filter?.minValue || 0,
+              maxValue: dataset.filter?.maxValue || 0
+            }
+          }));
       return {
-        ...state, datasets
+        ...state,
+        datasets
       };
     case 'SET_DATASET':
       return {
-        ...state, datasets: state.datasets.map((d: any) => {
+        ...state,
+        datasets: state.datasets.map((d: any) => {
           const corresponding = action.payload.find(ud => ud.identifier === d.identifier);
           return {
             ...corresponding,
@@ -94,7 +121,8 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
       };
     case 'DELETE_DATASET':
       return {
-        ...state, datasets: state.datasets.filter((dataset: any) => dataset.identifier !== action.payload)
+        ...state,
+        datasets: state.datasets.filter((dataset: any) => dataset.identifier !== action.payload)
       };
     case 'UPDATE_DATASET':
       return {
@@ -115,21 +143,30 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
         )
       };
     case 'TOGGLE_DATASET_VISIBILITY':
-      return { ...state, datasets: state.datasets.map((dataset: any) => dataset.identifier === action.payload.identifier ? action.payload : dataset) }
+      return {
+        ...state,
+        datasets: state.datasets.map((dataset: any) =>
+          dataset.identifier === action.payload.identifier ? action.payload : dataset
+        )
+      };
     case 'ADD_DATASET':
       return {
-        ...state, datasets: [...state.datasets, {
-          ...action.payload,
-          hidden: false,
-          selectedRange: {
-            minValue: 0,
-            maxValue: 0
-          },
-          filter: {
-            minValue: 0,
-            maxValue: 0
+        ...state,
+        datasets: [
+          ...state.datasets,
+          {
+            ...action.payload,
+            hidden: false,
+            selectedRange: {
+              minValue: 0,
+              maxValue: 0
+            },
+            filter: {
+              minValue: 0,
+              maxValue: 0
+            }
           }
-        }]
+        ]
       };
     case 'SELECT_SINGLE':
       if (JSON.stringify(state.selected) === JSON.stringify(action.payload?.properties)) {
@@ -138,9 +175,7 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
         return { ...state, selected: action.payload?.properties, multiselect: [] };
       }
     case 'TOGGLE_MULTISELECT':
-      const multiselect = state.multiselect.some(
-        (item: any) => item.properties.id === action.payload.properties.id
-      )
+      const multiselect = state.multiselect.some((item: any) => item.properties.id === action.payload.properties.id)
         ? state.multiselect.filter((item: any) => item.properties.id !== action.payload.properties.id)
         : [...state.multiselect, action.payload];
       return { ...state, multiselect, selected: null };

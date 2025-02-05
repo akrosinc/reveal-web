@@ -10,10 +10,7 @@ import ItemMenu from './ItemMenu';
 
 import styles from '../accordion/Accordion.module.css';
 import DatasetStyles from './DatasetsAccordion.module.css';
-import {
-  DataSetList,
-  updateDataset
-} from '../../../planSimulation/components/SimulationMapView/api/datasetsAPI';
+import { DataSetList, updateDataset } from '../../../planSimulation/components/SimulationMapView/api/datasetsAPI';
 import { usePolygonContext } from '../../../../contexts/PolygonContext';
 interface DatasetsAccordionProps {
   open?: boolean;
@@ -22,24 +19,31 @@ interface DatasetsAccordionProps {
   removeDatasetHandler: (datasetId: string) => void;
 }
 
-function DatasetsAccordion({ open = false, dataset, updateDatasetHandler, removeDatasetHandler }: DatasetsAccordionProps) {
-
+function DatasetsAccordion({
+  open = false,
+  dataset,
+  updateDatasetHandler,
+  removeDatasetHandler
+}: DatasetsAccordionProps) {
   const [range, setRange] = useState({ min: dataset.filter?.minValue, max: dataset.filter?.maxValue });
-  const [currentRange, setCurrentRange] = useState({ min: dataset.selectedRange?.minValue, max: dataset.selectedRange?.minValue });
-
+  const [currentRange, setCurrentRange] = useState({
+    min: dataset.selectedRange?.minValue,
+    max: dataset.selectedRange?.minValue
+  });
 
   const [isOpen, setOpen] = useState(open);
   const [showModal, setShowModal] = useState(false);
 
   const [customColor, setCustomColor] = useColor('hex', dataset.hexColor);
-  const [value, setValue] = useState(50);
+  // SLIDER
+  const [opacitySliderValue, setOpacitySliderValue] = useState(100);
 
-  const [borderColor, setBorderColor] = useColor('hex', '#00FF00');
+  const [borderColor, setBorderColor] = useColor('hex', dataset?.borderColor);
   const [borderValue, setBorderValue] = useState(dataset.lineWidth);
 
   const [checked, setChecked] = useState(false);
 
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const [edit, setEdit] = useState(false);
 
   const [datasetName, setDatasetName] = useState(dataset.name);
@@ -58,7 +62,8 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler, remove
   const handleRangeChange = (minValue: number, maxValue: number) => {
     setCurrentRange({ min: minValue, max: maxValue });
     dispatch({
-      type: 'UPDATE_DATASET_FILTER', payload: {
+      type: 'UPDATE_DATASET_FILTER',
+      payload: {
         datasetId: dataset.identifier,
         filter: {
           minValue,
@@ -75,7 +80,8 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler, remove
         datasetId: dataset.identifier,
         name: tempName,
         hexColor: customColor.hex,
-        lineWidth: borderValue
+        lineWidth: borderValue,
+        borderColor: borderColor.hex
       });
       updateDatasetHandler(UpdatedSimulation.datasets);
     } catch (error) {
@@ -110,7 +116,8 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler, remove
     setChecked(!checked);
     setCurrentRange(range);
     dispatch({
-      type: 'UPDATE_DATASET_FILTER', payload: {
+      type: 'UPDATE_DATASET_FILTER',
+      payload: {
         datasetId: dataset.identifier,
         filter: {
           minValue: range.min,
@@ -118,7 +125,20 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler, remove
         }
       }
     });
-  }
+  };
+
+  const handleDatasetSliderValue = (newOpacity: number) => {
+    setOpacitySliderValue(newOpacity);
+
+    console.log(newOpacity);
+
+    dispatch({
+      type: 'UPDATE_DATASET_OPACITY',
+      payload: {
+        [dataset.identifier]: newOpacity
+      }
+    });
+  };
 
   useEffect(() => {
     setIsVisible(dataset.hidden);
@@ -142,12 +162,15 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler, remove
         <ItemMenu
           direction="left"
           isVisible={isVisible}
-          onToggleVisibility={() => dispatch({
-            type: 'TOGGLE_DATASET_VISIBILITY', payload: {
-              ...dataset,
-              hidden: !isVisible
-            }
-          })}
+          onToggleVisibility={() =>
+            dispatch({
+              type: 'TOGGLE_DATASET_VISIBILITY',
+              payload: {
+                ...dataset,
+                hidden: !isVisible
+              }
+            })
+          }
           onEdit={() => {
             setEdit(!edit);
           }}
@@ -173,8 +196,8 @@ function DatasetsAccordion({ open = false, dataset, updateDatasetHandler, remove
                   <RangeInput
                     min={0}
                     max={100}
-                    value={value}
-                    onChange={setValue}
+                    value={opacitySliderValue}
+                    onChange={handleDatasetSliderValue}
                     label="Opacity"
                     trackColor={customColor.hex}
                     thumbColor={customColor.hex}

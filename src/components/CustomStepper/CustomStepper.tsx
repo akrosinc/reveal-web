@@ -7,9 +7,17 @@ interface CustomStepperProps {
   stepperHeader?: string;
   onFinish?: { label: string; onClick: () => void };
   onClose?: () => void;
+  validation?: boolean;
 }
 
-function CustomStepper({ children, stepLabels, stepperHeader, onClose, onFinish }: CustomStepperProps) {
+function CustomStepper({
+  children,
+  stepLabels,
+  stepperHeader,
+  onClose,
+  onFinish,
+  validation = false
+}: CustomStepperProps) {
   const [activeStep, setActiveStep] = useState(0);
 
   const sections = React.Children.toArray(children).filter(
@@ -88,7 +96,8 @@ function CustomStepper({ children, stepLabels, stepperHeader, onClose, onFinish 
             <button
               className={`${styles.controlButton} ${styles.nextButton}`}
               onClick={goToNextStep}
-              disabled={activeStep === totalSteps - 1}
+              disabled={!validation}
+              style={{ opacity: validation ? 1 : 0.5, pointerEvents: validation ? 'auto' : 'none' }}
             >
               Next
             </button>

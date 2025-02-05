@@ -4,7 +4,7 @@ interface SwitchButtonProps {
   title: string;
   isOn: boolean;
   id: string;
-  handleToggle: () => void;
+  handleToggle: (e: any) => void;
   colorOne?: string;
   colorTwo?: string;
 }

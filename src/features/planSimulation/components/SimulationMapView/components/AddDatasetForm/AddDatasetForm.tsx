@@ -29,12 +29,22 @@ function AddDatasetForm({
     parentLocationId: selectedLocationId || state.admin0LocationId
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [validation, setValidation] = useState(false);
+
+  useEffect(() => {
+    setValidation(!!formValue.tagId);
+  }, [formValue]);
 
   useEffect(() => {
     const fetchEntityTags = async () => {
       try {
         const res = await getEntityTags();
-        setEntityTags(res.entityTagResponses);
+
+        const filteredEntityTags = res.entityTagResponses.filter(
+          (resTag: any) => !state.datasets.some((stateTag: any) => stateTag.name === resTag.tag)
+        );
+
+        setEntityTags(filteredEntityTags);
       } catch (error) {
         console.error('Failed to fetch entity tags:', error);
       } finally {
@@ -72,9 +82,10 @@ function AddDatasetForm({
         label: 'Add Dataset',
         onClick: handleFinish
       }}
+      validation={validation}
     >
       <section className={styles.step}>
-        <p className={styles.stepParagraph}>
+        {/* <p className={styles.stepParagraph}>
           Make sure you upload a JSON file. You can dowload JSON sample link{' '}
           <span className={styles.downloadTemplate}>here</span>
         </p>
@@ -86,7 +97,7 @@ function AddDatasetForm({
         //   }));
         // }}
         />
-        <p className={styles.stepParagraph}>or</p>
+        <p className={styles.stepParagraph}>or</p> */}
         {isLoading ? (
           <p>Loading options...</p>
         ) : (

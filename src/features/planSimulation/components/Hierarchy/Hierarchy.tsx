@@ -32,22 +32,6 @@ function Hierarchy({ clickHandler }: HierarchyProps) {
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  // const toggleExpanded = (id: string) => {
-  //   const updateIsOpen = (items: HierarchyItemProps[]): HierarchyItemProps[] => {
-  //     return items.map(item => {
-  //       if (item.identifier === id) {
-  //         return { ...item, isOpen: !item.isOpen };
-  //       }
-  //       if (item.children) {
-  //         return { ...item, children: updateIsOpen(item.children) };
-  //       }
-  //       return item;
-  //     });
-  //   };
-
-  //   setFilteredData(prevData => updateIsOpen(prevData));
-  // };
-
   const toggleExpanded = (id: string) => {
     const updateIsOpen = (items: HierarchyItemProps[]): HierarchyItemProps[] => {
       return items.map(item => {

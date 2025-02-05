@@ -7,10 +7,10 @@ interface AccordionProps {
   children: React.ReactNode;
   open?: boolean;
   parent?: boolean;
-  removeBorderBottom?: boolean;
+  customTitle?: React.ReactNode;
 }
 
-function Accordion({ title, open = false, children, parent = true, removeBorderBottom = false }: AccordionProps) {
+function Accordion({ title, open = false, children, parent = true, customTitle }: AccordionProps) {
   const [isOpen, setOpen] = useState(open);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ function Accordion({ title, open = false, children, parent = true, removeBorderB
         }}
         style={{ position: 'relative' }}
       >
-        <span>{title}</span>
+        {customTitle ? customTitle : <span>{title}</span>}
         <FontAwesomeIcon
           style={{ width: '0.9rem', height: '0.9rem' }}
           className={styles.icon}

@@ -126,10 +126,6 @@ export const initSimulationMap = (
       }
     });
 
-    // mapboxInstance.on('mouseover', 'draw-layer', e => {
-    //   console.log(e);
-    // });
-
     let initParentData: PlanningParentLocationResponse = {
       features: [],
       type: 'FeatureCollection',
