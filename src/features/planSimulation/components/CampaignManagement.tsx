@@ -588,6 +588,8 @@ const CampaignManagement = () => {
     remove: handleRemoveTargetArea
   };
 
+  console.log(selectedLocationChildren, 'selectedLocationChildren');
+
   return (
     <>
       <Container fluid ref={divRef}>

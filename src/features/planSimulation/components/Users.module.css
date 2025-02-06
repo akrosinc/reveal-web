@@ -1,185 +1,179 @@
 .modalContainer {
-    display: flex;
-    flex-direction: row;
-    height: 500px;
-  }
-  
-  .sidebar {
-    width: 200px;
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-right: 1px solid #dee2e6;
-  }
-  
-  .sidebarButton {
-    display: block;
-    width: 100%;
-    background: none;
-    border: none;
-    text-align: left;
-    padding: 10px;
-    font-weight: 500;
-    cursor: pointer;
-    color: #333;
-  }
-  
-  .sidebarButton.active {
-    background-color: #e9ecef;
-  }
-  
-  .content {
-    flex-grow: 1;
-    padding: 20px;
-  }
-  
-  .formContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-  }
-  
-  .avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background-color: blue;
-    margin-bottom: 20px;
-  }
-  
-  .formGroup {
-    width: 100%;
-    margin-bottom: 40px;
-  }
-  
-  .formButtons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    gap: 10px;
+  display: flex;
+  flex-direction: row;
+  height: 500px;
+}
 
-    
-  }
-  .fullForm{
-    width: 100%;
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    padding: 20px;
-   
-  }
-  
-  .buttonPrimary {
-    background-color: #254c8b;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .buttonSecondary {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
+.sidebar {
+  width: 200px;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-right: 1px solid #dee2e6;
+}
 
-  .buttonContainer{
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-    gap: 20px;
-  }
-  
-  .sidebarNav{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background-color: white;
-    border-right: #d4d1d1;
-    border-right-width: 1px;
-    border-right-style: solid;
-    height: 100%;
-    min-height: 420px;
-    
-   
+.sidebarButton {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #333;
+}
 
-   
-  }
+.sidebarButton.active {
+  background-color: #e9ecef;
+}
 
-  .modal-dialog {
-    min-height: 400px; 
-  }
+.content {
+  flex-grow: 1;
+  padding: 20px;
+}
 
-  .modal-content {
-    height: 100%;
-  }
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
 
-  .modalFull{
-    width: 100%;
-    min-height: 400px;
-  }
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: blue;
+  margin-bottom: 20px;
+}
 
-  .title{
-    font-size: 20px;
-    font-weight: 500;
-    margin-bottom: 20px;
-  }
+.formGroup {
+  width: 100%;
+  margin-bottom: 40px;
+}
 
+.formButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 10px;
+}
+.fullForm {
+  width: 100%;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+}
 
- 
+.buttonPrimary {
+  background-color: #254c8b;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
-  
+.buttonSecondary {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
-  .manageTeams{
-    display: flex;
-  }
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 20px;
+}
 
-  .settings{
-    display: flex;
-  }
-  .navsettingItemMenu{
-    display: flex;
-    align-items: center; 
-    gap: 8px;
-    color: black !important;
-    font-size: 17px;
-    white-space: nowrap;
-    
-  }
-  .settingIcon{
-    position: relative;
-    width:20px;
-    height:16px;
-    margin-right: 10px;
-    font-size: 16px;
-  }
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: white;
+  border-right: #d4d1d1;
+  border-right-width: 1px;
+  border-right-style: solid;
+  height: 100%;
+  min-height: 420px;
+}
 
-  .manageItemMenu{
-    display: flex;
-    align-items: center; 
-    gap: 8px;
-    color: black !important;
-    font-size: 17px;
-    white-space: nowrap;
-  }
+.modal-dialog {
+  min-height: 400px;
+}
 
-  .manageIcon{
-    position: relative;
-    width:20px;
-    height:16px;
-    margin-right: 10px;
-    font-size: 16px;
-  }
+.modal-content {
+  height: 100%;
+}
 
+.modalFull {
+  width: 100%;
+  min-height: 400px;
+}
 
+.title {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
 
+.settings {
+  display: flex;
+}
+.navsettingItemMenu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: black !important;
+  font-size: 17px;
+  white-space: nowrap;
+}
+.settingIcon {
+  position: relative;
+  width: 20px;
+  height: 16px;
+  margin-right: 10px;
+  font-size: 16px;
+}
 
+.manageIcon {
+  position: relative;
+  width: 20px;
+  height: 16px;
+  margin-right: 10px;
+  font-size: 16px;
+}
 
+.manageItemMenu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: black !important;
+  font-size: 17px;
+  white-space: nowrap;
+  transition: background-color 0.3s, color 0.3s;
+}
 
+.manageTeams {
+  display: flex;
+  width: 100%;
+  color: black;
+}
+
+.manageItemMenu:hover {
+  background-color: #007bff !important;
+  color: white !important;
+}
+
+.manageItemMenu.active {
+  background-color: #007bff;
+  color: white !important;
+}
 
 .viewIcon {
   position: relative;
@@ -189,17 +183,15 @@
   font-size: 16px;
 }
 
-
 .viewItemMenu {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: black !important; 
+  color: black !important;
   font-size: 17px;
   white-space: nowrap;
-  transition: background-color 0.3s, color 0.3s; 
+  transition: background-color 0.3s, color 0.3s;
 }
-
 
 .viewUsers {
   display: flex;
@@ -207,26 +199,15 @@
   color: black;
 }
 
-
 .viewItemMenu:hover {
-  background-color: #007bff !important; 
-  color: white !important; 
+  background-color: #007bff !important;
+  color: white !important;
 }
-
 
 .viewItemMenu.active {
-  background-color: #007bff; 
-  color: white !important; 
+  background-color: #007bff;
+  color: white !important;
 }
-
-
-
-
-
-
-
-
-
 
 .userIcon {
   position: relative;
@@ -236,17 +217,15 @@
   font-size: 17px;
 }
 
-
 .userItemMenu {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: black !important; 
+  color: black !important;
   font-size: 17px;
   white-space: nowrap;
-  transition: background-color 0.3s, color 0.3s; 
+  transition: background-color 0.3s, color 0.3s;
 }
-
 
 .userPlus {
   display: flex;
@@ -254,198 +233,192 @@
   color: black;
 }
 
-
 .userItemMenu:hover {
-  background-color: #007bff;
-  color: white !important; 
+  background-color: #007bff !important;
+  color: white !important;
 }
 
-.userIcon:hover{
-  color: white !important; 
+.userIcon:hover {
+  color: white !important;
 }
 
 .userItemMenu.active {
-  background-color: #007bff; 
-  color: white !important; 
+  background-color: #007bff;
+  color: white !important;
 }
 
+.searchContainer {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
 
+.bodyClass {
+  height: 100%;
+  background-color: #f9fafb;
+  /* background-color: red; */
+  padding-left: 10px;
+  padding-top: 0 !important;
+  padding-bottom: 0;
+}
 
+.contentArea {
+  padding: 20px;
+}
 
+.dropDown {
+  margin-bottom: 16px;
+}
 
+.columnField {
+  margin-top: 5px;
+}
 
+.userColumn {
+  border: 1px solid #dee2e6;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 350px;
+  padding: 10px;
+}
 
-  .bodyClass{
-    height: 100%;
-    background-color: #F9FAFB;
-    /* background-color: red; */
-    padding-left: 10px;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
+.arrowClass {
+  text-align: center;
+  margin-top: 80px;
+}
 
-  .contentArea{
-   
-    padding: 20px;
-  }
+.openModalButton {
+  background-color: white !important;
+  color: black !important;
+  border: 1px solid black; /* Optional: adds a border */
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 200px;
+  transition: background 0.3s ease !important;
+}
 
- 
-  .dropDown{
-    margin-bottom: 16px;
-    
-  }
+.userColumn {
+  border: 1px solid #dee2e6;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 350px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  .columnField{
+.columnHeader {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 5px 0;
+  border-bottom: 2px solid #dee2e6;
+}
 
-  }
+.userList {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
 
-  .userColumn{
-    border: 1px solid #dee2e6;
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    min-height: 350px;
-    padding: 10px;
-    
-  }
+.userItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
 
-  .arrowClass{
-    text-align: center;
-    margin-top: 80px;
-  }
+.userItem:hover {
+  background-color: #f8f9fa;
+}
 
-  .openModalButton{
-    background-color: white !important;
-    color: black !important;
-    border: 1px solid black; /* Optional: adds a border */
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 200px;
-    transition: background 0.3s ease !important;
-  }
+.selected {
+  background-color: #e9ecef;
+  font-weight: bold;
+}
 
-  .userColumn {
-    border: 1px solid #dee2e6;
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    min-height: 350px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .columnHeader {
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 5px 0;
-    border-bottom: 2px solid #dee2e6;
-  }
-  
-  .userList {
-    list-style: none;
-    padding: 0;
-    width: 100%;
-  }
-  
-  .userItem {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .userItem:hover {
-    background-color: #f8f9fa;
-  }
-  
-  .selected {
-    background-color: #e9ecef;
-    font-weight: bold;
-  }
-  
-  .userIcon {
-    font-size: 16px;
-    color: #555;
-  }
+.userIcon {
+  font-size: 16px;
+  color: #555;
+}
 
-  .arrowClass {
-    display: flex !important;
-    flex-direction: column !important;
-   
-    align-items: center !important; 
-    justify-content: center !important; 
-    height: 100%;
-    margin-top: 100px !important;
-    
-  }
-  
+.arrowClass {
+  display: flex !important;
+  flex-direction: column !important;
 
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100%;
+  margin-top: 100px !important;
+}
 
+.viewUserContainer {
+  margin-top: 20px;
+  padding-left: 10px;
+}
 
-  .viewUserContainer {
-    margin-top: 20px;
-    padding-left: 10px;
-  }
-  
-  .usersSection, .teamsSection {
-    border: 1px solid #dee2e6;
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    min-height: 350px;
-    padding: 10px;
-    padding-left: 20px;
-  }
-  
-  .sectionHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #ddd;
-    text-align: center;
-  }
-  
-  .controls {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .controlIcon {
-    cursor: pointer;
-    color: #555;
-  }
-  
-  .usersList, .teamsList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .userEntry, .teamEntry {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .userEntry:hover, .teamEntry:hover {
-    background-color: #f8f9fa;
-  }
-  
-  .activeEntry {
-    background-color: #e9ecef;
-    font-weight: bold;
-  }
-  
-  .userAvatar, .teamAvatar {
-    margin-right: 10px;
-    color: #007bff;
-  }
-  
+.usersSection,
+.teamsSection {
+  border: 1px solid #dee2e6;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 350px;
+  padding: 10px;
+  padding-left: 20px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ddd;
+  text-align: center;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+.controlIcon {
+  cursor: pointer;
+  color: #555;
+}
+
+.usersList,
+.teamsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.userEntry,
+.teamEntry {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.userEntry:hover,
+.teamEntry:hover {
+  background-color: #f8f9fa;
+}
+
+.activeEntry {
+  background-color: #e9ecef;
+  font-weight: bold;
+}
+
+.userAvatar,
+.teamAvatar {
+  margin-right: 10px;
+  color: #007bff;
+}
