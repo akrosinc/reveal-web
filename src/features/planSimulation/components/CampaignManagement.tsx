@@ -1,5 +1,5 @@
 import { re } from 'mathjs';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, Col, Container, Form, Modal, Row } from 'react-bootstrap';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
@@ -15,7 +15,12 @@ import style from './CampaignManagement.module.css';
 import { bbox, Geometry, polygon } from '@turf/turf';
 import { LngLatBounds, Map as MapBoxMap } from 'mapbox-gl';
 
-import { getHierarchy, getHierarchyPolygon, getPlanInfo } from './SimulationMapView/api/hierarchyAPI';
+import {
+  getDefaultHierarchyData,
+  getHierarchy,
+  getHierarchyPolygon,
+  getPlanInfo
+} from './SimulationMapView/api/hierarchyAPI';
 import Hierarchy from './Hierarchy/Hierarchy';
 import SimulationMapView from './SimulationMapView/SimulationMapView';
 import { Color } from 'react-color-palette';
@@ -59,6 +64,8 @@ import {
   getSimulationData,
   LocationData
 } from './SimulationMapView/api/datasetsAPI';
+import { toast } from 'react-toastify';
+import { assignLocationsToPlan } from '../../assignment/api';
 
 export interface Stats {
   [key: string]: Metadata;
@@ -143,46 +150,137 @@ const CampaignManagement = () => {
       dispatch({ type: 'SET_NEW_DATASETS', payload: simulationData.datasets });
       dispatch({ type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
       dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+      console.log(state.simulationId);
     } catch (error) {
       console.error('Failed to fetch simulation:', error);
     }
   };
 
-  const checkifChildrenLoaded = (polygonsWithData: any, selectedLocationId: any) => {
-    if (polygonsWithData?.[selectedLocationId]?.childrenLoaded === undefined) {
-      return true;
-    } else if (polygonsWithData?.[selectedLocationId]?.childrenLoaded === true) {
-      return false;
-    } else {
-      return true;
+  const fetchDefaultHierarchyData = async () => {
+    const hierarchyData = await getDefaultHierarchyData();
+    try {
+      dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: hierarchyData });
+    } catch (error) {
+      console.error('Failed to fetch hierarchy data:', error);
     }
   };
 
-  const handleAddDataset = (datasetResponse: AddDatasetResponse) => {
-    const dataset = {
-      identifier: datasetResponse.datasetId,
-      name: datasetResponse.datasetName,
-      hexColor: datasetResponse.hexColor,
-      lineWidth: datasetResponse.lineWidth
-    };
+  useMemo(() => {
+    setDatasetList(state.datasets);
+  }, [state.datasets]);
 
-    dispatch({ type: 'ADD_DATASET', payload: dataset });
-
-    //! LOOP LOCATIONS WITH METADA AND ATTACH DATASET DATA TO LOADED POLYGONS
-    setPolygonsWithData((prev: any) => {
-      const updatedPolygons = { ...prev };
-
-      Object.entries(datasetResponse.locationWithMetadata).forEach(([locationId, metadata]) => {
-        if (updatedPolygons[locationId]) {
-          const existingMetadata = updatedPolygons[locationId].polygonData.properties.metadata || [];
-          updatedPolygons[locationId].polygonData.properties.metadata = Array.from(
-            new Set([...existingMetadata, metadata])
-          );
+  // we are updating selectedLocationChildren whenever an assignment happens,
+  // because assigned flag on these locations is not updated (it is still the one we got on location fetch)
+  useEffect(() => {
+    setSelectedLocationChildren(prev =>
+      prev.map(obj => ({
+        ...obj,
+        properties: {
+          ...obj.properties,
+          assigned: state.assingedLocations[obj.identifier]
         }
-      });
-      return updatedPolygons;
-    });
-  };
+      }))
+    );
+  }, [state.assingedLocations]);
+
+  useEffect(() => {
+    if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
+      const children = Object.values(polygonsWithData)
+        .map((polygon: any) => polygon.polygonData)
+        .filter((polygon: any) => polygon.properties.parentIdentifier === currentLocationId);
+
+      setSelectedLocationChildren(children);
+
+      // when locations loaded, we are setting their assigned flag values as default values in assignment map
+      // this way, state.assignedLocations is our single source of truth
+      const assignedMap = children.reduce(
+        (map, obj) => {
+          return {
+            ...map,
+            [obj.identifier]: map[obj.identifier] ?? obj.properties.assigned
+          };
+        },
+        { ...state.assingedLocations }
+      );
+      dispatch({ type: 'SET_ASSIGNED', payload: assignedMap });
+
+      const selectedLocation = polygonsWithData[currentLocationId].polygonData;
+
+      if (selectedLocation) {
+        setGeometry(selectedLocation);
+        setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
+        const populationData = transformPopulationData(selectedLocation?.properties?.population);
+        if (populationData !== null) {
+          setChartData(populationData.chartData);
+          setLabels(populationData.labels);
+          setTotals(populationData.totals);
+        }
+      }
+    }
+  }, [currentLocationId, polygonsWithData]);
+
+  useEffect(() => {
+    let populationData: any;
+    if (state.selected) {
+      populationData = transformPopulationData(JSON.parse(state.selected.population));
+      if (populationData !== null) {
+        setChartData(populationData.chartData);
+        setLabels(populationData.labels);
+        setTotals(populationData.totals);
+      }
+    } else if (!state.selected && currentLocationId) {
+      const selectedLocation = polygonsWithData[currentLocationId].polygonData;
+      const populationData = transformPopulationData(selectedLocation?.properties?.population);
+      if (populationData !== null) {
+        setChartData(populationData.chartData);
+        setLabels(populationData.labels);
+        setTotals(populationData.totals);
+      }
+    }
+  }, [state.selected]);
+
+  useEffect(() => {
+    fetchHierarchy();
+    fetchSimulationAndData();
+    fetchDefaultHierarchyData();
+    console.log(state);
+  }, []);
+
+  // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+  useEffect(() => {
+    Promise.all([
+      getLocationHierarchyList(50, 0, true),
+      getEntityList(),
+      getGeneratedLocationHierarchyList()
+      // getComplexTagReponses()
+    ])
+      .then(([locationHierarchyList, entityList, generatedHierarchyList]) => {
+        let generatedHierarchyItems = generatedHierarchyList?.map(generatedHierarchy => {
+          return {
+            identifier: generatedHierarchy.identifier,
+            name: generatedHierarchy.name,
+            nodeOrder: generatedHierarchy.nodeOrder,
+            type: HierarchyType.GENERATED
+          };
+        });
+
+        let list = locationHierarchyList?.content.map(savedHierarchy => {
+          return {
+            identifier: savedHierarchy.identifier,
+            name: savedHierarchy.name,
+            nodeOrder: savedHierarchy.nodeOrder,
+            type: HierarchyType.SAVED
+          };
+        });
+
+        let combinedList = list.concat(generatedHierarchyItems);
+        setCombinedHierarchyList(combinedList);
+
+        // setComplexTags(complexTagResponses);
+      })
+      .catch(err => toast.error(err));
+  }, []);
 
   const updateMarkedLocations = (identifier: string, ancestry: string[] | undefined, marked: boolean) => {
     setMarkedLocations(markedLocations => {
@@ -209,6 +307,148 @@ const CampaignManagement = () => {
       return newMarkedLocations;
     });
   };
+
+  useEffect(() => {
+    if (markedLocations.length > 0) {
+      let newMarkedParents = new Set<string>();
+      markedLocations.forEach(markedLocation => {
+        markedLocation.ancestry?.forEach(ancestor => {
+          if (ancestor !== markedLocation.identifier) {
+            newMarkedParents.add(ancestor);
+          }
+        });
+      });
+    }
+  }, [markedLocations]);
+
+  const updateParentAsHasResultOrIsResult = (
+    parent: RevealFeature,
+    lowestLocation: RevealFeature,
+    mapDataClone: PlanningLocationResponseTagged
+  ) => {
+    if (parent.children) {
+      if (!parent.children.map((locationChild: any) => locationChild.identifier).includes(lowestLocation.identifier)) {
+        parent.children.push(lowestLocation);
+      }
+    } else {
+      parent.children = [];
+      parent.children.push(lowestLocation);
+      if (parent.properties != null) {
+        if (parent.identifier) {
+          parent.properties.result = mapDataClone?.features[parent.identifier] != null;
+        }
+      }
+    }
+    if (parent.properties != null) {
+      if (
+        !parent.properties.hasOwnProperty('hasResultChild') ||
+        (parent.properties.hasOwnProperty('hasResultChild') && !parent.properties.hasResultChild)
+      ) {
+        if (lowestLocation.properties != null) {
+          parent.properties.hasResultChild = !!(
+            mapDataClone?.features[lowestLocation.properties.identifier] != null ||
+            lowestLocation.properties?.hasResultChild ||
+            lowestLocation.properties?.result
+          );
+        }
+      }
+
+      if (
+        !parent.properties.hasOwnProperty('hasMarkedChild') ||
+        (parent.properties.hasOwnProperty('hasMarkedChild') && !parent.properties.hasMarkedChild)
+      ) {
+        if (lowestLocation.properties != null) {
+          parent.properties.hasMarkedChild = !!(
+            lowestLocation.properties?.mark || lowestLocation.properties?.hasMarkedChild
+          );
+        }
+      }
+    }
+  };
+
+  const getLocationHierarchyFromLowestLocation = useCallback(
+    (lowestLocation: RevealFeature, mapDataClone: PlanningLocationResponseTagged) => {
+      let parent: RevealFeature = mapDataClone?.parents[lowestLocation.properties?.parent];
+
+      if (parent) {
+        updateParentAsHasResultOrIsResult(parent, lowestLocation, mapDataClone);
+        setParentChild(newParentChild => {
+          if (lowestLocation?.identifier) {
+            if (parent.identifier) {
+              if (newParentChild[parent.identifier] && newParentChild[parent.identifier].childrenList.length > 0) {
+                if (!newParentChild[parent.identifier].childrenList.includes(lowestLocation?.identifier)) {
+                  newParentChild[parent.identifier].childrenList.push(lowestLocation?.identifier);
+                }
+              } else {
+                newParentChild[parent.identifier] = {
+                  level: lowestLocation.properties?.geographicLevel,
+                  childrenList: [lowestLocation.identifier]
+                };
+              }
+              newParentChild[parent.identifier].level = lowestLocation.properties?.geographicLevel;
+            }
+          }
+          return newParentChild;
+        });
+        getLocationHierarchyFromLowestLocation(parent, mapDataClone);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (mapData && mapData?.features && Object.keys(mapData?.features).length > 0) {
+      let max = Number.MIN_VALUE;
+
+      if (max != null) {
+        Object.keys(mapData?.features).forEach(key => {
+          if (mapData?.features[key]?.properties?.geographicLevelNodeNumber > max) {
+            max = mapData?.features[key]?.properties?.geographicLevelNodeNumber;
+          }
+        });
+
+        let lowestLocations: RevealFeature[] = Object.keys(mapData.features)
+          .filter(key => mapData.features[key].properties?.geographicLevelNodeNumber === max)
+          .map(key => {
+            return mapData.features[key];
+          })
+          .map((val: RevealFeature) => {
+            if (val.properties != null) {
+              val.properties.result = true;
+            }
+            return val;
+          });
+
+        if (!mapData.source || mapData.source !== 'uploadHandler') {
+          lowestLocations.forEach(lowestLocation => {
+            getLocationHierarchyFromLowestLocation(lowestLocation, mapData);
+          });
+        }
+      }
+
+      let min = Number.MAX_VALUE;
+
+      if (min !== null) {
+        Object.keys(mapData?.parents).forEach(key => {
+          if (mapData?.parents[key]?.properties?.geographicLevelNodeNumber < min) {
+            min = mapData?.parents[key]?.properties?.geographicLevelNodeNumber;
+          }
+        });
+
+        // if (mapData.parents) {
+        //   let highestLocations: any[] = Object.keys(mapData.parents)
+        //     .filter(
+        //       key =>
+        //         mapData.parents[key].properties !== null &&
+        //         mapData.parents[key].properties?.geographicLevelNodeNumber === min
+        //     )
+        //     .map(key => mapData.parents[key]);
+        //   // setHighestLocations(highestLocations);
+        // }
+      }
+    }
+  }, [mapData, getLocationHierarchyFromLowestLocation, markedLocations]);
+
   const fetchHierarchy = async () => {
     const hierarchyData = await getHierarchy();
     try {
@@ -221,40 +461,21 @@ const CampaignManagement = () => {
   const fetchPlanInfo = async () => {
     try {
       const planInfo = await getPlanInfo();
+      dispatch({ type: 'SET_PLANID', payload: planInfo.identifier });
       return planInfo.identifier;
     } catch (error) {
       console.error('Failed to fetch plan info:', error);
     }
   };
-  const clearSomeHandler = () => {
-    setAnalysisLayerDetails([]);
-    setShowResult(false);
-    setMapData(undefined);
-    setToLocation(undefined);
-    setResetMap(true);
-    setParentMapData(undefined);
-    setParentsLoadingState('notstarted');
-    setResultsLoadingState('notstarted');
-    setHighestLocations(undefined);
-    setStatsLayerMetadata({});
-    setAnalysisResultEntityTags(undefined);
-    setSelectedMapData(undefined);
-    setSummary({});
-    setAggregationSummary({});
-    setAggregationSummaryDefinition({});
-    levelsLoaded.current = [];
-  };
 
-  const updateDatasetHandler = async (newDatasetList: string) => {
-    dispatch({ type: 'SET_DATASET', payload: newDatasetList });
-  };
-
-  const removeDatasetHandler = async (datasetId: string) => {
-    deleteDataset({
-      simulationId: state.simulationId,
-      datasetId
-    });
-    dispatch({ type: 'DELETE_DATASET', payload: datasetId });
+  const checkifChildrenLoaded = (polygonsWithData: any, selectedLocationId: any) => {
+    if (polygonsWithData?.[selectedLocationId]?.childrenLoaded === undefined) {
+      return true;
+    } else if (polygonsWithData?.[selectedLocationId]?.childrenLoaded === true) {
+      return false;
+    } else {
+      return true;
+    }
   };
 
   useEffect(() => {
@@ -281,14 +502,18 @@ const CampaignManagement = () => {
     } else {
       const includeGeometry: boolean = checkifChildrenLoaded(polygonsWithData, locationId);
 
-      let configObj: LocationData = {
-        datasetsIds: datasetList.map(dataset => dataset.identifier),
+      let configObj: any = {
+        datasetsIds: [],
         includeGeometry: includeGeometry,
         parentLocationId: locationId, //current location identifier
         simulationId: state.simulationId
       };
 
       const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
+      if (!polygonsWithDatasets || polygonsWithDatasets.length === 0) {
+        toast.error('Cannot get results. Please try again.');
+        return;
+      }
 
       if (includeGeometry) {
         setPolygonsWithData((prev: any) => {
@@ -305,81 +530,63 @@ const CampaignManagement = () => {
       } else {
         setPolygonsWithData((prev: any) => {
           const updatedPolygons = { ...prev };
-          polygonsWithDatasets.forEach((location: any) => {
-            updatedPolygons[location.identifier].polygonData.properties.metadata = location.properties.metadata;
-          });
+          // polygonsWithDatasets.forEach((location: any) => {
+          //   updatedPolygons[location.identifier].polygonData.properties.metadata = location.properties.metadata;
+          // });
 
           return updatedPolygons;
         });
       }
     }
   };
-  const campaignTotals = [
-    {
-      label: 'Target Areas',
-      total: state.targetAreas.length,
-      targetAreasList: state.targetAreas
+
+  const processChildren = useCallback(
+    (mapDataClone: any) => {
+      let geoLevel: string = mapDataClone.properties.geographicLevel;
+
+      if (!summary[geoLevel]) {
+        summary[geoLevel] = {};
+      }
+      summary[geoLevel][mapDataClone.identifier] = mapDataClone.properties;
+      summary[geoLevel][mapDataClone.identifier]['aggregates'] = mapDataClone.aggregates;
+      setSummary(summary);
+
+      if (mapDataClone.children) {
+        mapDataClone.children.forEach((child: any) => processChildren(child));
+      }
     },
-    {
-      label: 'Total Population',
-      total: Math.round(state.targetAreas?.reduce((a, b) => a + b?.properties?.population?.sum, 0)) || 0,
-      targetAreasList: state.targetAreas
-    },
-    {
-      label: 'Total Structures',
-      total: 200,
-      targetAreasList: [
-        {
-          name: 'Target Area 1',
-          sum: 50
-        },
-        {
-          name: 'Target Area 2',
-          sum: 100
-        },
-        {
-          name: 'Target Area 3',
-          sum: 50
-        }
-      ]
-    },
-    {
-      label: 'Total Facilities',
-      total: 50,
-      targetAreasList: [
-        {
-          name: 'Target Area 1',
-          sum: 10
-        },
-        {
-          name: 'Target Area 2',
-          sum: 20
-        },
-        {
-          name: 'Target Area 3',
-          sum: 20
-        }
-      ]
-    },
-    {
-      label: 'Total Statistics',
-      total: 100,
-      targetAreasList: [
-        {
-          name: 'Target Area 1',
-          sum: 20
-        },
-        {
-          name: 'Target Area 2',
-          sum: 30
-        },
-        {
-          name: 'Target Area 3',
-          sum: 50
-        }
-      ]
+    [summary]
+  );
+
+  useEffect(() => {
+    if (Object.keys(summary).length === 0) {
+      if (selectedMapData) {
+        processChildren(selectedMapData);
+      }
     }
-  ];
+  }, [selectedMapData, summary, processChildren]);
+
+  const handleRemoveTargetArea = (id: string) => {
+    const assignedAreas = state.targetAreas?.flatMap((ta: any) => [...ta.ancestry, ta.identifier]) || [];
+    const targetArea = state.targetAreas?.find(ta => ta.identifier === id);
+    const toExcludeSet = new Set([...targetArea.ancestry, id]);
+    const filtered = assignedAreas.filter(item => !toExcludeSet.has(item));
+    assignLocationsToPlan(state.planid, filtered).then(async () => {
+      // update assignment map
+      dispatch({ type: 'SET_ASSIGNED', payload: { ...state.assingedLocations, [id]: false } });
+      // refetch target areas, so the map updates
+      const simulationData = await getSimulationData(state.planid);
+      dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+      dispatch({ type: 'CLEAR_SELECTION' });
+    });
+  };
+
+  const campaignTotals = {
+    label: 'Target Areas',
+    total: state.targetAreas.length,
+    targetAreasList: state.targetAreas,
+    remove: handleRemoveTargetArea
+  };
 
   return (
     <>
@@ -387,17 +594,15 @@ const CampaignManagement = () => {
         <div style={{ display: 'flex', position: 'relative' }}>
           <Drawer open={leftOpen} anchor="left" heading="Campaign Manager">
             {/* {highestLocations && showResult && ( */}
-            {highestLocations &&
-              (console.log('highestLocations', highestLocations),
-              (
-                <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
-                  <Hierarchy clickHandler={loadLocationHandler} />
-                  <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Operational Area</DrawerButton>
-                  <CustomPopup isOpen={openCustomModal === 0} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
-                    <AddTargetAreaForm onClose={() => setOpenCustomModal(undefined)} />
-                  </CustomPopup>
-                </Accordion>
-              ))}
+            {highestLocations && (
+              <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
+                <Hierarchy clickHandler={loadLocationHandler} />
+                <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Operational Area</DrawerButton>
+                <CustomPopup isOpen={openCustomModal === 0} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
+                  <AddTargetAreaForm onClose={() => setOpenCustomModal(undefined)} />
+                </CustomPopup>
+              </Accordion>
+            )}
             {/* {highestLocations && showResult && ( */}
             <Accordion title="Teams" open>
               <Teams />
@@ -412,7 +617,6 @@ const CampaignManagement = () => {
           <SimulationMapView
             selectedLoaction={geometry} // BBBOX
             currentLocationChildren={selectedLocationChildren}
-            // polygons={extractPolygonsFromPolysWithData(polygonsWithData)} // LIST OF POLYGONS
             loading={resultsLoadingState}
             leftOpenHandler={() => setLeftOpen(!leftOpen)}
             leftOpenState={leftOpen}
@@ -437,24 +641,22 @@ const CampaignManagement = () => {
             parentChild={parentChild}
             analysisLayerDetails={analysisLayerDetails}
           />
-          <Drawer open={rightOpen} anchor="left">
-            <span
-              style={{
-                fontSize: '1.25rem',
-                fontWeight: '700',
-                padding: '1rem'
-              }}
-            >
-              Performance
-            </span>
-            <Accordion title="Targets" open>
-              <Target />
+          <Drawer open={rightOpen} anchor="left" heading="Performance">
+            <Accordion title="Statistics" open>
+              <Dashboard
+                polulationChart={false}
+                buildingsChart={false}
+                targetAreaChart={true}
+                chartLabels={labels}
+                chartData={chartData}
+                totals={totals}
+              />
             </Accordion>
-            {/* <Accordion title="Targets" open>
-              {campaignTotals.map((item, index) => (
-                <CampaignTotalsAccordion key={index} campaignTotals={item} />
-              ))}
-            </Accordion> */}
+            {campaignTotals.targetAreasList.length !== 0 && (
+              <Accordion title="Targets" open>
+                <Target targetAreas={campaignTotals} />
+              </Accordion>
+            )}
           </Drawer>
         </div>
       </Container>
@@ -463,3 +665,51 @@ const CampaignManagement = () => {
 };
 
 export default CampaignManagement;
+
+const transformPopulationData = (population: any) => {
+  const mergedPyramids = mergeAgeGroups(population?.Pyramids) || [];
+  if (!mergedPyramids || mergedPyramids.length === 0) {
+    return null;
+  }
+  const ageGroups = mergedPyramids.map((group: any) => group.AgeGroup.replace('_', '-'));
+  const summaryData = mergedPyramids.map((group: any) => Math.round(group.TotalPop));
+  const maleData = mergedPyramids.map((group: any) => Math.round(group.MalePop));
+  const femaleData = mergedPyramids.map((group: any) => Math.round(group.FemalePop));
+
+  return {
+    labels: ageGroups,
+    chartData: {
+      summary: summaryData,
+      male: maleData,
+      female: femaleData
+    },
+    totals: {
+      summary: Math.round(population.sum),
+      male: Math.round(population.male),
+      female: Math.round(population.female)
+    }
+  };
+};
+
+const mergeAgeGroups = (pyramids: any[]) => {
+  if (!pyramids || pyramids.length === 0) return [];
+  const mergedGroups: any[] = [];
+
+  for (let i = 0; i < pyramids.length; i += 2) {
+    const first = pyramids[i];
+    const second = pyramids[i + 1] || null;
+
+    const mergedGroup = {
+      AgeGroup: second
+        ? `${first.AgeGroup.split('_')[0]}-${second.AgeGroup.split('_')[1]}`
+        : first.AgeGroup.replace('_', '-'),
+      MalePop: Math.round(first.MalePop + (second?.MalePop || 0)),
+      FemalePop: Math.round(first.FemalePop + (second?.FemalePop || 0)),
+      TotalPop: Math.round(first.TotalPop + (second?.TotalPop || 0))
+    };
+
+    mergedGroups.push(mergedGroup);
+  }
+
+  return mergedGroups;
+};

@@ -380,13 +380,11 @@ const Simulation = () => {
         ...obj,
         properties: {
           ...obj.properties,
-          assigned: state.assingedLocations[obj.identifier],
-        },
+          assigned: state.assingedLocations[obj.identifier]
+        }
       }))
     );
   }, [state.assingedLocations]);
-
-
 
   useEffect(() => {
     if (
@@ -395,7 +393,6 @@ const Simulation = () => {
       polygonsWithData[currentLocationId] &&
       !showDatasetsAgainstParentLevel
     ) {
-
       const children = Object.values(polygonsWithData)
         .map((polygon: any) => polygon.polygonData)
         .filter((polygon: any) => polygon.properties.parentIdentifier === currentLocationId);
@@ -403,14 +400,17 @@ const Simulation = () => {
       setSelectedLocationChildren(children);
 
       // when locations loaded, we are setting their assigned flag values as default values in assignment map
-      // this way, state.assignedLocations is our single source of truth 
-      const assignedMap = children.reduce((map, obj) => {
-        return {
-          ...map,
-          [obj.identifier]: map[obj.identifier] ?? obj.properties.assigned,
-        };
-      }, { ...state.assingedLocations });
-      dispatch({ type: "SET_ASSIGNED", payload: assignedMap });
+      // this way, state.assignedLocations is our single source of truth
+      const assignedMap = children.reduce(
+        (map, obj) => {
+          return {
+            ...map,
+            [obj.identifier]: map[obj.identifier] ?? obj.properties.assigned
+          };
+        },
+        { ...state.assingedLocations }
+      );
+      dispatch({ type: 'SET_ASSIGNED', payload: assignedMap });
 
       const selectedLocation = polygonsWithData[currentLocationId].polygonData;
 
@@ -1355,6 +1355,11 @@ const Simulation = () => {
     }
   };
 
+  useEffect(() => {
+    fetchHierarchy();
+    fetchSimulationAndData();
+  }, []);
+
   //! LOADING POLYGONS ON DEMAND
   const loadLocationHandler = async (locationId: string) => {
     setShowDatasetsAgainstParentLevel(false);
@@ -1545,12 +1550,11 @@ const Simulation = () => {
     assignLocationsToPlan(state.planid, filtered).then(async () => {
       // update assignment map
       dispatch({ type: 'SET_ASSIGNED', payload: { ...state.assingedLocations, [id]: false } });
-      // refetch target areas, so the map updates 
+      // refetch target areas, so the map updates
       const simulationData = await getSimulationData(state.planid);
       dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
       dispatch({ type: 'CLEAR_SELECTION' });
-    })
-
+    });
   };
 
   const campaignTotals = [
@@ -1563,7 +1567,7 @@ const Simulation = () => {
     {
       label: 'Total Population',
       total: Math.round(state.targetAreas?.reduce((a, b) => a + b?.properties?.population?.sum, 0)) || 0,
-      targetAreasList: state.targetAreas,
+      targetAreasList: state.targetAreas
     },
     {
       label: 'Total Structures',
@@ -1670,7 +1674,6 @@ const Simulation = () => {
           <Drawer open={leftOpen} anchor="left" heading="Plan Simulation">
             {/* {highestLocations && showResult && ( */}
             {highestLocations && (
-               console.log("highestLocations", highestLocations),
               <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
                 <Hierarchy clickHandler={loadLocationHandler} />
                 <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Operational Area</DrawerButton>
@@ -1774,9 +1777,11 @@ const Simulation = () => {
             analysisLayerDetails={analysisLayerDetails}
           />
           <Drawer open={rightOpen} anchor="left">
-            <Accordion title="Statistics" open>
-              <Dashboard chartLabels={labels} chartData={chartData} totals={totals} />
-            </Accordion>
+            {Object.keys(chartData).length > 0 && (
+              <Accordion title="Statistics" open>
+                <Dashboard chartLabels={labels} chartData={chartData} totals={totals} />
+              </Accordion>
+            )}
             <Accordion title="Campaign Totals" open>
               {campaignTotals.map((item, index) => (
                 <CampaignTotalsAccordion key={index} campaignTotals={item} />
@@ -1843,21 +1848,6 @@ const Simulation = () => {
               )}
             </Col>
           </Row>
-          {/* <Row>
-            <Col>
-              {highestLocations && showResult && (
-                <SimulationResultExpandingTable
-                  clickHandler={loadLocationHandler}
-                  data={highestLocations}
-                  detailsClickHandler={showDetailsClickHandler}
-                  summaryClickHandler={summaryDetailsClickHandler}
-                  markedLocations={markedLocations}
-                  showOnlyMarkedLocations={showOnlyMarkedLocations}
-                  markedParents={markedParents}
-                />
-              )}
-            </Col>
-          </Row> */}
         </Container>
       </>
       {showModal && selectedEntity && (
