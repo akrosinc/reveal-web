@@ -599,10 +599,10 @@ const CampaignManagement = () => {
             {highestLocations && (
               <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
                 <Hierarchy clickHandler={loadLocationHandler} />
-                <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Operational Area</DrawerButton>
+                {/* <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Operational Area</DrawerButton>
                 <CustomPopup isOpen={openCustomModal === 0} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <AddTargetAreaForm onClose={() => setOpenCustomModal(undefined)} />
-                </CustomPopup>
+                </CustomPopup> */}
               </Accordion>
             )}
             {/* {highestLocations && showResult && ( */}
