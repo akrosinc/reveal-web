@@ -130,8 +130,6 @@ function DatasetsAccordion({
   const handleDatasetSliderValue = (newOpacity: number) => {
     setOpacitySliderValue(newOpacity);
 
-    console.log(newOpacity);
-
     dispatch({
       type: 'UPDATE_DATASET_OPACITY',
       payload: {

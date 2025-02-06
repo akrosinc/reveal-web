@@ -17,6 +17,9 @@
 .parrentAccordion {
   border-bottom: 1px solid #ddd;
 }
+.noBorder {
+  border-bottom: none !important;
+}
 .accordion_item.collapsed {
   max-height: 0;
   transition: max-height 0.35s cubic-bezier(0, 1, 0, 1);
