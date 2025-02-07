@@ -19,9 +19,11 @@ interface DashboardProps {
   polulationChart?: boolean;
   buildingsChart?: boolean;
   targetAreaChart?: boolean;
+  locationReport?: any;
 }
 
 function Dashboard({
+  locationReport,
   chartData,
   chartLabels,
   totals,
@@ -47,6 +49,13 @@ function Dashboard({
         setChartDataType('summary');
     }
   };
+
+  const generateChartData = [
+    { label: 'Complete', data: [locationReport.totalComplete], backgroundColor: '#008000' },
+    { label: 'Incomplete', data: [locationReport.totalIncomplete], backgroundColor: '#cd1c18' },
+    { label: 'Not Visited', data: [locationReport.totalNotVisited], backgroundColor: '#FFE066' }
+  ];
+  console.log(locationReport, 'locationReport');
 
   return (
     <section className={style.statisticsWrapper}>
@@ -87,11 +96,27 @@ function Dashboard({
           />
         </div>
       )}
-      {targetAreaChart && (
+      {targetAreaChart && Object.keys(locationReport).length > 0 && (
         <>
-          <StackedBarChart />
-          <GaugeChart value={68790} minValue={60000} maxValue={180000} label="Visitation coverage" color="#FF5733" />
-          <GaugeChart value={75000} minValue={0} maxValue={180000} label="Completion coverage" color="#4CAF50" />
+          <StackedBarChart
+            chartData={generateChartData}
+            max={locationReport.totalStructures}
+            title="Custom Chart Title"
+          />
+          <GaugeChart
+            value={locationReport.totalVisited}
+            minValue={0}
+            maxValue={locationReport.totalStructures}
+            label="Visitation coverage"
+            color="#FF5733"
+          />
+          <GaugeChart
+            value={locationReport.totalComplete}
+            minValue={0}
+            maxValue={locationReport.totalStructures}
+            label="Completion coverage"
+            color="#4CAF50"
+          />
         </>
       )}
 

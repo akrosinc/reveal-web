@@ -266,8 +266,6 @@ const SimulationMapView = ({
           dispatch({ type: 'CLEAR_SELECTION' });
         });
       }
-    } else {
-      console.log('state - planId', state);
     }
   };
 
@@ -821,11 +819,7 @@ const SimulationMapView = ({
 
   useEffect(() => {
     if (map && map.current && currentLocationChildren && selectedLoaction) {
-      console.log(state.selected?.childrenNumber, 'state.selected?.childrenNumber');
-
-      if (!showDatasetsAgainstParentLevel && state.selected?.childrenNumber !== 0) {
-        console.log('BBOX');
-
+      if (!showDatasetsAgainstParentLevel) {
         map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
       }
 
@@ -841,8 +835,6 @@ const SimulationMapView = ({
         'fill-color': 'rgba(57, 62, 65, 0)',
         'fill-outline-color': 'rgba(57, 62, 65, 1)'
       });
-
-      console.log(currentLocationChildren, 'currentLocationChildren');
 
       // Add or update the "children-layer" with individual polygon colors
       if (!map.current.getLayer('children-layer')) {
@@ -914,8 +906,6 @@ const SimulationMapView = ({
             dispatch({ type: 'SELECT_SINGLE', payload: clickedFeature });
 
             if (map.current && clickedFeature) {
-              console.log('clickedFeature', clickedFeature?.properties);
-
               const createPopupContent = () => {
                 const tagData = clickedFeature.properties?.metadata
                   ? JSON.parse(clickedFeature.properties.metadata)
@@ -2045,92 +2035,6 @@ const SimulationMapView = ({
           entityTags={entityTags}
         />
       )}
-
-      {/* LEFT CLICK FORM */}
-      {/* {showMapDrawnModal && (
-        <ActionDialog
-          closeHandler={() => setShowMapDrawnModal(false)}
-          title={'Selected Locations'}
-          footer={
-            <>
-              <Button
-                onClick={() => {
-                  if (mapBoxDraw.current) {
-                    mapBoxDraw.current?.deleteAll();
-                  }
-                  setShowMapDrawnModal(false);
-                }}
-              >
-                <FontAwesomeIcon className="mx-1" icon="trash" />
-              </Button>
-              <Button
-                onClick={_ => {
-                  updateSelectedLocations3();
-
-                  if (mapBoxDraw.current) {
-                    mapBoxDraw.current?.deleteAll();
-                  }
-
-                  setShowMapDrawnModal(false);
-                }}
-              >
-                update
-              </Button>
-              <Button onClick={() => setShowMapDrawnModal(false)}>close</Button>
-            </>
-          }
-          element={
-            <Container fluid>
-              <Row className="my-3">
-                <Col>
-                  <Form.Group>
-                    <Form.Check
-                      className="float-left"
-                      type="switch"
-                      id="custom-switch"
-                      label="Should the selection apply to all locations?"
-                      defaultChecked={false}
-                      onChange={e => setShouldApplyToAll(e.target.checked)}
-                    />
-                  </Form.Group>
-                  {!shouldApplyToAll && (
-                    <Form.Group>
-                      <Form.Label>{'Select Location for which the Drawn Polygon to apply to'}</Form.Label>
-
-                      <Form.Select
-                        style={{ display: 'inline-block' }}
-                        onChange={e => {
-                          setDrawnMapLevel(e.target.value);
-                        }}
-                      >
-                        <option key="selectDrawLayer" value={'select layer'}>
-                          {'Select layer...'}
-                        </option>
-                        {getOptions()}
-                      </Form.Select>
-                    </Form.Group>
-                  )}
-                </Col>
-              </Row>
-              <Row className="my-3">
-                <Col>
-                  <Form.Group>
-                    <Form.Check
-                      className="float-left"
-                      type="switch"
-                      id="custom-switch"
-                      label="Should the selection apply to children locations?"
-                      defaultChecked={true}
-                      onChange={e => setShouldApplyToChildren(e.target.checked)}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-            </Container>
-          }
-          size={'lg'}
-        />
-      )} */}
 
       <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '90vh' : '75vh', width: '100%' }} />
     </Container>

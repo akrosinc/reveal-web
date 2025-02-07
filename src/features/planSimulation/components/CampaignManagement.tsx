@@ -66,6 +66,7 @@ import {
 } from './SimulationMapView/api/datasetsAPI';
 import { toast } from 'react-toastify';
 import { assignLocationsToPlan } from '../../assignment/api';
+import { getReportForLocation } from '../reportsAPI/reportsApi';
 
 export interface Stats {
   [key: string]: Metadata;
@@ -137,6 +138,8 @@ const CampaignManagement = () => {
     method: undefined,
     source: undefined
   });
+
+  const [locationReport, setLocationReport] = useState<any>({});
 
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
@@ -220,6 +223,12 @@ const CampaignManagement = () => {
       if (selectedLocation) {
         setGeometry(selectedLocation);
         setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
+
+        // report on location
+        getReportForLocation(state.planid, selectedLocation.identifier).then(report => {
+          setLocationReport(report);
+        });
+
         const populationData = transformPopulationData(selectedLocation?.properties?.population);
         if (populationData !== null) {
           setChartData(populationData.chartData);
@@ -234,6 +243,10 @@ const CampaignManagement = () => {
     let populationData: any;
     if (state.selected) {
       populationData = transformPopulationData(JSON.parse(state.selected.population));
+
+      getReportForLocation(state.planid, state.selected.id).then(report => {
+        setLocationReport(report);
+      });
       if (populationData !== null) {
         setChartData(populationData.chartData);
         setLabels(populationData.labels);
@@ -662,6 +675,7 @@ const CampaignManagement = () => {
                 targetAreaChart={true}
                 chartLabels={labels}
                 chartData={chartData}
+                locationReport={locationReport}
                 totals={totals}
               />
             </Accordion>
