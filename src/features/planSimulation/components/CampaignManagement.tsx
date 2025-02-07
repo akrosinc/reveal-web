@@ -611,9 +611,13 @@ const CampaignManagement = () => {
               {/* <Button className={style.buttonPrimary} onClick={() => setShowModal(true)}>
                 Manage Teams
               </Button> */}
-              <div className={style.modalContainer}>
-                <UserModal className={style.modalButton} show={showModal} onHide={() => setShowModal(false)} />
-              </div>
+              <DrawerButton onClick={() => setOpenCustomModal(1)}>Manage Teams</DrawerButton>
+              <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
+               
+                  <UserModal  />
+                  
+              
+              </CustomPopup>
             </Accordion>
           </Drawer>
           <SimulationMapView

@@ -1,7 +1,7 @@
 import api from '../../../../../api/axios';
 import { toast } from 'react-toastify';
 import { OrganizationModel } from '../../../../../features/organization/providers/types';
-import { USER } from '../../../../../constants';
+import { ORGANIZATION, USER } from '../../../../../constants';
 export interface CreateUserRequest {
   email: string;
   firstName: string;
@@ -12,10 +12,12 @@ export interface CreateUserRequest {
   username: string;
 }
 export interface MemberModel {
-  id: string;
-  name: string;
+  identifier: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: string;
+  username: string;
 }
 
 export interface UserModel {
@@ -70,6 +72,15 @@ export interface CreateUserResponse {
   username: string;
 }
 
+export interface AddUserToOrganizationRequest {
+  username: string;
+}
+
+export interface AddUserToOrganizationResponse {
+  success: boolean;
+  message: string;
+}
+
 export const getUserList = async (
   search?: string,
   filters?: { firstName?: string; lastName?: string; email?: string },
@@ -105,12 +116,39 @@ export const createUser = async (data: CreateUserRequest): Promise<CreateUserRes
   }
 };
 
+// create
+
+export const createOrganization = async (organization: any): Promise<OrganizationModel> => {
+  const data = await api.post<OrganizationModel>(ORGANIZATION, organization).then(response => response.data);
+  return data;
+};
+
 export const getOrganizationMembers = async (organizationId: string): Promise<MemberModel[]> => {
   try {
-    const response = await api.get<MemberModel[]>(`/api/v1/organization/${organizationId}/members`);
+    const response = await api.get<MemberModel[]>(`/organization/${organizationId}/members`);
     return response.data;
   } catch (error) {
     console.error('Error fetching organization members:', error);
+    throw error;
+  }
+};
+
+export const addUserToOrganization = async (organizationId: string, username: string) => {
+  try {
+    const response = await api.post(`/organization/${organizationId}/members`, username);
+    return response.data;
+  } catch (error) {
+    console.error('Error adding user to organization:', error);
+    throw error;
+  }
+};
+
+export const deleteUserFromOrganization = async (organizationId: string, username: string) => {
+  try {
+    const response = await api.delete(`/organization/${organizationId}/members/${username}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting user from organization:', error);
     throw error;
   }
 };

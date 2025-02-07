@@ -2,19 +2,24 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Button, Col, Container, Form, Modal, Row, Nav, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Select, { MultiValue, SingleValue } from 'react-select';
+import { DebounceInput } from 'react-debounce-input';
+
 import {
   CreateUserRequest,
   CreateUserResponse,
   createUser,
   UserModel,
   getOrganizationMembers,
-  getUserList
+  getUserList,
+  addUserToOrganization,
+  MemberModel,
+  createOrganization,
+  deleteUserFromOrganization
 } from '../../planSimulation/components/User/api/userAPI';
 import { getOrganizationList } from './Teams/api/teamAPI';
 import {
   getOrganizationListSummary,
   getSecurityGroups,
-  createOrganization,
   getOrganizationById
 } from '../../organization/api';
 import { Controller, useForm } from 'react-hook-form';
@@ -59,8 +64,8 @@ interface Options {
   label: string;
 }
 interface UserModalProps {
-  show: boolean;
-  onHide: () => void;
+  
+  
   className?: string;
 }
 
@@ -71,7 +76,7 @@ interface TeamsRegisterValues {
   active: boolean;
 }
 
-const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
+export default function UserModal(){
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
   const [selectedTeamSecurityGroups, setSelectedTeamSecurityGroups] = useState<SingleValue<Option>>();
   const [teamOrganization, setteamOrganization] = useState<OrganizationModel[]>([]);
@@ -102,38 +107,19 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
   const [availableUsers, setAvailableUsers] = useState(['User A', 'User B', 'User C']);
   const [viewType, setViewType] = useState('Available Members');
 
-  const [teamsList, setTeamsList] = useState<string[]>([]);
+  const [teamsList, setTeamsList] = useState<{ name: string; id: string }[]>([]);
 
   const [selectedTeam, setSelectedTeam] = useState<string>('');
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  const [selectedTeamName, setSelectedTeamName] = useState<string>('');
 
   // Dynamic filtering for Available/All Members dropdown
   const filteredAvailableUsers = viewType === 'All Members' ? allUsers : availableUsers;
-  const [assignedUsers, setAssignedUsers] = useState<string[]>([]);
+  const [assignedUsers, setAssignedUsers] = useState<MemberModel[]>([]);
 
   const [selectedAvailable, setSelectedAvailable] = useState<string | null>(null);
   const [selectedAssigned, setSelectedAssigned] = useState<string | null>(null);
 
-  // const moveToAssigned = () => {
-  //   if (selectedAvailable) {
-  //     setAvailableUsers(prev => prev.filter(user => user !== selectedAvailable));
-  //     setTeamsAv(prev => ({
-  //       ...prev,
-  //       [selectedTeam]: [...prev[selectedTeam], selectedAvailable]
-  //     }));
-  //     setSelectedAvailable(null);
-  //   }
-  // };
-
-  // const moveToAvailable = () => {
-  //   if (selectedAssigned) {
-  //     setAvailableUsers(prev => [...prev, selectedAssigned]);
-  //     setteamsList(prev => ({
-  //       ...prev,
-  //       [selectedTeam]: prev[selectedTeam].filter(user => user !== selectedAssigned)
-  //     }));
-  //     setSelectedAssigned(null);
-  //   }
-  // };
   const {
     reset,
     register,
@@ -191,7 +177,7 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
       securityGroups: selectedSecurityGroups?.map(el => el.value) ?? []
     };
     createUser(newUser).then((res: CreateUserResponse | null) => {
-      console.log('API Response:', res);
+      
       if (res) {
         toast.success('User created successfully!');
         reset();
@@ -201,13 +187,11 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
     });
   };
 
+ 
+  /// users list logic
   const handleSortClick = (field: string) => {
-    if (sortField === field) {
-      setDirection(!direction);
-    } else {
-      setSortField(field);
-      setDirection(true);
-    }
+    setSortField(prev => (prev === field ? field : field));
+    setDirection(prev => (sortField === field ? !prev : true));
   };
 
   const toggleFilter = () => {
@@ -221,53 +205,65 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
     }));
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const sortedUsers = await getUserList(searchTerm, filters, sortField, direction);
-      console.log('Sorted users:', sortedUsers);
       setUsers(sortedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
     }
+  }, [searchTerm, filters, sortField, direction]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchUsers();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [fetchUsers]);
+
+  /// users list logic end here
+
+  /// teams logic
+  const fetchTeams = async () => {
+    setLoading(true);
+    try {
+      const response = await getOrganizationListSummary();
+  
+      const teamNames = response.content.map(org => ({
+        name: org.name,
+        id: org.identifier
+      }));
+      console.log('teams with no filter', response.content);
+      console.log('Teams:', teamNames);
+      setTeams(teamNames.map(team => team.name));
+      setTeamsList(teamNames);
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+    } finally {
+      setLoading(false);
+    }
   };
-
+  
   useEffect(() => {
-    fetchUsers();
-  }, [sortField, filters, direction, searchTerm]);
-
-  useEffect(() => {
-    const fetchTeams = async () => {
-      setLoading(true);
-      try {
-        const response = await getOrganizationListSummary();
-
-        const teamNames = response.content.map(org => org.name);
-        console.log('teams with no filter', response.content);
-        console.log('Teams:', teamNames);
-        setTeams(teamNames);
-        setTeamsList(teamNames);
-      } catch (error) {
-        console.error('Error fetching teams:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTeams();
+    fetchTeams(); 
   }, []);
   const filteredTeams = teams.filter(team => team.toLowerCase().includes(teamSearchTerm.toLowerCase()));
-  const sortedTeams = filteredTeams.sort((a, b) => {
+
+  const sortedTeams = [...filteredTeams].sort((a, b) => {
     if (teamSortField === 'name') {
       return teamSortDirection ? a.localeCompare(b) : b.localeCompare(a);
     }
     return 0;
   });
   const handleSortToggle = () => {
-    setTeamSortDirection(!teamSortDirection);
+    setTeamSortDirection(prev => !prev);
   };
+
+  // teams end here
+
   const {
     register: registerTeams,
     handleSubmit: handleSubmitTeams,
@@ -312,31 +308,115 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
     });
   };
 
-  const handleTeamSelection = (team: string) => {
-    setSelectedTeam(team);
-    setAssignedUsers([]);
-  };
+  const handleTeamSelection = (teamId: string) => {
+    const selectedTeamObj = teamsList.find(team => team.id === teamId);
 
+    if (selectedTeamObj) {
+      setSelectedTeam(teamId);
+      setSelectedTeamName(selectedTeamObj.name);
+      setAssignedUsers([]);
+
+      fetchMembers(teamId);
+    }
+  };
   const fetchMembers = async (organizationId: string) => {
     try {
       const members = await getOrganizationMembers(organizationId);
+      setAssignedUsers(members);
       console.log('Members of the organization:', members);
     } catch (error) {
       console.error('Error fetching members:', error);
     }
   };
 
+  // Move member to Team
+
+  const moveToTeam = async (userId: string) => {
+    console.log('Current selectedTeamId:', selectedTeam);
+
+    console.error('User ID or Team ID is missing');
+
+    const user = users.find(u => u.identifier === userId);
+    console.log(user, 'the user intent to be moved to team');
+
+    if (!selectedTeam) {
+      console.error('Error: selectedTeamId is missing or undefined');
+      return; 
+    }
+
+    if (user) {
+      const member: MemberModel = {
+        identifier: user.identifier,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        username: user.username,
+        role: 'default_role'
+      };
+
+      try {
+        console.log('Sending request to add user to team');
+        const response = await addUserToOrganization(selectedTeam, user.username);
+
+        console.log('API Response:', response);
+
+        if (response && response.success) {
+          console.log('User moved successfully');
+          setAssignedUsers(prevAssigned => [...prevAssigned, member]);
+          
+          fetchTeams(); 
+          fetchMembers(selectedTeam); 
+          toast.success('User moved to team successfully!');
+
+          setSelectedAvailable(null);
+        } else {
+          toast.error('Failed to add user to team');
+          console.error('Failed to add user to team');
+        }
+      } catch (error) {
+        console.error('Error during API request:', error);
+      }
+    }
+  };
+
+  /// delete user from the team assigned
+
+  const handleDeleteUser = async () => {
+    const userToDelete = assignedUsers.find(u => u.identifier === selectedAssigned);
+
+    if (userToDelete) {
+      const username = userToDelete.username;
+      const organizationId = selectedTeam;
+
+      try {
+        const response = await deleteUserFromOrganization(organizationId, username);
+
+        if (response && response.success) {
+          console.log('User deleted successfully');
+
+          setAssignedUsers(prevAssigned => prevAssigned.filter(user => user.identifier !== selectedAssigned));
+          
+          fetchTeams(); 
+          fetchMembers(organizationId); 
+          toast.success('User deleted from team successfully!');
+          setSelectedAssigned(null);
+        } else {
+          console.error('Failed to delete user');
+        }
+      } catch (error) {
+        toast.error('Failed to delete user');
+        console.error('Error during delete request:', error);
+      }
+    }
+  };
+
   return (
     <div>
-      <Button className={style.openModalButton} onClick={handleShow}>
-        Manage Teams
-      </Button>
-
-      <Modal show={showModal} onHide={handleClose} size="xl" className={style.modalFull} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Manage Users & Teams</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className={style.bodyClass}>
+      
+        <div>
+          <h1>Manage Users & Teams</h1>
+        </div>
+        <section className={style.bodyClass}>
           <Row className={style.rowStyle}>
             <Col md={3} className={style.sidebarNav}>
               <Nav variant="pills" className="flex-column">
@@ -518,16 +598,16 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
                   <Row className={style.dropDown}>
                     <Col>
                       <Form.Select value={viewType} onChange={e => setViewType(e.target.value)}>
-                        <option>Available Members</option>
-                        <option>All Members</option>
+                        <option value="Available Members">Available Members</option>
+                        <option value="All Members">All Members</option>
                       </Form.Select>
                     </Col>
                     <Col>
                       <Form.Select value={selectedTeam || ''} onChange={e => handleTeamSelection(e.target.value)}>
                         <option value="">Select a Team</option>
                         {teamsList.map((team, index) => (
-                          <option key={index} value={team}>
-                            {team}
+                          <option key={index} value={team.id}>
+                            {team.name}
                           </option>
                         ))}
                       </Form.Select>
@@ -563,59 +643,7 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
                             )}
                           </Form.Group>
 
-                          <Form.Group className="my-4">
-                            <Form.Label>Type</Form.Label>
-                            <Form.Select
-                              id="type-select"
-                              {...registerTeams('type', { required: 'Teams type must be selected.' })}
-                            >
-                              <option value=""></option>
-                              <option value="CG">Community group</option>
-                              <option value="TEAM">Team</option>
-                              <option value="OTHER">Other</option>
-                            </Form.Select>
-                            {errorsTeams.type && (
-                              <Form.Label className="text-danger">{errorsTeams.type.message}</Form.Label>
-                            )}
-                          </Form.Group>
-
-                          <Form.Group className="my-4">
-                            <Form.Label>Part of</Form.Label>
-                            <Controller
-                              control={control}
-                              name="partOf"
-                              render={({ field: { onChange } }) => (
-                                <Select
-                                  className="custom-react-select-container"
-                                  classNamePrefix="custom-react-select"
-                                  id="part-of-select"
-                                  menuPosition="fixed"
-                                  isClearable
-                                  {...registerTeams('partOf', { required: false })}
-                                  value={selectedSecurityGroups}
-                                  options={teamOrganization.map(el => {
-                                    return {
-                                      value: el.identifier,
-                                      label: el.name
-                                    };
-                                  })}
-                                  onChange={selectedOption => {
-                                    setSelectedTeamSecurityGroups(selectedOption);
-                                    onChange(selectedOption?.value);
-                                  }}
-                                />
-                              )}
-                            />
-                          </Form.Group>
-
-                          <Form.Group className="my-4">
-                            <Form.Switch
-                              id="active-switch"
-                              {...registerTeams('active', { required: false })}
-                              defaultChecked
-                              label="Active"
-                            />
-                          </Form.Group>
+                          
                           <hr />
                           <Button
                             id="save-button"
@@ -631,45 +659,80 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
                   </Accordion>
                   <Row className={style.columnField}>
                     <Col md={5} className={style.userColumn}>
-                      <h5 className={style.columnHeader}>All Members</h5>
+                      <h5 className={style.columnHeader}>{viewType}</h5>
                       <ul className={style.userList}>
-                        {users.map(user => (
-                          <li
-                            key={user.identifier}
-                            className={`${style.userItem} ${
-                              selectedAvailable === user.identifier ? style.selected : ''
-                            }`}
-                            onClick={() => setSelectedAvailable(user.identifier)}
-                          >
-                            <FontAwesomeIcon icon={faUser} className={style.userIcon} /> {user.firstName}
-                          </li>
-                        ))}
+                        {viewType === 'Available Members'
+                          ? users
+                              .filter(user => !user.organizations.length)
+                              .map(user => (
+                                <li
+                                  key={user.identifier}
+                                  className={`${style.userItem} ${
+                                    selectedAvailable === user.identifier ? style.selected : ''
+                                  }`}
+                                  onClick={() => setSelectedAvailable(user.identifier)}
+                                >
+                                  <FontAwesomeIcon icon={faUser} className={style.userIcon} /> {user.firstName}{' '}
+                                  {user.lastName}
+                                </li>
+                              ))
+                          : users.map(user => (
+                              <li
+                                key={user.identifier}
+                                className={`${style.userItem} ${
+                                  selectedAvailable === user.identifier ? style.selected : ''
+                                }`}
+                                onClick={() => setSelectedAvailable(user.identifier)}
+                              >
+                                <FontAwesomeIcon icon={faUser} className={style.userIcon} /> {user.firstName}{' '}
+                                {user.lastName}
+                              </li>
+                            ))}
                       </ul>
                     </Col>
 
                     <Col md={2} className={style.arrowClass}>
-                      <Button variant="primary" className="mb-2" disabled={!selectedAvailable}>
+                      <Button
+                        variant="primary"
+                        className="mb-2"
+                        disabled={!selectedAvailable}
+                        onClick={() => {
+                          if (selectedAvailable) {
+                            moveToTeam(selectedAvailable);
+                          } else {
+                            console.log('No member selected');
+                          }
+                        }}
+                      >
                         <FontAwesomeIcon icon={faArrowRight} />
                       </Button>
                       <br />
-                      <Button variant="secondary" disabled={!selectedAssigned}>
+                      <Button variant="secondary" disabled={!selectedAssigned} onClick={handleDeleteUser}>
                         <FontAwesomeIcon icon={faArrowLeft} />
                       </Button>
                     </Col>
 
                     <Col md={5} className={style.userColumn}>
-                      <h5 className={style.columnHeader}>{selectedTeam} Members</h5>
-                      <ul className={style.userList}>
-                        {assignedUsers.map(user => (
-                          <li
-                            key={user}
-                            className={`${style.userItem} ${selectedAssigned === user ? style.selected : ''}`}
-                            onClick={() => setSelectedAssigned(user)}
-                          >
-                            <FontAwesomeIcon icon={faUser} className={style.userIcon} /> {user}
-                          </li>
-                        ))}
-                      </ul>
+                      <h5 className={style.columnHeader}>{selectedTeamName}'s Members</h5>
+
+                      {assignedUsers.length > 0 ? (
+                        <ul className={style.userList}>
+                          {assignedUsers.map(user => (
+                            <li
+                              key={user.identifier}
+                              className={`${style.userItem} ${
+                                selectedAssigned === user.identifier ? style.selected : ''
+                              }`}
+                              onClick={() => setSelectedAssigned(user.identifier)}
+                            >
+                              <FontAwesomeIcon icon={faUser} className={style.userIcon} />
+                              {user.firstName} {user.lastName}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>No members available.</p>
+                      )}
                     </Col>
                   </Row>
                 </Container>
@@ -680,8 +743,9 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
                     <div className={style.sectionHeader}>
                       <h5>Users</h5>
                       <div className={style.controls}>
-                        <input
-                          type="text"
+                        <DebounceInput
+                          minLength={2}
+                          debounceTimeout={300}
                           className={style.searchInput}
                           value={searchTerm}
                           onChange={e => setSearchTerm(e.target.value)}
@@ -700,23 +764,12 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
                         <h5>Filter Options</h5>
                         <div>
                           <label>First Name:</label>
-                          <input
-                            type="text"
+                          <DebounceInput
+                            minLength={1}
+                            debounceTimeout={300}
                             value={filters.firstName}
                             onChange={e => handleFilterChange(e, 'firstName')}
                           />
-                        </div>
-                        <div>
-                          <label>Last Name:</label>
-                          <input
-                            type="text"
-                            value={filters.lastName}
-                            onChange={e => handleFilterChange(e, 'lastName')}
-                          />
-                        </div>
-                        <div>
-                          <label>Email:</label>
-                          <input type="text" value={filters.email} onChange={e => handleFilterChange(e, 'email')} />
                         </div>
                       </div>
                     )}
@@ -761,20 +814,11 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
                     ) : (
                       <ul className={style.teamsList}>
                         {filteredTeams.length > 0 ? (
-                          filteredTeams
-                            .filter(team => team.toLowerCase().includes(teamSearchTerm.toLowerCase()))
-                            .sort((a, b) => {
-                              if (sortDirection) {
-                                return a.localeCompare(b);
-                              } else {
-                                return b.localeCompare(a);
-                              }
-                            })
-                            .map((team, index) => (
-                              <li key={index} className={style.teamEntry}>
-                                <FontAwesomeIcon icon={faUsers} className={style.teamAvatar} /> {team}
-                              </li>
-                            ))
+                          sortedTeams.map((team, index) => (
+                            <li key={index} className={style.teamEntry}>
+                              <FontAwesomeIcon icon={faUsers} className={style.teamAvatar} /> {team}
+                            </li>
+                          ))
                         ) : (
                           <li>No teams found</li>
                         )}
@@ -785,10 +829,10 @@ const UserModal: React.FC<UserModalProps> = ({ show, onHide }) => {
               )}
             </Col>
           </Row>
-        </Modal.Body>
-      </Modal>
+        </section>
+      
     </div>
   );
 };
 
-export default UserModal;
+
