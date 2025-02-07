@@ -821,8 +821,13 @@ const SimulationMapView = ({
 
   useEffect(() => {
     if (map && map.current && currentLocationChildren && selectedLoaction) {
-      if (!showDatasetsAgainstParentLevel)
+      console.log(state.selected?.childrenNumber, 'state.selected?.childrenNumber');
+
+      if (!showDatasetsAgainstParentLevel && state.selected?.childrenNumber !== 0) {
+        console.log('BBOX');
+
         map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
+      }
 
       // Add or update the "parent-source" {REFACTORED}
       DrawPolygonsFeature(map.current, selectedLoaction, 'parent');
@@ -837,17 +842,43 @@ const SimulationMapView = ({
         'fill-outline-color': 'rgba(57, 62, 65, 1)'
       });
 
+      console.log(currentLocationChildren, 'currentLocationChildren');
+
       // Add or update the "children-layer" with individual polygon colors
       if (!map.current.getLayer('children-layer')) {
         // Add or update the "children-layer" {REFACTORED}
+        // const paintConfig = {
+        //   'fill-color': [
+        //     'case',
+        //     ['==', ['get', 'id'], singleSelected],
+        //     singleSelectedColor,
+        //     'rgba(239, 239, 240, 0)' // Default color
+        //   ],
+        //   'fill-outline-color': 'rgba(000, 000, 000, 0.5)'
+        // };
+
         const paintConfig = {
           'fill-color': [
             'case',
             ['==', ['get', 'id'], singleSelected],
-            singleSelectedColor,
-            'rgba(239, 239, 240, 0)' // Default color
+            singleSelectedColor, // Highlight selected
+
+            ['==', ['get', 'businessStatus'], 'Not Visited'],
+            'rgba(255, 255, 0, 1)', // Yellow
+            ['==', ['get', 'businessStatus'], 'Not Eligible'],
+            'rgba(0, 0, 0, 1)', // Black
+            ['==', ['get', 'businessStatus'], 'Family / structure registered'],
+            'rgba(255, 192, 203, 1)', // Pink
+            ['==', ['get', 'businessStatus'], 'In Progress'],
+            'rgba(255, 165, 0, 1)', // Orange
+            ['==', ['get', 'businessStatus'], 'Unable to complete / referral'],
+            'rgba(255, 0, 0, 1)', // Red
+            ['==', ['get', 'businessStatus'], 'Complete'],
+            'rgba(0, 128, 0, 1)', // Green
+
+            'rgba(239, 239, 240, 0)' // Default transparent color
           ],
-          'fill-outline-color': 'rgba(000, 000, 000, 0.5)'
+          'fill-outline-color': 'rgba(0, 0, 0, 0.5)'
         };
         AddLayer(map.current, 'children', 'children', paintConfig);
 
@@ -985,10 +1016,31 @@ const SimulationMapView = ({
           }
         });
       } else {
+        // map.current?.setPaintProperty('children-layer', 'fill-color', [
+        //   'case',
+        //   ['==', ['get', 'id'], singleSelected],
+        //   singleSelectedColor,
+        //   'rgba(57, 62, 65, 0.05)' // Default color
+        // ]);
+
         map.current?.setPaintProperty('children-layer', 'fill-color', [
           'case',
           ['==', ['get', 'id'], singleSelected],
-          singleSelectedColor,
+          singleSelectedColor, // Highlight selected
+
+          ['==', ['get', 'businessStatus'], 'Not Visited'],
+          'rgba(255, 255, 0, 1)', // Yellow
+          ['==', ['get', 'businessStatus'], 'Not Eligible'],
+          'rgba(0, 0, 0, 1)', // Black
+          ['==', ['get', 'businessStatus'], 'Family / structure registered'],
+          'rgba(255, 192, 203, 1)', // Pink
+          ['==', ['get', 'businessStatus'], 'In Progress'],
+          'rgba(255, 165, 0, 1)', // Orange
+          ['==', ['get', 'businessStatus'], 'Unable to complete / referral'],
+          'rgba(255, 0, 0, 1)', // Red
+          ['==', ['get', 'businessStatus'], 'Complete'],
+          'rgba(0, 128, 0, 1)', // Green
+
           'rgba(57, 62, 65, 0.05)' // Default color
         ]);
 

@@ -191,6 +191,17 @@ const CampaignManagement = () => {
 
       setSelectedLocationChildren(children);
 
+      console.log(children, 'All children');
+
+      console.log(
+        children.filter((child: any) => child.properties.businessStatus === 'Complete'),
+        'Complete children'
+      );
+      console.log(
+        children.filter((child: any) => child.properties.businessStatus === 'Not Visited'),
+        'Not Visited children'
+      );
+
       // when locations loaded, we are setting their assigned flag values as default values in assignment map
       // this way, state.assignedLocations is our single source of truth
       const assignedMap = children.reduce(
@@ -538,6 +549,8 @@ const CampaignManagement = () => {
         });
       }
     }
+
+    console.log(polygonsWithData);
   };
 
   const processChildren = useCallback(
@@ -587,8 +600,6 @@ const CampaignManagement = () => {
     targetAreasList: state.targetAreas,
     remove: handleRemoveTargetArea
   };
-
-  console.log(selectedLocationChildren, 'selectedLocationChildren');
 
   return (
     <>
