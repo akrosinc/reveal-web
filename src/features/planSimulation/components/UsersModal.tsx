@@ -97,8 +97,10 @@ export default function UserModal() {
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
 
-  const allUsers = ['User A', 'User B', 'User C', 'User D', 'User E'];
-  const [availableUsers, setAvailableUsers] = useState(['User A', 'User B', 'User C']);
+  const [allUsers, setAllUsers] = useState<UserModel[]>([]);
+
+  const [sortedUsers, setSortedUsers] = useState<UserModel[]>([]);
+
   const [viewType, setViewType] = useState('Available Members');
 
   const [teamsList, setTeamsList] = useState<{ name: string; id: string }[]>([]);
@@ -108,7 +110,7 @@ export default function UserModal() {
   const [selectedTeamName, setSelectedTeamName] = useState<string>('');
 
   // Dynamic filtering for Available/All Members dropdown
-  const filteredAvailableUsers = viewType === 'All Members' ? allUsers : availableUsers;
+
   const [assignedUsers, setAssignedUsers] = useState<MemberModel[]>([]);
 
   const [selectedAvailable, setSelectedAvailable] = useState<string | null>(null);
@@ -181,40 +183,61 @@ export default function UserModal() {
   };
 
   /// users list logic
-  const handleSortClick = (field: string) => {
-    setSortField(prev => (prev === field ? field : field));
-    setDirection(prev => (sortField === field ? !prev : true));
-  };
-
-  const toggleFilter = () => {
-    setIsFilterOpen(prev => !prev);
-  };
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
-    setFilters(prevFilters => ({
-      ...prevFilters,
-      [field]: e.target.value
-    }));
-  };
 
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const sortedUsers = await getUserList(searchTerm, filters, sortField, direction);
-      setUsers(sortedUsers);
+      const allUsers = await getUserList();
+      setSortedUsers(allUsers);
+      setUsers(sortUsers(allUsers, sortField, direction));
     } catch (error) {
-     
+      console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, filters, sortField, direction]);
+  }, [sortField, direction]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchUsers();
-    }, 300);
-    return () => clearTimeout(timer);
+    fetchUsers();
   }, [fetchUsers]);
+
+  const sortUsers = (userList: UserModel[], field: string, direction: boolean): UserModel[] => {
+    return [...userList].sort((a, b) => {
+      if (field === 'firstName') {
+        return direction ? a.firstName.localeCompare(b.firstName) : b.firstName.localeCompare(a.firstName);
+      }
+      return 0;
+    });
+  };
+
+  const handleSortClick = (field: string) => {
+    const isSameField = sortField === field;
+    const newSortDirection = isSameField ? !direction : true;
+
+    setSortField(field);
+    setDirection(newSortDirection);
+
+    setUsers(sortUsers(sortedUsers, field, newSortDirection));
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    filterUsers(e.target.value);
+  };
+
+  const filterUsers = (term: string) => {
+    if (!term.trim()) {
+      setUsers(sortedUsers);
+
+      return;
+    }
+
+    const filtered = sortedUsers.filter(user =>
+      `${user.firstName} ${user.lastName}`.toLowerCase().includes(term.toLowerCase())
+    );
+
+    setUsers(filtered);
+  };
 
   /// users list logic end here
 
@@ -228,7 +251,7 @@ export default function UserModal() {
         name: org.name,
         id: org.identifier
       }));
-    
+
       setTeams(teamNames.map(team => team.name));
       setTeamsList(teamNames);
     } catch (error) {
@@ -303,7 +326,6 @@ export default function UserModal() {
     try {
       const members = await getOrganizationMembers(organizationId);
       setAssignedUsers(members);
-     
     } catch (error) {
       console.error('Error fetching members:', error);
     }
@@ -312,12 +334,9 @@ export default function UserModal() {
   // Move member to Team
 
   const moveToTeam = async (userId: string) => {
-   
-
     console.error('User ID or Team ID is missing');
 
     const user = users.find(u => u.identifier === userId);
-    
 
     if (!selectedTeam) {
       console.error('Error: selectedTeamId is missing or undefined');
@@ -335,14 +354,13 @@ export default function UserModal() {
       };
 
       try {
-  
         const response = await addUserToOrganization(selectedTeam, user.username);
+        console.log(response, 'the response of the move to team');
 
-  
-
-        if (response && response.success) {
-         
+        if (Array.isArray(response) && response.length > 0) {
           setAssignedUsers(prevAssigned => [...prevAssigned, member]);
+
+          setUsers(prevUsers => prevUsers.filter(u => u.identifier !== userId));
 
           fetchTeams();
           fetchMembers(selectedTeam);
@@ -370,12 +388,13 @@ export default function UserModal() {
 
       try {
         const response = await deleteUserFromOrganization(organizationId, username);
+        console.log(response, 'the response of the delete user');
 
-        if (response && response.success) {
-          
-
+        if (Array.isArray(response) && !response.some(user => user.identifier === selectedAssigned)) {
           setAssignedUsers(prevAssigned => prevAssigned.filter(user => user.identifier !== selectedAssigned));
 
+          // setUsers(prevUsers => prevUsers.filter(user => user.identifier !== selectedAssigned));
+          fetchUsers();
           fetchTeams();
           fetchMembers(organizationId);
           toast.success('User deleted from team successfully!');
@@ -389,7 +408,7 @@ export default function UserModal() {
       }
     }
   };
-
+  const rightArrowDisabled = !selectedTeam;
   return (
     <div className={style.fullModal}>
       <div>
@@ -666,12 +685,12 @@ export default function UserModal() {
                     <Button
                       variant="primary"
                       className="mb-2"
-                      disabled={!selectedAvailable}
+                      disabled={!selectedTeam || !selectedAvailable}
                       onClick={() => {
                         if (selectedAvailable) {
                           moveToTeam(selectedAvailable);
                         } else {
-                          alert('No member selected. Please select a member to move to the team.');
+                          alert('No member or team selected. Please select both a member and a team.');
                         }
                       }}
                     >
@@ -684,7 +703,9 @@ export default function UserModal() {
                   </Col>
 
                   <Col md={5} className={style.userColumn}>
-                    <h5 className={style.columnHeader}>{selectedTeamName}'s Members</h5>
+                    <h5 className={style.columnHeader}>
+                      {selectedTeamName ? `${selectedTeamName}'s Members` : 'Members'}
+                    </h5>
 
                     {assignedUsers.length > 0 ? (
                       <ul className={style.userList}>
@@ -714,12 +735,11 @@ export default function UserModal() {
                   <div className={style.sectionHeader}>
                     <h5>Users</h5>
                     <div className={style.controls}>
-                      <DebounceInput
-                        minLength={2}
-                        debounceTimeout={300}
+                      <input
+                        type="text"
                         className={style.searchInput}
                         value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
+                        onChange={handleSearchChange}
                         placeholder="Search by name..."
                       />
                       <FontAwesomeIcon
@@ -730,20 +750,6 @@ export default function UserModal() {
                       {/* <FontAwesomeIcon icon={faFilter} className={style.controlIcon} onClick={toggleFilter} /> */}
                     </div>
                   </div>
-                  {isFilterOpen && (
-                    <div className={style.filterPanel}>
-                      <h5>Filter Options</h5>
-                      <div>
-                        <label>First Name:</label>
-                        <DebounceInput
-                          minLength={1}
-                          debounceTimeout={300}
-                          value={filters.firstName}
-                          onChange={e => handleFilterChange(e, 'firstName')}
-                        />
-                      </div>
-                    </div>
-                  )}
                   <div>
                     {loading ? (
                       <p>Loading...</p>
