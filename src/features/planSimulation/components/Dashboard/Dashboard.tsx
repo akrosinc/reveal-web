@@ -51,9 +51,9 @@ function Dashboard({
   };
 
   const generateChartData = [
-    { label: 'Complete', data: [locationReport.totalComplete], backgroundColor: '#008000' },
-    { label: 'Incomplete', data: [locationReport.totalIncomplete], backgroundColor: '#cd1c18' },
-    { label: 'Not Visited', data: [locationReport.totalNotVisited], backgroundColor: '#FFE066' }
+    { label: 'Complete', data: [locationReport?.totalComplete], backgroundColor: '#008000' },
+    { label: 'Incomplete', data: [locationReport?.totalIncomplete], backgroundColor: '#cd1c18' },
+    { label: 'Not Visited', data: [locationReport?.totalNotVisited], backgroundColor: '#FFE066' }
   ];
   console.log(locationReport, 'locationReport');
 

@@ -637,10 +637,7 @@ const CampaignManagement = () => {
               </Button> */}
               <DrawerButton onClick={() => setOpenCustomModal(1)}>Manage Teams</DrawerButton>
               <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
-               
-                  <UserModal  />
-                  
-              
+                <UserModal />
               </CustomPopup>
             </Accordion>
           </Drawer>

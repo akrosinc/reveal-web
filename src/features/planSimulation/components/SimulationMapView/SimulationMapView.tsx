@@ -1119,7 +1119,7 @@ const SimulationMapView = ({
           properties: {
             name: child.properties.name,
             geographicLevel: child.properties.geographicLevel,
-            childrenNumber: child.properties.childrenNumber
+            childrenNumber: child.properties.childrenNumber > 0 ? ` (${child.properties.childrenNumber})` : ''
           }
         };
       });
@@ -1153,7 +1153,7 @@ const SimulationMapView = ({
                 'case',
                 ['==', ['get', 'geographicLevel'], 'structure'],
                 '',
-                ['concat', ' (', ['to-string', ['get', 'childrenNumber']], ')']
+                ['concat', ['to-string', ['get', 'childrenNumber']]]
               ]
             ],
             'text-size': 13,
@@ -1829,7 +1829,7 @@ const SimulationMapView = ({
             properties: {
               name: child.properties.name,
               geographicLevel: child.properties.geographicLevel,
-              childrenNumber: child.properties.childrenNumber
+              childrenNumber: child.properties.childrenNumber > 0 ? ` (${child.properties.childrenNumber})` : ''
             }
           };
         }
@@ -1867,7 +1867,7 @@ const SimulationMapView = ({
                 'case',
                 ['==', ['get', 'geographicLevel'], 'structure'], // Condition for 'structure'
                 '',
-                ['concat', ' (', ['to-string', ['get', 'childrenNumber']], ')'] // Append childrenNumber if not 'structure'
+                ['concat', ['to-string', ['get', 'childrenNumber']]] // Append childrenNumber if not 'structure'
               ]
             ],
             'text-size': 13,
