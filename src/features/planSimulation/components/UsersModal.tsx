@@ -61,6 +61,7 @@ interface Options {
 }
 interface UserModalProps {
   className?: string;
+  fetchTeamsData: () => void;
 }
 
 interface TeamsRegisterValues {
@@ -70,7 +71,7 @@ interface TeamsRegisterValues {
   active: boolean;
 }
 
-export default function UserModal() {
+export default function UserModal({ fetchTeamsData }: UserModalProps) {
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
   const [selectedTeamSecurityGroups, setSelectedTeamSecurityGroups] = useState<SingleValue<Option>>();
   const [teamOrganization, setteamOrganization] = useState<OrganizationModel[]>([]);
@@ -305,6 +306,7 @@ export default function UserModal() {
       success: {
         render({ data }: { data: OrganizationModel }) {
           resetTeams();
+          fetchTeamsData();
           return `Organization with id: ${data.identifier} created successfully.`;
         }
       }
