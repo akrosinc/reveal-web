@@ -391,15 +391,14 @@ export default function UserModal() {
   };
 
   return (
-    <div>
+    <div className={style.fullModal}>
       <div>
         <h1>Manage Users & Teams</h1>
       </div>
       <section className={style.bodyClass}>
         <Row className={style.rowStyle}>
           <Col md={3} className={style.sidebarNav}>
-            <Nav variant="pills" className="flex-column">
-              <p className={style.title}>Management</p>
+            <Nav variant="pills">
               <Nav.Item className={style.viewUsers}>
                 <Nav.Link eventKey="viewUsers" onClick={() => setActiveTab('viewUsers')} className={style.viewItemMenu}>
                   <FontAwesomeIcon icon={faUsers} className={style.viewIcon} />
@@ -728,7 +727,7 @@ export default function UserModal() {
                         className={style.controlIcon}
                         onClick={() => handleSortClick('firstName')}
                       />
-                      <FontAwesomeIcon icon={faFilter} className={style.controlIcon} onClick={toggleFilter} />
+                      {/* <FontAwesomeIcon icon={faFilter} className={style.controlIcon} onClick={toggleFilter} /> */}
                     </div>
                   </div>
                   {isFilterOpen && (
@@ -777,7 +776,7 @@ export default function UserModal() {
                         />
                       </div>
                       <FontAwesomeIcon icon={faSort} className={style.controlIcon} onClick={handleSortToggle} />
-                      <FontAwesomeIcon icon={faFilter} className={style.controlIcon} />
+                      {/* <FontAwesomeIcon icon={faFilter} className={style.controlIcon} /> */}
                     </div>
                   </div>
 
