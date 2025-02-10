@@ -66,6 +66,7 @@ import {
 } from './SimulationMapView/api/datasetsAPI';
 import { toast } from 'react-toastify';
 import { assignLocationsToPlan } from '../../assignment/api';
+import { getReportForLocation } from '../reportsAPI/reportsApi';
 
 export interface Stats {
   [key: string]: Metadata;
@@ -138,6 +139,8 @@ const CampaignManagement = () => {
     source: undefined
   });
 
+  const [locationReport, setLocationReport] = useState<any>({});
+
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
   const [labels, setLabels] = useState<string[]>([]);
@@ -191,6 +194,17 @@ const CampaignManagement = () => {
 
       setSelectedLocationChildren(children);
 
+      console.log(children, 'All children');
+
+      console.log(
+        children.filter((child: any) => child.properties.businessStatus === 'Complete'),
+        'Complete children'
+      );
+      console.log(
+        children.filter((child: any) => child.properties.businessStatus === 'Not Visited'),
+        'Not Visited children'
+      );
+
       // when locations loaded, we are setting their assigned flag values as default values in assignment map
       // this way, state.assignedLocations is our single source of truth
       const assignedMap = children.reduce(
@@ -209,6 +223,12 @@ const CampaignManagement = () => {
       if (selectedLocation) {
         setGeometry(selectedLocation);
         setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
+
+        // report on location
+        getReportForLocation(state.planid, selectedLocation.identifier).then(report => {
+          setLocationReport(report);
+        });
+
         const populationData = transformPopulationData(selectedLocation?.properties?.population);
         if (populationData !== null) {
           setChartData(populationData.chartData);
@@ -223,6 +243,10 @@ const CampaignManagement = () => {
     let populationData: any;
     if (state.selected) {
       populationData = transformPopulationData(JSON.parse(state.selected.population));
+
+      getReportForLocation(state.planid, state.selected.id).then(report => {
+        setLocationReport(report);
+      });
       if (populationData !== null) {
         setChartData(populationData.chartData);
         setLabels(populationData.labels);
@@ -538,6 +562,8 @@ const CampaignManagement = () => {
         });
       }
     }
+
+    console.log(polygonsWithData);
   };
 
   const processChildren = useCallback(
@@ -588,8 +614,6 @@ const CampaignManagement = () => {
     remove: handleRemoveTargetArea
   };
 
-  console.log(selectedLocationChildren, 'selectedLocationChildren');
-
   return (
     <>
       <Container fluid ref={divRef}>
@@ -611,9 +635,10 @@ const CampaignManagement = () => {
               {/* <Button className={style.buttonPrimary} onClick={() => setShowModal(true)}>
                 Manage Teams
               </Button> */}
-              <div className={style.modalContainer}>
-                <UserModal className={style.modalButton} show={showModal} onHide={() => setShowModal(false)} />
-              </div>
+              <DrawerButton onClick={() => setOpenCustomModal(1)}>Manage Teams</DrawerButton>
+              <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
+                <UserModal />
+              </CustomPopup>
             </Accordion>
           </Drawer>
           <SimulationMapView
@@ -651,6 +676,7 @@ const CampaignManagement = () => {
                 targetAreaChart={true}
                 chartLabels={labels}
                 chartData={chartData}
+                locationReport={locationReport}
                 totals={totals}
               />
             </Accordion>

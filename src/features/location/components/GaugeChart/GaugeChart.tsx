@@ -26,7 +26,7 @@ export default function GaugeChart({ value, minValue, maxValue, label, color }: 
   // Convert large numbers to k/m notation
   const formatNumber = (num: number): string => {
     if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(0)}m`;
-    if (num >= 1_000) return `${(num / 1_000).toFixed(0)}k`;
+    if (num >= 1_000) return `${(num / 1_000).toFixed(1)}k`;
     return num.toString();
   };
 
@@ -63,8 +63,8 @@ export default function GaugeChart({ value, minValue, maxValue, label, color }: 
         </div>
       </div>
       <div className={styles.rangeLabels}>
-        <span>{formatNumber(minValue)}</span>
-        <span>{formatNumber(maxValue)}</span>
+        <span>{minValue}</span>
+        <span>{maxValue}</span>
       </div>
     </div>
   );

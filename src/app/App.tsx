@@ -84,7 +84,9 @@ function App() {
           toast.success('Welcome back ' + res.username);
         });
         api.interceptors.request.use(function (config) {
-          dispatch(showLoader(true));
+          if (!config.url?.includes('task-details')) {
+            dispatch(showLoader(true));
+          }
           // Inject Bearer token in every request
           config.headers = {
             Authorization: `Bearer ${keycloak.token}`
@@ -101,7 +103,7 @@ function App() {
         });
       }
     } else {
-      dispatch(showLoader(true));
+      // dispatch(showLoader(true));
     }
   }, [initialized, dispatch, keycloak]);
 

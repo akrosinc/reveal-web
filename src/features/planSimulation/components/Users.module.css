@@ -10,6 +10,31 @@
   padding: 15px;
   border-right: 1px solid #dee2e6;
 }
+.fullModal {
+  width: 90vw; 
+  max-width: 1200px;
+  height: auto; 
+  min-height: 400px; 
+  max-height: 90vh; 
+  margin: auto;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding-left: 15px;
+  padding-right: 18px !important;
+  padding:2px;
+}
+.fullModal h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: black;
+  padding: 10px;
+  border-bottom: 1px solid #dee2e6;
+  margin: 0;
+}
 
 .sidebarButton {
   display: block;
@@ -99,9 +124,11 @@
   border-right: #d4d1d1;
   border-right-width: 1px;
   border-right-style: solid;
-  height: 100%;
-  min-height: 420px;
+  height: auto; 
+  min-height: 420px; 
+  overflow-y: auto; 
 }
+
 
 .modal-dialog {
   min-height: 400px;
@@ -157,6 +184,9 @@
   font-size: 17px;
   white-space: nowrap;
   transition: background-color 0.3s, color 0.3s;
+  width: 100%; 
+  padding: 12px 20px; 
+  border-radius: 8px;
 }
 
 .manageTeams {
@@ -166,14 +196,14 @@
 }
 
 .manageItemMenu:hover {
-  background-color: #007bff !important;
+  background-color: #085ED6 !important;
   color: white !important;
 }
 
-.manageItemMenu.active {
+/* .manageItemMenu.active {
   background-color: #007bff;
   color: white !important;
-}
+} */
 
 .viewIcon {
   position: relative;
@@ -187,10 +217,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: black !important;
+  color: black !important; 
   font-size: 17px;
   white-space: nowrap;
   transition: background-color 0.3s, color 0.3s;
+  width: 100%; 
+  padding: 12px 20px;
+  border-radius: 8px; 
 }
 
 .viewUsers {
@@ -199,15 +232,14 @@
   color: black;
 }
 
+
 .viewItemMenu:hover {
-  background-color: #007bff !important;
-  color: white !important;
+  background-color: #085ED6 !important; 
+  color: white !important; 
 }
 
-.viewItemMenu.active {
-  background-color: #007bff;
-  color: white !important;
-}
+
+
 
 .userIcon {
   position: relative;
@@ -221,10 +253,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: black !important;
+  color: black !important; 
   font-size: 17px;
   white-space: nowrap;
   transition: background-color 0.3s, color 0.3s;
+  width: 100%; 
+  padding: 12px 20px;
+  border-radius: 8px; 
 }
 
 .userPlus {
@@ -234,7 +269,7 @@
 }
 
 .userItemMenu:hover {
-  background-color: #007bff !important;
+  background-color: #085ED6 !important;
   color: white !important;
 }
 
@@ -242,20 +277,46 @@
   color: white !important;
 }
 
-.userItemMenu.active {
-  background-color: #007bff;
+
+
+
+
+.viewItemMenu.active,
+.userItemMenu.active,
+.manageItemMenu.active {
+  background-color: #085ED6 !important; 
   color: white !important;
 }
 
-.searchContainer {
+.viewItemMenu,
+.userItemMenu,
+.manageItemMenu {
+  color: black !important;
+}
+
+.nav-item .viewItemMenu.active,
+.nav-item .userItemMenu.active,
+.nav-item .manageItemMenu.active {
+  background-color: #085ED6 !important; 
+  color: white !important;
+}
+
+.nav-item .viewItemMenu:hover .viewIcon,
+.nav-item .userItemMenu:hover .userIcon,
+.nav-item .manageItemMenu:hover .manageIcon {
+  color: white !important; 
+}
+
+
+
+/* .searchContainer {
   margin-top: 10px;
   margin-bottom: 10px;
-}
+} */
 
 .bodyClass {
   height: 100%;
   background-color: #f9fafb;
-  /* background-color: red; */
   padding-left: 10px;
   padding-top: 0 !important;
   padding-bottom: 0;
@@ -289,7 +350,7 @@
 .openModalButton {
   background-color: white !important;
   color: black !important;
-  border: 1px solid black; /* Optional: adds a border */
+  border: 1px solid black; 
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
@@ -342,10 +403,7 @@
   font-weight: bold;
 }
 
-.userIcon {
-  font-size: 16px;
-  color: #555;
-}
+
 
 .arrowClass {
   display: flex !important;
@@ -372,24 +430,53 @@
   padding-left: 20px;
 }
 
+
 .sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding-bottom: 10px;
   border-bottom: 2px solid #ddd;
-  text-align: center;
+  text-align: left; 
 }
 
 .controls {
   display: flex;
-  gap: 10px;
+  align-items: center; 
+  gap: 10px; 
 }
+
+
+.searchInput {
+  height: 35px; 
+  padding: 0 10px; 
+  font-size: 16px; 
+  border: 1px solid #ddd; 
+  border-radius: 4px; 
+  width: 200px;
+  box-sizing: border-box; 
+  outline: none; 
+  transition: border-color 0.3s ease;
+}
+
+
+.searchInput:focus {
+  border-color: #085ED6; 
+}
+
 
 .controlIcon {
   cursor: pointer;
   color: #555;
+  font-size: 18px;
+  transition: color 0.3s ease;
 }
+
+
+.controlIcon:hover {
+  color: #085ED6; 
+}
+
 
 .usersList,
 .teamsList {
