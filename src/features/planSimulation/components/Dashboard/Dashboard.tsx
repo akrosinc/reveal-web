@@ -3,8 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DoghnutChart } from '../../../location/components/doughnutChart/DoghnutChart';
 import { faUsers, faSitemap, faHouseUser, faDiceD20 } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import House from '../../../../assets/svgs/house.svg';
-import Sphere from '../../../../assets/svgs/sphere.svg';
 import { useState } from 'react';
 import { ChartSwitch } from './ChartSwitch/ChartSwitch';
 import StackedBarChart from '../../../location/components/StackedBarChart/StackedBarChart';
@@ -19,6 +17,7 @@ interface DashboardProps {
   polulationChart?: boolean;
   buildingsChart?: boolean;
   targetAreaChart?: boolean;
+  structures?: number;
 }
 
 function Dashboard({
@@ -27,7 +26,8 @@ function Dashboard({
   totals,
   polulationChart = true,
   buildingsChart = true,
-  targetAreaChart = false
+  targetAreaChart = false,
+  structures = 0
 }: DashboardProps) {
   const [chartDataType, setChartDataType] = useState<'summary' | 'male' | 'female'>('summary');
 
@@ -95,32 +95,14 @@ function Dashboard({
         </>
       )}
 
-      {buildingsChart && (
-        <>
+      {!!(buildingsChart && structures && structures > 0) && (
           <div className={`${style.dashBoardSectionWrapper} ${style.structureWrapper}`}>
             <div className={style.structureText}>
               <FontAwesomeIcon className={style.structureIcon} icon="sitemap" />
               <h3 className={style.populationChartSumH3}>Structures</h3>
             </div>
-            <p className={style.populationChartSumP}>79</p>
+            <p className={style.populationChartSumP}>{structures}</p>
           </div>
-          <div className={style.facilitiesStatisticWrapper}>
-            <div className={`${style.dashBoardSectionWrapper} ${style.facilitiesWrapper}`}>
-              <div className={style.facilitiesText}>
-                <img src={House} className={style.houseIcon} alt="Facilities" />
-                <h3 className={style.populationChartSumH3}>Facilities</h3>
-              </div>
-              <p className={style.populationChartSumP}>26</p>
-            </div>
-            <div className={`${style.dashBoardSectionWrapper} ${style.facilitiesWrapper}`}>
-              <div className={style.facilitiesText}>
-                <img src={Sphere} alt="Distribution" className={style.houseIcon} />
-                <h3 className={style.populationChartSumH3}>Distribution</h3>
-              </div>
-              <p className={style.populationChartSumP}>31</p>
-            </div>
-          </div>
-        </>
       )}
     </section>
   );

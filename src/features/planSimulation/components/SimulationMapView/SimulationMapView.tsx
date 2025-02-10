@@ -916,19 +916,20 @@ const SimulationMapView = ({
                 content.className = styles.content;
 
                 // Population card
-                const populationCard = document.createElement('div');
-                populationCard.className = styles.populationCard;
-                populationCard.innerHTML = `
-                <div class="${styles.label}">Population</div>
-                <div class="${styles.value}">${
-                  Math.round(JSON.parse(clickedFeature.properties?.population).sum).toLocaleString() ?? 'Not Available'
-                }</div>
-                <div class="${styles.subtotalValueContainer}">
-                  <div class="${styles.sublabel}">Children Number</div>
-                  <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
-                </div>
-              `;
-                content.appendChild(populationCard);
+                if (clickedFeature.properties?.population && clickedFeature.properties?.childrenNumber) {
+                  const populationCard = document.createElement('div');
+                  populationCard.className = styles.populationCard;
+                  populationCard.innerHTML = `
+                    <div class="${styles.label}">Population</div>
+                    <div class="${styles.value}">${Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ?? 'Not Available'
+                        }</div>
+                    <div class="${styles.subtotalValueContainer}">
+                      <div class="${styles.sublabel}">Children Number</div>
+                      <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
+                    </div>
+                  `;
+                  content.appendChild(populationCard);
+                }
 
                 // Score container
                 const scoreContainer = document.createElement('div');
@@ -1464,7 +1465,7 @@ const SimulationMapView = ({
                         try {
                           let perc = parseFloat(selectedTagPercentageValue);
                           percDisplay = Math.trunc(Math.round(perc * 100));
-                        } catch (e) {}
+                        } catch (e) { }
                         htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}

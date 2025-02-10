@@ -268,6 +268,7 @@ const Simulation = () => {
   const [showDatasetsAgainstParentLevel, setShowDatasetsAgainstParentLevel] = useState(false);
   const [selectedParentLevel, setSelectedParentLevel] = useState<SingleValue<{ value: string; label: string }>>();
   const [showingParentLevelsMenu, setShowingParentLevelsMenu] = useState(false);
+  const [numberOfStructures, setNumberOfStructures] = useState(0);
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
   const { dispatch } = usePolygonContext();
@@ -418,10 +419,11 @@ const Simulation = () => {
         setGeometry(selectedLocation);
         setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
         const populationData = transformPopulationData(selectedLocation?.properties?.population);
+        setNumberOfStructures(selectedLocation?.properties?.numberOfStructures);
         if (populationData !== null) {
-          setChartData(populationData.chartData);
-          setLabels(populationData.labels);
-          setTotals(populationData.totals);
+          setChartData(populationData?.chartData);
+          setLabels(populationData?.labels);
+          setTotals(populationData?.totals);
         }
       }
     }
@@ -430,19 +432,21 @@ const Simulation = () => {
   useEffect(() => {
     let populationData: any;
     if (state.selected) {
-      populationData = transformPopulationData(JSON.parse(state.selected.population));
+      populationData = state.selected.population ? transformPopulationData(JSON.parse(state.selected.population)) : null;
+      setNumberOfStructures(state.selected?.numberOfStructures);
       if (populationData !== null) {
         setChartData(populationData.chartData);
-        setLabels(populationData.labels);
-        setTotals(populationData.totals);
+        setLabels(populationData?.labels);
+        setTotals(populationData?.totals);
       }
     } else if (!state.selected && currentLocationId) {
       const selectedLocation = polygonsWithData[currentLocationId].polygonData;
       const populationData = transformPopulationData(selectedLocation?.properties?.population);
+      setNumberOfStructures(selectedLocation?.properties?.numberOfStructures);
       if (populationData !== null) {
         setChartData(populationData.chartData);
-        setLabels(populationData.labels);
-        setTotals(populationData.totals);
+        setLabels(populationData?.labels);
+        setTotals(populationData?.totals);
       }
     }
   }, [state.selected, showDatasetsAgainstParentLevel]);
@@ -1567,61 +1571,9 @@ const Simulation = () => {
     {
       label: 'Total Population',
       total: Math.round(state.targetAreas?.reduce((a, b) => a + b?.properties?.population?.sum, 0)) || 0,
-      targetAreasList: state.targetAreas
-    },
-    {
-      label: 'Total Structures',
-      total: 200,
-      targetAreasList: [
-        {
-          name: 'Target Area 1',
-          sum: 50
-        },
-        {
-          name: 'Target Area 2',
-          sum: 100
-        },
-        {
-          name: 'Target Area 3',
-          sum: 50
-        }
-      ]
-    },
-    {
-      label: 'Total Facilities',
-      total: 50,
-      targetAreasList: [
-        {
-          name: 'Target Area 1',
-          sum: 10
-        },
-        {
-          name: 'Target Area 2',
-          sum: 20
-        },
-        {
-          name: 'Target Area 3',
-          sum: 20
-        }
-      ]
-    },
-    {
-      label: 'Total Statistics',
-      total: 100,
-      targetAreasList: [
-        {
-          name: 'Target Area 1',
-          sum: 20
-        },
-        {
-          name: 'Target Area 2',
-          sum: 30
-        },
-        {
-          name: 'Target Area 3',
-          sum: 50
-        }
-      ]
+      targetAreasList: state.targetAreas,
+      type: 'population'
+
     }
   ];
 
@@ -1779,7 +1731,8 @@ const Simulation = () => {
           <Drawer open={rightOpen} anchor="left">
             {Object.keys(chartData).length > 0 && (
               <Accordion title="Statistics" open>
-                <Dashboard chartLabels={labels} chartData={chartData} totals={totals} />
+                <Dashboard chartLabels={labels} chartData={chartData} totals={totals} structures={numberOfStructures}
+                />
               </Accordion>
             )}
             <Accordion title="Campaign Totals" open>
