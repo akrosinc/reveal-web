@@ -29,3 +29,8 @@ export const getOrganizationListSummary = async (): Promise<PageableModel<Organi
     .then(response => response.data);
   return data;
 };
+
+export const getOrganizatonsWithMembers = async (): Promise<any[]> => {
+  const data = await api.get<any[]>('/organization/members').then(response => response.data);
+  return data;
+};

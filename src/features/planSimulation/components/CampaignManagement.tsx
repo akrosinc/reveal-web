@@ -67,6 +67,7 @@ import {
 import { toast } from 'react-toastify';
 import { assignLocationsToPlan } from '../../assignment/api';
 import { getReportForLocation } from '../reportsAPI/reportsApi';
+import { getOrganizationListSummary, getOrganizatonsWithMembers } from './Teams/api/teamAPI';
 
 export interface Stats {
   [key: string]: Metadata;
@@ -140,6 +141,7 @@ const CampaignManagement = () => {
   });
 
   const [locationReport, setLocationReport] = useState<any>({});
+  const [teamsList, setTeamsList] = useState<any[]>([]);
 
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
@@ -607,6 +609,14 @@ const CampaignManagement = () => {
     });
   };
 
+  const fetchTeamsData = async () => {
+    getOrganizatonsWithMembers().then((data: any) => {
+      console.log(data);
+
+      setTeamsList(data);
+    });
+  };
+
   const campaignTotals = {
     label: 'Target Areas',
     total: state.targetAreas.length,
@@ -619,29 +629,21 @@ const CampaignManagement = () => {
       <Container fluid ref={divRef}>
         <div style={{ display: 'flex', position: 'relative' }}>
           <Drawer open={leftOpen} anchor="left" heading="Campaign Manager">
-            {/* {highestLocations && showResult && ( */}
             {highestLocations && (
               <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
                 <Hierarchy clickHandler={loadLocationHandler} />
-                {/* <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Operational Area</DrawerButton>
-                <CustomPopup isOpen={openCustomModal === 0} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
-                  <AddTargetAreaForm onClose={() => setOpenCustomModal(undefined)} />
-                </CustomPopup> */}
               </Accordion>
             )}
-            {/* {highestLocations && showResult && ( */}
             <Accordion title="Teams" open>
-              <Teams />
-              {/* <Button className={style.buttonPrimary} onClick={() => setShowModal(true)}>
-                Manage Teams
-              </Button> */}
+              <Teams teamsList={teamsList} fetchTeamsData={fetchTeamsData} />
               <DrawerButton onClick={() => setOpenCustomModal(1)}>Manage Teams</DrawerButton>
               <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
-                <UserModal />
+                <UserModal fetchTeamsData={fetchTeamsData} />
               </CustomPopup>
             </Accordion>
           </Drawer>
           <SimulationMapView
+            teamsList={teamsList} //list of teams
             selectedLoaction={geometry} // BBBOX
             currentLocationChildren={selectedLocationChildren}
             loading={resultsLoadingState}

@@ -70,6 +70,7 @@ import { set } from 'react-hook-form';
 import { getSimulationData } from './api/datasetsAPI';
 import { getPlanInfo } from './api/hierarchyAPI';
 import { findNodeById, getIdsByGeographicLevel } from './util';
+import { AssignToTeamsDialog } from '../AssignToTeamsDialog/AssignToTeamsDialog';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -83,6 +84,7 @@ export const getBackgroundStyle = (value: { r: number; g: number; b: number } | 
 };
 
 const SimulationMapView = ({
+  teamsList,
   currentLocationChildren,
   loading,
   leftOpenHandler,
@@ -168,6 +170,9 @@ const SimulationMapView = ({
 
   // DATASET OPACITY IDS
   const [datasetLayersId, setDatasetLayersId] = useState<string[]>([]);
+
+  // Assign location to team
+  const [assignToTeamPopup, setAssignToTeamPopup] = useState(false);
 
   const [toggleAssignedLayer, setToggleAssignedLayer] = useState(false);
   // CONTEXT
@@ -942,11 +947,15 @@ const SimulationMapView = ({
                   populationCard.className = styles.populationCard;
                   populationCard.innerHTML = `
                     <div class="${styles.label}">Population</div>
-                    <div class="${styles.value}">${Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ?? 'Not Available'
-                        }</div>
+                    <div class="${styles.value}">${
+                    Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
+                    'Not Available'
+                  }</div>
                     <div class="${styles.subtotalValueContainer}">
                       <div class="${styles.sublabel}">Children Number</div>
-                      <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
+                      <p class="${styles.sublabelValue}">${
+                    clickedFeature.properties?.childrenNumber ?? 'Not Available'
+                  }</p>
                     </div>
                   `;
                   content.appendChild(populationCard);
@@ -974,6 +983,7 @@ const SimulationMapView = ({
 
                 // Button with event listener
                 const button = document.createElement('a');
+                const assignToATeamButton = document.createElement('a');
                 const condition = assignedLocationsRef.current
                   ? !assignedLocationsRef.current?.[clickedFeature.properties?.id]
                   : !clickedFeature.properties?.assigned;
@@ -981,10 +991,18 @@ const SimulationMapView = ({
                   button.textContent = 'Add to campaign';
                   button.className = styles.addToCampaignButton;
                 } else {
+                  if ((teamsList ?? []).length > 0) {
+                    assignToATeamButton.textContent = 'Assign to a team';
+                    assignToATeamButton.className = styles.addToCampaignButton;
+                  }
                   button.textContent = 'Remove from campaign';
                   button.className = styles.RemoveFromCampaignButton;
                 }
                 button.addEventListener('click', () => handleCampaignClick(clickedFeature));
+                if ((teamsList ?? []).length > 0) {
+                  assignToATeamButton.addEventListener('click', () => setAssignToTeamPopup(true));
+                  scoreContainer.appendChild(assignToATeamButton);
+                }
                 scoreContainer.appendChild(button);
 
                 content.appendChild(scoreContainer);
@@ -1507,7 +1525,7 @@ const SimulationMapView = ({
                         try {
                           let perc = parseFloat(selectedTagPercentageValue);
                           percDisplay = Math.trunc(Math.round(perc * 100));
-                        } catch (e) { }
+                        } catch (e) {}
                         htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}
@@ -1977,8 +1995,26 @@ const SimulationMapView = ({
     setColor(color); // Update color state
   };
 
+  const handleAssign = (teamId: number) => {
+    console.log('SELECTED TEAM ', teamId);
+  };
+
+  const teams: any[] = [
+    { id: 1, name: 'Team Alpha', members: 8, active: true },
+    { id: 2, name: 'Team Beta', members: 6, active: true },
+    { id: 3, name: 'Team Gamma', members: 5, active: false },
+    { id: 4, name: 'Team Delta', members: 7, active: true },
+    { id: 5, name: 'Team Epsilon', members: 4, active: true }
+  ];
+
   return (
     <Container fluid style={{ position: 'relative' }} className={`mx-0 px-0 ${styles.mapContainer}`}>
+      <AssignToTeamsDialog
+        isOpen={assignToTeamPopup}
+        onOpenChange={setAssignToTeamPopup}
+        onAssign={handleAssign}
+        teams={teamsList ? teamsList : teams}
+      />
       {loading === 'started' && (
         <div className={styles.backDrop}>
           <Spinner animation="grow" variant="success" className={styles.spinner} />

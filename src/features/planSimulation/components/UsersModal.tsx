@@ -61,6 +61,7 @@ interface Options {
 }
 interface UserModalProps {
   className?: string;
+  fetchTeamsData: () => void;
 }
 
 interface TeamsRegisterValues {
@@ -70,7 +71,7 @@ interface TeamsRegisterValues {
   active: boolean;
 }
 
-export default function UserModal() {
+export default function UserModal({ fetchTeamsData }: UserModalProps) {
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
   const [selectedTeamSecurityGroups, setSelectedTeamSecurityGroups] = useState<SingleValue<Option>>();
   const [teamOrganization, setteamOrganization] = useState<OrganizationModel[]>([]);
@@ -281,6 +282,7 @@ export default function UserModal() {
       success: {
         render({ data }: { data: OrganizationModel }) {
           resetTeams();
+          fetchTeamsData();
           return `Organization with id: ${data.identifier} created successfully.`;
         }
       }
@@ -310,8 +312,6 @@ export default function UserModal() {
   // Move member to Team
 
   const moveToTeam = async (userId: string) => {
-    
-
     const user = users.find(u => u.identifier === userId);
 
     if (!selectedTeam) {
@@ -331,7 +331,7 @@ export default function UserModal() {
 
       try {
         const response = await addUserToOrganization(selectedTeam, user.username);
-        console.log(response, "the response of the move to team")
+        console.log(response, 'the response of the move to team');
 
         if (Array.isArray(response) && response.length > 0) {
           setAssignedUsers(prevAssigned => [...prevAssigned, member]);
@@ -362,7 +362,7 @@ export default function UserModal() {
 
       try {
         const response = await deleteUserFromOrganization(organizationId, username);
-        console.log(response, "the response of the delete user")
+        console.log(response, 'the response of the delete user');
 
         if (Array.isArray(response) && !response.some(user => user.identifier === selectedAssigned)) {
           setAssignedUsers(prevAssigned => prevAssigned.filter(user => user.identifier !== selectedAssigned));

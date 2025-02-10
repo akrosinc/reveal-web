@@ -55,7 +55,8 @@ function Dashboard({
     { label: 'Incomplete', data: [locationReport?.totalIncomplete], backgroundColor: '#cd1c18' },
     { label: 'Not Visited', data: [locationReport?.totalNotVisited], backgroundColor: '#FFE066' }
   ];
-  console.log(locationReport, 'locationReport');
+
+  console.log(locationReport);
 
   return (
     <section className={style.statisticsWrapper}>
@@ -104,16 +105,18 @@ function Dashboard({
             title="Custom Chart Title"
           />
           <GaugeChart
-            value={locationReport.totalVisited}
+            valueInPercentage={locationReport.visitationCoverage}
+            absolutValue={locationReport.totalVisited}
             minValue={0}
             maxValue={locationReport.totalStructures}
             label="Visitation coverage"
             color="#FF5733"
           />
           <GaugeChart
-            value={locationReport.totalComplete}
+            valueInPercentage={locationReport.completionCoverage}
+            absolutValue={locationReport.totalComplete}
             minValue={0}
-            maxValue={locationReport.totalStructures}
+            maxValue={locationReport.totalVisited}
             label="Completion coverage"
             color="#4CAF50"
           />
@@ -121,13 +124,13 @@ function Dashboard({
       )}
 
       {!!(buildingsChart && structures && structures > 0) && (
-          <div className={`${style.dashBoardSectionWrapper} ${style.structureWrapper}`}>
-            <div className={style.structureText}>
-              <FontAwesomeIcon className={style.structureIcon} icon="sitemap" />
-              <h3 className={style.populationChartSumH3}>Structures</h3>
-            </div>
-            <p className={style.populationChartSumP}>{structures}</p>
+        <div className={`${style.dashBoardSectionWrapper} ${style.structureWrapper}`}>
+          <div className={style.structureText}>
+            <FontAwesomeIcon className={style.structureIcon} icon="sitemap" />
+            <h3 className={style.populationChartSumH3}>Structures</h3>
           </div>
+          <p className={style.populationChartSumP}>{structures}</p>
+        </div>
       )}
     </section>
   );
