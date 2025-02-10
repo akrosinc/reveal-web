@@ -3,8 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DoghnutChart } from '../../../location/components/doughnutChart/DoghnutChart';
 import { faUsers, faSitemap, faHouseUser, faDiceD20 } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import House from '../../../../assets/svgs/house.svg';
-import Sphere from '../../../../assets/svgs/sphere.svg';
 import { useState } from 'react';
 import { ChartSwitch } from './ChartSwitch/ChartSwitch';
 import StackedBarChart from '../../../location/components/StackedBarChart/StackedBarChart';
@@ -19,15 +17,19 @@ interface DashboardProps {
   polulationChart?: boolean;
   buildingsChart?: boolean;
   targetAreaChart?: boolean;
+  structures?: number;
+  locationReport?: any;
 }
 
 function Dashboard({
+  locationReport,
   chartData,
   chartLabels,
   totals,
   polulationChart = true,
   buildingsChart = true,
-  targetAreaChart = false
+  targetAreaChart = false,
+  structures = 0
 }: DashboardProps) {
   const [chartDataType, setChartDataType] = useState<'summary' | 'male' | 'female'>('summary');
 
@@ -47,6 +49,14 @@ function Dashboard({
         setChartDataType('summary');
     }
   };
+
+  const generateChartData = [
+    { label: 'Complete', data: [locationReport?.totalComplete], backgroundColor: '#008000' },
+    { label: 'Incomplete', data: [locationReport?.totalIncomplete], backgroundColor: '#cd1c18' },
+    { label: 'Not Visited', data: [locationReport?.totalNotVisited], backgroundColor: '#FFE066' }
+  ];
+
+  console.log(locationReport);
 
   return (
     <section className={style.statisticsWrapper}>
@@ -87,40 +97,40 @@ function Dashboard({
           />
         </div>
       )}
-      {targetAreaChart && (
+      {targetAreaChart && Object.keys(locationReport).length > 0 && (
         <>
-          <StackedBarChart />
-          <GaugeChart value={68790} minValue={60000} maxValue={180000} label="Visitation coverage" color="#FF5733" />
-          <GaugeChart value={75000} minValue={0} maxValue={180000} label="Completion coverage" color="#4CAF50" />
+          <StackedBarChart
+            chartData={generateChartData}
+            max={locationReport.totalStructures}
+            title="Custom Chart Title"
+          />
+          <GaugeChart
+            valueInPercentage={locationReport.visitationCoverage}
+            absolutValue={locationReport.totalVisited}
+            minValue={0}
+            maxValue={locationReport.totalStructures}
+            label="Visitation coverage"
+            color="#FF5733"
+          />
+          <GaugeChart
+            valueInPercentage={locationReport.completionCoverage}
+            absolutValue={locationReport.totalComplete}
+            minValue={0}
+            maxValue={locationReport.totalVisited}
+            label="Completion coverage"
+            color="#4CAF50"
+          />
         </>
       )}
 
-      {buildingsChart && (
-        <>
-          <div className={`${style.dashBoardSectionWrapper} ${style.structureWrapper}`}>
-            <div className={style.structureText}>
-              <FontAwesomeIcon className={style.structureIcon} icon="sitemap" />
-              <h3 className={style.populationChartSumH3}>Structures</h3>
-            </div>
-            <p className={style.populationChartSumP}>79</p>
+      {!!(buildingsChart && structures && structures > 0) && (
+        <div className={`${style.dashBoardSectionWrapper} ${style.structureWrapper}`}>
+          <div className={style.structureText}>
+            <FontAwesomeIcon className={style.structureIcon} icon="sitemap" />
+            <h3 className={style.populationChartSumH3}>Structures</h3>
           </div>
-          <div className={style.facilitiesStatisticWrapper}>
-            <div className={`${style.dashBoardSectionWrapper} ${style.facilitiesWrapper}`}>
-              <div className={style.facilitiesText}>
-                <img src={House} className={style.houseIcon} alt="Facilities" />
-                <h3 className={style.populationChartSumH3}>Facilities</h3>
-              </div>
-              <p className={style.populationChartSumP}>26</p>
-            </div>
-            <div className={`${style.dashBoardSectionWrapper} ${style.facilitiesWrapper}`}>
-              <div className={style.facilitiesText}>
-                <img src={Sphere} alt="Distribution" className={style.houseIcon} />
-                <h3 className={style.populationChartSumH3}>Distribution</h3>
-              </div>
-              <p className={style.populationChartSumP}>31</p>
-            </div>
-          </div>
-        </>
+          <p className={style.populationChartSumP}>{structures}</p>
+        </div>
       )}
     </section>
   );

@@ -7,26 +7,29 @@ import GaugeIcon from '../../../../assets/svgs/gaugeIcon.svg';
 Chart.register(ArcElement, Tooltip);
 
 interface GaugeChartProps {
-  value: number; // Current value
+  valueInPercentage: number; // Current value in percentage
+  absolutValue: number; // Current value
   minValue: number; // Minimum value of the range
   maxValue: number; // Maximum value of the range
   label: string; // Chart label
   color: string; // Gauge color
 }
 
-export default function GaugeChart({ value, minValue, maxValue, label, color }: GaugeChartProps) {
+export default function GaugeChart({
+  absolutValue,
+  valueInPercentage,
+  minValue,
+  maxValue,
+  label,
+  color
+}: GaugeChartProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const clampedValue = absolutValue;
+  const percentage = valueInPercentage;
 
-  // Ensure value is within range
-  const clampedValue = Math.min(Math.max(value, minValue), maxValue);
-
-  // Calculate percentage within the provided range
-  const percentage = ((clampedValue - minValue) / (maxValue - minValue)) * 100;
-
-  // Convert large numbers to k/m notation
   const formatNumber = (num: number): string => {
     if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(0)}m`;
-    if (num >= 1_000) return `${(num / 1_000).toFixed(0)}k`;
+    if (num >= 1_000) return `${(num / 1_000).toFixed(1)}k`;
     return num.toString();
   };
 
@@ -63,8 +66,8 @@ export default function GaugeChart({ value, minValue, maxValue, label, color }: 
         </div>
       </div>
       <div className={styles.rangeLabels}>
-        <span>{formatNumber(minValue)}</span>
-        <span>{formatNumber(maxValue)}</span>
+        <span>{minValue}</span>
+        <span>{maxValue}</span>
       </div>
     </div>
   );

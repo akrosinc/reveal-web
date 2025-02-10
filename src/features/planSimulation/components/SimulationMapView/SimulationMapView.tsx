@@ -70,6 +70,7 @@ import { set } from 'react-hook-form';
 import { getSimulationData } from './api/datasetsAPI';
 import { getPlanInfo } from './api/hierarchyAPI';
 import { findNodeById, getIdsByGeographicLevel } from './util';
+import { AssignToTeamsDialog } from '../AssignToTeamsDialog/AssignToTeamsDialog';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -83,6 +84,7 @@ export const getBackgroundStyle = (value: { r: number; g: number; b: number } | 
 };
 
 const SimulationMapView = ({
+  teamsList,
   currentLocationChildren,
   loading,
   leftOpenHandler,
@@ -168,6 +170,9 @@ const SimulationMapView = ({
 
   // DATASET OPACITY IDS
   const [datasetLayersId, setDatasetLayersId] = useState<string[]>([]);
+
+  // Assign location to team
+  const [assignToTeamPopup, setAssignToTeamPopup] = useState(false);
 
   const [toggleAssignedLayer, setToggleAssignedLayer] = useState(false);
   // CONTEXT
@@ -266,8 +271,6 @@ const SimulationMapView = ({
           dispatch({ type: 'CLEAR_SELECTION' });
         });
       }
-    } else {
-      console.log('state - planId', state);
     }
   };
 
@@ -821,11 +824,7 @@ const SimulationMapView = ({
 
   useEffect(() => {
     if (map && map.current && currentLocationChildren && selectedLoaction) {
-      console.log(state.selected?.childrenNumber, 'state.selected?.childrenNumber');
-
-      if (!showDatasetsAgainstParentLevel && state.selected?.childrenNumber !== 0) {
-        console.log('BBOX');
-
+      if (!showDatasetsAgainstParentLevel) {
         map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
       }
 
@@ -841,8 +840,6 @@ const SimulationMapView = ({
         'fill-color': 'rgba(57, 62, 65, 0)',
         'fill-outline-color': 'rgba(57, 62, 65, 1)'
       });
-
-      console.log(currentLocationChildren, 'currentLocationChildren');
 
       // Add or update the "children-layer" with individual polygon colors
       if (!map.current.getLayer('children-layer')) {
@@ -914,8 +911,6 @@ const SimulationMapView = ({
             dispatch({ type: 'SELECT_SINGLE', payload: clickedFeature });
 
             if (map.current && clickedFeature) {
-              console.log('clickedFeature', clickedFeature?.properties);
-
               const createPopupContent = () => {
                 const tagData = clickedFeature.properties?.metadata
                   ? JSON.parse(clickedFeature.properties.metadata)
@@ -947,19 +942,24 @@ const SimulationMapView = ({
                 content.className = styles.content;
 
                 // Population card
-                const populationCard = document.createElement('div');
-                populationCard.className = styles.populationCard;
-                populationCard.innerHTML = `
-                <div class="${styles.label}">Population</div>
-                <div class="${styles.value}">${
-                  Math.round(JSON.parse(clickedFeature.properties?.population).sum).toLocaleString() ?? 'Not Available'
-                }</div>
-                <div class="${styles.subtotalValueContainer}">
-                  <div class="${styles.sublabel}">Children Number</div>
-                  <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'}</p>
-                </div>
-              `;
-                content.appendChild(populationCard);
+                if (clickedFeature.properties?.population && clickedFeature.properties?.childrenNumber) {
+                  const populationCard = document.createElement('div');
+                  populationCard.className = styles.populationCard;
+                  populationCard.innerHTML = `
+                    <div class="${styles.label}">Population</div>
+                    <div class="${styles.value}">${
+                    Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
+                    'Not Available'
+                  }</div>
+                    <div class="${styles.subtotalValueContainer}">
+                      <div class="${styles.sublabel}">Children Number</div>
+                      <p class="${styles.sublabelValue}">${
+                    clickedFeature.properties?.childrenNumber ?? 'Not Available'
+                  }</p>
+                    </div>
+                  `;
+                  content.appendChild(populationCard);
+                }
 
                 // Score container
                 const scoreContainer = document.createElement('div');
@@ -983,6 +983,7 @@ const SimulationMapView = ({
 
                 // Button with event listener
                 const button = document.createElement('a');
+                const assignToATeamButton = document.createElement('a');
                 const condition = assignedLocationsRef.current
                   ? !assignedLocationsRef.current?.[clickedFeature.properties?.id]
                   : !clickedFeature.properties?.assigned;
@@ -990,10 +991,18 @@ const SimulationMapView = ({
                   button.textContent = 'Add to campaign';
                   button.className = styles.addToCampaignButton;
                 } else {
+                  if ((teamsList ?? []).length > 0) {
+                    assignToATeamButton.textContent = 'Assign to a team';
+                    assignToATeamButton.className = styles.addToCampaignButton;
+                  }
                   button.textContent = 'Remove from campaign';
                   button.className = styles.RemoveFromCampaignButton;
                 }
                 button.addEventListener('click', () => handleCampaignClick(clickedFeature));
+                if ((teamsList ?? []).length > 0) {
+                  assignToATeamButton.addEventListener('click', () => setAssignToTeamPopup(true));
+                  scoreContainer.appendChild(assignToATeamButton);
+                }
                 scoreContainer.appendChild(button);
 
                 content.appendChild(scoreContainer);
@@ -1129,7 +1138,7 @@ const SimulationMapView = ({
           properties: {
             name: child.properties.name,
             geographicLevel: child.properties.geographicLevel,
-            childrenNumber: child.properties.childrenNumber
+            childrenNumber: child.properties.childrenNumber > 0 ? ` (${child.properties.childrenNumber})` : ''
           }
         };
       });
@@ -1163,7 +1172,7 @@ const SimulationMapView = ({
                 'case',
                 ['==', ['get', 'geographicLevel'], 'structure'],
                 '',
-                ['concat', ' (', ['to-string', ['get', 'childrenNumber']], ')']
+                ['concat', ['to-string', ['get', 'childrenNumber']]]
               ]
             ],
             'text-size': 13,
@@ -1839,7 +1848,7 @@ const SimulationMapView = ({
             properties: {
               name: child.properties.name,
               geographicLevel: child.properties.geographicLevel,
-              childrenNumber: child.properties.childrenNumber
+              childrenNumber: child.properties.childrenNumber > 0 ? ` (${child.properties.childrenNumber})` : ''
             }
           };
         }
@@ -1877,7 +1886,7 @@ const SimulationMapView = ({
                 'case',
                 ['==', ['get', 'geographicLevel'], 'structure'], // Condition for 'structure'
                 '',
-                ['concat', ' (', ['to-string', ['get', 'childrenNumber']], ')'] // Append childrenNumber if not 'structure'
+                ['concat', ['to-string', ['get', 'childrenNumber']]] // Append childrenNumber if not 'structure'
               ]
             ],
             'text-size': 13,
@@ -1986,8 +1995,26 @@ const SimulationMapView = ({
     setColor(color); // Update color state
   };
 
+  const handleAssign = (teamId: number) => {
+    console.log('SELECTED TEAM ', teamId);
+  };
+
+  const teams: any[] = [
+    { id: 1, name: 'Team Alpha', members: 8, active: true },
+    { id: 2, name: 'Team Beta', members: 6, active: true },
+    { id: 3, name: 'Team Gamma', members: 5, active: false },
+    { id: 4, name: 'Team Delta', members: 7, active: true },
+    { id: 5, name: 'Team Epsilon', members: 4, active: true }
+  ];
+
   return (
     <Container fluid style={{ position: 'relative' }} className={`mx-0 px-0 ${styles.mapContainer}`}>
+      <AssignToTeamsDialog
+        isOpen={assignToTeamPopup}
+        onOpenChange={setAssignToTeamPopup}
+        onAssign={handleAssign}
+        teams={teamsList ? teamsList : teams}
+      />
       {loading === 'started' && (
         <div className={styles.backDrop}>
           <Spinner animation="grow" variant="success" className={styles.spinner} />
@@ -2045,92 +2072,6 @@ const SimulationMapView = ({
           entityTags={entityTags}
         />
       )}
-
-      {/* LEFT CLICK FORM */}
-      {/* {showMapDrawnModal && (
-        <ActionDialog
-          closeHandler={() => setShowMapDrawnModal(false)}
-          title={'Selected Locations'}
-          footer={
-            <>
-              <Button
-                onClick={() => {
-                  if (mapBoxDraw.current) {
-                    mapBoxDraw.current?.deleteAll();
-                  }
-                  setShowMapDrawnModal(false);
-                }}
-              >
-                <FontAwesomeIcon className="mx-1" icon="trash" />
-              </Button>
-              <Button
-                onClick={_ => {
-                  updateSelectedLocations3();
-
-                  if (mapBoxDraw.current) {
-                    mapBoxDraw.current?.deleteAll();
-                  }
-
-                  setShowMapDrawnModal(false);
-                }}
-              >
-                update
-              </Button>
-              <Button onClick={() => setShowMapDrawnModal(false)}>close</Button>
-            </>
-          }
-          element={
-            <Container fluid>
-              <Row className="my-3">
-                <Col>
-                  <Form.Group>
-                    <Form.Check
-                      className="float-left"
-                      type="switch"
-                      id="custom-switch"
-                      label="Should the selection apply to all locations?"
-                      defaultChecked={false}
-                      onChange={e => setShouldApplyToAll(e.target.checked)}
-                    />
-                  </Form.Group>
-                  {!shouldApplyToAll && (
-                    <Form.Group>
-                      <Form.Label>{'Select Location for which the Drawn Polygon to apply to'}</Form.Label>
-
-                      <Form.Select
-                        style={{ display: 'inline-block' }}
-                        onChange={e => {
-                          setDrawnMapLevel(e.target.value);
-                        }}
-                      >
-                        <option key="selectDrawLayer" value={'select layer'}>
-                          {'Select layer...'}
-                        </option>
-                        {getOptions()}
-                      </Form.Select>
-                    </Form.Group>
-                  )}
-                </Col>
-              </Row>
-              <Row className="my-3">
-                <Col>
-                  <Form.Group>
-                    <Form.Check
-                      className="float-left"
-                      type="switch"
-                      id="custom-switch"
-                      label="Should the selection apply to children locations?"
-                      defaultChecked={true}
-                      onChange={e => setShouldApplyToChildren(e.target.checked)}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-            </Container>
-          }
-          size={'lg'}
-        />
-      )} */}
 
       <div id="mapContainer" ref={mapContainer} style={{ height: fullScreen ? '90vh' : '75vh', width: '100%' }} />
     </Container>

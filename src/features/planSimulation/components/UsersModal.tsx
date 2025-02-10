@@ -183,16 +183,20 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     });
   };
 
+
   /// users list logic
 
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const allUsers = await getUserList();
-      setSortedUsers(allUsers);
-      setUsers(sortUsers(allUsers, sortField, direction));
+      console.log('allUsers', allUsers);
+      const uniqueUsers = Array.from(
+        new Map(allUsers.map(user => [user.identifier, user])).values()
+      );
+      setSortedUsers(uniqueUsers);
+      setUsers(sortUsers(uniqueUsers, sortField, direction));
     } catch (error) {
-      console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
     }
@@ -248,10 +252,12 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     try {
       const response = await getOrganizationListSummary();
 
+
       const teamNames = response.content.map(org => ({
         name: org.name,
         id: org.identifier
       }));
+
 
       setTeams(teamNames.map(team => team.name));
       setTeamsList(teamNames);
@@ -262,7 +268,9 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     }
   };
 
+
   useEffect(() => {
+    fetchTeams();
     fetchTeams();
   }, []);
   const filteredTeams = teams.filter(team => team.toLowerCase().includes(teamSearchTerm.toLowerCase()));
@@ -307,6 +315,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
         render({ data }: { data: OrganizationModel }) {
           resetTeams();
           fetchTeamsData();
+          fetchTeamsData();
           return `Organization with id: ${data.identifier} created successfully.`;
         }
       }
@@ -343,6 +352,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     if (!selectedTeam) {
       console.error('Error: selectedTeamId is missing or undefined');
       return;
+      return;
     }
 
     if (user) {
@@ -363,7 +373,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
           setAssignedUsers(prevAssigned => [...prevAssigned, member]);
 
           setUsers(prevUsers => prevUsers.filter(u => u.identifier !== userId));
-
+          fetchUsers();
           fetchTeams();
           fetchMembers(selectedTeam);
           toast.success('User moved to team successfully!');
@@ -446,19 +456,8 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                   Manage Teams
                 </Nav.Link>
               </Nav.Item>
-              {/* <Nav.Item className={style.settings}>
-                  <Nav.Link
-                    eventKey="settings"
-                    onClick={() => setActiveTab('settings')}
-                    className={style.navsettingItemMenu}
-                  >
-                    <FontAwesomeIcon icon={faCogs} className={style.settingIcon} />
-                    Settings
-                  </Nav.Link>
-                </Nav.Item> */}
             </Nav>
           </Col>
-
           <Col md={9} className={style.contentArea}>
             {activeTab === 'createUser' && (
               <Container className={style.createUserContainer}>
@@ -522,6 +521,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                       </Form.Group>
                     </Col>
                   </Row>
+                 
 
                   <Form.Group className="mb-3">
                     <Form.Label>Password</Form.Label>
@@ -533,6 +533,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                     />
                     {errors.password && <Form.Label className="text-danger">{errors.password.message}</Form.Label>}
                   </Form.Group>
+                 
 
                   <Form.Group className="mb-3">
                     <Form.Label>Email</Form.Label>
@@ -548,6 +549,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                       })}
                     />
                   </Form.Group>
+                 
 
                   <Form.Group className="mb-3">
                     <Form.Label>Security Groups</Form.Label>
@@ -561,6 +563,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                       onChange={selectHandler}
                     />
                   </Form.Group>
+                 
 
                   <Form.Group className="mb-3">
                     <Form.Label>Teams</Form.Label>
@@ -574,6 +577,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                       onChange={organizationSelectHandler}
                     />
                   </Form.Group>
+               
 
                   <div className={style.buttonContainer}>
                     <Button className={style.primaryButton} onClick={handleSubmit(submitHandler)}>
@@ -769,7 +773,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                     )}
                   </div>
                 </Col>
-
                 <Col md={6} className={style.teamsSection}>
                   <div className={style.sectionHeader}>
                     <h5>Teams</h5>
@@ -809,6 +812,8 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
           </Col>
         </Row>
       </section>
+                 
     </div>
   );
 }
+

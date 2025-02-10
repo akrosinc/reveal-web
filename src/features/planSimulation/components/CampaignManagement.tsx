@@ -66,6 +66,8 @@ import {
 } from './SimulationMapView/api/datasetsAPI';
 import { toast } from 'react-toastify';
 import { assignLocationsToPlan } from '../../assignment/api';
+import { getReportForLocation } from '../reportsAPI/reportsApi';
+import { getOrganizationListSummary, getOrganizatonsWithMembers } from './Teams/api/teamAPI';
 
 export interface Stats {
   [key: string]: Metadata;
@@ -137,6 +139,9 @@ const CampaignManagement = () => {
     method: undefined,
     source: undefined
   });
+
+  const [locationReport, setLocationReport] = useState<any>({});
+  const [teamsList, setTeamsList] = useState<any[]>([]);
 
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
@@ -220,6 +225,12 @@ const CampaignManagement = () => {
       if (selectedLocation) {
         setGeometry(selectedLocation);
         setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
+
+        // report on location
+        getReportForLocation(state.planid, selectedLocation.identifier).then(report => {
+          setLocationReport(report);
+        });
+
         const populationData = transformPopulationData(selectedLocation?.properties?.population);
         if (populationData !== null) {
           setChartData(populationData.chartData);
@@ -234,6 +245,10 @@ const CampaignManagement = () => {
     let populationData: any;
     if (state.selected) {
       populationData = transformPopulationData(JSON.parse(state.selected.population));
+
+      getReportForLocation(state.planid, state.selected.id).then(report => {
+        setLocationReport(report);
+      });
       if (populationData !== null) {
         setChartData(populationData.chartData);
         setLabels(populationData.labels);
@@ -594,6 +609,14 @@ const CampaignManagement = () => {
     });
   };
 
+  const fetchTeamsData = async () => {
+    getOrganizatonsWithMembers().then((data: any) => {
+      console.log(data);
+
+      setTeamsList(data);
+    });
+  };
+
   const campaignTotals = {
     label: 'Target Areas',
     total: state.targetAreas.length,
@@ -606,32 +629,21 @@ const CampaignManagement = () => {
       <Container fluid ref={divRef}>
         <div style={{ display: 'flex', position: 'relative' }}>
           <Drawer open={leftOpen} anchor="left" heading="Campaign Manager">
-            {/* {highestLocations && showResult && ( */}
             {highestLocations && (
               <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
                 <Hierarchy clickHandler={loadLocationHandler} />
-                {/* <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Operational Area</DrawerButton>
-                <CustomPopup isOpen={openCustomModal === 0} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
-                  <AddTargetAreaForm onClose={() => setOpenCustomModal(undefined)} />
-                </CustomPopup> */}
               </Accordion>
             )}
-            {/* {highestLocations && showResult && ( */}
             <Accordion title="Teams" open>
-              <Teams />
-              {/* <Button className={style.buttonPrimary} onClick={() => setShowModal(true)}>
-                Manage Teams
-              </Button> */}
+              <Teams teamsList={teamsList} fetchTeamsData={fetchTeamsData} />
               <DrawerButton onClick={() => setOpenCustomModal(1)}>Manage Teams</DrawerButton>
               <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
-               
-                  <UserModal  />
-                  
-              
+                <UserModal fetchTeamsData={fetchTeamsData} />
               </CustomPopup>
             </Accordion>
           </Drawer>
           <SimulationMapView
+            teamsList={teamsList} //list of teams
             selectedLoaction={geometry} // BBBOX
             currentLocationChildren={selectedLocationChildren}
             loading={resultsLoadingState}
@@ -666,6 +678,7 @@ const CampaignManagement = () => {
                 targetAreaChart={true}
                 chartLabels={labels}
                 chartData={chartData}
+                locationReport={locationReport}
                 totals={totals}
               />
             </Accordion>
