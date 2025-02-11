@@ -16,7 +16,7 @@ import {
   RESOURCE_PLANNING_PAGE,
   DATA_PROCESSING_PROGRESS,
   REVEAL_SIMULATION,
-  CAMPAIGN_MANAGEMENT
+  CampaignManage
 } from '../../../constants';
 
 export const MAIN_MENU = [
@@ -51,8 +51,8 @@ export const MAIN_MENU = [
         roles: [PLAN_VIEW]
       },
       {
-        pageTitle: 'Campaign Management',
-        route: CAMPAIGN_MANAGEMENT,
+        pageTitle: 'CampaignManage',
+        route: CampaignManage,
         roles: [REVEAL_SIMULATION]
       }
     ]
