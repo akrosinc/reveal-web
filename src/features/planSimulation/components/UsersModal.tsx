@@ -40,6 +40,7 @@ import { OrganizationModel } from '../../organization/providers/types';
 import { FieldValidationError } from '../../../api/providers';
 import Accordion from '../../location/components/accordion/Accordion';
 import { string } from 'mathjs';
+import { AxiosResponse } from 'axios';
 interface RegisterValues {
   username: string;
   firstname: string;
@@ -173,7 +174,8 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
       password: formValues.password,
       securityGroups: selectedSecurityGroups?.map(el => el.value) ?? []
     };
-    createUser(newUser).then((res: CreateUserResponse | null) => {
+    createUser(newUser).then((res: AxiosResponse | null) => {
+      console.log(res, 'the response of the create user');
       if (res) {
         toast.success('User created successfully!');
         fetchTeamsData();
@@ -202,7 +204,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, []);
 
   const sortUsers = (userList: UserModel[], field: string, direction: boolean): UserModel[] => {
     return [...userList].sort((a, b) => {
@@ -220,7 +222,8 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     setSortField(field);
     setDirection(newSortDirection);
 
-    setUsers(sortUsers(sortedUsers, field, newSortDirection));
+    const sorted = sortUsers(sortedUsers, field, newSortDirection);
+    setUsers(sorted);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

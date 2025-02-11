@@ -12,7 +12,7 @@ import {
   RESOURCE_PLANNING_PAGE,
   SIMULATION_PAGE,
   TAG_MANAGEMENT,
-  CAMPAIGN_MANAGEMENT
+  CampaignManage
 } from '../constants/';
 import Home from '../pages/HomePage';
 import Plan from '../pages/Plan';
@@ -49,7 +49,7 @@ const Router = () => {
           <Route path={ASSIGNMENT_PAGE + '/*'} element={<Assignment />} />
           <Route path={REPORTING_PAGE + '/*'} element={<Reporting />} />
           <Route path={SIMULATION_PAGE + '/*'} element={<PlanSimulation />} />
-          <Route path={CAMPAIGN_MANAGEMENT + '/*'} element={<Campaign />} />
+          <Route path={CampaignManage + '/*'} element={<Campaign />} />
           <Route path={TAG_MANAGEMENT + '/*'} element={<TagManagement2 />} />
           <Route path={DATA_PROCESSING_PROGRESS + '/*'} element={<DataProcessingProgress />} />
           <Route path={METADATA_IMPORT + '/*'} element={<MetaDataImport />}>

@@ -23,7 +23,7 @@ export const SIMULATION_PAGE = '/plans/simulation';
 
 export const RESOURCE_PLANNING_PAGE = '/plans/resource-planning';
 
-export const CAMPAIGN_MANAGEMENT = '/plans/campaign-management';
+export const CampaignManage = '/plans/campaign-management';
 
 //REPORTING PAGES
 export const REPORTING_PAGE = '/reports';

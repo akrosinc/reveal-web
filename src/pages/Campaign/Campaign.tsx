@@ -5,18 +5,19 @@ import { ErrorPage } from '../../components/pages';
 import PageWrapper from '../../components/PageWrapper';
 import { REVEAL_SIMULATION } from '../../constants';
 import Simulation from '../../features/planSimulation/components/Simulation';
-import CampaignManagement from '../../features/planSimulation/components/CampaignManagement';
+import Campaign_Management from '../../features/planSimulation/components/CampaignManagement';
+
 const Campaign = () => {
   const { t } = useTranslation();
 
   return (
-    <PageWrapper>
+    <PageWrapper >
       <Routes>
         <Route
           path="/"
           element={
             <AuthGuard roles={[REVEAL_SIMULATION]}>
-              <CampaignManagement />
+              <Campaign_Management />
             </AuthGuard>
           }
         />
