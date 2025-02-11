@@ -275,9 +275,8 @@ const SimulationMapView = ({
     }
   };
 
-  const handleTeamAssignment = (location: any) => {
+  const handleTeamAssignment = async (location: any) => {
     setLocationForTeamAssignment(location);
-
     setAssignToTeamPopup(true);
   };
 

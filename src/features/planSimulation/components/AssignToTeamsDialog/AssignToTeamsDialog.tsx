@@ -3,6 +3,7 @@ import styles from './AssignToTeamsDialog.module.css';
 import CheckIcon from '../../../../assets/svgs/check-circle.svg';
 import { usePolygonContext } from '../../../../contexts/PolygonContext';
 import { assignLocationToTeam } from './api/teamAssignmentAPI';
+import { getSimulationData } from '../SimulationMapView/api/datasetsAPI';
 
 interface AssignToTeamsDialogProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ export function AssignToTeamsDialog({
 }: AssignToTeamsDialogProps) {
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const { state } = usePolygonContext();
+  const { state, dispatch } = usePolygonContext();
   const planId = state.planid;
 
   useEffect(() => {
@@ -38,12 +39,15 @@ export function AssignToTeamsDialog({
 
   const filteredTeams = teams.filter(team => team.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  const handleAssign = () => {
+  const handleAssign = async () => {
     if (selectedTeam && selectedLocation) {
       console.log('Assigning team', selectedTeam, 'to location', selectedLocation);
 
-      assignLocationToTeam(selectedTeam, selectedLocation, planId);
-
+      assignLocationToTeam(selectedTeam, selectedLocation, planId).then(async () => {
+        const simulationData = await getSimulationData(state.planid);
+        dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+        dispatch({ type: 'CLEAR_SELECTION' });
+      });
       onAssign(selectedTeam);
       setSelectedTeam(null);
       setSearchQuery('');

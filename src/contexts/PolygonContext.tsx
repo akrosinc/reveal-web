@@ -84,6 +84,8 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
     case 'SET_SIMULATION_ID':
       return { ...state, simulationId: action.payload };
     case 'SET_TARGET_AREAS':
+      console.log('setting target areas', action.payload);
+
       return { ...state, targetAreas: action.payload };
     case 'SET_ADMIN0_LOCATION_ID':
       return { ...state, admin0LocationId: action.payload };
