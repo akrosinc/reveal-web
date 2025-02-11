@@ -45,7 +45,6 @@ const Teams = ({ teamsList, fetchTeamsData }: TeamsProps) => {
                 {/* <ChevronRight size={16} className={style.chevron} /> */}
               </div>
             }
-            open
           >
             <div className={style.membersList}>
               {team.members.length > 0 ? (

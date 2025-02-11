@@ -1,18 +1,28 @@
 import { useState, useEffect } from 'react';
 import styles from './AssignToTeamsDialog.module.css';
+import CheckIcon from '../../../../assets/svgs/check-circle.svg';
+import { usePolygonContext } from '../../../../contexts/PolygonContext';
+import { assignLocationToTeam } from './api/teamAssignmentAPI';
 
 interface AssignToTeamsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onAssign: (teamId: number) => void;
   teams: any[];
+  selectedLocation: any;
 }
 
-export function AssignToTeamsDialog({ isOpen, onOpenChange, onAssign, teams }: AssignToTeamsDialogProps) {
+export function AssignToTeamsDialog({
+  isOpen,
+  onOpenChange,
+  onAssign,
+  teams,
+  selectedLocation
+}: AssignToTeamsDialogProps) {
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-
-  console.log(teams);
+  const { state } = usePolygonContext();
+  const planId = state.planid;
 
   useEffect(() => {
     if (isOpen) {
@@ -29,7 +39,11 @@ export function AssignToTeamsDialog({ isOpen, onOpenChange, onAssign, teams }: A
   const filteredTeams = teams.filter(team => team.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const handleAssign = () => {
-    if (selectedTeam) {
+    if (selectedTeam && selectedLocation) {
+      console.log('Assigning team', selectedTeam, 'to location', selectedLocation);
+
+      assignLocationToTeam(selectedTeam, selectedLocation, planId);
+
       onAssign(selectedTeam);
       setSelectedTeam(null);
       setSearchQuery('');
@@ -68,7 +82,9 @@ export function AssignToTeamsDialog({ isOpen, onOpenChange, onAssign, teams }: A
                   {team.members.length} members • {team.active ? 'Active' : 'Inactive'}
                 </span>
               </div>
-              {selectedTeam === team.identifier && team.active && '✔'}
+              {selectedTeam === team.identifier && team.active && (
+                <img src={CheckIcon} alt="Check Icon" className={styles.checkIcon} />
+              )}
             </button>
           ))}
         </div>
