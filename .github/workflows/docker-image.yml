@@ -30,7 +30,7 @@ jobs:
 
     - uses: borales/actions-yarn@v5.0.0
       with:
-        cmd: build # will run `yarn build` command
+        cmd: build --verbose # will run `yarn build` command
       env:
         NODE_OPTIONS: --openssl-legacy-provider
         CI: false
