@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import styles from './AssignToTeamsDialog.module.css';
 import CheckIcon from '../../../../assets/svgs/check-circle.svg';
-import RemoveIcon from '../../../../assets/svgs/remove-minus.svg';
 import { usePolygonContext } from '../../../../contexts/PolygonContext';
-import { assignLocationToTeam } from './api/teamAssignmentAPI';
+import { assignLocationToTeam, getLocationsAssignedToATeam } from './api/teamAssignmentAPI';
 import { getSimulationData } from '../SimulationMapView/api/datasetsAPI';
 
 interface AssignToTeamsDialogProps {
@@ -47,6 +46,7 @@ export function AssignToTeamsDialog({
 
   const unassignedTeams = teams.filter(team => !assignedTeamIdentifiers.includes(team.identifier));
   const assignedTeams = teams.filter(team => assignedTeamIdentifiers.includes(team.identifier));
+  //   const selectedLocationsForTeam
 
   //   console.log('Unassigned Teams', unassignedTeams);
   //   console.log('Assigned Teams', assignedTeamsToLocation);
@@ -54,10 +54,13 @@ export function AssignToTeamsDialog({
   const handleAssign = async () => {
     if (selectedTeam && selectedLocation) {
       if (assignedTeams.some(team => team.identifier === selectedTeam)) {
-        assignLocationToTeam(selectedTeam, '', planId);
+        assignLocationToTeam(selectedTeam, [''], planId);
         console.log('Unassigning Location from Team');
       } else {
-        assignLocationToTeam(selectedTeam, selectedLocation.properties?.id, planId);
+        getLocationsAssignedToATeam(selectedTeam.toString(), planId).then(response => {
+          const selectedLocationsId = [...response, selectedLocation.properties.id];
+          assignLocationToTeam(selectedTeam, selectedLocationsId, planId);
+        });
         console.log('Assigning Location to Team', selectedTeam);
       }
       const simulationData = await getSimulationData(state.planid);

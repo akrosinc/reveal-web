@@ -1,9 +1,9 @@
 import api from '../../../../../api/axios';
 
-export const assignLocationToTeam = async (teamId: number, locationId: string, planId: string) => {
+export const assignLocationToTeam = async (teamId: number, locationId: string[], planId: string) => {
   const response = await api.post(`/plan/assignLocationsToTeam/${planId}`, {
     organizationIdentifier: teamId,
-    locationIdentifiers: [locationId]
+    locationIdentifiers: locationId
   });
 
   return response.data;
