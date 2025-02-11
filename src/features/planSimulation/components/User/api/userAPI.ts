@@ -2,6 +2,7 @@ import api from '../../../../../api/axios';
 import { toast } from 'react-toastify';
 import { OrganizationModel } from '../../../../../features/organization/providers/types';
 import { ORGANIZATION, USER } from '../../../../../constants';
+import axios, { AxiosResponse } from 'axios';
 export interface CreateUserRequest {
   email: string;
   firstName: string;
@@ -10,6 +11,7 @@ export interface CreateUserRequest {
   password: string;
   securityGroups: string[];
   username: string;
+
 }
 export interface MemberModel {
   identifier: string;
@@ -70,6 +72,7 @@ export interface CreateUserResponse {
   organizations: string[];
   securityGroups: string[];
   username: string;
+  success?: boolean;
 }
 
 export interface AddUserToOrganizationRequest {
@@ -106,13 +109,13 @@ export const getUserList = async (
   return response.data.content;
 };
 
-export const createUser = async (data: CreateUserRequest): Promise<CreateUserResponse | null> => {
+export const createUser = async (data: CreateUserRequest): Promise<AxiosResponse | null> => {
   try {
-    const response = await api.post<CreateUserResponse>('/user', data);
-    return response.data;
+    const response: AxiosResponse = await api.post('/user', data);
+    return response; 
   } catch (error) {
     console.error('Error creating user:', error);
-    return null;
+    return null; 
   }
 };
 

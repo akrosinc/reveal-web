@@ -155,7 +155,6 @@ const CampaignManagement = () => {
       dispatch({ type: 'SET_NEW_DATASETS', payload: simulationData.datasets });
       dispatch({ type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
       dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
-      console.log(state.simulationId);
     } catch (error) {
       console.error('Failed to fetch simulation:', error);
     }
@@ -195,17 +194,6 @@ const CampaignManagement = () => {
         .filter((polygon: any) => polygon.properties.parentIdentifier === currentLocationId);
 
       setSelectedLocationChildren(children);
-
-      console.log(children, 'All children');
-
-      console.log(
-        children.filter((child: any) => child.properties.businessStatus === 'Complete'),
-        'Complete children'
-      );
-      console.log(
-        children.filter((child: any) => child.properties.businessStatus === 'Not Visited'),
-        'Not Visited children'
-      );
 
       // when locations loaded, we are setting their assigned flag values as default values in assignment map
       // this way, state.assignedLocations is our single source of truth
@@ -269,7 +257,6 @@ const CampaignManagement = () => {
     fetchHierarchy();
     fetchSimulationAndData();
     fetchDefaultHierarchyData();
-    console.log(state);
   }, []);
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -564,8 +551,6 @@ const CampaignManagement = () => {
         });
       }
     }
-
-    console.log(polygonsWithData);
   };
 
   const processChildren = useCallback(
@@ -611,8 +596,6 @@ const CampaignManagement = () => {
 
   const fetchTeamsData = async () => {
     getOrganizatonsWithMembers().then((data: any) => {
-      console.log(data);
-
       setTeamsList(data);
     });
   };
@@ -671,17 +654,19 @@ const CampaignManagement = () => {
             analysisLayerDetails={analysisLayerDetails}
           />
           <Drawer open={rightOpen} anchor="left" heading="Performance">
-            <Accordion title="Statistics" open>
-              <Dashboard
-                polulationChart={false}
-                buildingsChart={false}
-                targetAreaChart={true}
-                chartLabels={labels}
-                chartData={chartData}
-                locationReport={locationReport}
-                totals={totals}
-              />
-            </Accordion>
+            {Object.keys(locationReport).length > 0 && (
+              <Accordion title="Statistics" open>
+                <Dashboard
+                  polulationChart={false}
+                  buildingsChart={false}
+                  targetAreaChart={true}
+                  chartLabels={labels}
+                  chartData={chartData}
+                  locationReport={locationReport}
+                  totals={totals}
+                />
+              </Accordion>
+            )}
             {campaignTotals.targetAreasList.length !== 0 && (
               <Accordion title="Targets" open>
                 <Target targetAreas={campaignTotals} />

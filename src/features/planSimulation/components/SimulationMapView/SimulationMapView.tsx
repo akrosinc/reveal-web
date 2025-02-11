@@ -173,6 +173,7 @@ const SimulationMapView = ({
 
   // Assign location to team
   const [assignToTeamPopup, setAssignToTeamPopup] = useState(false);
+  const [locationForTeamAssignment, setLocationForTeamAssignment] = useState<any>();
 
   const [toggleAssignedLayer, setToggleAssignedLayer] = useState(false);
   // CONTEXT
@@ -272,6 +273,11 @@ const SimulationMapView = ({
         });
       }
     }
+  };
+
+  const handleTeamAssignment = async (location: any) => {
+    setLocationForTeamAssignment(location);
+    setAssignToTeamPopup(true);
   };
 
   const updateChildrenOfSelectedLocation = useCallback(
@@ -823,6 +829,8 @@ const SimulationMapView = ({
   }, [map, map.current, state.datasets, datasetsDataMap, state.opacitySliderValue]);
 
   useEffect(() => {
+    // console.log('selectedLoaction', currentLocationChildren);
+
     if (map && map.current && currentLocationChildren && selectedLoaction) {
       if (!showDatasetsAgainstParentLevel) {
         map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
@@ -1000,7 +1008,11 @@ const SimulationMapView = ({
                 }
                 button.addEventListener('click', () => handleCampaignClick(clickedFeature));
                 if ((teamsList ?? []).length > 0) {
-                  assignToATeamButton.addEventListener('click', () => setAssignToTeamPopup(true));
+                  assignToATeamButton.addEventListener('click', () => {
+                    console.log('clickedFeature', clickedFeature);
+
+                    handleTeamAssignment(clickedFeature);
+                  });
                   scoreContainer.appendChild(assignToATeamButton);
                 }
                 scoreContainer.appendChild(button);
@@ -1115,6 +1127,7 @@ const SimulationMapView = ({
       state.targetAreas.length !== 0
     ) {
       DrawPolygonsFeatureCollection(map.current, state.targetAreas, 'target-areas');
+      console.log('target areas', state.targetAreas);
 
       if (!map.current.getLayer('target-areas-layer')) {
         map.current.addLayer({
@@ -1122,14 +1135,20 @@ const SimulationMapView = ({
           type: 'fill',
           source: `target-areas-source`,
           paint: {
-            'fill-color': 'rgba(255, 0, 74, 1)',
-            'fill-outline-color': 'rgba(57, 62, 65, 1)'
+            // 'fill-color': 'rgba(255, 0, 74, 0.5)',
+            'fill-color': [
+              'case',
+              ['!=', ['get', 'numberOfTeams'], 0], // Corrected condition
+              'rgba(128, 128, 128, 0.7)', // Yellow
+              'rgba(255, 0, 74, 0.7)' // Default color
+            ]
           },
           layout: {
             visibility: 'visible'
           }
         });
       }
+
       const taLabelFeatures = state.targetAreas?.map(child => {
         const center = turf.centroid(child.geometry);
         return {
@@ -1996,7 +2015,7 @@ const SimulationMapView = ({
   };
 
   const handleAssign = (teamId: number) => {
-    console.log('SELECTED TEAM ', teamId);
+    // console.log('SELECTED TEAM ', teamId);
   };
 
   const teams: any[] = [
@@ -2014,6 +2033,7 @@ const SimulationMapView = ({
         onOpenChange={setAssignToTeamPopup}
         onAssign={handleAssign}
         teams={teamsList ? teamsList : teams}
+        selectedLocation={locationForTeamAssignment}
       />
       {loading === 'started' && (
         <div className={styles.backDrop}>

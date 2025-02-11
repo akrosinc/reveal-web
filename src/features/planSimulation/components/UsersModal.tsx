@@ -40,6 +40,7 @@ import { OrganizationModel } from '../../organization/providers/types';
 import { FieldValidationError } from '../../../api/providers';
 import Accordion from '../../location/components/accordion/Accordion';
 import { string } from 'mathjs';
+import { AxiosResponse } from 'axios';
 interface RegisterValues {
   username: string;
   firstname: string;
@@ -173,9 +174,11 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
       password: formValues.password,
       securityGroups: selectedSecurityGroups?.map(el => el.value) ?? []
     };
-    createUser(newUser).then((res: CreateUserResponse | null) => {
+    createUser(newUser).then((res: AxiosResponse | null) => {
+      console.log(res, 'the response of the create user');
       if (res) {
         toast.success('User created successfully!');
+        fetchTeamsData();
         reset();
       } else {
         toast.error('Failed to create user');
@@ -201,7 +204,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, []);
 
   const sortUsers = (userList: UserModel[], field: string, direction: boolean): UserModel[] => {
     return [...userList].sort((a, b) => {
@@ -219,7 +222,8 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     setSortField(field);
     setDirection(newSortDirection);
 
-    setUsers(sortUsers(sortedUsers, field, newSortDirection));
+    const sorted = sortUsers(sortedUsers, field, newSortDirection);
+    setUsers(sorted);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -309,7 +313,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
         render({ data }: { data: OrganizationModel }) {
           resetTeams();
           fetchTeamsData();
-          fetchTeamsData();
           return `Organization with id: ${data.identifier} created successfully.`;
         }
       }
@@ -377,6 +380,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
           fetchTeams();
           fetchMembers(selectedTeam);
           toast.success('User moved to team successfully!');
+          fetchTeamsData();
 
           setSelectedAvailable(null);
         } else {
@@ -410,6 +414,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
           fetchTeams();
           fetchMembers(organizationId);
           toast.success('User deleted from team successfully!');
+          fetchTeamsData();
           setSelectedAssigned(null);
         } else {
           console.error('Failed to delete user');
