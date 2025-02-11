@@ -654,17 +654,19 @@ const CampaignManagement = () => {
             analysisLayerDetails={analysisLayerDetails}
           />
           <Drawer open={rightOpen} anchor="left" heading="Performance">
-            <Accordion title="Statistics" open>
-              <Dashboard
-                polulationChart={false}
-                buildingsChart={false}
-                targetAreaChart={true}
-                chartLabels={labels}
-                chartData={chartData}
-                locationReport={locationReport}
-                totals={totals}
-              />
-            </Accordion>
+            {Object.keys(locationReport).length > 0 && (
+              <Accordion title="Statistics" open>
+                <Dashboard
+                  polulationChart={false}
+                  buildingsChart={false}
+                  targetAreaChart={true}
+                  chartLabels={labels}
+                  chartData={chartData}
+                  locationReport={locationReport}
+                  totals={totals}
+                />
+              </Accordion>
+            )}
             {campaignTotals.targetAreasList.length !== 0 && (
               <Accordion title="Targets" open>
                 <Target targetAreas={campaignTotals} />
