@@ -415,6 +415,8 @@ const Simulation = () => {
 
       const selectedLocation = polygonsWithData[currentLocationId].polygonData;
 
+      console.log('418 selectedLocation', selectedLocation?.properties.name);
+
       if (selectedLocation && !showDatasetsAgainstParentLevel) {
         setGeometry(selectedLocation);
         setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
@@ -432,7 +434,9 @@ const Simulation = () => {
   useEffect(() => {
     let populationData: any;
     if (state.selected) {
-      populationData = state.selected.population ? transformPopulationData(JSON.parse(state.selected.population)) : null;
+      populationData = state.selected.population
+        ? transformPopulationData(JSON.parse(state.selected.population))
+        : null;
       setNumberOfStructures(state.selected?.numberOfStructures);
       if (populationData !== null) {
         setChartData(populationData.chartData);
@@ -1573,7 +1577,6 @@ const Simulation = () => {
       total: Math.round(state.targetAreas?.reduce((a, b) => a + b?.properties?.population?.sum, 0)) || 0,
       targetAreasList: state.targetAreas,
       type: 'population'
-
     }
   ];
 
@@ -1731,8 +1734,7 @@ const Simulation = () => {
           <Drawer open={rightOpen} anchor="left">
             {Object.keys(chartData).length > 0 && (
               <Accordion title="Statistics" open>
-                <Dashboard chartLabels={labels} chartData={chartData} totals={totals} structures={numberOfStructures}
-                />
+                <Dashboard chartLabels={labels} chartData={chartData} totals={totals} structures={numberOfStructures} />
               </Accordion>
             )}
             <Accordion title="Campaign Totals" open>

@@ -178,6 +178,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
       console.log(res, 'the response of the create user');
       if (res) {
         toast.success('User created successfully!');
+        fetchTeamsData();
         reset();
       } else {
         toast.error('Failed to create user');
@@ -312,7 +313,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
         render({ data }: { data: OrganizationModel }) {
           resetTeams();
           fetchTeamsData();
-          fetchTeamsData();
           return `Organization with id: ${data.identifier} created successfully.`;
         }
       }
@@ -356,7 +356,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     if (!selectedTeam) {
       console.error('Error: selectedTeamId is missing or undefined');
       return;
-      return;
     }
 
     if (user) {
@@ -381,6 +380,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
           fetchTeams();
           fetchMembers(selectedTeam);
           toast.success('User moved to team successfully!');
+          fetchTeamsData();
 
           setSelectedAvailable(null);
         } else {
@@ -414,6 +414,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
           fetchTeams();
           fetchMembers(organizationId);
           toast.success('User deleted from team successfully!');
+          fetchTeamsData();
           setSelectedAssigned(null);
         } else {
           console.error('Failed to delete user');

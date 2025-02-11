@@ -62,7 +62,6 @@
   height: 300px;
   overflow-y: auto;
   margin: 16px 0;
-  padding-right: 16px;
 }
 
 .teamButton {
@@ -172,4 +171,8 @@
 .assignButton:disabled {
   background-color: #9ca3af;
   cursor: not-allowed;
+}
+
+.checkIcon {
+  width: 25px;
 }

@@ -56,8 +56,6 @@ function Dashboard({
     { label: 'Not Visited', data: [locationReport?.totalNotVisited], backgroundColor: '#FFE066' }
   ];
 
-  console.log(locationReport);
-
   return (
     <section className={style.statisticsWrapper}>
       {polulationChart && (
