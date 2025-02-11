@@ -98,8 +98,10 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
 
-  const allUsers = ['User A', 'User B', 'User C', 'User D', 'User E'];
-  const [availableUsers, setAvailableUsers] = useState(['User A', 'User B', 'User C']);
+  const [allUsers, setAllUsers] = useState<UserModel[]>([]);
+
+  const [sortedUsers, setSortedUsers] = useState<UserModel[]>([]);
+
   const [viewType, setViewType] = useState('Available Members');
 
   const [teamsList, setTeamsList] = useState<{ name: string; id: string }[]>([]);
@@ -109,7 +111,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
   const [selectedTeamName, setSelectedTeamName] = useState<string>('');
 
   // Dynamic filtering for Available/All Members dropdown
-  const filteredAvailableUsers = viewType === 'All Members' ? allUsers : availableUsers;
+
   const [assignedUsers, setAssignedUsers] = useState<MemberModel[]>([]);
 
   const [selectedAvailable, setSelectedAvailable] = useState<string | null>(null);
@@ -182,39 +184,62 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
   };
 
   /// users list logic
-  const handleSortClick = (field: string) => {
-    setSortField(prev => (prev === field ? field : field));
-    setDirection(prev => (sortField === field ? !prev : true));
-  };
-
-  const toggleFilter = () => {
-    setIsFilterOpen(prev => !prev);
-  };
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
-    setFilters(prevFilters => ({
-      ...prevFilters,
-      [field]: e.target.value
-    }));
-  };
 
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const sortedUsers = await getUserList(searchTerm, filters, sortField, direction);
-      setUsers(sortedUsers);
+      const allUsers = await getUserList();
+      console.log('allUsers', allUsers);
+      const uniqueUsers = Array.from(new Map(allUsers.map(user => [user.identifier, user])).values());
+      setSortedUsers(uniqueUsers);
+      setUsers(sortUsers(uniqueUsers, sortField, direction));
     } catch (error) {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, filters, sortField, direction]);
+  }, [sortField, direction]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchUsers();
-    }, 300);
-    return () => clearTimeout(timer);
+    fetchUsers();
   }, [fetchUsers]);
+
+  const sortUsers = (userList: UserModel[], field: string, direction: boolean): UserModel[] => {
+    return [...userList].sort((a, b) => {
+      if (field === 'firstName') {
+        return direction ? a.firstName.localeCompare(b.firstName) : b.firstName.localeCompare(a.firstName);
+      }
+      return 0;
+    });
+  };
+
+  const handleSortClick = (field: string) => {
+    const isSameField = sortField === field;
+    const newSortDirection = isSameField ? !direction : true;
+
+    setSortField(field);
+    setDirection(newSortDirection);
+
+    setUsers(sortUsers(sortedUsers, field, newSortDirection));
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    filterUsers(e.target.value);
+  };
+
+  const filterUsers = (term: string) => {
+    if (!term.trim()) {
+      setUsers(sortedUsers);
+
+      return;
+    }
+
+    const filtered = sortedUsers.filter(user =>
+      `${user.firstName} ${user.lastName}`.toLowerCase().includes(term.toLowerCase())
+    );
+
+    setUsers(filtered);
+  };
 
   /// users list logic end here
 
@@ -239,6 +264,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
   };
 
   useEffect(() => {
+    fetchTeams();
     fetchTeams();
   }, []);
   const filteredTeams = teams.filter(team => team.toLowerCase().includes(teamSearchTerm.toLowerCase()));
@@ -283,6 +309,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
         render({ data }: { data: OrganizationModel }) {
           resetTeams();
           fetchTeamsData();
+          fetchTeamsData();
           return `Organization with id: ${data.identifier} created successfully.`;
         }
       }
@@ -290,6 +317,13 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
   };
 
   const handleTeamSelection = (teamId: string) => {
+    if (teamId === '') {
+      setSelectedTeam('');
+      setSelectedTeamName('');
+      setAssignedUsers([]);
+      return;
+    }
+
     const selectedTeamObj = teamsList.find(team => team.id === teamId);
 
     if (selectedTeamObj) {
@@ -312,10 +346,13 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
   // Move member to Team
 
   const moveToTeam = async (userId: string) => {
+    console.error('User ID or Team ID is missing');
+
     const user = users.find(u => u.identifier === userId);
 
     if (!selectedTeam) {
       console.error('Error: selectedTeamId is missing or undefined');
+      return;
       return;
     }
 
@@ -335,7 +372,9 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
 
         if (Array.isArray(response) && response.length > 0) {
           setAssignedUsers(prevAssigned => [...prevAssigned, member]);
+
           setUsers(prevUsers => prevUsers.filter(u => u.identifier !== userId));
+          fetchUsers();
           fetchTeams();
           fetchMembers(selectedTeam);
           toast.success('User moved to team successfully!');
@@ -367,6 +406,8 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
         if (Array.isArray(response) && !response.some(user => user.identifier === selectedAssigned)) {
           setAssignedUsers(prevAssigned => prevAssigned.filter(user => user.identifier !== selectedAssigned));
 
+          // setUsers(prevUsers => prevUsers.filter(user => user.identifier !== selectedAssigned));
+          fetchUsers();
           fetchTeams();
           fetchMembers(organizationId);
           toast.success('User deleted from team successfully!');
@@ -380,7 +421,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
       }
     }
   };
-
+  const rightArrowDisabled = !selectedTeam;
   return (
     <div className={style.fullModal}>
       <div>
@@ -416,19 +457,8 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                   Manage Teams
                 </Nav.Link>
               </Nav.Item>
-              {/* <Nav.Item className={style.settings}>
-                  <Nav.Link
-                    eventKey="settings"
-                    onClick={() => setActiveTab('settings')}
-                    className={style.navsettingItemMenu}
-                  >
-                    <FontAwesomeIcon icon={faCogs} className={style.settingIcon} />
-                    Settings
-                  </Nav.Link>
-                </Nav.Item> */}
             </Nav>
           </Col>
-
           <Col md={9} className={style.contentArea}>
             {activeTab === 'createUser' && (
               <Container className={style.createUserContainer}>
@@ -566,7 +596,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                     </Form.Select>
                   </Col>
                   <Col>
-                    <Form.Select value={selectedTeam || ''} onChange={e => handleTeamSelection(e.target.value)}>
+                    <Form.Select value={selectedTeam} onChange={e => handleTeamSelection(e.target.value)}>
                       <option value="">Select a Team</option>
                       {teamsList.map((team, index) => (
                         <option key={index} value={team.id}>
@@ -657,12 +687,12 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                     <Button
                       variant="primary"
                       className="mb-2"
-                      disabled={!selectedAvailable}
+                      disabled={!selectedTeam || !selectedAvailable}
                       onClick={() => {
                         if (selectedAvailable) {
                           moveToTeam(selectedAvailable);
                         } else {
-                          alert('No member selected. Please select a member to move to the team.');
+                          alert('No member or team selected. Please select both a member and a team.');
                         }
                       }}
                     >
@@ -707,12 +737,11 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                   <div className={style.sectionHeader}>
                     <h5>Users</h5>
                     <div className={style.controls}>
-                      <DebounceInput
-                        minLength={2}
-                        debounceTimeout={300}
+                      <input
+                        type="text"
                         className={style.searchInput}
                         value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
+                        onChange={handleSearchChange}
                         placeholder="Search by name..."
                       />
                       <FontAwesomeIcon
@@ -723,20 +752,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                       {/* <FontAwesomeIcon icon={faFilter} className={style.controlIcon} onClick={toggleFilter} /> */}
                     </div>
                   </div>
-                  {isFilterOpen && (
-                    <div className={style.filterPanel}>
-                      <h5>Filter Options</h5>
-                      <div>
-                        <label>First Name:</label>
-                        <DebounceInput
-                          minLength={1}
-                          debounceTimeout={300}
-                          value={filters.firstName}
-                          onChange={e => handleFilterChange(e, 'firstName')}
-                        />
-                      </div>
-                    </div>
-                  )}
                   <div>
                     {loading ? (
                       <p>Loading...</p>
@@ -754,7 +769,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                     )}
                   </div>
                 </Col>
-
                 <Col md={6} className={style.teamsSection}>
                   <div className={style.sectionHeader}>
                     <h5>Teams</h5>
