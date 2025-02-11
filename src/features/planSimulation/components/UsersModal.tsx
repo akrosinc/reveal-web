@@ -183,7 +183,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     });
   };
 
-
   /// users list logic
 
   const fetchUsers = useCallback(async () => {
@@ -191,9 +190,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
       setLoading(true);
       const allUsers = await getUserList();
       console.log('allUsers', allUsers);
-      const uniqueUsers = Array.from(
-        new Map(allUsers.map(user => [user.identifier, user])).values()
-      );
+      const uniqueUsers = Array.from(new Map(allUsers.map(user => [user.identifier, user])).values());
       setSortedUsers(uniqueUsers);
       setUsers(sortUsers(uniqueUsers, sortField, direction));
     } catch (error) {
@@ -252,12 +249,10 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     try {
       const response = await getOrganizationListSummary();
 
-
       const teamNames = response.content.map(org => ({
         name: org.name,
         id: org.identifier
       }));
-
 
       setTeams(teamNames.map(team => team.name));
       setTeamsList(teamNames);
@@ -267,7 +262,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchTeams();
@@ -323,6 +317,13 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
   };
 
   const handleTeamSelection = (teamId: string) => {
+    if (teamId === '') {
+      setSelectedTeam('');
+      setSelectedTeamName('');
+      setAssignedUsers([]);
+      return;
+    }
+
     const selectedTeamObj = teamsList.find(team => team.id === teamId);
 
     if (selectedTeamObj) {
@@ -521,7 +522,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                       </Form.Group>
                     </Col>
                   </Row>
-                 
 
                   <Form.Group className="mb-3">
                     <Form.Label>Password</Form.Label>
@@ -533,7 +533,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                     />
                     {errors.password && <Form.Label className="text-danger">{errors.password.message}</Form.Label>}
                   </Form.Group>
-                 
 
                   <Form.Group className="mb-3">
                     <Form.Label>Email</Form.Label>
@@ -549,7 +548,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                       })}
                     />
                   </Form.Group>
-                 
 
                   <Form.Group className="mb-3">
                     <Form.Label>Security Groups</Form.Label>
@@ -563,7 +561,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                       onChange={selectHandler}
                     />
                   </Form.Group>
-                 
 
                   <Form.Group className="mb-3">
                     <Form.Label>Teams</Form.Label>
@@ -577,7 +574,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                       onChange={organizationSelectHandler}
                     />
                   </Form.Group>
-               
 
                   <div className={style.buttonContainer}>
                     <Button className={style.primaryButton} onClick={handleSubmit(submitHandler)}>
@@ -600,7 +596,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
                     </Form.Select>
                   </Col>
                   <Col>
-                    <Form.Select value={selectedTeam || ''} onChange={e => handleTeamSelection(e.target.value)}>
+                    <Form.Select value={selectedTeam} onChange={e => handleTeamSelection(e.target.value)}>
                       <option value="">Select a Team</option>
                       {teamsList.map((team, index) => (
                         <option key={index} value={team.id}>
@@ -812,8 +808,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
           </Col>
         </Row>
       </section>
-                 
     </div>
   );
 }
-
