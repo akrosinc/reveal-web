@@ -8,6 +8,7 @@ import styles from '../../../../../location/components/accordion/Accordion.modul
 function CampaignTotalsAccordion({ open = false, campaignTotals }: any) {
   const [isOpen, setOpen] = useState(open);
 
+
   return (
     <div className={styles.accordion_Wrapper}>
       {/* Accordion Header */}
@@ -33,7 +34,7 @@ function CampaignTotalsAccordion({ open = false, campaignTotals }: any) {
               <div className={CampaignStyles.itemDot}></div>
               <p className={CampaignStyles.paragraph}>{area?.properties?.name || ''}</p>
               <div className={CampaignStyles.paragraph}>
-                <p className={CampaignStyles.paragraph}>{Math.round(area?.properties?.population?.sum) || ''}</p>
+                <p className={CampaignStyles.paragraph}>{campaignTotals.type === 'population' ? Math.round(area?.properties?.population?.sum) ?? '' : '' }</p>
                 <button className={CampaignStyles.hoverButton}>
                   {campaignTotals.remove && <img src={Delete} alt="Delete" onClick={()=>campaignTotals.remove(area.identifier)} />}
                 </button>

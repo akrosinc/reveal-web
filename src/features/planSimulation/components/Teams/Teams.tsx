@@ -1,39 +1,36 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import style from './Teams.module.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
 import Accordion from '../../../location/components/accordion/Accordion';
 
-const Teams = () => {
-  const targetAreas = [
-    { id: 1, text: "Mutele Mwapa", value: 26, progress: 80 },
-    { id: 2, text: "Boniface Jere", value: 26, progress: 70 },
-    { id: 3, text: "Boniface Jere", value: 26, progress: 90 }
-  ];
+interface TeamsProps {
+  teamsList: any[];
+  fetchTeamsData: () => void;
+}
+
+const Teams = ({ teamsList, fetchTeamsData }: TeamsProps) => {
+  useEffect(() => {
+    fetchTeamsData();
+  }, []);
 
   return (
     <>
       <div className={style.container}>
-      <Accordion title="Team 1" open>
-        {targetAreas.map(area => (
-          <div key={area.id} className={style.teamItem}>
-            <div className={style.text}>
-              <div>{area.text}</div>
-            </div>
-            
-          </div>
+        {teamsList.map((team: any) => (
+          <Accordion key={team.identifier} title={team.name} open>
+            {team.members.length > 0 ? (
+              team.members.map((member: any) => (
+                <div key={member.identifier} className={style.teamItem}>
+                  <div className={style.text}>
+                    {member.firstName} {member.lastName}
+                  </div>
+                  <div>{member.username}</div>
+                </div>
+              ))
+            ) : (
+              <div>No members</div>
+            )}
+          </Accordion>
         ))}
-        </Accordion>
-        <Accordion title="Team 2"  open>
-        {targetAreas.map(area => (
-          <div key={area.id} className={style.teamItem}>
-            <div className={style.text}>
-              <div>{area.text}</div>
-            </div>
-            
-          </div>
-        ))}
-        </Accordion>
       </div>
     </>
   );

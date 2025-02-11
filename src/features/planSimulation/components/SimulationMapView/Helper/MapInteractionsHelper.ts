@@ -22,10 +22,11 @@ export const DrawPolygonsFeatureCollection = (mapRef: any, polygonArray: any, fe
   const SourceName = `${featureName}-source`;
   // attach ancestry to properties, as Mapbox strips down the features object to geometry and properties
   const updatedArray = polygonArray.map((obj: any) => ({
-    ...obj, 
+    ...obj,
     properties: {
       ...obj.properties,
-      ancestry: obj.ancestry
+      ancestry: obj.ancestry,
+      teamsAssigned: obj.teams
     }
   }));
   if (!mapRef.getSource(SourceName)) {
