@@ -353,7 +353,6 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     if (!selectedTeam) {
       console.error('Error: selectedTeamId is missing or undefined');
       return;
-      return;
     }
 
     if (user) {
