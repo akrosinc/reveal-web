@@ -9,6 +9,7 @@ interface AccordionProps {
   parent?: boolean;
   customTitle?: React.ReactNode;
   removeBorderBottom?: boolean;
+  border?: boolean;
 }
 
 function Accordion({
@@ -17,7 +18,8 @@ function Accordion({
   children,
   parent = true,
   customTitle,
-  removeBorderBottom = false
+  removeBorderBottom = false,
+  border = true
 }: AccordionProps) {
   const [isOpen, setOpen] = useState(open);
 
@@ -42,7 +44,7 @@ function Accordion({
         />
       </div>
       <div
-        className={`${styles.accordion_item} ${parent && styles.parrentAccordion} ${
+        className={`${styles.accordion_item} ${parent && border && styles.parrentAccordion} ${
           !isOpen ? `${styles.collapsed}` : ''
         }${removeBorderBottom ? styles.noBorder : ''}`}
       >
