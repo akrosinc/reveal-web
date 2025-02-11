@@ -1009,7 +1009,9 @@ const SimulationMapView = ({
                 button.addEventListener('click', () => handleCampaignClick(clickedFeature));
                 if ((teamsList ?? []).length > 0) {
                   assignToATeamButton.addEventListener('click', () => {
-                    handleTeamAssignment(clickedFeature.properties?.id);
+                    console.log('clickedFeature', clickedFeature);
+
+                    handleTeamAssignment(clickedFeature);
                   });
                   scoreContainer.appendChild(assignToATeamButton);
                 }

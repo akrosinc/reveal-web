@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import styles from './AssignToTeamsDialog.module.css';
 import CheckIcon from '../../../../assets/svgs/check-circle.svg';
+import RemoveIcon from '../../../../assets/svgs/remove-minus.svg';
 import { usePolygonContext } from '../../../../contexts/PolygonContext';
 import { assignLocationToTeam } from './api/teamAssignmentAPI';
 import { getSimulationData } from '../SimulationMapView/api/datasetsAPI';
@@ -37,17 +38,32 @@ export function AssignToTeamsDialog({
     };
   }, [isOpen]);
 
-  const filteredTeams = teams.filter(team => team.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  if (!selectedLocation) return null;
+
+  const assignedTeamsToLocation = JSON.parse(selectedLocation?.properties?.teamsAssigned || '[]');
+
+  // Extract identifiers from assigned teams
+  const assignedTeamIdentifiers = assignedTeamsToLocation.map((team: any) => team.identifier);
+
+  const unassignedTeams = teams.filter(team => !assignedTeamIdentifiers.includes(team.identifier));
+  const assignedTeams = teams.filter(team => assignedTeamIdentifiers.includes(team.identifier));
+
+  //   console.log('Unassigned Teams', unassignedTeams);
+  //   console.log('Assigned Teams', assignedTeamsToLocation);
 
   const handleAssign = async () => {
     if (selectedTeam && selectedLocation) {
-      console.log('Assigning team', selectedTeam, 'to location', selectedLocation);
+      if (assignedTeams.some(team => team.identifier === selectedTeam)) {
+        assignLocationToTeam(selectedTeam, '', planId);
+        console.log('Unassigning Location from Team');
+      } else {
+        assignLocationToTeam(selectedTeam, selectedLocation.properties?.id, planId);
+        console.log('Assigning Location to Team', selectedTeam);
+      }
+      const simulationData = await getSimulationData(state.planid);
+      dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+      dispatch({ type: 'CLEAR_SELECTION' });
 
-      assignLocationToTeam(selectedTeam, selectedLocation, planId).then(async () => {
-        const simulationData = await getSimulationData(state.planid);
-        dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
-        dispatch({ type: 'CLEAR_SELECTION' });
-      });
       onAssign(selectedTeam);
       setSelectedTeam(null);
       setSearchQuery('');
@@ -61,6 +77,9 @@ export function AssignToTeamsDialog({
     onOpenChange(false);
   };
 
+  //   console.log('Selected Team', selectedTeam);
+  //   console.log('AssignedTeams', assignedTeams);
+
   if (!isOpen) return null;
 
   return (
@@ -71,7 +90,31 @@ export function AssignToTeamsDialog({
         </header>
 
         <div className={`${styles.teamsList} ${styles.customScroll}`}>
-          {filteredTeams.map(team => (
+          {assignedTeams.length > 0 && (
+            <>
+              {assignedTeams.map(team => (
+                <button
+                  key={team.identifier}
+                  onClick={() => setSelectedTeam(team.identifier)}
+                  className={`${styles.teamButton} ${selectedTeam === team.identifier ? styles.selected : ''}`}
+                >
+                  <div className={styles.teamInfo}>
+                    <div className={styles.teamHeader}>
+                      <span className={styles.teamName}>{team.name}</span>
+                      <div className={`${styles.statusDot} ${team.active ? styles.active : styles.inactive}`} />
+                    </div>
+                    <span className={styles.teamMembers}>
+                      {team.members.length} members • {team.active ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                  <div className={styles.assignedTeam}>
+                    <span>assigned</span>
+                  </div>
+                </button>
+              ))}
+            </>
+          )}
+          {unassignedTeams.map(team => (
             <button
               key={team.identifier}
               onClick={() => setSelectedTeam(team.identifier)}
@@ -97,9 +140,16 @@ export function AssignToTeamsDialog({
           <button onClick={handleClose} className={styles.cancelButton}>
             Cancel
           </button>
-          <button onClick={handleAssign} disabled={!selectedTeam} className={styles.assignButton}>
-            Assign
-          </button>
+
+          {selectedTeam && assignedTeams.some(team => team.identifier === selectedTeam) ? (
+            <button onClick={handleAssign} className={styles.unassignButton}>
+              Unassign
+            </button>
+          ) : (
+            <button onClick={handleAssign} disabled={!selectedTeam} className={styles.assignButton}>
+              Assign
+            </button>
+          )}
         </div>
       </div>
     </div>

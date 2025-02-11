@@ -164,6 +164,33 @@
   transition: background-color 0.2s;
 }
 
+.unassignButton {
+  padding: 8px 16px;
+  border: none;
+  background-color: #f87171;
+  color: white;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.assignedTeam {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #374151;
+  font-size: 0.8rem;
+  border-radius: 6px;
+}
+
+.unassignButton:hover {
+  background-color: #f87171;
+}
+
 .assignButton:hover {
   background-color: #047857;
 }
@@ -175,4 +202,12 @@
 
 .checkIcon {
   width: 25px;
+}
+
+.unnasignedSection {
+  padding: 8px 16px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #374151;
+  border-radius: 6px;
 }
