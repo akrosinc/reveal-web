@@ -23,14 +23,14 @@ jobs:
         cmd: install # will run `yarn install` command
 
 
-    # - uses: borales/actions-yarn@v5.0.0
-    #   with:
-    #     cmd: upgrade # will run `yarn upgrade` command
+    - uses: borales/actions-yarn@v5.0.0
+      with:
+        cmd: upgrade # will run `yarn upgrade` command
 
 
     - uses: borales/actions-yarn@v5.0.0
       with:
-        cmd: build # will run `yarn build` command
+        cmd: build --verbose # will run `yarn build` command
       env:
         NODE_OPTIONS: --openssl-legacy-provider
         CI: false
