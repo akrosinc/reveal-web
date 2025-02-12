@@ -9,7 +9,7 @@ export const assignLocationToTeam = async (teamId: number, locationId: string[],
   return response.data;
 };
 
-export const getLocationsAssignedToATeam = async (teamId: string, planId: string) => {
+export const getLocationsAssignedToATeam = async (teamId: number, planId: string) => {
   const response = await api.get(`/plan/${planId}/assigned-locations/${teamId}`);
 
   return response.data;

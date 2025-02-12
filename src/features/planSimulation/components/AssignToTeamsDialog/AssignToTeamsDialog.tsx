@@ -8,30 +8,17 @@ import { getSimulationData } from '../SimulationMapView/api/datasetsAPI';
 interface AssignToTeamsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onAssign: (teamId: number) => void;
   teams: any[];
   selectedLocation: any;
 }
 
-export function AssignToTeamsDialog({
-  isOpen,
-  onOpenChange,
-  onAssign,
-  teams,
-  selectedLocation
-}: AssignToTeamsDialogProps) {
-  const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+export function AssignToTeamsDialog({ isOpen, onOpenChange, teams, selectedLocation }: AssignToTeamsDialogProps) {
+  const [selectedTeam, setSelectedTeam] = useState<any | null>(null);
   const { state, dispatch } = usePolygonContext();
   const planId = state.planid;
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
+    document.body.style.overflow = isOpen ? 'hidden' : 'unset';
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -40,48 +27,49 @@ export function AssignToTeamsDialog({
   if (!selectedLocation) return null;
 
   const assignedTeamsToLocation = JSON.parse(selectedLocation?.properties?.teamsAssigned || '[]');
-
-  // Extract identifiers from assigned teams
   const assignedTeamIdentifiers = assignedTeamsToLocation.map((team: any) => team.identifier);
 
   const unassignedTeams = teams.filter(team => !assignedTeamIdentifiers.includes(team.identifier));
   const assignedTeams = teams.filter(team => assignedTeamIdentifiers.includes(team.identifier));
-  //   const selectedLocationsForTeam
-
-  //   console.log('Unassigned Teams', unassignedTeams);
-  //   console.log('Assigned Teams', assignedTeamsToLocation);
 
   const handleAssign = async () => {
     if (selectedTeam && selectedLocation) {
-      if (assignedTeams.some(team => team.identifier === selectedTeam)) {
-        assignLocationToTeam(selectedTeam, [''], planId);
-        console.log('Unassigning Location from Team');
-      } else {
-        getLocationsAssignedToATeam(selectedTeam.toString(), planId).then(response => {
-          const selectedLocationsId = [...response, selectedLocation.properties.id];
-          assignLocationToTeam(selectedTeam, selectedLocationsId, planId);
+      getLocationsAssignedToATeam(selectedTeam.identifier, planId).then(response => {
+        const selectedLocationsId = [...response, selectedLocation.properties.id];
+        assignLocationToTeam(selectedTeam.identifier, selectedLocationsId, planId).then(async () => {
+          const simulationData = await getSimulationData(state.planid);
+          dispatch({
+            type: 'LOCATIONS_WITH_TEAMS_ASSIGNED',
+            payload: { [selectedLocation.properties.id]: selectedTeam.identifier }
+          });
+          dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+          dispatch({ type: 'CLEAR_SELECTION' });
         });
-        console.log('Assigning Location to Team', selectedTeam);
-      }
-      const simulationData = await getSimulationData(state.planid);
-      dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
-      dispatch({ type: 'CLEAR_SELECTION' });
-
-      onAssign(selectedTeam);
+      });
       setSelectedTeam(null);
-      setSearchQuery('');
+      onOpenChange(false);
+    }
+  };
+
+  const handleUnassign = async () => {
+    if (selectedTeam && selectedLocation) {
+      getLocationsAssignedToATeam(selectedTeam.identifier, planId).then(response => {
+        const selectedLocationsId = response.filter((location: any) => location !== selectedLocation.properties.id);
+        assignLocationToTeam(selectedTeam.identifier, selectedLocationsId, planId).then(async () => {
+          const simulationData = await getSimulationData(state.planid);
+          dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+          dispatch({ type: 'CLEAR_SELECTION' });
+        });
+      });
+      setSelectedTeam(null);
       onOpenChange(false);
     }
   };
 
   const handleClose = () => {
     setSelectedTeam(null);
-    setSearchQuery('');
     onOpenChange(false);
   };
-
-  //   console.log('Selected Team', selectedTeam);
-  //   console.log('AssignedTeams', assignedTeams);
 
   if (!isOpen) return null;
 
@@ -93,35 +81,11 @@ export function AssignToTeamsDialog({
         </header>
 
         <div className={`${styles.teamsList} ${styles.customScroll}`}>
-          {assignedTeams.length > 0 && (
-            <>
-              {assignedTeams.map(team => (
-                <button
-                  key={team.identifier}
-                  onClick={() => setSelectedTeam(team.identifier)}
-                  className={`${styles.teamButton} ${selectedTeam === team.identifier ? styles.selected : ''}`}
-                >
-                  <div className={styles.teamInfo}>
-                    <div className={styles.teamHeader}>
-                      <span className={styles.teamName}>{team.name}</span>
-                      <div className={`${styles.statusDot} ${team.active ? styles.active : styles.inactive}`} />
-                    </div>
-                    <span className={styles.teamMembers}>
-                      {team.members.length} members • {team.active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <div className={styles.assignedTeam}>
-                    <span>assigned</span>
-                  </div>
-                </button>
-              ))}
-            </>
-          )}
-          {unassignedTeams.map(team => (
+          {assignedTeams.map(team => (
             <button
               key={team.identifier}
-              onClick={() => setSelectedTeam(team.identifier)}
-              className={`${styles.teamButton} ${selectedTeam === team.identifier ? styles.selected : ''}`}
+              onClick={() => setSelectedTeam(team)}
+              className={`${styles.teamButton} ${selectedTeam?.identifier === team.identifier ? styles.selected : ''}`}
             >
               <div className={styles.teamInfo}>
                 <div className={styles.teamHeader}>
@@ -132,7 +96,27 @@ export function AssignToTeamsDialog({
                   {team.members.length} members • {team.active ? 'Active' : 'Inactive'}
                 </span>
               </div>
-              {selectedTeam === team.identifier && team.active && (
+              <div className={styles.assignedTeam}>
+                <span>assigned</span>
+              </div>
+            </button>
+          ))}
+          {unassignedTeams.map(team => (
+            <button
+              key={team.identifier}
+              onClick={() => setSelectedTeam(team)}
+              className={`${styles.teamButton} ${selectedTeam?.identifier === team.identifier ? styles.selected : ''}`}
+            >
+              <div className={styles.teamInfo}>
+                <div className={styles.teamHeader}>
+                  <span className={styles.teamName}>{team.name}</span>
+                  <div className={`${styles.statusDot} ${team.active ? styles.active : styles.inactive}`} />
+                </div>
+                <span className={styles.teamMembers}>
+                  {team.members.length} members • {team.active ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              {selectedTeam?.identifier === team.identifier && team.active && (
                 <img src={CheckIcon} alt="Check Icon" className={styles.checkIcon} />
               )}
             </button>
@@ -143,9 +127,8 @@ export function AssignToTeamsDialog({
           <button onClick={handleClose} className={styles.cancelButton}>
             Cancel
           </button>
-
-          {selectedTeam && assignedTeams.some(team => team.identifier === selectedTeam) ? (
-            <button onClick={handleAssign} className={styles.unassignButton}>
+          {selectedTeam && assignedTeams.some(team => team.identifier === selectedTeam.identifier) ? (
+            <button onClick={handleUnassign} className={styles.unassignButton}>
               Unassign
             </button>
           ) : (

@@ -277,6 +277,8 @@ const SimulationMapView = ({
 
   const handleTeamAssignment = async (location: any) => {
     setLocationForTeamAssignment(location);
+    console.log('location', location);
+
     setAssignToTeamPopup(true);
   };
 
@@ -840,7 +842,6 @@ const SimulationMapView = ({
       DrawPolygonsFeature(map.current, selectedLoaction, 'parent');
 
       // Add or update the "children-source" {REFACTORED}
-
       DrawPolygonsFeatureCollection(map.current, currentLocationChildren, 'children');
 
       // Add or update the "parent-layer" {REFACTORED}
@@ -1009,8 +1010,6 @@ const SimulationMapView = ({
                 button.addEventListener('click', () => handleCampaignClick(clickedFeature));
                 if ((teamsList ?? []).length > 0) {
                   assignToATeamButton.addEventListener('click', () => {
-                    console.log('clickedFeature', clickedFeature);
-
                     handleTeamAssignment(clickedFeature);
                   });
                   scoreContainer.appendChild(assignToATeamButton);
@@ -1103,6 +1102,7 @@ const SimulationMapView = ({
     multiSelectedColor,
     showDatasetsAgainstParentLevel,
     state.targetAreas,
+    state.locationsWithAssignedTeams,
     dispatch
   ]);
 
@@ -1127,7 +1127,6 @@ const SimulationMapView = ({
       state.targetAreas.length !== 0
     ) {
       DrawPolygonsFeatureCollection(map.current, state.targetAreas, 'target-areas');
-      console.log('target areas', state.targetAreas);
 
       if (!map.current.getLayer('target-areas-layer')) {
         map.current.addLayer({
@@ -2014,10 +2013,6 @@ const SimulationMapView = ({
     setColor(color); // Update color state
   };
 
-  const handleAssign = (teamId: number) => {
-    // console.log('SELECTED TEAM ', teamId);
-  };
-
   const teams: any[] = [
     { id: 1, name: 'Team Alpha', members: 8, active: true },
     { id: 2, name: 'Team Beta', members: 6, active: true },
@@ -2031,7 +2026,6 @@ const SimulationMapView = ({
       <AssignToTeamsDialog
         isOpen={assignToTeamPopup}
         onOpenChange={setAssignToTeamPopup}
-        onAssign={handleAssign}
         teams={teamsList ? teamsList : teams}
         selectedLocation={locationForTeamAssignment}
       />
