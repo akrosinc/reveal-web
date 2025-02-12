@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer } from 'react';
 
 type PolygonActions =
+  | { type: 'LOCATIONS_WITH_TEAMS_ASSIGNED'; payload: any }
   | { type: 'SET REPORT'; payload: any }
   | { type: 'UPDATE_DATASET_OPACITY'; payload: { [id: string]: number } }
   | { type: 'SET_ASSIGNED'; payload: { [identifier: string]: boolean } }
@@ -21,7 +22,18 @@ type PolygonActions =
   | { type: 'SET_DEFAULT_HIERARCHY_DATA'; payload: any }
   | { type: 'CLEAR_SELECTION' };
 
+// interface Team {
+//   id: string;
+//   name: string;
+//   // Add other properties if needed
+// }
+
+// interface LocationsWithAssignedTeams {
+//   [locationId: string]: Team[]; // Each location ID maps to an array of assigned teams
+// }
+
 interface InitialStateInterface {
+  locationsWithAssignedTeams: any; // Now properly typed
   opacitySliderValue: { [id: string]: number };
   // using this as a map with assigned flags for all loaded children,
   // as assigned flag changes and updated location data are not re-fetched from backend
@@ -39,6 +51,7 @@ interface InitialStateInterface {
 }
 
 const initialState: InitialStateInterface = {
+  locationsWithAssignedTeams: {},
   locationReport: {},
   opacitySliderValue: {},
   assingedLocations: {},
@@ -73,6 +86,15 @@ export interface PolygonContextInterface {
 // Reducer
 function polygonReducer(state: InitialStateInterface, action: PolygonActions): InitialStateInterface {
   switch (action.type) {
+    case 'LOCATIONS_WITH_TEAMS_ASSIGNED': {
+      console.log(action.payload);
+
+      return {
+        ...state,
+        locationsWithAssignedTeams: action.payload
+      };
+    }
+
     case 'SET REPORT':
       return { ...state, locationReport: action.payload };
     case 'UPDATE_DATASET_OPACITY':
@@ -198,6 +220,8 @@ const PolygonDispatchContext = createContext<any>(null);
 // Provider
 export function PolygonProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(polygonReducer, initialState);
+
+  console.log('Location With a Team', state.locationsWithAssignedTeams);
 
   return (
     <PolygonStateContext.Provider value={state}>

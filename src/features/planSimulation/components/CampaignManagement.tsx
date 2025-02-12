@@ -68,6 +68,7 @@ import { toast } from 'react-toastify';
 import { assignLocationsToPlan } from '../../assignment/api';
 import { getReportForLocation } from '../reportsAPI/reportsApi';
 import { getOrganizationListSummary, getOrganizatonsWithMembers } from './Teams/api/teamAPI';
+import { getLocationsAssignedToATeam } from './AssignToTeamsDialog/api/teamAssignmentAPI';
 
 export interface Stats {
   [key: string]: Metadata;
@@ -188,6 +189,50 @@ const CampaignManagement = () => {
   }, [state.assingedLocations]);
 
   useEffect(() => {
+    setSelectedLocationChildren(prev =>
+      prev.map(obj => ({
+        ...obj,
+        teams: [state.locationsWithAssignedTeams[obj.identifier]]
+      }))
+    );
+  }, [state.locationsWithAssignedTeams]);
+
+  useEffect(() => {
+    if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
+      const children = Object.values(polygonsWithData)
+        .map((polygon: any) => polygon.polygonData)
+        .filter((polygon: any) => polygon.properties.parentIdentifier === currentLocationId);
+      console.log('state.locationsWithAssignedTeams', children);
+    }
+  }, [currentLocationId, polygonsWithData]);
+
+  useEffect(() => {
+    if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
+      const children = Object.values(polygonsWithData)
+        .map((polygon: any) => polygon.polygonData)
+        .filter((polygon: any) => polygon.properties.parentIdentifier === currentLocationId);
+
+      setSelectedLocationChildren(children);
+
+      // when locations loaded, we are setting their assigned flag values as default values in assignment map
+      // this way, state.assignedLocations is our single source of truth
+      const locationsWithTeams = children.reduce(
+        (acc, location) => {
+          return {
+            ...acc,
+            [location.identifier]: acc[location.identifier] ?? location.teams
+          };
+        },
+        { ...state.locationsWithAssignedTeams }
+      );
+
+      console.log(locationsWithTeams);
+
+      dispatch({ type: 'LOCATIONS_WITH_TEAMS_ASSIGNED', payload: locationsWithTeams });
+    }
+  }, [currentLocationId, polygonsWithData]);
+
+  useEffect(() => {
     if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
       const children = Object.values(polygonsWithData)
         .map((polygon: any) => polygon.polygonData)
@@ -206,6 +251,7 @@ const CampaignManagement = () => {
         },
         { ...state.assingedLocations }
       );
+
       dispatch({ type: 'SET_ASSIGNED', payload: assignedMap });
 
       const selectedLocation = polygonsWithData[currentLocationId].polygonData;
