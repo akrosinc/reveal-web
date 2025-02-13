@@ -26,8 +26,8 @@ export function AssignToTeamsDialog({ isOpen, onOpenChange, teams, selectedLocat
 
   if (!selectedLocation) return null;
 
-  const assignedTeamsToLocation = JSON.parse(selectedLocation?.properties?.teamsAssigned || '[]');
-  const assignedTeamIdentifiers = assignedTeamsToLocation.map((team: any) => team.identifier);
+  const assignedTeamsToLocation = state.locationsTeamsMap[selectedLocation.properties.id] || [];
+  const assignedTeamIdentifiers = assignedTeamsToLocation?.map((team: any) => team.identifier);
 
   const unassignedTeams = teams.filter(team => !assignedTeamIdentifiers.includes(team.identifier));
   const assignedTeams = teams.filter(team => assignedTeamIdentifiers.includes(team.identifier));
@@ -44,10 +44,16 @@ export function AssignToTeamsDialog({ isOpen, onOpenChange, teams, selectedLocat
           });
           dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
           dispatch({ type: 'CLEAR_SELECTION' });
+          const updatedLocTeamsMap = {
+            ...state.locationsTeamsMap, 
+            [selectedLocation.properties.id]: [...state.locationsTeamsMap[selectedLocation.properties.id], selectedTeam]
+          }
+          dispatch( {type: 'SET_LOCATIONS_TEAMS_MAP', payload: updatedLocTeamsMap});
         });
       });
       setSelectedTeam(null);
       onOpenChange(false);
+      
     }
   };
 
@@ -59,6 +65,12 @@ export function AssignToTeamsDialog({ isOpen, onOpenChange, teams, selectedLocat
           const simulationData = await getSimulationData(state.planid);
           dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
           dispatch({ type: 'CLEAR_SELECTION' });
+          const updatedLocTeamsMap = {
+            ...state.locationsTeamsMap,
+          [selectedLocation.properties.id]: state.locationsTeamsMap[selectedLocation.properties.id]
+          .filter((t:any) => t.name != selectedTeam.name)
+          }
+          dispatch( {type: 'SET_LOCATIONS_TEAMS_MAP', payload: updatedLocTeamsMap});
         });
       });
       setSelectedTeam(null);
