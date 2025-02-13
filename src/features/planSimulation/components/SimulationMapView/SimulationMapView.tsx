@@ -2059,7 +2059,11 @@ const SimulationMapView = ({
       {/* MULTISELECTED POLYGONS LIST */}
       {multiselectState.length > 0 && <TargetsSelectedList />}
       {/* MAP LEGEND */}
-      <MapLegend handleClickedSwitchOnMap={setToggleAssignedLayer} assigned={toggleAssignedLayer} />
+      <MapLegend
+        handleClickedSwitchOnMap={setToggleAssignedLayer}
+        teamsList={teamsList}
+        assigned={toggleAssignedLayer}
+      />
       <div style={{ position: 'absolute', zIndex: 2, width: 'fit-content' }} className="mx-0 px-0">
         <div style={{ float: 'left', position: 'relative' }} className="sidebar-adjust "></div>
 
