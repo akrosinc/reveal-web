@@ -12,11 +12,13 @@ interface Dataset {
 }
 
 function MapLegend({
+  teamsList,
   handleClickedSwitchOnMap,
   assigned
 }: {
   handleClickedSwitchOnMap: (toggle: any) => void;
   assigned: boolean;
+  teamsList?: any[];
 }) {
   const { state } = usePolygonContext();
 
@@ -46,12 +48,25 @@ function MapLegend({
               handleToggle={(e: any) => handleClickedSwitchOnMap(e.target.checked)}
             />
           </li>
-          {datasets.map((dataset: Dataset) => (
-            <li className={style.legendItem} key={dataset.identifier}>
-              <div className={style.colorBox} style={{ backgroundColor: dataset.hexColor }}></div>
-              {dataset.name}
-            </li>
-          ))}
+          {(teamsList ?? []).length === 0 &&
+            datasets.map((dataset: Dataset) => (
+              <li className={style.legendItem} key={dataset.identifier}>
+                <div className={style.colorBox} style={{ backgroundColor: dataset.hexColor }}></div>
+                {dataset.name}
+              </li>
+            ))}
+          {(teamsList ?? []).length > 0 && (
+            <>
+              <li className={style.legendItem}>
+                <div className={`${style.colorBox} ${style.unassignedLocationColor}`}></div>
+                Assigned locations to a campaign
+              </li>
+              <li className={style.legendItem}>
+                <div className={`${style.colorBox} ${style.assignedLocationColor}`}></div>
+                Locations with assigned teams
+              </li>
+            </>
+          )}
         </ul>
       </Accordion>
     </div>
