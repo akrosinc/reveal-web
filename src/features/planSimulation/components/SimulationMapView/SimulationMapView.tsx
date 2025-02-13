@@ -141,6 +141,7 @@ const SimulationMapView = ({
   // we are using ref for these two, as state won't do for event listener handlers
   const targetAreasRef = useRef<any[]>([]);
   const assignedLocationsRef = useRef<any>({});
+  const teamsLocationsMapRef = useRef<any>({});
 
   const [parentMapStateData, setParentMapStateData] = useState<PlanningParentLocationResponse>();
 
@@ -201,6 +202,10 @@ const SimulationMapView = ({
   useEffect(() => {
     assignedLocationsRef.current = state.assingedLocations;
   }, [state.assingedLocations]);
+
+  useEffect(() => {
+    teamsLocationsMapRef.current = state.locationsTeamsMap;
+  }, [state.locationsTeamsMap]);
 
   useEffect(() => {
     if (map.current) {
@@ -956,15 +961,13 @@ const SimulationMapView = ({
                   populationCard.className = styles.populationCard;
                   populationCard.innerHTML = `
                     <div class="${styles.label}">Population</div>
-                    <div class="${styles.value}">${
-                    Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
+                    <div class="${styles.value}">${Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
                     'Not Available'
-                  }</div>
+                    }</div>
                     <div class="${styles.subtotalValueContainer}">
                       <div class="${styles.sublabel}">Children Number</div>
-                      <p class="${styles.sublabelValue}">${
-                    clickedFeature.properties?.childrenNumber ?? 'Not Available'
-                  }</p>
+                      <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'
+                    }</p>
                     </div>
                   `;
                   content.appendChild(populationCard);
@@ -1102,7 +1105,7 @@ const SimulationMapView = ({
     multiSelectedColor,
     showDatasetsAgainstParentLevel,
     state.targetAreas,
-    state.locationsWithAssignedTeams,
+    // state.locationsWithAssignedTeams,
     dispatch
   ]);
 
@@ -1116,7 +1119,7 @@ const SimulationMapView = ({
     } else if (map.current?.getLayer('target-areas-layer') && !toggleAssignedLayer) {
       map.current?.setLayoutProperty('target-areas-layer', 'visibility', 'none');
     }
-  });
+  }, []);
 
   useEffect(() => {
     if (
@@ -1138,7 +1141,7 @@ const SimulationMapView = ({
             'fill-color': [
               'case',
               ['!=', ['get', 'numberOfTeams'], 0], // Corrected condition
-              'rgba(128, 128, 128, 0.7)', // Yellow
+              'rgba(128, 128, 128, 0.7)', // Grey
               'rgba(255, 0, 74, 0.7)' // Default color
             ]
           },
@@ -1211,7 +1214,16 @@ const SimulationMapView = ({
       } else if (map.current.getLayer('ta-labels-layer') && (zoomRef.current || map.current.getZoom()) < 8) {
         map.current.removeLayer('ta-labels-layer');
       }
-    }
+    } else if (
+      map &&
+      map.current &&
+      currentLocationChildren.length > 0 &&
+      state.targetAreas && 
+      state.targetAreas.length === 0) {
+        if (map.current.getLayer('target-areas-layer')){
+          map.current.removeLayer('target-areas-layer');
+        }
+      }
   }, [state.targetAreas, map.current, currentLocationChildren, toggleAssignedLayer]);
 
   useEffect(() => {
@@ -1543,7 +1555,7 @@ const SimulationMapView = ({
                         try {
                           let perc = parseFloat(selectedTagPercentageValue);
                           percDisplay = Math.trunc(Math.round(perc * 100));
-                        } catch (e) {}
+                        } catch (e) { }
                         htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}

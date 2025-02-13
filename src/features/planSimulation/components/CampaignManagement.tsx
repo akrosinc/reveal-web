@@ -190,12 +190,22 @@ const CampaignManagement = () => {
 
   useEffect(() => {
     setSelectedLocationChildren(prev =>
-      prev.map(obj => ({
-        ...obj,
-        teams: [state.locationsWithAssignedTeams[obj.identifier]]
-      }))
+      prev.map(obj => {
+        const updatedObj = {
+          ...obj,
+          teams: state.locationsTeamsMap[obj.identifier],
+          properties: {
+            ...obj.properties,
+            numberOfTeams: Object.values(state.locationsTeamsMap[obj.identifier]).length || 0
+  
+          }
+        }
+        return updatedObj;
+      })
     );
-  }, [state.locationsWithAssignedTeams]);
+  }, [state.locationsTeamsMap]);
+
+
 
   useEffect(() => {
     if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
@@ -206,31 +216,31 @@ const CampaignManagement = () => {
     }
   }, [currentLocationId, polygonsWithData]);
 
-  useEffect(() => {
-    if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
-      const children = Object.values(polygonsWithData)
-        .map((polygon: any) => polygon.polygonData)
-        .filter((polygon: any) => polygon.properties.parentIdentifier === currentLocationId);
+  // useEffect(() => {
+  //   if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
+  //     const children = Object.values(polygonsWithData)
+  //       .map((polygon: any) => polygon.polygonData)
+  //       .filter((polygon: any) => polygon.properties.parentIdentifier === currentLocationId);
 
-      setSelectedLocationChildren(children);
+  //     setSelectedLocationChildren(children);
 
-      // when locations loaded, we are setting their assigned flag values as default values in assignment map
-      // this way, state.assignedLocations is our single source of truth
-      const locationsWithTeams = children.reduce(
-        (acc, location) => {
-          return {
-            ...acc,
-            [location.identifier]: acc[location.identifier] ?? location.teams
-          };
-        },
-        { ...state.locationsWithAssignedTeams }
-      );
+  //     // when locations loaded, we are setting their assigned flag values as default values in assignment map
+  //     // this way, state.assignedLocations is our single source of truth
+  //     // const locationsWithTeams = children.reduce(
+  //     //   (acc, location) => {
+  //     //     return {
+  //     //       ...acc,
+  //     //       [location.identifier]: acc[location.identifier] ?? location.teams
+  //     //     };
+  //     //   },
+  //     //   { ...state.locationsWithAssignedTeams }
+  //     // );
 
-      console.log(locationsWithTeams);
+  //     // console.log(locationsWithTeams);
 
-      dispatch({ type: 'LOCATIONS_WITH_TEAMS_ASSIGNED', payload: locationsWithTeams });
-    }
-  }, [currentLocationId, polygonsWithData]);
+  //     // dispatch({ type: 'LOCATIONS_WITH_TEAMS_ASSIGNED', payload: locationsWithTeams });
+  //   }
+  // }, [currentLocationId, polygonsWithData]);
 
   useEffect(() => {
     if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
@@ -252,7 +262,18 @@ const CampaignManagement = () => {
         { ...state.assingedLocations }
       );
 
+      const locationsTeamsMap = children.reduce(
+        (map, obj) => {
+          return {
+            ...map,
+            [obj.identifier]: map[obj.identifier] ?? (obj.teams || [])
+          }
+        },
+        { ...state.locationsTeamsMap }
+      )
+
       dispatch({ type: 'SET_ASSIGNED', payload: assignedMap });
+      dispatch({ type: 'SET_LOCATIONS_TEAMS_MAP', payload: locationsTeamsMap });
 
       const selectedLocation = polygonsWithData[currentLocationId].polygonData;
 

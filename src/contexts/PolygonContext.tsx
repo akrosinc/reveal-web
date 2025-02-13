@@ -20,6 +20,7 @@ type PolygonActions =
   | { type: 'TOGGLE_MULTISELECT'; payload: any }
   | { type: 'SET_ADMIN0_LOCATION_ID'; payload: any }
   | { type: 'SET_DEFAULT_HIERARCHY_DATA'; payload: any }
+  | { type: 'SET_LOCATIONS_TEAMS_MAP'; payload: any }
   | { type: 'CLEAR_SELECTION' };
 
 // interface Team {
@@ -48,6 +49,7 @@ interface InitialStateInterface {
   admin0LocationId: string;
   targetAreas: any[];
   defaultHierarchyData: any;
+  locationsTeamsMap: any;
 }
 
 const initialState: InitialStateInterface = {
@@ -63,7 +65,8 @@ const initialState: InitialStateInterface = {
   multiselect: [],
   admin0LocationId: '',
   targetAreas: [],
-  defaultHierarchyData: null
+  defaultHierarchyData: null,
+  locationsTeamsMap: {}
 };
 
 export interface SelectedPolygon {
@@ -118,17 +121,17 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
         action.payload.length === 0
           ? []
           : action.payload.map((dataset: any) => ({
-              ...dataset,
-              hidden: false,
-              selectedRange: {
-                minValue: dataset.selectedRange?.minValue || 0,
-                maxValue: dataset.selectedRange?.maxValue || 0
-              },
-              filter: {
-                minValue: dataset.filter?.minValue || 0,
-                maxValue: dataset.filter?.maxValue || 0
-              }
-            }));
+            ...dataset,
+            hidden: false,
+            selectedRange: {
+              minValue: dataset.selectedRange?.minValue || 0,
+              maxValue: dataset.selectedRange?.maxValue || 0
+            },
+            filter: {
+              minValue: dataset.filter?.minValue || 0,
+              maxValue: dataset.filter?.maxValue || 0
+            }
+          }));
       return {
         ...state,
         datasets
@@ -208,6 +211,8 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
       return { ...state, multiselect, selected: null };
     case 'CLEAR_SELECTION':
       return { ...state, selected: null, multiselect: [] };
+    case 'SET_LOCATIONS_TEAMS_MAP':
+      return { ...state, locationsTeamsMap: action.payload };
     default:
       return state;
   }
