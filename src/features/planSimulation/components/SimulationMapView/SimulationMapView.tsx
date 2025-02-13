@@ -961,13 +961,15 @@ const SimulationMapView = ({
                   populationCard.className = styles.populationCard;
                   populationCard.innerHTML = `
                     <div class="${styles.label}">Population</div>
-                    <div class="${styles.value}">${Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
+                    <div class="${styles.value}">${
+                    Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
                     'Not Available'
-                    }</div>
+                  }</div>
                     <div class="${styles.subtotalValueContainer}">
                       <div class="${styles.sublabel}">Children Number</div>
-                      <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'
-                    }</p>
+                      <p class="${styles.sublabelValue}">${
+                    clickedFeature.properties?.childrenNumber ?? 'Not Available'
+                  }</p>
                     </div>
                   `;
                   content.appendChild(populationCard);
@@ -1119,7 +1121,7 @@ const SimulationMapView = ({
     } else if (map.current?.getLayer('target-areas-layer') && !toggleAssignedLayer) {
       map.current?.setLayoutProperty('target-areas-layer', 'visibility', 'none');
     }
-  }, []);
+  });
 
   useEffect(() => {
     if (
@@ -1218,12 +1220,13 @@ const SimulationMapView = ({
       map &&
       map.current &&
       currentLocationChildren.length > 0 &&
-      state.targetAreas && 
-      state.targetAreas.length === 0) {
-        if (map.current.getLayer('target-areas-layer')){
-          map.current.removeLayer('target-areas-layer');
-        }
+      state.targetAreas &&
+      state.targetAreas.length === 0
+    ) {
+      if (map.current.getLayer('target-areas-layer')) {
+        map.current.removeLayer('target-areas-layer');
       }
+    }
   }, [state.targetAreas, map.current, currentLocationChildren, toggleAssignedLayer]);
 
   useEffect(() => {
@@ -1555,7 +1558,7 @@ const SimulationMapView = ({
                         try {
                           let perc = parseFloat(selectedTagPercentageValue);
                           percDisplay = Math.trunc(Math.round(perc * 100));
-                        } catch (e) { }
+                        } catch (e) {}
                         htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}
