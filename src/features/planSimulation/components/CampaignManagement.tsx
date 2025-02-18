@@ -197,7 +197,7 @@ const CampaignManagement = () => {
           properties: {
             ...obj.properties,
             numberOfTeams: Object.values(state.locationsTeamsMap[obj.identifier]).length || 0
-  
+
           }
         }
         return updatedObj;
@@ -299,7 +299,7 @@ const CampaignManagement = () => {
   useEffect(() => {
     let populationData: any;
     if (state.selected) {
-      populationData = transformPopulationData(JSON.parse(state.selected.population));
+      populationData = state.selected.population ? transformPopulationData(JSON.parse(state.selected.population)) : null;
 
       getReportForLocation(state.planid, state.selected.id).then(report => {
         setLocationReport(report);
