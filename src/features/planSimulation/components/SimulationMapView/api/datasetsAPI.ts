@@ -44,6 +44,7 @@ export interface LocationData {
   includeGeometry: boolean;
   parentLocationId: string;
   simulationId: string;
+  campaignManagementFeatures: boolean;
 }
 
 export interface AddDatasetResponse {

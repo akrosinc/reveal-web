@@ -586,7 +586,8 @@ const CampaignManagement = () => {
         datasetsIds: [],
         includeGeometry: includeGeometry,
         parentLocationId: locationId, //current location identifier
-        simulationId: state.simulationId
+        simulationId: state.simulationId,
+        campaignManagementFeatures: true
       };
 
       const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);

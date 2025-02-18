@@ -571,6 +571,7 @@ const SimulationMapView = ({
   }, [resetMap, initializeMap, setResetMap]);
 
   useEffect(() => {
+    polygonClickPopup.current.remove();
     if (currentLocationChildren) {
       const groupedById: any = {};
       currentLocationChildren.forEach((location: any) => {
@@ -663,6 +664,7 @@ const SimulationMapView = ({
       });
 
       Object.entries(datasetsDataMap).forEach(([layerId, features]) => {
+        console.log('selected loc: ', selectedLoaction);
         const sourceId = `ds-${layerId}-${selectedLoaction.properties.name}`;
 
         if (!map.current?.getSource(sourceId)) {

@@ -273,6 +273,8 @@ const Simulation = () => {
 
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
+  const prevDatasetsLengthRef = useRef<number>(state.datasets.length);
+
 
   const fetchSimulationAndData = async () => {
     const simulationIdentifier = await fetchPlanInfo();
@@ -1370,33 +1372,32 @@ const Simulation = () => {
 
   //! LOADING POLYGONS ON DEMAND
   const loadLocationHandler = async (locationId: string) => {
+    dispatch({ type: "SET_DETAILS_POPUP_REF", payload: null });
+
     setShowDatasetsAgainstParentLevel(false);
     setSelectedParentLevel(null);
     setNodeOrderListVisible(false);
 
     setCurrentLocationId(locationId);
+
+    // If no datasets and children already loaded, skip fetching
     if (state.datasets.length === 0 && polygonsWithData?.[locationId]?.childrenLoaded) {
-      setIncludeGeometry(false);
+      handleNoDatasetCase(locationId);
+      return;
+    }
 
-      const k = Object.values(polygonsWithData)
-        .map((polygon: any) => polygon.polygonData)
-        .filter(p => p.properties.parentIdentifier === locationId);
+    const includeGeometry = checkifChildrenLoaded(polygonsWithData, locationId);
+    const datasetsChanged = prevDatasetsLengthRef.current !== state.datasets.length;
 
-      setSelectedLocationChildren(k);
+    if (datasetsChanged || includeGeometry) {
+      prevDatasetsLengthRef.current = state.datasets.length; 
 
-      const selectedLocation = polygonsWithData?.[locationId]?.polygonData;
-      if (selectedLocation) {
-        setGeometry(selectedLocation);
-        setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
-      }
-    } else {
-      const includeGeometry: boolean = checkifChildrenLoaded(polygonsWithData, locationId);
-
-      let configObj: LocationData = {
+      const configObj: LocationData = {
         datasetsIds: datasetList.map(dataset => dataset.identifier),
-        includeGeometry: includeGeometry,
-        parentLocationId: locationId, //current location identifier
-        simulationId: state.simulationId
+        includeGeometry,
+        parentLocationId: locationId,
+        simulationId: state.simulationId,
+        campaignManagementFeatures: false
       };
 
       const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
@@ -1405,30 +1406,49 @@ const Simulation = () => {
         return;
       }
 
-      if (includeGeometry) {
-        setPolygonsWithData((prev: any) => {
-          const updatedPolygons = { ...prev };
-          polygonsWithDatasets.forEach((location: any) => {
-            updatedPolygons[location.identifier] = {
-              polygonData: location,
-              childrenLoaded: location.identifier === locationId
-            };
-          });
-
-          return updatedPolygons;
-        });
-      } else {
-        setPolygonsWithData((prev: any) => {
-          const updatedPolygons = { ...prev };
-          polygonsWithDatasets.forEach((location: any) => {
-            updatedPolygons[location.identifier].polygonData.properties.metadata = location.properties.metadata;
-          });
-
-          return updatedPolygons;
-        });
-      }
+      updatePolygonsData(polygonsWithDatasets, includeGeometry, locationId);
     }
   };
+
+  const handleNoDatasetCase = (locationId: string) => {
+    setIncludeGeometry(false);
+
+    const selectedChildren = Object.values(polygonsWithData)
+      .map((polygon: any) => polygon.polygonData)
+      .filter(p => p.properties.parentIdentifier === locationId);
+
+    setSelectedLocationChildren(selectedChildren);
+
+    const selectedLocation = polygonsWithData?.[locationId]?.polygonData;
+    if (selectedLocation) {
+      setGeometry(selectedLocation);
+      setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
+    }
+  };
+
+  const updatePolygonsData = (polygonsWithDatasets: any[], includeGeometry: boolean, locationId: string) => {
+    setPolygonsWithData((prev: any) => {
+      const updatedPolygons = { ...prev };
+
+      if (includeGeometry) {
+        polygonsWithDatasets.forEach(location => {
+          updatedPolygons[location.identifier] = {
+            polygonData: location,
+            childrenLoaded: location.identifier === locationId
+          };
+        });
+      } else {
+        polygonsWithDatasets.forEach(location => {
+          if (updatedPolygons[location.identifier]) {
+            updatedPolygons[location.identifier].polygonData.properties.metadata = location.properties.metadata;
+          }
+        });
+      }
+
+      return updatedPolygons;
+    });
+  };
+
 
   // const showDetailsClickHandler = (locationId: string) => {
   //   let feature = mapData?.parents[locationId];
