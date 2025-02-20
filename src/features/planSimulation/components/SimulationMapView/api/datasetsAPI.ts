@@ -157,3 +157,12 @@ export const filterDatasets = async (
     console.error(error);
   }
 };
+
+export const getStructuresWithinBoundingBox = async (topLeftLon: number, topLeftLat: number, bottomRightLon: number, bottomRightLat:number) => {
+  try {
+    const response = await api.get(`/simulation/within?topLeftLon=${topLeftLon}&topLeftLat=${topLeftLat}&bottomRightLon=${bottomRightLon}&bottomRightLat=${bottomRightLat}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};

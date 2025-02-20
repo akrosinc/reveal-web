@@ -21,6 +21,7 @@ type PolygonActions =
   | { type: 'SET_ADMIN0_LOCATION_ID'; payload: any }
   | { type: 'SET_DEFAULT_HIERARCHY_DATA'; payload: any }
   | { type: 'SET_LOCATIONS_TEAMS_MAP'; payload: any }
+  | { type: 'SET_PLAN_TARGET_TYPE'; payload: string }
   | { type: 'CLEAR_SELECTION' };
 
 // interface Team {
@@ -50,6 +51,7 @@ interface InitialStateInterface {
   targetAreas: any[];
   defaultHierarchyData: any;
   locationsTeamsMap: any;
+  planTargetType: string;
 }
 
 const initialState: InitialStateInterface = {
@@ -66,7 +68,8 @@ const initialState: InitialStateInterface = {
   admin0LocationId: '',
   targetAreas: [],
   defaultHierarchyData: null,
-  locationsTeamsMap: {}
+  locationsTeamsMap: {},
+  planTargetType: ''
 };
 
 export interface SelectedPolygon {
@@ -213,6 +216,8 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
       return { ...state, selected: null, multiselect: [] };
     case 'SET_LOCATIONS_TEAMS_MAP':
       return { ...state, locationsTeamsMap: action.payload };
+    case 'SET_PLAN_TARGET_TYPE':
+      return { ...state, planTargetType: action.payload };
     default:
       return state;
   }
@@ -226,7 +231,6 @@ const PolygonDispatchContext = createContext<any>(null);
 export function PolygonProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(polygonReducer, initialState);
 
-  console.log('Location With a Team', state.locationsWithAssignedTeams);
 
   return (
     <PolygonStateContext.Provider value={state}>

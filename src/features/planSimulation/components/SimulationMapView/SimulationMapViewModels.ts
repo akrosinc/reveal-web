@@ -31,6 +31,7 @@ export interface SimulationMapViewProps {
   analysisLayerDetails: AnalysisLayer[];
   selectedLoaction?: any;
   showDatasetsAgainstParentLevel?: boolean;
+  updateChildrenPolygons: (data: any) => void;
 }
 
 export interface LineWidth {
@@ -96,4 +97,11 @@ export interface ProcessedLayer {
   key: string;
   list: UserDefinedLayer[] | undefined;
   color: Color;
+}
+
+export interface Bounds {
+  topLeftLon: number;
+  topLeftLat: number;
+  bottomRightLon: number;
+  bottomRightLat: number;
 }

@@ -73,7 +73,6 @@ import CampaignTotalsAccordion from './SimulationMapView/components/CampaignTota
 import {
   getDefaultHierarchyData,
   getHierarchy,
-  getHierarchyPolygon,
   getPlanInfo
 } from './SimulationMapView/api/hierarchyAPI';
 import Hierarchy from './Hierarchy/Hierarchy';
@@ -92,6 +91,7 @@ import {
   SimulationDatasetRequest
 } from './SimulationMapView/api/datasetsAPI';
 import { assignLocationsToPlan } from '../../assignment/api';
+import { getPlanTargetLevelName } from '../../../utils';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -330,6 +330,7 @@ const Simulation = () => {
     try {
       const planInfo = await getPlanInfo();
       dispatch({ type: 'SET_PLANID', payload: planInfo.identifier });
+      dispatch({ type: 'SET_PLAN_TARGET_TYPE', payload: planInfo.planTargetType });
       return planInfo.identifier;
     } catch (error) {
       console.error('Failed to fetch plan info:', error);
@@ -417,11 +418,8 @@ const Simulation = () => {
 
       const selectedLocation = polygonsWithData[currentLocationId].polygonData;
 
-      console.log('418 selectedLocation', selectedLocation?.properties.name);
-
       if (selectedLocation && !showDatasetsAgainstParentLevel) {
         setGeometry(selectedLocation);
-        setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
         const populationData = transformPopulationData(selectedLocation?.properties?.population);
         setNumberOfStructures(selectedLocation?.properties?.numberOfStructures);
         if (populationData !== null) {
@@ -1373,6 +1371,7 @@ const Simulation = () => {
   //! LOADING POLYGONS ON DEMAND
   const loadLocationHandler = async (locationId: string) => {
     dispatch({ type: "SET_DETAILS_POPUP_REF", payload: null });
+    dispatch({ type: "CLEAR_SELECTION" });
 
     setShowDatasetsAgainstParentLevel(false);
     setSelectedParentLevel(null);
@@ -1387,10 +1386,11 @@ const Simulation = () => {
     }
 
     const includeGeometry = checkifChildrenLoaded(polygonsWithData, locationId);
+    const parentGeoLevel = polygonsWithData?.[locationId].polygonData?.properties?.geographicLevel || '';
     const datasetsChanged = prevDatasetsLengthRef.current !== state.datasets.length;
 
     if (datasetsChanged || includeGeometry) {
-      prevDatasetsLengthRef.current = state.datasets.length; 
+      prevDatasetsLengthRef.current = state.datasets.length;
 
       const configObj: LocationData = {
         datasetsIds: datasetList.map(dataset => dataset.identifier),
@@ -1400,13 +1400,19 @@ const Simulation = () => {
         campaignManagementFeatures: false
       };
 
-      const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
-      if (!polygonsWithDatasets || polygonsWithDatasets.length === 0) {
-        toast.error('Cannot get results. Please try again.');
-        return;
+      const targetLevelName = getPlanTargetLevelName(state.defaultHierarchyData.nodeOrder, state.planTargetType);
+      // If location clicked is level above structures, we need to load only its polygon
+      // and show a tip to load structures in the area by zooming in on the map
+      if (parentGeoLevel !== targetLevelName) {
+        const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
+        if (!polygonsWithDatasets || polygonsWithDatasets.length === 0) {
+          toast.error('Cannot get results. Please try again.');
+          return;
+        }
+        updatePolygonsData(polygonsWithDatasets, includeGeometry, locationId);
+      } else {
+        toast.info('Please zoom in to see structures data.');
       }
-
-      updatePolygonsData(polygonsWithDatasets, includeGeometry, locationId);
     }
   };
 
@@ -1642,6 +1648,11 @@ const Simulation = () => {
     }
   };
 
+  // map zoom in for the structures lifts up the state, so we still have a single source of truth
+  const updateChildrenPolygons = (data: any) => {
+    setSelectedLocationChildren(prev => [...prev, ...data]);
+  }
+
   return (
     <>
       <Container fluid ref={divRef}>
@@ -1750,6 +1761,7 @@ const Simulation = () => {
             updateMarkedLocations={updateMarkedLocations}
             parentChild={parentChild}
             analysisLayerDetails={analysisLayerDetails}
+            updateChildrenPolygons={updateChildrenPolygons}
           />
           <Drawer open={rightOpen} anchor="left">
             {Object.keys(chartData).length > 0 && (

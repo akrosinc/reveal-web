@@ -67,8 +67,8 @@ import {
 import { toast } from 'react-toastify';
 import { assignLocationsToPlan } from '../../assignment/api';
 import { getReportForLocation } from '../reportsAPI/reportsApi';
-import { getOrganizationListSummary, getOrganizatonsWithMembers } from './Teams/api/teamAPI';
-import { getLocationsAssignedToATeam } from './AssignToTeamsDialog/api/teamAssignmentAPI';
+import {  getOrganizatonsWithMembers } from './Teams/api/teamAPI';
+import { getPlanTargetLevelName } from '../../../utils';
 
 export interface Stats {
   [key: string]: Metadata;
@@ -542,6 +542,7 @@ const CampaignManagement = () => {
     try {
       const planInfo = await getPlanInfo();
       dispatch({ type: 'SET_PLANID', payload: planInfo.identifier });
+      dispatch({ type: 'SET_PLAN_TARGET_TYPE', payload: planInfo.planTargetType });
       return planInfo.identifier;
     } catch (error) {
       console.error('Failed to fetch plan info:', error);
@@ -564,61 +565,82 @@ const CampaignManagement = () => {
   }, []);
 
   const loadLocationHandler = async (locationId: string) => {
+    dispatch({ type: "SET_DETAILS_POPUP_REF", payload: null });
+    dispatch({ type: "CLEAR_SELECTION" });
+
     setCurrentLocationId(locationId);
-    if (state.datasets.length === 0 && polygonsWithData?.[locationId]?.childrenLoaded) {
-      setIncludeGeometry(false);
+    // If children already loaded, skip fetching
+    if (polygonsWithData?.[locationId]?.childrenLoaded) {
+      handleChildrenAlreadyLoaded(locationId);
+      return;
+    }
 
-      const k = Object.values(polygonsWithData)
-        .map((polygon: any) => polygon.polygonData)
-        .filter(p => p.properties.parentIdentifier === locationId);
+    const includeGeometry = checkifChildrenLoaded(polygonsWithData, locationId);
+    const parentGeoLevel = polygonsWithData?.[locationId].polygonData?.properties?.geographicLevel || '';
 
-      setSelectedLocationChildren(k);
+    if (includeGeometry) {
 
-      const selectedLocation = polygonsWithData?.[locationId]?.polygonData;
-      if (selectedLocation) {
-        setGeometry(selectedLocation);
-        setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
-      }
-    } else {
-      const includeGeometry: boolean = checkifChildrenLoaded(polygonsWithData, locationId);
-
-      let configObj: any = {
+      const configObj: LocationData = {
         datasetsIds: [],
-        includeGeometry: includeGeometry,
-        parentLocationId: locationId, //current location identifier
+        includeGeometry,
+        parentLocationId: locationId,
         simulationId: state.simulationId,
         campaignManagementFeatures: true
       };
 
-      const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
-      if (!polygonsWithDatasets || polygonsWithDatasets.length === 0) {
-        toast.error('Cannot get results. Please try again.');
-        return;
-      }
-
-      if (includeGeometry) {
-        setPolygonsWithData((prev: any) => {
-          const updatedPolygons = { ...prev };
-          polygonsWithDatasets.forEach((location: any) => {
-            updatedPolygons[location.identifier] = {
-              polygonData: location,
-              childrenLoaded: location.identifier === locationId
-            };
-          });
-
-          return updatedPolygons;
-        });
+      const targetLevelName = getPlanTargetLevelName(state.defaultHierarchyData.nodeOrder, state.planTargetType);
+      // If location clicked is level above structures, we need to load only its polygon
+      // and show a tip to load structures in the area by zooming in on the map
+      if (parentGeoLevel !== targetLevelName) {
+        const polygonsResponse = await getLocationPolygonsWithDatasets(configObj);
+        if (!polygonsResponse || polygonsResponse.length === 0) {
+          toast.error('Cannot get results. Please try again.');
+          return;
+        }
+        updatePolygonsData(polygonsResponse, includeGeometry, locationId);
       } else {
-        setPolygonsWithData((prev: any) => {
-          const updatedPolygons = { ...prev };
-          // polygonsWithDatasets.forEach((location: any) => {
-          //   updatedPolygons[location.identifier].polygonData.properties.metadata = location.properties.metadata;
-          // });
-
-          return updatedPolygons;
-        });
+        toast.info('Please zoom in to see structures data.');
       }
     }
+  };
+
+  const handleChildrenAlreadyLoaded = (locationId: string) => {
+    setIncludeGeometry(false);
+
+    const selectedChildren = Object.values(polygonsWithData)
+      .map((polygon: any) => polygon.polygonData)
+      .filter(p => p.properties.parentIdentifier === locationId);
+
+    setSelectedLocationChildren(selectedChildren);
+
+    const selectedLocation = polygonsWithData?.[locationId]?.polygonData;
+    if (selectedLocation) {
+      setGeometry(selectedLocation);
+      setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
+    }
+  };
+
+  const updatePolygonsData = (polygonsWithDatasets: any[], includeGeometry: boolean, locationId: string) => {
+    setPolygonsWithData((prev: any) => {
+      const updatedPolygons = { ...prev };
+
+      if (includeGeometry) {
+        polygonsWithDatasets.forEach(location => {
+          updatedPolygons[location.identifier] = {
+            polygonData: location,
+            childrenLoaded: location.identifier === locationId
+          };
+        });
+      } else {
+        polygonsWithDatasets.forEach(location => {
+          if (updatedPolygons[location.identifier]) {
+            updatedPolygons[location.identifier].polygonData.properties.metadata = location.properties.metadata;
+          }
+        });
+      }
+
+      return updatedPolygons;
+    });
   };
 
   const processChildren = useCallback(
@@ -675,6 +697,11 @@ const CampaignManagement = () => {
     remove: handleRemoveTargetArea
   };
 
+  // map zoom in for the structures lifts up the state, so we still have a single source of truth
+  const updateChildrenPolygons = (data: any) => {
+    setSelectedLocationChildren(prev => [...prev, ...data]);
+  }
+
   return (
     <>
       <Container fluid ref={divRef}>
@@ -720,6 +747,7 @@ const CampaignManagement = () => {
             updateMarkedLocations={updateMarkedLocations}
             parentChild={parentChild}
             analysisLayerDetails={analysisLayerDetails}
+            updateChildrenPolygons={updateChildrenPolygons}
           />
           <Drawer open={rightOpen} anchor="left" heading="Performance">
             {Object.keys(locationReport).length > 0 && (

@@ -12,7 +12,8 @@ import {
   getTagStats,
   initSimulationMap,
   PARENT_LABEL_SOURCE,
-  PARENT_SOURCE
+  PARENT_SOURCE,
+  getPlanTargetLevelName
 } from '../../../../utils';
 import { PlanningLocationResponse, PlanningParentLocationResponse } from '../../providers/types';
 import { bbox, Feature, MultiPoint, MultiPolygon, Point, pointsWithinPolygon, Polygon, Properties } from '@turf/turf';
@@ -26,6 +27,7 @@ import ActionDialog from '../../../../components/Dialogs/ActionDialog';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import styles from './SimulationMapView.module.css';
 import Spinner from 'react-bootstrap/Spinner';
+import debounce from 'lodash/debounce';
 
 import { FeatureCollection, Geometry } from 'geojson';
 
@@ -41,7 +43,7 @@ import {
   updateSelectedLayerProperty
 } from './SimulationMapViewUtils';
 // INTERFACE
-import { SimulationMapViewProps, UserDefinedLayer, UserDefinedNames } from './SimulationMapViewModels';
+import { Bounds, SimulationMapViewProps, UserDefinedLayer, UserDefinedNames } from './SimulationMapViewModels';
 // CONTANTS
 import {
   INITIAL_FILL_COLOR,
@@ -67,12 +69,14 @@ import TargetsSelectedList from '../TargetsSelectedList/TargetsSelectedList';
 import MapLegend from './components/MapLegend/MapLegend';
 import { assignLocationsToPlan } from './api/planAPI';
 import { set } from 'react-hook-form';
-import { getSimulationData } from './api/datasetsAPI';
-import { getPlanInfo } from './api/hierarchyAPI';
+import { getSimulationData, getStructuresWithinBoundingBox } from './api/datasetsAPI';
 import { findNodeById, getIdsByGeographicLevel } from './util';
 import { AssignToTeamsDialog } from '../AssignToTeamsDialog/AssignToTeamsDialog';
+import { toast } from 'react-toastify';
 
 library.add(faCaretRight, faCaretLeft);
+
+const MIN_DETAIL_ZOOM = 15;
 
 // DATASET REFACTORED GET COLOR FUNCTION
 export const getBackgroundStyle = (value: { r: number; g: number; b: number } | null) => {
@@ -106,6 +110,7 @@ const SimulationMapView = ({
   parentChild,
   analysisLayerDetails,
   selectedLoaction,
+  updateChildrenPolygons,
   showDatasetsAgainstParentLevel = false
 }: SimulationMapViewProps) => {
   const [defColor] = useColor('hex', INITIAL_FILL_COLOR);
@@ -177,6 +182,11 @@ const SimulationMapView = ({
   const [locationForTeamAssignment, setLocationForTeamAssignment] = useState<any>();
 
   const [toggleAssignedLayer, setToggleAssignedLayer] = useState(false);
+
+  // cachedBounds holds the union of all bounds for which structures have been fetched,
+  //  so we don't refetch on each move on the map if that has already been done
+  const [cachedBounds, setCachedBounds] = useState<Bounds | null>(null);
+
   // CONTEXT
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
@@ -285,6 +295,70 @@ const SimulationMapView = ({
     console.log('location', location);
 
     setAssignToTeamPopup(true);
+  };
+
+  // Fetch features from the backend for the given bounds.
+  const fetchFeatures = useCallback(async (bounds) => {
+    try {
+      const response = await getStructuresWithinBoundingBox(bounds.topLeftLon, bounds.topLeftLat, bounds.bottomRightLon, bounds.bottomRightLat);
+      updateChildrenPolygons(response);
+      setCachedBounds(prev => unionBounds(prev, bounds));
+    } catch (err) {
+      console.error(err);
+      toast.error('Could not load structures. Please try again.');
+    }
+  }, []);
+
+  // debounce to reduce API calls during rapid map movements
+  const debouncedFetch = useCallback(debounce(fetchFeatures, 300), [fetchFeatures]);
+
+  useEffect(() => {
+    if (!map) return;
+
+    const handleMoveEnd = () => {
+      const zoom = map.current?.getZoom();
+      if (zoom && zoom > MIN_DETAIL_ZOOM) {
+        const bounds = map.current?.getBounds();
+        if (!bounds) return;
+        const newBounds = convertMapBounds(bounds);
+        // check if the new bounds are fully contained in our cached bounds, cause if they are not
+        // we dont want to fetch again
+        if (
+          cachedBounds &&
+          cachedBounds.topLeftLon <= newBounds.topLeftLon &&
+          cachedBounds.topLeftLat >= newBounds.topLeftLat &&
+          cachedBounds.bottomRightLon >= newBounds.bottomRightLon &&
+          cachedBounds.bottomRightLat <= newBounds.bottomRightLat
+        ) {
+          return;
+        }
+        debouncedFetch(newBounds);
+      }
+    };
+
+    map.current?.on('moveend', handleMoveEnd);
+
+    return () => {
+      map.current?.off('moveend', handleMoveEnd);
+    };
+  }, [map, cachedBounds, debouncedFetch]);
+
+
+  const convertMapBounds = (mapBounds: mapboxgl.LngLatBounds) => ({
+    topLeftLon: mapBounds.getSouthWest().lng,
+    topLeftLat: mapBounds.getNorthEast().lat,
+    bottomRightLon: mapBounds.getNorthEast().lng,
+    bottomRightLat: mapBounds.getSouthWest().lat,
+  });
+
+  const unionBounds = (a: Bounds | null, b: Bounds) => {
+    if (!a) return b;
+    return {
+      topLeftLon: Math.min(a.topLeftLon, b.topLeftLon),
+      topLeftLat: Math.max(a.topLeftLat, b.topLeftLat),
+      bottomRightLon: Math.max(a.bottomRightLon, b.bottomRightLon),
+      bottomRightLat: Math.min(a.bottomRightLat, b.bottomRightLat),
+    };
   };
 
   const updateChildrenOfSelectedLocation = useCallback(
@@ -664,7 +738,6 @@ const SimulationMapView = ({
       });
 
       Object.entries(datasetsDataMap).forEach(([layerId, features]) => {
-        console.log('selected loc: ', selectedLoaction);
         const sourceId = `ds-${layerId}-${selectedLoaction.properties.name}`;
 
         if (!map.current?.getSource(sourceId)) {
@@ -837,11 +910,16 @@ const SimulationMapView = ({
     }
   }, [map, map.current, state.datasets, datasetsDataMap, state.opacitySliderValue]);
 
+
   useEffect(() => {
     // console.log('selectedLoaction', currentLocationChildren);
 
     if (map && map.current && currentLocationChildren && selectedLoaction) {
-      if (!showDatasetsAgainstParentLevel) {
+      // we retrieve target area level from nodeOrder of the hierarchy, in case of different hierarchy, can't be hardcoded...
+      const targetLevelName = getPlanTargetLevelName(state.defaultHierarchyData.nodeOrder, state.planTargetType);
+      // we do not want to focus to the parent every time we're loading structures on zoom 
+      const doNotFocusSelected = selectedLoaction.properties?.geographicLevel === targetLevelName && currentLocationChildren && currentLocationChildren.length !== 0;
+      if (!showDatasetsAgainstParentLevel && !doNotFocusSelected) {
         map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
       }
 
@@ -963,15 +1041,13 @@ const SimulationMapView = ({
                   populationCard.className = styles.populationCard;
                   populationCard.innerHTML = `
                     <div class="${styles.label}">Population</div>
-                    <div class="${styles.value}">${
-                    Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
+                    <div class="${styles.value}">${Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
                     'Not Available'
-                  }</div>
+                    }</div>
                     <div class="${styles.subtotalValueContainer}">
                       <div class="${styles.sublabel}">Children Number</div>
-                      <p class="${styles.sublabelValue}">${
-                    clickedFeature.properties?.childrenNumber ?? 'Not Available'
-                  }</p>
+                      <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'
+                    }</p>
                     </div>
                   `;
                   content.appendChild(populationCard);
@@ -1560,7 +1636,7 @@ const SimulationMapView = ({
                         try {
                           let perc = parseFloat(selectedTagPercentageValue);
                           percDisplay = Math.trunc(Math.round(perc * 100));
-                        } catch (e) {}
+                        } catch (e) { }
                         htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}
