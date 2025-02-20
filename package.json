@@ -85,6 +85,7 @@
     ]
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.15",
     "prettier": "2.8.4"
   }
 }
