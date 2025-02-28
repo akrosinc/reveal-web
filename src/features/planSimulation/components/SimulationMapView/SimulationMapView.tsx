@@ -12,8 +12,7 @@ import {
   getTagStats,
   initSimulationMap,
   PARENT_LABEL_SOURCE,
-  PARENT_SOURCE,
-  getPlanTargetLevelName
+  PARENT_SOURCE
 } from '../../../../utils';
 import { PlanningLocationResponse, PlanningParentLocationResponse } from '../../providers/types';
 import { bbox, Feature, MultiPoint, MultiPolygon, Point, pointsWithinPolygon, Polygon, Properties } from '@turf/turf';
@@ -27,7 +26,6 @@ import ActionDialog from '../../../../components/Dialogs/ActionDialog';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import styles from './SimulationMapView.module.css';
 import Spinner from 'react-bootstrap/Spinner';
-import debounce from 'lodash/debounce';
 
 import { FeatureCollection, Geometry } from 'geojson';
 
@@ -43,7 +41,7 @@ import {
   updateSelectedLayerProperty
 } from './SimulationMapViewUtils';
 // INTERFACE
-import { Bounds, SimulationMapViewProps, UserDefinedLayer, UserDefinedNames } from './SimulationMapViewModels';
+import { SimulationMapViewProps, UserDefinedLayer, UserDefinedNames } from './SimulationMapViewModels';
 // CONTANTS
 import {
   INITIAL_FILL_COLOR,
@@ -69,14 +67,12 @@ import TargetsSelectedList from '../TargetsSelectedList/TargetsSelectedList';
 import MapLegend from './components/MapLegend/MapLegend';
 import { assignLocationsToPlan } from './api/planAPI';
 import { set } from 'react-hook-form';
-import { getSimulationData, getStructuresWithinBoundingBox } from './api/datasetsAPI';
+import { getSimulationData } from './api/datasetsAPI';
+import { getPlanInfo } from './api/hierarchyAPI';
 import { findNodeById, getIdsByGeographicLevel } from './util';
 import { AssignToTeamsDialog } from '../AssignToTeamsDialog/AssignToTeamsDialog';
-import { toast } from 'react-toastify';
 
 library.add(faCaretRight, faCaretLeft);
-
-const MIN_DETAIL_ZOOM = 15;
 
 // DATASET REFACTORED GET COLOR FUNCTION
 export const getBackgroundStyle = (value: { r: number; g: number; b: number } | null) => {
@@ -110,7 +106,6 @@ const SimulationMapView = ({
   parentChild,
   analysisLayerDetails,
   selectedLoaction,
-  updateChildrenPolygons,
   showDatasetsAgainstParentLevel = false
 }: SimulationMapViewProps) => {
   const [defColor] = useColor('hex', INITIAL_FILL_COLOR);
@@ -182,11 +177,6 @@ const SimulationMapView = ({
   const [locationForTeamAssignment, setLocationForTeamAssignment] = useState<any>();
 
   const [toggleAssignedLayer, setToggleAssignedLayer] = useState(false);
-
-  // cachedBounds holds the union of all bounds for which structures have been fetched,
-  //  so we don't refetch on each move on the map if that has already been done
-  const [cachedBounds, setCachedBounds] = useState<Bounds | null>(null);
-
   // CONTEXT
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
@@ -295,70 +285,6 @@ const SimulationMapView = ({
     console.log('location', location);
 
     setAssignToTeamPopup(true);
-  };
-
-  // Fetch features from the backend for the given bounds.
-  const fetchFeatures = useCallback(async (bounds) => {
-    try {
-      const response = await getStructuresWithinBoundingBox(bounds.topLeftLon, bounds.topLeftLat, bounds.bottomRightLon, bounds.bottomRightLat);
-      updateChildrenPolygons(response);
-      setCachedBounds(prev => unionBounds(prev, bounds));
-    } catch (err) {
-      console.error(err);
-      toast.error('Could not load structures. Please try again.');
-    }
-  }, []);
-
-  // debounce to reduce API calls during rapid map movements
-  const debouncedFetch = useCallback(debounce(fetchFeatures, 300), [fetchFeatures]);
-
-  useEffect(() => {
-    if (!map) return;
-
-    const handleMoveEnd = () => {
-      const zoom = map.current?.getZoom();
-      if (zoom && zoom > MIN_DETAIL_ZOOM) {
-        const bounds = map.current?.getBounds();
-        if (!bounds) return;
-        const newBounds = convertMapBounds(bounds);
-        // check if the new bounds are fully contained in our cached bounds, cause if they are not
-        // we dont want to fetch again
-        if (
-          cachedBounds &&
-          cachedBounds.topLeftLon <= newBounds.topLeftLon &&
-          cachedBounds.topLeftLat >= newBounds.topLeftLat &&
-          cachedBounds.bottomRightLon >= newBounds.bottomRightLon &&
-          cachedBounds.bottomRightLat <= newBounds.bottomRightLat
-        ) {
-          return;
-        }
-        debouncedFetch(newBounds);
-      }
-    };
-
-    map.current?.on('moveend', handleMoveEnd);
-
-    return () => {
-      map.current?.off('moveend', handleMoveEnd);
-    };
-  }, [map, cachedBounds, debouncedFetch]);
-
-
-  const convertMapBounds = (mapBounds: mapboxgl.LngLatBounds) => ({
-    topLeftLon: mapBounds.getSouthWest().lng,
-    topLeftLat: mapBounds.getNorthEast().lat,
-    bottomRightLon: mapBounds.getNorthEast().lng,
-    bottomRightLat: mapBounds.getSouthWest().lat,
-  });
-
-  const unionBounds = (a: Bounds | null, b: Bounds) => {
-    if (!a) return b;
-    return {
-      topLeftLon: Math.min(a.topLeftLon, b.topLeftLon),
-      topLeftLat: Math.max(a.topLeftLat, b.topLeftLat),
-      bottomRightLon: Math.max(a.bottomRightLon, b.bottomRightLon),
-      bottomRightLat: Math.min(a.bottomRightLat, b.bottomRightLat),
-    };
   };
 
   const updateChildrenOfSelectedLocation = useCallback(
@@ -738,6 +664,7 @@ const SimulationMapView = ({
       });
 
       Object.entries(datasetsDataMap).forEach(([layerId, features]) => {
+        console.log('selected loc: ', selectedLoaction);
         const sourceId = `ds-${layerId}-${selectedLoaction.properties.name}`;
 
         if (!map.current?.getSource(sourceId)) {
@@ -910,16 +837,11 @@ const SimulationMapView = ({
     }
   }, [map, map.current, state.datasets, datasetsDataMap, state.opacitySliderValue]);
 
-
   useEffect(() => {
     // console.log('selectedLoaction', currentLocationChildren);
 
     if (map && map.current && currentLocationChildren && selectedLoaction) {
-      // we retrieve target area level from nodeOrder of the hierarchy, in case of different hierarchy, can't be hardcoded...
-      const targetLevelName = getPlanTargetLevelName(state.defaultHierarchyData.nodeOrder, state.planTargetType);
-      // we do not want to focus to the parent every time we're loading structures on zoom 
-      const doNotFocusSelected = selectedLoaction.properties?.geographicLevel === targetLevelName && currentLocationChildren && currentLocationChildren.length !== 0;
-      if (!showDatasetsAgainstParentLevel && !doNotFocusSelected) {
+      if (!showDatasetsAgainstParentLevel) {
         map.current?.fitBounds(JSON.parse(JSON.stringify(bbox(selectedLoaction.geometry))));
       }
 
@@ -937,17 +859,6 @@ const SimulationMapView = ({
 
       // Add or update the "children-layer" with individual polygon colors
       if (!map.current.getLayer('children-layer')) {
-        // Add or update the "children-layer" {REFACTORED}
-        // const paintConfig = {
-        //   'fill-color': [
-        //     'case',
-        //     ['==', ['get', 'id'], singleSelected],
-        //     singleSelectedColor,
-        //     'rgba(239, 239, 240, 0)' // Default color
-        //   ],
-        //   'fill-outline-color': 'rgba(000, 000, 000, 0.5)'
-        // };
-
         const paintConfig = {
           'fill-color': [
             'case',
@@ -969,7 +880,8 @@ const SimulationMapView = ({
 
             'rgba(239, 239, 240, 0)' // Default transparent color
           ],
-          'fill-outline-color': 'rgba(0, 0, 0, 0.5)'
+          // Default outline; the selected outline will be handled in a separate layer
+          'fill-outline-color': 'rgba(0, 0, 0, 1)'
         };
         AddLayer(map.current, 'children', 'children', paintConfig);
 
@@ -981,6 +893,21 @@ const SimulationMapView = ({
           'fill-color': multiSelectedColor,
           'fill-outline-color': 'rgba(255, 0, 0, 1)'
         });
+
+        // Add a separate line layer for the selected polygon with a thicker yellow outline
+        if (!map.current.getLayer('selected-outline-layer')) {
+          map.current.addLayer({
+            id: 'selected-outline-layer',
+            type: 'line',
+            source: 'children-source', // Reuse the same source as the fill layer
+            filter: ['==', ['get', 'id'], singleSelected],
+            layout: {},
+            paint: {
+              'line-color': 'rgba(255, 255, 0, 1)', // Bright yellow
+              'line-width': 10 // Thicker outline; adjust this value as needed
+            }
+          });
+        }
 
         map.current.on('click', 'children-layer', e => {
           const clickedFeature = e.features && e.features[0] ? e.features[0] : null;
@@ -1041,13 +968,15 @@ const SimulationMapView = ({
                   populationCard.className = styles.populationCard;
                   populationCard.innerHTML = `
                     <div class="${styles.label}">Population</div>
-                    <div class="${styles.value}">${Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
+                    <div class="${styles.value}">${
+                    Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
                     'Not Available'
-                    }</div>
+                  }</div>
                     <div class="${styles.subtotalValueContainer}">
                       <div class="${styles.sublabel}">Children Number</div>
-                      <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'
-                    }</p>
+                      <p class="${styles.sublabelValue}">${
+                    clickedFeature.properties?.childrenNumber ?? 'Not Available'
+                  }</p>
                     </div>
                   `;
                   content.appendChild(populationCard);
@@ -1119,18 +1048,8 @@ const SimulationMapView = ({
           }
         });
       } else {
-        // map.current?.setPaintProperty('children-layer', 'fill-color', [
-        //   'case',
-        //   ['==', ['get', 'id'], singleSelected],
-        //   singleSelectedColor,
-        //   'rgba(57, 62, 65, 0.05)' // Default color
-        // ]);
-
         map.current?.setPaintProperty('children-layer', 'fill-color', [
           'case',
-          ['==', ['get', 'id'], singleSelected],
-          singleSelectedColor, // Highlight selected
-
           ['==', ['get', 'businessStatus'], 'Not Visited'],
           'rgba(255, 255, 0, 1)', // Yellow
           ['==', ['get', 'businessStatus'], 'Not Eligible'],
@@ -1153,6 +1072,11 @@ const SimulationMapView = ({
           1,
           0.2
         ]);
+
+        // Update the selected outline layer filter to match the current selection
+        if (map.current.getLayer('selected-outline-layer')) {
+          map.current.setFilter('selected-outline-layer', ['==', ['get', 'id'], singleSelected]);
+        }
 
         const updatedFeatures = multiSelected.map(feature => ({
           type: 'Feature',
@@ -1221,7 +1145,7 @@ const SimulationMapView = ({
             'fill-color': [
               'case',
               ['!=', ['get', 'numberOfTeams'], 0], // Corrected condition
-              'rgba(128, 128, 128, 0.7)', // Grey
+              'rgba(0, 144, 0, 1)', // Green
               'rgba(255, 0, 74, 0.7)' // Default color
             ]
           },
@@ -1636,7 +1560,7 @@ const SimulationMapView = ({
                         try {
                           let perc = parseFloat(selectedTagPercentageValue);
                           percDisplay = Math.trunc(Math.round(perc * 100));
-                        } catch (e) { }
+                        } catch (e) {}
                         htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}
