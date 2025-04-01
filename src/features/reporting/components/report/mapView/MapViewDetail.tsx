@@ -9,7 +9,7 @@ import {
   initMap
 } from '../../../../../utils';
 import PopoverComponent from '../../../../../components/Popover';
-import { bbox, feature, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
+import { bbox, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
 import {
   MAPBOX_STYLE_SATELLITE,
   MAP_DEFAULT_FILL_OPACITY,
