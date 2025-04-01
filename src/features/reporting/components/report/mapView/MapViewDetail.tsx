@@ -1,9 +1,15 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Map, Popup } from 'mapbox-gl';
 import { Button, Container } from 'react-bootstrap';
-import { createChildLocationLabel, disableMapInteractions, getPolygonCenter, initMap } from '../../../../../utils';
+import {
+  convertMultiPolygonsToPolygonFeatures,
+  createChildLocationLabel,
+  disableMapInteractions,
+  getPolygonCenter,
+  initMap
+} from '../../../../../utils';
 import PopoverComponent from '../../../../../components/Popover';
-import { bbox, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
+import { bbox, feature, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
 import {
   MAPBOX_STYLE_SATELLITE,
   MAP_DEFAULT_FILL_OPACITY,
@@ -153,9 +159,43 @@ const MapViewDetail = React.forwardRef<any, Props>(
             bbox: undefined
           };
 
+          let multipolygonLabels: FeatureCollection<Polygon | MultiPolygon | Point> = {
+            features: data.features
+              .filter(feature => feature.geometry.type === 'MultiPolygon')
+              .flatMap(feature => {
+                let newFeatures = convertMultiPolygonsToPolygonFeatures(feature as Feature<MultiPolygon>);
+                return newFeatures.map((featureN, index) => {
+                  let properties = feature.properties;
+                  let val = getPolygonCenter(featureN);
+                  let newFeature = val.center;
+                  newFeature.properties = {
+                    name: properties.name,
+                    id: properties.id
+                  };
+                  newFeature.properties.name = newFeature.properties.name + '_' + index;
+                  return newFeature;
+                });
+
+                // let properties = feature.properties;
+                //
+                // let val = getPolygonCenter(feature);
+                // let newFeature = val.center;
+                // newFeature.properties = properties;
+                // return newFeature;
+              }),
+            type: 'FeatureCollection',
+            bbox: undefined
+          };
+
           currentMap.addSource(parentLocationIdentifier + '-center', {
             type: 'geojson',
             data: centreData,
+            tolerance: 1
+          });
+
+          currentMap.addSource(parentLocationIdentifier + '-multicenter', {
+            type: 'geojson',
+            data: multipolygonLabels,
             tolerance: 1
           });
 
@@ -229,6 +269,43 @@ const MapViewDetail = React.forwardRef<any, Props>(
               ]
             },
             filter: ['all', ['!=', 'geographicLevel', 'structure'], ['!=', 'geographicLevel', 'operational']]
+          });
+
+          currentMap.addLayer({
+            id: parentLocationIdentifier + '-multilabel',
+            type: 'symbol',
+            source: parentLocationIdentifier + '-multicenter',
+            layout: {
+              'text-field': [
+                'format',
+                ['get', 'name'],
+                {
+                  'text-font': ['literal', ['Open Sans Bold', 'Open Sans Semibold']]
+                }
+              ],
+              'text-size': ['interpolate', ['linear'], ['zoom'], 5, 2, 7, 10, 10, 12, 18, 20],
+              'text-anchor': 'top',
+              'text-justify': 'center'
+            },
+            paint: {
+              'text-color': ['case', ['==', ['get', 'mark'], true], 'red', 'black'],
+
+              'text-opacity': [
+                'step',
+                ['zoom'],
+                ['case', ['==', ['get', 'geographicLevel'], 'structure'], 0.1, 1],
+                15,
+                ['case', ['==', ['get', 'geographicLevel'], 'structure'], 1, 1]
+              ]
+            },
+            filter: [
+              'all',
+              ['!=', 'geographicLevel', 'structure'],
+              ['!=', 'geographicLevel', 'operational'],
+              ['!=', 'geographicLevel', 'country'],
+              ['!=', 'geographicLevel', 'studysite'],
+              ['!=', 'geographicLevel', 'zone']
+            ]
           });
 
           currentMap.on('mouseover', parentLocationIdentifier + '-label', e => {

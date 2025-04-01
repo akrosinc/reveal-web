@@ -1,4 +1,14 @@
-import { bbox, center, Feature, FeatureCollection, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
+import {
+  bbox,
+  center,
+  polygon,
+  Feature,
+  FeatureCollection,
+  MultiPolygon,
+  Point,
+  Polygon,
+  Properties
+} from '@turf/turf';
 import mapboxgl, {
   EventData,
   GeolocateControl,
@@ -209,6 +219,10 @@ export const getPolygonCenter = (data: Feature<Polygon | MultiPolygon | Point>) 
     center: center(data),
     bounds: bbox(data) as LngLatBoundsLike
   };
+};
+
+export const convertMultiPolygonsToPolygonFeatures = (data: Feature<MultiPolygon>) => {
+  return data.geometry.coordinates.map(coords => polygon(coords));
 };
 
 export const getFeatureCentres = (
