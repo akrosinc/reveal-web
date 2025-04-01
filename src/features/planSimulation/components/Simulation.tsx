@@ -70,11 +70,7 @@ import AddDatasetForm from './SimulationMapView/components/AddDatasetForm/AddDat
 
 import CampaignTotalsAccordion from './SimulationMapView/components/CampaignTotalsAccordion/CampaignTotalsAccordion';
 
-import {
-  getDefaultHierarchyData,
-  getHierarchy,
-  getPlanInfo
-} from './SimulationMapView/api/hierarchyAPI';
+import { getDefaultHierarchyData, getHierarchy, getPlanInfo, getPlans } from './SimulationMapView/api/hierarchyAPI';
 import Hierarchy from './Hierarchy/Hierarchy';
 
 // CONTEXT
@@ -92,6 +88,7 @@ import {
 } from './SimulationMapView/api/datasetsAPI';
 import { assignLocationsToPlan } from '../../assignment/api';
 import { getPlanTargetLevelName } from '../../../utils';
+import { auto } from '@popperjs/core';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -274,10 +271,11 @@ const Simulation = () => {
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
   const prevDatasetsLengthRef = useRef<number>(state.datasets.length);
+  const [plans, setPlans] = useState<any[]>();
+  const [selectedPlan, setSelectedPlan] = useState<any>();
 
-
-  const fetchSimulationAndData = async () => {
-    const simulationIdentifier = await fetchPlanInfo();
+  const fetchSimulationAndData = async (selectedPlan: any) => {
+    const simulationIdentifier = await fetchPlanInfo(selectedPlan);
 
     try {
       const simulationData = await getSimulationData(simulationIdentifier);
@@ -326,9 +324,9 @@ const Simulation = () => {
     }
   };
 
-  const fetchPlanInfo = async () => {
+  const fetchPlanInfo = async (selectedPlan: any) => {
     try {
-      const planInfo = await getPlanInfo();
+      const planInfo = selectedPlan;
       dispatch({ type: 'SET_PLANID', payload: planInfo.identifier });
       dispatch({ type: 'SET_PLAN_TARGET_TYPE', payload: planInfo.planTargetType });
       return planInfo.identifier;
@@ -456,9 +454,17 @@ const Simulation = () => {
   }, [state.selected, showDatasetsAgainstParentLevel]);
 
   useEffect(() => {
-    fetchHierarchy();
-    fetchSimulationAndData();
-    fetchDefaultHierarchyData();
+    if (selectedPlan) {
+      fetchHierarchy();
+      fetchSimulationAndData(selectedPlan);
+      fetchDefaultHierarchyData();
+    }
+  }, [selectedPlan]);
+
+  useEffect(() => {
+    getPlans().then(planInfo => {
+      setPlans(planInfo);
+    });
   }, []);
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -1363,15 +1369,15 @@ const Simulation = () => {
     }
   };
 
-  useEffect(() => {
-    fetchHierarchy();
-    fetchSimulationAndData();
-  }, []);
+  // useEffect(() => {
+  //   fetchHierarchy();
+  //   fetchSimulationAndData();
+  // }, []);
 
   //! LOADING POLYGONS ON DEMAND
   const loadLocationHandler = async (locationId: string) => {
-    dispatch({ type: "SET_DETAILS_POPUP_REF", payload: null });
-    dispatch({ type: "CLEAR_SELECTION" });
+    dispatch({ type: 'SET_DETAILS_POPUP_REF', payload: null });
+    dispatch({ type: 'CLEAR_SELECTION' });
 
     setShowDatasetsAgainstParentLevel(false);
     setSelectedParentLevel(null);
@@ -1454,7 +1460,6 @@ const Simulation = () => {
       return updatedPolygons;
     });
   };
-
 
   // const showDetailsClickHandler = (locationId: string) => {
   //   let feature = mapData?.parents[locationId];
@@ -1651,13 +1656,44 @@ const Simulation = () => {
   // map zoom in for the structures lifts up the state, so we still have a single source of truth
   const updateChildrenPolygons = (data: any) => {
     setSelectedLocationChildren(prev => [...prev, ...data]);
-  }
+  };
+
+  const handlePlanSelectionChange = (option: SingleValue<{ value: string; label: string }>) => {
+    let found = plans?.find(plan => plan.identifier === option?.value);
+    if (found) {
+      setSelectedPlan(found);
+    }
+  };
 
   return (
     <>
       <Container fluid ref={divRef}>
         <div style={{ display: 'flex', position: 'relative' }}>
           <Drawer open={leftOpen} anchor="left" heading="Plan Simulation">
+            {plans && (
+              <Accordion title="Plans" open={selectedPlan == null}>
+                <Select
+                  placeholder={'Select Plan'}
+                  className={styles.select_small}
+                  options={plans.map((plan: any) => {
+                    return {
+                      value: plan.identifier,
+                      label: plan.title
+                    };
+                  })}
+                  onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
+                    handlePlanSelectionChange(selectedOption);
+                  }}
+                />
+                {plans.map(plan => (
+                  <>
+                    <br></br>
+                    <br></br>
+                  </>
+                ))}
+              </Accordion>
+            )}
+
             {/* {highestLocations && showResult && ( */}
             {highestLocations && (
               <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
