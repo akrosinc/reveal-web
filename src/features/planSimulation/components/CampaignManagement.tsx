@@ -19,7 +19,8 @@ import {
   getDefaultHierarchyData,
   getHierarchy,
   getHierarchyPolygon,
-  getPlanInfo
+  getPlanInfo,
+  getPlans
 } from './SimulationMapView/api/hierarchyAPI';
 import Hierarchy from './Hierarchy/Hierarchy';
 import SimulationMapView from './SimulationMapView/SimulationMapView';
@@ -67,8 +68,10 @@ import {
 import { toast } from 'react-toastify';
 import { assignLocationsToPlan } from '../../assignment/api';
 import { getReportForLocation } from '../reportsAPI/reportsApi';
-import {  getOrganizatonsWithMembers } from './Teams/api/teamAPI';
+import { getOrganizatonsWithMembers } from './Teams/api/teamAPI';
 import { getPlanTargetLevelName } from '../../../utils';
+import Select, { SingleValue } from 'react-select';
+import styles from './Simulation.module.css';
 
 export interface Stats {
   [key: string]: Metadata;
@@ -147,9 +150,11 @@ const CampaignManagement = () => {
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
   const [labels, setLabels] = useState<string[]>([]);
+  const [plans, setPlans] = useState<any[]>();
+  const [selectedPlan, setSelectedPlan] = useState<any>();
 
-  const fetchSimulationAndData = async () => {
-    const simulationIdentifier = await fetchPlanInfo();
+  const fetchSimulationAndData = async (selectedPlan: any) => {
+    const simulationIdentifier = await fetchPlanInfo(selectedPlan);
 
     try {
       const simulationData = await getSimulationData(simulationIdentifier);
@@ -197,15 +202,12 @@ const CampaignManagement = () => {
           properties: {
             ...obj.properties,
             numberOfTeams: Object.values(state.locationsTeamsMap[obj.identifier]).length || 0
-
           }
-        }
+        };
         return updatedObj;
       })
     );
   }, [state.locationsTeamsMap]);
-
-
 
   useEffect(() => {
     if (currentLocationId && polygonsWithData && polygonsWithData[currentLocationId]) {
@@ -267,10 +269,10 @@ const CampaignManagement = () => {
           return {
             ...map,
             [obj.identifier]: map[obj.identifier] ?? (obj.teams || [])
-          }
+          };
         },
         { ...state.locationsTeamsMap }
-      )
+      );
 
       dispatch({ type: 'SET_ASSIGNED', payload: assignedMap });
       dispatch({ type: 'SET_LOCATIONS_TEAMS_MAP', payload: locationsTeamsMap });
@@ -299,7 +301,9 @@ const CampaignManagement = () => {
   useEffect(() => {
     let populationData: any;
     if (state.selected) {
-      populationData = state.selected.population ? transformPopulationData(JSON.parse(state.selected.population)) : null;
+      populationData = state.selected.population
+        ? transformPopulationData(JSON.parse(state.selected.population))
+        : null;
 
       getReportForLocation(state.planid, state.selected.id).then(report => {
         setLocationReport(report);
@@ -321,9 +325,17 @@ const CampaignManagement = () => {
   }, [state.selected]);
 
   useEffect(() => {
-    fetchHierarchy();
-    fetchSimulationAndData();
-    fetchDefaultHierarchyData();
+    if (selectedPlan) {
+      fetchHierarchy();
+      fetchSimulationAndData(selectedPlan);
+      fetchDefaultHierarchyData();
+    }
+  }, [selectedPlan]);
+
+  useEffect(() => {
+    getPlans().then(planInfo => {
+      setPlans(planInfo);
+    });
   }, []);
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -538,9 +550,9 @@ const CampaignManagement = () => {
       console.error('Failed to fetch hierarchy:', error);
     }
   };
-  const fetchPlanInfo = async () => {
+  const fetchPlanInfo = async (selectedPlan: any) => {
     try {
-      const planInfo = await getPlanInfo();
+      const planInfo = selectedPlan;
       dispatch({ type: 'SET_PLANID', payload: planInfo.identifier });
       dispatch({ type: 'SET_PLAN_TARGET_TYPE', payload: planInfo.planTargetType });
       return planInfo.identifier;
@@ -559,14 +571,14 @@ const CampaignManagement = () => {
     }
   };
 
-  useEffect(() => {
-    fetchHierarchy();
-    fetchSimulationAndData();
-  }, []);
+  // useEffect(() => {
+  //   fetchHierarchy();
+  //   fetchSimulationAndData();
+  // }, []);
 
   const loadLocationHandler = async (locationId: string) => {
-    dispatch({ type: "SET_DETAILS_POPUP_REF", payload: null });
-    dispatch({ type: "CLEAR_SELECTION" });
+    dispatch({ type: 'SET_DETAILS_POPUP_REF', payload: null });
+    dispatch({ type: 'CLEAR_SELECTION' });
 
     setCurrentLocationId(locationId);
     // If children already loaded, skip fetching
@@ -579,7 +591,6 @@ const CampaignManagement = () => {
     const parentGeoLevel = polygonsWithData?.[locationId].polygonData?.properties?.geographicLevel || '';
 
     if (includeGeometry) {
-
       const configObj: LocationData = {
         datasetsIds: [],
         includeGeometry,
@@ -700,13 +711,42 @@ const CampaignManagement = () => {
   // map zoom in for the structures lifts up the state, so we still have a single source of truth
   const updateChildrenPolygons = (data: any) => {
     setSelectedLocationChildren(prev => [...prev, ...data]);
-  }
+  };
 
+  const handlePlanSelectionChange = (option: SingleValue<{ value: string; label: string }>) => {
+    let found = plans?.find(plan => plan.identifier === option?.value);
+    if (found) {
+      setSelectedPlan(found);
+    }
+  };
   return (
     <>
       <Container fluid ref={divRef}>
         <div style={{ display: 'flex', position: 'relative' }}>
           <Drawer open={leftOpen} anchor="left" heading="Campaign Manager">
+            {plans && (
+              <Accordion title="Plans" open={selectedPlan == null}>
+                <Select
+                  placeholder={'Select Plan'}
+                  className={styles.select_small}
+                  options={plans.map((plan: any) => {
+                    return {
+                      value: plan.identifier,
+                      label: plan.title
+                    };
+                  })}
+                  onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
+                    handlePlanSelectionChange(selectedOption);
+                  }}
+                />
+                {plans.map(plan => (
+                  <>
+                    <br></br>
+                    <br></br>
+                  </>
+                ))}
+              </Accordion>
+            )}
             {highestLocations && (
               <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
                 <Hierarchy clickHandler={loadLocationHandler} />
