@@ -571,6 +571,7 @@ const SimulationMapView = ({
   }, [resetMap, initializeMap, setResetMap]);
 
   useEffect(() => {
+    polygonClickPopup.current.remove();
     if (currentLocationChildren) {
       const groupedById: any = {};
       currentLocationChildren.forEach((location: any) => {
@@ -663,6 +664,7 @@ const SimulationMapView = ({
       });
 
       Object.entries(datasetsDataMap).forEach(([layerId, features]) => {
+        console.log('selected loc: ', selectedLoaction);
         const sourceId = `ds-${layerId}-${selectedLoaction.properties.name}`;
 
         if (!map.current?.getSource(sourceId)) {
@@ -857,17 +859,6 @@ const SimulationMapView = ({
 
       // Add or update the "children-layer" with individual polygon colors
       if (!map.current.getLayer('children-layer')) {
-        // Add or update the "children-layer" {REFACTORED}
-        // const paintConfig = {
-        //   'fill-color': [
-        //     'case',
-        //     ['==', ['get', 'id'], singleSelected],
-        //     singleSelectedColor,
-        //     'rgba(239, 239, 240, 0)' // Default color
-        //   ],
-        //   'fill-outline-color': 'rgba(000, 000, 000, 0.5)'
-        // };
-
         const paintConfig = {
           'fill-color': [
             'case',
@@ -889,7 +880,8 @@ const SimulationMapView = ({
 
             'rgba(239, 239, 240, 0)' // Default transparent color
           ],
-          'fill-outline-color': 'rgba(0, 0, 0, 0.5)'
+          // Default outline; the selected outline will be handled in a separate layer
+          'fill-outline-color': 'rgba(0, 0, 0, 1)'
         };
         AddLayer(map.current, 'children', 'children', paintConfig);
 
@@ -901,6 +893,21 @@ const SimulationMapView = ({
           'fill-color': multiSelectedColor,
           'fill-outline-color': 'rgba(255, 0, 0, 1)'
         });
+
+        // Add a separate line layer for the selected polygon with a thicker yellow outline
+        if (!map.current.getLayer('selected-outline-layer')) {
+          map.current.addLayer({
+            id: 'selected-outline-layer',
+            type: 'line',
+            source: 'children-source', // Reuse the same source as the fill layer
+            filter: ['==', ['get', 'id'], singleSelected],
+            layout: {},
+            paint: {
+              'line-color': 'rgba(255, 255, 0, 1)', // Bright yellow
+              'line-width': 10 // Thicker outline; adjust this value as needed
+            }
+          });
+        }
 
         map.current.on('click', 'children-layer', e => {
           const clickedFeature = e.features && e.features[0] ? e.features[0] : null;
@@ -1041,18 +1048,8 @@ const SimulationMapView = ({
           }
         });
       } else {
-        // map.current?.setPaintProperty('children-layer', 'fill-color', [
-        //   'case',
-        //   ['==', ['get', 'id'], singleSelected],
-        //   singleSelectedColor,
-        //   'rgba(57, 62, 65, 0.05)' // Default color
-        // ]);
-
         map.current?.setPaintProperty('children-layer', 'fill-color', [
           'case',
-          ['==', ['get', 'id'], singleSelected],
-          singleSelectedColor, // Highlight selected
-
           ['==', ['get', 'businessStatus'], 'Not Visited'],
           'rgba(255, 255, 0, 1)', // Yellow
           ['==', ['get', 'businessStatus'], 'Not Eligible'],
@@ -1075,6 +1072,11 @@ const SimulationMapView = ({
           1,
           0.2
         ]);
+
+        // Update the selected outline layer filter to match the current selection
+        if (map.current.getLayer('selected-outline-layer')) {
+          map.current.setFilter('selected-outline-layer', ['==', ['get', 'id'], singleSelected]);
+        }
 
         const updatedFeatures = multiSelected.map(feature => ({
           type: 'Feature',
@@ -1143,7 +1145,7 @@ const SimulationMapView = ({
             'fill-color': [
               'case',
               ['!=', ['get', 'numberOfTeams'], 0], // Corrected condition
-              'rgba(128, 128, 128, 0.7)', // Grey
+              'rgba(0, 144, 0, 1)', // Green
               'rgba(255, 0, 74, 0.7)' // Default color
             ]
           },
