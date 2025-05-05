@@ -86,8 +86,5 @@
   },
   "devDependencies": {
     "prettier": "2.8.4"
-  },
-  "resolutions": {
-    "caniuse-lite": "1.0.30001632"
   }
 }
