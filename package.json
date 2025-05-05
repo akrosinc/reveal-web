@@ -56,8 +56,8 @@
     "react-toastify": "^8.1.0",
     "react-transition-group": "^4.4.5",
     "simplebar-react": "^2.4.1",
-    "typescript": "~4.2.0",
-    "typed-function": "4.1.0"
+    "typed-function": "4.1.0",
+    "typescript": "~4.2.0"
   },
   "scripts": {
     "start": "react-scripts  start ",
