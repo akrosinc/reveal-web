@@ -14,7 +14,7 @@ import { getPlanReports } from '../reporting/api';
 import { useTranslation } from 'react-i18next';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
-
+//
 const Dashboard = () => {
   const [data, setData] = useState<ChartData<'pie'>>();
   const [dougData, setDougData] = useState<ChartData<'doughnut'>>();
