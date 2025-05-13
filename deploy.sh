@@ -1,4 +1,4 @@
 #!/bin/sh
 
-npm run build
+CI=false npm run build
 serve -s build
