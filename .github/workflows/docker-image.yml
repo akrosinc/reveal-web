@@ -5,46 +5,27 @@ on:
     branches: [ main, zambia-aggregation, zam-agg, nih-simulation, nih-2024, nih-2024-enhance, mali-extract, test_mali_2 ]
 
 jobs:
+
   npm-install-and-build:
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
 
-    - name: Install dependencies
-      run: npm install
+    runs-on: ubuntu-latest
 
-    - name: Build the app
-      run: npm run build
+    steps:
+      - name: Checkout reveal-web
+        uses: actions/checkout@v3
+        with:
+          repository: akrosinc/reveal-web
 
-  #  yarn-install-and-build:
-  #
-  #    runs-on: ubuntu-latest
-  #
-  #    steps:
-  #
-  #    - name: Checkout reveal-web
-  #      uses: actions/checkout@v3
-  #      with:
-  #        repository: akrosinc/reveal-web
-  #
-  #
-  #    - uses: borales/actions-yarn@v4.0.0
-  #      with:
-  #        cmd: install # will run `yarn install` command
-  #
-  #
-  #    - uses: borales/actions-yarn@v4.0.0
-  #      with:
-  #        cmd: upgrade # will run `yarn upgrade` command
-  #
-  #
-  #    - uses: borales/actions-yarn@v4.0.0
-  #      with:
-  #        cmd: build # will run `yarn build` command
-  #      env:
-  #        NODE_OPTIONS: --openssl-legacy-provider
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the app
+        run: npm run build
 
   build-and-push-docker-image:
 
