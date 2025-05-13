@@ -1,4 +1,4 @@
 #!/bin/sh
 
-yarn build
+npm run build
 serve -s build

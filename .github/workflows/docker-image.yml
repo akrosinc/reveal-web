@@ -5,60 +5,70 @@ on:
     branches: [ main, zambia-aggregation, zam-agg, nih-simulation, nih-2024, nih-2024-enhance, mali-extract, test_mali_2 ]
 
 jobs:
+  npm-install-and-build:
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
 
-#  yarn-install-and-build:
-#
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#
-#    - name: Checkout reveal-web
-#      uses: actions/checkout@v3
-#      with:
-#        repository: akrosinc/reveal-web
-#
-#
-#    - uses: borales/actions-yarn@v4.0.0
-#      with:
-#        cmd: install # will run `yarn install` command
-#
-#
-#    - uses: borales/actions-yarn@v4.0.0
-#      with:
-#        cmd: upgrade # will run `yarn upgrade` command
-#
-#
-#    - uses: borales/actions-yarn@v4.0.0
-#      with:
-#        cmd: build # will run `yarn build` command
-#      env:
-#        NODE_OPTIONS: --openssl-legacy-provider
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build the app
+      run: npm run build
+
+  #  yarn-install-and-build:
+  #
+  #    runs-on: ubuntu-latest
+  #
+  #    steps:
+  #
+  #    - name: Checkout reveal-web
+  #      uses: actions/checkout@v3
+  #      with:
+  #        repository: akrosinc/reveal-web
+  #
+  #
+  #    - uses: borales/actions-yarn@v4.0.0
+  #      with:
+  #        cmd: install # will run `yarn install` command
+  #
+  #
+  #    - uses: borales/actions-yarn@v4.0.0
+  #      with:
+  #        cmd: upgrade # will run `yarn upgrade` command
+  #
+  #
+  #    - uses: borales/actions-yarn@v4.0.0
+  #      with:
+  #        cmd: build # will run `yarn build` command
+  #      env:
+  #        NODE_OPTIONS: --openssl-legacy-provider
 
 
   build-and-push-docker-image:
 
     runs-on: ubuntu-latest
-#    needs: [yarn-install-and-build]
+      needs: [ npm-install-and-build ]
 
     steps:
+      - name: Output Run Number
+        run: echo ${{ github.run_number }}
 
-    - name: Output Run Number
-      run: echo ${{ github.run_number }}
+      - name: Checkout reveal-web
+        uses: actions/checkout@v3
+        with:
+          repository: akrosinc/reveal-web
 
-    - name: Checkout reveal-web
-      uses: actions/checkout@v3
-      with:
-        repository: akrosinc/reveal-web
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: akrosinc
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Login to DockerHub
-      uses: docker/login-action@v1
-      with:
-        username: akrosinc
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Build and push
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        push: true
-        tags: akrosinc/reveal-web:v3.0.${{ github.run_number }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: akrosinc/reveal-web:v3.0.${{ github.run_number }}
