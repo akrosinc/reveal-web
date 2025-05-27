@@ -50,7 +50,7 @@ export const getPlanInfo = async () => {
 
 export const getPlans = async () => {
   try {
-    const response = await api.get(`/plan?_summary=false&search=&size=1&page=0&sort=,desc`);
+    const response = await api.get(`/plan?_summary=false&search=&size=10&page=0&sort=,desc`);
     return response.data.content;
   } catch (error) {
     console.error(error);
