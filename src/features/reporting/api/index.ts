@@ -30,14 +30,15 @@ export const getReportTypeInfo = async (reportType: string): Promise<AdditionalR
 export const getMapReportData = async (
   mapData: MapDataReportRequest,
   filters?: string,
-  type?: string
+  type?: string,
+  clickedColumn?:string
 ): Promise<FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>> => {
   const data = await prodAPI
     .get<any>(
       REPORTS +
         `/reportData?reportType=${mapData.reportTypeEnum}&planIdentifier=${mapData.planIdentifier}${
           mapData.parentLocationIdentifier !== null ? '&parentIdentifier=' + mapData.parentLocationIdentifier : ''
-        }${filters && filters.length ? '&filters=' + filters : ''}${type ? '&type=' + type : ''}`
+        }${filters && filters.length ? '&filters=' + filters : ''}${type ? '&type=' + type : ''}${clickedColumn ? '&clickedColumn=' + clickedColumn : ''}`
     )
     .then(response => response.data);
   return data;

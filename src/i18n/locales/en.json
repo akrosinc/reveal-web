@@ -22,7 +22,9 @@
     "MetaDataImport": "Metadata Import",
     "Resource Planning": "Resource Planning",
     "dataProcessingProgress": "Data Processing Progress",
-    "extracts": "Data Extracts"
+    "extracts": "Data Extracts",
+    "AmdrImport": "AMDR Import",
+    "amdrReporting": "AMDR Report"
   },
   "publicPage": {
     "supportedBy": "supported by",
@@ -82,7 +84,8 @@
     "Upload Date": "Upload Date",
     "Uploaded By": "User",
     "Status": "Status",
-    "validateImport": "Validate Import"
+    "validateImport": "Validate Import",
+    "refresh": "Refresh"
   },
   "organizationPage": {
     "organization": "Organization",
@@ -230,7 +233,8 @@
     "identifier": "Identifier",
     "treatmentCoverage": "Treatment Coverage",
     "drugInventoryAdverseReporting": "Drug Inventory / Adverse Reporting",
-    "populationCoverage": "Population coverage"
+    "populationCoverage": "Population coverage",
+    "backFromColumnDrillDown": "Back"
   },
   "simulationPage": {
     "tag": "tag",
@@ -332,6 +336,23 @@
       "owners": "Current Owners",
       "selected": "Selection"
 
+    }
+  },
+  "amdrImport": {
+    "templateCreation": "AMDR Template Creation",
+    "fileImport": "File Import",
+    "uploadFile": "Upload File",
+    "download": "Download",
+    "lowestGeographicLevel":"Lowest Geographic Level",
+    "haplotype":"Haplotype",
+    "table": {
+      "fileName": "Filename",
+      "uploadDate": "Upload Date",
+      "status": "Status",
+      "uploadedBy": "Uploaded By",
+      "owner": "I am the owner",
+      "owners": "Current Owners",
+      "selected": "Selection"
     }
   },
   "locationHierarchyPage": {

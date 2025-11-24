@@ -16,7 +16,7 @@ import {
   RESOURCE_PLANNING_PAGE,
   DATA_PROCESSING_PROGRESS,
   REVEAL_SIMULATION,
-  DATA_EXTRACTS
+  DATA_EXTRACTS, AMDR_IMPORT, AMDR_REPORT
 } from '../../../constants';
 
 export const MAIN_MENU = [
@@ -71,6 +71,11 @@ export const MAIN_MENU = [
         pageTitle: 'surveyReporting',
         route: REPORTING_PAGE + '/survey-data',
         roles: ['view_survey_data']
+      },
+      {
+        pageTitle: 'amdrReporting',
+        route: REPORTING_PAGE + "/amdr-data" ,
+        roles: ['view_survey_data']
       }
     ]
   },
@@ -97,6 +102,11 @@ export const MAIN_MENU = [
       {
         pageTitle: 'MetaDataImport',
         route: METADATA_IMPORT,
+        roles: ['metadata_import']
+      },
+      {
+        pageTitle: 'AmdrImport',
+        route: AMDR_IMPORT,
         roles: ['metadata_import']
       },
       {

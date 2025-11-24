@@ -8,12 +8,17 @@ import { toast } from 'react-toastify';
 import AuthorizedElement from '../../components/AuthorizedElement';
 import { PLAN_VIEW, USER_VIEW } from '../../constants';
 import { ChartData } from 'chart.js/auto';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, LineElement,
+  BarElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Title, } from 'chart.js';
 import { Doughnut, Pie } from 'react-chartjs-2';
 import { getPlanReports } from '../reporting/api';
 import { useTranslation } from 'react-i18next';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend,LineElement,CategoryScale,Title,LinearScale,PointElement,BarElement );
 //
 const Dashboard = () => {
   const [data, setData] = useState<ChartData<'pie'>>();

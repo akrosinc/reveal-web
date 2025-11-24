@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
 import { OverlayTrigger, Table, Tooltip } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
-import { Column, useTable } from 'react-table';
+import {Column, Row, useTable} from 'react-table';
 import { ReportLocationProperties, ReportType } from '../../features/reporting/providers/types';
 import { useAppSelector } from '../../store/hooks';
 import { useTranslation } from 'react-i18next';
@@ -13,9 +13,11 @@ interface Props {
   clickHandler: (locationId: string, locationName: string) => void;
   sortHandler: (sortDirection: boolean, columnName: string) => void;
   rangeDeterminer: (value: number) => any;
+  columnClickable?: boolean;
+  columnClickHandler:(clickedColumn?:string)=>void;
 }
 
-const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDeterminer }: Props) => {
+const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDeterminer,columnClickable,columnClickHandler }: Props) => {
   const [totalValue, setTotalValue] = useState<number[]>([]);
   const { reportType } = useParams();
 
@@ -63,6 +65,18 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
     return numFloor.toLocaleString();
   };
 
+  const getOnClick = (header: string,rows: Row[], columnClickable?:boolean ) => {
+    if (columnClickable){
+     return () => columnClickHandler(header)
+    } else {
+      return () => {
+        sortHandler(!sortDirection, header);
+        setCurrentSortDirection(!sortDirection);
+        setCurrentSortDirectionField(header);
+      };
+    }
+  }
+
   return (
     <Table bordered hover {...getTableProps()} className="mt-2" variant={isDarkMode ? 'dark' : 'white'}>
       <thead className="bg-white" style={{ position: 'sticky', top: '0' }}>
@@ -70,17 +84,15 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => {
               const header = column.Header?.toString();
+              const desc = (column as any)["desc"]?.toString()
               if (header) {
                 return (
                   <th
-                    onClick={() => {
-                      sortHandler(!sortDirection, header);
-                      setCurrentSortDirection(!sortDirection);
-                      setCurrentSortDirectionField(header);
-                    }}
+                    onClick={getOnClick(header,rows, columnClickable)}
                     {...column.getHeaderProps()}
                   >
-                    {column.Header !== null && column.Header !== undefined
+                    {desc? desc :
+                    column.Header !== null && column.Header !== undefined
                       ? t('dashboard.' + column.Header.toString(), column.Header.toString())
                       : ''}
                     {sortDirectionField === header ? (
@@ -137,7 +149,7 @@ const ReportsTable = ({ columns, data, clickHandler, sortHandler, rangeDetermine
                         <OverlayTrigger
                           {...cell.getCellProps()}
                           placement="top"
-                          overlay={<Tooltip id="meta-tooltip">{rowData.columnDataMap[cellName].meta}</Tooltip>}
+                          overlay={<Tooltip id="meta-tooltip"><span style={{ whiteSpace: "pre-line" }}>{rowData.columnDataMap[cellName].meta}</span></Tooltip>}
                         >
                           <td
                             className={

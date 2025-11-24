@@ -12,7 +12,7 @@ import {
   RESOURCE_PLANNING_PAGE,
   SIMULATION_PAGE,
   TAG_MANAGEMENT,
-  DATA_EXTRACTS
+  DATA_EXTRACTS, AMDR_IMPORT
 } from '../constants/';
 import Home from '../pages/HomePage';
 import Plan from '../pages/Plan';
@@ -25,6 +25,7 @@ import Assignment from '../pages/AssignmentPage';
 import Reporting from '../pages/Reporting';
 import PlanSimulation from '../pages/PlanSimulationPage';
 import MetaDataImport from '../pages/MetaDataImport';
+import AmdrImport from '../pages/AmdrImport';
 import ResourcePlanning from '../pages/ResourcePlanning';
 import DataProcessingProgress from '../features/technical/components/DataProcessingProgress';
 import TagManagement2 from '../pages/TagManagement/TagManagement2';
@@ -53,6 +54,9 @@ const Router = () => {
           <Route path={DATA_PROCESSING_PROGRESS + '/*'} element={<DataProcessingProgress />} />
           <Route path={METADATA_IMPORT + '/*'} element={<MetaDataImport />}>
             <Route path=":tab" element={<MetaDataImport />} />
+          </Route>
+          <Route path={AMDR_IMPORT + '/*'} element={<AmdrImport />}>
+            <Route path=":tab" element={<AmdrImport />} />
           </Route>
           <Route path={RESOURCE_PLANNING_PAGE + '/*'} element={<ResourcePlanning />}>
             <Route path=":tab" element={<ResourcePlanning />} />

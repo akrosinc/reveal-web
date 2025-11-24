@@ -1,5 +1,5 @@
 export interface MapDataReportRequest {
-  planIdentifier: string;
+  planIdentifier: string|null;
   reportTypeEnum: string;
   parentLocationIdentifier: string | null;
 }
@@ -10,6 +10,7 @@ export interface FoundCoverage {
   meta: string;
   dataType: string;
   isHidden: boolean;
+  description: string;
 }
 
 export enum ReportType {
@@ -64,6 +65,9 @@ export interface AdditionalReportInfo {
   dashboardFilter: {
     ntd: string;
   };
+  columnClickable:boolean;
+  showMap:boolean;
+  showGraphs:boolean;
 }
 
 export interface PerformanceDashboardModel {

@@ -117,6 +117,7 @@ const LocationBulk = () => {
           </h2>
         </Col>
         <Col>
+
           <Button id="import-locations-button" className="float-end" onClick={() => setOpenUpload(true)}>
             {t('userImportPage.bulkImport')}
           </Button>
@@ -129,6 +130,9 @@ const LocationBulk = () => {
             }}
           >
             {t('userImportPage.validateImport')}
+          </Button>
+          <Button id="import-locations-button" className="float-end mx-2" onClick={() => loadData(PAGINATION_DEFAULT_SIZE, 0)}>
+            {t('userImportPage.refresh')}
           </Button>
         </Col>
       </Row>

@@ -96,7 +96,7 @@
   "assignPage": {
     "title": "Assignments",
     "subTitle": "Assign Plans",
-    "titleTeams": "Assign Teams",    
+    "titleTeams": "Assign Teams",
     "assignmentPreview": "Assignment Summary",
     "titleLocations": "Assign Locations",
     "selectLocations": "Select Locations",
@@ -163,7 +163,7 @@
       "endDate": "End date",
       "endDateError": "End date must be selected.",
       "selectHierarchy": "Select Hierarchy",
-      "selectHierarchyError": "Please select location hierarchy.", 
+      "selectHierarchyError": "Please select location hierarchy.",
       "selectInterventionType": "Select Intervention Type",
       "selectInterventionTypeError": "Please select intervention type.",
       "hierarchyLevelTarget": "Hierarchy Level Target",
@@ -202,7 +202,8 @@
     },
     "locationName": "Location Name",
     "locationType": "Location Type",
-    "identifier": "Identifier"
+    "identifier": "Identifier",
+    "backFromColumnDrillDown": "Back"
   },
   "simulationPage": {
     "title": "Plan Simulation",
