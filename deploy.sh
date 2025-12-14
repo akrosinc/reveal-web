@@ -1,4 +1,4 @@
 #!/bin/sh
 
-yarn build
+CI=false npm run build
 serve -s build

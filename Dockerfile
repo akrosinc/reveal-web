@@ -4,8 +4,8 @@ WORKDIR /usr/local/app
 ADD . .
 RUN chmod +x deploy.sh
 
-RUN yarn && \
-    yarn global add serve
+RUN npm install && \
+    npm install -g serve
 
 EXPOSE 3000
 
