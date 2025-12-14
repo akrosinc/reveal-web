@@ -7,3 +7,6 @@ export interface AmdrImportResponse {
   uploadedBy: string;
 }
 
+export interface AmdrImportResultsResponse {
+  sampleIds: number;
+}

@@ -4,27 +4,30 @@ import {Button, Col, Collapse, Container, Form, Row,} from 'react-bootstrap';
 import {useNavigate} from 'react-router-dom';
 import {Column} from 'react-table';
 import {toast} from 'react-toastify';
-
 import ReportsTable from '../../../../components/Table/ReportsTable';
 
 import {
-  COLOR_BOOTSTRAP_DANGER, COLOR_BOOTSTRAP_SUCCESS, COLOR_YELLOW,
+  COLOR_BOOTSTRAP_DANGER,
+  COLOR_BOOTSTRAP_SUCCESS,
+  COLOR_YELLOW,
   KEY_INDICATOR_LEVELS
 } from '../../../../constants';
 import {useAppSelector} from '../../../../store/hooks';
 import {getReportTypeInfo} from '../../api';
-import {Feature, FeatureCollection, MultiPolygon, Point, Polygon} from '@turf/turf';
+import {Coord, Feature, MultiPolygon, Polygon} from '@turf/turf';
 import {
-  AdditionalReportInfo,
-  FoundCoverage,
-  ReportLocationProperties,
-  ReportType
-} from '../../providers/types';
+  Coord as ThreeCoord,
+  CoordsByYearOrLocation,
+  CoordsByYearOrLocationWithTicks
+} from './types';
+import {AdditionalReportInfo, FoundCoverage, ReportLocationProperties} from '../../providers/types';
 import {useTranslation} from 'react-i18next';
-import {SingleValue} from 'react-select';
+import Select, {SingleValue} from 'react-select';
 import {getAmdrMapReportData} from "./index";
-import {ChartData, ChartOptions, ChartType, LegendItem, ScatterDataPoint} from "chart.js";
-import {Line, Bar} from "react-chartjs-2";
+import {ChartData, ChartOptions, ChartType} from "chart.js";
+import {Bar, Line} from "react-chartjs-2";
+import RibbonPlot, {Coords,  LayoutObj, RibbonData} from "./RibbonPlot";
+
 
 interface BreadcrumbModel {
   locationName: string;
@@ -32,13 +35,19 @@ interface BreadcrumbModel {
   locationProperties: ReportLocationProperties | undefined;
 }
 
-const getReportDetails = () => {
-  return KEY_INDICATOR_LEVELS['DEFAULT'];
-};
+
+type OptionType = {
+  label:string;value:string
+}
+
+const locationOrYearOptions = ['coordsByTypeAndLocation', 'coordsByTypeAndYear'] as const;
 
 const AmdrReport = () => {
   const [cols, setCols] = useState<{ [x: string]: FoundCoverage }>({});
   const [data, setData] = useState<ReportLocationProperties[]>([]);
+
+  const [three, setThree] = useState<CoordsByYearOrLocationWithTicks>();
+
   const [filterData, setFilterData] = useState<ReportLocationProperties[]>([]);
   const navigate = useNavigate();
   const [path, setPath] = useState<BreadcrumbModel[]>([]);
@@ -66,6 +75,12 @@ const AmdrReport = () => {
 
   const [graphOptions, setGraphOptions] = useState<ChartOptions<'line' | 'bar'>>()
   const [showGraphs, setShowGraphs] = useState<boolean>(false);
+  const [show3dGraphs, setShow3dGraphs] = useState<boolean>(false);
+  const [coords, setCoords] = useState<Coords[]>([]);
+  const [ribbonData, setRibbonData] = useState<RibbonData>();
+  const [plotSelector,setPlotSelector] = useState<string>();
+    const [plotSelectedOption, setPlotSelectedOption] = useState<OptionType | null>(null);
+    const [locationOrYear,setLocationOrYear] = useState<string>('coordsByTypeAndLocation')
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>, clickedColumn?: string) => {
     loadChildHandler(
@@ -139,10 +154,7 @@ const AmdrReport = () => {
           legend: {
             position: 'right',
             labels: {
-              // filter: (legendItem: LegendItem, chart: ChartData<'line'>) => {
-              //
-              //   return legendItem.datasetIndex < 2;
-              // },
+
               boxWidth: 10,
               boxHeight: 2
             },
@@ -223,7 +235,6 @@ const AmdrReport = () => {
             }
           }
 
-
             getAmdrMapReportData(
                 parentLocationId ? parentLocationId : null,
                 clickedColumn
@@ -245,6 +256,7 @@ const AmdrReport = () => {
               setCols(report.features[0].properties.columnDataMap);
               setData(tableData);
               setFilterData(tableData);
+              setThree(report.coords);
 
             }
             else if (report.noLocationData){
@@ -269,6 +281,68 @@ const AmdrReport = () => {
     loadData();
   }, [loadData]);
 
+  useEffect(()=>{
+    console.log("three",three)
+
+    if (three && three.coordsByYearOrLocation && three.coordsByYearOrLocation[locationOrYear] && plotSelector){
+      if (plotSelector && three.coordsByYearOrLocation[locationOrYear][plotSelector]) {
+
+        let locationMap = three.coordsByYearOrLocation[locationOrYear][plotSelector];
+
+        let coords: Coords[] = Object.keys(locationMap).map(location =>{
+          let xAxis = locationMap[location].x;
+          let yAxis = locationMap[location].y;
+          let zAxis = locationMap[location].z;
+
+          let coord: Coords = {x: xAxis, y: yAxis, z: zAxis, name: locationMap[location].name};
+          return coord
+        })
+
+
+        let lineWidth : number | undefined;
+
+        let isVertical = false;
+        if (data.length==1){
+          lineWidth = 10;
+          isVertical = true;
+        }
+
+        setCoords(coords)
+
+        let ticks = coords[0];
+        let xTickValues = ticks.x.map((year, yearNum) => {
+          return yearNum
+        })
+
+        let xTickNames =  ticks.x.map((year, yearNum) => {
+          return year.toString();
+        })
+
+        let yTickValues = ticks.y.map((year, yearNum) => {
+          return yearNum
+        })
+
+        let yTickNames = ticks.y.map((year, yearNum) => {
+          return year.toString();
+        })
+
+        let layout: LayoutObj = {
+          xTickvals: three.xtickValues,
+          xTickNames: three.xtickNames,
+          yTickvals: three.ytickValues,
+          yTickNames:  three.ytickNames,
+          lineWidth:lineWidth,
+          isVertical:isVertical
+        }
+
+        let ribbonData: RibbonData = {coords: coords, layout: layout, title: 'som'}
+
+        setRibbonData(ribbonData)
+      }
+    }
+
+  },[three, plotSelector,locationOrYear])
+
   const loadChildHandler = (
       id: string,
       locationName: string,
@@ -276,9 +350,7 @@ const AmdrReport = () => {
       parentData?: ReportLocationProperties,
       clickedColumn?: string
   ) => {
-    // setParentLocationId(id);
-    // setClickedColumn(undefined);
-
+    setParentLocationId(id);
     getAmdrMapReportData(
         id,
         clickedColumn
@@ -347,6 +419,7 @@ const AmdrReport = () => {
   const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
 
     setPath(path);
+
     setParentLocationId(el.locationIdentifier);
     setClickedColumn(undefined);
 
@@ -358,12 +431,12 @@ const AmdrReport = () => {
     .then(res => {
       //reset search input on new load
       if (searchInput.current) searchInput.current.value = '';
-      setData([]);
       setFilterData([]);
 
       if (res.features.length) {
         const tableData = res.features.map(el => el.properties);
-        const defaultDisplayColumn: string | undefined = (res as any).defaultDisplayColumn;
+
+        const defaultDisplayColumn: string | undefined = res.defaultDisplayColumn;
         if (defaultDisplayColumn) {
           res.features.forEach(el => {
             el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
@@ -386,39 +459,7 @@ const AmdrReport = () => {
     setClickedColumn(clickedColumn);
   }, []);
 
-  // useEffect(()=>{
-  //
-  //   let graphDataMap:{[key:string]:ChartData<'line'>} = {}
-  //
-  //   let lineCharts:{[theKey:string ]:{x:string; y:(number|ScatterDataPoint|null)}[]}= {};
-  //
-  //   if (data[0] && data[0].columnDataMap) {
-  //     Object.keys(data[0].columnDataMap).map(key => {
-  //       lineCharts[data[0].columnDataMap[key].description] = data.map(location => {
-  //         return {
-  //           x: location.name,
-  //           y: +location.columnDataMap[key].value
-  //         }
-  //       })
-  //
-  //       console.log("lineCharts[key]: ",lineCharts[key])
-  //       let graphData:ChartData<'line'> = {
-  //         labels: lineCharts[data[0].columnDataMap[key].description].map(xy=>xy.x),
-  //         datasets: [{
-  //              label: data[0].columnDataMap[key].description,
-  //             data: lineCharts[data[0].columnDataMap[key].description].map(xy=>xy.y), // Y-axis data
-  //             fill: true,
-  //             pointStyle: 'dash',
-  //             borderColor: 'rgb(75, 192, 192)',
-  //             tension: 0,
-  //           }]}
-  //       graphDataMap[data[0].columnDataMap[key].description] = graphData
-  //     })
-  //
-  //   }
-  //   setGraphDataMap(graphDataMap);
-  //   console.log("lineCharts",graphDataMap)
-  // },[data])
+
   function getDistinctColor(index: number, total: number): string {
     const hue = Math.floor((360 / total) * index);
     return `hsl(${hue}, 70%, 50%)`;
@@ -465,7 +506,9 @@ const AmdrReport = () => {
       setChartType('line');
     }
 
-  }, [data]);
+  }, [
+      data
+  ]);
 
   useEffect(()=>{
     if (clickedColumn){
@@ -473,6 +516,12 @@ const AmdrReport = () => {
     }
     loadData();
   },[clickedColumn])
+
+  useEffect(()=>{
+    setPlotSelector(undefined)
+    setPlotSelectedOption(null)
+  },[clickedColumn])
+
 
   return (
       <Container fluid className="my-4 px-2">
@@ -482,7 +531,7 @@ const AmdrReport = () => {
           </Col>
           <Col md={6} className="text-center">
             <h2 className="m-0">
-              {dashboardView==='haplotype'?'Haplotype View':'Gene View'} ({"AMDR"})
+              {dashboardView==='haplotype'?'Drug View':'Gene View'} ({"AMDR"})
             </h2>
           </Col>
         </Row>
@@ -576,7 +625,7 @@ const AmdrReport = () => {
                         setClickedColumn(undefined)
                       }}
                   >
-                    {'Back to Haplotype View'}
+                    {'Back to Drug View'}
                   </Button>}
 
                 </Col>
@@ -609,7 +658,7 @@ const AmdrReport = () => {
             </>
         )}
         {filterData.length === 0 && <p className="lead text-center">{t('general.noDataFound')}</p>}
-        {showGraphs && combinedGraphData ? <Row className="my-3 align-items-center">
+        {showGraphs && combinedGraphData ? <><Row className="my-3 align-items-center">
           <Col md={showMap ? 10 : 2}>
             <Collapse in={showMap}>
               <div style={{
@@ -627,9 +676,63 @@ const AmdrReport = () => {
                     <Bar data={combinedGraphData as ChartData<'bar'>} options={graphOptions} />
                 )}
               </div>
+
             </Collapse>
           </Col>
-        </Row> : ""}
+        </Row>
+
+              <Row>
+                <Col xs sm md={10} className="border pe-3 d-flex justify-content-center align-items-center">
+                  {plotSelector && ribbonData ?
+                  <RibbonPlot data={ribbonData}/>:<span>Select {dashboardView =="haplotype"?"Drug":"Gene"} to view data</span>}
+
+                </Col>
+                <Col xs sm md={2}>
+                  <h5 className="mb-2">Select {dashboardView =="haplotype"?"Drug":"Gene"}</h5>
+                  <Select
+                      placeholder={'Select data to display' + '...'}
+                      options={Object.keys(data[0].columnDataMap).map(el => {
+                        return {
+                          label: data[0].columnDataMap[el].description,
+                          value: el ?? ''
+                        };
+                      })}
+                      value={plotSelectedOption}
+                      onChange={(e:SingleValue<OptionType>) => {
+                        setPlotSelectedOption(e)
+                        if (e) {
+                          setPlotSelector(e?.value);
+                        }
+                      }}
+                  />
+                  <Select
+                      placeholder={'Select Direction...'}
+                      options={locationOrYearOptions.map(el => ({
+                        label: el.toString(),
+                        value: el
+                      }))}
+                      value={locationOrYearOptions
+                      .map(el => ({
+                        label: el.toString(),
+                        value: el
+                      }))
+                      .find(o => o.value === locationOrYear)}
+                      onChange={(e: SingleValue<{
+                        label: string;
+                        value: string;
+                      }>) => {
+                        if (e?.value) {
+                          setLocationOrYear(e.value);
+                        }
+                      }}
+                  />
+                </Col>
+              </Row>
+
+
+        </>: ""}
+
+
       </Container>
   );
 };

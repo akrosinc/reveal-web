@@ -2,7 +2,7 @@ import api from "../../../api/axios";
 import {PageableModel} from "../../../api/providers";
 import {MetadataFileImportResponse} from "../../metaDataImport/type";
 import {EntityTagMap} from "../../planSimulation/providers/types";
-import {AmdrImportResponse} from "../type";
+import {AmdrImportResponse, AmdrImportResultsResponse} from "../type";
 
 export const downloadAmdrImportTemplate = async (
     hierarchyIdentifier: string,
@@ -55,6 +55,14 @@ export const getAmdrImportList = async (
       `amdr/amdrImport?size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField !== undefined ? sortField : ''},${
           direction ? 'asc' : 'desc'
       }`
+  )
+  .then(res => res.data);
+  return data;
+};
+export const getAmdrImportResults = async (importId: string): Promise<AmdrImportResultsResponse> => {
+  const data = await api
+  .get<AmdrImportResultsResponse>(
+      `amdr/importResults?importId=${importId}`
   )
   .then(res => res.data);
   return data;

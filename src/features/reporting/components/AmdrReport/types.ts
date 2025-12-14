@@ -15,4 +15,23 @@ export interface FeatureSetResponse {
   parents: LocationResponse[];
   noLocationData: boolean | null;
   noDashboardData: boolean | null;
+  coords:CoordsByYearOrLocationWithTicks;
+}
+export interface Coord {
+  x: number[];
+  y: number[];
+  z: number[];
+  name:string;
+}
+
+export interface CoordsByYearOrLocation {
+[key:string]: {[location:string]:{[location:string]:Coord}};
+}
+
+export interface CoordsByYearOrLocationWithTicks {
+  coordsByYearOrLocation: CoordsByYearOrLocation;
+  xtickValues: number[];
+  xtickNames: string[];
+  ytickValues: number[];
+  ytickNames: string[];
 }
