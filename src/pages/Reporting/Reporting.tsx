@@ -12,6 +12,7 @@ import SurveyDashboard from '../../features/reporting/components/SurveyDashboard
 import { getColumnHeaderNameTranslations } from '../../features/reporting/api';
 import i18n from '../../i18n';
 import AmdrReport from "../../features/reporting/components/AmdrReport/AmdrReport";
+import AmdrLandingPage from "../../features/reporting/components/AmdrReport/AmdrLandingPage";
 
 const Reporting = () => {
   const { t } = useTranslation();
@@ -74,6 +75,14 @@ const Reporting = () => {
             element={
               <AuthGuard roles={['view_survey_data']}>
                 <AmdrReport />
+              </AuthGuard>
+            }
+        />
+        <Route
+            path="/amdr-landing"
+            element={
+              <AuthGuard roles={['view_survey_data']}>
+                <AmdrLandingPage />
               </AuthGuard>
             }
         />

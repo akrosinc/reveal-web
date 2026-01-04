@@ -112,7 +112,7 @@ function App() {
           <Container fluid>
             <main>
               <NavbarComponent />
-              <Router />
+              <Router instance={process.env.REACT_APP_INSTANCE}/>
             </main>
             <Container fluid className="footer-row-container">
               <Footer />

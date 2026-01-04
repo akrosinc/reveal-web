@@ -30,16 +30,27 @@ import ResourcePlanning from '../pages/ResourcePlanning';
 import DataProcessingProgress from '../features/technical/components/DataProcessingProgress';
 import TagManagement2 from '../pages/TagManagement/TagManagement2';
 import DataExtracts from '../pages/DataExtracts/DataExtracts';
+import AmdrLandingPage from "../features/reporting/components/AmdrReport/AmdrLandingPage";
 
-const Router = () => {
+interface Props {
+  instance?:string;
+}
+
+const Router = ({instance}:Props) => {
   const { keycloak, initialized } = useKeycloak();
 
   if (initialized) {
     if (keycloak.authenticated) {
       return (
         <Routes>
+          {instance !== 'AMDR' ? <>
           <Route index element={<Home />} />
           <Route path={HOME_PAGE} element={<Home />} />
+          </>:<>
+            <Route index element={<AmdrLandingPage />} />
+            <Route path={HOME_PAGE} element={<AmdrLandingPage />} />
+          </>}
+
           <Route path={PLANS + '/*'} element={<Plan />} />
           <Route path={MANAGEMENT + '/*'} element={<Management />}>
             <Route path=":tab" element={<Management />} />
