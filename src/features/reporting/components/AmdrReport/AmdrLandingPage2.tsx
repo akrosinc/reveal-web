@@ -27,7 +27,7 @@ const PERCENTAGE_TITLES = {
   importToParasitologyPercentage: "Total Imported Sequences vs Total Parasitology Reports"
 }
 
-const AmdrLandingPage = () => {
+const AmdrLandingPage2 = () => {
   const [parasitologyTraces, setParasitologyTraces] = useState<Data[]>([]);
   const [parasitologyLayout, setParasitologyLayout] = useState<Partial<Plotly.Layout>>({});
 
@@ -109,8 +109,8 @@ const AmdrLandingPage = () => {
 
 // Styles for the circular indicator container
   const circularIndicatorStyle: React.CSSProperties = {
-    width: "120px",
-    height: "120px",
+    width: "80px",
+    height: "80px",
     borderRadius: "50%",
     display: "flex",
     alignItems: "center",
@@ -170,8 +170,8 @@ const AmdrLandingPage = () => {
 
         {/* Plots row */}
         <Row className="g-5 mb-4">
-          <Col md={6}>
-            <div className="d-flex border hover-enlarge w-100" style={{ height: "200px" }}>
+          <Col md={10} >
+            <div className="d-flex border  w-100" style={{ height: "420px" }}>
               <div style={{ width: "100%", minWidth: 0 }} className={"m-3"}>
                 {parasitologyTraces.length > 0 ? (
                     <Plot
@@ -194,99 +194,99 @@ const AmdrLandingPage = () => {
             </div>
           </Col>
 
-          <Col md={6}>
-            <div className="d-flex border hover-enlarge w-100" style={{ height: "200px" }}>
-              <div style={{ width: "100%", minWidth: 0 }} className={"m-3"}>
-                {importTraces.length > 0 ? (
-                    <Plot
-                        data={importTraces}
-                        layout={{ ...importLayout, autosize: true }}
-                        style={{ width: "100%", height: "100%" }}
-                        useResizeHandler
-                        config={{
-                          displayModeBar: true,
-                          displaylogo: false,
-                          modeBarButtons: [["resetScale2d", "zoomIn2d", "zoomOut2d", "pan2d"]]
-                        }}
-                    />
-                ) : (
-                    <div className="d-flex justify-content-center align-items-center h-100 w-100">
-                      loading...
-                    </div>
-                )}
-              </div>
-            </div>
-          </Col>
-        </Row>
+          {/*<Col md={6}>*/}
+          {/*  <div className="d-flex border hover-enlarge w-100" style={{ height: "200px" }}>*/}
+          {/*    <div style={{ width: "100%", minWidth: 0 }} className={"m-3"}>*/}
+          {/*      {importTraces.length > 0 ? (*/}
+          {/*          <Plot*/}
+          {/*              data={importTraces}*/}
+          {/*              layout={{ ...importLayout, autosize: true }}*/}
+          {/*              style={{ width: "100%", height: "100%" }}*/}
+          {/*              useResizeHandler*/}
+          {/*              config={{*/}
+          {/*                displayModeBar: true,*/}
+          {/*                displaylogo: false,*/}
+          {/*                modeBarButtons: [["resetScale2d", "zoomIn2d", "zoomOut2d", "pan2d"]]*/}
+          {/*              }}*/}
+          {/*          />*/}
+          {/*      ) : (*/}
+          {/*          <div className="d-flex justify-content-center align-items-center h-100 w-100">*/}
+          {/*            loading...*/}
+          {/*          </div>*/}
+          {/*      )}*/}
+          {/*    </div>*/}
+          {/*  </div>*/}
+          {/*</Col>*/}
+        {/*</Row>*/}
 
         {/* Second row with plot + indicators */}
-        <Row className="g-5" style={{ minHeight: "250px" }}>
-          <Col md={6}>
-            <div className="d-flex border hover-enlarge w-100" style={{ height: "200px" }}>
-              <div style={{ width: "100%", minWidth: 0 }} className={"m-3"}>
-                {paraImportTraces.length > 0 ? (
-                    <Plot
-                        data={paraImportTraces}
-                        layout={paraImportLayout}
-                        style={{ width: "100%", height: "100%" }}
-                        useResizeHandler
-                        config={{
-                          displayModeBar: true,
-                          displaylogo: false,
-                          modeBarButtons: [["resetScale2d", "zoomIn2d", "zoomOut2d", "pan2d"]]
-                        }}
-                    />
-                ) : (
-                    <div className="d-flex justify-content-center align-items-center h-100 w-100">
-                      loading...
-                    </div>
-                )}
-              </div>
-            </div>
-          </Col>
+        {/*<Row className="g-5" style={{ minHeight: "250px" }}>*/}
+        {/*  <Col md={2}>*/}
+        {/*    <div className="d-flex border hover-enlarge w-100" style={{ height: "200px" }}>*/}
+        {/*      <div style={{ width: "100%", minWidth: 0 }} className={"m-3"}>*/}
+        {/*        {paraImportTraces.length > 0 ? (*/}
+        {/*            <Plot*/}
+        {/*                data={paraImportTraces}*/}
+        {/*                layout={paraImportLayout}*/}
+        {/*                style={{ width: "100%", height: "100%" }}*/}
+        {/*                useResizeHandler*/}
+        {/*                config={{*/}
+        {/*                  displayModeBar: true,*/}
+        {/*                  displaylogo: false,*/}
+        {/*                  modeBarButtons: [["resetScale2d", "zoomIn2d", "zoomOut2d", "pan2d"]]*/}
+        {/*                }}*/}
+        {/*            />*/}
+        {/*        ) : (*/}
+        {/*            <div className="d-flex justify-content-center align-items-center h-100 w-100">*/}
+        {/*              loading...*/}
+        {/*            </div>*/}
+        {/*        )}*/}
+        {/*      </div>*/}
+        {/*    </div>*/}
+        {/*  </Col>*/}
 
-          <Col md={6}>
-            <div className="d-flex border hover-enlarge w-100" style={{ height: "200px" }}>
+          <Col md={2}>
+            <div className="d-flex border w-100" style={{ height: "420px" }}>
               {amdrTotalsPercentageLandingPageData ? (
-                  <div className="d-flex flex-column justify-content-center w-100 m-2">
-                    <Row className="g-3">
-                      {(Object.entries(amdrTotalsPercentageLandingPageData) as [
-                        keyof AmdrTotalsPercentageLandingPageData,
-                        number
-                      ][]).map(([key, value]) => {
-                        const percent = Math.round(value * 100);
-                        let circleColor = "#dc3545";
-                        if (percent > 70) circleColor = "#28a745";
-                        else if (percent > 29) circleColor = "#ffc107";
+                  <div className="d-flex flex-column justify-content-center w-100 m-2 gap-3">
 
-                        return (
-                            <Col md={4} key={key}>
-                              <div
-                                  className="indicator-card d-flex flex-column align-items-center justify-content-center"
-                                  style={{ minHeight: "180px" }}
-                              >
-                                <div
-                                    className="mb-2 text-center fw-semibold"
-                                    style={{ fontSize: "0.65rem" }}
-                                >
-                                  {PERCENTAGE_TITLES[key]}
-                                </div>
-                                <div
-                                    style={{
-                                      ...circularIndicatorStyle,
-                                      background: `conic-gradient(${circleColor} ${
-                                          percent * 3.6
-                                      }deg, #d6d6d6 0deg)`
-                                    }}
-                                    className="mb-2 d-flex align-items-center justify-content-center"
-                                >
-                                  <span style={indicatorTextStyle}>{percent}%</span>
-                                </div>
-                              </div>
-                            </Col>
-                        );
-                      })}
-                    </Row>
+                    {(Object.entries(amdrTotalsPercentageLandingPageData) as [
+                      keyof AmdrTotalsPercentageLandingPageData,
+                      number
+                    ][]).map(([key, value]) => {
+                      const percent = Math.round(value * 100);
+
+                      let circleColor = "#dc3545";
+                      if (percent > 70) circleColor = "#28a745";
+                      else if (percent > 29) circleColor = "#ffc107";
+
+                      return (
+                          <div
+                              key={key}
+                              className="indicator-card d-flex align-items-center"
+                          >
+                            <div
+                                style={{
+                                  ...circularIndicatorStyle,
+                                  background: `conic-gradient(${circleColor} ${
+                                      percent * 3.6
+                                  }deg, #d6d6d6 0deg)`
+                                }}
+                                className="d-flex align-items-center justify-content-center flex-shrink-0"
+                            >
+                              <span style={indicatorTextStyle}>{percent}%</span>
+                            </div>
+
+                            <div
+                                className="ms-2 fw-semibold"
+                                style={{ fontSize: "0.65rem", lineHeight: 1.2 }}
+                            >
+                              {PERCENTAGE_TITLES[key]}
+                            </div>
+                          </div>
+                      );
+                    })}
+
                   </div>
               ) : (
                   <div className="d-flex justify-content-center align-items-center h-100 w-100">
@@ -295,10 +295,11 @@ const AmdrLandingPage = () => {
               )}
             </div>
           </Col>
+
         </Row>
       </Container>
 
   );
 };
 
-export default AmdrLandingPage;
+export default AmdrLandingPage2;

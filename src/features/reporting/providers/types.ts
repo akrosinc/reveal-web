@@ -27,8 +27,6 @@ export enum ReportType {
   DEFAULT = 'DEFAULT'
 }
 
-
-
 export interface ReportLocationProperties {
   id: string;
   name: string;

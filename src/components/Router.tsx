@@ -31,6 +31,7 @@ import DataProcessingProgress from '../features/technical/components/DataProcess
 import TagManagement2 from '../pages/TagManagement/TagManagement2';
 import DataExtracts from '../pages/DataExtracts/DataExtracts';
 import AmdrLandingPage from "../features/reporting/components/AmdrReport/AmdrLandingPage";
+import AmdrLandingPage2 from "../features/reporting/components/AmdrReport/AmdrLandingPage2";
 
 interface Props {
   instance?:string;
@@ -47,8 +48,8 @@ const Router = ({instance}:Props) => {
           <Route index element={<Home />} />
           <Route path={HOME_PAGE} element={<Home />} />
           </>:<>
-            <Route index element={<AmdrLandingPage />} />
-            <Route path={HOME_PAGE} element={<AmdrLandingPage />} />
+            <Route index element={<AmdrLandingPage2 />} />
+            <Route path={HOME_PAGE} element={<AmdrLandingPage2 />} />
           </>}
 
           <Route path={PLANS + '/*'} element={<Plan />} />

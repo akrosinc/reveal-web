@@ -83,20 +83,39 @@ export interface Xaxis {
   type?: 'date' | 'category';
   tickvals?: string[];
   ticktext?: string[];
+  tickfont:{
+      size:number;
+  }
   fixedrange?: boolean;
 }
 
 export interface Yaxis {
-  title?: string;
+  title: {
+    text:string;
+    font:{
+      size:number;
+    }
+  };
+  tickfont:{
+    size:number;
+  }
 }
 
 export interface Layout {
-  xaxis?: Xaxis;
-  yaxis?: Yaxis;
+  xaxis: Xaxis;
+  yaxis: Yaxis;
   barmode?: 'overlay' | 'stack' | 'group';
   bargap?: number;
   title: {
     text: string;
+    font:{
+      size:number;
+    }
+  },
+  legend:{
+    font:{
+      size:number;
+    }
   }
 }
 

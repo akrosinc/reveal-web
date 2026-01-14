@@ -471,6 +471,16 @@ const AmdrReport = () => {
     return `hsl(${hue}, 70%, 50%)`;
   }
 
+
+  const checkAndRemoveAndAddPerc=(str: string)=>{
+    if (str.includes("%")){
+      str = str.replaceAll("%","")
+      return Number(str)
+    } else {
+      return Number(str)
+    }
+  }
+
   useEffect(() => {
     if (!data || !data.length || !data[0].columnDataMap) return;
 
@@ -480,7 +490,10 @@ const AmdrReport = () => {
 
     columnKeys.forEach((colKey, index) => {
       const columnDescription = data[0].columnDataMap[colKey].description;
-      const yValues = data.map(loc => Number(loc.columnDataMap[colKey].value));
+      const yValues = data.map(loc => {
+       return loc.columnDataMap[colKey].value.split(" ").length>1 ?
+           checkAndRemoveAndAddPerc(loc.columnDataMap[colKey].value.split(" ")[0]): Number(loc.columnDataMap[colKey].value)
+      });
 
       allLineDatasets.push({
         label: columnDescription,

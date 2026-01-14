@@ -1,0 +1,30 @@
+/* HoverEnlarge.css */
+
+/* Base hover class */
+.hover-enlarge {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, z-index 0.3s ease;
+  transform-origin: center;
+  cursor: pointer;
+  position: relative; /* stays in layout */
+  z-index: 1;
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* Hover effect: enlarge and lift visually */
+.hover-enlarge:hover,
+.hover-enlarge.active,
+.hover-enlarge:focus,
+.hover-enlarge:active {
+  transform: scale(1.85) translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+  z-index: 10;
+}
+
+/* Optional: smaller effect on mobile to prevent layout issues */
+@media (max-width: 768px) {
+  .hover-enlarge:hover {
+    transform: scale(1.05) translateY(0);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    z-index: 10;
+  }
+}
