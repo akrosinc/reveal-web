@@ -169,7 +169,7 @@ const AmdrLandingPage2 = () => {
         )}
 
         {/* Plots row */}
-        <Row className="g-5 mb-4">
+        <Row className="g-3 mb-4">
           <Col md={10} >
             <div className="d-flex border  w-100" style={{ height: "420px" }}>
               <div style={{ width: "100%", minWidth: 0 }} className={"m-3"}>
@@ -246,9 +246,9 @@ const AmdrLandingPage2 = () => {
         {/*  </Col>*/}
 
           <Col md={2}>
-            <div className="d-flex border w-100" style={{ height: "420px" }}>
+            <div className="d-flex border w-100 " style={{ height: "420px" }}>
               {amdrTotalsPercentageLandingPageData ? (
-                  <div className="d-flex flex-column justify-content-center w-100 m-2 gap-3">
+                  <div className="d-flex flex-column justify-content-center w-100 gap-5 mx-3 " >
 
                     {(Object.entries(amdrTotalsPercentageLandingPageData) as [
                       keyof AmdrTotalsPercentageLandingPageData,
