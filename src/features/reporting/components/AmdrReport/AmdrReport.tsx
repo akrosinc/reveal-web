@@ -491,7 +491,7 @@ const AmdrReport = () => {
     columnKeys.forEach((colKey, index) => {
       const columnDescription = data[0].columnDataMap[colKey].description;
       const yValues = data.map(loc => {
-       return loc.columnDataMap[colKey].value.split(" ").length>1 ?
+       return loc.columnDataMap[colKey].value.toString().split(" ").length>1 ?
            checkAndRemoveAndAddPerc(loc.columnDataMap[colKey].value.split(" ")[0]): Number(loc.columnDataMap[colKey].value)
       });
 

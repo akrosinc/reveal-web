@@ -175,7 +175,7 @@ const ReportsTable = ({
                               >
                                 <Container fluid>
                                   <BootRow>
-                                    {percentage.split(" ").map((str: string,num:number) =>
+                                    {percentage.toString().split(" ").map((str: string,num:number) =>
                                         <Col className="text-center">
                                           {str.concat(num===0?(columnDataMapElement.isPercentage?"%":''):"")}
                                         </Col>
