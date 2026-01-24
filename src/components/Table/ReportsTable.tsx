@@ -155,7 +155,7 @@ const ReportsTable = ({
                           if (columnDataMapElement.isPercentage) {
                             percentage = Number(percentage.toFixed(percentage > 1 ? 2 : 3));
                           } else {
-                            let num = Math.floor(percentage);
+                            let num = percentage;
                             percentage = num.toLocaleString();
                           }
                         }
