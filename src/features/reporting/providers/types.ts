@@ -66,6 +66,7 @@ export interface AdditionalReportInfo {
   columnClickable:boolean;
   showMap:boolean;
   showGraphs:boolean;
+  show3dGraphs:boolean;
 }
 
 export interface PerformanceDashboardModel {

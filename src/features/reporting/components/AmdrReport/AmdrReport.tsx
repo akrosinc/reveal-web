@@ -14,7 +14,7 @@ import {
 } from '../../../../constants';
 import {useAppSelector} from '../../../../store/hooks';
 import {getReportTypeInfo} from '../../api';
-import {Coord, Feature, MultiPolygon, Polygon} from '@turf/turf';
+import {Coord, Feature, FeatureCollection, MultiPolygon, Point, Polygon} from '@turf/turf';
 import {
   Coord as ThreeCoord,
   CoordsByYearOrLocation,
@@ -27,6 +27,7 @@ import {getAmdrMapReportData} from "./index";
 import {ChartData, ChartOptions, ChartType} from "chart.js";
 import {Bar, Line} from "react-chartjs-2";
 import RibbonPlot, {Coords,  LayoutObj, RibbonData} from "./RibbonPlot";
+import MapViewDetail from "../report/mapView/MapViewDetail";
 
 
 interface BreadcrumbModel {
@@ -81,6 +82,18 @@ const AmdrReport = () => {
   const [plotSelector,setPlotSelector] = useState<string>();
     const [plotSelectedOption, setPlotSelectedOption] = useState<OptionType | null>(null);
     const [locationOrYear,setLocationOrYear] = useState<string>('coordsByTypeAndLocation')
+
+  const [defaultDisplayColumn, setDefaultDisplayColumn] = useState('');
+  const [currentFeature, setCurrentFeature] =
+      useState<Feature<Polygon | MultiPolygon | Point, ReportLocationProperties>>();
+  const [showModal, setShowModal] = useState(false);
+  const [featureSet, setFeatureSet] =
+      useState<[
+        location: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties>,
+        parentId: string,
+        path: string[]
+      ]>();
+
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>, clickedColumn?: string) => {
     loadChildHandler(
@@ -91,6 +104,14 @@ const AmdrReport = () => {
         clickedColumn
     );
   };
+
+  const clearMap = useCallback(
+      (filter?: string) => {
+        //clear all map data and return to root element on the grid
+
+      }, []
+  );
+
   const KEY_INDICATOR_LEVELS: {}=
     //Add new entry here for customization
      {
@@ -145,6 +166,12 @@ const AmdrReport = () => {
 
 
   }, [cols]);
+
+  const openModalHandler = (show: boolean, feature?: Feature<Polygon | MultiPolygon, ReportLocationProperties>) => {
+    if (feature) setCurrentFeature(feature);
+    setShowModal(show);
+  };
+
 
   useEffect(() => {
     if (showGraphs) {
@@ -225,6 +252,7 @@ const AmdrReport = () => {
         getReportTypeInfo('AMDR').then(res => {
           setColumnClickable(res.columnClickable);
           setShowGraphs(res.showGraphs);
+          setShow3dGraphs(res.show3dGraphs);
           if (res.dashboardFilter && res.dashboardFilter.ntd && selectedReport === undefined) {
             setReportInfo(res);
             if (selectedReport === undefined) {
@@ -257,6 +285,26 @@ const AmdrReport = () => {
               setData(tableData);
               setFilterData(tableData);
               setThree(report.coords);
+
+              const features: Feature<
+                  Polygon | MultiPolygon | Point,
+                  ReportLocationProperties
+                  >[] = report.features.map(feature => ({
+                type: "Feature",
+                id: feature.id,
+                properties: feature.properties,
+                geometry: feature.geometry ?? null   // 👈 must never be undefined
+              }));
+
+              const reportCollection: FeatureCollection<
+                  Polygon | MultiPolygon | Point,
+                  ReportLocationProperties
+                  > = {
+                type: "FeatureCollection",
+                features
+              };
+
+              setFeatureSet([reportCollection, 'main', []]);
 
             }
             else if (report.noLocationData){
@@ -378,15 +426,38 @@ const AmdrReport = () => {
           setFilterData([]);
           //check if there is a default column set and add default column property
           if (defaultDisplayColumn) {
+            setDefaultDisplayColumn(defaultDisplayColumn);
             res.features.forEach(el => {
               if (el.properties.columnDataMap[defaultDisplayColumn]) {
                 el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
               }
             });
+          } else {
+            setDefaultDisplayColumn('');
           }
           setCols(res.features[0].properties.columnDataMap);
           setData(tableData);
 
+        const features: Feature<
+            Polygon | MultiPolygon | Point,
+            ReportLocationProperties
+            >[] = res.features.map(feature => ({
+          type: "Feature",
+          id: feature.id,
+          properties: feature.properties,
+          geometry: feature.geometry ?? null   // 👈 must never be undefined
+        }));
+
+        const reportCollection: FeatureCollection<
+            Polygon | MultiPolygon | Point,
+            ReportLocationProperties
+            > = {
+          type: "FeatureCollection",
+          features
+        };
+
+
+          setFeatureSet([reportCollection, id, path.map(el => el.locationIdentifier)]);
           setFilterData(tableData);
           if (!path.some(el => el.locationIdentifier === id)) {
             setPath([
@@ -417,7 +488,7 @@ const AmdrReport = () => {
   };
 
   const breadCrumbClickHandler = (el: BreadcrumbModel, index: number) => {
-
+    const locationsToDelete = path.splice(index + 1);
     setPath(path);
 
     setParentLocationId(el.locationIdentifier);
@@ -429,6 +500,7 @@ const AmdrReport = () => {
         clickedColumn
     )
     .then(res => {
+
       //reset search input on new load
       if (searchInput.current) searchInput.current.value = '';
       setFilterData([]);
@@ -441,10 +513,34 @@ const AmdrReport = () => {
           res.features.forEach(el => {
             el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
           });
+          setDefaultDisplayColumn(defaultDisplayColumn);
+        } else {
+          setDefaultDisplayColumn('');
         }
+
         setCols(res.features[0].properties.columnDataMap);
         setData(tableData);
         setFilterData(tableData);
+        const features: Feature<
+            Polygon | MultiPolygon | Point,
+            ReportLocationProperties
+            >[] = res.features.map(feature => ({
+          type: "Feature",
+          id: feature.id,
+          properties: feature.properties,
+          geometry: feature.geometry ?? null   // 👈 must never be undefined
+        }));
+
+        const reportCollection: FeatureCollection<
+            Polygon | MultiPolygon | Point,
+            ReportLocationProperties
+            > = {
+          type: "FeatureCollection",
+          features
+        };
+
+
+        setFeatureSet([{...reportCollection}, el.locationIdentifier, locationsToDelete.map(loc => loc.locationIdentifier)]);
         //if its the same object as before we need to make a new copy of an object otherwise rerender won't happen
         //its enough to spread the object so rerender will be triggered
       }
@@ -693,7 +789,7 @@ const AmdrReport = () => {
             </Collapse>
           </Col>
         </Row>
-
+        {show3dGraphs &&
               <Row>
                 <Col xs sm md={10} className="border pe-3 d-flex justify-content-center align-items-center">
                   {plotSelector && ribbonData ?
@@ -740,7 +836,25 @@ const AmdrReport = () => {
                       }}
                   />
                 </Col>
-              </Row>
+              </Row>}
+          {showMap &&  <Row className="my-3 align-items-center">
+            <Col md={showMap ? 10 : 2}>
+              <Collapse in={showMap}>
+                <div id="expand-table">
+                  <MapViewDetail
+                      defaultColumn={defaultDisplayColumn}
+                      showModal={openModalHandler}
+                      doubleClickEvent={(feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) =>
+                          handleDobuleClickRef.current(feature)
+                      }
+                      featureSet={featureSet}
+                      clearMap={clearMap}
+                      ref={clearButtonRef}
+                  /></div>
+              </Collapse>
+            </Col>
+          </Row>}
+
 
 
         </>: ""}
