@@ -18,16 +18,22 @@ import {Coord, Feature, FeatureCollection, MultiPolygon, Point, Polygon} from '@
 import {
   Coord as ThreeCoord,
   CoordsByYearOrLocation,
-  CoordsByYearOrLocationWithTicks
+  CoordsByYearOrLocationWithTicks, FeatureSetResponse
 } from './types';
-import {AdditionalReportInfo, FoundCoverage, ReportLocationProperties} from '../../providers/types';
+import {
+  AdditionalReportInfo,
+  FoundCoverage,
+  HslColor,
+  ReportLocationProperties
+} from '../../providers/types';
 import {useTranslation} from 'react-i18next';
 import Select, {SingleValue} from 'react-select';
 import {getAmdrMapReportData} from "./index";
 import {ChartData, ChartOptions, ChartType} from "chart.js";
 import {Bar, Line} from "react-chartjs-2";
-import RibbonPlot, {Coords,  LayoutObj, RibbonData} from "./RibbonPlot";
+import RibbonPlot, {Coords, LayoutObj, RibbonData} from "./RibbonPlot";
 import MapViewDetail from "../report/mapView/MapViewDetail";
+import AmdrMapViewDetail from "../report/mapView/amdr/AmdrMapViewDetail";
 
 
 interface BreadcrumbModel {
@@ -38,7 +44,7 @@ interface BreadcrumbModel {
 
 
 type OptionType = {
-  label:string;value:string
+  label: string; value: string
 }
 
 const locationOrYearOptions = ['coordsByTypeAndLocation', 'coordsByTypeAndYear'] as const;
@@ -46,7 +52,8 @@ const locationOrYearOptions = ['coordsByTypeAndLocation', 'coordsByTypeAndYear']
 const AmdrReport = () => {
   const [cols, setCols] = useState<{ [x: string]: FoundCoverage }>({});
   const [data, setData] = useState<ReportLocationProperties[]>([]);
-
+  const [selectedColor, setSelectedColor] = useState<string | undefined>();
+  const [selectedHslColor, setSelectedHslColor] = useState<HslColor | undefined>();
   const [three, setThree] = useState<CoordsByYearOrLocationWithTicks>();
 
   const [filterData, setFilterData] = useState<ReportLocationProperties[]>([]);
@@ -67,11 +74,13 @@ const AmdrReport = () => {
   }>>();
   const clearButtonRef = useRef<any>(null);
   const [clickedColumn, setClickedColumn] = useState<string>();
-  const [dashboardView, setDashboardView] = useState<'haplotype'|'gene'>('haplotype');
+  const [dashboardView, setDashboardView] = useState<'haplotype' | 'gene'>('haplotype');
   const [graphData, setGraphData] = useState<ChartData<'line'>>()
 
-  const [graphDataMap, setGraphDataMap] = useState<{[key:string]:ChartData<'line'>}>()
+  const [graphDataMap, setGraphDataMap] = useState<{ [key: string]: ChartData<'line'> }>()
   const [combinedGraphData, setCombinedGraphData] = useState<ChartData<'line' | 'bar'>>();
+  // const [columnDescriptions, setColumnDescriptions] = useState<{key: string, value:string}[]>([]);
+
   const [chartType, setChartType] = useState<ChartType>('line');
 
   const [graphOptions, setGraphOptions] = useState<ChartOptions<'line' | 'bar'>>()
@@ -79,9 +88,9 @@ const AmdrReport = () => {
   const [show3dGraphs, setShow3dGraphs] = useState<boolean>(false);
   const [coords, setCoords] = useState<Coords[]>([]);
   const [ribbonData, setRibbonData] = useState<RibbonData>();
-  const [plotSelector,setPlotSelector] = useState<string>();
-    const [plotSelectedOption, setPlotSelectedOption] = useState<OptionType | null>(null);
-    const [locationOrYear,setLocationOrYear] = useState<string>('coordsByTypeAndLocation')
+  const [plotSelector, setPlotSelector] = useState<string>();
+  const [plotSelectedOption, setPlotSelectedOption] = useState<OptionType | null>(null);
+  const [locationOrYear, setLocationOrYear] = useState<string>('coordsByTypeAndLocation')
 
   const [defaultDisplayColumn, setDefaultDisplayColumn] = useState('');
   const [currentFeature, setCurrentFeature] =
@@ -93,6 +102,7 @@ const AmdrReport = () => {
         parentId: string,
         path: string[]
       ]>();
+  const [featureSetResponse, setFeatureSetResponse] = useState<FeatureSetResponse>();
 
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>, clickedColumn?: string) => {
@@ -112,34 +122,34 @@ const AmdrReport = () => {
       }, []
   );
 
-  const KEY_INDICATOR_LEVELS: {}=
-    //Add new entry here for customization
-     {
-      DANGER: {
-        colorName: 'red',
-        min: 0,
-        max: 65,
-        class: 'bg-danger',
-        color: COLOR_BOOTSTRAP_DANGER,
-        highest: false
-      },
-      GOOD: {
-        colorName: 'yellow',
-        min: 65,
-        max: 80,
-        class: 'bg-yellow',
-        color: COLOR_YELLOW,
-        highest: false
-      },
-      EXCELLENT: {
-        colorName: 'green',
-        min: 80,
-        max: 100,
-        class: 'bg-success',
-        color: COLOR_BOOTSTRAP_SUCCESS,
-        highest: true
-      }
-    };
+  const KEY_INDICATOR_LEVELS: {} =
+      //Add new entry here for customization
+      {
+        DANGER: {
+          colorName: 'red',
+          min: 0,
+          max: 65,
+          class: 'bg-danger',
+          color: COLOR_BOOTSTRAP_DANGER,
+          highest: false
+        },
+        GOOD: {
+          colorName: 'yellow',
+          min: 65,
+          max: 80,
+          class: 'bg-yellow',
+          color: COLOR_YELLOW,
+          highest: false
+        },
+        EXCELLENT: {
+          colorName: 'green',
+          min: 80,
+          max: 100,
+          class: 'bg-success',
+          color: COLOR_BOOTSTRAP_SUCCESS,
+          highest: true
+        }
+      };
 
   const handleDobuleClickRef = useRef(doubleClickHandler);
   handleDobuleClickRef.current = doubleClickHandler;
@@ -149,10 +159,10 @@ const AmdrReport = () => {
     return Object.entries(rowColumns)
     .filter(rc => rc[1] && !rc[1].isHidden)
     // .map(e => e[0])
-    .map(e=> {
+    .map(e => {
       return {
         Header: e[0],
-        desc:e[1].description,
+        desc: e[1].description,
         accessor: (row: any) => {
           return row.columnDataMap[e[0]].value;
         }
@@ -263,10 +273,10 @@ const AmdrReport = () => {
             }
           }
 
-            getAmdrMapReportData(
-                parentLocationId ? parentLocationId : null,
-                clickedColumn
-            )
+          getAmdrMapReportData(
+              parentLocationId ? parentLocationId : null,
+              clickedColumn
+          )
           .then(async (report) => {
             if (report.features.length) {
               //map location data to show it in a table also
@@ -286,33 +296,14 @@ const AmdrReport = () => {
               setFilterData(tableData);
               setThree(report.coords);
 
-              const features: Feature<
-                  Polygon | MultiPolygon | Point,
-                  ReportLocationProperties
-                  >[] = report.features.map(feature => ({
-                type: "Feature",
-                id: feature.id,
-                properties: feature.properties,
-                geometry: feature.geometry ?? null   // 👈 must never be undefined
-              }));
+              setFeatureSetResponse(report);
 
-              const reportCollection: FeatureCollection<
-                  Polygon | MultiPolygon | Point,
-                  ReportLocationProperties
-                  > = {
-                type: "FeatureCollection",
-                features
-              };
 
-              setFeatureSet([reportCollection, 'main', []]);
-
-            }
-            else if (report.noLocationData){
+            } else if (report.noLocationData) {
               toast.info('no location data found.');
-            } else if (report.noDashboardData){
+            } else if (report.noDashboardData) {
               toast.info('no data for selected location.')
-            }
-            else {
+            } else {
               toast.error('There is no report data found.');
             }
           })
@@ -322,22 +313,75 @@ const AmdrReport = () => {
         });
 
       },
-      [ parentLocationId, clickedColumn]
+      [parentLocationId, clickedColumn]
   );
+
+  useEffect(()=>{
+    if (featureSetResponse && plotSelector && selectedHslColor){
+
+      let locIds: Record<string, number> = {};
+
+      featureSetResponse.features.map(feature => {
+        let value = feature.properties.columnDataMap[plotSelector].value;
+        locIds[feature.identifier] = value
+      })
+      let values:number[] = []
+      Object.keys(locIds).map(locId => {
+        values.push(Number(locIds[locId]))
+      })
+      const minValue = Math.min(...values);
+      const maxValue = Math.max(...values);
+
+      const locPercentages: Record<string, number> = {};
+      Object.keys(locIds).forEach((locId, index) => {
+        if (maxValue === minValue) {
+          locPercentages[locId] = 100;
+        } else {
+          locPercentages[locId] = ((Number(locIds[locId]) - minValue) / (maxValue - minValue)) * 100;
+        }
+      });
+
+
+      const features: Feature<Polygon | MultiPolygon | Point, ReportLocationProperties>[] =
+          featureSetResponse.features.map(feature => {
+
+            const color = `hsl(${selectedHslColor.h}, ${ locIds[feature.identifier] }%, ${50}%)`;
+
+            const properties: ReportLocationProperties = {
+              ...feature.properties,            // new object
+              evaluatedColor: color ?? feature.properties.evaluatedColor
+            };
+
+            return {
+              type: "Feature",
+              id: feature.id,
+              properties,
+              geometry: feature.geometry ?? null
+            };
+          });
+
+      const reportCollection: FeatureCollection<Polygon | MultiPolygon | Point, ReportLocationProperties> = {
+        type: "FeatureCollection",
+        features // already a new array
+      };
+
+      setFeatureSet([reportCollection, parentLocationId?parentLocationId:'main', []]);
+    }
+  },[featureSetResponse, selectedColor, parentLocationId, plotSelector, selectedHslColor])
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  useEffect(()=>{
-    console.log("three",three)
+  useEffect(() => {
+    console.log("three", three)
 
-    if (three && three.coordsByYearOrLocation && three.coordsByYearOrLocation[locationOrYear] && plotSelector){
+    if (three && three.coordsByYearOrLocation && three.coordsByYearOrLocation[locationOrYear] && plotSelector) {
       if (plotSelector && three.coordsByYearOrLocation[locationOrYear][plotSelector]) {
 
         let locationMap = three.coordsByYearOrLocation[locationOrYear][plotSelector];
 
-        let coords: Coords[] = Object.keys(locationMap).map(location =>{
+        let coords: Coords[] = Object.keys(locationMap).map(location => {
           let xAxis = locationMap[location].x;
           let yAxis = locationMap[location].y;
           let zAxis = locationMap[location].z;
@@ -347,10 +391,10 @@ const AmdrReport = () => {
         })
 
 
-        let lineWidth : number | undefined;
+        let lineWidth: number | undefined;
 
         let isVertical = false;
-        if (data.length==1){
+        if (data.length == 1) {
           lineWidth = 10;
           isVertical = true;
         }
@@ -362,7 +406,7 @@ const AmdrReport = () => {
           return yearNum
         })
 
-        let xTickNames =  ticks.x.map((year, yearNum) => {
+        let xTickNames = ticks.x.map((year, yearNum) => {
           return year.toString();
         })
 
@@ -378,9 +422,9 @@ const AmdrReport = () => {
           xTickvals: three.xtickValues,
           xTickNames: three.xtickNames,
           yTickvals: three.ytickValues,
-          yTickNames:  three.ytickNames,
-          lineWidth:lineWidth,
-          isVertical:isVertical
+          yTickNames: three.ytickNames,
+          lineWidth: lineWidth,
+          isVertical: isVertical
         }
 
         let ribbonData: RibbonData = {coords: coords, layout: layout, title: 'som'}
@@ -389,7 +433,7 @@ const AmdrReport = () => {
       }
     }
 
-  },[three, plotSelector,locationOrYear])
+  }, [three, plotSelector, locationOrYear])
 
   const loadChildHandler = (
       id: string,
@@ -398,6 +442,10 @@ const AmdrReport = () => {
       parentData?: ReportLocationProperties,
       clickedColumn?: string
   ) => {
+    setPlotSelector(undefined)
+    setPlotSelectedOption(null)
+    setSelectedHslColor(undefined)
+    setSelectedColor(undefined)
     setParentLocationId(id);
     getAmdrMapReportData(
         id,
@@ -408,7 +456,7 @@ const AmdrReport = () => {
       //reset search input on new load
       if (searchInput.current) searchInput.current.value = '';
       //mapping location properties to data usable for table view
-      if (res.features && res.features.length > 0){
+      if (res.features && res.features.length > 0) {
         const tableData = res.features
         .filter(
             (feature: any) =>
@@ -422,62 +470,57 @@ const AmdrReport = () => {
         const defaultDisplayColumn: string | undefined = res.defaultDisplayColumn;
 
         // if (res.features && tableData.length) {
-          //first set data to empty array for new columns to render
-          setFilterData([]);
-          //check if there is a default column set and add default column property
-          if (defaultDisplayColumn) {
-            setDefaultDisplayColumn(defaultDisplayColumn);
-            res.features.forEach(el => {
-              if (el.properties.columnDataMap[defaultDisplayColumn]) {
-                el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
-              }
-            });
-          } else {
-            setDefaultDisplayColumn('');
-          }
-          setCols(res.features[0].properties.columnDataMap);
-          setData(tableData);
+        //first set data to empty array for new columns to render
+        setFilterData([]);
+        //check if there is a default column set and add default column property
+        if (defaultDisplayColumn) {
+          setDefaultDisplayColumn(defaultDisplayColumn);
+          res.features.forEach(el => {
+            if (el.properties.columnDataMap[defaultDisplayColumn]) {
+              el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
+            }
+          });
+        } else {
+          setDefaultDisplayColumn('');
+        }
+        setCols(res.features[0].properties.columnDataMap);
+        setData(tableData);
 
-        const features: Feature<
-            Polygon | MultiPolygon | Point,
-            ReportLocationProperties
-            >[] = res.features.map(feature => ({
+        const features: Feature<Polygon | MultiPolygon | Point,
+            ReportLocationProperties>[] = res.features.map(feature => ({
           type: "Feature",
           id: feature.id,
           properties: feature.properties,
           geometry: feature.geometry ?? null   // 👈 must never be undefined
         }));
 
-        const reportCollection: FeatureCollection<
-            Polygon | MultiPolygon | Point,
-            ReportLocationProperties
-            > = {
+        const reportCollection: FeatureCollection<Polygon | MultiPolygon | Point,
+            ReportLocationProperties> = {
           type: "FeatureCollection",
           features
         };
 
 
-          setFeatureSet([reportCollection, id, path.map(el => el.locationIdentifier)]);
-          setFilterData(tableData);
-          if (!path.some(el => el.locationIdentifier === id)) {
-            setPath([
-              ...path,
-              {
-                locationIdentifier: id,
-                locationName: locationName,
-                locationProperties: parentProperties
-              }
-            ]);
-          }
-      // }
+        setFeatureSet([reportCollection, id, path.map(el => el.locationIdentifier)]);
+        setFilterData(tableData);
+        if (!path.some(el => el.locationIdentifier === id)) {
+          setPath([
+            ...path,
+            {
+              locationIdentifier: id,
+              locationName: locationName,
+              locationProperties: parentProperties
+            }
+          ]);
+        }
+        // }
 
         // in case of irs report type and structure geo level calculate progress bar data
       } else if (res.noLocationData) {
         toast.info(`${locationName} has no child locations.`);
-      } else  if (res.noDashboardData){
+      } else if (res.noDashboardData) {
         toast.info('no data for selected location.')
-      }
-      else {
+      } else {
         toast.error('There is no report data found.');
       }
     })
@@ -521,20 +564,16 @@ const AmdrReport = () => {
         setCols(res.features[0].properties.columnDataMap);
         setData(tableData);
         setFilterData(tableData);
-        const features: Feature<
-            Polygon | MultiPolygon | Point,
-            ReportLocationProperties
-            >[] = res.features.map(feature => ({
+        const features: Feature<Polygon | MultiPolygon | Point,
+            ReportLocationProperties>[] = res.features.map(feature => ({
           type: "Feature",
           id: feature.id,
           properties: feature.properties,
           geometry: feature.geometry ?? null   // 👈 must never be undefined
         }));
 
-        const reportCollection: FeatureCollection<
-            Polygon | MultiPolygon | Point,
-            ReportLocationProperties
-            > = {
+        const reportCollection: FeatureCollection<Polygon | MultiPolygon | Point,
+            ReportLocationProperties> = {
           type: "FeatureCollection",
           features
         };
@@ -560,6 +599,18 @@ const AmdrReport = () => {
     const hue = Math.floor((360 / total) * index);
     return `hsl(${hue}, 70%, 50%)`;
   }
+
+
+  function getDistinctHslColor(hslColor?: HslColor): string {
+    if (hslColor) {
+      return `hsl(${hslColor.h}, ${hslColor.s}%, ${hslColor.l}%)`;
+    } else {
+      return `hst(120,60%,45%)`
+    }
+
+  }
+
+
   function getLineColor(label: string): string {
     const chars = Array.from(label); // safe for any string
     const hash = chars.reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
@@ -568,9 +619,9 @@ const AmdrReport = () => {
   }
 
 
-  const checkAndRemoveAndAddPerc=(str: string)=>{
-    if (str.includes("%")){
-      str = str.replaceAll("%","")
+  const checkAndRemoveAndAddPerc = (str: string) => {
+    if (str.includes("%")) {
+      str = str.replaceAll("%", "")
       return Number(str)
     } else {
       return Number(str)
@@ -584,19 +635,21 @@ const AmdrReport = () => {
     const xAxisLabels = data.map(loc => loc.name);
     const allLineDatasets: ChartData<'line'>['datasets'] = [];
 
+
     columnKeys.forEach((colKey, index) => {
       const columnDescription = data[0].columnDataMap[colKey].description;
+      const hslColor = data[0].columnDataMap[colKey].hslColor;
       const yValues = data.map(loc => {
-       return loc.columnDataMap[colKey].value.toString().split(" ").length>1 ?
-           checkAndRemoveAndAddPerc(loc.columnDataMap[colKey].value.split(" ")[0]): Number(loc.columnDataMap[colKey].value)
+        return loc.columnDataMap[colKey].value.toString().split(" ").length > 1 ?
+            checkAndRemoveAndAddPerc(loc.columnDataMap[colKey].value.split(" ")[0]) : Number(loc.columnDataMap[colKey].value)
       });
 
       allLineDatasets.push({
         label: columnDescription,
         data: yValues,
         fill: false,
-        borderColor: getDistinctColor(index, columnKeys.length),
-        backgroundColor: getDistinctColor(index, columnKeys.length), // for bar chart
+        borderColor: getDistinctHslColor(hslColor),
+        backgroundColor: getDistinctHslColor(hslColor), // for bar chart
         tension: 0
       });
     });
@@ -616,20 +669,57 @@ const AmdrReport = () => {
     }
 
   }, [
-      data
+    data
   ]);
 
-  useEffect(()=>{
-    if (clickedColumn){
+  useEffect(() => {
+    if (clickedColumn) {
       setDashboardView('gene')
     }
     loadData();
-  },[clickedColumn])
+  }, [clickedColumn])
 
-  useEffect(()=>{
+  // useEffect(() => {
+  //   if (!plotSelector || !data) return;
+  //
+  //   setFeatureSet(prev => {
+  //     if (!prev) return prev; // now legal
+  //
+  //     const [collection, parentId, path] = prev;
+  //
+  //     const updatedFeatures = collection.features.map(feature => {
+  //       const columnData =
+  //           feature.properties.columnDataMap?.[plotSelector];
+  //
+  //       const evaluatedColor =
+  //           columnData?.hslColor ??
+  //           feature.properties.statusColor ??
+  //           feature.properties.evaluatedColor;
+  //
+  //       return {
+  //         ...feature,
+  //         properties: {
+  //           ...feature.properties,
+  //           evaluatedColor
+  //         }
+  //       };
+  //     });
+  //
+  //     return [
+  //       {
+  //         ...collection,
+  //         features: updatedFeatures
+  //       },
+  //       parentId,
+  //       path
+  //     ];
+  //   });
+  // }, [plotSelector, data]);
+
+  useEffect(() => {
     setPlotSelector(undefined)
     setPlotSelectedOption(null)
-  },[clickedColumn])
+  }, [clickedColumn])
 
 
   return (
@@ -640,7 +730,7 @@ const AmdrReport = () => {
           </Col>
           <Col md={6} className="text-center">
             <h2 className="m-0">
-              {dashboardView==='haplotype'?'Drug View':'Gene View'} ({"AMDR"})
+              {dashboardView === 'haplotype' ? 'Drug View' : 'Gene View'} ({"AMDR"})
             </h2>
           </Col>
         </Row>
@@ -759,7 +849,9 @@ const AmdrReport = () => {
                     sortHandler={sortDataHandler}
                     columns={columns}
                     data={filterData}
-                    rangeDeterminer={(_)=>{return {class:''}}}
+                    rangeDeterminer={(_) => {
+                      return {class: ''}
+                    }}
                     columnClickable={columnClickable}
                     columnClickHandler={columnClickHandler}
                 />
@@ -778,26 +870,28 @@ const AmdrReport = () => {
               }}
                    className="mp-2 mx-2">
                 {combinedGraphData && chartType === 'line' && (
-                    <Line data={combinedGraphData as ChartData<'line'>} options={graphOptions} />
+                    <Line data={combinedGraphData as ChartData<'line'>} options={graphOptions}/>
                 )}
 
                 {combinedGraphData && chartType === 'bar' && (
-                    <Bar data={combinedGraphData as ChartData<'bar'>} options={graphOptions} />
+                    <Bar data={combinedGraphData as ChartData<'bar'>} options={graphOptions}/>
                 )}
               </div>
 
             </Collapse>
           </Col>
         </Row>
-        {show3dGraphs &&
+          {show3dGraphs &&
               <Row>
-                <Col xs sm md={10} className="border pe-3 d-flex justify-content-center align-items-center">
+                <Col xs sm md={10}
+                     className="border pe-3 d-flex justify-content-center align-items-center">
                   {plotSelector && ribbonData ?
-                  <RibbonPlot data={ribbonData}/>:<span>Select {dashboardView =="haplotype"?"Drug":"Gene"} to view data</span>}
+                      <RibbonPlot data={ribbonData}/> :
+                      <span>Select {dashboardView == "haplotype" ? "Drug" : "Gene"} to view data</span>}
 
                 </Col>
                 <Col xs sm md={2}>
-                  <h5 className="mb-2">Select {dashboardView =="haplotype"?"Drug":"Gene"}</h5>
+                  <h5 className="mb-2">Select {dashboardView == "haplotype" ? "Drug" : "Gene"}</h5>
                   <Select
                       placeholder={'Select data to display' + '...'}
                       options={Object.keys(data[0].columnDataMap).map(el => {
@@ -807,7 +901,7 @@ const AmdrReport = () => {
                         };
                       })}
                       value={plotSelectedOption}
-                      onChange={(e:SingleValue<OptionType>) => {
+                      onChange={(e: SingleValue<OptionType>) => {
                         setPlotSelectedOption(e)
                         if (e) {
                           setPlotSelector(e?.value);
@@ -837,11 +931,11 @@ const AmdrReport = () => {
                   />
                 </Col>
               </Row>}
-          {showMap &&  <Row className="my-3 align-items-center">
+          {showMap && <Row className="my-3 align-items-center">
             <Col md={showMap ? 10 : 2}>
               <Collapse in={showMap}>
                 <div id="expand-table">
-                  <MapViewDetail
+                  <AmdrMapViewDetail
                       defaultColumn={defaultDisplayColumn}
                       showModal={openModalHandler}
                       doubleClickEvent={(feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) =>
@@ -853,11 +947,74 @@ const AmdrReport = () => {
                   /></div>
               </Collapse>
             </Col>
+            <Col>
+              <Select
+                  placeholder="Select data to display..."
+                  options={Object.keys(data[0].columnDataMap).map(el => ({
+                    value: el ?? "",
+                    label: data[0].columnDataMap[el].description
+                  }))}
+                  formatOptionLabel={(option) => {
+                    const column = data[0].columnDataMap[option.value];
+                    const color = `hsl(${column.hslColor?.h}, ${column.hslColor?.s}%, ${column.hslColor?.l}%)`;
+
+                    return (
+                        <div style={{display: "flex", alignItems: "center", gap: 8}}>
+                            <span
+                                style={{
+                                  width: 10,
+                                  height: 10,
+                                  backgroundColor: color,
+                                  display: "inline-block",
+                                  borderRadius: 2,
+                                  flexShrink: 0
+                                }}
+                            />
+                             <span style={{whiteSpace: "normal"}}>
+                              {option.label}
+                            </span>
+                        </div>
+                    );
+                  }}
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      minHeight: 48,          // ⬆️ taller select
+                      height: "auto"
+                    }),
+                    valueContainer: (base) => ({
+                      ...base,
+                      paddingTop: 6,
+                      paddingBottom: 6
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      whiteSpace: "normal",   // ⬅️ allow wrapping
+                      overflow: "visible"
+                    }),
+                    option: (base) => ({
+                      ...base,
+                      whiteSpace: "normal"    // ⬅️ wrap in dropdown too
+                    })
+                  }}
+                  value={plotSelectedOption}
+                  onChange={(e: SingleValue<OptionType>) => {
+
+                    if (e) {
+                      setPlotSelectedOption(e);
+                      const column = data[0].columnDataMap[e.value];
+                      const color = `hsl(${column.hslColor?.h}, ${column.hslColor?.s}%, ${column.hslColor?.l}%)`;
+                      setSelectedColor(color);
+                      setSelectedHslColor(column.hslColor)
+                      setPlotSelector(e.value);
+                    }
+                  }}
+              />
+            </Col>
           </Row>}
 
 
-
-        </>: ""}
+        </> : ""}
 
 
       </Container>

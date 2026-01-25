@@ -4,6 +4,12 @@ export interface MapDataReportRequest {
   parentLocationIdentifier: string | null;
 }
 
+export interface HslColor{
+  h:number;
+  s:number;
+  l:number;
+}
+
 export interface FoundCoverage {
   value: any;
   isPercentage: boolean;
@@ -11,7 +17,10 @@ export interface FoundCoverage {
   dataType: string;
   isHidden: boolean;
   description: string;
+  hslColor?:HslColor;
 }
+
+
 
 export enum ReportType {
   MDA_FULL_COVERAGE = 'MDA_FULL_COVERAGE',
