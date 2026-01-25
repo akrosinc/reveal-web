@@ -48,7 +48,7 @@ export const MAIN_MENU = [
       {
         pageTitle: 'Resource Planning',
         route: RESOURCE_PLANNING_PAGE,
-        roles: [PLAN_VIEW]
+        roles: ["resource_planning"]
       }
     ]
   },
