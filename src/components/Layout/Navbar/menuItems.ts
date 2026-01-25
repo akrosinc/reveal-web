@@ -75,7 +75,7 @@ export const MAIN_MENU = [
       {
         pageTitle: 'amdrReporting',
         route: REPORTING_PAGE + "/amdr-data" ,
-        roles: ['view_survey_data']
+        roles: ['view_amdr_report']
       }
     ]
   },
