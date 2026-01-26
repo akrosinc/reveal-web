@@ -212,22 +212,22 @@ export const KEY_INDICATOR_LEVELS: any[string] = {
     DANGER: {
       colorName: 'red',
       min: 0,
-      max: 70,
+      max: 1,
       class: 'bg-danger',
       color: COLOR_BOOTSTRAP_DANGER,
       highest: false
     },
     GOOD: {
       colorName: 'yellow',
-      min: 70,
-      max: 80,
+      min: 1,
+      max: 5,
       class: 'bg-yellow',
       color: COLOR_YELLOW,
       highest: false
     },
     EXCELLENT: {
       colorName: 'green',
-      min: 80,
+      min: 5,
       max: 100,
       class: 'bg-success',
       color: COLOR_BOOTSTRAP_SUCCESS,
