@@ -74,7 +74,7 @@ const Reporting = () => {
         <Route
             path="/amdr-data"
             element={
-              <AuthGuard roles={['view_survey_data']}>
+              <AuthGuard roles={['view_amdr_report']}>
                 <AmdrReport />
               </AuthGuard>
             }
@@ -82,7 +82,7 @@ const Reporting = () => {
         <Route
             path="/amdr-landing"
             element={
-              <AuthGuard roles={['view_survey_data']}>
+              <AuthGuard roles={['view_amdr_report']}>
                 <AmdrLandingPage2 />
               </AuthGuard>
             }
