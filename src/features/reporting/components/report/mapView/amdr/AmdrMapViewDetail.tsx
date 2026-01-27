@@ -459,6 +459,7 @@ const AmdrMapViewDetail = React.forwardRef<any, Props>(
 
     useEffect(() => {
       if (map.current && featureSet) {
+
         const mapInstance = map.current;
         //check if map is loaded completly
         if (mapInstance.getLayer('label-layer')) {
@@ -476,7 +477,26 @@ const AmdrMapViewDetail = React.forwardRef<any, Props>(
         const mapInstance = map.current;
         //check if map is loaded completly
         if (mapInstance){
-          let source = mapInstance?.getSource(featureSet[1]);
+
+          let sources:any = mapInstance.getStyle().sources;
+          Object.keys(sources).map(key => {
+
+            if (key!=="mapbox" && key !== featureSet[1]){
+              let thisSource = mapInstance.getSource(key);
+              let data:any = sources[key].data;
+              let features:any[] = data.features;
+              if (features.length > 0) {
+                let featuresNew: any[] = features.map((feature: any) => {
+                  feature.properties.evaluatedColor = null;
+                  return feature;
+                })
+                data.features = featuresNew;
+                (thisSource as any).setData(data)
+              }
+            }
+          })
+
+          let source = mapInstance.getSource(featureSet[1]);
           if (source){
             let dataFeatures: Feature<Polygon | MultiPolygon | Point, ReportLocationProperties>[] = (
                 featureSet[0] as any

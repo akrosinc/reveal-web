@@ -300,9 +300,9 @@ const AmdrReport = () => {
 
 
             } else if (report.noLocationData) {
-              toast.info('no location data found.');
+              toast.info('no data found.');
             } else if (report.noDashboardData) {
-              toast.info('no data for selected location.')
+              toast.info('no data for available.')
             } else {
               toast.error('There is no report data found.');
             }
@@ -367,7 +367,7 @@ const AmdrReport = () => {
 
       setFeatureSet([reportCollection, parentLocationId?parentLocationId:'main', []]);
     }
-  },[featureSetResponse, selectedColor, parentLocationId, plotSelector, selectedHslColor])
+  },[featureSetResponse, selectedColor, parentLocationId, plotSelector, selectedHslColor,path])
 
   useEffect(() => {
     loadData();

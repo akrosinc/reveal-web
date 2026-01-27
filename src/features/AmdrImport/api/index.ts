@@ -4,13 +4,9 @@ import {MetadataFileImportResponse} from "../../metaDataImport/type";
 import {EntityTagMap} from "../../planSimulation/providers/types";
 import {AmdrImportResponse, AmdrImportResultsResponse} from "../type";
 
-export const downloadAmdrImportTemplate = async (
-    hierarchyIdentifier: string,
-    geographicLevelName: string,
-    amdrKey: string
-): Promise<BlobPart> => {
+export const downloadAmdrImportTemplate = async (): Promise<BlobPart> => {
   const data = api
-  .get<BlobPart>(`amdr/downloadAmdrImportTemplate/${hierarchyIdentifier}/${geographicLevelName}/${amdrKey}`, {
+  .get<BlobPart>(`amdr/downloadAmdrImportTemplate`, {
     responseType: 'arraybuffer'
   })
   .then(res => res.data);

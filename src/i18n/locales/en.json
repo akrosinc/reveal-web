@@ -300,6 +300,7 @@
     "file": "File",
     "entityTags": "Entity Tags",
     "fileTemplate": "File Template",
+    "amdrFileTemplate": "AMDR File Template",
     "saveHierarchy": "Save Hierarchy",
     "hierarchyName": "Hierarchy Name",
     "tagsSelected": "The following tags will be saved with this hierarchy",
