@@ -22,7 +22,7 @@ jobs:
           node-version: 16
 
       - name: Install dependencies
-        run: npm install
+        run: npm install -v
 
       - name: Build the app
         run: CI=false npm run build
