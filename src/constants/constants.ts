@@ -118,6 +118,44 @@ export const RESOURCE_PLANNING_HISTORY_TABLE_COLUMNS = [
   { name: 'Uploaded By', sortValue: 'createdBy', accessor: 'createdBy' }
 ];
 
+export const INSTANCE_TABLE_COLUMNS = [
+  {
+    name: 'instanceName',
+    sortValue: 'instanceName',
+    accessor: 'instanceName'
+  },
+  {
+    name: 'title',
+    sortValue: 'title',
+    accessor: 'title'
+  },
+  {
+    name: 'status',
+    sortValue: 'status',
+    accessor: 'status'
+  },
+  {
+    name: 'interventionType',
+    sortValue: 'interventionType',
+    accessor: 'interventionType'
+  },
+  {
+    name: 'createdDate',
+    sortValue: 'createdDate',
+    accessor: 'createdDate'
+  },
+  {
+    name: 'startDate',
+    sortValue: 'startDate',
+    accessor: 'startDate'
+  },
+  {
+    name: 'endDate',
+    sortValue: 'endDate',
+    accessor: 'endDate'
+  }
+];
+
 export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';
 export const LOCATION_TEAM_ASSIGNMENT_TAB = 'team-assignment';
 export const LOCATION_TEAM_ASSIGNMENT_SUMMARY = 'team-assignment-summary';

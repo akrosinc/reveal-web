@@ -7,6 +7,7 @@ import { MANAGEMENT, ORGANIZATION_VIEW, ROLE_MANAGE_USER } from '../../constants
 import Organization from '../../features/organization/components';
 import UserImport from '../../features/user/components/UserImport/UserImport';
 import Users from '../../features/user/components/UsersPage';
+import InstanceConfiguration from '../../features/instanceConfiguration';
 import { useKeycloak } from '@react-keycloak/web';
 
 const Management = () => {
@@ -44,6 +45,12 @@ const Management = () => {
         <Tab eventKey="user-import" title={t('managementPage.userImport')}>
           <AuthGuard roles={[ROLE_MANAGE_USER]}>
             <UserImport />
+          </AuthGuard>
+        </Tab>
+        <Tab eventKey="instance-configuration" title={t('managementPage.instanceConfiuration')}>
+          {/* Default role is added for Authorization */}
+          <AuthGuard roles={[ROLE_MANAGE_USER]}>
+            <InstanceConfiguration />
           </AuthGuard>
         </Tab>
       </Tabs>

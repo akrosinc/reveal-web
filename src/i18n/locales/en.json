@@ -64,7 +64,8 @@
   "managementPage": {
     "organization": "Organization",
     "user": "User",
-    "userImport": "User Import"
+    "userImport": "User Import",
+    "instanceConfiuration": "Instance Configuration"
   },
   "userPage": {
     "Username": "Username",
@@ -232,6 +233,19 @@
     "drugInventoryAdverseReporting": "Drug Inventory / Adverse Reporting",
     "populationCoverage": "Population coverage"
   },
+  "instancesPage": {
+    "search": "Search",
+    "title": "Instance",
+    "table": {
+      "instanceName": "Instance name",
+      "title": "Title",
+      "status": "Status",
+      "interventionType": "Intervention Type",
+      "createdDate": "Created Date",
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    }
+  },
   "simulationPage": {
     "tag": "tag",
     "isPublic": "Is public",
@@ -331,7 +345,6 @@
       "owner": "I am the owner",
       "owners": "Current Owners",
       "selected": "Selection"
-
     }
   },
   "locationHierarchyPage": {
