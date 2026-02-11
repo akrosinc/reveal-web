@@ -1,116 +1,106 @@
 import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { FaTrash, FaEdit, FaPlus } from 'react-icons/fa';
+import { Accordion, Button, Container, Row, Col } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Goal } from '../../../plan/providers/types';
+import Item from './Goals';
+import CreateGoal from './Goals/CreateGoal/CreateGoal';
+import { useTranslation } from 'react-i18next';
 
 export default function AddGoalDetails() {
-  const [goals, setGoals] = useState([{ id: 1, title: 'Goal - lorem', description: '', actions: [] }]);
+  const [goalList, setGoalList] = useState<Goal[]>([]);
+  const [showCreateGoal, setShowCreateGoal] = useState(false);
+  const [currentGoal, setCurrentGoal] = useState<Goal>();
+  const { t } = useTranslation();
 
-  const addGoal = () => {
-    const newGoal = { id: Date.now(), title: 'New Goal', description: '', actions: [] };
-    setGoals([...goals, newGoal]);
+  // Mock plan period for static data
+  const planPeriod = {
+    start: new Date(),
+    end: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
   };
 
-  const updateGoalDescription = (id, value) => {
-    setGoals(goals.map(g => (g.id === id ? { ...g, description: value } : g)));
+  const createGoalHandler = (goal?: Goal) => {
+    setCurrentGoal(goal);
+    setShowCreateGoal(true);
   };
 
-  const addAction = goalId => {
-    const actionDesc = prompt('Enter action description');
-    if (!actionDesc) return;
-    setGoals(goals.map(g => (g.id === goalId ? { ...g, actions: [...g.actions, { description: actionDesc }] } : g)));
+  const deleteGoal = (goalId: string) => {
+    if (window.confirm(t('planPage.deleteGoalMessage') + goalId + '?')) {
+      const newArr = goalList.filter(el => el.identifier !== goalId);
+      setGoalList(newArr);
+    }
   };
 
-  const deleteGoal = id => {
-    setGoals(goals.filter(g => g.id !== id));
+  const saveGoalHandler = (savedGoal: Goal) => {
+    // Check if goal already exists (update) or is new (add)
+    const existingIndex = goalList.findIndex(g => g.identifier === savedGoal.identifier);
+    if (existingIndex >= 0) {
+      const newGoals = [...goalList];
+      newGoals[existingIndex] = savedGoal;
+      setGoalList(newGoals);
+    } else {
+      setGoalList([...goalList, savedGoal]);
+    }
   };
 
   return (
-    <div className="container mt-5">
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3>Add Goals details</h3>
-        <button className="btn btn-primary" onClick={addGoal}>
-          <FaPlus />
-        </button>
-      </div>
+    <>
+      <Row className="mt-3 align-items-center">
+        <Col>
+          <h3>{t('planPage.goals')}</h3>
+        </Col>
+      </Row>
+      <hr className="my-3" />
+      <Row>
+        <Col md={8} className="">
+          <Button id="add-goal-button" className="float-end mb-3" onClick={() => createGoalHandler()}>
+            <FontAwesomeIcon icon="plus" className="me-2" />
+            {t('buttons.add')}
+          </Button>
 
-      {/* Goals */}
-      <div className="accordion" id="goalsAccordion">
-        {goals.map((goal, index) => (
-          <div className="accordion-item" key={goal.id}>
-            <h2 className="accordion-header" id={`heading${goal.id}`}>
-              <button
-                className="accordion-button collapsed"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target={`#collapse${goal.id}`}
-                aria-expanded="false"
-                aria-controls={`collapse${goal.id}`}
-              >
-                {goal.title}
-                <div className="ms-auto d-flex gap-2">
-                  <button className="btn btn-sm btn-danger" onClick={() => deleteGoal(goal.id)}>
-                    <FaTrash />
-                  </button>
-                  <button className="btn btn-sm btn-secondary">
-                    <FaEdit />
-                  </button>
-                </div>
-              </button>
-            </h2>
-            <div
-              id={`collapse${goal.id}`}
-              className="accordion-collapse collapse"
-              aria-labelledby={`heading${goal.id}`}
-              data-bs-parent="#goalsAccordion"
-            >
-              <div className="accordion-body">
-                {/* Description */}
-                <div className="mb-3">
-                  <label className="form-label">Description</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={goal.description}
-                    onChange={e => updateGoalDescription(goal.id, e.target.value)}
-                  />
-                </div>
-
-                {/* Actions */}
-                <div className="mb-3">
-                  <h5>Actions</h5>
-                  <table className="table table-bordered">
-                    <thead>
-                      <tr>
-                        <th>Description</th>
-                        <th>Edit Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {goal.actions.map((action, idx) => (
-                        <tr key={idx}>
-                          <td>{action.description}</td>
-                          <td>
-                            <button className="btn btn-sm btn-secondary">Edit</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <button className="btn btn-primary btn-sm" onClick={() => addAction(goal.id)}>
-                    Create
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Create Plan Button */}
-      <div className="mt-4 text-end">
-        <button className="btn btn-success">Create Plan</button>
-      </div>
-    </div>
+          <Accordion id="plan-card" defaultActiveKey="0" flush className="w-100">
+            {goalList.length === 0 && <div className="text-center p-3">No goals added yet.</div>}
+            {goalList.map(el => {
+              return (
+                <Item
+                  planId={undefined}
+                  loadData={() => {
+                    // refreshing state is handled by passing state setter or relying on mutation + refetch,
+                    // but here we rely on local state updates in Item/Actions which might need a force update if they mutate deep
+                    setGoalList([...goalList]);
+                  }}
+                  editGoalHandler={createGoalHandler}
+                  key={el.identifier}
+                  goal={el}
+                  planPeriod={planPeriod}
+                  deleteHandler={deleteGoal}
+                />
+              );
+            })}
+          </Accordion>
+        </Col>
+      </Row>
+      <Col md={8} className="">
+        <div className="d-flex  justify-content-between">
+          <Button variant="secondary" className="float-end mt-3" onClick={() => console.log('Cancel clicked')}>
+            Cancel
+          </Button>
+          <Button type="submit" className="float-end mt-3">
+            Next and Continue
+          </Button>
+        </div>
+      </Col>
+      {showCreateGoal && (
+        <CreateGoal
+          planId={undefined}
+          goalList={goalList} // Passed for reference if needed by component logic, though we prefer onSave
+          currentGoal={currentGoal}
+          closeHandler={() => {
+            setShowCreateGoal(false);
+          }}
+          show={showCreateGoal}
+          onSave={saveGoalHandler}
+        />
+      )}
+    </>
   );
 }
