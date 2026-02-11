@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Accordion, Button, Container, Row, Col } from 'react-bootstrap';
+import { Accordion, Button, Row, Col } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Goal } from '../../../plan/providers/types';
 import Item from './Goals';
 import CreateGoal from './Goals/CreateGoal/CreateGoal';
 import { useTranslation } from 'react-i18next';
+import { WizardStepProps } from '../Wizard/Wizard';
 
-export default function AddGoalDetails() {
-  const [goalList, setGoalList] = useState<Goal[]>([]);
+const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues }) => {
+  // Initialize from defaultValues if present
+  const [goalList, setGoalList] = useState<Goal[]>(defaultValues?.goals || []);
   const [showCreateGoal, setShowCreateGoal] = useState(false);
   const [currentGoal, setCurrentGoal] = useState<Goal>();
   const { t } = useTranslation();
@@ -43,29 +45,27 @@ export default function AddGoalDetails() {
   };
 
   return (
-    <>
-      <Row className="mt-3 align-items-center">
+    <div className="p-4 bg-white">
+      <Row className="align-items-center">
         <Col>
           <h3>{t('planPage.goals')}</h3>
         </Col>
       </Row>
       <hr className="my-3" />
       <Row>
-        <Col md={8} className="">
+        <Col md={12} className="">
           <Button id="add-goal-button" className="float-end mb-3" onClick={() => createGoalHandler()}>
             <FontAwesomeIcon icon="plus" className="me-2" />
             {t('buttons.add')}
           </Button>
 
-          <Accordion id="plan-card" defaultActiveKey="0" flush className="w-100">
+          <Accordion id="plan-card" defaultActiveKey="0" flush className="w-100 mb-3">
             {goalList.length === 0 && <div className="text-center p-3">No goals added yet.</div>}
             {goalList.map(el => {
               return (
                 <Item
                   planId={undefined}
                   loadData={() => {
-                    // refreshing state is handled by passing state setter or relying on mutation + refetch,
-                    // but here we rely on local state updates in Item/Actions which might need a force update if they mutate deep
                     setGoalList([...goalList]);
                   }}
                   editGoalHandler={createGoalHandler}
@@ -79,20 +79,19 @@ export default function AddGoalDetails() {
           </Accordion>
         </Col>
       </Row>
-      <Col md={8} className="">
-        <div className="d-flex  justify-content-between">
-          <Button variant="secondary" className="float-end mt-3" onClick={() => console.log('Cancel clicked')}>
-            Cancel
-          </Button>
-          <Button type="submit" className="float-end mt-3">
-            Next and Continue
-          </Button>
-        </div>
-      </Col>
+      <div className="d-flex justify-content-between mt-4 pt-3 border-top">
+        <Button variant="secondary" className="px-4 py-2" onClick={onBack}>
+          Back
+        </Button>
+        <Button variant="primary" className="px-4 py-2" onClick={() => onNext && onNext({ goals: goalList })}>
+          Next and Continue
+        </Button>
+      </div>
+
       {showCreateGoal && (
         <CreateGoal
           planId={undefined}
-          goalList={goalList} // Passed for reference if needed by component logic, though we prefer onSave
+          goalList={goalList} // Passed for reference if needed
           currentGoal={currentGoal}
           closeHandler={() => {
             setShowCreateGoal(false);
@@ -101,6 +100,8 @@ export default function AddGoalDetails() {
           onSave={saveGoalHandler}
         />
       )}
-    </>
+    </div>
   );
 }
+
+export default AddGoalDetails;

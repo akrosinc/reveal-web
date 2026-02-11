@@ -1,43 +1,29 @@
-import { useState } from 'react';
-import StepBasicInfo from './InstanceDetails';
-// import StepAccess from './steps/StepAccess';
-// import StepReview from './steps/StepReview';
+import React from 'react';
+import Wizard from '../Wizard/Wizard';
+import PlanDetails from './PlanDetails';
+import AddGoalDetails from './AddGoalDetails';
+import InstanceDetails from './InstanceDetails';
+import DatasetDetails from './DatasetDetails';
+import CreateInstance from './AddInstance';
 
-const STEPS = {
-  BASIC: 0,
-  ACCESS: 1,
-  REVIEW: 2
-};
+const steps = [
+  { label: 'Add plan details', component: CreateInstance },
+  { label: 'Add Goals details', component: AddGoalDetails },
+  { label: 'Add Instance details', component: InstanceDetails },
+  { label: 'Add Dataset details', component: DatasetDetails }
+];
 
-const CreateUserWizard = () => {
-  const [step, setStep] = useState(STEPS.BASIC);
-  const [formData, setFormData] = useState({});
-
-  const next = data => {
-    setFormData(prev => ({ ...prev, ...data }));
-    setStep(prev => prev + 1);
-  };
-
-  const back = () => setStep(prev => prev - 1);
-
-  const submit = async () => {
-    // toast.promise(createUser(formData as CreateUserModel), {
-    //   pending: 'Creating user...',
-    //   success: 'User created successfully',
-    //   error: 'Failed to create user'
-    // });
-    // // optionally reset
-    // setFormData({});
-    // setStep(STEPS.BASIC);
+const CreateInstanceWizard = () => {
+  const handleComplete = (finalData: any) => {
+    console.log('Wizard Completed:', finalData);
+    alert('Instance Creation Wizard Completed! Check console for data.');
   };
 
   return (
-    <div className="user-wizard">
-      {step === STEPS.BASIC && <StepBasicInfo onNext={next} defaultValues={formData} />}
-      {/* {step === STEPS.ACCESS && <StepAccess onNext={next} onBack={back} defaultValues={formData} />}
-      {step === STEPS.REVIEW && <StepReview data={formData} onBack={back} onSubmit={submit} />} */}
+    <div className="create-instance-wizard">
+      <Wizard steps={steps} onComplete={handleComplete} />
     </div>
   );
 };
 
-export default CreateUserWizard;
+export default CreateInstanceWizard;

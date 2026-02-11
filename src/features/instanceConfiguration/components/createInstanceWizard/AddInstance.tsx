@@ -1,12 +1,12 @@
 import React, { ChangeEvent, useState } from 'react';
-import { Container, Row, Col, Form, Button, Tabs, Tab } from 'react-bootstrap';
+import { Row, Col, Form, Button } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
 import Select from 'react-select';
 import 'react-datepicker/dist/react-datepicker.css';
+import { WizardStepProps } from '../Wizard/Wizard';
 
 /* -------------------- Static Dropdown Data -------------------- */
-
 const hierarchyOptions = [
     { value: 'country', label: 'Country', nodeOrder: ['region', 'district'] },
     { value: 'region', label: 'Region', nodeOrder: ['district'] }
@@ -18,7 +18,6 @@ const interventionOptions = [
 ];
 
 /* -------------------- Types -------------------- */
-
 interface RegisterValues {
     name: string;
     title: string;
@@ -33,10 +32,27 @@ interface RegisterValues {
 
 const REGEX_TITLE_VALIDATION = /^[A-Za-z0-9\s-]+$/;
 
-const CreateInstance = () => {
-    const [activeTab, setActiveTab] = useState('plan-details');
-    const [selectedHierarchy, setSelectedHierarchy] = useState<any>();
-    const [selectedIntervention, setSelectedIntervention] = useState<any>();
+const CreateInstance: React.FC<WizardStepProps> = ({ onNext, defaultValues }) => {
+    // Initialize form state from defaultValues (received from Wizard)
+    // We lift state up by using defaultValues to initialize, and onNext to save.
+
+    // Note: react-select values need object { value, label }, so we might need to find them again based on stored string values
+    const getInitialHierarchy = () => {
+        if (defaultValues?.locationHierarchy) {
+            return hierarchyOptions.find(opt => opt.value === defaultValues.locationHierarchy) || null;
+        }
+        return null;
+    };
+    const getInitialIntervention = () => {
+        if (defaultValues?.interventionType) {
+            return interventionOptions.find(opt => opt.value === defaultValues.interventionType) || null;
+        }
+        return null;
+    };
+
+
+    const [selectedHierarchy, setSelectedHierarchy] = useState<any>(getInitialHierarchy());
+    const [selectedIntervention, setSelectedIntervention] = useState<any>(getInitialIntervention());
 
     const {
         register,
@@ -46,13 +62,23 @@ const CreateInstance = () => {
         setValue,
         formState: { errors }
     } = useForm<RegisterValues>({
-        mode: 'onChange'
+        mode: 'onChange',
+        defaultValues: {
+            name: defaultValues?.name || '',
+            title: defaultValues?.title || '',
+            effectivePeriod: {
+                start: defaultValues?.effectivePeriod?.start ? new Date(defaultValues.effectivePeriod.start) : undefined,
+                end: defaultValues?.effectivePeriod?.end ? new Date(defaultValues.effectivePeriod.end) : undefined
+            },
+            locationHierarchy: defaultValues?.locationHierarchy || '',
+            interventionType: defaultValues?.interventionType || '',
+            hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || ''
+        }
     });
 
-    /* -------------------- Submit -------------------- */
-
     const onSubmit = (data: RegisterValues) => {
-        console.log('Validated Data:', data);
+        // Pass data to next step
+        onNext && onNext(data);
     };
 
     const populateNameHandler = (e: ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +90,7 @@ const CreateInstance = () => {
     /* ========================== UI ========================== */
 
     return (
-        <Row className="mt-4">
+        <Row className="p-4 bg-white">
             <Col md={8} className="">
                 <Form onSubmit={handleSubmit(onSubmit)}>
                     {/* Hidden Name */}
@@ -94,7 +120,10 @@ const CreateInstance = () => {
                                     message: 'Only letters, numbers, spaces and hyphen allowed'
                                 }
                             })}
-                            onChange={populateNameHandler}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                register('title').onChange(e);
+                                populateNameHandler(e);
+                            }}
                         />
                         <Form.Control.Feedback type="invalid">{errors.title?.message}</Form.Control.Feedback>
                     </Form.Group>
@@ -213,6 +242,12 @@ const CreateInstance = () => {
                                                 value: el
                                             })) || []
                                         }
+                                        value={
+                                            selectedHierarchy?.nodeOrder?.map((el: string) => ({
+                                                label: el,
+                                                value: el
+                                            })).find((opt: any) => opt.value === watch('hierarchyLevelTarget'))
+                                        }
                                         onChange={(val: any) => field.onChange(val?.value)}
                                     />
                                 )}
@@ -220,11 +255,8 @@ const CreateInstance = () => {
                             <div className="text-danger small mt-1">{errors.hierarchyLevelTarget?.message}</div>
                         </Form.Group>
                     )}
-                    <div className="d-flex  justify-content-between">
-                        <Button variant="secondary" className="float-end mt-3" onClick={() => console.log('Cancel clicked')}>
-                            Cancel
-                        </Button>
-                        <Button type="submit" className="float-end mt-3">
+                    <div className="d-flex  justify-content-end mt-4">
+                        <Button type="submit" className="">
                             Next and Continue
                         </Button>
                     </div>
