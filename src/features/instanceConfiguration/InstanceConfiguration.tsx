@@ -1,15 +1,15 @@
 import InstancesListing from './components/instancesListing/InstanceListing';
 //TESTING..
-import CreateInstance from './components/createInstanceWizard/CreateInstance';
+import InstanceDetails from './components/createInstanceWizard/InstanceDetails';
 import AddGoalDetails from './components/createInstanceWizard/AddGoalDetails';
 import AddInstance from './components/createInstanceWizard/AddInstance';
 export default function InstanceConfiguration() {
   return (
     <>
-      <InstancesListing />
+      {/* <InstancesListing /> */}
       {/* <AddInstance /> */}
-      {/* <CreateInstance /> */}
-      {/* <AddGoalDetails /> */}
+      {/* <InstanceDetails /> */}
+      <AddGoalDetails />
     </>
   );
 }

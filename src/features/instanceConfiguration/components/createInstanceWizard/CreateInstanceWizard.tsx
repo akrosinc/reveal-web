@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import StepBasicInfo from './CreateInstance';
+import StepBasicInfo from './InstanceDetails';
 // import StepAccess from './steps/StepAccess';
 // import StepReview from './steps/StepReview';
 

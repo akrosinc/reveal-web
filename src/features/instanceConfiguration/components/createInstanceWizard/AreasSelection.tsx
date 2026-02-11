@@ -1,189 +1,244 @@
 import React, { useState } from 'react';
-import { Card, Form, ListGroup, Button, Collapse } from 'react-bootstrap';
+import { Card, Form, Collapse } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronRight, faChevronDown, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 // Mock Data
 const mockAreas = [
-    {
-        id: 'niagara',
-        label: 'Niagara',
+  {
+    id: 'niagara',
+    label: 'Niagara',
+    children: [
+      {
+        id: 'boko',
+        label: 'Boko',
         children: [
-            {
-                id: 'boko',
-                label: 'Boko',
-                children: [
-                    { id: 'ph1', label: 'PH 1' },
-                    { id: 'ph2', label: 'PH 2' },
-                    { id: 'ph3', label: 'PH 3' },
-                    { id: 'ph4', label: 'PH 4' }
-                ]
-            },
-            {
-                id: 'laka',
-                label: 'Laka',
-                children: [
-                    { id: 'lg1', label: 'LG 1' },
-                    { id: 'lg2', label: 'LG 2' }
-                ]
-            },
-            {
-                id: 'lagos',
-                label: 'Lagos',
-                children: [
-                    { id: 'lg1', label: 'LG 1' },
-                    { id: 'lg2', label: 'LG 2' }
-                ]
-            }
+          { id: 'ph1', label: 'PH 1' },
+          { id: 'ph2', label: 'PH 2' },
+          { id: 'ph3', label: 'PH 3' },
+          { id: 'ph4', label: 'PH 4' }
         ]
-    }
+      },
+      {
+        id: 'laka',
+        label: 'Laka',
+        children: [
+          { id: 'lg1', label: 'LG 1' },
+          { id: 'lg2', label: 'LG 2' }
+        ]
+      },
+      {
+        id: 'lagos',
+        label: 'Lagos',
+        children: [
+          { id: 'la1', label: 'LG 1' },
+          { id: 'la2', label: 'LG 2' }
+        ]
+      }
+    ]
+  }
 ];
 
 interface Props {
-    selectedAreas: string[];
-    onSelectionChange: (selectedIds: string[]) => void;
+  selectedAreas: string[];
+  onSelectionChange: (selectedIds: string[]) => void;
 }
 
-const TreeNode = ({ node, selectedAreas, onToggle, onSelect }: any) => {
-    const [expanded, setExpanded] = useState(true);
+const TreeNode = ({ node, selectedAreas, onSelect, readOnly, filter }: any) => {
+  const [expanded, setExpanded] = useState(true);
 
-    const isSelected = selectedAreas.includes(node.id);
-    const hasChildren = node.children && node.children.length > 0;
+  const isSelected = selectedAreas.includes(node.id);
+  const hasChildren = node.children && node.children.length > 0;
 
-    const handleExpand = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setExpanded(!expanded);
+  // If readOnly (Selected View), only render if self or descendant is selected
+  if (readOnly) {
+    const hasSelectedDescendant = (n: any): boolean => {
+      if (selectedAreas.includes(n.id)) return true;
+      if (n.children) return n.children.some((c: any) => hasSelectedDescendant(c));
+      return false;
     };
+    if (!selectedAreas.includes(node.id) && !hasSelectedDescendant(node)) {
+      return null;
+    }
+  }
 
-    const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
-        onSelect(node.id, e.target.checked);
-    };
+  // Filter logic (for search in Left View)
+  // If filter is active, only show if self matches or child matches
+  if (!readOnly && filter) {
+    const matches = node.label.toLowerCase().includes(filter.toLowerCase());
+    const childMatches =
+      node.children &&
+      node.children.some((c: any) => {
+        // crude check, ideally deeply recursive but 'TreeNode' handles recursion.
+        // For prop drilling filter, we need to know if we should render THIS node.
+        // Simplified: Render if self matches OR if any child renders.
+        return JSON.stringify(c).toLowerCase().includes(filter.toLowerCase());
+      });
+    if (!matches && !childMatches) return null;
+  }
 
-    return (
-        <div className="ms-3">
-            <div className="d-flex align-items-center mb-1">
-                {hasChildren ? (
-                    <span onClick={handleExpand} style={{ cursor: 'pointer', width: '20px' }}>
-                        <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} size="xs" />
-                    </span>
-                ) : (
-                    <span style={{ width: '20px' }}></span>
-                )}
-                <Form.Check
-                    type="checkbox"
-                    id={`check-${node.id}`}
-                    label={node.label}
-                    checked={isSelected}
-                    onChange={handleCheck}
-                    className="mb-0"
-                />
-            </div>
-            {hasChildren && (
-                <Collapse in={expanded}>
-                    <div>
-                        {node.children.map((child: any) => (
-                            <TreeNode
-                                key={child.id}
-                                node={child}
-                                selectedAreas={selectedAreas}
-                                onToggle={onToggle}
-                                onSelect={onSelect}
-                            />
-                        ))}
-                    </div>
-                </Collapse>
-            )}
+  const handleExpand = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpanded(!expanded);
+  };
+
+  const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (readOnly) return;
+    onSelect(node.id, e.target.checked);
+  };
+
+  return (
+    <div className="ms-3 mb-1">
+      <div className="d-flex align-items-center">
+        {hasChildren ? (
+          <span
+            onClick={handleExpand}
+            style={{ cursor: 'pointer', width: '20px', display: 'inline-block', textAlign: 'center' }}
+            className="me-1"
+          >
+            <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
+          </span>
+        ) : (
+          <span style={{ width: '20px', display: 'inline-block' }} className="me-1"></span>
+        )}
+        <div className="form-check mb-0">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id={`${readOnly ? 'ro' : 'edit'}-${node.id}`}
+            checked={isSelected}
+            onChange={handleCheck}
+            disabled={readOnly}
+            style={{ cursor: readOnly ? 'default' : 'pointer' }}
+          />
+          <label
+            className="form-check-label"
+            htmlFor={`${readOnly ? 'ro' : 'edit'}-${node.id}`}
+            style={{ cursor: readOnly ? 'default' : 'pointer', userSelect: 'none' }}
+          >
+            {node.label}
+          </label>
         </div>
-    );
+      </div>
+      {hasChildren && (
+        <Collapse in={expanded}>
+          <div>
+            {node.children.map((child: any) => (
+              <TreeNode
+                key={child.id}
+                node={child}
+                selectedAreas={selectedAreas}
+                onSelect={onSelect}
+                readOnly={readOnly}
+                filter={filter}
+              />
+            ))}
+          </div>
+        </Collapse>
+      )}
+    </div>
+  );
 };
 
 const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
-    const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
-    const recursiveSelect = (node: any, isChecked: boolean, currentSelected: string[]) => {
-        let newSelected = [...currentSelected];
-        if (isChecked) {
-            if (!newSelected.includes(node.id)) newSelected.push(node.id);
-        } else {
-            newSelected = newSelected.filter(id => id !== node.id);
-        }
+  const getAllDescendantIds = (node: any): string[] => {
+    let ids = [node.id];
+    if (node.children) {
+      node.children.forEach((child: any) => {
+        ids = [...ids, ...getAllDescendantIds(child)];
+      });
+    }
+    return ids;
+  };
 
-        if (node.children) {
-            node.children.forEach((child: any) => {
-                newSelected = recursiveSelect(child, isChecked, newSelected);
-            });
-        }
-        return newSelected;
-    };
+  const findNode = (nodes: any[], targetId: string): any => {
+    for (const node of nodes) {
+      if (node.id === targetId) return node;
+      if (node.children) {
+        const found = findNode(node.children, targetId);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
 
-    const handleSelect = (id: string, isChecked: boolean) => {
-        // Find node and select/deselect self and children (simplified flat lookup for demo)
-        // For a real app, we need a lookup map or recursive search.
-        // Assuming simple flat selection for now or implementing recursive helper
+  const handleSelect = (id: string, isChecked: boolean) => {
+    const node = findNode(mockAreas, id);
+    if (!node) return;
 
-        // Better implementation: find node in mockAreas
-        const findNode = (nodes: any[], targetId: string): any => {
-            for (const node of nodes) {
-                if (node.id === targetId) return node;
-                if (node.children) {
-                    const found = findNode(node.children, targetId);
-                    if (found) return found;
-                }
-            }
-            return null;
-        };
+    const affectedIds = getAllDescendantIds(node);
+    let newSelected = [...selectedAreas];
 
-        const node = findNode(mockAreas, id);
-        if (node) {
-            const newSelected = recursiveSelect(node, isChecked, selectedAreas);
-            onSelectionChange(newSelected);
-        }
-    };
+    if (isChecked) {
+      // Add all descendants that aren't already selected
+      affectedIds.forEach(affectedId => {
+        if (!newSelected.includes(affectedId)) newSelected.push(affectedId);
+      });
+    } else {
+      // Remove all descendants
+      newSelected = newSelected.filter(sid => !affectedIds.includes(sid));
+    }
+    onSelectionChange(newSelected);
+  };
 
-    return (
-        <div className="d-flex gap-3">
-            {/* Areas Tree */}
-            <Card className="flex-fill" style={{ minWidth: '300px' }}>
-                <Card.Header className="bg-light fw-bold">Areas</Card.Header>
-                <Card.Body>
-                    <Form.Control
-                        type="text"
-                        placeholder="Search..."
-                        className="mb-3"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
-                    <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                        {mockAreas.map(area => (
-                            <TreeNode
-                                key={area.id}
-                                node={area}
-                                selectedAreas={selectedAreas}
-                                onSelect={handleSelect}
-                            />
-                        ))}
-                    </div>
-                </Card.Body>
-            </Card>
+  return (
+    <div className="d-flex gap-4">
+      {/* Areas Tree */}
+      <Card className="flex-fill shadow-sm" style={{ minWidth: '300px' }}>
+        <Card.Header className="bg-light fw-bold">All Areas</Card.Header>
+        <Card.Body className="p-3">
+          <div className="mb-3">
+            <Form.Select className="mb-2 border-0 bg-white" defaultValue="Niagara">
+              <option value="Niagara">Niagara</option>
+            </Form.Select>
+            <div className="position-relative">
+              <Form.Control
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="ps-2"
+                style={{ fontSize: '0.9rem' }}
+              />
+            </div>
+          </div>
 
-            {/* Selected Areas */}
-            <Card className="flex-fill" style={{ minWidth: '300px' }}>
-                <Card.Header className="bg-light fw-bold">Selected Areas</Card.Header>
-                <Card.Body style={{ maxHeight: '475px', overflowY: 'auto' }}>
-                    {/* Logic to show selected structure mimics tree but only selected items */}
-                    {selectedAreas.length === 0 && <span className="text-muted">No areas selected</span>}
-                    <ListGroup variant="flush">
-                        {selectedAreas.map(id => (
-                            <ListGroup.Item key={id} className="border-0 py-1">
-                                <FontAwesomeIcon icon="check-square" className="text-primary me-2" />
-                                {id} {/* Use label mapped from ID in real app */}
-                            </ListGroup.Item>
-                        ))}
-                    </ListGroup>
-                </Card.Body>
-            </Card>
-        </div>
-    );
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="bg-white rounded p-2">
+            {mockAreas.map(area => (
+              <TreeNode
+                key={area.id}
+                node={area}
+                selectedAreas={selectedAreas}
+                onSelect={handleSelect}
+                filter={searchTerm}
+              />
+            ))}
+          </div>
+        </Card.Body>
+      </Card>
+
+      {/* Selected Areas */}
+      <Card className="flex-fill shadow-sm" style={{ minWidth: '300px' }}>
+        <Card.Header className="bg-light fw-bold">Selected Areas</Card.Header>
+        <Card.Body className="p-3">
+          <div className="mb-3">
+            {/* Initial View often mirrors top level unless filtered, mimicking screenshot layout 'Niagara' */}
+            <div className="p-2 fw-bold text-secondary">Niagara</div>
+          </div>
+
+          <div style={{ maxHeight: '435px', overflowY: 'auto' }} className="bg-white rounded p-2">
+            {selectedAreas.length === 0 && <span className="text-muted small p-2">No areas selected</span>}
+            {mockAreas.map(area => (
+              // In Selected View, we render the tree but filtering out unselected nodes (handled by TreeNode readOnly logic)
+              <TreeNode key={area.id} node={area} selectedAreas={selectedAreas} onSelect={() => {}} readOnly={true} />
+            ))}
+          </div>
+        </Card.Body>
+      </Card>
+    </div>
+  );
 };
 
 export default AreasSelection;
