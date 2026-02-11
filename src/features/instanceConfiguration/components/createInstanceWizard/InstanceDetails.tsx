@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Row, Col, Form, Button } from 'react-bootstrap';
+import { Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import Select from 'react-select';
 import AreasSelection from './AreasSelection';
 import MembersSelection from './MembersSelection';
@@ -19,15 +19,27 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
   );
   const [selectedAreas, setSelectedAreas] = useState<string[]>(defaultValues?.areas || []);
   const [assignedMembers, setAssignedMembers] = useState<string[]>(defaultValues?.members || []);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (selectedAreas.length === 0) {
+      setError('At least one area must be selected.');
+      return;
+    }
+    if (assignedMembers.length === 0) {
+      setError('At least one member must be assigned.');
+      return;
+    }
+
     const formData = {
       instanceName,
       hierarchy: selectedHierarchy?.value,
       areas: selectedAreas,
       members: assignedMembers
     };
+    setError(null);
     onNext && onNext(formData);
   };
 
@@ -35,51 +47,44 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
     <div className="p-4 bg-white">
       {/* <h4 className="mb-4 fw-bold">Create Instance</h4> */}
       <Form onSubmit={handleSubmit}>
-        {/* Top Row: Name and Hierarchy */}
-        <Row className="mb-5">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Control
-                type="text"
-                placeholder="Enter Instance name"
-                className="py-2"
-                value={instanceName}
-                onChange={(e) => setInstanceName(e.target.value)}
-              />
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Select
-              options={hierarchyOptions}
-              value={selectedHierarchy}
-              onChange={setSelectedHierarchy}
-              placeholder="Select Hierarchy"
-              className="react-select-container"
-              classNamePrefix="react-select"
-            />
-          </Col>
-        </Row>
-
-        {/* Areas Section */}
-        <div className="mb-5">
-          <AreasSelection selectedAreas={selectedAreas} onSelectionChange={setSelectedAreas} />
-        </div>
+        <Col md={8}>
+          {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+          {/* Areas Section */}
+          <div className="mb-5">
+            <AreasSelection selectedAreas={selectedAreas} onSelectionChange={setSelectedAreas} />
+          </div>
+        </Col>
 
         {/* Members Section */}
-        <h5 className="mb-3 fw-bold text-secondary">Members</h5>
-        <div className="mb-5">
-          <MembersSelection assignedMembers={assignedMembers} onAssignmentChange={setAssignedMembers} />
-        </div>
 
-        {/* Footer Buttons */}
-        <div className="d-flex justify-content-between mt-5 pt-3 border-top">
-          <Button variant="secondary" className="px-4 py-2" onClick={onBack} style={{ backgroundColor: '#6c757d', border: 'none' }}>
-            Back
-          </Button>
-          <Button variant="primary" type="submit" className="px-4 py-2" style={{ backgroundColor: '#0d6efd', border: 'none' }}>
-            Next and Continue
-          </Button>
-        </div>
+        <h5 className="mb-3 fw-bold text-secondary">Members</h5>
+        <Col md={8}>
+          <div className="mb-5">
+            <MembersSelection assignedMembers={assignedMembers} onAssignmentChange={setAssignedMembers} />
+          </div>
+        </Col>
+        <Col md={8}>
+          <hr className="my-3" />
+          {/* Footer Buttons */}
+          <div className="d-flex justify-content-between ">
+            <Button
+              variant="secondary"
+              className="px-4 py-2"
+              onClick={onBack}
+              style={{ backgroundColor: '#6c757d', border: 'none' }}
+            >
+              Back
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              className="px-4 py-2"
+              style={{ backgroundColor: '#0d6efd', border: 'none' }}
+            >
+              Next and Continue
+            </Button>
+          </div>
+        </Col>
       </Form>
     </div>
   );
