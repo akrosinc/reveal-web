@@ -4,6 +4,7 @@ import Stepper from './Stepper';
 export interface WizardStepProps {
     onNext: (data?: any) => void;
     onBack: () => void;
+    onCancel?: () => void;
     defaultValues?: any;
 }
 
@@ -15,9 +16,10 @@ interface Step {
 interface WizardProps {
     steps: Step[];
     onComplete: (finalData: any) => void;
+    onCancel?: () => void;
 }
 
-const Wizard: React.FC<WizardProps> = ({ steps, onComplete }) => {
+const Wizard: React.FC<WizardProps> = ({ steps, onComplete, onCancel }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const [formData, setFormData] = useState<any>({});
 
@@ -57,6 +59,7 @@ const Wizard: React.FC<WizardProps> = ({ steps, onComplete }) => {
                     React.cloneElement(ActiveComponent as ReactElement, {
                         onNext: handleNext,
                         onBack: handleBack,
+                        onCancel: onCancel,
                         defaultValues: formData
                     } as any)
                 ) : (
@@ -64,6 +67,7 @@ const Wizard: React.FC<WizardProps> = ({ steps, onComplete }) => {
                     <ActiveComponent
                         onNext={handleNext}
                         onBack={handleBack}
+                        onCancel={onCancel}
                         defaultValues={formData}
                     />
                 )}

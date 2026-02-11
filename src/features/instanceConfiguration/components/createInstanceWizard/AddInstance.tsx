@@ -32,7 +32,7 @@ interface RegisterValues {
 
 const REGEX_TITLE_VALIDATION = /^[A-Za-z0-9\s-]+$/;
 
-const CreateInstance: React.FC<WizardStepProps> = ({ onNext, defaultValues }) => {
+const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultValues }) => {
     // Initialize form state from defaultValues (received from Wizard)
     // We lift state up by using defaultValues to initialize, and onNext to save.
 
@@ -255,7 +255,11 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, defaultValues }) =>
                             <div className="text-danger small mt-1">{errors.hierarchyLevelTarget?.message}</div>
                         </Form.Group>
                     )}
-                    <div className="d-flex  justify-content-end mt-4">
+                    <div className="d-flex  justify-content-between mt-4">
+                        {/* Step 1 Cancel Button */}
+                        <Button variant="secondary" onClick={onCancel}>
+                            Cancel
+                        </Button>
                         <Button type="submit" className="">
                             Next and Continue
                         </Button>

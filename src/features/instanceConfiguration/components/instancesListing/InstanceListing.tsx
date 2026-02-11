@@ -6,7 +6,11 @@ import { MOCK_INSTANCES, InstanceModel } from './mockInstances';
 import { INSTANCE_TABLE_COLUMNS } from '../../../../constants/constants';
 import { useTranslation } from 'react-i18next';
 
-const Instances = () => {
+interface InstancesProps {
+  onCreate?: () => void;
+}
+
+const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
   const [search, setSearch] = useState('');
   const { t } = useTranslation();
   const [currentSortField, setCurrentSortField] = useState('');
@@ -95,7 +99,7 @@ const Instances = () => {
         </Col>
 
         <Col md={8}>
-          <Button className="btn btn-primary float-end">{t('buttons.create')}</Button>
+          <Button className="btn btn-primary float-end" onClick={onCreate}>{t('buttons.create')}</Button>
         </Col>
       </Row>
 
