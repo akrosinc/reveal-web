@@ -1,79 +1,77 @@
 import React, { useState, ReactElement } from 'react';
 import Stepper from './Stepper';
+import { Col } from 'react-bootstrap';
 
 export interface WizardStepProps {
-    onNext: (data?: any) => void;
-    onBack: () => void;
-    onCancel?: () => void;
-    defaultValues?: any;
+  onNext: (data?: any) => void;
+  onBack: () => void;
+  onCancel?: () => void;
+  defaultValues?: any;
 }
 
 interface Step {
-    label: string;
-    component: React.ComponentType<WizardStepProps> | ReactElement;
+  label: string;
+  component: React.ComponentType<WizardStepProps> | ReactElement;
 }
 
 interface WizardProps {
-    steps: Step[];
-    onComplete: (finalData: any) => void;
-    onCancel?: () => void;
+  steps: Step[];
+  onComplete: (finalData: any) => void;
+  onCancel?: () => void;
 }
 
 const Wizard: React.FC<WizardProps> = ({ steps, onComplete, onCancel }) => {
-    const [currentStep, setCurrentStep] = useState(0);
-    const [formData, setFormData] = useState<any>({});
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState<any>({});
 
-    const handleNext = (stepData: any) => {
-        const updatedData = { ...formData, ...stepData };
-        setFormData(updatedData);
+  const handleNext = (stepData: any) => {
+    const updatedData = { ...formData, ...stepData };
+    setFormData(updatedData);
 
-        if (currentStep < steps.length - 1) {
-            setCurrentStep(prev => prev + 1);
-        } else {
-            onComplete(updatedData);
-        }
-    };
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      onComplete(updatedData);
+    }
+  };
 
-    const handleBack = () => {
-        if (currentStep > 0) {
-            setCurrentStep(prev => prev - 1);
-        }
-    };
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
 
-    const ActiveComponent = steps[currentStep].component;
+  const ActiveComponent = steps[currentStep].component;
 
-    return (
-        <div className="wizard-container">
-            <Stepper
-                steps={steps.map(s => ({ label: s.label }))}
-                currentStep={currentStep}
-            />
+  return (
+    <div className="wizard-container">
+      <Col md={9}>
+        <Stepper steps={steps.map(s => ({ label: s.label }))} currentStep={currentStep} />
+      </Col>
 
-            <div className="wizard-content mt-4">
-                {/* 
+      <div className="wizard-content mt-2">
+        {/* 
                    Check if component is a React Element (already instantiated) or a Component Type 
                    If it's a Component Type, we render it with props.
                    If it's an Element, we clone it with new props.
                 */}
-                {React.isValidElement(ActiveComponent) ? (
-                    React.cloneElement(ActiveComponent as ReactElement, {
-                        onNext: handleNext,
-                        onBack: handleBack,
-                        onCancel: onCancel,
-                        defaultValues: formData
-                    } as any)
-                ) : (
-                    // @ts-ignore - Assuming it's a component type if not an element
-                    <ActiveComponent
-                        onNext={handleNext}
-                        onBack={handleBack}
-                        onCancel={onCancel}
-                        defaultValues={formData}
-                    />
-                )}
-            </div>
-        </div>
-    );
+        {React.isValidElement(ActiveComponent) ? (
+          React.cloneElement(
+            ActiveComponent as ReactElement,
+            {
+              onNext: handleNext,
+              onBack: handleBack,
+              onCancel: onCancel,
+              defaultValues: formData
+            } as any
+          )
+        ) : (
+          // @ts-ignore - Assuming it's a component type if not an element
+          <ActiveComponent onNext={handleNext} onBack={handleBack} onCancel={onCancel} defaultValues={formData} />
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default Wizard;
