@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Form, ListGroup, Button, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faChevronRight, faChevronLeft, faAngleDoubleRight, faAngleDoubleLeft } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faChevronRight, faChevronLeft, faAngleDoubleRight, faAngleDoubleLeft, faChevronDown, faChevronUp, faAngleDoubleDown, faAngleDoubleUp } from '@fortawesome/free-solid-svg-icons';
 
 interface Member {
     id: string;
@@ -63,9 +63,9 @@ const MembersSelection = ({ assignedMembers, onAssignmentChange }: Props) => {
     };
 
     return (
-        <div className="d-flex align-items-center gap-3">
+        <div className="d-flex flex-column flex-md-row align-items-center gap-3">
             {/* Available Members */}
-            <Card className="flex-grow-1" style={{ height: '400px' }}>
+            <Card className="flex-grow-1 w-100" style={{ height: '400px' }}>
                 <Card.Header className="bg-light fw-bold">All</Card.Header>
                 <Card.Body className="d-flex flex-column">
                     <InputGroup className="mb-3">
@@ -93,23 +93,27 @@ const MembersSelection = ({ assignedMembers, onAssignmentChange }: Props) => {
             </Card>
 
             {/* Transfer Buttons */}
-            <div className="d-flex flex-column gap-2">
+            <div className="d-flex flex-row flex-md-column gap-2">
                 <Button variant="primary" size="sm" onClick={handleMoveRight} disabled={leftSelected.length === 0}>
-                    <FontAwesomeIcon icon={faChevronRight} />
+                    <FontAwesomeIcon icon={faChevronRight} className="d-none d-md-inline" />
+                    <FontAwesomeIcon icon={faChevronDown} className="d-inline d-md-none" />
                 </Button>
                 <Button variant="primary" size="sm" onClick={handleMoveAllRight} disabled={filteredAvailable.length === 0}>
-                    <FontAwesomeIcon icon={faAngleDoubleRight} />
+                    <FontAwesomeIcon icon={faAngleDoubleRight} className="d-none d-md-inline" />
+                    <FontAwesomeIcon icon={faAngleDoubleDown} className="d-inline d-md-none" />
                 </Button>
                 <Button variant="primary" size="sm" onClick={handleMoveLeft} disabled={rightSelected.length === 0}>
-                    <FontAwesomeIcon icon={faChevronLeft} />
+                    <FontAwesomeIcon icon={faChevronLeft} className="d-none d-md-inline" />
+                    <FontAwesomeIcon icon={faChevronUp} className="d-inline d-md-none" />
                 </Button>
                 <Button variant="primary" size="sm" onClick={handleMoveAllLeft} disabled={assignedList.length === 0}>
-                    <FontAwesomeIcon icon={faAngleDoubleLeft} />
+                    <FontAwesomeIcon icon={faAngleDoubleLeft} className="d-none d-md-inline" />
+                    <FontAwesomeIcon icon={faAngleDoubleUp} className="d-inline d-md-none" />
                 </Button>
             </div>
 
             {/* Assigned Members */}
-            <Card className="flex-grow-1" style={{ height: '400px' }}>
+            <Card className="flex-grow-1 w-100" style={{ height: '400px' }}>
                 <Card.Header className="bg-light fw-bold">Assigned</Card.Header>
                 <Card.Body className="d-flex flex-column">
                     <div className="overflow-auto flex-grow-1 border rounded p-2 mt-3">

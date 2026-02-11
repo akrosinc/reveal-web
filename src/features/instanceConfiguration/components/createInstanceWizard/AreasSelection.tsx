@@ -184,7 +184,7 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
   };
 
   return (
-    <div className="d-flex gap-4">
+    <div className="d-flex flex-column flex-md-row gap-4">
       {/* Areas Tree */}
       <Card className="flex-fill shadow-sm" style={{ minWidth: '300px' }}>
         <Card.Header className="bg-light fw-bold">All Areas</Card.Header>
@@ -232,7 +232,7 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
             {selectedAreas.length === 0 && <span className="text-muted small p-2">No areas selected</span>}
             {mockAreas.map(area => (
               // In Selected View, we render the tree but filtering out unselected nodes (handled by TreeNode readOnly logic)
-              <TreeNode key={area.id} node={area} selectedAreas={selectedAreas} onSelect={() => {}} readOnly={true} />
+              <TreeNode key={area.id} node={area} selectedAreas={selectedAreas} onSelect={() => { }} readOnly={true} />
             ))}
           </div>
         </Card.Body>
