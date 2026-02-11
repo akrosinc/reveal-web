@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Accordion, Button, Row, Col } from 'react-bootstrap';
+import { Accordion, Button, Row, Col, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Goal } from '../../../plan/providers/types';
 import Item from './Goals';
@@ -12,6 +12,7 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
   const [goalList, setGoalList] = useState<Goal[]>(defaultValues?.goals || []);
   const [showCreateGoal, setShowCreateGoal] = useState(false);
   const [currentGoal, setCurrentGoal] = useState<Goal>();
+  const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
 
   // Mock plan period for static data
@@ -29,6 +30,8 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
     if (window.confirm(t('planPage.deleteGoalMessage') + goalId + '?')) {
       const newArr = goalList.filter(el => el.identifier !== goalId);
       setGoalList(newArr);
+      // Clear error if they delete a goal, though they might be in an invalid state again
+      // We'll re-validate on Next click anyway
     }
   };
 
@@ -42,22 +45,44 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
     } else {
       setGoalList([...goalList, savedGoal]);
     }
+    setError(null); // Clear error on successful add
+  };
+
+  const handleNext = () => {
+    if (goalList.length === 0) {
+      setError('At least one goal must be added before continuing.');
+      return;
+    }
+    onNext && onNext({ goals: goalList });
   };
 
   return (
     <div className="p-4 bg-white">
       <Row className="align-items-center">
-        <Col>
-          <h3>{t('planPage.goals')}</h3>
+        <Col md={8}>
+          <div className="d-flex justify-content-between align-items-center">
+            <h3>{t('planPage.goals')}</h3>
+            <Button
+              id="add-goal-button "
+              style={{ height: 20, width: 20 }}
+              className="mb-3 rounded-circle d-flex align-items-center justify-content-center"
+              onClick={() => createGoalHandler()}
+            >
+              <FontAwesomeIcon icon="plus" className="" />
+              {/* {t('buttons.add')} */}
+            </Button>
+          </div>
+          <hr className="my-3" />
         </Col>
       </Row>
-      <hr className="my-3" />
+
       <Row>
-        <Col md={12} className="">
-          <Button id="add-goal-button" className="float-end mb-3" onClick={() => createGoalHandler()}>
-            <FontAwesomeIcon icon="plus" className="me-2" />
-            {t('buttons.add')}
-          </Button>
+        <Col md={8} className="">
+          {error && (
+            <Alert variant="danger" className="mb-3">
+              {error}
+            </Alert>
+          )}
 
           <Accordion id="plan-card" defaultActiveKey="0" flush className="w-100 mb-3">
             {goalList.length === 0 && <div className="text-center p-3">No goals added yet.</div>}
@@ -77,16 +102,17 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
               );
             })}
           </Accordion>
+          <hr className="my-3" />
+          <div className="d-flex justify-content-between mt-4 ">
+            <Button variant="secondary" className="px-4 py-2" onClick={onBack}>
+              Back
+            </Button>
+            <Button variant="primary" className="px-4 py-2" onClick={handleNext}>
+              Next and Continue
+            </Button>
+          </div>
         </Col>
       </Row>
-      <div className="d-flex justify-content-between mt-4 pt-3 border-top">
-        <Button variant="secondary" className="px-4 py-2" onClick={onBack}>
-          Back
-        </Button>
-        <Button variant="primary" className="px-4 py-2" onClick={() => onNext && onNext({ goals: goalList })}>
-          Next and Continue
-        </Button>
-      </div>
 
       {showCreateGoal && (
         <CreateGoal
@@ -102,6 +128,6 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
       )}
     </div>
   );
-}
+};
 
 export default AddGoalDetails;
