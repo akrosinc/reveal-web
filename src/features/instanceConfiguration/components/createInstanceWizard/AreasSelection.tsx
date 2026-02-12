@@ -251,7 +251,7 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
             style={{ maxHeight: '435px', overflowY: 'auto', background: isDarkMode ? '#212529' : '' }}
             className="rounded p-2"
           >
-            {selectedAreas.length === 0 && <span className="text-muted small p-2">No areas selected</span>}
+            {selectedAreas.length === 0 && <span className="text-muted text-center d-block mt-3">No areas selected</span>}
             {mockAreas.map(area => (
               // In Selected View, we render the tree but filtering out unselected nodes (handled by TreeNode readOnly logic)
               <TreeNode key={area.id} node={area} selectedAreas={selectedAreas} onSelect={() => { }} readOnly={true} />

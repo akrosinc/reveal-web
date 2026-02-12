@@ -217,15 +217,13 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
       <div
         className={`p-4 ${isDarkMode ? 'text-white' : 'bg-white'}`}
         style={isDarkMode ? { backgroundColor: '#282828' } : {}}
-        // className="my-4"
+      // className="my-4"
       >
-        <Card className="border  shadow-sm rounded-3  ">
+        <Card className={`border  shadow-sm rounded-3 ${isDarkMode ? 'border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '' }}>
           <Card.Header
-            className={`${
-              isDarkMode ? 'border-b ' : 'bg-light'
-            } border-0 py-3 d-flex justify-content-between align-items-center`}
+            className={`d-flex align-items-center justify-content-between ${isDarkMode ? 'border-bottom  text-white' : 'bg-light'} fw-bold`}
           >
-            <h5 className="mb-0 text-black fw-bold">Datasets</h5>
+            <h5 className="mb-0 fw-bold">Datasets</h5>
             <Button
               variant="primary"
               className="rounded-circle p-0 d-flex align-items-center justify-content-center"
@@ -284,7 +282,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
             loadData();
             setOpen(false);
           }}
-          setTagsCreated={() => {}}
+          setTagsCreated={() => { }}
         />
       )}
       {selectedMetaImport && (
