@@ -10,6 +10,7 @@ import RemoveTagAccess from '../../../access/RemoveTagAccess';
 import DetailsModal from './DatasetDetails/detailsModal';
 import UploadModal from './DatasetDetails/uploadModal';
 import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '../../../../store/hooks';
 
 // Comprehensive mock data to mimic API response structure
 const MOCK_DATA: any[] = [
@@ -122,6 +123,7 @@ const MOCK_DATA: any[] = [
 
 const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValues }) => {
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [open, setOpen] = useState(false);
   const [openAccess, setOpenAccess] = useState(false);
   const [metadataImportPaged, setMetadataImportPaged] = useState<any>();
@@ -208,11 +210,22 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
   };
 
   return (
-    <div className="p-4 bg-white">
-      <div className="my-4">
-        <Card className="border-0 shadow-sm rounded-3">
-          <Card.Header className="bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-            <h5 className="mb-0 fw-bold">Datasets</h5>
+    <div
+      className={`p-4 ${isDarkMode ? 'text-white' : 'bg-white'}`}
+      style={isDarkMode ? { backgroundColor: '#282828' } : {}}
+    >
+      <div
+        className={`p-4 ${isDarkMode ? 'text-white' : 'bg-white'}`}
+        style={isDarkMode ? { backgroundColor: '#282828' } : {}}
+        // className="my-4"
+      >
+        <Card className="border  shadow-sm rounded-3  ">
+          <Card.Header
+            className={`${
+              isDarkMode ? 'border-b ' : 'bg-light'
+            } border-0 py-3 d-flex justify-content-between align-items-center`}
+          >
+            <h5 className="mb-0 text-black fw-bold">Datasets</h5>
             <Button
               variant="primary"
               className="rounded-circle p-0 d-flex align-items-center justify-content-center"
@@ -222,7 +235,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
               +
             </Button>
           </Card.Header>
-          <Card.Body>
+          <Card.Body style={isDarkMode ? { backgroundColor: '#282828' } : {}}>
             <Row className="mb-3 g-2">
               <Col md={4}>
                 <InputGroup>
@@ -230,12 +243,17 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
                     placeholder="Search by dataset name or owner"
                     value={searchTerm}
                     onChange={handleSearch}
-                    className="bg-light border-0"
+                    className="form-control"
                   />
                 </InputGroup>
               </Col>
               <Col md={{ span: 2, offset: 6 }}>
-                <Form.Select value={statusFilter} onChange={handleFilterChange} className="bg-light border-0">
+                <Form.Select
+                  className="custom-react-select-container"
+                  // classNamePrefix="custom-react-select"
+                  value={statusFilter}
+                  onChange={handleFilterChange}
+                >
                   <option value="All">All</option>
                   <option value="Public">Public</option>
                   <option value="Private">Private</option>

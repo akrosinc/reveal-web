@@ -1,9 +1,9 @@
 import React from 'react';
 import Wizard from '../Wizard/Wizard';
 import AddGoalDetails from './AddGoalDetails';
+import CreateInstance from './AddInstance';
 import InstanceDetails from './InstanceDetails';
 import DatasetDetails from './DatasetDetails';
-import CreateInstance from './AddInstance';
 
 const steps = [
   { label: 'Add Plan details', component: CreateInstance },
