@@ -229,7 +229,7 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
       {/* Areas Tree */}
       <Card
         className={`flex-fill shadow-sm ${isDarkMode ? 'border-white' : ''}`}
-        style={{ background: isDarkMode ? '#212529' : '', minWidth: 300 }}
+        style={{ background: isDarkMode ? '#212529' : '' }}
       // style={{ minWidth: '300px' }}
       >
         <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
@@ -272,7 +272,7 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
       {/* Selected Areas */}
       <Card
         className={`flex-fill shadow-sm ${isDarkMode ? 'border-white' : ''}`}
-        style={{ minWidth: '300px', background: isDarkMode ? '#212529' : '' }}
+        style={{ background: isDarkMode ? '#212529' : '' }}
       >
         <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
           Selected Areas
