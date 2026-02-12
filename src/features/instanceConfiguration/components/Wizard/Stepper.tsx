@@ -59,12 +59,12 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
               style={
                 (isCompleted || isActive) && index >= 1
                   ? {
-                      borderLeft: '1px solid white',
-                      paddingLeft: 5,
-                      borderTopLeftRadius: 1000,
-                      borderBottomLeftRadius: 1000,
-                      paddingRight: index === 3 ? 8 : 0
-                    }
+                    borderLeft: '1px solid white',
+                    paddingLeft: 5,
+                    borderTopLeftRadius: 1000,
+                    borderBottomLeftRadius: 1000,
+                    paddingRight: index === 3 ? 8 : 0
+                  }
                   : {}
               }
               className="d-flex align-items-center"
@@ -81,7 +81,7 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
                 {content}
               </div>
               <span
-                className={`ms-3 ${isActive ? 'fw-bold text-dark' : 'text-secondary'}`}
+                className={`ms-3  d-none d-md-block ${isActive ? 'fw-bold text-dark' : 'text-secondary'}`}
                 style={{
                   whiteSpace: 'nowrap',
                   fontSize: '1rem'
