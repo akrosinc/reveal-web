@@ -53,7 +53,6 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
           ) : null;
         }
       },
-      { Header: 'selected', accessor: 'selected' },
       { Header: 'tag', accessor: 'tag' },
       { Header: 'type', accessor: 'valueType' },
       { Header: 'aggregate', accessor: 'aggregate' },
@@ -61,7 +60,8 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
       { Header: 'owners', accessor: 'owners' },
       { Header: 'isPublic', accessor: 'public' },
       { Header: 'orgGrants' },
-      { Header: 'userGrants' }
+      { Header: 'userGrants' },
+      { Header: 'selected', accessor: 'selected' }
     ],
     []
   );
@@ -113,13 +113,13 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
             </span>
           ) : null
       },
-      { Header: 'selected', accessor: 'selected' },
       { Header: 'fileName', accessor: 'filename' },
       { Header: 'uploadDate', accessor: 'uploadDatetime' },
       { Header: 'status', accessor: 'status' },
       { Header: 'uploadedBy', accessor: 'uploadedBy' },
       { Header: 'owner', accessor: 'owner' },
-      { Header: 'owners', accessor: 'owners' }
+      { Header: 'owners', accessor: 'owners' },
+      { Header: 'selected', accessor: 'selected' }
     ],
     []
   );

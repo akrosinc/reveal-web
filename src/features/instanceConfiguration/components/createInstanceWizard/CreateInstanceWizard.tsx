@@ -6,7 +6,7 @@ import DatasetDetails from './DatasetDetails';
 import CreateInstance from './AddInstance';
 
 const steps = [
-  { label: 'Add plan details', component: CreateInstance },
+  { label: 'Add Plan details', component: CreateInstance },
   { label: 'Add Goals details', component: AddGoalDetails },
   { label: 'Add Instance details', component: InstanceDetails },
   { label: 'Add Dataset details', component: DatasetDetails }

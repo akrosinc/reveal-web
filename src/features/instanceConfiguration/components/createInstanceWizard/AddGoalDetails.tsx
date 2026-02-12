@@ -68,7 +68,8 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
               className="mb-3 rounded-circle d-flex align-items-center justify-content-center"
               onClick={() => createGoalHandler()}
             >
-              <FontAwesomeIcon icon="plus" className="" />
+              +
+              {/* <FontAwesomeIcon icon="plus" className="" /> */}
               {/* {t('buttons.add')} */}
             </Button>
           </div>
