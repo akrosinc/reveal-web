@@ -5,6 +5,7 @@ import DatePicker from 'react-datepicker';
 import Select from 'react-select';
 import 'react-datepicker/dist/react-datepicker.css';
 import { WizardStepProps } from '../Wizard/Wizard';
+import { useAppSelector } from '../../../../store/hooks';
 
 /* -------------------- Static Dropdown Data -------------------- */
 const hierarchyOptions = [
@@ -33,6 +34,7 @@ interface RegisterValues {
 const REGEX_TITLE_VALIDATION = /^[A-Za-z0-9\s-]+$/;
 
 const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultValues }) => {
+  const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   // Initialize form state from defaultValues (received from Wizard)
   // We lift state up by using defaultValues to initialize, and onNext to save.
 
@@ -89,7 +91,10 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
   /* ========================== UI ========================== */
 
   return (
-    <Row className="p-4 bg-white">
+    <Row
+      className={`p-4 ${isDarkMode ? 'text-white' : 'bg-white'}`}
+      style={isDarkMode ? { backgroundColor: '#282828' } : {}}
+    >
       <Col md={8} className="">
         <Form onSubmit={handleSubmit(onSubmit)}>
           {/* Hidden Name */}
@@ -103,6 +108,8 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
             <Form.Control
               type="text"
               placeholder="Enter plan title"
+              // className={isDarkMode ? 'text-white border-secondary' : 'bg-light border-0'}
+              // style={isDarkMode ? { backgroundColor: '#282828' } : {}}
               isInvalid={!!errors.title}
               {...register('title', {
                 required: 'Title is required',
@@ -142,8 +149,11 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                       selected={field.value}
                       onChange={field.onChange}
                       className={`form-control ${errors.effectivePeriod?.start ? 'is-invalid' : ''}`}
+                      // className={`form-control ${isDarkMode ? 'text-white border-secondary' : 'bg-light border-0'} ${errors.effectivePeriod?.start ? 'is-invalid' : ''}`}
+                      // style={isDarkMode ? { backgroundColor: '#282828' } : {}}
                       dateFormat="yyyy-MM-dd"
                       minDate={new Date()}
+                      calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
                     />
                   )}
                 />
@@ -167,9 +177,12 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                       selected={field.value}
                       onChange={field.onChange}
                       className={`form-control ${errors.effectivePeriod?.end ? 'is-invalid' : ''}`}
+                      // className={`form-control ${ 'text-white border-secondary' : 'bg-light border-0'} ${errors.effectivePeriod?.end ? 'is-invalid' : ''}`}
+                      // style={isDarkMode ? { backgroundColor: '#282828' } : {}}
                       dateFormat="yyyy-MM-dd"
                       minDate={startDate}
                       disabled={!startDate}
+                      calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
                     />
                   )}
                 />
@@ -188,6 +201,8 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
               }}
               render={({ field }) => (
                 <Select
+                  className="custom-react-select-container"
+                  classNamePrefix="custom-react-select"
                   options={hierarchyOptions}
                   value={selectedHierarchy}
                   onChange={(val: any) => {
@@ -211,6 +226,8 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
               }}
               render={({ field }) => (
                 <Select
+                  className="custom-react-select-container"
+                  classNamePrefix="custom-react-select"
                   options={interventionOptions}
                   value={selectedIntervention}
                   onChange={(val: any) => {
@@ -235,6 +252,8 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                 }}
                 render={({ field }) => (
                   <Select
+                    className="custom-react-select-container"
+                    classNamePrefix="custom-react-select"
                     options={
                       selectedHierarchy?.nodeOrder?.map((el: string) => ({
                         label: el,
