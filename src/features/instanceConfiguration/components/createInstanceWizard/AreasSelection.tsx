@@ -169,6 +169,17 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
     return null;
   };
 
+  const findParent = (nodes: any[], targetId: string, parent: any = null): any => {
+    for (const node of nodes) {
+      if (node.id === targetId) return parent;
+      if (node.children) {
+        const found = findParent(node.children, targetId, node);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
   const handleSelect = (id: string, isChecked: boolean) => {
     const node = findNode(mockAreas, id);
     if (!node) return;
@@ -181,9 +192,34 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
       affectedIds.forEach(affectedId => {
         if (!newSelected.includes(affectedId)) newSelected.push(affectedId);
       });
+
+      // Bubble up: check if parent should be selected
+      let currentParent = findParent(mockAreas, id);
+      while (currentParent) {
+        const allChildrenSelected = currentParent.children.every((child: any) => newSelected.includes(child.id));
+        if (allChildrenSelected) {
+          if (!newSelected.includes(currentParent.id)) {
+            newSelected.push(currentParent.id);
+          }
+          currentParent = findParent(mockAreas, currentParent.id);
+        } else {
+          break;
+        }
+      }
     } else {
       // Remove all descendants
       newSelected = newSelected.filter(sid => !affectedIds.includes(sid));
+
+      // Bubble up: remove all ancestors
+      let currentParent = findParent(mockAreas, id);
+      while (currentParent) {
+        if (newSelected.includes(currentParent.id)) {
+          newSelected = newSelected.filter(sid => sid !== currentParent.id);
+          currentParent = findParent(mockAreas, currentParent.id);
+        } else {
+          break;
+        }
+      }
     }
     onSelectionChange(newSelected);
   };
