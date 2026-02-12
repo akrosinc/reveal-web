@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, Form, Collapse } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight, faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { useAppSelector } from '../../../../store/hooks';
 
 // Mock Data
 const mockAreas = [
@@ -46,6 +47,7 @@ interface Props {
 
 const TreeNode = ({ node, selectedAreas, onSelect, readOnly, filter }: any) => {
   const [expanded, setExpanded] = useState(true);
+  const { isDarkMode } = useAppSelector(state => state.darkMode.value);
 
   const isSelected = selectedAreas.includes(node.id);
   const hasChildren = node.children && node.children.length > 0;
@@ -88,7 +90,7 @@ const TreeNode = ({ node, selectedAreas, onSelect, readOnly, filter }: any) => {
   };
 
   return (
-    <div className="ms-3 mb-1">
+    <div className="ms-3 mb-1 " style={{ background: isDarkMode ? '#212529' : '' }}>
       <div className="d-flex align-items-center">
         {hasChildren ? (
           <span
@@ -141,6 +143,8 @@ const TreeNode = ({ node, selectedAreas, onSelect, readOnly, filter }: any) => {
 };
 
 const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
+  const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
+  //#ffffff2c
   const [searchTerm, setSearchTerm] = useState('');
 
   const getAllDescendantIds = (node: any): string[] => {
@@ -186,8 +190,12 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
   return (
     <div className="d-flex flex-column flex-md-row gap-4">
       {/* Areas Tree */}
-      <Card className="flex-fill shadow-sm" style={{ minWidth: '300px' }}>
-        <Card.Header className="bg-light fw-bold">All Areas</Card.Header>
+      <Card
+        className="flex-fill shadow-sm"
+        style={{ background: isDarkMode ? '#212529' : '', minWidth: 300 }}
+        // style={{ minWidth: '300px' }}
+      >
+        <Card.Header className="bg-light fw-bold text-black border">All Areas</Card.Header>
         <Card.Body className="p-3">
           <div className="mb-3">
             <Form.Select className="mb-2 border-0 bg-white" defaultValue="Niagara">
@@ -205,7 +213,10 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
             </div>
           </div>
 
-          <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="bg-white rounded p-2">
+          <div
+            style={{ maxHeight: '400px', overflowY: 'auto', background: isDarkMode ? '#212529' : '#FFF' }}
+            className=" rounded p-2"
+          >
             {mockAreas.map(area => (
               <TreeNode
                 key={area.id}
@@ -220,19 +231,22 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
       </Card>
 
       {/* Selected Areas */}
-      <Card className="flex-fill shadow-sm" style={{ minWidth: '300px' }}>
-        <Card.Header className="bg-light fw-bold">Selected Areas</Card.Header>
+      <Card className="flex-fill shadow-sm" style={{ minWidth: '300px', background: isDarkMode ? '#212529' : '' }}>
+        <Card.Header className="bg-light fw-bold border text-black">Selected Areas</Card.Header>
         <Card.Body className="p-3">
-          <div className="mb-3">
+          <div style={{ background: isDarkMode ? '#212529' : '#FFF' }} className="mb-3">
             {/* Initial View often mirrors top level unless filtered, mimicking screenshot layout 'Niagara' */}
             <div className="p-2 fw-bold text-secondary">Niagara</div>
           </div>
 
-          <div style={{ maxHeight: '435px', overflowY: 'auto' }} className="bg-white rounded p-2">
+          <div
+            style={{ maxHeight: '435px', overflowY: 'auto', background: isDarkMode ? '#212529' : '' }}
+            className="rounded p-2"
+          >
             {selectedAreas.length === 0 && <span className="text-muted small p-2">No areas selected</span>}
             {mockAreas.map(area => (
               // In Selected View, we render the tree but filtering out unselected nodes (handled by TreeNode readOnly logic)
-              <TreeNode key={area.id} node={area} selectedAreas={selectedAreas} onSelect={() => { }} readOnly={true} />
+              <TreeNode key={area.id} node={area} selectedAreas={selectedAreas} onSelect={() => {}} readOnly={true} />
             ))}
           </div>
         </Card.Body>

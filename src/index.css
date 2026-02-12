@@ -56,6 +56,9 @@ code {
 .table-dark {
   --bs-table-hover-bg: #ffffff2c !important;
 }
+.dark-card-instance-config-color {
+  background-color: #212529;
+}
 
 .pagination-dark .page-item .page-link {
   background-color: #212529 !important;

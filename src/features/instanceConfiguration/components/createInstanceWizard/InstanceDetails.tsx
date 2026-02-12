@@ -4,6 +4,7 @@ import Select from 'react-select';
 import AreasSelection from './AreasSelection';
 import MembersSelection from './MembersSelection';
 import { WizardStepProps } from '../Wizard/Wizard';
+import { useAppSelector } from '../../../../store/hooks';
 
 /* -------------------- Mock Data -------------------- */
 const hierarchyOptions = [
@@ -13,6 +14,7 @@ const hierarchyOptions = [
 
 const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues }) => {
   // Form State - Initialize with defaultValues if present
+  const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [instanceName, setInstanceName] = useState(defaultValues?.instanceName || '');
   const [selectedHierarchy, setSelectedHierarchy] = useState<any>(
     defaultValues?.hierarchy ? hierarchyOptions.find(opt => opt.value === defaultValues.hierarchy) : null
@@ -52,7 +54,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
   };
 
   return (
-    <div className="p-4 bg-white">
+    <div style={isDarkMode ? { backgroundColor: '#282828' } : { background: '#FFF' }} className="p-4">
       <h4 className="mb-4 fw-bold">Create Instance</h4>
       <Form onSubmit={handleSubmit}>
         <Col md={8}>
@@ -80,12 +82,12 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
             <Form.Group className="flex-grow-1" controlId="hierarchy">
               {/* <Form.Label>Hierarchy</Form.Label> */}
               <Select
+                className="custom-react-select-container"
+                classNamePrefix="custom-react-select"
                 options={hierarchyOptions}
                 value={selectedHierarchy}
                 onChange={setSelectedHierarchy}
                 placeholder="Select Hierarchy"
-                className="react-select-container"
-                classNamePrefix="react-select"
               />
             </Form.Group>
           </div>
