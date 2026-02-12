@@ -22,7 +22,8 @@
     "MetaDataImport": "Metadata Import",
     "Resource Planning": "Resource Planning",
     "dataProcessingProgress": "Data Processing Progress",
-    "CampaignManage": "Campaign Management"
+    "CampaignManage": "Campaign Management",
+    "Instance Configuration": "Instance Configuration"
   },
   "publicPage": {
     "supportedBy": "supported by",
@@ -65,7 +66,7 @@
     "organization": "Organization",
     "user": "User",
     "userImport": "User Import",
-    "instanceConfiuration": "Instance Configuration"
+    "instanceConfiguration": "Instance Configuration"
   },
   "userPage": {
     "Username": "Username",
