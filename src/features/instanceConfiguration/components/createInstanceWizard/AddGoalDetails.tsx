@@ -6,9 +6,11 @@ import Item from './Goals';
 import CreateGoal from './Goals/CreateGoal/CreateGoal';
 import { useTranslation } from 'react-i18next';
 import { WizardStepProps } from '../Wizard/Wizard';
+import { useAppSelector } from '../../../../store/hooks';
 
 const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues }) => {
   // Initialize from defaultValues if present
+  const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [goalList, setGoalList] = useState<Goal[]>(defaultValues?.goals || []);
   const [showCreateGoal, setShowCreateGoal] = useState(false);
   const [currentGoal, setCurrentGoal] = useState<Goal>();
@@ -57,7 +59,8 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
   };
 
   return (
-    <div className="p-4 bg-white">
+    <div className={`p-4 ${isDarkMode ? 'text-white' : 'bg-white'}`}
+      style={isDarkMode ? { backgroundColor: '#282828' } : {}}>
       <Row className="align-items-center">
         <Col md={8}>
           <div className="d-flex justify-content-between align-items-center">
