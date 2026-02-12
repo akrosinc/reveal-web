@@ -36,8 +36,7 @@ const MembersSelection = ({ assignedMembers, onAssignmentChange }: Props) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [leftSelected, setLeftSelected] = useState<string[]>([]);
   const [rightSelected, setRightSelected] = useState<string[]>([]);
-  const { isDarkMode } = useAppSelector(state => state.darkMode.value);
-
+  const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   // Filter available members (those not in assigned list)
   const availableMembers = mockMembers.filter(m => !assignedMembers.includes(m.id));
   const assignedList = mockMembers.filter(m => assignedMembers.includes(m.id));
@@ -71,18 +70,18 @@ const MembersSelection = ({ assignedMembers, onAssignmentChange }: Props) => {
       setRightSelected(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
     }
   };
-
+  console.log("DARK MODE", isDarkMode)
   return (
     <div className="d-flex flex-column flex-md-row align-items-center gap-3">
       {/* Available Members */}
-      <Card className="flex-grow-1 w-100" style={{ background: isDarkMode ? '#212529' : '', height: '400px' }}>
-        <Card.Header className="bg-light fw-bold text-black border">All</Card.Header>
+      <Card className={`flex-grow-1 w-100 ${isDarkMode ? ' border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '', height: '400px' }}>
+        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>All</Card.Header>
         <Card.Body style={{ background: isDarkMode ? '#212529' : '' }} className="d-flex flex-column">
           <InputGroup className="mb-3">
             <Form.Control placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
             {/* <InputGroup.Text><FontAwesomeIcon icon={faSearch} /></InputGroup.Text> */}
           </InputGroup>
-          <div className="overflow-auto flex-grow-1 border rounded p-2">
+          <div className="overflow-auto flex-grow-1 rounded p-2">
             {filteredAvailable.map(member => (
               <Form.Check
                 key={member.id}
@@ -119,11 +118,11 @@ const MembersSelection = ({ assignedMembers, onAssignmentChange }: Props) => {
       </div>
 
       {/* Assigned Members */}
-      <Card className="flex-grow-1 w-100" style={{ height: '400px', backgroundColor: isDarkMode ? 'red' : '' }}>
-        <Card.Header className="bg-light fw-bold text-black border">Assigned</Card.Header>
-        <Card.Body className="d-flex flex-column" style={{ backgroundColor: isDarkMode ? 'red' : undefined }}>
+      <Card className={`flex-grow-1 w-100 ${isDarkMode ? ' border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '', height: '400px' }}>
+        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>Assigned</Card.Header>
+        <Card.Body className="d-flex flex-column">
           <div
-            style={{ backgroundColor: isDarkMode ? 'red' : undefined }}
+            style={{ backgroundColor: isDarkMode ? '#212529' : undefined }}
             className="overflow-auto flex-grow-1 rounded p-2 mt-3"
           >
             {assignedList.map(member => (
@@ -143,7 +142,7 @@ const MembersSelection = ({ assignedMembers, onAssignmentChange }: Props) => {
           </div>
         </Card.Body>
       </Card>
-    </div>
+    </div >
   );
 };
 
