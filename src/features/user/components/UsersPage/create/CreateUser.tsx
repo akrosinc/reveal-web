@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Form, Modal, Row, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import Select, { MultiValue } from 'react-select';
-import CreatableSelect from 'react-select/creatable';
 import { createUser } from '../../../api';
 import { getOrganizationListSummary, getSecurityGroups } from '../../../../organization/api';
 import { useForm } from 'react-hook-form';
@@ -10,6 +9,7 @@ import { useAppSelector } from '../../../../../store/hooks';
 import { toast } from 'react-toastify';
 import { REGEX_EMAIL_VALIDATION, REGEX_USERNAME_VALIDATION } from '../../../../../constants';
 import { FieldValidationError } from '../../../../../api/providers';
+import { MOCK_INSTANCES } from '../../../../instanceConfiguration/components/instancesListing/mockInstances';
 
 interface RegisterValues {
   username: string;
@@ -143,6 +143,11 @@ const CreateUser = ({ show, handleClose }: Props) => {
     { name: 'Standard User', value: 'Standard User' }
   ];
 
+  const instanceOptions = MOCK_INSTANCES.map(inst => ({
+    value: inst.id,
+    label: inst.instanceName
+  }));
+
   return (
     <Modal show={show} onHide={handleClose} backdrop="static" keyboard={false} centered scrollable contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header closeButton>
@@ -188,20 +193,20 @@ const CreateUser = ({ show, handleClose }: Props) => {
             />
             {errors.username && <Form.Label className="text-danger">{errors.username.message}</Form.Label>}
           </Form.Group>
-          {/* <Form.Group className="mb-2">
-            <Form.Label>Instance Name</Form.Label>
-            <CreatableSelect
+          <Form.Group className="mb-2">
+            <Form.Label>Select Instances</Form.Label>
+            <Select
               className="custom-react-select-container"
               classNamePrefix="custom-react-select"
               id="instances-select"
               menuPosition="fixed"
               isMulti
               value={selectedInstances}
+              options={instanceOptions}
               onChange={instanceSelectHandler}
-              placeholder="Type instance name and press Enter"
-              noOptionsMessage={() => 'Type to add new instance'}
+              placeholder="Select instances..."
             />
-          </Form.Group> */}
+          </Form.Group>
           <Row>
             <Col>
               <Form.Group className="mb-2">
