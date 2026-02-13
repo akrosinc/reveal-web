@@ -99,6 +99,17 @@ const Reports = () => {
         <Row>
           <Col md={5} lg={3}>
             <Form className="mb-4">
+              <Form.Label>Instance:</Form.Label>
+              <Form.Select>
+                <option value="">Select Instance</option>
+                <option value="instance1">Instance 1</option>
+                <option value="instance2">Instance 2</option>
+                <option value="instance3">Instance 3</option>
+              </Form.Select>
+            </Form>
+          </Col>
+          <Col md={5} lg={3}>
+            <Form className="mb-4">
               <Form.Label>{t('reportPage.reportType')}:</Form.Label>
               <Form.Select value={selectedReportType} onChange={reportTypeSelectHandler}>
                 {reportTypes?.map(res => (
