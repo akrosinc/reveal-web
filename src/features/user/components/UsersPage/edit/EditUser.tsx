@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, Form, Row, Col } from 'react-bootstrap';
+import { Button, Form, Row, Col, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import { deleteUserById, resetUserPassword, updateUser } from '../../../../user/api';
 import { EditUserModel, UserModel } from '../../../../user/providers/types';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
 import { useAppSelector } from '../../../../../store/hooks';
 import { useForm } from 'react-hook-form';
 import Select, { MultiValue } from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 import { getOrganizationListSummary, getSecurityGroups } from '../../../../organization/api';
 import { toast } from 'react-toastify';
 import { FieldValidationError } from '../../../../../api/providers';
@@ -26,6 +27,8 @@ interface RegisterValues {
   securityGroups: string[];
   organizations: string[];
   isTemp: boolean;
+  userType: string;
+  instances: string[];
 }
 
 interface Options {
@@ -39,31 +42,42 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [showDialog, setShowDialog] = useState(false);
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
+  const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
+  const [userType, setUserType] = useState('Standard User');
+
   const {
     register,
     setValue,
     handleSubmit,
     setError,
     formState: { errors, isDirty }
-  } = useForm();
+  } = useForm<RegisterValues>();
   const [groups, setGroups] = useState<Options[]>();
   const [organizations, setOrganizations] = useState<Options[]>([]);
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const setStartValues = useCallback(
-    (userDetails: UserModel) => {
+    (userDetails: UserModel & { userType?: string; instances?: string[] }) => {
       setValue('username', userDetails.username);
       setValue('firstname', userDetails.firstName);
       setValue('lastname', userDetails.lastName);
       setValue('email', userDetails.email);
+
+      setUserType(userDetails.userType || 'Standard User');
+      setSelectedInstances(
+        userDetails.instances
+          ? userDetails.instances.map(inst => ({ label: inst, value: inst }))
+          : []
+      );
+
       setSelectedSecurityGroups(
         userDetails.securityGroups !== undefined
           ? userDetails.securityGroups.map(group => {
-              return {
-                label: group,
-                value: group
-              };
-            })
+            return {
+              label: group,
+              value: group
+            };
+          })
           : []
       );
       setSelectedOrganizations(
@@ -152,7 +166,7 @@ const EditUser = ({ user, handleClose }: Props) => {
             if (typeof err !== 'string') {
               const fieldValidationErrors = err as FieldValidationError[];
               return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
-                setError(errField.field as any, {message: errField.messageKey});
+                setError(errField.field as any, { message: errField.messageKey });
                 return errField.field;
               }).toString();
             }
@@ -161,16 +175,18 @@ const EditUser = ({ user, handleClose }: Props) => {
         }
       });
     } else {
-      let updatedUser: EditUserModel = {
+      let updatedUser: EditUserModel & { userType: string; instances: string[] } = {
         identifier: user.identifier,
         email: formValues.email,
         firstName: formValues.firstname,
         lastName: formValues.lastname,
         organizations: selectedOrganizations?.map(el => el.value) ?? [],
-        securityGroups: selectedSecurityGroups?.map(el => el.value) ?? []
+        securityGroups: selectedSecurityGroups?.map(el => el.value) ?? [],
+        userType: userType,
+        instances: selectedInstances.map(el => el.value)
       };
       toast
-        .promise(updateUser(updatedUser), {
+        .promise(updateUser(updatedUser as any), {
           pending: 'Loading...',
           success: {
             render() {
@@ -184,7 +200,7 @@ const EditUser = ({ user, handleClose }: Props) => {
               if (typeof err !== 'string') {
                 const fieldValidationErrors = err as FieldValidationError[];
                 return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
-                  setError(errField.field as any, {message: errField.messageKey});
+                  setError(errField.field as any, { message: errField.messageKey });
                   return errField.field;
                 }).toString();
               }
@@ -199,7 +215,7 @@ const EditUser = ({ user, handleClose }: Props) => {
     const values = selectedOption.map(selected => {
       return selected;
     });
-    setValue('securityGroups', values, { shouldDirty: true });
+    setValue('securityGroups', values as any, { shouldDirty: true });
     setSelectedSecurityGroups(values);
   };
 
@@ -207,12 +223,64 @@ const EditUser = ({ user, handleClose }: Props) => {
     const values = selectedOption.map(selected => {
       return selected;
     });
-    setValue('organizations', values, { shouldDirty: true });
+    setValue('organizations', values as any, { shouldDirty: true });
     setSelectedOrganizations(values);
   };
 
+  const instanceSelectHandler = (selectedOption: MultiValue<Options>) => {
+    const values = [...selectedOption];
+    setSelectedInstances(values);
+    setValue('instances', values as any, { shouldDirty: true });
+  };
+
+  const userTypeOptions = [
+    { name: 'Admin', value: 'Admin' },
+    { name: 'Standard User', value: 'Standard User' }
+  ];
+
   return (
     <Form>
+      <Form.Group className="mb-3">
+        <Form.Label className="d-block">User Type</Form.Label>
+        <ButtonGroup className="w-100 border rounded overflow-hidden">
+          {userTypeOptions.map((option, idx) => (
+            <ToggleButton
+              key={idx}
+              id={`user-type-${idx}`}
+              type="radio"
+              variant={userType === option.value ? 'primary' : 'light'}
+              name="userType"
+              value={option.value}
+              checked={userType === option.value}
+              onChange={(e) => {
+                setUserType(e.currentTarget.value);
+                setValue('userType', e.currentTarget.value, { shouldDirty: true });
+              }}
+              disabled={!edit}
+              className={`py-2 border-0 rounded-0 ${userType !== option.value ? 'text-secondary bg-light bg-opacity-75' : ''}`}
+            >
+              {option.name}
+            </ToggleButton>
+          ))}
+        </ButtonGroup>
+      </Form.Group>
+
+      <Form.Group className="mb-2">
+        <Form.Label>Instance Name</Form.Label>
+        <CreatableSelect
+          className="custom-react-select-container"
+          classNamePrefix="custom-react-select"
+          id="instances-select"
+          menuPosition="fixed"
+          isMulti
+          isDisabled={!edit}
+          value={selectedInstances}
+          onChange={instanceSelectHandler}
+          placeholder="Type instance name and press Enter"
+          noOptionsMessage={() => 'Type to add new instance'}
+        />
+      </Form.Group>
+
       <Form.Group className="mb-3">
         <Form.Label>Identifier</Form.Label>
         <Form.Control readOnly={true} type="text" defaultValue={user?.identifier} />
@@ -360,6 +428,7 @@ const EditUser = ({ user, handleClose }: Props) => {
             onClick={() => {
               setEdit(!edit);
               setChangePassword(false);
+              setStartValues(user);
             }}
           >
             Discard changes
