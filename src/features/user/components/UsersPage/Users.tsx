@@ -42,7 +42,7 @@ const Users = () => {
 
   const loadData = useCallback(
     (size: number, page: number, searchData?: string) => {
-      
+
       getUserList(size, page, searchData !== undefined ? searchData : '')
         .then(res => {
           setUserList(res);
@@ -111,7 +111,10 @@ const Users = () => {
         <>
           <DefaultTable
             columns={USER_TABLE_COLUMNS}
-            data={userList.content}
+            data={userList.content.map((user, index) => ({
+              ...user,
+              role: index % 2 === 0 ? 'Admin' : 'User'
+            }))}
             clickHandler={openUserById}
             sortHandler={sortHanlder}
             clickAccessor="identifier"

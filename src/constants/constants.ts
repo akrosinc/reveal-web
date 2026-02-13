@@ -52,6 +52,7 @@ export const USER_TABLE_COLUMNS = [
   { name: 'username', sortValue: 'username', accessor: 'username' },
   { name: 'firstname', sortValue: 'firstName', accessor: 'firstName' },
   { name: 'lastname', sortValue: 'lastName', accessor: 'lastName' },
+  { name: 'role', sortValue: undefined, accessor: 'role' },
   { name: 'organization', sortValue: undefined, accessor: 'organizations', key: 'name' }
 ];
 export const BULK_TABLE_COLUMNS = [
