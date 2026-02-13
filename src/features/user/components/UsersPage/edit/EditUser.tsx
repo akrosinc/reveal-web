@@ -242,7 +242,7 @@ const EditUser = ({ user, handleClose }: Props) => {
     <Form>
       <Form.Group className="mb-3">
         <Form.Label className="d-block">User Type</Form.Label>
-        <ButtonGroup className="w-100 border rounded overflow-hidden">
+        <ButtonGroup className="border rounded overflow-hidden" style={{ padding: 3 }}>
           {userTypeOptions.map((option, idx) => (
             <ToggleButton
               key={idx}
@@ -252,12 +252,9 @@ const EditUser = ({ user, handleClose }: Props) => {
               name="userType"
               value={option.value}
               checked={userType === option.value}
-              onChange={(e) => {
-                setUserType(e.currentTarget.value);
-                setValue('userType', e.currentTarget.value, { shouldDirty: true });
-              }}
-              disabled={!edit}
+              onChange={(e) => setUserType(e.currentTarget.value)}
               className={`py-2 border-0 rounded-0 ${userType !== option.value ? 'text-secondary bg-light bg-opacity-75' : ''}`}
+              style={{ padding: '11px 30px' }}
             >
               {option.name}
             </ToggleButton>
@@ -265,7 +262,7 @@ const EditUser = ({ user, handleClose }: Props) => {
         </ButtonGroup>
       </Form.Group>
 
-      <Form.Group className="mb-2">
+      {/* <Form.Group className="mb-2">
         <Form.Label>Instance Name</Form.Label>
         <CreatableSelect
           className="custom-react-select-container"
@@ -279,7 +276,7 @@ const EditUser = ({ user, handleClose }: Props) => {
           placeholder="Type instance name and press Enter"
           noOptionsMessage={() => 'Type to add new instance'}
         />
-      </Form.Group>
+      </Form.Group> */}
 
       <Form.Group className="mb-3">
         <Form.Label>Identifier</Form.Label>
@@ -371,7 +368,43 @@ const EditUser = ({ user, handleClose }: Props) => {
             />
             {errors.email && <Form.Label className="text-danger">{errors.email.message}</Form.Label>}
           </Form.Group>
-          <Form.Group className="mb-3">
+          <div
+            className="d-flex"
+            style={{
+              overflowX: "auto",
+              overflowY: "hidden",
+              whiteSpace: "nowrap",
+              gap: "8px",
+              scrollbarWidth: "none", marginTop: 4
+            }}
+          >
+            {['Instance 1', 'Instance 2'].map((item, index) => (
+              <div
+                key={index}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "11px 20px",
+                  borderRadius: "999px",
+                  background: "#E2EDFe",
+                  cursor: "pointer",
+                  fontWeight: 400,
+                  fontStyle: "normal",
+                  fontSize: "14px",
+                  lineHeight: "100%",
+                  letterSpacing: "0%",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  transition: "all 0.2s ease",
+                  color: "#0D6EFD"
+                }}
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+          {/* <Form.Group className="mb-3">
             <Form.Label>Security groups</Form.Label>
             <Select
               className="custom-react-select-container"
@@ -399,7 +432,7 @@ const EditUser = ({ user, handleClose }: Props) => {
               options={organizations}
               onChange={organizationSelectHandler}
             />
-          </Form.Group>
+          </Form.Group> */}
         </>
       )}
       <hr />

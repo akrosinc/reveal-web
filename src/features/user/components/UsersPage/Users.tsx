@@ -132,7 +132,10 @@ const Users = () => {
       {showEdit && currentUser && (
         <ActionDialog
           closeHandler={handleClose}
-          element={<EditUser handleClose={handleClose} user={currentUser} />}
+          element={<EditUser handleClose={handleClose}
+            user={currentUser}
+
+          />}
           title="User details"
         />
       )}

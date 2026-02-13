@@ -153,7 +153,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
 
           <Form.Group className="mb-3">
             <Form.Label className="d-block">User Type</Form.Label>
-            <ButtonGroup className="w-100 border rounded overflow-hidden">
+            <ButtonGroup className="border rounded overflow-hidden" style={{ padding: 3 }}>
               {userTypeOptions.map((option, idx) => (
                 <ToggleButton
                   key={idx}
@@ -165,6 +165,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
                   checked={userType === option.value}
                   onChange={(e) => setUserType(e.currentTarget.value)}
                   className={`py-2 border-0 rounded-0 ${userType !== option.value ? 'text-secondary bg-light bg-opacity-75' : ''}`}
+                  style={{ padding: '11px 30px' }}
                 >
                   {option.name}
                 </ToggleButton>
@@ -187,7 +188,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             />
             {errors.username && <Form.Label className="text-danger">{errors.username.message}</Form.Label>}
           </Form.Group>
-          <Form.Group className="mb-2">
+          {/* <Form.Group className="mb-2">
             <Form.Label>Instance Name</Form.Label>
             <CreatableSelect
               className="custom-react-select-container"
@@ -200,7 +201,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
               placeholder="Type instance name and press Enter"
               noOptionsMessage={() => 'Type to add new instance'}
             />
-          </Form.Group>
+          </Form.Group> */}
           <Row>
             <Col>
               <Form.Group className="mb-2">
@@ -270,7 +271,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             {errors.email && <Form.Label className="text-danger">Please enter a valid email.</Form.Label>}
           </Form.Group>
 
-
+          {/* 
           <Form.Group className="mb-2">
             <Form.Label>Security groups</Form.Label>
             <Select
@@ -297,7 +298,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
               options={organizations}
               onChange={organizationSelectHandler}
             />
-          </Form.Group>
+          </Form.Group> */}
 
 
         </Form>
