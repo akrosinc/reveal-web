@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
+import { Button, Col, Form, Modal, Row, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import Select, { MultiValue } from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 import { createUser } from '../../../api';
 import { getOrganizationListSummary, getSecurityGroups } from '../../../../organization/api';
 import { useForm } from 'react-hook-form';
@@ -19,6 +20,8 @@ interface RegisterValues {
   securityGroups: string[];
   organizations: string[];
   bulk: File[];
+  userType: string;
+  instances: string[];
 }
 
 interface Options {
@@ -34,6 +37,9 @@ interface Props {
 const CreateUser = ({ show, handleClose }: Props) => {
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
+  const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
+  const [userType, setUserType] = useState('Standard User');
+
   const {
     reset,
     register,
@@ -86,8 +92,12 @@ const CreateUser = ({ show, handleClose }: Props) => {
     setSelectedOrganizations(values);
   };
 
+  const instanceSelectHandler = (selectedOption: MultiValue<Options>) => {
+    setSelectedInstances([...selectedOption]);
+  };
+
   const submitHandler = (formValues: RegisterValues) => {
-    let newUser: CreateUserModel = {
+    let newUser: CreateUserModel & { userType: string; instances: string[] } = {
       username: formValues.username,
       email: formValues.email === '' ? null : formValues.email,
       firstName: formValues.firstname,
@@ -95,15 +105,20 @@ const CreateUser = ({ show, handleClose }: Props) => {
       organizations: selectedOrganizations?.map(el => el.value) ?? [],
       securityGroups: selectedSecurityGroups?.map(el => el.value) ?? [],
       password: formValues.password,
-      tempPassword: false
+      tempPassword: false,
+      userType: userType,
+      instances: selectedInstances.map(el => el.value)
     };
-    toast.promise(createUser(newUser), {
+
+    toast.promise(createUser(newUser as any), {
       pending: 'Loading...',
       success: {
         render() {
           reset();
           setSelectedOrganizations([]);
           setSelectedSecurityGroups([]);
+          setSelectedInstances([]);
+          setUserType('Standard User');
           handleClose();
           return `User ${newUser.username} created successfully.`;
         }
@@ -113,7 +128,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
           if (typeof err !== 'string') {
             const fieldValidationErrors = err as FieldValidationError[];
             return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
-              setError(errField.field as any, {message: errField.messageKey});
+              setError(errField.field as any, { message: errField.messageKey });
               return errField.field;
             }).toString();
           }
@@ -123,6 +138,11 @@ const CreateUser = ({ show, handleClose }: Props) => {
     });
   };
 
+  const userTypeOptions = [
+    { name: 'Admin', value: 'Admin' },
+    { name: 'Standard User', value: 'Standard User' }
+  ];
+
   return (
     <Modal show={show} onHide={handleClose} backdrop="static" keyboard={false} centered scrollable contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header closeButton>
@@ -130,6 +150,27 @@ const CreateUser = ({ show, handleClose }: Props) => {
       </Modal.Header>
       <Modal.Body>
         <Form>
+
+          <Form.Group className="mb-3">
+            <Form.Label className="d-block">User Type</Form.Label>
+            <ButtonGroup className="w-100 border rounded overflow-hidden">
+              {userTypeOptions.map((option, idx) => (
+                <ToggleButton
+                  key={idx}
+                  id={`user-type-${idx}`}
+                  type="radio"
+                  variant={userType === option.value ? 'primary' : 'light'}
+                  name="userType"
+                  value={option.value}
+                  checked={userType === option.value}
+                  onChange={(e) => setUserType(e.currentTarget.value)}
+                  className={`py-2 border-0 rounded-0 ${userType !== option.value ? 'text-secondary bg-light bg-opacity-75' : ''}`}
+                >
+                  {option.name}
+                </ToggleButton>
+              ))}
+            </ButtonGroup>
+          </Form.Group>
           <Form.Group className="mb-2">
             <Form.Label>Username</Form.Label>
             <Form.Control
@@ -145,6 +186,20 @@ const CreateUser = ({ show, handleClose }: Props) => {
               placeholder="Enter username"
             />
             {errors.username && <Form.Label className="text-danger">{errors.username.message}</Form.Label>}
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>Instance Name</Form.Label>
+            <CreatableSelect
+              className="custom-react-select-container"
+              classNamePrefix="custom-react-select"
+              id="instances-select"
+              menuPosition="fixed"
+              isMulti
+              value={selectedInstances}
+              onChange={instanceSelectHandler}
+              placeholder="Type instance name and press Enter"
+              noOptionsMessage={() => 'Type to add new instance'}
+            />
           </Form.Group>
           <Row>
             <Col>
@@ -215,6 +270,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             {errors.email && <Form.Label className="text-danger">Please enter a valid email.</Form.Label>}
           </Form.Group>
 
+
           <Form.Group className="mb-2">
             <Form.Label>Security groups</Form.Label>
             <Select
@@ -242,6 +298,8 @@ const CreateUser = ({ show, handleClose }: Props) => {
               onChange={organizationSelectHandler}
             />
           </Form.Group>
+
+
         </Form>
       </Modal.Body>
       <Modal.Footer>
