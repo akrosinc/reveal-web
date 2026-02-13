@@ -95,6 +95,36 @@ const LocationHierarchy = () => {
 
   return (
     <>
+      <Row className="align-items-center mb-1">
+        <Col>
+          <h3 className="m-0 fw-bold" style={{ color: '#444', fontSize: '20px' }}>
+            Base Hierarchy
+          </h3>
+        </Col>
+        <Col>
+          <Button
+            id="create-button"
+            className="float-end px-4 py-2"
+            // onClick={createHandler}
+            style={{ borderRadius: '6px', fontWeight: 500 }}
+          >
+            {t('buttons.create')}
+          </Button>
+        </Col>
+      </Row>
+      <Row className="mb-3">
+        <Col className="d-flex align-items-center">
+          <span className="text-secondary me-2" style={{ fontSize: '14px' }}>
+            Node order:
+          </span>
+          <span className="me-2" style={{ fontSize: '14px', color: '#333' }}>
+            Admin 1, Admin 2, Admin 3, Structure
+          </span>
+
+        </Col>
+      </Row>
+      <hr className="my-4" />
+
       <Row>
         <Col>
           <h2 className="m-0">
@@ -141,6 +171,16 @@ const LocationHierarchy = () => {
                         className="float-end"
                       >
                         <FontAwesomeIcon className="m-0" icon="trash" />
+                      </Button>
+                      <Button
+                        id="activate-button"
+                        variant="primary"
+                        onClick={() => {
+                          toast.info(`Hierarchy ${el.name} activated (placeholder)`);
+                        }}
+                        className="float-end me-2"
+                      >
+                        <FontAwesomeIcon className="m-0" icon="check" />
                       </Button>
                     </td>
                   </tr>
