@@ -65,7 +65,6 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, isTe
                         <span style={{ width: '20px' }} className="me-1"></span>
                     )}
 
-                    {/* Checkbox: Hidden for leaf nodes in Team Mode as per Screenshot 2 */}
                     {(!isTeamMode || hasChildren) ? (
                         <div className="form-check mb-0">
                             <input
@@ -85,39 +84,34 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, isTe
                 </div>
 
                 {isTeamMode && !hasChildren && (
-                    <div className="d-flex align-items-center gap-2">
+                    <div className={`d-flex align-items-center gap-2 ${!isSelected ? 'opacity-25' : ''}`}>
                         <span className="text-muted small">{areaTeams[node.id] || ''}</span>
                         <FontAwesomeIcon
                             icon={faEllipsisV}
-                            className="text-secondary cursor-pointer ms-2"
-                            onClick={() => onTeamClick(node.id)}
+                            className={`text-secondary ${isSelected ? 'cursor-pointer' : ''} ms-2`}
+                            onClick={() => isSelected && onTeamClick(node.id)}
                         />
                     </div>
                 )}
             </div>
             {hasChildren && (
-                <>
-                    <Collapse in={expanded}>
-                        <div>
-                            {node.children.map((child: any) => (
-                                <>
-                                    <TreeNode
-                                        key={child.id}
-                                        node={child}
-                                        selectedAreas={selectedAreas}
-                                        onSelect={onSelect}
-                                        isTeamMode={isTeamMode}
-                                        onTeamClick={onTeamClick}
-                                        areaTeams={areaTeams}
-                                    />
-
-                                </>
-                            ))}
-                        </div>
-                    </Collapse>
-                    <hr />
-                </>
+                <Collapse in={expanded}>
+                    <div>
+                        {node.children.map((child: any) => (
+                            <TreeNode
+                                key={child.id}
+                                node={child}
+                                selectedAreas={selectedAreas}
+                                onSelect={onSelect}
+                                isTeamMode={isTeamMode}
+                                onTeamClick={onTeamClick}
+                                areaTeams={areaTeams}
+                            />
+                        ))}
+                    </div>
+                </Collapse>
             )}
+            {/* <hr className="my-2 opacity-25" /> */}
         </div>
     );
 };
@@ -230,26 +224,19 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
 
     return (
         <Card
-            className={`flex-fill shadow-sm ${isDarkMode ? 'border-white text-white' : ''}`}
-            style={{ background: isDarkMode ? '#212529' : '' }}
+            className={`flex-fill border-0 shadow-sm ${isDarkMode ? 'text-white' : ''}`}
+            style={{ background: isDarkMode ? '#212529' : '', minHeight: '400px' }}
         >
-            <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
+            <Card.Header className={`${isDarkMode ? 'border-bottom border-white/10 text-white' : 'bg-light border-0'} fw-bold`}>
                 {headerTitle}
             </Card.Header>
             <Card.Body className="p-3">
-                <Form.Select className="mb-3 border-0 bg-light" defaultValue="Niagara">
+                <Form.Select className="mb-3 border-0 py-2" defaultValue="Niagara">
                     <option value="Niagara">Niagara</option>
                 </Form.Select>
-                {/* <div className="mb-3">
-                    <Form.Control
-                        type="text"
-                        placeholder="Search..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
-                </div> */}
-                <hr className="my-2" />
-                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                {/* Search is currently commented out as per user request */}
+                <hr className="my-3 opacity-25" />
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="pe-2">
                     {/* Render from top-level children since Niagara is in the dropdown */}
                     {mockAreas[0].children.map(area => (
                         <TreeNode

@@ -38,8 +38,8 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
         <div className={`p-4 ${isDarkMode ? 'text-white' : ''}`}>
             <h3 className="mb-4">Create Group</h3>
 
-            <Row className="mb-4 align-items-center">
-                <Col md={4}>
+            <Row className="mb-4 g-3 align-items-center">
+                <Col md={3} xs={8}>
                     <Form.Group>
                         <Form.Control
                             placeholder="Enter group name"
@@ -48,19 +48,23 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
                         />
                     </Form.Group>
                 </Col>
-                <Col md={1}>
+                <Col md={1} xs={4}>
                     <Form.Check
                         type="checkbox"
                         id="team-checkbox"
                         label="Team"
                         checked={isTeam}
-                        onChange={e => setIsTeam(e.target.checked)}
+                        onChange={e => {
+                            setIsTeam(e.target.checked);
+                            setSelectedAreas([]);
+                            setAreaTeams({});
+                        }}
                     />
                 </Col>
             </Row>
 
-            <Row className="mb-4">
-                <Col md={4}>
+            <Row className="mb-4 g-4 items-stretch">
+                <Col md={4} xs={12}>
                     <AreasSelection
                         isTeamMode={isTeam}
                         selectedAreas={selectedAreas}
@@ -71,21 +75,21 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
                 </Col>
                 {!isTeam ? (
                     <>
-                        <Col md={4}>
+                        <Col md={4} xs={12}>
                             <RolesSelection />
                         </Col>
-                        <Col md={4}>
+                        <Col md={4} xs={12}>
                             <DatasetsSelection />
                         </Col>
                     </>
                 ) : (
-                    <Col md={4}>
+                    <Col md={4} xs={12}>
                         <TeamStats />
                     </Col>
                 )}
             </Row>
 
-            <Row className="mb-4">
+            <Row className="mb-4 g-4">
                 <Col md={12}>
                     <MembersSelection assignedMembers={assignedMembers} onAssignmentChange={setAssignedMembers} />
                 </Col>
