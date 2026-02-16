@@ -98,7 +98,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
                     Cancel
                 </Button>
                 <Button variant="primary" onClick={handleSave}>
-                    Save
+                    Create
                 </Button>
             </div>
         </div>
