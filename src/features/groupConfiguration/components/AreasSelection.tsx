@@ -96,21 +96,27 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, isTe
                 )}
             </div>
             {hasChildren && (
-                <Collapse in={expanded}>
-                    <div>
-                        {node.children.map((child: any) => (
-                            <TreeNode
-                                key={child.id}
-                                node={child}
-                                selectedAreas={selectedAreas}
-                                onSelect={onSelect}
-                                isTeamMode={isTeamMode}
-                                onTeamClick={onTeamClick}
-                                areaTeams={areaTeams}
-                            />
-                        ))}
-                    </div>
-                </Collapse>
+                <>
+                    <Collapse in={expanded}>
+                        <div>
+                            {node.children.map((child: any) => (
+                                <>
+                                    <TreeNode
+                                        key={child.id}
+                                        node={child}
+                                        selectedAreas={selectedAreas}
+                                        onSelect={onSelect}
+                                        isTeamMode={isTeamMode}
+                                        onTeamClick={onTeamClick}
+                                        areaTeams={areaTeams}
+                                    />
+
+                                </>
+                            ))}
+                        </div>
+                    </Collapse>
+                    <hr />
+                </>
             )}
         </div>
     );
@@ -234,14 +240,15 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
                 <Form.Select className="mb-3 border-0 bg-light" defaultValue="Niagara">
                     <option value="Niagara">Niagara</option>
                 </Form.Select>
-                <div className="mb-3">
+                {/* <div className="mb-3">
                     <Form.Control
                         type="text"
                         placeholder="Search..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
-                </div>
+                </div> */}
+                <hr className="my-2" />
                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                     {/* Render from top-level children since Niagara is in the dropdown */}
                     {mockAreas[0].children.map(area => (
