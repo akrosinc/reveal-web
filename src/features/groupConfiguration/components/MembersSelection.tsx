@@ -86,7 +86,7 @@ const MembersSelection: React.FC<MembersSelectionProps> = ({ assignedMembers, on
                         </div>
                         <div className="overflow-auto flex-grow-1 px-3 pb-3" style={{ maxHeight: '300px' }}>
                             {filteredAvailable.map(member => (
-                                <div key={member.id} className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                                <div key={member.id} className="d-flex justify-content-between align-items-center py-2 ">
                                     <Form.Check
                                         type="checkbox"
                                         id={`member-left-${member.id}`}
@@ -137,7 +137,7 @@ const MembersSelection: React.FC<MembersSelectionProps> = ({ assignedMembers, on
                     <Card.Body className="d-flex flex-column p-0">
                         <div className="overflow-auto flex-grow-1 p-3" style={{ maxHeight: '350px' }}>
                             {assignedList.map(member => (
-                                <div key={member.id} className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                                <div key={member.id} className="d-flex justify-content-between align-items-center py-2">
                                     <Form.Check
                                         type="checkbox"
                                         id={`member-right-${member.id}`}
@@ -146,7 +146,7 @@ const MembersSelection: React.FC<MembersSelectionProps> = ({ assignedMembers, on
                                         onChange={() => toggleSelection(member.id, 'right')}
                                         className="mb-0"
                                     />
-                                    <FontAwesomeIcon icon={faPencilAlt} size="xs" className="text-secondary opacity-50 cursor-pointer" />
+                                    {/* <FontAwesomeIcon icon={faPencilAlt} size="xs" className="text-secondary opacity-50 cursor-pointer" /> */}
                                 </div>
                             ))}
                             {assignedList.length === 0 && (
