@@ -40,9 +40,18 @@ interface TreeNodeProps {
     isTeamMode: boolean;
     onTeamClick: (id: string) => void;
     areaTeams: Record<string, string>;
+    textColor?: string;
 }
 
-const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, isTeamMode, onTeamClick, areaTeams }) => {
+const TreeNode: React.FC<TreeNodeProps> = ({
+    node,
+    selectedAreas,
+    onSelect,
+    isTeamMode,
+    onTeamClick,
+    areaTeams,
+    textColor
+}) => {
     const [expanded, setExpanded] = useState(true);
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const isSelected = selectedAreas.includes(node.id);
@@ -74,18 +83,18 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, isTe
                                 checked={isSelected}
                                 onChange={e => onSelect(node.id, e.target.checked, true)}
                             />
-                            <label className="form-check-label cursor-pointer" htmlFor={`area-${node.id}`}>
+                            <label className="form-check-label cursor-pointer" htmlFor={`area-${node.id}`} style={{ color: textColor }}>
                                 {node.label}
                             </label>
                         </div>
                     ) : (
-                        <span className="text-muted ms-1" style={{ fontSize: '0.9rem' }}>{node.label}</span>
+                        <span className="ms-1" style={{ fontSize: '0.9rem', color: textColor || 'inherit' }}>{node.label}</span>
                     )}
                 </div>
 
                 {isTeamMode && !hasChildren && (
                     <div className={`d-flex align-items-center gap-2 ${!isSelected ? 'opacity-25' : ''}`}>
-                        <span className="text-muted small">{areaTeams[node.id] || ''}</span>
+                        <span className="text-muted small" style={{ color: textColor }}>{areaTeams[node.id] || ''}</span>
                         <FontAwesomeIcon
                             icon={faEllipsisV}
                             className={`text-secondary ${isSelected ? 'cursor-pointer' : ''} ms-2`}
@@ -106,6 +115,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, isTe
                                 isTeamMode={isTeamMode}
                                 onTeamClick={onTeamClick}
                                 areaTeams={areaTeams}
+                                textColor={textColor}
                             />
                         ))}
                     </div>
@@ -122,6 +132,8 @@ interface AreasSelectionProps {
     onSelectionChange: (ids: string[]) => void;
     areaTeams: Record<string, string>;
     onAreaTeamChange: (areaId: string, team: string) => void;
+    hideHeader?: boolean;
+    textColor?: string;
 }
 
 const AreasSelection: React.FC<AreasSelectionProps> = ({
@@ -129,7 +141,9 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
     selectedAreas,
     onSelectionChange,
     areaTeams,
-    onAreaTeamChange
+    onAreaTeamChange,
+    hideHeader = false,
+    textColor
 }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const [searchTerm, setSearchTerm] = useState('');
@@ -225,13 +239,15 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
     return (
         <Card
             className={`flex-fill  shadow-sm ${isDarkMode ? 'text-white border-white' : ''}`}
-            style={{ background: isDarkMode ? '#212529' : '', minHeight: '300px' }}
+            style={{ background: isDarkMode ? '#F0F2F5' : '#F0F2F5', minHeight: '300px', border: 'none' }}
         >
-            <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
-                {headerTitle}
-            </Card.Header>
+            {!hideHeader && (
+                <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
+                    {headerTitle}
+                </Card.Header>
+            )}
             <Card.Body className="p-3">
-                <Form.Select className="mb-3 border-0 py-2" defaultValue="Niagara">
+                <Form.Select className="mb-3 border-0 py-2" defaultValue="Niagara" style={{ color: textColor }}>
                     <option value="Niagara">Niagara</option>
                 </Form.Select>
                 {/* Search is currently commented out as per user request */}
@@ -247,6 +263,7 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
                             isTeamMode={isTeamMode}
                             onTeamClick={handleTeamClick}
                             areaTeams={areaTeams}
+                            textColor={textColor}
                         />
                     ))}
                 </div>

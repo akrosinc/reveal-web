@@ -12,6 +12,10 @@ import { toast } from 'react-toastify';
 import { FieldValidationError } from '../../../../../api/providers';
 import { AxiosResponse } from 'axios';
 import { REGEX_EMAIL_VALIDATION } from '../../../../../constants';
+import AreasSelection from '../../../../groupConfiguration/components/AreasSelection';
+import RolesSelection from '../../../../groupConfiguration/components/RolesSelection';
+import DatasetsSelection from '../../../../groupConfiguration/components/DatasetsSelection';
+
 
 interface Props {
   user: UserModel;
@@ -44,6 +48,13 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
   const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
   const [userType, setUserType] = useState('Standard User');
+  const [selectedGroup, setSelectedGroup] = useState<Options | null>(null);
+  const [selectedUserAreas, setSelectedUserAreas] = useState<string[]>([]);
+  const [selectedUserRoles, setSelectedUserRoles] = useState<string[]>([]);
+  const [selectedUserDatasets, setSelectedUserDatasets] = useState<string[]>([]);
+  const [areaTeams, setAreaTeams] = useState<Record<string, string>>({});
+  // const level="Instance"
+  const level = "Global"
 
   const {
     register,
@@ -183,7 +194,11 @@ const EditUser = ({ user, handleClose }: Props) => {
         organizations: selectedOrganizations?.map(el => el.value) ?? [],
         securityGroups: selectedSecurityGroups?.map(el => el.value) ?? [],
         userType: userType,
-        instances: selectedInstances.map(el => el.value)
+        instances: selectedInstances.map(el => el.value),
+        // groupId: selectedGroup?.value,
+        // areas: selectedUserAreas,
+        // roles: selectedUserRoles,
+        // datasets: selectedUserDatasets
       };
       toast
         .promise(updateUser(updatedUser as any), {
@@ -419,7 +434,7 @@ const EditUser = ({ user, handleClose }: Props) => {
             />
           </Form.Group>
 
-          <Form.Group className="mb-3">
+          {/* <Form.Group className="mb-3">
             <Form.Label>Organization</Form.Label>
             <Select
               className="custom-react-select-container"
@@ -433,6 +448,73 @@ const EditUser = ({ user, handleClose }: Props) => {
               onChange={organizationSelectHandler}
             />
           </Form.Group> */}
+          {/* For Instance level  */}
+          <>
+            <Form.Group className="mb-3">
+              <Form.Label>Group</Form.Label>
+              <Select
+                className="custom-react-select-container"
+                classNamePrefix="custom-react-select"
+                id="group-select"
+                isDisabled={!edit}
+                value={selectedGroup}
+                options={groups}
+                onChange={(opt) => setSelectedGroup(opt as Options)}
+                placeholder="Select a group..."
+              />
+            </Form.Group>
+
+            <Row className="mb-4 g-3">
+              <Col md={4}>
+                <Form.Label>Areas</Form.Label>
+                <div style={{ position: 'relative' }} className={!edit ? 'opacity-75 pointer-events-none' : ''}>
+                  {!edit && <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
+                  }}></div>}
+                  <AreasSelection
+                    isTeamMode={false}
+                    selectedAreas={selectedUserAreas}
+                    onSelectionChange={setSelectedUserAreas}
+                    areaTeams={areaTeams}
+                    onAreaTeamChange={(id, team) => setAreaTeams(prev => ({ ...prev, [id]: team }))}
+                    hideHeader={true}
+                    textColor="black"
+                  />
+                </div>
+              </Col>
+              <Col md={4}>
+                <Form.Label>Permission</Form.Label>
+                <div style={{ position: 'relative' }} className={!edit ? 'opacity-75 pointer-events-none' : ''}>
+                  {!edit && <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
+                  }}></div>}
+                  <RolesSelection
+                    selectedRoles={selectedUserRoles}
+                    onRoleChange={setSelectedUserRoles}
+                    hideHeader={true}
+                    textColor="black"
+                  />
+                </div>
+              </Col>
+              <Col md={4}>
+                <Form.Label>Datasets</Form.Label>
+                <div style={{ position: 'relative' }} className={!edit ? 'opacity-75 pointer-events-none' : ''}>
+                  {!edit && <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
+
+                  }}>
+
+                  </div>}
+                  <DatasetsSelection
+                    selectedDatasets={selectedUserDatasets}
+                    onDatasetChange={setSelectedUserDatasets}
+                    hideHeader={true}
+                    textColor="black"
+                  />
+                </div>
+              </Col>
+            </Row>
+          </>
         </>
       )}
       <hr />
@@ -462,6 +544,10 @@ const EditUser = ({ user, handleClose }: Props) => {
               setEdit(!edit);
               setChangePassword(false);
               setStartValues(user);
+              setSelectedGroup(null);
+              setSelectedUserAreas([]);
+              setSelectedUserRoles([]);
+              setSelectedUserDatasets([]);
             }}
           >
             Discard changes
