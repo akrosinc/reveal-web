@@ -4,12 +4,14 @@ import { DebounceInput } from 'react-debounce-input';
 import { useTranslation } from 'react-i18next';
 import DefaultTable from '../../components/Table/DefaultTable';
 import { MOCK_GROUPS, GroupModel } from './mockGroups';
+import CreateGroup from './CreateGroup';
 
 const GroupConfiguration: React.FC = () => {
     const { t } = useTranslation();
     const [search, setSearch] = useState('');
     const [currentSortField, setCurrentSortField] = useState('');
     const [currentSortDirection, setCurrentSortDirection] = useState(false);
+    const [showCreate, setShowCreate] = useState(false);
 
     const filterData = (e: ChangeEvent<HTMLInputElement>) => {
         setSearch(e.target.value);
@@ -66,6 +68,10 @@ const GroupConfiguration: React.FC = () => {
         )
     }));
 
+    if (showCreate) {
+        return <CreateGroup onCancel={() => setShowCreate(false)} onSave={() => setShowCreate(false)} />;
+    }
+
     return (
         <>
             <h2 className="mb-4">{t('groupConfigurationPage.title')}</h2>
@@ -81,7 +87,9 @@ const GroupConfiguration: React.FC = () => {
                 </Col>
 
                 <Col md={8}>
-                    <Button className="btn btn-primary float-end">{t('buttons.create')}</Button>
+                    <Button className="btn btn-primary float-end" onClick={() => setShowCreate(true)}>
+                        {t('buttons.create')}
+                    </Button>
                 </Col>
             </Row>
 
