@@ -224,10 +224,10 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
 
     return (
         <Card
-            className={`flex-fill border-0 shadow-sm ${isDarkMode ? 'text-white' : ''}`}
-            style={{ background: isDarkMode ? '#212529' : '', minHeight: '400px' }}
+            className={`flex-fill  shadow-sm ${isDarkMode ? 'text-white border-white' : ''}`}
+            style={{ background: isDarkMode ? '#212529' : '', minHeight: '300px' }}
         >
-            <Card.Header className={`${isDarkMode ? 'border-bottom border-white/10 text-white' : 'bg-light border-0'} fw-bold`}>
+            <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
                 {headerTitle}
             </Card.Header>
             <Card.Body className="p-3">

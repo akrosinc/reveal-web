@@ -65,20 +65,24 @@ const MembersSelection: React.FC<MembersSelectionProps> = ({ assignedMembers, on
             <div className="d-flex flex-column flex-lg-row align-items-stretch gap-3">
                 {/* Available */}
                 <Card
-                    className={`flex-grow-1 border-0 shadow-sm ${isDarkMode ? 'text-white' : ''}`}
-                    style={{ background: isDarkMode ? '#212529' : '', minHeight: '350px' }}
+                    className={`flex-grow-1 shadow-sm ${isDarkMode ? 'text-white border-white' : ''}`}
+                    style={{ background: isDarkMode ? '#212529' : '', minHeight: '300px' }}
                 >
-                    <Card.Header className={`${isDarkMode ? 'border-bottom border-white/10 text-white' : 'bg-light border-0'} fw-bold`}>
+                    <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
                         All
                     </Card.Header>
                     <Card.Body className="d-flex flex-column p-0">
                         <div className="p-3 pb-0">
-                            <Form.Control
+                            <InputGroup className="mb-3">
+                                <Form.Control placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                                {/* <InputGroup.Text><FontAwesomeIcon icon={faSearch} /></InputGroup.Text> */}
+                            </InputGroup>
+                            {/* <Form.Control
                                 placeholder="Search..."
                                 className="mb-3 border-0 bg-light"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                            />
+                            /> */}
                         </div>
                         <div className="overflow-auto flex-grow-1 px-3 pb-3" style={{ maxHeight: '300px' }}>
                             {filteredAvailable.map(member => (
@@ -91,7 +95,7 @@ const MembersSelection: React.FC<MembersSelectionProps> = ({ assignedMembers, on
                                         onChange={() => toggleSelection(member.id, 'left')}
                                         className="mb-0"
                                     />
-                                    <FontAwesomeIcon icon={faPencilAlt} size="xs" className="text-secondary opacity-50 cursor-pointer" />
+                                    {/* <FontAwesomeIcon icon={faPencilAlt} size="xs" className="text-secondary opacity-50 cursor-pointer" /> */}
                                 </div>
                             ))}
                         </div>
@@ -124,10 +128,10 @@ const MembersSelection: React.FC<MembersSelectionProps> = ({ assignedMembers, on
 
                 {/* Assigned */}
                 <Card
-                    className={`flex-grow-1 border-0 shadow-sm ${isDarkMode ? 'text-white' : ''}`}
-                    style={{ background: isDarkMode ? '#212529' : '', minHeight: '350px' }}
+                    className={`flex-grow-1 shadow-sm ${isDarkMode ? 'text-white border-white' : ''}`}
+                    style={{ background: isDarkMode ? '#212529' : '', minHeight: '300px' }}
                 >
-                    <Card.Header className={`${isDarkMode ? 'border-bottom border-white/10 text-white' : 'bg-light border-0'} fw-bold`}>
+                    <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
                         Assigned
                     </Card.Header>
                     <Card.Body className="d-flex flex-column p-0">

@@ -9,8 +9,8 @@ const RolesSelection: React.FC = () => {
 
     return (
         <Card
-            className={`flex-fill shadow-sm ${isDarkMode ? 'border-white text-white' : ''}`}
-            style={{ background: isDarkMode ? '#212529' : '' }}
+            className={`flex-fill shadow-sm border-1 ${isDarkMode ? 'border-white text-white' : ''}`}
+            style={{ background: isDarkMode ? '#212529' : '', height: '100%' }}
         >
             <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
                 Roles
