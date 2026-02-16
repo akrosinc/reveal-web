@@ -36,7 +36,7 @@ const mockAreas = [
 interface TreeNodeProps {
     node: any;
     selectedAreas: string[];
-    onSelect: (id: string, isChecked: boolean) => void;
+    onSelect: (id: string, isChecked: boolean, recursive?: boolean) => void;
     isTeamMode: boolean;
     onTeamClick: (id: string) => void;
     areaTeams: Record<string, string>;
@@ -64,22 +64,29 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, isTe
                     ) : (
                         <span style={{ width: '20px' }} className="me-1"></span>
                     )}
-                    <div className="form-check mb-0">
-                        <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id={`area-${node.id}`}
-                            checked={isSelected}
-                            onChange={e => onSelect(node.id, e.target.checked)}
-                        />
-                        <label className="form-check-label cursor-pointer" htmlFor={`area-${node.id}`}>
-                            {node.label}
-                        </label>
-                    </div>
+
+                    {/* Checkbox: Hidden for leaf nodes in Team Mode as per Screenshot 2 */}
+                    {(!isTeamMode || hasChildren) ? (
+                        <div className="form-check mb-0">
+                            <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id={`area-${node.id}`}
+                                checked={isSelected}
+                                onChange={e => onSelect(node.id, e.target.checked, true)}
+                            />
+                            <label className="form-check-label cursor-pointer" htmlFor={`area-${node.id}`}>
+                                {node.label}
+                            </label>
+                        </div>
+                    ) : (
+                        <span className="text-muted ms-1" style={{ fontSize: '0.9rem' }}>{node.label}</span>
+                    )}
                 </div>
-                {isTeamMode && isSelected && !hasChildren && (
+
+                {isTeamMode && !hasChildren && (
                     <div className="d-flex align-items-center gap-2">
-                        <span className="text-muted small">{areaTeams[node.id]}</span>
+                        <span className="text-muted small">{areaTeams[node.id] || ''}</span>
                         <FontAwesomeIcon
                             icon={faEllipsisV}
                             className="text-secondary cursor-pointer ms-2"
@@ -129,11 +136,47 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
     const [showModal, setShowModal] = useState(false);
     const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
 
-    const handleSelect = (id: string, isChecked: boolean) => {
-        if (isChecked) {
-            onSelectionChange([...selectedAreas, id]);
+    // Helper to get all descendant IDs
+    const getAllDescendantIds = (nodeId: string): string[] => {
+        let ids: string[] = [];
+        const findNode = (nodes: any[]): any => {
+            for (const node of nodes) {
+                if (node.id === nodeId) return node;
+                if (node.children) {
+                    const result = findNode(node.children);
+                    if (result) return result;
+                }
+            }
+            return null;
+        };
+
+        const targetNode = findNode(mockAreas);
+        if (!targetNode) return [];
+
+        const collectIds = (node: any) => {
+            ids.push(node.id);
+            if (node.children) {
+                node.children.forEach((child: any) => collectIds(child));
+            }
+        };
+        collectIds(targetNode);
+        return ids;
+    };
+
+    const handleSelect = (id: string, isChecked: boolean, recursive: boolean = true) => {
+        if (recursive) {
+            const affectedIds = getAllDescendantIds(id);
+            if (isChecked) {
+                onSelectionChange(Array.from(new Set([...selectedAreas, ...affectedIds])));
+            } else {
+                onSelectionChange(selectedAreas.filter(sid => !affectedIds.includes(sid)));
+            }
         } else {
-            onSelectionChange(selectedAreas.filter(sid => sid !== id));
+            if (isChecked) {
+                onSelectionChange([...selectedAreas, id]);
+            } else {
+                onSelectionChange(selectedAreas.filter(sid => sid !== id));
+            }
         }
     };
 
@@ -148,18 +191,23 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
         }
     };
 
+    // The screenshots show "All" in the header for Team mode or consistent with Members selection
+    const headerTitle = isTeamMode ? "All" : "Areas";
+
     return (
         <Card
             className={`flex-fill shadow-sm ${isDarkMode ? 'border-white text-white' : ''}`}
             style={{ background: isDarkMode ? '#212529' : '' }}
         >
             <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
-                Areas
+                {headerTitle}
             </Card.Header>
             <Card.Body className="p-3">
                 <Form.Select className="mb-3 border-0 bg-light" defaultValue="Niagara">
                     <option value="Niagara">Niagara</option>
                 </Form.Select>
+                {/* Search is visible in my code but hidden in screenshots? Actually Screenshot 2 has a dot where search was. 
+                    I'll keep search for now as it was in previous design. */}
                 <div className="mb-3">
                     <Form.Control
                         type="text"
@@ -169,7 +217,8 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
                     />
                 </div>
                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                    {mockAreas.map(area => (
+                    {/* Render from top-level children since Niagara is in the dropdown */}
+                    {mockAreas[0].children.map(area => (
                         <TreeNode
                             key={area.id}
                             node={area}
