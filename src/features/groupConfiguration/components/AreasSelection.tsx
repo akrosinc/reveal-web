@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, Form, Collapse } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight, faChevronDown, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
@@ -136,48 +136,76 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
     const [showModal, setShowModal] = useState(false);
     const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
 
+    // Create a flat map of parents and children for easier traversal
+    const areaTreeData = useMemo(() => {
+        const parentsMap: Record<string, string> = {};
+        const childrenMap: Record<string, string[]> = {};
+        const allNodes: Record<string, any> = {};
+
+        const traverse = (nodes: any[], parentId?: string) => {
+            nodes.forEach(node => {
+                allNodes[node.id] = node;
+                if (parentId) parentsMap[node.id] = parentId;
+                if (node.children) {
+                    childrenMap[node.id] = node.children.map((c: any) => c.id);
+                    traverse(node.children, node.id);
+                }
+            });
+        };
+        traverse(mockAreas);
+        return { parentsMap, childrenMap, allNodes };
+    }, []);
+
+    const { parentsMap, childrenMap, allNodes } = areaTreeData;
+
     // Helper to get all descendant IDs
     const getAllDescendantIds = (nodeId: string): string[] => {
         let ids: string[] = [];
-        const findNode = (nodes: any[]): any => {
-            for (const node of nodes) {
-                if (node.id === nodeId) return node;
-                if (node.children) {
-                    const result = findNode(node.children);
-                    if (result) return result;
-                }
-            }
-            return null;
-        };
-
-        const targetNode = findNode(mockAreas);
-        if (!targetNode) return [];
-
         const collectIds = (node: any) => {
             ids.push(node.id);
             if (node.children) {
                 node.children.forEach((child: any) => collectIds(child));
             }
         };
-        collectIds(targetNode);
+        const node = allNodes[nodeId];
+        if (node) collectIds(node);
         return ids;
     };
 
     const handleSelect = (id: string, isChecked: boolean, recursive: boolean = true) => {
+        let newSelected = [...selectedAreas];
+
         if (recursive) {
             const affectedIds = getAllDescendantIds(id);
             if (isChecked) {
-                onSelectionChange(Array.from(new Set([...selectedAreas, ...affectedIds])));
+                newSelected = Array.from(new Set([...newSelected, ...affectedIds]));
             } else {
-                onSelectionChange(selectedAreas.filter(sid => !affectedIds.includes(sid)));
+                newSelected = newSelected.filter(sid => !affectedIds.includes(sid));
             }
         } else {
             if (isChecked) {
-                onSelectionChange([...selectedAreas, id]);
+                if (!newSelected.includes(id)) newSelected.push(id);
             } else {
-                onSelectionChange(selectedAreas.filter(sid => sid !== id));
+                newSelected = newSelected.filter(sid => sid !== id);
             }
         }
+
+        // --- Upward recursive logic ---
+        let currentId = id;
+        while (parentsMap[currentId]) {
+            const parentId = parentsMap[currentId];
+            const siblings = childrenMap[parentId];
+            const allSiblingsSelected = siblings.every((sId: string) => newSelected.includes(sId));
+
+            if (allSiblingsSelected) {
+                if (!newSelected.includes(parentId)) newSelected.push(parentId);
+            } else {
+                newSelected = newSelected.filter(sid => sid !== parentId);
+            }
+            currentId = parentId;
+        }
+
+        onSelectionChange(newSelected);
     };
 
     const handleTeamClick = (id: string) => {
@@ -206,8 +234,6 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
                 <Form.Select className="mb-3 border-0 bg-light" defaultValue="Niagara">
                     <option value="Niagara">Niagara</option>
                 </Form.Select>
-                {/* Search is visible in my code but hidden in screenshots? Actually Screenshot 2 has a dot where search was. 
-                    I'll keep search for now as it was in previous design. */}
                 <div className="mb-3">
                     <Form.Control
                         type="text"
