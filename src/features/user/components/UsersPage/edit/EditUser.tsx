@@ -54,7 +54,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [selectedUserDatasets, setSelectedUserDatasets] = useState<string[]>([]);
   const [areaTeams, setAreaTeams] = useState<Record<string, string>>({});
   // const level="Instance"
-  const level = "Global"
+  let level = "Global"
 
   const {
     register,
@@ -383,7 +383,7 @@ const EditUser = ({ user, handleClose }: Props) => {
             />
             {errors.email && <Form.Label className="text-danger">{errors.email.message}</Form.Label>}
           </Form.Group>
-          <div
+          {level === 'Global' && <div
             className="d-flex"
             style={{
               overflowX: "auto",
@@ -418,7 +418,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                 {item}
               </div>
             ))}
-          </div>
+          </div>}
           {/* <Form.Group className="mb-3">
             <Form.Label>Security groups</Form.Label>
             <Select
@@ -449,7 +449,7 @@ const EditUser = ({ user, handleClose }: Props) => {
             />
           </Form.Group> */}
           {/* For Instance level  */}
-          <>
+          {level === 'Instance' && <>
             <Form.Group className="mb-3">
               <Form.Label>Group</Form.Label>
               <Select
@@ -514,7 +514,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                 </div>
               </Col>
             </Row>
-          </>
+          </>}
         </>
       )}
       <hr />
