@@ -99,7 +99,7 @@ const DefaultTable = ({
                     if (moment(dataEl[el.accessor], DATE_FORMATS, true).isValid()) {
                       return <td key={index}>{formatDate(dataEl[el.accessor])}</td>;
                     }
-                    return <td key={index}>{dataEl[el.accessor]?.toString()}</td>;
+                    return <td key={index}>{dataEl[el.accessor]}</td>;
                   }
                 }
                 return null;

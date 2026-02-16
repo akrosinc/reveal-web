@@ -23,7 +23,8 @@
     "Resource Planning": "Resource Planning",
     "dataProcessingProgress": "Data Processing Progress",
     "CampaignManage": "Campaign Management",
-    "Instance Configuration": "Instance Configuration"
+    "Instance Configuration": "Instance Configuration",
+    "Group Configuration": "Group Configuration"
   },
   "publicPage": {
     "supportedBy": "supported by",
@@ -66,7 +67,8 @@
     "organization": "Organization",
     "user": "User",
     "userImport": "User Import",
-    "instanceConfiguration": "Instance Configuration"
+    "instanceConfiguration": "Instance Configuration",
+    "groupConfiguration": "Group Configuration"
   },
   "userPage": {
     "Username": "Username",
@@ -245,6 +247,16 @@
       "createdDate": "Created Date",
       "startDate": "Start Date",
       "endDate": "End Date"
+    }
+  },
+  "groupConfigurationPage": {
+    "title": "Group configuration",
+    "search": "Search group name",
+    "table": {
+      "groupName": "Group Name",
+      "team": "Team",
+      "yes": "Yes",
+      "no": "No"
     }
   },
   "simulationPage": {

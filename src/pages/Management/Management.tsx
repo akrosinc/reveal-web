@@ -8,6 +8,7 @@ import Organization from '../../features/organization/components';
 import UserImport from '../../features/user/components/UserImport/UserImport';
 import Users from '../../features/user/components/UsersPage';
 import InstanceConfiguration from '../../features/instanceConfiguration';
+import GroupConfiguration from '../../features/groupConfiguration';
 import { useKeycloak } from '@react-keycloak/web';
 
 const Management = () => {
@@ -52,6 +53,11 @@ const Management = () => {
           {/* Default role is added for Authorization */}
           <AuthGuard roles={[ROLE_MANAGE_USER]}>
             <InstanceConfiguration />
+          </AuthGuard>
+        </Tab>
+        <Tab eventKey="group-configuration" title={t('managementPage.groupConfiguration')}>
+          <AuthGuard roles={[ROLE_MANAGE_USER]}>
+            <GroupConfiguration />
           </AuthGuard>
         </Tab>
       </Tabs>

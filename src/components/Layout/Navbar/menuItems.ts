@@ -90,6 +90,12 @@ export const MAIN_MENU = [
         roles: ['manage-users']
       },
       {
+        pageTitle: 'Group Configuration',
+        route: MANAGEMENT + '/group-configuration',
+        // roles: ['manage-users']
+        roles: []
+      },
+      {
         pageTitle: 'Instance Configuration',
         route: MANAGEMENT + '/instance-configuration',
         // roles: ['manage-users']
