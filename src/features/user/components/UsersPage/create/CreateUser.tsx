@@ -193,7 +193,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             />
             {errors.username && <Form.Label className="text-danger">{errors.username.message}</Form.Label>}
           </Form.Group>
-          <Form.Group className="mb-2">
+          {userType === 'Standard User' && <Form.Group className="mb-2">
             <Form.Label>Select Instances</Form.Label>
             <Select
               className="custom-react-select-container"
@@ -206,7 +206,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
               onChange={instanceSelectHandler}
               placeholder="Select instances..."
             />
-          </Form.Group>
+          </Form.Group>}
           <Row>
             <Col>
               <Form.Group className="mb-2">
