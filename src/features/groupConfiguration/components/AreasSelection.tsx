@@ -134,6 +134,7 @@ interface AreasSelectionProps {
     onAreaTeamChange: (areaId: string, team: string) => void;
     hideHeader?: boolean;
     textColor?: string;
+    variant?: 'default' | 'editUser';
 }
 
 const AreasSelection: React.FC<AreasSelectionProps> = ({
@@ -142,13 +143,18 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
     onSelectionChange,
     areaTeams,
     onAreaTeamChange,
-    hideHeader = false,
-    textColor
+    hideHeader,
+    textColor,
+    variant = 'default'
 }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
+
+    const isEditUser = variant === 'editUser';
+    const showHeader = hideHeader !== undefined ? !hideHeader : !isEditUser;
+    const effectiveTextColor = textColor || (isEditUser ? 'black' : (isDarkMode ? 'white' : 'black'));
 
     // Create a flat map of parents and children for easier traversal
     const areaTreeData = useMemo(() => {
@@ -238,16 +244,20 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
 
     return (
         <Card
-            className={`flex-fill  shadow-sm ${isDarkMode ? 'text-white border-white' : ''}`}
-            style={{ background: isDarkMode ? '#F0F2F5' : '#F0F2F5', minHeight: '300px', border: 'none' }}
+            className={`flex-fill shadow-sm ${isEditUser ? 'border-0' : (isDarkMode ? 'text-white border-white' : '')}`}
+            style={{
+                background: isEditUser ? '#F0F2F5' : (isDarkMode ? '#212529' : ''),
+                height: isEditUser ? '100%' : 'auto',
+                minHeight: isEditUser ? '0' : '300px'
+            }}
         >
-            {!hideHeader && (
+            {showHeader && (
                 <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
                     {headerTitle}
                 </Card.Header>
             )}
             <Card.Body className="p-3">
-                <Form.Select className="mb-3 border-0 py-2" defaultValue="Niagara" style={{ color: textColor }}>
+                <Form.Select className="mb-3 border-0 py-2" defaultValue="Niagara" >
                     <option value="Niagara">Niagara</option>
                 </Form.Select>
                 {/* Search is currently commented out as per user request */}
@@ -263,7 +273,7 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
                             isTeamMode={isTeamMode}
                             onTeamClick={handleTeamClick}
                             areaTeams={areaTeams}
-                            textColor={textColor}
+                            textColor={effectiveTextColor}
                         />
                     ))}
                 </div>

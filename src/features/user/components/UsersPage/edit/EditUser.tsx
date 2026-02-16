@@ -54,7 +54,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [selectedUserDatasets, setSelectedUserDatasets] = useState<string[]>([]);
   const [areaTeams, setAreaTeams] = useState<Record<string, string>>({});
   // const level="Instance"
-  let level = "Global"
+  let level = "Instance"
 
   const {
     register,
@@ -477,8 +477,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                     onSelectionChange={setSelectedUserAreas}
                     areaTeams={areaTeams}
                     onAreaTeamChange={(id, team) => setAreaTeams(prev => ({ ...prev, [id]: team }))}
-                    hideHeader={true}
-                    textColor="black"
+                    variant="editUser"
                   />
                 </div>
               </Col>
@@ -491,8 +490,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                   <RolesSelection
                     selectedRoles={selectedUserRoles}
                     onRoleChange={setSelectedUserRoles}
-                    hideHeader={true}
-                    textColor="black"
+                    variant="editUser"
                   />
                 </div>
               </Col>
@@ -508,8 +506,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                   <DatasetsSelection
                     selectedDatasets={selectedUserDatasets}
                     onDatasetChange={setSelectedUserDatasets}
-                    hideHeader={true}
-                    textColor="black"
+                    variant="editUser"
                   />
                 </div>
               </Col>
