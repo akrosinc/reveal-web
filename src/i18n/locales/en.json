@@ -50,6 +50,8 @@
   },
   "buttons": {
     "management": "User Management",
+    "instanceConfiguration": "Instance Management",
+    "groupConfiguration": "Group Management",
     "plans": "Plan Management",
     "create": "Create",
     "delete": "Delete",
