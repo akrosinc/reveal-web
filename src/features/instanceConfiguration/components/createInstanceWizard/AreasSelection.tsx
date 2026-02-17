@@ -1,69 +1,114 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Card, Form, Collapse } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronRight, faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../../store/hooks';
-
-// Mock Data - 2 levels of nesting
-const mockAreas = [
-  {
-    id: 'boko',
-    label: 'Boko',
-    children: [
-      { id: 'ph1', label: 'PH 1' },
-      { id: 'ph2', label: 'PH 2' },
-      { id: 'ph3', label: 'PH 3' },
-      { id: 'ph4', label: 'PH 4' }
-    ]
-  },
-  {
-    id: 'laka',
-    label: 'Laka',
-    children: [
-      { id: 'lg1', label: 'LG 1' },
-      { id: 'lg2', label: 'LG 2' }
-    ]
-  }
-];
+import { datasetsByHierarchy, hierarchyOptions, AreaNode } from './mockLargeDataset';
 
 interface Props {
   selectedAreas: string[];
   onSelectionChange: (selectedIds: string[]) => void;
 }
 
-const TreeNode = ({ node, selectedAreas, onSelect, filter }: any) => {
-  const [expanded, setExpanded] = useState(true);
+interface TreeNodeProps {
+  node: AreaNode;
+  selectedAreas: string[];
+  onSelect: (id: string, checked: boolean) => void;
+  filter: string;
+  depth?: number;
+  expandedNodeId: string | null;
+  onToggleExpand: (nodeId: string | null) => void;
+}
+
+const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, filter, depth = 0, expandedNodeId, onToggleExpand }) => {
+  const [childrenLoaded, setChildrenLoaded] = useState(false); // Track if children are loaded
+  const [isVisible, setIsVisible] = useState(depth === 0); // Top level always visible
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const checkboxRef = useRef<HTMLInputElement>(null);
+  const nodeRef = useRef<HTMLDivElement>(null);
 
   const isSelected = selectedAreas.includes(node.id);
   const hasChildren = node.children && node.children.length > 0;
 
+  // Single accordion logic: check if this node matches the expanded one
+  // If filter is active, we expand if matching children found, essentially ignoring single-accordion restriction for search
+  // But if the user request implies strict single accordion even during search, we might need adjustments.
+  // However, usually search results should show all matches.
+  // Let's keep expanded if filter matches OR if expandedNodeId matches.
+  const isExpandedByFilter = !!(filter && hasChildren && node.children?.some(c => JSON.stringify(c).toLowerCase().includes(filter.toLowerCase())));
+  const expanded = isExpandedByFilter || expandedNodeId === node.id;
+
+  // Auto-expand logic handled by isExpandedByFilter derivation above
+  // but if we need to update state for single accordion when filter clears?
+  // Actually, we don't need local state for expansion anymore if we rely on props.
+  // But wait, if filter clears, we want to go back to previous state? Or closed?
+  // The user said "by default all accordions are closed".
+
+  // Lazy loading with Intersection Observer (only for nested items)
+  useEffect(() => {
+    // Disable lazy loading when filtering to prevent whitespace gaps
+    if (filter) {
+      setIsVisible(true);
+      return;
+    }
+
+    if (depth === 0 || !nodeRef.current) return; // Skip for top-level items
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.01
+      }
+    );
+
+    observer.observe(nodeRef.current);
+
+    return () => observer.disconnect();
+  }, [depth, filter]);
+
+  // Load children when accordion expands OR when filtering
+  useEffect(() => {
+    if ((expanded || filter) && hasChildren && !childrenLoaded) {
+      // Simulate async loading (in real app, this could be an API call)
+      setTimeout(() => {
+        setChildrenLoaded(true);
+      }, 0);
+    }
+  }, [expanded, filter, hasChildren, childrenLoaded]);
+
   // Calculate indeterminate state
-  const getDescendantSelectionState = (n: any): { total: number; selected: number } => {
+  const getDescendantSelectionState = useCallback((n: AreaNode): { total: number; selected: number } => {
     let total = 0;
     let selected = 0;
 
     if (n.children && n.children.length > 0) {
-      n.children.forEach((child: any) => {
+      n.children.forEach((child) => {
         const childState = getDescendantSelectionState(child);
         total += childState.total;
         selected += childState.selected;
       });
     } else {
-      // Leaf node
       total = 1;
       selected = selectedAreas.includes(n.id) ? 1 : 0;
     }
 
     return { total, selected };
-  };
+  }, [selectedAreas]);
 
-  const isIndeterminate = () => {
+  const isIndeterminate = useCallback(() => {
     if (!hasChildren) return false;
     const state = getDescendantSelectionState(node);
     return state.selected > 0 && state.selected < state.total;
-  };
+  }, [hasChildren, node, getDescendantSelectionState]);
 
   const indeterminate = isIndeterminate();
 
@@ -74,12 +119,12 @@ const TreeNode = ({ node, selectedAreas, onSelect, filter }: any) => {
     }
   }, [indeterminate]);
 
-  // Filter logic (for search)
+  // Filter logic
   if (filter) {
     const matches = node.label.toLowerCase().includes(filter.toLowerCase());
     const childMatches =
       node.children &&
-      node.children.some((c: any) => {
+      node.children.some((c) => {
         return JSON.stringify(c).toLowerCase().includes(filter.toLowerCase());
       });
     if (!matches && !childMatches) return null;
@@ -87,15 +132,22 @@ const TreeNode = ({ node, selectedAreas, onSelect, filter }: any) => {
 
   const handleExpand = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setExpanded(!expanded);
+    // Toggle: if already expanded, close it (pass null); otherwise open this one (pass id)
+    onToggleExpand(expandedNodeId === node.id ? null : node.id);
   };
 
   const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSelect(node.id, e.target.checked);
   };
 
+  // Render placeholder until visible (lazy loading for nested items)
+  // DISABLE placeholder if filtering
+  if (!isVisible && depth > 0 && !filter) {
+    return <div ref={nodeRef} style={{ height: '40px' }} />;
+  }
+
   return (
-    <div className="mb-1" style={{ background: isDarkMode ? '#212529' : '' }}>
+    <div ref={nodeRef} className="mb-1" style={{ background: isDarkMode ? '#212529' : '' }}>
       <div className="d-flex align-items-center">
         {hasChildren ? (
           <span
@@ -130,15 +182,22 @@ const TreeNode = ({ node, selectedAreas, onSelect, filter }: any) => {
       {hasChildren && (
         <Collapse in={expanded}>
           <div className="ms-4">
-            {node.children.map((child: any) => (
-              <TreeNode
-                key={child.id}
-                node={child}
-                selectedAreas={selectedAreas}
-                onSelect={onSelect}
-                filter={filter}
-              />
-            ))}
+            {childrenLoaded ? (
+              node.children!.map((child) => (
+                <TreeNode
+                  key={child.id}
+                  node={child}
+                  selectedAreas={selectedAreas}
+                  onSelect={onSelect}
+                  filter={filter}
+                  depth={depth + 1}
+                  expandedNodeId={expandedNodeId} // Pass down, though children usually don't have expanded logic if 2 levels
+                  onToggleExpand={onToggleExpand}
+                />
+              ))
+            ) : (
+              <div className="text-muted small p-2">Loading...</div>
+            )}
           </div>
         </Collapse>
       )}
@@ -146,21 +205,53 @@ const TreeNode = ({ node, selectedAreas, onSelect, filter }: any) => {
   );
 };
 
-const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
+// Custom hook for debounced search
+const useDebounce = (value: string, delay: number = 300) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
+const AreasSelection: React.FC<Props> = ({ selectedAreas, onSelectionChange }) => {
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300); // 300ms debounce
+  const [selectedHierarchy, setSelectedHierarchy] = useState('Niagara');
+  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>(datasetsByHierarchy['Niagara']);
+  const [expandedNodeId, setExpandedNodeId] = useState<string | null>(null); // State for single expanded node
 
-  const getAllDescendantIds = (node: any): string[] => {
+  // Update areas when hierarchy changes
+  useEffect(() => {
+    setCurrentAreas(datasetsByHierarchy[selectedHierarchy] || []);
+    // Clear selections when changing hierarchy
+    onSelectionChange([]);
+    // Clear search when changing hierarchy
+    setSearchTerm('');
+    // Reset expanded state
+    setExpandedNodeId(null);
+  }, [selectedHierarchy, onSelectionChange]);
+
+  const getAllDescendantIds = useCallback((node: AreaNode): string[] => {
     let ids = [node.id];
     if (node.children) {
-      node.children.forEach((child: any) => {
+      node.children.forEach((child) => {
         ids = [...ids, ...getAllDescendantIds(child)];
       });
     }
     return ids;
-  };
+  }, []);
 
-  const findNode = (nodes: any[], targetId: string): any => {
+  const findNode = useCallback((nodes: AreaNode[], targetId: string): AreaNode | null => {
     for (const node of nodes) {
       if (node.id === targetId) return node;
       if (node.children) {
@@ -169,9 +260,9 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
       }
     }
     return null;
-  };
+  }, []);
 
-  const findParent = (nodes: any[], targetId: string, parent: any = null): any => {
+  const findParent = useCallback((nodes: AreaNode[], targetId: string, parent: AreaNode | null = null): AreaNode | null => {
     for (const node of nodes) {
       if (node.id === targetId) return parent;
       if (node.children) {
@@ -180,10 +271,10 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
       }
     }
     return null;
-  };
+  }, []);
 
-  const handleSelect = (id: string, isChecked: boolean) => {
-    const node = findNode(mockAreas, id);
+  const handleSelect = useCallback((id: string, isChecked: boolean) => {
+    const node = findNode(currentAreas, id);
     if (!node) return;
 
     const affectedIds = getAllDescendantIds(node);
@@ -196,14 +287,14 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
       });
 
       // Bubble up: check if parent should be selected
-      let currentParent = findParent(mockAreas, id);
+      let currentParent = findParent(currentAreas, id);
       while (currentParent) {
-        const allChildrenSelected = currentParent.children.every((child: any) => newSelected.includes(child.id));
+        const allChildrenSelected = currentParent.children!.every((child) => newSelected.includes(child.id));
         if (allChildrenSelected) {
           if (!newSelected.includes(currentParent.id)) {
             newSelected.push(currentParent.id);
           }
-          currentParent = findParent(mockAreas, currentParent.id);
+          currentParent = findParent(currentAreas, currentParent.id);
         } else {
           break;
         }
@@ -213,18 +304,18 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
       newSelected = newSelected.filter(sid => !affectedIds.includes(sid));
 
       // Bubble up: remove all ancestors
-      let currentParent = findParent(mockAreas, id);
+      let currentParent = findParent(currentAreas, id);
       while (currentParent) {
         if (newSelected.includes(currentParent.id)) {
           newSelected = newSelected.filter(sid => sid !== currentParent.id);
-          currentParent = findParent(mockAreas, currentParent.id);
+          currentParent = findParent(currentAreas, currentParent.id);
         } else {
           break;
         }
       }
     }
     onSelectionChange(newSelected);
-  };
+  }, [currentAreas, selectedAreas, findNode, getAllDescendantIds, findParent, onSelectionChange]);
 
   return (
     <div>
@@ -240,14 +331,17 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
           <div className="mb-3">
             <Form.Select
               className="mb-2"
-              defaultValue="Niagara"
+              value={selectedHierarchy}
+              onChange={(e) => setSelectedHierarchy(e.target.value)}
               style={{
                 backgroundColor: isDarkMode ? '#212529' : '#fff',
                 color: isDarkMode ? '#fff' : '#6c757d',
                 border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
               }}
             >
-              <option value="Niagara">Niagara</option>
+              {hierarchyOptions.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
             </Form.Select>
             <div className="position-relative">
               <Form.Control
@@ -263,6 +357,9 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
                   border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
                 }}
               />
+              {searchTerm && searchTerm !== debouncedSearchTerm && (
+                <small className="text-muted d-block mt-1">Searching...</small>
+              )}
             </div>
           </div>
 
@@ -270,15 +367,21 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
             style={{ maxHeight: '400px', overflowY: 'auto', background: isDarkMode ? '#212529' : '#FFF' }}
             className="rounded p-2"
           >
-            {mockAreas.map(area => (
-              <TreeNode
-                key={area.id}
-                node={area}
-                selectedAreas={selectedAreas}
-                onSelect={handleSelect}
-                filter={searchTerm}
-              />
-            ))}
+            {currentAreas.length === 0 ? (
+              <div className="text-muted text-center p-3">No areas available</div>
+            ) : (
+              currentAreas.map(area => (
+                <TreeNode
+                  key={area.id}
+                  node={area}
+                  selectedAreas={selectedAreas}
+                  onSelect={handleSelect}
+                  filter={debouncedSearchTerm}
+                  expandedNodeId={expandedNodeId}
+                  onToggleExpand={setExpandedNodeId}
+                />
+              ))
+            )}
           </div>
         </Card.Body>
       </Card>
