@@ -1,41 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, Form, Collapse } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight, faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../../store/hooks';
 
-// Mock Data
+// Mock Data - 2 levels of nesting
 const mockAreas = [
   {
-    id: 'niagara',
-    label: 'Niagara',
+    id: 'boko',
+    label: 'Boko',
     children: [
-      {
-        id: 'boko',
-        label: 'Boko',
-        children: [
-          { id: 'ph1', label: 'PH 1' },
-          { id: 'ph2', label: 'PH 2' },
-          { id: 'ph3', label: 'PH 3' },
-          { id: 'ph4', label: 'PH 4' }
-        ]
-      },
-      {
-        id: 'laka',
-        label: 'Laka',
-        children: [
-          { id: 'lg1', label: 'LG 1' },
-          { id: 'lg2', label: 'LG 2' }
-        ]
-      },
-      {
-        id: 'lagos',
-        label: 'Lagos',
-        children: [
-          { id: 'la1', label: 'LG 1' },
-          { id: 'la2', label: 'LG 2' }
-        ]
-      }
+      { id: 'ph1', label: 'PH 1' },
+      { id: 'ph2', label: 'PH 2' },
+      { id: 'ph3', label: 'PH 3' },
+      { id: 'ph4', label: 'PH 4' }
+    ]
+  },
+  {
+    id: 'laka',
+    label: 'Laka',
+    children: [
+      { id: 'lg1', label: 'LG 1' },
+      { id: 'lg2', label: 'LG 2' }
     ]
   }
 ];
@@ -45,35 +31,55 @@ interface Props {
   onSelectionChange: (selectedIds: string[]) => void;
 }
 
-const TreeNode = ({ node, selectedAreas, onSelect, readOnly, filter }: any) => {
+const TreeNode = ({ node, selectedAreas, onSelect, filter }: any) => {
   const [expanded, setExpanded] = useState(true);
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
+  const checkboxRef = useRef<HTMLInputElement>(null);
 
   const isSelected = selectedAreas.includes(node.id);
   const hasChildren = node.children && node.children.length > 0;
 
-  // If readOnly (Selected View), only render if self or descendant is selected
-  if (readOnly) {
-    const hasSelectedDescendant = (n: any): boolean => {
-      if (selectedAreas.includes(n.id)) return true;
-      if (n.children) return n.children.some((c: any) => hasSelectedDescendant(c));
-      return false;
-    };
-    if (!selectedAreas.includes(node.id) && !hasSelectedDescendant(node)) {
-      return null;
-    }
-  }
+  // Calculate indeterminate state
+  const getDescendantSelectionState = (n: any): { total: number; selected: number } => {
+    let total = 0;
+    let selected = 0;
 
-  // Filter logic (for search in Left View)
-  // If filter is active, only show if self matches or child matches
-  if (!readOnly && filter) {
+    if (n.children && n.children.length > 0) {
+      n.children.forEach((child: any) => {
+        const childState = getDescendantSelectionState(child);
+        total += childState.total;
+        selected += childState.selected;
+      });
+    } else {
+      // Leaf node
+      total = 1;
+      selected = selectedAreas.includes(n.id) ? 1 : 0;
+    }
+
+    return { total, selected };
+  };
+
+  const isIndeterminate = () => {
+    if (!hasChildren) return false;
+    const state = getDescendantSelectionState(node);
+    return state.selected > 0 && state.selected < state.total;
+  };
+
+  const indeterminate = isIndeterminate();
+
+  // Set indeterminate property on checkbox
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = indeterminate;
+    }
+  }, [indeterminate]);
+
+  // Filter logic (for search)
+  if (filter) {
     const matches = node.label.toLowerCase().includes(filter.toLowerCase());
     const childMatches =
       node.children &&
       node.children.some((c: any) => {
-        // crude check, ideally deeply recursive but 'TreeNode' handles recursion.
-        // For prop drilling filter, we need to know if we should render THIS node.
-        // Simplified: Render if self matches OR if any child renders.
         return JSON.stringify(c).toLowerCase().includes(filter.toLowerCase());
       });
     if (!matches && !childMatches) return null;
@@ -85,12 +91,11 @@ const TreeNode = ({ node, selectedAreas, onSelect, readOnly, filter }: any) => {
   };
 
   const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (readOnly) return;
     onSelect(node.id, e.target.checked);
   };
 
   return (
-    <div className="ms-3 mb-1 " style={{ background: isDarkMode ? '#212529' : '' }}>
+    <div className="mb-1" style={{ background: isDarkMode ? '#212529' : '' }}>
       <div className="d-flex align-items-center">
         {hasChildren ? (
           <span
@@ -105,18 +110,18 @@ const TreeNode = ({ node, selectedAreas, onSelect, readOnly, filter }: any) => {
         )}
         <div className="form-check mb-0">
           <input
+            ref={checkboxRef}
             className="form-check-input"
             type="checkbox"
-            id={`${readOnly ? 'ro' : 'edit'}-${node.id}`}
+            id={`edit-${node.id}`}
             checked={isSelected}
             onChange={handleCheck}
-            disabled={readOnly}
-            style={{ cursor: readOnly ? 'default' : 'pointer' }}
+            style={{ cursor: 'pointer' }}
           />
           <label
             className="form-check-label"
-            htmlFor={`${readOnly ? 'ro' : 'edit'}-${node.id}`}
-            style={{ cursor: readOnly ? 'default' : 'pointer', userSelect: 'none' }}
+            htmlFor={`edit-${node.id}`}
+            style={{ cursor: 'pointer', userSelect: 'none' }}
           >
             {node.label}
           </label>
@@ -124,14 +129,13 @@ const TreeNode = ({ node, selectedAreas, onSelect, readOnly, filter }: any) => {
       </div>
       {hasChildren && (
         <Collapse in={expanded}>
-          <div>
+          <div className="ms-4">
             {node.children.map((child: any) => (
               <TreeNode
                 key={child.id}
                 node={child}
                 selectedAreas={selectedAreas}
                 onSelect={onSelect}
-                readOnly={readOnly}
                 filter={filter}
               />
             ))}
@@ -144,8 +148,6 @@ const TreeNode = ({ node, selectedAreas, onSelect, readOnly, filter }: any) => {
 
 const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
-
-  //#ffffff2c
   const [searchTerm, setSearchTerm] = useState('');
 
   const getAllDescendantIds = (node: any): string[] => {
@@ -225,19 +227,26 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
   };
 
   return (
-    <div className="d-flex flex-column flex-md-row gap-4">
-      {/* Areas Tree */}
+    <div>
+      {/* Single Areas Card */}
       <Card
-        className={`flex-fill shadow-sm ${isDarkMode ? 'border-white' : ''}`}
-        style={{ background: isDarkMode ? '#212529' : '' }}
-      // style={{ minWidth: '300px' }}
+        className={`shadow-sm ${isDarkMode ? 'border-white' : ''}`}
+        style={{ background: isDarkMode ? '#212529' : '#f8f9fa' }}
       >
-        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
-          All Areas
+        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-white border-bottom'} fw-bold`}>
+          Areas
         </Card.Header>
-        <Card.Body className="p-3">
+        <Card.Body className="p-3" style={{ background: isDarkMode ? '#282828' : '#fff' }}>
           <div className="mb-3">
-            <Form.Select className="mb-2 border-0 bg-white" defaultValue="Niagara">
+            <Form.Select
+              className="mb-2"
+              defaultValue="Niagara"
+              style={{
+                backgroundColor: isDarkMode ? '#212529' : '#fff',
+                color: isDarkMode ? '#fff' : '#6c757d',
+                border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
+              }}
+            >
               <option value="Niagara">Niagara</option>
             </Form.Select>
             <div className="position-relative">
@@ -247,14 +256,19 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 className="ps-2"
-                style={{ fontSize: '0.9rem' }}
+                style={{
+                  fontSize: '0.9rem',
+                  backgroundColor: isDarkMode ? '#212529' : '#fff',
+                  color: isDarkMode ? '#fff' : '#000',
+                  border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
+                }}
               />
             </div>
           </div>
 
           <div
             style={{ maxHeight: '400px', overflowY: 'auto', background: isDarkMode ? '#212529' : '#FFF' }}
-            className=" rounded p-2"
+            className="rounded p-2"
           >
             {mockAreas.map(area => (
               <TreeNode
@@ -264,33 +278,6 @@ const AreasSelection = ({ selectedAreas, onSelectionChange }: Props) => {
                 onSelect={handleSelect}
                 filter={searchTerm}
               />
-            ))}
-          </div>
-        </Card.Body>
-      </Card>
-
-      {/* Selected Areas */}
-      <Card
-        className={`flex-fill shadow-sm ${isDarkMode ? 'border-white' : ''}`}
-        style={{ background: isDarkMode ? '#212529' : '' }}
-      >
-        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
-          Selected Areas
-        </Card.Header>
-        <Card.Body className="p-3">
-          <div style={{ background: isDarkMode ? '#212529' : '#FFF' }} className="mb-3">
-            {/* Initial View often mirrors top level unless filtered, mimicking screenshot layout 'Niagara' */}
-            <div className="p-2 fw-bold text-secondary">Niagara</div>
-          </div>
-
-          <div
-            style={{ maxHeight: '435px', overflowY: 'auto', background: isDarkMode ? '#212529' : '' }}
-            className="rounded p-2"
-          >
-            {selectedAreas.length === 0 && <span className="text-muted text-center d-block mt-3">No areas selected</span>}
-            {mockAreas.map(area => (
-              // In Selected View, we render the tree but filtering out unselected nodes (handled by TreeNode readOnly logic)
-              <TreeNode key={area.id} node={area} selectedAreas={selectedAreas} onSelect={() => { }} readOnly={true} />
             ))}
           </div>
         </Card.Body>
