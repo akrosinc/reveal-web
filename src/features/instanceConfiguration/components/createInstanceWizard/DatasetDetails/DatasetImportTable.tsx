@@ -9,6 +9,8 @@ import { EntityTagResponse } from '../../../../planSimulation/providers/types';
 import { TAG_ACCESS_OVERRIDE } from '../../../../../constants';
 import { useKeycloak } from '@react-keycloak/web';
 
+import { useTranslation } from 'react-i18next';
+
 interface Props {
     data: MetadataFileImportResponse[];
     sortHandler?: (sortValue: string, sortDirection: boolean) => void;
@@ -20,13 +22,51 @@ interface Props {
 const DatasetImportTable = ({ data, setMetadataList }: Props) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const { keycloak } = useKeycloak();
+    const { t } = useTranslation();
     const columnsForMetadataTables = React.useMemo<Column<EntityTagResponse>[]>(
         () => [
-            { Header: 'Tag', accessor: 'tag' },
-            { Header: 'Is Public', accessor: 'public' },
-            { Header: 'Currents Groups', id: 'orgGrants' },
-            { Header: 'Current User', id: 'userGrants' },
-            { Header: 'Selection', id: 'Selection', accessor: 'selected' }
+            {
+                // Build our expander column
+                id: 'expander', // Make sure it has an ID
+                Cell: ({ row }: { row: any }) =>
+                // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
+                // to build the toggle for expanding a row
+                {
+                    return row.canExpand ? (
+                        <span
+                            {...row.getToggleRowExpandedProps({
+                                // Use the row.depth property
+                                // and paddingLeft to indicate the depth
+                                // of the row
+                                style: {
+                                    paddingLeft: `${row.depth}rem`,
+                                    paddingTop: '15px',
+                                    paddingBottom: '15px',
+                                    paddingRight: '15px'
+                                }
+                            })}
+                        >
+                            {row.isExpanded ? (
+                                <FontAwesomeIcon className="ms-1" icon="chevron-down" />
+                            ) : (
+                                <FontAwesomeIcon className="ms-1" icon="chevron-right" />
+                            )}
+                        </span>
+                    ) : null;
+                }
+            },
+            {
+                Header: 'selected',
+                accessor: 'selected'
+            },
+            { Header: 'tag', accessor: 'tag' },
+            { Header: 'type', accessor: 'valueType' },
+            { Header: 'aggregate', accessor: 'aggregate' },
+            { Header: 'owner', accessor: 'owner' },
+            { Header: 'owners', accessor: 'owners' },
+            { Header: 'isPublic', accessor: 'public' },
+            { Header: 'orgGrants' },
+            { Header: 'userGrants' }
         ],
         []
     );
@@ -73,9 +113,12 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
                     ) : null
             },
             { Header: 'selected', accessor: 'selected' },
-            { Header: 'Dataset name', accessor: 'filename' },
-            { Header: 'Owner Name', accessor: 'uploadedBy' },
-            { Header: 'Is public', accessor: 'owner' }
+            { Header: 'fileName', accessor: 'filename' },
+            { Header: 'uploadDate', accessor: 'uploadDatetime' },
+            { Header: 'status', accessor: 'status' },
+            { Header: 'uploadedBy', accessor: 'uploadedBy' },
+            { Header: 'owner', accessor: 'owner' },
+            { Header: 'owners', accessor: 'owners' }
         ],
         []
     );
@@ -132,7 +175,7 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
                                 {...column.getHeaderProps()}
                             >
                                 {column.Header !== undefined && column.Header !== null && column.id !== 'expander'
-                                    ? column.Header.toString()
+                                    ? t('metadataImport.table.' + column.Header.toString())
                                     : ''}
                             </th>
                         ))}
@@ -157,6 +200,14 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
                                         );
                                     } else if (cell.column.id === 'owner') {
                                         return <td {...cell.getCellProps()}>{cell.row.original.owner ? 'true' : 'false'}</td>;
+                                    } else if (cell.column.id === 'owners') {
+                                        return (
+                                            <td {...cell.getCellProps()}>
+                                                {cell.row.original.owners.map(owner => (
+                                                    <p key={owner.id}>{owner.username}</p>
+                                                ))}
+                                            </td>
+                                        );
                                     } else {
                                         return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>;
                                     }

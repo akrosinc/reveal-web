@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useState, useEffect } from 'react';
 import { Row, Col, Form, Button } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
 import DatePicker from 'react-datepicker';
@@ -6,19 +6,17 @@ import Select from 'react-select';
 import 'react-datepicker/dist/react-datepicker.css';
 import { WizardStepProps } from '../Wizard/Wizard';
 import { useAppSelector } from '../../../../store/hooks';
-
-/* -------------------- Static Dropdown Data -------------------- */
-const hierarchyOptions = [
-  { value: 'country', label: 'Country', nodeOrder: ['region', 'district'] },
-  { value: 'region', label: 'Region', nodeOrder: ['district'] }
-];
-
-const interventionOptions = [
-  { value: 'full', label: 'Full Intervention' },
-  { value: 'lite', label: 'Lite Intervention' }
-];
+import { getLocationHierarchyList, getGeographicLevelList } from '../../../location/api';
+import { getInterventionTypeList } from '../../../plan/api';
+import { toast } from 'react-toastify';
 
 /* -------------------- Types -------------------- */
+interface Options {
+  value: string;
+  label: string;
+  nodeOrder?: string[];
+}
+
 interface RegisterValues {
   name: string;
   title: string;
@@ -35,25 +33,11 @@ const REGEX_TITLE_VALIDATION = /^[A-Za-z0-9\s-]+$/;
 
 const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultValues }) => {
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
-  // Initialize form state from defaultValues (received from Wizard)
-  // We lift state up by using defaultValues to initialize, and onNext to save.
-
-  // Note: react-select values need object { value, label }, so we might need to find them again based on stored string values
-  const getInitialHierarchy = () => {
-    if (defaultValues?.locationHierarchy) {
-      return hierarchyOptions.find(opt => opt.value === defaultValues.locationHierarchy) || null;
-    }
-    return null;
-  };
-  const getInitialIntervention = () => {
-    if (defaultValues?.interventionType) {
-      return interventionOptions.find(opt => opt.value === defaultValues.interventionType) || null;
-    }
-    return null;
-  };
-
-  const [selectedHierarchy, setSelectedHierarchy] = useState<any>(getInitialHierarchy());
-  const [selectedIntervention, setSelectedIntervention] = useState<any>(getInitialIntervention());
+  const [hierarchyList, setHierarchyList] = useState<Options[]>([]);
+  const [interventionTypeList, setInterventionTypeList] = useState<Options[]>([]);
+  const [geographicLevelList, setGeographicLevelList] = useState<any[]>([]);
+  const [selectedHierarchy, setSelectedHierarchy] = useState<Options | null>(null);
+  const [selectedIntervention, setSelectedIntervention] = useState<Options | null>(null);
 
   const {
     register,
@@ -76,6 +60,33 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
       hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || ''
     }
   });
+
+  useEffect(() => {
+    Promise.all([getLocationHierarchyList(0, 0, true), getInterventionTypeList(), getGeographicLevelList(0, 0)])
+      .then(([locationHierarchyList, interventionTypeList, geoLevelList]) => {
+        const hList = locationHierarchyList.content.map<Options>(el => ({
+          label: el.name,
+          value: el.identifier ?? '',
+          nodeOrder: el.nodeOrder
+        }));
+        const iList = interventionTypeList.map<Options>(el => ({
+          label: el.name,
+          value: el.identifier
+        }));
+
+        setHierarchyList(hList);
+        setInterventionTypeList(iList);
+        setGeographicLevelList(geoLevelList.content);
+
+        if (defaultValues?.locationHierarchy) {
+          setSelectedHierarchy(hList.find(opt => opt.value === defaultValues.locationHierarchy) || null);
+        }
+        if (defaultValues?.interventionType) {
+          setSelectedIntervention(iList.find(opt => opt.value === defaultValues.interventionType) || null);
+        }
+      })
+      .catch(err => toast.error(err));
+  }, [defaultValues]);
 
   const onSubmit = (data: RegisterValues) => {
     // Pass data to next step
@@ -203,7 +214,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                 <Select
                   className="custom-react-select-container"
                   classNamePrefix="custom-react-select"
-                  options={hierarchyOptions}
+                  options={hierarchyList}
                   value={selectedHierarchy}
                   onChange={(val: any) => {
                     setSelectedHierarchy(val);
@@ -228,7 +239,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                 <Select
                   className="custom-react-select-container"
                   classNamePrefix="custom-react-select"
-                  options={interventionOptions}
+                  options={interventionTypeList}
                   value={selectedIntervention}
                   onChange={(val: any) => {
                     setSelectedIntervention(val);
@@ -255,16 +266,25 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                     className="custom-react-select-container"
                     classNamePrefix="custom-react-select"
                     options={
-                      selectedHierarchy?.nodeOrder?.map((el: string) => ({
-                        label: el,
-                        value: el
-                      })) || []
+                      selectedHierarchy?.nodeOrder
+                        ?.filter(el => el !== 'structure')
+                        .map((el: string) => {
+                          const geoLevel = geographicLevelList.find(g => g.name === el);
+                          return {
+                            label: geoLevel ? geoLevel.title : el,
+                            value: el
+                          };
+                        }) || []
                     }
                     value={selectedHierarchy?.nodeOrder
-                      ?.map((el: string) => ({
-                        label: el,
-                        value: el
-                      }))
+                      ?.filter(el => el !== 'structure')
+                      .map((el: string) => {
+                        const geoLevel = geographicLevelList.find(g => g.name === el);
+                        return {
+                          label: geoLevel ? geoLevel.title : el,
+                          value: el
+                        };
+                      })
                       .find((opt: any) => opt.value === watch('hierarchyLevelTarget'))}
                     onChange={(val: any) => field.onChange(val?.value)}
                   />

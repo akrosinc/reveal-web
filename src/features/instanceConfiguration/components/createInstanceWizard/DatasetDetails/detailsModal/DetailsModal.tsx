@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Collapse, Modal, Table } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+// import { getMetadataDetailsById } from '../../../../metaDataImport/api';
+// import { MetaImportTag } from '../../../../metaDataImport/providers/types';
+import { getMetadataDetailsById } from '../../../../../metaDataImport/api';
+import { MetaImportTag } from '../../../../../metaDataImport/providers/types';
 
 interface Props {
     selectedFile: any;
@@ -7,23 +12,13 @@ interface Props {
 }
 
 const DetailsModal = ({ selectedFile, closeHandler }: Props) => {
-    const [importDetails, setImportDetails] = useState<any[]>([]);
+    const [importDetails, setImportDetails] = useState<MetaImportTag[]>([]);
     const [showColumn, setShowColumn] = useState<string | undefined>();
 
     useEffect(() => {
-        // Static data instead of API call
-        setImportDetails([
-            {
-                identifier: '1',
-                locationName: 'Root Location',
-                entityValue: [
-                    {
-                        tag: 'Tag1',
-                        tagData: { value: { valueString: 'Value1' } }
-                    }
-                ]
-            }
-        ]);
+        getMetadataDetailsById(selectedFile.identifier)
+            .then(res => setImportDetails(res))
+            .catch(err => toast.error(err));
     }, [selectedFile]);
 
     return (

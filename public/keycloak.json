@@ -1,8 +1,9 @@
 {
   "realm": "reveal",
-  "auth-server-url-nih": "https://sso-nih-uat.akros.digital/auth/",
+  "auth-server-url-nih": "https://sso-nih-ind.akros.digital/",
+  "url":"https://sso-nih-ind.akros.digital/",
   "auth-server-url-demo": "https://sso-demo.akros.digital/auth/",
-  "auth-server-url": "https://sso-my-local.akros.digital/auth/",
+  "auth-server-url": "https://sso-nih-ind.akros.digital/auth/",
   "auth-server-url-mali": "https://sso-ef-mali.akros.digital/auth/",
   "ssl-required": "external",
   "resource": "reveal-web",

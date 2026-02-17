@@ -11,123 +11,19 @@ import DetailsModal from './DatasetDetails/detailsModal';
 import UploadModal from './DatasetDetails/uploadModal';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../../store/hooks';
-
-// Comprehensive mock data to mimic API response structure
-const MOCK_DATA: any[] = [
-  {
-    identifier: '1',
-    filename: 'metadata_sample_v1.xlsx',
-    uploadDatetime: '2024-02-12T08:30:00Z',
-    status: 'SUCCESS',
-    uploadedBy: 'John Doe',
-    selected: false,
-    owner: true,
-    owners: [{ id: 'u1', username: 'jdoe' }],
-    entityTagEvents: [
-      {
-        identifier: 'tag-101',
-        tag: 'Temperature_Sensor_01',
-        public: true,
-        selected: false,
-        aggregate: false,
-        owner: true,
-        owners: [{ id: 'u1', username: 'jdoe' }]
-      },
-      {
-        identifier: 'tag-1011',
-        tag: 'Temperature_Sensor_011',
-        public: false,
-        selected: false,
-        aggregate: false,
-        owner: true,
-        owners: [{ id: 'u1', username: 'jdoe' }]
-      }
-    ]
-  },
-  {
-    identifier: '2',
-    filename: 'production_data_feb.xlsx',
-    uploadDatetime: '2024-02-11T14:45:00Z',
-    status: 'SUCCESS',
-    uploadedBy: 'Jane Smith',
-    selected: false,
-    owner: false,
-    owners: [{ id: 'u2', username: 'jsmith' }],
-    entityTagEvents: [
-      {
-        identifier: 'tag-201',
-        tag: 'Pressure_Gauge_A',
-        public: false,
-        selected: false,
-        aggregate: false,
-        owner: true,
-        owners: [{ id: 'u2', username: 'jsmith' }]
-      }
-    ]
-  },
-  {
-    identifier: '3',
-    filename: 'covid-hiv.xlsx',
-    uploadDatetime: '2024-02-10T10:00:00Z',
-    status: 'SUCCESS',
-    uploadedBy: 'Trevelen',
-    selected: true,
-    owner: false,
-    owners: [{ id: 'u3', username: 'trevelen' }],
-    entityTagEvents: [
-      {
-        identifier: 'tag-301',
-        tag: 'covid-hiv.xlsx',
-        public: false,
-        selected: false,
-        aggregate: false,
-        owner: true,
-        owners: [{ id: 'u3', username: 'trevelen' }]
-      }
-    ]
-  },
-  {
-    identifier: '4',
-    filename: 'population_stats.xlsx',
-    uploadDatetime: '2024-02-09T16:20:00Z',
-    status: 'SUCCESS',
-    uploadedBy: 'Alice Wong',
-    selected: false,
-    owner: true,
-    owners: [{ id: 'u4', username: 'awong' }],
-    entityTagEvents: []
-  },
-  {
-    identifier: '5',
-    filename: 'weather_patterns.xlsx',
-    uploadDatetime: '2024-02-08T09:15:00Z',
-    status: 'SUCCESS',
-    uploadedBy: 'Bob Miller',
-    selected: false,
-    owner: true,
-    owners: [{ id: 'u5', username: 'bmiller' }],
-    entityTagEvents: []
-  },
-  {
-    identifier: '6',
-    filename: 'economic_indicators.xlsx',
-    uploadDatetime: '2024-02-07T11:45:00Z',
-    status: 'SUCCESS',
-    uploadedBy: 'Charlie Brown',
-    selected: false,
-    owner: false,
-    owners: [{ id: 'u6', username: 'cbrown' }],
-    entityTagEvents: []
-  }
-];
+import { getMetadataImportList } from '../../../metaDataImport/api';
+import { toast } from 'react-toastify';
+import { EntityTagResponse } from '../../../planSimulation/providers/types';
+import { MetadataFileImportResponse } from '../../../metaDataImport/type';
+import { PageableModel } from '../../../../api/providers';
 
 const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValues }) => {
   const { t } = useTranslation();
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [open, setOpen] = useState(false);
   const [openAccess, setOpenAccess] = useState(false);
-  const [metadataImportPaged, setMetadataImportPaged] = useState<any>();
-  const [metadataImportList, setMetadataImportList] = useState<any[]>([]);
+  const [metadataImportPaged, setMetadataImportPaged] = useState<PageableModel<MetadataFileImportResponse>>();
+  const [metadataImportList, setMetadataImportList] = useState<MetadataFileImportResponse[]>([]);
   const [selectedMetadata, setSelectedMetadata] = useState<any[]>([]);
   const [selectedMetaImport, setSelectedMetaImport] = useState<any>();
   const [showRemoveAccess, setShowRemoveAccess] = useState(false);
@@ -135,52 +31,87 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
   const [statusFilter, setStatusFilter] = useState('All');
 
   const loadData = useCallback(
-    (search?: string, status?: string) => {
-      const s = search ?? searchTerm;
-      const st = status ?? statusFilter;
+    (
+      size: number = PAGINATION_DEFAULT_SIZE,
+      page: number = 0,
+      search?: string,
+      status?: string,
+      sortField?: string,
+      direction?: boolean
+    ) => {
+      getMetadataImportList(size, page, sortField, direction)
+        .then(res => {
+          let transformedMetadataList: MetadataFileImportResponse[] = res.content.map(fileImport => {
+            let entityTagsNotAggregate: EntityTagResponse[] | undefined = fileImport.entityTagEvents?.filter(
+              entityTag => !entityTag.aggregate
+            );
 
-      // Simulating data loading with filtering
-      let filtered = MOCK_DATA.filter(item => {
-        const matchesSearch =
-          item.filename.toLowerCase().includes(s.toLowerCase()) ||
-          item.uploadedBy.toLowerCase().includes(s.toLowerCase());
-        const matchesStatus = st === 'All' || (st === 'Public' && item.owner) || (st === 'Private' && !item.owner);
-        return matchesSearch && matchesStatus;
-      }).map(fileImport => ({ ...fileImport }));
+            let entityTagWithChildren = entityTagsNotAggregate?.map(entityTag => {
+              entityTag.children = fileImport.entityTagEvents?.filter(entityTagEvent => {
+                return entityTagEvent.aggregate && entityTagEvent.referencedTag === entityTag.identifier;
+              });
+              return entityTag;
+            });
 
-      setMetadataImportList(filtered);
-      setMetadataImportPaged({
-        content: filtered,
-        totalElements: filtered.length,
-        totalPages: 1,
-        size: filtered.length,
-        pageable: { pageNumber: 0 },
-        empty: filtered.length === 0
-      });
+            let newFileImport: MetadataFileImportResponse = {
+              selected: fileImport.selected,
+              entityTagEvents: entityTagWithChildren,
+              filename: fileImport.filename,
+              status: fileImport.status,
+              identifier: fileImport.identifier,
+              uploadDatetime: fileImport.uploadDatetime,
+              uploadedBy: fileImport.uploadedBy,
+              owner: fileImport.owner,
+              owners: fileImport.owners
+            };
+
+            return newFileImport;
+          });
+
+          // Local filtering for search and status if API doesn't support it yet
+          // But looking at getMetadataImportList, it only takes size, page, field, direction
+          const s = search ?? searchTerm;
+          const st = status ?? statusFilter;
+
+          let filtered = transformedMetadataList.filter(item => {
+            const matchesSearch =
+              item.filename.toLowerCase().includes(s.toLowerCase()) ||
+              item.uploadedBy.toLowerCase().includes(s.toLowerCase());
+            const matchesStatus = st === 'All' || (st === 'Public' && item.owner) || (st === 'Private' && !item.owner);
+            return matchesSearch && matchesStatus;
+          });
+
+          setMetadataImportList(filtered);
+          setMetadataImportPaged({
+            ...res,
+            content: filtered
+          });
+        })
+        .catch(err => toast.error(err));
     },
     [searchTerm, statusFilter]
   );
 
   useEffect(() => {
-    loadData();
+    loadData(PAGINATION_DEFAULT_SIZE, 0);
   }, [loadData]);
 
   const paginationHandler = (size: number, page: number) => {
-    loadData(searchTerm, statusFilter);
+    loadData(size, page, searchTerm, statusFilter);
   };
 
   const sortHandler = (field: string, direction: boolean) => {
-    loadData(searchTerm, statusFilter);
+    loadData(PAGINATION_DEFAULT_SIZE, 0, searchTerm, statusFilter, field, direction);
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    loadData(e.target.value, statusFilter);
+    loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value, statusFilter);
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value);
-    loadData(searchTerm, e.target.value);
+    loadData(PAGINATION_DEFAULT_SIZE, 0, searchTerm, e.target.value);
   };
 
   // Precise logic from MetaFileImport for tracking selection
@@ -267,6 +198,15 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
                     sortHandler={sortHandler}
                     setMetadataList={setMetadataImportList}
                   />
+                  {!metadataImportPaged.empty ? (
+                    <Paginator
+                      page={metadataImportPaged.pageable.pageNumber}
+                      size={metadataImportPaged.size}
+                      totalElements={metadataImportPaged.totalElements}
+                      totalPages={metadataImportPaged.totalPages}
+                      paginationHandler={paginationHandler}
+                    />
+                  ) : null}
                 </>
               ) : (
                 <div className="p-3 text-center w-100">No data found.</div>
