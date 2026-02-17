@@ -54,19 +54,14 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
                         </span>
                     ) : null;
                 }
-            },
-            {
-                Header: 'selected',
-                accessor: 'selected'
-            },
+            }, { Header: 'selected', accessor: 'selected' },
             { Header: 'tag', accessor: 'tag' },
-            { Header: 'type', accessor: 'valueType' },
-            { Header: 'aggregate', accessor: 'aggregate' },
             { Header: 'owner', accessor: 'owner' },
-            { Header: 'owners', accessor: 'owners' },
+            { Header: 'owner', id: 'owner2', accessor: 'owner' },
             { Header: 'isPublic', accessor: 'public' },
             { Header: 'orgGrants' },
-            { Header: 'userGrants' }
+            { Header: 'userGrants' },
+
         ],
         []
     );
@@ -118,7 +113,8 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
             { Header: 'status', accessor: 'status' },
             { Header: 'uploadedBy', accessor: 'uploadedBy' },
             { Header: 'owner', accessor: 'owner' },
-            { Header: 'owners', accessor: 'owners' }
+            { Header: 'owners', accessor: 'owners' },
+
         ],
         []
     );
