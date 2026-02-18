@@ -119,7 +119,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
         if (checkboxRef.current) {
             checkboxRef.current.indeterminate = indeterminate;
         }
-    }, [indeterminate]);
+    }); // Run on every render to ensure indeterminate state persists
 
     const handleExpand = (e: React.MouseEvent) => {
         e.stopPropagation();

@@ -117,7 +117,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, filt
     if (checkboxRef.current) {
       checkboxRef.current.indeterminate = indeterminate;
     }
-  }, [indeterminate]);
+  }); // Run on every render to ensure indeterminate state persists
 
   // Filter logic
   if (filter) {

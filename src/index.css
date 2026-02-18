@@ -88,6 +88,16 @@ code {
   /* Bootstrap default white checkmark works here */
 }
 
+/* Parent Node: Indeterminate (Partially Checked) */
+.area-selection-tree .parent-checkbox:indeterminate {
+  background-color: #000 !important;
+  border-color: #000 !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/%3e%3c/svg%3e") !important;
+  background-size: 1rem !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
 /* Child Node: Outlined Blue when checked */
 .area-selection-tree .child-checkbox:checked {
   background-color: #fff !important;
