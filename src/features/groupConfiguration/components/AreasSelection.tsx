@@ -147,19 +147,11 @@ const TreeNode: React.FC<TreeNodeProps> = ({
         <div ref={nodeRef} className="ms-3 mb-1">
             <div className="d-flex align-items-center justify-content-between">
                 <div className="d-flex align-items-center">
-                    {hasChildren ? (
-                        <span onClick={handleExpand} style={{ cursor: 'pointer', width: '20px' }} className="me-1 text-center">
-                            <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
-                        </span>
-                    ) : (
-                        <span style={{ width: '20px' }} className="me-1"></span>
-                    )}
-
                     {(!isTeamMode || hasChildren) ? (
                         <div className="form-check mb-0">
                             <input
                                 ref={checkboxRef}
-                                className="form-check-input"
+                                className={`form-check-input ${hasChildren ? 'parent-checkbox' : 'child-checkbox'}`}
                                 type="checkbox"
                                 id={`area-${node.id}`}
                                 checked={isSelected}
@@ -174,16 +166,26 @@ const TreeNode: React.FC<TreeNodeProps> = ({
                     )}
                 </div>
 
-                {isTeamMode && !hasChildren && (
-                    <div className={`d-flex align-items-center gap-2 ${!isSelected ? 'opacity-25' : ''}`}>
-                        <span className="text-muted small" style={{ color: textColor }}>{areaTeams[node.id] || ''}</span>
-                        <FontAwesomeIcon
-                            icon={faEllipsisV}
-                            className={`text-secondary ${isSelected ? 'cursor-pointer' : ''} ms-2`}
-                            onClick={() => isSelected && onTeamClick(node.id)}
-                        />
-                    </div>
-                )}
+                <div className="d-flex align-items-center">
+                    {hasChildren ? (
+                        <span onClick={handleExpand} style={{ cursor: 'pointer', width: '20px' }} className="me-1 text-center">
+                            <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
+                        </span>
+                    ) : (
+                        <span style={{ width: '20px' }} className="me-1"></span>
+                    )}
+
+                    {isTeamMode && !hasChildren && (
+                        <div className={`d-flex align-items-center gap-2 ${!isSelected ? 'opacity-25' : ''}`}>
+                            <span className="text-muted small" style={{ color: textColor }}>{areaTeams[node.id] || ''}</span>
+                            <FontAwesomeIcon
+                                icon={faEllipsisV}
+                                className={`text-secondary ${isSelected ? 'cursor-pointer' : ''} ms-2`}
+                                onClick={() => isSelected && onTeamClick(node.id)}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
             {hasChildren && (
                 <Collapse in={expanded}>
@@ -409,7 +411,7 @@ const AreasSelection: React.FC<AreasSelectionProps> = ({
                 </div>
 
                 <hr className="my-3 opacity-25" />
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="pe-2">
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="pe-2 area-selection-tree">
                     {currentAreas.map(area => (
                         <TreeNode
                             key={area.id}

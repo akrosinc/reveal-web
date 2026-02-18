@@ -148,22 +148,12 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, filt
 
   return (
     <div ref={nodeRef} className="mb-1" style={{ background: isDarkMode ? '#212529' : '' }}>
-      <div className="d-flex align-items-center">
-        {hasChildren ? (
-          <span
-            onClick={handleExpand}
-            style={{ cursor: 'pointer', width: '20px', display: 'inline-block', textAlign: 'center' }}
-            className="me-1"
-          >
-            <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
-          </span>
-        ) : (
-          <span style={{ width: '20px', display: 'inline-block' }} className="me-1"></span>
-        )}
+      <div className="d-flex align-items-center justify-content-between">
+
         <div className="form-check mb-0">
           <input
             ref={checkboxRef}
-            className="form-check-input"
+            className={`form-check-input ${hasChildren ? 'parent-checkbox' : 'child-checkbox'}`}
             type="checkbox"
             id={`edit-${node.id}`}
             checked={isSelected}
@@ -178,6 +168,17 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, filt
             {node.label}
           </label>
         </div>
+        {hasChildren ? (
+          <span
+            onClick={handleExpand}
+            style={{ cursor: 'pointer', width: '20px', display: 'inline-block', textAlign: 'center' }}
+            className="me-1"
+          >
+            <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
+          </span>
+        ) : (
+          <span style={{ width: '20px', display: 'inline-block' }} className="me-1"></span>
+        )}
       </div>
       {hasChildren && (
         <Collapse in={expanded}>
@@ -365,7 +366,7 @@ const AreasSelection: React.FC<Props> = ({ selectedAreas, onSelectionChange }) =
 
           <div
             style={{ maxHeight: '400px', overflowY: 'auto', background: isDarkMode ? '#212529' : '#FFF' }}
-            className="rounded p-2"
+            className="rounded p-2 area-selection-tree"
           >
             {currentAreas.length === 0 ? (
               <div className="text-muted text-center p-3">No areas available</div>
