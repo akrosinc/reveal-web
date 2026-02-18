@@ -329,60 +329,62 @@ const AreasSelection: React.FC<Props> = ({ selectedAreas, onSelectionChange }) =
           Areas
         </Card.Header>
         <Card.Body className="p-3" style={{ background: isDarkMode ? '#282828' : '#fff' }}>
-          <div className="mb-3">
-            <Form.Select
-              className="mb-2"
-              value={selectedHierarchy}
-              onChange={(e) => setSelectedHierarchy(e.target.value)}
-              style={{
-                backgroundColor: isDarkMode ? '#212529' : '#fff',
-                color: isDarkMode ? '#fff' : '#6c757d',
-                border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
-              }}
-            >
-              {hierarchyOptions.map(option => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </Form.Select>
-            <div className="position-relative">
-              <Form.Control
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="ps-2"
+          <div className="area-selection-content">
+            <div className="mb-3">
+              <Form.Select
+                className="mb-2"
+                value={selectedHierarchy}
+                onChange={(e) => setSelectedHierarchy(e.target.value)}
                 style={{
-                  fontSize: '0.9rem',
                   backgroundColor: isDarkMode ? '#212529' : '#fff',
-                  color: isDarkMode ? '#fff' : '#000',
+                  color: isDarkMode ? '#fff' : '#6c757d',
                   border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
                 }}
-              />
-              {searchTerm && searchTerm !== debouncedSearchTerm && (
-                <small className="text-muted d-block mt-1">Searching...</small>
+              >
+                {hierarchyOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </Form.Select>
+              <div className="position-relative">
+                <Form.Control
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="ps-2"
+                  style={{
+                    fontSize: '0.9rem',
+                    backgroundColor: isDarkMode ? '#212529' : '#fff',
+                    color: isDarkMode ? '#fff' : '#000',
+                    border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
+                  }}
+                />
+                {searchTerm && searchTerm !== debouncedSearchTerm && (
+                  <small className="text-muted d-block mt-1">Searching...</small>
+                )}
+              </div>
+            </div>
+
+            <div
+              style={{ maxHeight: '400px', overflowY: 'auto', background: isDarkMode ? '#212529' : '#FFF' }}
+              className="rounded p-2 area-selection-tree"
+            >
+              {currentAreas.length === 0 ? (
+                <div className="text-muted text-center p-3">No areas available</div>
+              ) : (
+                currentAreas.map(area => (
+                  <TreeNode
+                    key={area.id}
+                    node={area}
+                    selectedAreas={selectedAreas}
+                    onSelect={handleSelect}
+                    filter={debouncedSearchTerm}
+                    expandedNodeId={expandedNodeId}
+                    onToggleExpand={setExpandedNodeId}
+                  />
+                ))
               )}
             </div>
-          </div>
-
-          <div
-            style={{ maxHeight: '400px', overflowY: 'auto', background: isDarkMode ? '#212529' : '#FFF' }}
-            className="rounded p-2 area-selection-tree"
-          >
-            {currentAreas.length === 0 ? (
-              <div className="text-muted text-center p-3">No areas available</div>
-            ) : (
-              currentAreas.map(area => (
-                <TreeNode
-                  key={area.id}
-                  node={area}
-                  selectedAreas={selectedAreas}
-                  onSelect={handleSelect}
-                  filter={debouncedSearchTerm}
-                  expandedNodeId={expandedNodeId}
-                  onToggleExpand={setExpandedNodeId}
-                />
-              ))
-            )}
           </div>
         </Card.Body>
       </Card>

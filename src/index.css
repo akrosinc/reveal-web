@@ -115,3 +115,14 @@ code {
   box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
   border-color: #000;
 }
+
+/* Responsive width for Area Selection content in Group Config */
+.area-selection-content {
+  width: 100%;
+}
+
+@media (min-width: 992px) {
+  .area-selection-content {
+    width: 60%;
+  }
+}
