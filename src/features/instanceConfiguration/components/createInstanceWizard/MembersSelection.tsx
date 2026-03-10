@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Form, ListGroup, Button, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -13,7 +13,7 @@ import {
   faAngleDoubleUp
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../../store/hooks';
-
+import { getUserList } from '../../../planSimulation/components/User/api/userAPI';
 interface Member {
   id: string;
   name: string;
@@ -34,12 +34,13 @@ interface Props {
 
 const MembersSelection = ({ assignedMembers, onAssignmentChange }: Props) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [users,setUsers]=useState<Member[]>([])
   const [leftSelected, setLeftSelected] = useState<string[]>([]);
   const [rightSelected, setRightSelected] = useState<string[]>([]);
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   // Filter available members (those not in assigned list)
-  const availableMembers = mockMembers.filter(m => !assignedMembers.includes(m.id));
-  const assignedList = mockMembers.filter(m => assignedMembers.includes(m.id));
+  const availableMembers = users?.filter(m => !assignedMembers.includes(m.id));
+  const assignedList = users?.filter(m => assignedMembers.includes(m.id));
 
   const filteredAvailable = availableMembers.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -70,7 +71,19 @@ const MembersSelection = ({ assignedMembers, onAssignmentChange }: Props) => {
       setRightSelected(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
     }
   };
-  console.log("DARK MODE", isDarkMode)
+  useEffect(()=>{
+    const fetchUsers=async()=>{
+      try{
+        const users=await getUserList()
+        console.log(users)
+        setUsers(users?.map(elem=>({id:elem.identifier,name:(elem.firstName+' '+elem.lastName || '').trim()})))
+      }
+      catch(err){
+        console.log(err)
+      }
+    }
+    fetchUsers()
+  },[])
   return (
     <div className="d-flex flex-column flex-md-row align-items-center gap-3">
       {/* Available Members */}
