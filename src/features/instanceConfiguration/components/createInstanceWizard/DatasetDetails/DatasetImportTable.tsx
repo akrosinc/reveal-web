@@ -25,46 +25,17 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
     const { t } = useTranslation();
     const columnsForMetadataTables = React.useMemo<Column<EntityTagResponse>[]>(
         () => [
-            {
-                // Build our expander column
-                id: 'expander', // Make sure it has an ID
-                Cell: ({ row }: { row: any }) =>
-                // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
-                // to build the toggle for expanding a row
-                {
-                    return row.canExpand ? (
-                        <span
-                            {...row.getToggleRowExpandedProps({
-                                // Use the row.depth property
-                                // and paddingLeft to indicate the depth
-                                // of the row
-                                style: {
-                                    paddingLeft: `${row.depth}rem`,
-                                    paddingTop: '15px',
-                                    paddingBottom: '15px',
-                                    paddingRight: '15px'
-                                }
-                            })}
-                        >
-                            {row.isExpanded ? (
-                                <FontAwesomeIcon className="ms-1" icon="chevron-down" />
-                            ) : (
-                                <FontAwesomeIcon className="ms-1" icon="chevron-right" />
-                            )}
-                        </span>
-                    ) : null;
-                }
-            }, { Header: 'selected', accessor: 'selected' },
+            { Header: 'selected', id: 'selected' },
             { Header: 'tag', accessor: 'tag' },
             { Header: 'owner', accessor: 'owner' },
             { Header: 'owner', id: 'owner2', accessor: 'owner' },
             { Header: 'isPublic', accessor: 'public' },
             { Header: 'orgGrants' },
             { Header: 'userGrants' },
-
         ],
         []
     );
+
 
     const renderRowSubComponent = React.useCallback(
         (row: Row<MetadataFileImportResponse>) => {
@@ -107,7 +78,6 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
                         </span>
                     ) : null
             },
-            { Header: 'selected', accessor: 'selected' },
             { Header: 'fileName', accessor: 'filename' },
             { Header: 'uploadDate', accessor: 'uploadDatetime' },
             { Header: 'status', accessor: 'status' },

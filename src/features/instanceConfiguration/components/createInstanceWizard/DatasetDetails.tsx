@@ -114,23 +114,26 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
     loadData(PAGINATION_DEFAULT_SIZE, 0, searchTerm, e.target.value);
   };
 
-  // Precise logic from MetaFileImport for tracking selection
+  // Track selection of only leaf nodes (tags)
   useEffect(() => {
     let selected: any[] = [];
-    metadataImportList?.forEach(metadataItem =>
-      metadataItem.entityTagEvents
-        ?.filter((metaEvent: any) => metaEvent.selected)
-        .forEach((metaEvent: any) => {
+    metadataImportList?.forEach(metadataItem => {
+      metadataItem.entityTagEvents?.forEach((metaEvent: any) => {
+        // Parent node but might be leaf if no children
+        if (metaEvent.selected && (!metaEvent.children || metaEvent.children.length === 0)) {
           selected.push(metaEvent);
-          if (metaEvent.children && metaEvent.children.length > 0) {
-            metaEvent.children
-              .filter((metaChild: any) => metaChild.selected)
-              .forEach((metaChild: any) => {
-                selected.push(metaChild);
-              });
-          }
-        })
-    );
+        }
+        
+        // Children (always leaves)
+        if (metaEvent.children && metaEvent.children.length > 0) {
+          metaEvent.children.forEach((child: any) => {
+            if (child.selected) {
+              selected.push(child);
+            }
+          });
+        }
+      });
+    });
     setSelectedMetadata(selected);
   }, [metadataImportList]);
 
@@ -257,7 +260,42 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
         <Button variant="secondary" onClick={onBack}>
           Back
         </Button>
-        <Button variant="primary" onClick={() => onNext && onNext({})}>
+        <Button
+          variant="primary"
+          onClick={() => {
+            const datasetsTags = selectedMetadata.map((tag: any) => tag.identifier);
+
+            const formatDate = (date: any) => {
+              if (!date) return '';
+              const d = new Date(date);
+              return d.toISOString().split('T')[0];
+            };
+
+            const finalPayload = {
+              planRequest: {
+                name: defaultValues?.name || '',
+                title: defaultValues?.title || '',
+                effectivePeriod: {
+                  start: formatDate(defaultValues?.effectivePeriod?.start),
+                  end: formatDate(defaultValues?.effectivePeriod?.end)
+                },
+                interventionType: defaultValues?.interventionType || '',
+                locationHierarchy: defaultValues?.locationHierarchy || '',
+                goals: defaultValues?.goals || [],
+                hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || ''
+              },
+              instanceName: defaultValues?.instanceName || '',
+              locationHierarchy: defaultValues?.hierarchy || defaultValues?.locationHierarchy || '',
+              areas: defaultValues?.areas || [],
+              members: defaultValues?.members || [],
+              datasets_tags: datasetsTags
+            };
+
+            if (onNext) {
+              onNext(finalPayload);
+            }
+          }}
+        >
           Finish
         </Button>
       </div>

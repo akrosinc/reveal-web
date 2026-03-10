@@ -6,18 +6,20 @@ import MembersSelection from './MembersSelection';
 import { WizardStepProps } from '../Wizard/Wizard';
 import { useAppSelector } from '../../../../store/hooks';
 
+import { hierarchyOptions as baseHierarchyOptions } from './mockLargeDataset';
+
 /* -------------------- Mock Data -------------------- */
-const hierarchyOptions = [
-  { value: 'country', label: 'Country' },
-  { value: 'region', label: 'Region' }
-];
+const hierarchyOptions = baseHierarchyOptions.map(opt => ({
+  value: opt,
+  label: opt
+}));
 
 const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues }) => {
   // Form State - Initialize with defaultValues if present
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [instanceName, setInstanceName] = useState(defaultValues?.instanceName || '');
   const [selectedHierarchy, setSelectedHierarchy] = useState<any>(
-    defaultValues?.hierarchy ? hierarchyOptions.find(opt => opt.value === defaultValues.hierarchy) : null
+    defaultValues?.hierarchy ? hierarchyOptions.find(opt => opt.value === defaultValues.hierarchy) : hierarchyOptions[0]
   );
   const [selectedAreas, setSelectedAreas] = useState<string[]>(defaultValues?.areas || []);
   const [assignedMembers, setAssignedMembers] = useState<string[]>(defaultValues?.members || []);
@@ -64,10 +66,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
             </Alert>
           )}
 
-          {/* Instance Name and Hierarchy Inputs */}
-          {/* <Row className="mb-4">
-            <Col md={6}> */}
-          <div style={{ width: '100%' }} className="d-flex flex-column flex-md-row gap-4">
+          <div style={{ width: '100%' }} className="d-flex flex-column flex-md-row gap-4 mb-4">
             <Form.Group className="flex-grow-1" controlId="instanceName">
               {/* <Form.Label>Instance Name</Form.Label> */}
               <Form.Control
@@ -92,10 +91,14 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
             </Form.Group>
           </div>
 
-          {/* Areas Section */}
+          {/* Areas Section - Render one AreaSelection tied to the dropdown */}
           <div className="mb-5">
             <h5 className="mb-3 fw-bold">Areas</h5>
-            <AreasSelection selectedAreas={selectedAreas} onSelectionChange={setSelectedAreas} />
+            <AreasSelection
+              selectedHierarchy={selectedHierarchy?.value}
+              selectedAreas={selectedAreas}
+              onSelectionChange={setSelectedAreas}
+            />
           </div>
         </Col>
 
