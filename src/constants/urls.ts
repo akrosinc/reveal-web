@@ -10,3 +10,4 @@ export const GENERATED_LOCATION_HIERARCHY = 'genericHierarchy';
 export const LOCATION = 'location';
 export const PLAN = 'plan';
 export const REPORTS = 'dashboard';
+export const INSTANCE = 'instance';

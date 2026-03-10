@@ -1,10 +1,11 @@
-import React, { ChangeEvent, useMemo, useState } from 'react';
+import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { DebounceInput } from 'react-debounce-input';
 import DefaultTable from '../../../../components/Table/DefaultTable';
 import { MOCK_INSTANCES, InstanceModel } from './mockInstances';
 import { INSTANCE_TABLE_COLUMNS } from '../../../../constants/constants';
 import { useTranslation } from 'react-i18next';
+import { getInstances } from '../../api';
 
 interface InstancesProps {
   onCreate?: () => void;
@@ -15,6 +16,12 @@ const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
   const { t } = useTranslation();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
+
+  useEffect(() => {
+    getInstances().then(res => {
+      console.log('Instances data:', res);
+    });
+  }, []);
 
   const filterData = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);

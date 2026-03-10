@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Card, Form, Collapse, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../../store/hooks';
 import { datasetsByHierarchy, hierarchyOptions, AreaNode } from './mockLargeDataset';
 import { getHierarchy } from '../../../planSimulation/components/SimulationMapView/api/hierarchyAPI';
-import { getLocationHierarchyList } from '../../../location/api';
+import { getLocationHierarchyList, getLocationListByHierarchyId, getLocationById } from '../../../location/api';
 import { toast } from 'react-toastify';
 interface Options {
   value: string;
@@ -18,6 +18,19 @@ interface Props {
   onSelectionChange: (selectedIds: string[]) => void;
 }
 
+const mapLocationToAreaNode = (loc: any): AreaNode => ({
+  identifier: loc.identifier,
+  children: loc.children ? loc.children.map(mapLocationToAreaNode) : [],
+  properties: {
+    name: loc.properties.name,
+    geographicLevel: loc.properties.geographicLevel,
+    assigned: loc.properties.assigned,
+    parentIdentifier: loc.properties.parentIdentifier,
+    childrenNumber: loc.properties.childrenNumber,
+    simulationSearchResult: false
+  }
+});
+
 interface TreeNodeProps {
   node: AreaNode;
   selectedAreas: string[];
@@ -29,7 +42,21 @@ interface TreeNodeProps {
   inheritedMatch?: boolean;
 }
 
-const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, filter, depth = 0, expandedNodeIds, onToggleExpand, inheritedMatch = false }) => {
+// Custom comparison for memo to prevent nodes from re-rendering unless relevant state changed
+const TreeNode = React.memo<TreeNodeProps>(({ 
+  node, 
+  selectedAreas, 
+  onSelect, 
+  filter, 
+  depth = 0, 
+  expandedNodeIds, 
+  onToggleExpand, 
+  inheritedMatch = false 
+}) => {
+  // We'll use a Set locally for ultra-fast lookup if passed as a prop, 
+  // but since we are optimizing the parent, we'll expect an array here for compatibility 
+  // and convert it or use the Set if we change the prop type.
+  // For now, let's stick to the parent providing the optimization.
   const [childrenLoaded, setChildrenLoaded] = useState(false); // Track if children are loaded
   const [isVisible, setIsVisible] = useState(depth === 0); // Top level always visible
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
@@ -259,8 +286,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, selectedAreas, onSelect, filt
         </Collapse>
       )}
     </div>
-  );
-};
+  )
+});
 
 // Custom hook for debounced search
 const useDebounce = (value: string, delay: number = 300) => {
@@ -290,11 +317,76 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([]); // State for multiple expanded nodes
   const [isLoading, setIsLoading] = useState(false);
 
+  // Optimized lookup Set
+  const selectedSet = useMemo(() => new Set(selectedAreas), [selectedAreas]);
+
+  // Recursively enrich nodes with their leaf counts for O(1) render-time stats
+  const enrichedAreas = useMemo(() => {
+    const enrich = (node: AreaNode): AreaNode & { _leafIds: string[], _stats: { total: number, selected: number } } => {
+      let leafIds: string[] = [];
+      let mappedChildren: any[] = [];
+      
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+          const enrichedChild = enrich(child);
+          leafIds = [...leafIds, ...enrichedChild._leafIds];
+          mappedChildren.push(enrichedChild);
+        });
+      } else {
+        leafIds = [node.identifier];
+      }
+
+      const selectedCount = leafIds.filter(id => selectedSet.has(id)).length;
+      
+      return {
+        ...node,
+        children: mappedChildren,
+        _leafIds: leafIds,
+        _stats: { total: leafIds.length, selected: selectedCount }
+      } as any;
+    };
+
+    return currentAreas.map(enrich);
+  }, [currentAreas, selectedSet]);
+
   const toggleNodeExpansion = useCallback((nodeId: string) => {
     setExpandedNodeIds(prev => 
       prev.includes(nodeId) ? prev.filter(id => id !== nodeId) : [...prev, nodeId]
     );
   }, []);
+
+  const loadData = useCallback(
+    (size: number, page: number, searchData?: string, sortField?: string, sortDirection?: boolean) => {
+      setIsLoading(true);
+      getLocationHierarchyList(0, 0, true)
+        .then(res => {
+          if (res.content && res.content.length > 0) {
+            const hierarchyId = res.content[0].identifier;
+            getLocationListByHierarchyId(size, page, hierarchyId!, true, searchData, sortField, sortDirection)
+              .then(locRes => {
+                if (locRes.content && locRes.content.length > 0) {
+                 setCurrentAreas(locRes?.content)
+                  setIsLoading(false);
+                } else {
+                  setCurrentAreas([]);
+                  setIsLoading(false);
+                }
+              })
+              .catch(err => {
+                toast.error(err.message || 'Error fetching locations');
+                setIsLoading(false);
+              });
+          } else {
+            setIsLoading(false);
+          }
+        })
+        .catch(err => {
+          toast.error(err.message || 'Error fetching hierarchies');
+          setIsLoading(false);
+        });
+    },
+    []
+  );
 
   useEffect(()=>{
     Promise.all([getLocationHierarchyList(0, 0, true)])
@@ -312,24 +404,11 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
   // Update areas when hierarchy changes from parent
   useEffect(() => {
     if (displayHierarchy === 'default') {
-      const fetchGlobalData = async () => {
-        setIsLoading(true);
-        try {
-          const data = await getHierarchy();
-          if (data) {
-            setCurrentAreas(data);
-          }
-        } catch (error) {
-          console.error('Error fetching global hierarchy:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchGlobalData();
+      loadData(10, 0);
     } else {
       setCurrentAreas(datasetsByHierarchy[displayHierarchy] || []);
     }
-  }, [displayHierarchy]);
+  }, [displayHierarchy, loadData]);
 
   const getAllLeafIds = useCallback((node: AreaNode): string[] => {
     let ids: string[] = [];
@@ -442,10 +521,10 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
                     >
                       {isLoading ? (
                         <div className="text-muted text-center p-3">Loading global data...</div>
-                      ) : currentAreas.length === 0 ? (
+                      ) : enrichedAreas.length === 0 ? (
                         <div className="text-muted text-center p-3">No areas available</div>
                       ) : (
-                        currentAreas.map(area => (
+                        enrichedAreas.map(area => (
                           <TreeNode
                             key={area.identifier}
                             node={area}
