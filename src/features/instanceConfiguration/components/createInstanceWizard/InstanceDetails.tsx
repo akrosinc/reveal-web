@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import Select from 'react-select';
 import AreasSelection from './AreasSelection';
@@ -7,7 +7,13 @@ import { WizardStepProps } from '../Wizard/Wizard';
 import { useAppSelector } from '../../../../store/hooks';
 
 import { hierarchyOptions as baseHierarchyOptions } from './mockLargeDataset';
-
+import { getLocationHierarchyList } from '../../../location/api';
+import { toast } from 'react-toastify';
+interface Options {
+  value: string;
+  label: string;
+  nodeOrder?: string[];
+}
 /* -------------------- Mock Data -------------------- */
 const hierarchyOptions = baseHierarchyOptions.map(opt => ({
   value: opt,
@@ -16,6 +22,7 @@ const hierarchyOptions = baseHierarchyOptions.map(opt => ({
 
 const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues }) => {
   // Form State - Initialize with defaultValues if present
+  const [hierarchyList, setHierarchyList] = useState<Options[]>([]);
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [instanceName, setInstanceName] = useState(defaultValues?.instanceName || '');
   const [selectedHierarchy, setSelectedHierarchy] = useState<any>(
@@ -54,7 +61,18 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
     setError(null);
     onNext && onNext(formData);
   };
-
+ useEffect(()=>{
+    Promise.all([getLocationHierarchyList(0, 0, true)])
+          .then(([locationHierarchyList]) => {
+            const hList = locationHierarchyList.content.map<Options>(el => ({
+              label: el.name,
+              value: el.name ?? '',
+              nodeOrder: el.nodeOrder
+            }));
+            setHierarchyList(hList);           
+          })
+          .catch(err => toast.error(err));
+  },[])
   return (
     <div style={isDarkMode ? { backgroundColor: '#282828' } : { background: '#FFF' }} className="p-4">
       <h4 className="mb-4 fw-bold">Create Instance</h4>
@@ -83,7 +101,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
               <Select
                 className="custom-react-select-container"
                 classNamePrefix="custom-react-select"
-                options={hierarchyOptions}
+                options={hierarchyList}
                 value={selectedHierarchy}
                 onChange={setSelectedHierarchy}
                 placeholder="Select Hierarchy"

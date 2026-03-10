@@ -6,11 +6,10 @@ import InstanceDetails from './InstanceDetails';
 import DatasetDetails from './DatasetDetails';
 
 const steps = [
-    { label: 'Add Dataset details', component: DatasetDetails },
   { label: 'Add Plan details', component: CreateInstance },
   { label: 'Add Goals details', component: AddGoalDetails },
   { label: 'Add Instance details', component: InstanceDetails },
-
+  { label: 'Add Dataset details', component: DatasetDetails },
 ];
 
 interface CreateInstanceWizardProps {

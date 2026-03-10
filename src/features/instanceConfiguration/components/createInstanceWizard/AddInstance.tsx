@@ -24,9 +24,9 @@ interface RegisterValues {
     start: Date;
     end: Date;
   };
-  locationHierarchy: string;
+  // locationHierarchy: string;
   interventionType: string;
-  hierarchyLevelTarget?: string;
+  // hierarchyLevelTarget?: string;
 }
 
 const REGEX_TITLE_VALIDATION = /^[A-Za-z0-9\s-]+$/;
@@ -55,9 +55,8 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
         start: defaultValues?.effectivePeriod?.start ? new Date(defaultValues.effectivePeriod.start) : undefined,
         end: defaultValues?.effectivePeriod?.end ? new Date(defaultValues.effectivePeriod.end) : undefined
       },
-      locationHierarchy: defaultValues?.locationHierarchy || '',
       interventionType: defaultValues?.interventionType || '',
-      hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || ''
+      // hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || ''
     }
   });
 
@@ -74,7 +73,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
           value: el.identifier
         }));
 
-        setHierarchyList(hList);
+       
         setInterventionTypeList(iList);
         setGeographicLevelList(geoLevelList.content);
 
@@ -202,7 +201,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
             </Col>
           </Row>
           {/* Location Hierarchy */}
-          <Form.Group className="mb-3">
+          {/* <Form.Group className="mb-3">
             <Form.Label>Location Hierarchy</Form.Label>
             <Controller
               control={control}
@@ -224,7 +223,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
               )}
             />
             <div className="text-danger small mt-1">{errors.locationHierarchy?.message}</div>
-          </Form.Group>
+          </Form.Group> */}
 
           {/* Intervention Type */}
           <Form.Group className="mb-3">
@@ -252,7 +251,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
           </Form.Group>
 
           {/* Hierarchy Level Target (Conditional) */}
-          {selectedIntervention?.label?.toLowerCase().includes('lite') && (
+          {/* {selectedIntervention?.label?.toLowerCase().includes('lite') && (
             <Form.Group className="mb-3">
               <Form.Label>Hierarchy Level Target</Form.Label>
               <Controller
@@ -292,7 +291,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
               />
               <div className="text-danger small mt-1">{errors.hierarchyLevelTarget?.message}</div>
             </Form.Group>
-          )}
+          )} */}
           <hr className="my-3" />
           <div className="d-flex  justify-content-between mt-4">
             {/* Step 1 Cancel Button */}
