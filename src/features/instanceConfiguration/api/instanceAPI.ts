@@ -120,3 +120,47 @@ export const getInstances = async (
   const response = await api.get<PageableModel<InstanceResponse>>(`${INSTANCE}?${params.toString()}`);
   return response.data;
 };
+
+export interface CreateInstanceRequest {
+  planRequest: {
+    name: string;
+    title: string;
+    effectivePeriod: {
+      start: string;
+      end: string;
+    };
+    interventionType: string;
+    locationHierarchy: string;
+    goals: {
+      description: string;
+      priority: string;
+      actions: {
+        title: string;
+        description: string;
+        timingPeriod: {
+          start: string;
+          end: string;
+        };
+        formIdentifier: string;
+        type: string;
+        conditions?: any[];
+      }[];
+    }[];
+    hierarchyLevelTarget?: string;
+  };
+  instanceName: string;
+  locationHierarchy: string;
+  areas: string[];
+  members: string[];
+  datasets_tags: string[];
+}
+
+/**
+ * Create a new instance
+ * @param payload CreateInstanceRequest
+ * @returns InstanceResponse
+ */
+export const createInstance = async (payload: CreateInstanceRequest): Promise<InstanceResponse> => {
+  const response = await api.post<InstanceResponse>(INSTANCE, payload);
+  return response.data;
+};

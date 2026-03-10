@@ -66,7 +66,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
           .then(([locationHierarchyList]) => {
             const hList = locationHierarchyList.content.map<Options>(el => ({
               label: el.name,
-              value: el.name ?? '',
+              value: el.identifier ?? '',
               nodeOrder: el.nodeOrder
             }));
             setHierarchyList(hList);           

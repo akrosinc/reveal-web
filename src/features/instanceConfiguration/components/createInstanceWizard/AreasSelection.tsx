@@ -403,7 +403,8 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
   
   // Update areas when hierarchy changes from parent
   useEffect(() => {
-    if (displayHierarchy === 'default') {
+    // if (displayHierarchy === 'default') {
+    if (displayHierarchy === 'f470addc-9251-46a5-8e1e-45ba45082da4'){
       loadData(10, 0);
     } else {
       setCurrentAreas(datasetsByHierarchy[displayHierarchy] || []);

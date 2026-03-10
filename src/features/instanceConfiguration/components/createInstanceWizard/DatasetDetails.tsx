@@ -280,8 +280,22 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
                   end: formatDate(defaultValues?.effectivePeriod?.end)
                 },
                 interventionType: defaultValues?.interventionType || '',
-                locationHierarchy: defaultValues?.locationHierarchy || '',
-                goals: defaultValues?.goals || [],
+                locationHierarchy: defaultValues?.hierarchy || defaultValues?.locationHierarchy || '',
+                goals: (defaultValues?.goals || []).map((goal: any) => ({
+                  description: goal.description,
+                  priority: goal.priority,
+                  actions: (goal.actions || []).map((action: any) => ({
+                    title: action.title,
+                    description: action.description,
+                    timingPeriod: {
+                      start: formatDate(action.timingPeriod?.start),
+                      end: formatDate(action.timingPeriod?.end)
+                    },
+                    formIdentifier: action.formIdentifier,
+                    type: action.type,
+                    conditions: action.conditions || []
+                  }))
+                })),
                 hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || ''
               },
               instanceName: defaultValues?.instanceName || '',
