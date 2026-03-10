@@ -65,7 +65,7 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
         <Col md={8}>
           <div className="d-flex justify-content-between align-items-center">
             <h3>{t('planPage.goals')}</h3>
-            <Button
+           {goalList?.length === 0 && <Button
               id="add-goal-button "
               style={{ height: 20, width: 20 }}
               className="mb-3 rounded-circle d-flex align-items-center justify-content-center"
@@ -74,7 +74,7 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
               +
               {/* <FontAwesomeIcon icon="plus" className="" /> */}
               {/* {t('buttons.add')} */}
-            </Button>
+            </Button>}
           </div>
           <hr className="my-3" />
         </Col>
