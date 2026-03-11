@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Card, Form, Collapse, Button } from 'react-bootstrap';
+import { Card, Form, Collapse, Button, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../../store/hooks';
@@ -517,7 +517,10 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
                           }}
                         />
                         {searchTerm && searchTerm !== debouncedSearchTerm && (
-                          <small className="text-muted d-block mt-1">Searching...</small>
+                         <div className="d-flex align-items-center gap-2 mt-2">
+                            <Spinner animation="border" size="sm" variant="primary" style={{ width: '0.8rem', height: '0.8rem', borderWidth: '1px' }} />
+                            <small className="text-muted">Searching...</small>
+                          </div>
                         )}
                       </div>
                     </div>
