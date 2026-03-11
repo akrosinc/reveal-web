@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Row, Col, Form, Button } from 'react-bootstrap';
 import Select from 'react-select';
 import { useAppSelector } from '../../store/hooks';
@@ -43,11 +43,11 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
             .catch(err => toast.error('Error fetching hierarchies'));
     }, []);
 
-    const handleAreaTeamChange = (areaId: string, team: string) => {
+    const handleAreaTeamChange = useCallback((areaId: string, team: string) => {
         setAreaTeams(prev => ({ ...prev, [areaId]: team }));
-    };
+    }, []);
 
-    const handleSave = () => {
+    const handleSave = useCallback(() => {
         onSave({
             groupName,
             isTeam,
@@ -56,7 +56,15 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
             assignedMembers,
             areaTeams
         });
-    };
+    }, [onSave, groupName, isTeam, selectedHierarchy, selectedAreas, assignedMembers, areaTeams]);
+
+    const handleTeamToggle = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = e.target.checked;
+        setIsTeam(checked);
+        // Reset selections when mode changes
+        setSelectedAreas([]);
+        setAreaTeams({});
+    }, []);
 
     return (
         <div className={`p-4 ${isDarkMode ? 'text-white' : ''}`}>
@@ -89,11 +97,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
                         id="team-checkbox"
                         label="Team"
                         checked={isTeam}
-                        onChange={e => {
-                            setIsTeam(e.target.checked);
-                            setSelectedAreas([]);
-                            setAreaTeams({});
-                        }}
+                        onChange={handleTeamToggle}
                     />
                 </Col>
             </Row>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, Form, Button, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -25,7 +25,7 @@ interface MembersSelectionProps {
     onAssignmentChange: (ids: string[]) => void;
 }
 
-const MembersSelection: React.FC<MembersSelectionProps> = ({ assignedMembers, onAssignmentChange }) => {
+const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assignedMembers, onAssignmentChange }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const [searchTerm, setSearchTerm] = useState('');
     const [users, setUsers] = useState<Member[]>([]);
@@ -47,27 +47,39 @@ const MembersSelection: React.FC<MembersSelectionProps> = ({ assignedMembers, on
         fetchUsers();
     }, []);
 
-    const availableMembers = users.filter(m => !assignedMembers.includes(m.id));
-    const assignedList = users.filter(m => assignedMembers.includes(m.id));
-    const filteredAvailable = availableMembers.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    // Optimized lookups using Set
+    const assignedSet = useMemo(() => new Set(assignedMembers), [assignedMembers]);
+    
+    const availableMembers = useMemo(() => 
+        users.filter(m => !assignedSet.has(m.id)),
+    [users, assignedSet]);
 
-    const handleMoveRight = () => {
+    const assignedList = useMemo(() => 
+        users.filter(m => assignedSet.has(m.id)),
+    [users, assignedSet]);
+
+    const filteredAvailable = useMemo(() => 
+        availableMembers.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())),
+    [availableMembers, searchTerm]);
+
+    const handleMoveRight = useCallback(() => {
         onAssignmentChange([...assignedMembers, ...leftSelected]);
         setLeftSelected([]);
-    };
+    }, [assignedMembers, leftSelected, onAssignmentChange]);
 
-    const handleMoveLeft = () => {
-        onAssignmentChange(assignedMembers.filter(id => !rightSelected.includes(id)));
+    const handleMoveLeft = useCallback(() => {
+        const selectedSet = new Set(rightSelected);
+        onAssignmentChange(assignedMembers.filter(id => !selectedSet.has(id)));
         setRightSelected([]);
-    };
+    }, [assignedMembers, rightSelected, onAssignmentChange]);
 
-    const toggleSelection = (id: string, listType: 'left' | 'right') => {
+    const toggleSelection = useCallback((id: string, listType: 'left' | 'right') => {
         if (listType === 'left') {
             setLeftSelected(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
         } else {
             setRightSelected(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
         }
-    };
+    }, [setLeftSelected, setRightSelected]);
 
     return (
         <div className="mt-4">
@@ -170,6 +182,6 @@ const MembersSelection: React.FC<MembersSelectionProps> = ({ assignedMembers, on
             </div>
         </div>
     );
-};
+});
 
 export default MembersSelection;

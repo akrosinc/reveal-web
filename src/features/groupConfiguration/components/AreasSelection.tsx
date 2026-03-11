@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Card, Form, Collapse, Button } from 'react-bootstrap';
+import { Card, Form, Collapse, Button, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight, faChevronDown, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../store/hooks';
@@ -29,6 +29,7 @@ interface TreeNodeProps {
   isTeamMode?: boolean;
   areaTeams?: Record<string, string>;
   onTeamClick?: (id: string) => void;
+  isDarkMode: boolean;
 }
 
 const TreeNode = React.memo<TreeNodeProps>(({ 
@@ -42,18 +43,26 @@ const TreeNode = React.memo<TreeNodeProps>(({
   inheritedMatch = false ,
   isTeamMode = false,
   areaTeams = {},
-  onTeamClick
+  onTeamClick,
+  isDarkMode
 }) => {
   const [childrenLoaded, setChildrenLoaded] = useState(false);
   const [isVisible, setIsVisible] = useState(depth === 0);
-  const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const checkboxRef = useRef<HTMLInputElement>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
 
   const isSelected = selectedAreas.includes(node.identifier);
   const hasChildren = !!(node.children && node.children.length > 0);
 
-  const isExpandedByFilter = !!(filter && (inheritedMatch || node.properties.name.toLowerCase().includes(filter.toLowerCase()) || (hasChildren && node.children?.some(c => JSON.stringify(c).toLowerCase().includes(filter.toLowerCase())))));
+  // Use pre-calculated stats from enriched node
+  const { total, selected, _isMatch, _hasChildMatch } = (node as any)._stats || { 
+    total: hasChildren ? 0 : 1, 
+    selected: isSelected ? 1 : 0,
+    _isMatch: true,
+    _hasChildMatch: false
+  };
+
+  const isExpandedByFilter = !!(filter && (inheritedMatch || _isMatch || _hasChildMatch));
   const expanded = isExpandedByFilter || expandedNodeIds.includes(node.identifier);
 
   useEffect(() => {
@@ -91,26 +100,6 @@ const TreeNode = React.memo<TreeNodeProps>(({
     }
   }, [expanded, filter, hasChildren, childrenLoaded]);
 
-  const getLeafIds = useCallback((n: AreaNode): string[] => {
-    let ids: string[] = [];
-    if (n.children && n.children.length > 0) {
-      n.children.forEach(child => {
-        ids = [...ids, ...getLeafIds(child)];
-      });
-    } else {
-      ids.push(n.identifier);
-    }
-    return ids;
-  }, []);
-
-  const getDescendantSelectionState = useCallback((n: AreaNode): { total: number; selected: number } => {
-    const leaves = getLeafIds(n);
-    const total = leaves.length;
-    const selectedCount = leaves.filter(id => selectedAreas.includes(id)).length;
-    return { total, selected: selectedCount };
-  }, [selectedAreas, getLeafIds]);
-
-  const { total, selected } = getDescendantSelectionState(node);
   const isFullySelected = !!(hasChildren && total > 0 && selected === total);
   const indeterminate = !!(hasChildren && selected > 0 && selected < total);
 
@@ -120,10 +109,9 @@ const TreeNode = React.memo<TreeNodeProps>(({
     }
   });
 
-  const parentMatches = node.properties.name.toLowerCase().includes(filter.toLowerCase());
-  if (filter && !inheritedMatch && !parentMatches) {
-    const anyChildMatches = node.children && node.children.some(c => JSON.stringify(c).toLowerCase().includes(filter.toLowerCase()));
-    if (!anyChildMatches) return null;
+  // Optimized match check using pre-calculated values
+  if (filter && !inheritedMatch && !_isMatch && !_hasChildMatch) {
+    return null;
   }
 
   const handleExpand = (e: React.MouseEvent) => {
@@ -236,14 +224,18 @@ const TreeNode = React.memo<TreeNodeProps>(({
                   depth={depth + 1}
                   expandedNodeIds={expandedNodeIds}
                   onToggleExpand={onToggleExpand}
-                  inheritedMatch={inheritedMatch || parentMatches}
+                  inheritedMatch={inheritedMatch || _isMatch}
                   isTeamMode={isTeamMode}
                   areaTeams={areaTeams}
                   onTeamClick={onTeamClick}
+                  isDarkMode={isDarkMode}
                 />
               ))
             ) : (
-              <div className="text-muted small p-2">Loading...</div>
+              <div className="text-muted small p-2 d-flex align-items-center gap-2">
+                <Spinner animation="border" size="sm" variant="primary" style={{ borderWidth: '2px' }} />
+                <span>Loading...</span>
+              </div>
             )}
           </div>
         </Collapse>
@@ -286,6 +278,51 @@ const AreasSelection: React.FC<Props> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
+
+  // Optimized lookup Set
+  const selectedSet = useMemo(() => new Set(selectedAreas), [selectedAreas]);
+
+  // Recursively enrich nodes with their leaf IDs, stats, AND search match results
+  const enrichedAreas = useMemo(() => {
+    const searchLower = debouncedSearchTerm.toLowerCase();
+    
+    const enrich = (node: AreaNode): any => {
+      let leafIds: string[] = [];
+      let mappedChildren: any[] = [];
+      let hasChildMatch = false;
+      
+      const isMatch = node.properties.name.toLowerCase().includes(searchLower);
+      
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+          const enrichedChild = enrich(child);
+          leafIds = [...leafIds, ...enrichedChild._leafIds];
+          mappedChildren.push(enrichedChild);
+          if (enrichedChild._stats._isMatch || enrichedChild._stats._hasChildMatch) {
+            hasChildMatch = true;
+          }
+        });
+      } else {
+        leafIds = [node.identifier];
+      }
+
+      const selectedCount = leafIds.filter(id => selectedSet.has(id)).length;
+      
+      return {
+        ...node,
+        children: mappedChildren,
+        _leafIds: leafIds,
+        _stats: { 
+          total: leafIds.length, 
+          selected: selectedCount,
+          _isMatch: isMatch,
+          _hasChildMatch: hasChildMatch
+        }
+      };
+    };
+
+    return currentAreas.map(enrich);
+  }, [currentAreas, selectedSet, debouncedSearchTerm]);
 
   const toggleNodeExpansion = useCallback((nodeId: string) => {
     setExpandedNodeIds(prev => prev.includes(nodeId) ? prev.filter(id => id !== nodeId) : [...prev, nodeId]);
@@ -368,28 +405,33 @@ const AreasSelection: React.FC<Props> = ({
   }, []);
 
   const handleSelect = useCallback((id: string, isChecked: boolean) => {
-    const node = findNode(currentAreas, id);
+    const node = findNode(enrichedAreas, id);
     if (!node) return;
-    const leafIds = getAllLeafIds(node);
-    let newSelected = [...selectedAreas];
+    
+    const leafIds = (node as any)._leafIds;
+    const currentSelectedSet = new Set(selectedAreas);
+    
     if (isChecked) {
-      leafIds.forEach(leafId => {
-        if (!newSelected.includes(leafId)) newSelected.push(leafId);
-      });
+      // O(L) instead of O(L*S)
+      const toAdd = leafIds.filter((leafId: string) => !currentSelectedSet.has(leafId));
+      if (toAdd.length > 0) {
+        onSelectionChange([...selectedAreas, ...toAdd]);
+      }
     } else {
-      newSelected = newSelected.filter(sid => !leafIds.includes(sid));
+      // O(S) instead of O(S*L)
+      const toRemoveSet = new Set(leafIds);
+      onSelectionChange(selectedAreas.filter(sid => !toRemoveSet.has(sid)));
     }
-    onSelectionChange(newSelected);
-  }, [currentAreas, selectedAreas, findNode, getAllLeafIds, onSelectionChange]);
+  }, [enrichedAreas, selectedAreas, findNode, onSelectionChange]);
 
-  const handleTeamClick = (id: string) => {
+  const handleTeamClick = useCallback((id: string) => {
     setActiveAreaId(id);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleTeamSelect = (team: string) => {
+  const handleTeamSelect = useCallback((team: string) => {
     if (activeAreaId) onAreaTeamChange(activeAreaId, team);
-  };
+  }, [activeAreaId, onAreaTeamChange]);
 
   return (
     <div>
@@ -427,7 +469,10 @@ const AreasSelection: React.FC<Props> = ({
                           }}
                         />
                         {searchTerm && searchTerm !== debouncedSearchTerm && (
-                          <small className="text-muted d-block mt-1">Searching...</small>
+                          <div className="d-flex align-items-center gap-2 mt-2">
+                            <Spinner animation="border" size="sm" variant="primary" style={{ width: '0.8rem', height: '0.8rem', borderWidth: '1px' }} />
+                            <small className="text-muted">Searching...</small>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -437,9 +482,12 @@ const AreasSelection: React.FC<Props> = ({
                       className="rounded p-2 area-selection-tree"
                     >
                       {isLoading ? (
-                        <div className="text-muted text-center p-3">Loading global data...</div>
+                        <div className="text-muted text-center p-5 d-flex flex-column align-items-center gap-3">
+                          <Spinner animation="border" variant="primary" />
+                          <span>Loading hierarchy data...</span>
+                        </div>
                       ) : (
-                        currentAreas.map((area: any) => (
+                        enrichedAreas.map((area: any) => (
                           <TreeNode
                             key={area.identifier}
                             node={area}
@@ -452,6 +500,7 @@ const AreasSelection: React.FC<Props> = ({
                             isTeamMode={isTeamMode}
                             areaTeams={areaTeams}
                             onTeamClick={handleTeamClick}
+                            isDarkMode={isDarkMode}
                           />
                         ))
                       )}
@@ -468,4 +517,4 @@ const AreasSelection: React.FC<Props> = ({
   );
 };
 
-export default AreasSelection;
+export default React.memo(AreasSelection);
