@@ -26,9 +26,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [instanceName, setInstanceName] = useState(defaultValues?.instanceName || '');
   const [selectedHierarchy, setSelectedHierarchy] = useState<any>(
-    defaultValues?.hierarchy 
-      ? { value: defaultValues.hierarchy, label: defaultValues.hierarchy } 
-      : null
+    defaultValues?.selectedHierarchyObject || null
   );
   const [selectedAreas, setSelectedAreas] = useState<string[]>(defaultValues?.areas || []);
   const [assignedMembers, setAssignedMembers] = useState<string[]>(defaultValues?.members || []);
@@ -57,6 +55,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
     const formData = {
       instanceName,
       hierarchy: selectedHierarchy?.value,
+      selectedHierarchyObject: selectedHierarchy,
       areas: selectedAreas,
       members: assignedMembers
     };
@@ -73,13 +72,19 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
         }));
         setHierarchyList(hList);           
         
-        // Auto-select 0th element if none provided
-        if (hList.length > 0 && !selectedHierarchy) {
+        // Sync selectedHierarchy with the real list item (to fix ID showing instead of label)
+        if (defaultValues?.hierarchy) {
+          const match = hList.find(opt => opt.value === defaultValues.hierarchy);
+          if (match) {
+            setSelectedHierarchy(match);
+          }
+        } else if (hList.length > 0 && !selectedHierarchy) {
+          // Auto-select 0th element if none provided
           setSelectedHierarchy(hList[0]);
         }
       })
       .catch(err => toast.error(String(err)));
-  }, []); // Only fetch on mount
+  }, [defaultValues?.hierarchy]); // Re-sync if defaultValues changes
   return (
     <div style={isDarkMode ? { backgroundColor: '#282828' } : { background: '#FFF' }} className="p-4">
       <h4 className="mb-4 fw-bold">Create Instance</h4>
@@ -145,6 +150,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
               onClick={() => onBack({
                 instanceName,
                 hierarchy: selectedHierarchy?.value,
+                selectedHierarchyObject: selectedHierarchy,
                 areas: selectedAreas,
                 members: assignedMembers
               })}
