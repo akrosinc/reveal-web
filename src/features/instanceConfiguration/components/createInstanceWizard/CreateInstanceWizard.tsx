@@ -29,7 +29,7 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel })
       onCancel(); // Close wizard on success
     } catch (error: any) {
       console.error('Error creating instance:', error);
-      toast.error(error.response?.data?.message || error.message || 'Failed to create instance');
+      toast.error(error.response?.data?.message || error?.message || 'Failed to create instance');
     }
   };
 

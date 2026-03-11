@@ -342,32 +342,21 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
   }, []);
 
   const loadData = useCallback(
-    (size: number, page: number, searchData?: string, sortField?: string, sortDirection?: boolean) => {
+    (hierarchyId: string, size: number, page: number, searchData?: string, sortField?: string, sortDirection?: boolean) => {
+      if (!hierarchyId) return;
       setIsLoading(true);
-      getLocationHierarchyList(0, 0, true)
-        .then(res => {
-          if (res.content && res.content.length > 0) {
-            const hierarchyId = res.content[0].identifier;
-            getLocationListByHierarchyId(size, page, hierarchyId!, true, searchData, sortField, sortDirection)
-              .then(locRes => {
-                if (locRes.content && locRes.content.length > 0) {
-                 setCurrentAreas(locRes?.content)
-                  setIsLoading(false);
-                } else {
-                  setCurrentAreas([]);
-                  setIsLoading(false);
-                }
-              })
-              .catch(err => {
-                toast.error(err.message || 'Error fetching locations');
-                setIsLoading(false);
-              });
+      getLocationListByHierarchyId(size, page, hierarchyId, true, searchData, sortField, sortDirection)
+        .then(locRes => {
+          if (locRes.content && locRes.content.length > 0) {
+            setCurrentAreas(locRes.content);
+            setIsLoading(false);
           } else {
+            setCurrentAreas([]);
             setIsLoading(false);
           }
         })
         .catch(err => {
-          toast.error(err.message || 'Error fetching hierarchies');
+          toast.error(err.message || 'Error fetching locations');
           setIsLoading(false);
         });
     },
@@ -389,12 +378,13 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
   
   // Update areas when hierarchy changes from parent
   useEffect(() => {
-    // if (displayHierarchy === 'default') {
-    const dh = selectedHierarchy || 'Niagara';
-    if (dh === 'f470addc-9251-46a5-8e1e-45ba45082da4'){
-      loadData(10, 0);
-    } else {
-      setCurrentAreas(datasetsByHierarchy[dh] || []);
+    if (selectedHierarchy) {
+      if (datasetsByHierarchy[selectedHierarchy]) {
+        setCurrentAreas(datasetsByHierarchy[selectedHierarchy]);
+      } else {
+        // Call API for any other hierarchy (real ones)
+        loadData(selectedHierarchy, 10, 0);
+      }
     }
   }, [selectedHierarchy, loadData]);
 

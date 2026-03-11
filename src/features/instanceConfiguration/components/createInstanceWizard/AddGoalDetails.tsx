@@ -108,7 +108,11 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
           </Accordion>
           <hr className="my-3" />
           <div className="d-flex justify-content-between mt-4 ">
-            <Button variant="secondary" className="px-4 py-2" onClick={onBack}>
+            <Button 
+              variant="secondary" 
+              className="px-4 py-2" 
+              onClick={() => onBack({ goals: goalList })}
+            >
               Back
             </Button>
             <Button variant="primary" className="px-4 py-2" onClick={handleNext}>

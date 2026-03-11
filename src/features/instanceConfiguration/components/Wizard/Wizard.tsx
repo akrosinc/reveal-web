@@ -4,7 +4,7 @@ import { Col } from 'react-bootstrap';
 
 export interface WizardStepProps {
   onNext: (data?: any) => void;
-  onBack: () => void;
+  onBack: (data?: any) => void;
   onCancel?: () => void;
   defaultValues?: any;
 }
@@ -35,7 +35,10 @@ const Wizard: React.FC<WizardProps> = ({ steps, onComplete, onCancel }) => {
     }
   };
 
-  const handleBack = () => {
+  const handleBack = (stepData?: any) => {
+    if (stepData) {
+      setFormData((prev: any) => ({ ...prev, ...stepData }));
+    }
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     }

@@ -41,20 +41,35 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
     ) => {
       getMetadataImportList(size, page, sortField, direction)
         .then(res => {
+          const previouslySelectedTags = new Set(defaultValues?.datasets_tags || []);
+
           let transformedMetadataList: MetadataFileImportResponse[] = res.content.map(fileImport => {
             let entityTagsNotAggregate: EntityTagResponse[] | undefined = fileImport.entityTagEvents?.filter(
               entityTag => !entityTag.aggregate
             );
 
             let entityTagWithChildren = entityTagsNotAggregate?.map(entityTag => {
+              // Sync with previous selections
+              const isTagSelected = previouslySelectedTags.has(entityTag.identifier);
+              
+              entityTag.selected = isTagSelected;
               entityTag.children = fileImport.entityTagEvents?.filter(entityTagEvent => {
-                return entityTagEvent.aggregate && entityTagEvent.referencedTag === entityTag.identifier;
+                const isChild = entityTagEvent.aggregate && entityTagEvent.referencedTag === entityTag.identifier;
+                if (isChild) {
+                    // Match child selection to parent or its own if tracked separately
+                    entityTagEvent.selected = isTagSelected;
+                }
+                return isChild;
               });
               return entityTag;
             });
 
+            // A file is selected if all its tags are selected
+            const fileSelected = entityTagWithChildren && entityTagWithChildren.length > 0 && 
+                                entityTagWithChildren.every(tag => tag.selected);
+
             let newFileImport: MetadataFileImportResponse = {
-              selected: fileImport.selected,
+              selected: fileSelected || false,
               entityTagEvents: entityTagWithChildren,
               filename: fileImport.filename,
               status: fileImport.status,
@@ -249,7 +264,13 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
       )}
 
       <div className="d-flex justify-content-between mt-4 border-top pt-4">
-        <Button variant="secondary" onClick={onBack}>
+        <Button 
+          variant="secondary" 
+          onClick={() => {
+            const datasetsTags = selectedMetadata.map((tag: any) => tag.identifier);
+            onBack({ datasets_tags: datasetsTags });
+          }}
+        >
           Back
         </Button>
         <Button
