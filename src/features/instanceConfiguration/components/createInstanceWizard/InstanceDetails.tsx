@@ -26,7 +26,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [instanceName, setInstanceName] = useState(defaultValues?.instanceName || '');
   const [selectedHierarchy, setSelectedHierarchy] = useState<any>(
-    defaultValues?.hierarchy ? hierarchyOptions.find(opt => opt.value === defaultValues.hierarchy) : hierarchyOptions[0]
+    defaultValues?.hierarchy ? hierarchyOptions.find(opt => opt.value === defaultValues.hierarchy) : ''
   );
   const [selectedAreas, setSelectedAreas] = useState<string[]>(defaultValues?.areas || []);
   const [assignedMembers, setAssignedMembers] = useState<string[]>(defaultValues?.members || []);
