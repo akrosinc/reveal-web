@@ -273,8 +273,15 @@ const AreasSelection: React.FC<Props> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [hierarchyOpen, setHierarchyOpen] = useState(false);
-  const displayHierarchy = selectedHierarchy || 'Niagara';
-  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>(datasetsByHierarchy[displayHierarchy] || []);
+  const [hierarchyList, setHierarchyList] = useState<{label: string, value: string}[]>([]);
+  
+  const displayLabel = useMemo(() => {
+    const found = hierarchyList.find(h => h.value === selectedHierarchy);
+    if (found) return found.label;
+    return selectedHierarchy || '';
+  }, [hierarchyList, selectedHierarchy]);
+
+  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>(datasetsByHierarchy[selectedHierarchy || 'Niagara'] || []);
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -318,12 +325,24 @@ const AreasSelection: React.FC<Props> = ({
   );
 
   useEffect(() => {
-    if (displayHierarchy === 'Global' || displayHierarchy === 'f470addc-9251-46a5-8e1e-45ba45082da4'){
+    getLocationHierarchyList(0, 0, true)
+      .then((res: any) => {
+        setHierarchyList(res.content.map((el: any) => ({
+          label: el.name,
+          value: el.identifier ?? ''
+        })));
+      })
+      .catch(err => toast.error(err));
+  }, []);
+
+  useEffect(() => {
+    const dh = selectedHierarchy || 'Niagara';
+    if (dh === 'Global' || dh === 'f470addc-9251-46a5-8e1e-45ba45082da4'){
       loadData(10, 0);
     } else {
-      setCurrentAreas(datasetsByHierarchy[displayHierarchy] || []);
+      setCurrentAreas(datasetsByHierarchy[dh] || []);
     }
-  }, [displayHierarchy, loadData]);
+  }, [selectedHierarchy, loadData]);
 
   const getAllLeafIds = useCallback((node: AreaNode): string[] => {
     let ids: string[] = [];
@@ -387,7 +406,7 @@ const AreasSelection: React.FC<Props> = ({
                   className="d-flex align-items-center justify-content-between p-3 border-bottom"
                   style={{ cursor: 'pointer', fontSize: '1rem', color: isDarkMode ? '#fff' : '#000' }}
                 >
-                  <span className="fw-bold">{displayHierarchy}</span>
+                  <span className="fw-bold">{displayLabel}</span>
                   <FontAwesomeIcon icon={hierarchyOpen ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
                 </div>
                 <Collapse in={hierarchyOpen}>

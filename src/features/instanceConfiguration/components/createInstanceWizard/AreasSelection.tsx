@@ -312,8 +312,13 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
   const debouncedSearchTerm = useDebounce(searchTerm, 300); // 300ms debounce
   const [hierarchyOpen, setHierarchyOpen] = useState(false);
   const [hierarchyList, setHierarchyList] = useState<Options[]>([]);
-  const displayHierarchy = selectedHierarchy || 'Niagara';
-  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>(datasetsByHierarchy[displayHierarchy] || []);
+  const displayLabel = useMemo(() => {
+    const found = hierarchyList.find(h => h.value === selectedHierarchy);
+    if (found) return found.label;
+    return selectedHierarchy || '';
+  }, [hierarchyList, selectedHierarchy]);
+
+  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>(datasetsByHierarchy[selectedHierarchy || 'Niagara'] || []);
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([]); // State for multiple expanded nodes
   const [isLoading, setIsLoading] = useState(false);
 
@@ -404,12 +409,13 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
   // Update areas when hierarchy changes from parent
   useEffect(() => {
     // if (displayHierarchy === 'default') {
-    if (displayHierarchy === 'f470addc-9251-46a5-8e1e-45ba45082da4'){
+    const dh = selectedHierarchy || 'Niagara';
+    if (dh === 'f470addc-9251-46a5-8e1e-45ba45082da4'){
       loadData(10, 0);
     } else {
-      setCurrentAreas(datasetsByHierarchy[displayHierarchy] || []);
+      setCurrentAreas(datasetsByHierarchy[dh] || []);
     }
-  }, [displayHierarchy, loadData]);
+  }, [selectedHierarchy, loadData]);
 
   const getAllLeafIds = useCallback((node: AreaNode): string[] => {
     let ids: string[] = [];
@@ -487,7 +493,7 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
                   }}
                 >
                   <span className="fw-bold">
-                    {displayHierarchy}
+                    {displayLabel}
                   </span>
                   <FontAwesomeIcon icon={hierarchyOpen ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
                 </div>
