@@ -90,6 +90,18 @@ export const MAIN_MENU = [
         roles: ['manage-users']
       },
       {
+        pageTitle: 'Group Configuration',
+        route: MANAGEMENT + '/group-configuration',
+        // roles: ['manage-users']
+        roles: []
+      },
+      {
+        pageTitle: 'Instance Configuration',
+        route: MANAGEMENT + '/instance-configuration',
+        // roles: ['manage-users']
+        roles: []
+      },
+      {
         pageTitle: 'Location',
         route: LOCATION_PAGE,
         roles: [LOCATION_VIEW]
@@ -108,7 +120,7 @@ export const MAIN_MENU = [
         pageTitle: 'dataProcessingProgress',
         route: DATA_PROCESSING_PROGRESS,
         roles: ['data_processing_progress']
-      },
+      }
     ]
   }
 ];

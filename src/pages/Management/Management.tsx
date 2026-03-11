@@ -1,16 +1,19 @@
 import { Tab, Tabs } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import AuthGuard from '../../components/AuthGuard';
 import PageWrapper from '../../components/PageWrapper';
 import { MANAGEMENT, ORGANIZATION_VIEW, ROLE_MANAGE_USER } from '../../constants';
 import Organization from '../../features/organization/components';
 import UserImport from '../../features/user/components/UserImport/UserImport';
 import Users from '../../features/user/components/UsersPage';
+import InstanceConfiguration from '../../features/instanceConfiguration';
+import GroupConfiguration from '../../features/groupConfiguration';
 import { useKeycloak } from '@react-keycloak/web';
 
 const Management = () => {
   const { t } = useTranslation();
+  const { tab } = useParams();
 
   let navigate = useNavigate();
 
@@ -19,7 +22,7 @@ const Management = () => {
   return (
     <PageWrapper>
       <Tabs
-        defaultActiveKey={'user'}
+        activeKey={tab || 'user'}
         id="management-tab"
         className="mb-3"
         mountOnEnter={true}
@@ -44,6 +47,17 @@ const Management = () => {
         <Tab eventKey="user-import" title={t('managementPage.userImport')}>
           <AuthGuard roles={[ROLE_MANAGE_USER]}>
             <UserImport />
+          </AuthGuard>
+        </Tab>
+        <Tab eventKey="instance-configuration" title={t('managementPage.instanceConfiguration')}>
+          {/* Default role is added for Authorization */}
+          <AuthGuard roles={[ROLE_MANAGE_USER]}>
+            <InstanceConfiguration />
+          </AuthGuard>
+        </Tab>
+        <Tab eventKey="group-configuration" title={t('managementPage.groupConfiguration')}>
+          <AuthGuard roles={[ROLE_MANAGE_USER]}>
+            <GroupConfiguration />
           </AuthGuard>
         </Tab>
       </Tabs>

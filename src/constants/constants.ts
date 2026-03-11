@@ -52,6 +52,7 @@ export const USER_TABLE_COLUMNS = [
   { name: 'username', sortValue: 'username', accessor: 'username' },
   { name: 'firstname', sortValue: 'firstName', accessor: 'firstName' },
   { name: 'lastname', sortValue: 'lastName', accessor: 'lastName' },
+  { name: 'role', sortValue: undefined, accessor: 'role' },
   { name: 'organization', sortValue: undefined, accessor: 'organizations', key: 'name' }
 ];
 export const BULK_TABLE_COLUMNS = [
@@ -116,6 +117,44 @@ export const RESOURCE_PLANNING_HISTORY_TABLE_COLUMNS = [
   { name: 'Name', sortValue: 'name', accessor: 'name' },
   { name: 'Create Date', sortValue: 'created', accessor: 'created' },
   { name: 'Uploaded By', sortValue: 'createdBy', accessor: 'createdBy' }
+];
+
+export const INSTANCE_TABLE_COLUMNS = [
+  {
+    name: 'instanceName',
+    sortValue: 'instanceName',
+    accessor: 'instanceName'
+  },
+  {
+    name: 'interventionType',
+    sortValue: 'interventionType',
+    accessor: 'interventionType'
+  },
+  {
+    name: 'planTitle',
+    sortValue: 'planTitle',
+    accessor: 'planTitle'
+  },
+  {
+    name: 'planStatus',
+    sortValue: 'planStatus',
+    accessor: 'planStatus'
+  },
+  {
+    name: 'createdDatetime',
+    sortValue: 'createdDatetime',
+    accessor: 'createdDatetime'
+  },
+  {
+    name: 'startDate',
+    sortValue: 'startDate',
+    accessor: 'startDate'
+  },
+  {
+    name: 'endDate',
+    sortValue: 'endDate',
+    accessor: 'endDate'
+  }
 ];
 
 export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';

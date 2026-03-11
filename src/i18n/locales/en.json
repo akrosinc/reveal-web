@@ -22,7 +22,9 @@
     "MetaDataImport": "Metadata Import",
     "Resource Planning": "Resource Planning",
     "dataProcessingProgress": "Data Processing Progress",
-    "CampaignManage": "Campaign Management"
+    "CampaignManage": "Campaign Management",
+    "Instance Configuration": "Instance Configuration",
+    "Group Configuration": "Group Configuration"
   },
   "publicPage": {
     "supportedBy": "supported by",
@@ -48,6 +50,8 @@
   },
   "buttons": {
     "management": "User Management",
+    "instanceConfiguration": "Instance Management",
+    "groupConfiguration": "Group Management",
     "plans": "Plan Management",
     "create": "Create",
     "delete": "Delete",
@@ -64,7 +68,9 @@
   "managementPage": {
     "organization": "Organization",
     "user": "User",
-    "userImport": "User Import"
+    "userImport": "User Import",
+    "instanceConfiguration": "Instance Configuration",
+    "groupConfiguration": "Group Configuration"
   },
   "userPage": {
     "Username": "Username",
@@ -232,6 +238,29 @@
     "drugInventoryAdverseReporting": "Drug Inventory / Adverse Reporting",
     "populationCoverage": "Population coverage"
   },
+  "instancesPage": {
+    "search": "Search",
+    "title": "Instance",
+    "table": {
+      "instanceName": "Instance name",
+      "title": "Title",
+      "status": "Status",
+      "interventionType": "Intervention Type",
+      "createdDate": "Created Date",
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    }
+  },
+  "groupConfigurationPage": {
+    "title": "Group configuration",
+    "search": "Search group name",
+    "table": {
+      "groupName": "Group Name",
+      "team": "Team",
+      "yes": "Yes",
+      "no": "No"
+    }
+  },
   "simulationPage": {
     "tag": "tag",
     "isPublic": "Is public",
@@ -331,7 +360,6 @@
       "owner": "I am the owner",
       "owners": "Current Owners",
       "selected": "Selection"
-
     }
   },
   "locationHierarchyPage": {

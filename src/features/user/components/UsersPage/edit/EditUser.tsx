@@ -1,16 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, Form, Row, Col } from 'react-bootstrap';
+import { Button, Form, Row, Col, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import { deleteUserById, resetUserPassword, updateUser } from '../../../../user/api';
 import { EditUserModel, UserModel } from '../../../../user/providers/types';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
 import { useAppSelector } from '../../../../../store/hooks';
 import { useForm } from 'react-hook-form';
 import Select, { MultiValue } from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 import { getOrganizationListSummary, getSecurityGroups } from '../../../../organization/api';
 import { toast } from 'react-toastify';
 import { FieldValidationError } from '../../../../../api/providers';
 import { AxiosResponse } from 'axios';
 import { REGEX_EMAIL_VALIDATION } from '../../../../../constants';
+import AreasSelection from '../../../../groupConfiguration/components/AreasSelection';
+import RolesSelection from '../../../../groupConfiguration/components/RolesSelection';
+import DatasetsSelection from '../../../../groupConfiguration/components/DatasetsSelection';
+
 
 interface Props {
   user: UserModel;
@@ -26,6 +31,8 @@ interface RegisterValues {
   securityGroups: string[];
   organizations: string[];
   isTemp: boolean;
+  userType: string;
+  instances: string[];
 }
 
 interface Options {
@@ -39,31 +46,49 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [showDialog, setShowDialog] = useState(false);
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
+  const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
+  const [userType, setUserType] = useState('Standard User');
+  const [selectedGroup, setSelectedGroup] = useState<Options | null>(null);
+  const [selectedUserAreas, setSelectedUserAreas] = useState<string[]>([]);
+  const [selectedUserRoles, setSelectedUserRoles] = useState<string[]>([]);
+  const [selectedUserDatasets, setSelectedUserDatasets] = useState<string[]>([]);
+  const [areaTeams, setAreaTeams] = useState<Record<string, string>>({});
+  // const level="Instance"
+  let level = "Instance"
+
   const {
     register,
     setValue,
     handleSubmit,
     setError,
     formState: { errors, isDirty }
-  } = useForm();
+  } = useForm<RegisterValues>();
   const [groups, setGroups] = useState<Options[]>();
   const [organizations, setOrganizations] = useState<Options[]>([]);
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
   const setStartValues = useCallback(
-    (userDetails: UserModel) => {
+    (userDetails: UserModel & { userType?: string; instances?: string[] }) => {
       setValue('username', userDetails.username);
       setValue('firstname', userDetails.firstName);
       setValue('lastname', userDetails.lastName);
       setValue('email', userDetails.email);
+
+      setUserType(userDetails.userType || 'Standard User');
+      setSelectedInstances(
+        userDetails.instances
+          ? userDetails.instances.map(inst => ({ label: inst, value: inst }))
+          : []
+      );
+
       setSelectedSecurityGroups(
         userDetails.securityGroups !== undefined
           ? userDetails.securityGroups.map(group => {
-              return {
-                label: group,
-                value: group
-              };
-            })
+            return {
+              label: group,
+              value: group
+            };
+          })
           : []
       );
       setSelectedOrganizations(
@@ -152,7 +177,7 @@ const EditUser = ({ user, handleClose }: Props) => {
             if (typeof err !== 'string') {
               const fieldValidationErrors = err as FieldValidationError[];
               return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
-                setError(errField.field as any, {message: errField.messageKey});
+                setError(errField.field as any, { message: errField.messageKey });
                 return errField.field;
               }).toString();
             }
@@ -161,16 +186,22 @@ const EditUser = ({ user, handleClose }: Props) => {
         }
       });
     } else {
-      let updatedUser: EditUserModel = {
+      let updatedUser: EditUserModel & { userType: string; instances: string[] } = {
         identifier: user.identifier,
         email: formValues.email,
         firstName: formValues.firstname,
         lastName: formValues.lastname,
         organizations: selectedOrganizations?.map(el => el.value) ?? [],
-        securityGroups: selectedSecurityGroups?.map(el => el.value) ?? []
+        securityGroups: selectedSecurityGroups?.map(el => el.value) ?? [],
+        userType: userType,
+        instances: selectedInstances.map(el => el.value),
+        // groupId: selectedGroup?.value,
+        // areas: selectedUserAreas,
+        // roles: selectedUserRoles,
+        // datasets: selectedUserDatasets
       };
       toast
-        .promise(updateUser(updatedUser), {
+        .promise(updateUser(updatedUser as any), {
           pending: 'Loading...',
           success: {
             render() {
@@ -184,7 +215,7 @@ const EditUser = ({ user, handleClose }: Props) => {
               if (typeof err !== 'string') {
                 const fieldValidationErrors = err as FieldValidationError[];
                 return 'Field Validation Error: ' + fieldValidationErrors.map(errField => {
-                  setError(errField.field as any, {message: errField.messageKey});
+                  setError(errField.field as any, { message: errField.messageKey });
                   return errField.field;
                 }).toString();
               }
@@ -199,7 +230,7 @@ const EditUser = ({ user, handleClose }: Props) => {
     const values = selectedOption.map(selected => {
       return selected;
     });
-    setValue('securityGroups', values, { shouldDirty: true });
+    setValue('securityGroups', values as any, { shouldDirty: true });
     setSelectedSecurityGroups(values);
   };
 
@@ -207,12 +238,61 @@ const EditUser = ({ user, handleClose }: Props) => {
     const values = selectedOption.map(selected => {
       return selected;
     });
-    setValue('organizations', values, { shouldDirty: true });
+    setValue('organizations', values as any, { shouldDirty: true });
     setSelectedOrganizations(values);
   };
 
+  const instanceSelectHandler = (selectedOption: MultiValue<Options>) => {
+    const values = [...selectedOption];
+    setSelectedInstances(values);
+    setValue('instances', values as any, { shouldDirty: true });
+  };
+
+  const userTypeOptions = [
+    { name: 'Admin', value: 'Admin' },
+    { name: 'Standard User', value: 'Standard User' }
+  ];
+
   return (
     <Form>
+      <Form.Group className="mb-3">
+        <Form.Label className="d-block">User Type</Form.Label>
+        <ButtonGroup className="border rounded overflow-hidden" style={{ padding: 3 }}>
+          {userTypeOptions.map((option, idx) => (
+            <ToggleButton
+              key={idx}
+              id={`user-type-${idx}`}
+              type="radio"
+              variant={userType === option.value ? 'primary' : 'light'}
+              name="userType"
+              value={option.value}
+              checked={userType === option.value}
+              onChange={(e) => setUserType(e.currentTarget.value)}
+              className={`py-2 border-0 rounded-0 ${userType !== option.value ? 'text-secondary bg-light bg-opacity-75' : ''}`}
+              style={{ padding: '11px 30px' }}
+            >
+              {option.name}
+            </ToggleButton>
+          ))}
+        </ButtonGroup>
+      </Form.Group>
+
+      {/* <Form.Group className="mb-2">
+        <Form.Label>Instance Name</Form.Label>
+        <CreatableSelect
+          className="custom-react-select-container"
+          classNamePrefix="custom-react-select"
+          id="instances-select"
+          menuPosition="fixed"
+          isMulti
+          isDisabled={!edit}
+          value={selectedInstances}
+          onChange={instanceSelectHandler}
+          placeholder="Type instance name and press Enter"
+          noOptionsMessage={() => 'Type to add new instance'}
+        />
+      </Form.Group> */}
+
       <Form.Group className="mb-3">
         <Form.Label>Identifier</Form.Label>
         <Form.Control readOnly={true} type="text" defaultValue={user?.identifier} />
@@ -303,7 +383,43 @@ const EditUser = ({ user, handleClose }: Props) => {
             />
             {errors.email && <Form.Label className="text-danger">{errors.email.message}</Form.Label>}
           </Form.Group>
-          <Form.Group className="mb-3">
+          {level === 'Global' && <div
+            className="d-flex"
+            style={{
+              overflowX: "auto",
+              overflowY: "hidden",
+              whiteSpace: "nowrap",
+              gap: "8px",
+              scrollbarWidth: "none", marginTop: 4
+            }}
+          >
+            {['Instance 1', 'Instance 2'].map((item, index) => (
+              <div
+                key={index}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "11px 20px",
+                  borderRadius: "999px",
+                  background: "#E2EDFe",
+                  cursor: "pointer",
+                  fontWeight: 400,
+                  fontStyle: "normal",
+                  fontSize: "14px",
+                  lineHeight: "100%",
+                  letterSpacing: "0%",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  transition: "all 0.2s ease",
+                  color: "#0D6EFD"
+                }}
+              >
+                {item}
+              </div>
+            ))}
+          </div>}
+          {/* <Form.Group className="mb-3">
             <Form.Label>Security groups</Form.Label>
             <Select
               className="custom-react-select-container"
@@ -318,7 +434,7 @@ const EditUser = ({ user, handleClose }: Props) => {
             />
           </Form.Group>
 
-          <Form.Group className="mb-3">
+          {/* <Form.Group className="mb-3">
             <Form.Label>Organization</Form.Label>
             <Select
               className="custom-react-select-container"
@@ -331,7 +447,71 @@ const EditUser = ({ user, handleClose }: Props) => {
               options={organizations}
               onChange={organizationSelectHandler}
             />
-          </Form.Group>
+          </Form.Group> */}
+          {/* For Instance level  */}
+          {level === 'Instance' && <>
+            <Form.Group className="mb-3">
+              <Form.Label>Group</Form.Label>
+              <Select
+                className="custom-react-select-container"
+                classNamePrefix="custom-react-select"
+                id="group-select"
+                isDisabled={!edit}
+                value={selectedGroup}
+                options={groups}
+                onChange={(opt) => setSelectedGroup(opt as Options)}
+                placeholder="Select a group..."
+              />
+            </Form.Group>
+
+            <Row className="mb-4 g-3">
+              <Col md={4}>
+                <Form.Label>Areas</Form.Label>
+                <div style={{ position: 'relative' }} className={!edit ? 'opacity-75 pointer-events-none' : ''}>
+                  {!edit && <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
+                  }}></div>}
+                  <AreasSelection
+                    isTeamMode={false}
+                    selectedAreas={selectedUserAreas}
+                    onSelectionChange={setSelectedUserAreas}
+                    areaTeams={areaTeams}
+                    onAreaTeamChange={(id, team) => setAreaTeams(prev => ({ ...prev, [id]: team }))}
+                    variant="editUser"
+                  />
+                </div>
+              </Col>
+              <Col md={4}>
+                <Form.Label>Permission</Form.Label>
+                <div style={{ position: 'relative' }} className={!edit ? 'opacity-75 pointer-events-none' : ''}>
+                  {!edit && <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
+                  }}></div>}
+                  <RolesSelection
+                    selectedRoles={selectedUserRoles}
+                    onRoleChange={setSelectedUserRoles}
+                    variant="editUser"
+                  />
+                </div>
+              </Col>
+              <Col md={4}>
+                <Form.Label>Datasets</Form.Label>
+                <div style={{ position: 'relative' }} className={!edit ? 'opacity-75 pointer-events-none' : ''}>
+                  {!edit && <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
+
+                  }}>
+
+                  </div>}
+                  <DatasetsSelection
+                    selectedDatasets={selectedUserDatasets}
+                    onDatasetChange={setSelectedUserDatasets}
+                    variant="editUser"
+                  />
+                </div>
+              </Col>
+            </Row>
+          </>}
         </>
       )}
       <hr />
@@ -360,6 +540,11 @@ const EditUser = ({ user, handleClose }: Props) => {
             onClick={() => {
               setEdit(!edit);
               setChangePassword(false);
+              setStartValues(user);
+              setSelectedGroup(null);
+              setSelectedUserAreas([]);
+              setSelectedUserRoles([]);
+              setSelectedUserDatasets([]);
             }}
           >
             Discard changes

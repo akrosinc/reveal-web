@@ -62,7 +62,8 @@
   "managementPage": {
     "organization": "Organisation",
     "user": "Utilisateur",
-    "userImport": "Importation d'utilisateurs"
+    "userImport": "Importation d'utilisateurs",
+    "instanceConfiuration": "Configuration de l’instance"
   },
   "userPage": {
     "Username": "Nom d'utilisateur",
@@ -221,7 +222,7 @@
       "tag": "Balises",
       "lookupEntityType": "Type d'entité",
       "simulationDisplay": "Balise d'affichage",
-      "aggregate":"Est, un agrégat"
+      "aggregate": "Est, un agrégat"
     },
     "locationName": "Nom de la localisation",
     "locationType": "Type de lieu",
@@ -229,6 +230,19 @@
     "treatmentCoverage": "Couverture du traitement",
     "drugInventoryAdverseReporting": "Inventaire des médicaments / Rapports indésirables",
     "populationCoverage": "Couverture de la population"
+  },
+  "instancesPage": {
+    "search": "Rechercher",
+    "title": "Instance",
+    "table": {
+      "instanceName": "Nom de l’instance",
+      "title": "Titre",
+      "status": "Statut",
+      "interventionType": "Type d’intervention",
+      "createdDate": "Date de création",
+      "startDate": "Date de début",
+      "endDate": "Date de fin"
+    }
   },
   "simulationPage": {
     "title": "Planifier la simulation",

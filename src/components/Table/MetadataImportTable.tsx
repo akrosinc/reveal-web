@@ -27,31 +27,35 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
         // Build our expander column
         id: 'expander', // Make sure it has an ID
         Cell: ({ row }: { row: any }) =>
-          // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
-          // to build the toggle for expanding a row
-          {
-            return row.canExpand ? (
-              <span
-                {...row.getToggleRowExpandedProps({
-                  style: {
-                    // Use the row.depth property
-                    // and paddingLeft to indicate the depth
-                    // of the row
-                    paddingLeft: `${row.depth}rem`,
-                    paddingTop: '15px',
-                    paddingBottom: '15px',
-                    paddingRight: '15px'
-                  }
-                })}
-              >
-                {row.isExpanded ? (
-                  <FontAwesomeIcon className="ms-1" icon="chevron-down" />
-                ) : (
-                  <FontAwesomeIcon className="ms-1" icon="chevron-right" />
-                )}
-              </span>
-            ) : null;
-          }
+        // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
+        // to build the toggle for expanding a row
+        {
+          return row.canExpand ? (
+            <span
+              {...row.getToggleRowExpandedProps({
+                style: {
+                  // Use the row.depth property
+                  // and paddingLeft to indicate the depth
+                  // of the row
+                  paddingLeft: `${row.depth}rem`,
+                  paddingTop: '15px',
+                  paddingBottom: '15px',
+                  paddingRight: '15px'
+                }
+              })}
+            >
+              {row.isExpanded ? (
+                <FontAwesomeIcon className="ms-1" icon="chevron-down" />
+              ) : (
+                <FontAwesomeIcon className="ms-1" icon="chevron-right" />
+              )}
+            </span>
+          ) : null;
+        }
+      },
+      {
+        Header: 'selected',
+        accessor: 'selected'
       },
       { Header: 'tag', accessor: 'tag' },
       { Header: 'type', accessor: 'valueType' },
@@ -60,8 +64,7 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
       { Header: 'owners', accessor: 'owners' },
       { Header: 'isPublic', accessor: 'public' },
       { Header: 'orgGrants' },
-      { Header: 'userGrants' },
-      { Header: 'selected', accessor: 'selected' }
+      { Header: 'userGrants' }
     ],
     []
   );
@@ -113,13 +116,13 @@ const MetadataImportTable = ({ data, setMetadataList }: Props) => {
             </span>
           ) : null
       },
+      { Header: 'selected', accessor: 'selected' },
       { Header: 'fileName', accessor: 'filename' },
       { Header: 'uploadDate', accessor: 'uploadDatetime' },
       { Header: 'status', accessor: 'status' },
       { Header: 'uploadedBy', accessor: 'uploadedBy' },
       { Header: 'owner', accessor: 'owner' },
-      { Header: 'owners', accessor: 'owners' },
-      { Header: 'selected', accessor: 'selected' }
+      { Header: 'owners', accessor: 'owners' }
     ],
     []
   );

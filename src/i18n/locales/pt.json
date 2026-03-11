@@ -62,7 +62,8 @@
   "managementPage": {
     "organization": "Organização",
     "user": "Utilizador",
-    "userImport": "Importação de utilizadores"
+    "userImport": "Importação de utilizadores",
+    "instanceConfiuration": "Configuração da instância"
   },
   "userPage": {
     "Username": "Nome de utilizador",
@@ -208,6 +209,19 @@
     "locationType": "Tipo de Localização",
     "identifier": "Identificador"
   },
+  "instancesPage": {
+    "search": "Pesquisar",
+    "title": "Instância",
+    "table": {
+      "instanceName": "Nome da instância",
+      "title": "Título",
+      "status": "Status",
+      "interventionType": "Tipo de intervenção",
+      "createdDate": "Data de criação",
+      "startDate": "Data de início",
+      "endDate": "Data de término"
+    }
+  },
   "simulationPage": {
     "title": "Simulação do plano",
     "country": "País",
@@ -217,7 +231,7 @@
     "geographicLevel": "Nível Geográfico"
   },
   "label": {
-    "layerOpacity":  "Opacidade da camada"
+    "layerOpacity": "Opacidade da camada"
   },
   "darkMode": {
     "on": "Turn on dark mode (pt)",
