@@ -33,45 +33,49 @@ const mapLocationToAreaNode = (loc: any): AreaNode => ({
 
 interface TreeNodeProps {
   node: AreaNode;
-  selectedAreas: string[];
+  selectedSet: Set<string>;
   onSelect: (id: string, checked: boolean) => void;
   filter: string;
   depth?: number;
   expandedNodeIds: string[];
   onToggleExpand: (nodeId: string) => void;
   inheritedMatch?: boolean;
+  isDarkMode: boolean;
 }
 
 // Custom comparison for memo to prevent nodes from re-rendering unless relevant state changed
 const TreeNode = React.memo<TreeNodeProps>(({ 
   node, 
-  selectedAreas, 
+  selectedSet, 
   onSelect, 
   filter, 
   depth = 0, 
   expandedNodeIds, 
   onToggleExpand, 
-  inheritedMatch = false 
+  inheritedMatch = false,
+  isDarkMode
 }) => {
   // We'll use a Set locally for ultra-fast lookup if passed as a prop, 
   // but since we are optimizing the parent, we'll expect an array here for compatibility 
   // and convert it or use the Set if we change the prop type.
   // For now, let's stick to the parent providing the optimization.
-  const [childrenLoaded, setChildrenLoaded] = useState(false); // Track if children are loaded
-  const [isVisible, setIsVisible] = useState(depth === 0); // Top level always visible
-  const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
+  const [childrenLoaded, setChildrenLoaded] = useState(false);
+  const [isVisible, setIsVisible] = useState(depth === 0);
   const checkboxRef = useRef<HTMLInputElement>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
 
-  const isSelected = selectedAreas.includes(node.identifier);
+  const isSelected = selectedSet.has(node.identifier);
   const hasChildren = !!(node.children && node.children.length > 0);
 
-  // Single accordion logic: check if this node matches the expanded one
-  // If filter is active, we expand if matching children found, essentially ignoring single-accordion restriction for search
-  // But if the user request implies strict single accordion even during search, we might need adjustments.
-  // However, usually search results should show all matches.
-  // Let's keep expanded if filter matches OR if expandedNodeId matches.
-  const isExpandedByFilter = !!(filter && (inheritedMatch || node.properties.name.toLowerCase().includes(filter.toLowerCase()) || (hasChildren && node.children?.some(c => JSON.stringify(c).toLowerCase().includes(filter.toLowerCase())))));
+  // Use pre-calculated stats from enriched node
+  const { total, selected, _isMatch, _hasChildMatch } = (node as any)._stats || { 
+    total: hasChildren ? 0 : 1, 
+    selected: isSelected ? 1 : 0,
+    _isMatch: true,
+    _hasChildMatch: false
+  };
+
+  const isExpandedByFilter = !!(filter && (inheritedMatch || _isMatch || _hasChildMatch));
   const expanded = isExpandedByFilter || expandedNodeIds.includes(node.identifier);
 
   // Auto-expand logic handled by isExpandedByFilter derivation above
@@ -87,8 +91,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
       setIsVisible(true);
       return;
     }
-
-    if (depth === 0 || !nodeRef.current) return; // Skip for top-level items
+    if (!nodeRef.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -101,7 +104,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
       },
       {
         root: null,
-        rootMargin: '100px',
+        rootMargin: '200px', // More margin for smoother scrolling
         threshold: 0.01
       }
     );
@@ -121,32 +124,6 @@ const TreeNode = React.memo<TreeNodeProps>(({
     }
   }, [expanded, filter, hasChildren, childrenLoaded]);
 
-  // Get leaf IDs recursively for cascading selection
-  const getLeafIds = useCallback((n: AreaNode): string[] => {
-    let ids: string[] = [];
-    if (n.children && n.children.length > 0) {
-      n.children.forEach(child => {
-        ids = [...ids, ...getLeafIds(child)];
-      });
-    } else {
-      ids.push(n.identifier);
-    }
-    return ids;
-  }, []);
-
-  // Calculate selection state based on leaf descendants
-  const getDescendantSelectionState = useCallback((n: AreaNode): { total: number; selected: number } => {
-    let total = 0;
-    let selected = 0;
-
-    const leaves = getLeafIds(n);
-    total = leaves.length;
-    selected = leaves.filter(id => selectedAreas.includes(id)).length;
-
-    return { total, selected };
-  }, [selectedAreas, getLeafIds]);
-
-  const { total, selected } = getDescendantSelectionState(node);
   const isFullySelected = !!(hasChildren && total > 0 && selected === total);
   const indeterminate = !!(hasChildren && selected > 0 && selected < total);
 
@@ -158,20 +135,9 @@ const TreeNode = React.memo<TreeNodeProps>(({
     }
   }); // Run on every render to ensure indeterminate state persists
 
-  // Filter logic
-  const parentMatches = node.properties.name.toLowerCase().includes(filter.toLowerCase());
-  
-  if (filter && !inheritedMatch && !parentMatches) {
-    const anyChildMatches =
-      node.children &&
-      node.children.some((c) => {
-        return JSON.stringify(c).toLowerCase().includes(filter.toLowerCase());
-      });
-
-    // If neither parent nor any child matches, don't show this node at all
-    if (!anyChildMatches) {
-      return null;
-    }
+  // Optimized match check using pre-calculated values
+  if (filter && !inheritedMatch && !_isMatch && !_hasChildMatch) {
+    return null;
   }
 
   const handleExpand = (e: React.MouseEvent) => {
@@ -186,8 +152,9 @@ const TreeNode = React.memo<TreeNodeProps>(({
 
   // Render placeholder until visible (lazy loading for nested items)
   // DISABLE placeholder if filtering
-  if (!isVisible && depth > 0 && !filter) {
-    return <div ref={nodeRef} style={{ height: '40px' }} />;
+  // Render placeholder until visible (lazy loading)
+  if (!isVisible && !filter) {
+    return <div ref={nodeRef} style={{ height: '40px', background: isDarkMode ? '#212529' : '' }} />;
   }
 
   return (
@@ -263,24 +230,28 @@ const TreeNode = React.memo<TreeNodeProps>(({
         )}
       </div>
       {hasChildren && (
-        <Collapse in={expanded}>
+        <Collapse in={expanded} unmountOnExit>
           <div className="ms-2 border-start border-secondary-subtle">
             {childrenLoaded ? (
               node.children!.map((child) => (
                 <TreeNode
                   key={child.identifier}
                   node={child}
-                  selectedAreas={selectedAreas}
+                  selectedSet={selectedSet}
                   onSelect={onSelect}
                   filter={filter}
                   depth={depth + 1}
-                  expandedNodeIds={expandedNodeIds} // Pass down the array of expanded ids
+                  expandedNodeIds={expandedNodeIds}
                   onToggleExpand={onToggleExpand}
-                  inheritedMatch={inheritedMatch || parentMatches}
+                  inheritedMatch={inheritedMatch || _isMatch}
+                  isDarkMode={isDarkMode}
                 />
               ))
             ) : (
-              <div className="text-muted small p-2">Loading...</div>
+              <div className="text-muted small p-2 d-flex align-items-center gap-2">
+                <Spinner animation="border" size="sm" variant="primary" style={{ borderWidth: '2px' }} />
+                <span>Loading...</span>
+              </div>
             )}
           </div>
         </Collapse>
@@ -325,34 +296,51 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
   // Optimized lookup Set
   const selectedSet = useMemo(() => new Set(selectedAreas), [selectedAreas]);
 
-  // Recursively enrich nodes with their leaf counts for O(1) render-time stats
+  // Recursively enrich nodes with their leaf IDs, stats, AND search match results
   const enrichedAreas = useMemo(() => {
-    const enrich = (node: AreaNode): AreaNode & { _leafIds: string[], _stats: { total: number, selected: number } } => {
+    const searchLower = debouncedSearchTerm.toLowerCase();
+    
+    const enrich = (node: AreaNode): any => {
       let leafIds: string[] = [];
       let mappedChildren: any[] = [];
+      let hasChildMatch = false;
+      let totalCount = 0;
+      let selectedCount = 0;
+      
+      const isMatch = node.properties.name.toLowerCase().includes(searchLower);
       
       if (node.children && node.children.length > 0) {
-        node.children.forEach(child => {
-          const enrichedChild = enrich(child);
-          leafIds = [...leafIds, ...enrichedChild._leafIds];
+        for (let i = 0; i < node.children.length; i++) {
+          const enrichedChild = enrich(node.children[i]);
+          leafIds.push(...enrichedChild._leafIds); 
           mappedChildren.push(enrichedChild);
-        });
+          totalCount += enrichedChild._stats.total;
+          selectedCount += enrichedChild._stats.selected;
+          if (enrichedChild._stats._isMatch || enrichedChild._stats._hasChildMatch) {
+            hasChildMatch = true;
+          }
+        }
       } else {
         leafIds = [node.identifier];
+        totalCount = 1;
+        selectedCount = selectedSet.has(node.identifier) ? 1 : 0;
       }
-
-      const selectedCount = leafIds.filter(id => selectedSet.has(id)).length;
       
       return {
         ...node,
         children: mappedChildren,
         _leafIds: leafIds,
-        _stats: { total: leafIds.length, selected: selectedCount }
-      } as any;
+        _stats: { 
+          total: totalCount, 
+          selected: selectedCount,
+          _isMatch: isMatch,
+          _hasChildMatch: hasChildMatch
+        }
+      };
     };
 
     return currentAreas.map(enrich);
-  }, [currentAreas, selectedSet]);
+  }, [currentAreas, selectedSet, debouncedSearchTerm]);
 
   const toggleNodeExpansion = useCallback((nodeId: string) => {
     setExpandedNodeIds(prev => 
@@ -452,23 +440,24 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
   }, []);
 
   const handleSelect = useCallback((id: string, isChecked: boolean) => {
-    const node = findNode(currentAreas, id);
+    const node = findNode(enrichedAreas, id);
     if (!node) return;
 
-    const leafIds = getAllLeafIds(node);
-    let newSelected = [...selectedAreas];
+    const leafIds = (node as any)._leafIds;
+    const currentSelectedSet = new Set(selectedAreas);
 
     if (isChecked) {
-      // Add all leaf descendants that aren't already selected
-      leafIds.forEach(leafId => {
-        if (!newSelected.includes(leafId)) newSelected.push(leafId);
-      });
+      // O(L) instead of O(L*S)
+      const toAdd = leafIds.filter((leafId: string) => !currentSelectedSet.has(leafId));
+      if (toAdd.length > 0) {
+        onSelectionChange([...selectedAreas, ...toAdd]);
+      }
     } else {
-      // Remove all leaf descendants
-      newSelected = newSelected.filter(sid => !leafIds.includes(sid));
+      // O(S) instead of O(S*L)
+      const toRemoveSet = new Set(leafIds);
+      onSelectionChange(selectedAreas.filter(sid => !toRemoveSet.has(sid)));
     }
-    onSelectionChange(newSelected);
-  }, [currentAreas, selectedAreas, findNode, getAllLeafIds, onSelectionChange]);
+  }, [enrichedAreas, selectedAreas, findNode, onSelectionChange]);
 
   return (
     <div>
@@ -530,7 +519,10 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
                       className="rounded p-2 area-selection-tree"
                     >
                       {isLoading ? (
-                        <div className="text-muted text-center p-3">Loading global data...</div>
+                        <div className="text-muted text-center p-5 d-flex flex-column align-items-center gap-3">
+                          <Spinner animation="border" variant="primary" />
+                          <span>Loading hierarchy data...</span>
+                        </div>
                       ) : enrichedAreas.length === 0 ? (
                         <div className="text-muted text-center p-3">No areas available</div>
                       ) : (
@@ -538,12 +530,13 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
                           <TreeNode
                             key={area.identifier}
                             node={area}
-                            selectedAreas={selectedAreas}
+                            selectedSet={selectedSet}
                             onSelect={handleSelect}
                             filter={debouncedSearchTerm}
                             depth={0}
                             expandedNodeIds={expandedNodeIds}
                             onToggleExpand={toggleNodeExpansion}
+                            isDarkMode={isDarkMode}
                           />
                         ))
                       )}
@@ -559,4 +552,4 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
   );
 };
 
-export default AreasSelection;
+export default React.memo(AreasSelection);

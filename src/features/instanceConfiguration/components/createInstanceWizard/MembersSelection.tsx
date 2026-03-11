@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Form, ListGroup, Button, InputGroup } from 'react-bootstrap';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { Card, Form, Button, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faSearch,
   faChevronRight,
   faChevronLeft,
   faAngleDoubleRight,
@@ -14,76 +13,83 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../../store/hooks';
 import { getUserList } from '../../../planSimulation/components/User/api/userAPI';
+
 interface Member {
   id: string;
   name: string;
 }
-
-const mockMembers: Member[] = [
-  { id: '1', name: 'John Doe' },
-  { id: '2', name: 'Alex B' },
-  { id: '3', name: 'Jane Smith' },
-  { id: '4', name: 'Michael Brown' },
-  { id: '5', name: 'Sarah Wilson' }
-];
 
 interface Props {
   assignedMembers: string[];
   onAssignmentChange: (ids: string[]) => void;
 }
 
-const MembersSelection = ({ assignedMembers, onAssignmentChange }: Props) => {
+const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Props) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [users,setUsers]=useState<Member[]>([])
+  const [users, setUsers] = useState<Member[]>([]);
   const [leftSelected, setLeftSelected] = useState<string[]>([]);
   const [rightSelected, setRightSelected] = useState<string[]>([]);
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
-  // Filter available members (those not in assigned list)
-  const availableMembers = users?.filter(m => !assignedMembers.includes(m.id));
-  const assignedList = users?.filter(m => assignedMembers.includes(m.id));
 
-  const filteredAvailable = availableMembers.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const fetchedUsers = await getUserList();
+        setUsers(fetchedUsers?.map(elem => ({
+          id: elem.identifier,
+          name: (elem.firstName + ' ' + elem.lastName || '').trim()
+        })));
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchUsers();
+  }, []);
 
-  const handleMoveRight = () => {
+  // Optimized lookups using Set
+  const assignedSet = useMemo(() => new Set(assignedMembers), [assignedMembers]);
+  
+  const availableMembers = useMemo(() => 
+    users.filter(m => !assignedSet.has(m.id)),
+  [users, assignedSet]);
+
+  const assignedList = useMemo(() => 
+    users.filter(m => assignedSet.has(m.id)),
+  [users, assignedSet]);
+
+  const filteredAvailable = useMemo(() => 
+    availableMembers.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())),
+  [availableMembers, searchTerm]);
+
+  const handleMoveRight = useCallback(() => {
     onAssignmentChange([...assignedMembers, ...leftSelected]);
     setLeftSelected([]);
-  };
+  }, [assignedMembers, leftSelected, onAssignmentChange]);
 
-  const handleMoveLeft = () => {
-    onAssignmentChange(assignedMembers.filter(id => !rightSelected.includes(id)));
+  const handleMoveLeft = useCallback(() => {
+    const selectedSet = new Set(rightSelected);
+    onAssignmentChange(assignedMembers.filter(id => !selectedSet.has(id)));
     setRightSelected([]);
-  };
+  }, [assignedMembers, rightSelected, onAssignmentChange]);
 
-  const handleMoveAllRight = () => {
+  const handleMoveAllRight = useCallback(() => {
     onAssignmentChange([...assignedMembers, ...filteredAvailable.map(m => m.id)]);
     setLeftSelected([]);
-  };
+  }, [assignedMembers, filteredAvailable, onAssignmentChange]);
 
-  const handleMoveAllLeft = () => {
+  const handleMoveAllLeft = useCallback(() => {
     onAssignmentChange([]);
     setRightSelected([]);
-  };
+  }, [onAssignmentChange]);
 
-  const toggleSelection = (id: string, listType: 'left' | 'right') => {
+  const toggleSelection = useCallback((id: string, listType: 'left' | 'right') => {
     if (listType === 'left') {
       setLeftSelected(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
     } else {
       setRightSelected(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
     }
-  };
-  useEffect(()=>{
-    const fetchUsers=async()=>{
-      try{
-        const users=await getUserList()
-        console.log(users)
-        setUsers(users?.map(elem=>({id:elem.identifier,name:(elem.firstName+' '+elem.lastName || '').trim()})))
-      }
-      catch(err){
-        console.log(err)
-      }
-    }
-    fetchUsers()
-  },[])
+  }, []);
+
   return (
     <div className="d-flex flex-column flex-md-row align-items-center gap-3">
       {/* Available Members */}
@@ -92,7 +98,6 @@ const MembersSelection = ({ assignedMembers, onAssignmentChange }: Props) => {
         <Card.Body style={{ background: isDarkMode ? '#212529' : '' }} className="d-flex flex-column">
           <InputGroup className="mb-3">
             <Form.Control placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-            {/* <InputGroup.Text><FontAwesomeIcon icon={faSearch} /></InputGroup.Text> */}
           </InputGroup>
           <div className="overflow-auto flex-grow-1 rounded p-2">
             {filteredAvailable.map(member => (
@@ -157,6 +162,6 @@ const MembersSelection = ({ assignedMembers, onAssignmentChange }: Props) => {
       </Card>
     </div >
   );
-};
+});
 
 export default MembersSelection;
