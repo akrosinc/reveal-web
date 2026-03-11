@@ -113,24 +113,16 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
     setStatusFilter(e.target.value);
     loadData(PAGINATION_DEFAULT_SIZE, 0, searchTerm, e.target.value);
   };
+  console.log(selectedMetadata)
 
-  // Track selection of only leaf nodes (tags)
+  // Track selection of only main tags
   useEffect(() => {
     let selected: any[] = [];
     metadataImportList?.forEach(metadataItem => {
       metadataItem.entityTagEvents?.forEach((metaEvent: any) => {
-        // Parent node but might be leaf if no children
-        if (metaEvent.selected && (!metaEvent.children || metaEvent.children.length === 0)) {
+        // Only collect the main tag (parent) if it is selected
+        if (metaEvent.selected) {
           selected.push(metaEvent);
-        }
-        
-        // Children (always leaves)
-        if (metaEvent.children && metaEvent.children.length > 0) {
-          metaEvent.children.forEach((child: any) => {
-            if (child.selected) {
-              selected.push(child);
-            }
-          });
         }
       });
     });

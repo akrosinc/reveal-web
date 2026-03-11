@@ -1,6 +1,7 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck } from '@fortawesome/free-solid-svg-icons';
+import './Stepper.css';
 
 interface Step {
   label: string;
@@ -15,11 +16,11 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
   return (
     <div
       style={{ border: `1px solid white`, backgroundColor: '#E9ECEF', borderRadius: 1000 }}
-      className="d-flex align-items-center justify-content-between px-1 py-1 !pr-3 rounded-pill"
+      className="stepper-main-container d-flex align-items-center justify-content-between px-1 py-1 rounded-pill"
     >
       <div
         style={{ border: '1px solid white', borderRadius: 1000, width: '100%' }}
-        className="d-flex align-items-center justify-content-between px-2 py-1  rounded-pill"
+        className="stepper-inner-container d-flex align-items-center justify-content-between px-2 py-1 rounded-pill"
       >
         {steps.map((step, index) => {
           const isCompleted = index < currentStep;
@@ -70,7 +71,7 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
               className="d-flex align-items-center"
             >
               <div
-                className={`rounded-circle  d-flex align-items-center justify-content-center fw-bold ${circleBg} ${circleColor}`}
+                className={`stepper-circle rounded-circle d-flex align-items-center justify-content-center fw-bold ${circleBg} ${circleColor}`}
                 style={{
                   width: '50px',
                   height: '50px',
@@ -81,7 +82,7 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
                 {content}
               </div>
               <span
-                className={`ms-3  d-none d-md-block ${isActive ? 'fw-bold text-dark' : 'text-secondary'}`}
+                className={`stepper-step-label ms-3 d-none d-md-block ${isActive ? 'fw-bold text-dark' : 'text-secondary'}`}
                 style={{
                   whiteSpace: 'nowrap',
                   fontSize: '1rem'
