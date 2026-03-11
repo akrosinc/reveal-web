@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Form, Button } from 'react-bootstrap';
+import Select from 'react-select';
 import { useAppSelector } from '../../store/hooks';
 import AreasSelection from './components/AreasSelection';
 import RolesSelection from './components/RolesSelection';
 import DatasetsSelection from './components/DatasetsSelection';
 import TeamStats from './components/TeamStats';
 import MembersSelection from './components/MembersSelection';
+import { getLocationHierarchyList } from '../location/api';
+import { toast } from 'react-toastify';
+
+interface Options {
+    value: string;
+    label: string;
+}
 
 interface CreateGroupProps {
     onCancel: () => void;
@@ -16,9 +24,24 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const [groupName, setGroupName] = useState('');
     const [isTeam, setIsTeam] = useState(false);
+    const [hierarchyList, setHierarchyList] = useState<Options[]>([]);
+    const [selectedHierarchy, setSelectedHierarchy] = useState<any>(null);
     const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
     const [assignedMembers, setAssignedMembers] = useState<string[]>([]);
     const [areaTeams, setAreaTeams] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        getLocationHierarchyList(0, 0, true)
+            .then((res: any) => {
+                const list = res.content.map((el: any) => ({
+                    label: el.name,
+                    value: el.identifier ?? ''
+                }));
+                setHierarchyList(list);
+                if (list.length > 0) setSelectedHierarchy(list[0]);
+            })
+            .catch(err => toast.error('Error fetching hierarchies'));
+    }, []);
 
     const handleAreaTeamChange = (areaId: string, team: string) => {
         setAreaTeams(prev => ({ ...prev, [areaId]: team }));
@@ -28,6 +51,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
         onSave({
             groupName,
             isTeam,
+            hierarchy: selectedHierarchy?.value,
             selectedAreas,
             assignedMembers,
             areaTeams
@@ -39,7 +63,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
             <h3 className="mb-4">Create Group</h3>
 
             <Row className="mb-4 g-3 align-items-center">
-                <Col md={3} xs={8}>
+                <Col md={4} xs={12}>
                     <Form.Group>
                         <Form.Control
                             placeholder="Enter group name"
@@ -48,6 +72,17 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
                         />
                     </Form.Group>
                 </Col>
+                {/* <Col md={4} xs={12}>
+                    <Form.Group>
+                        <Select
+                            options={hierarchyList}
+                            value={selectedHierarchy}
+                            onChange={setSelectedHierarchy}
+                            placeholder="Select Hierarchy"
+                            className="text-dark"
+                        />
+                    </Form.Group>
+                </Col> */}
                 <Col md={1} xs={4}>
                     <Form.Check
                         type="checkbox"
@@ -67,6 +102,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
                 <Col md={4} xs={12}>
                     <AreasSelection
                         isTeamMode={isTeam}
+                        selectedHierarchy={selectedHierarchy?.value}
                         selectedAreas={selectedAreas}
                         onSelectionChange={setSelectedAreas}
                         areaTeams={areaTeams}

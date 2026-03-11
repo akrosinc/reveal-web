@@ -1,33 +1,66 @@
 // Mock large dataset generator for testing lazy loading
 export interface AreaNode {
-    id: string;
-    label: string;
+    identifier: string;
+    properties: {
+        name: string;
+        geographicLevel?: string;
+        assigned?: boolean;
+        parentIdentifier?: string;
+        childrenNumber?: number;
+        simulationSearchResult?: boolean;
+    };
     children?: AreaNode[];
 }
 
-// Generate large mock dataset for testing
+// Helper function for N-level deep mock dataset generation
+const generateDeepChildren = (
+    prefix: string,
+    currentDepth: number,
+    maxDepth: number,
+    minChildren: number,
+    maxChildren: number
+): AreaNode[] => {
+    if (currentDepth >= maxDepth) return [];
+
+    const numChildren = Math.floor(Math.random() * (maxChildren - minChildren + 1)) + minChildren;
+    const children: AreaNode[] = [];
+
+    for (let j = 1; j <= numChildren; j++) {
+        const identifier = `${prefix}-${j}`;
+        const node: AreaNode = {
+            identifier,
+            properties: {
+                name: `Zone ${identifier}`
+            }
+        };
+        const nextChildren = generateDeepChildren(identifier, currentDepth + 1, maxDepth, minChildren, maxChildren);
+        if (nextChildren.length > 0) {
+            node.children = nextChildren;
+        }
+        children.push(node);
+    }
+    return children;
+};
+
+// Generate large N-level deep mock dataset for testing
 export const generateLargeDataset = (
-    numParents: number = 100,
-    minChildren: number = 5,
-    maxChildren: number = 20
+    numParents: number = 10,
+    minChildren: number = 2,
+    maxChildren: number = 5,
+    maxDepth: number = 5
 ): AreaNode[] => {
     const areas: AreaNode[] = [];
 
     for (let i = 1; i <= numParents; i++) {
-        const numChildren = Math.floor(Math.random() * (maxChildren - minChildren + 1)) + minChildren;
-        const children: AreaNode[] = [];
-
-        for (let j = 1; j <= numChildren; j++) {
-            children.push({
-                id: `area-${i}-child-${j}`,
-                label: `Zone ${i}-${j}`
-            });
-        }
-
+        const identifier = `area-${i}`;
+        const children = generateDeepChildren(identifier, 1, maxDepth, minChildren, maxChildren);
+        
         areas.push({
-            id: `area-${i}`,
-            label: `Region ${i}`,
-            children
+            identifier,
+            properties: {
+                name: `Region ${i}`
+            },
+            children: children.length > 0 ? children : undefined
         });
     }
 
@@ -37,21 +70,21 @@ export const generateLargeDataset = (
 // Small dataset for normal use
 export const smallDataset: AreaNode[] = [
     {
-        id: 'boko',
-        label: 'Boko',
+        identifier: 'boko',
+        properties: { name: 'Boko' },
         children: [
-            { id: 'ph1', label: 'PH 1' },
-            { id: 'ph2', label: 'PH 2' },
-            { id: 'ph3', label: 'PH 3' },
-            { id: 'ph4', label: 'PH 4' }
+            { identifier: 'ph1', properties: { name: 'PH 1' } },
+            { identifier: 'ph2', properties: { name: 'PH 2' } },
+            { identifier: 'ph3', properties: { name: 'PH 3' } },
+            { identifier: 'ph4', properties: { name: 'PH 4' } }
         ]
     },
     {
-        id: 'laka',
-        label: 'Laka',
+        identifier: 'laka',
+        properties: { name: 'Laka' },
         children: [
-            { id: 'lg1', label: 'LG 1' },
-            { id: 'lg2', label: 'LG 2' }
+            { identifier: 'lg1', properties: { name: 'LG 1' } },
+            { identifier: 'lg2', properties: { name: 'LG 2' } }
         ]
     }
 ];
@@ -61,32 +94,20 @@ export const datasetsByHierarchy: Record<string, AreaNode[]> = {
     'Niagara': smallDataset,
     'Ontario': [
         {
-            id: 'toronto',
-            label: 'Toronto',
+            identifier: 'toronto',
+            properties: { name: 'Toronto' },
             children: [
-                { id: 'dt1', label: 'Downtown 1' },
-                { id: 'dt2', label: 'Downtown 2' },
-                { id: 'dt3', label: 'Downtown 3' }
+                { identifier: 'dt1', properties: { name: 'Downtown 1' } },
+                { identifier: 'dt2', properties: { name: 'Downtown 2' } },
+                { identifier: 'dt3', properties: { name: 'Downtown 3' } }
             ]
         },
         {
-            id: 'ottawa',
-            label: 'Ottawa',
+            identifier: 'ottawa',
+            properties: { name: 'Ottawa' },
             children: [
-                { id: 'ot1', label: 'Central 1' },
-                { id: 'ot2', label: 'Central 2' }
-            ]
-        }
-    ],
-    'Quebec': [
-        {
-            id: 'montreal',
-            label: 'Montreal',
-            children: [
-                { id: 'mt1', label: 'District 1' },
-                { id: 'mt2', label: 'District 2' },
-                { id: 'mt3', label: 'District 3' },
-                { id: 'mt4', label: 'District 4' }
+                { identifier: 'ot1', properties: { name: 'Central 1' } },
+                { identifier: 'ot2', properties: { name: 'Central 2' } }
             ]
         }
     ],
