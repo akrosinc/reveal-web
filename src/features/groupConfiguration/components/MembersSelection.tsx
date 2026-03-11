@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Form, Button, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -13,18 +13,12 @@ import {
     faPencilAlt
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../store/hooks';
+import { getUserList } from '../../planSimulation/components/User/api/userAPI';
 
 interface Member {
     id: string;
     name: string;
 }
-
-const mockMembers: Member[] = [
-    { id: '1', name: 'John Doe' },
-    { id: '2', name: 'Alex B' },
-    { id: '3', name: 'Jane Smith' },
-    { id: '4', name: 'Michael Brown' }
-];
 
 interface MembersSelectionProps {
     assignedMembers: string[];
@@ -34,11 +28,27 @@ interface MembersSelectionProps {
 const MembersSelection: React.FC<MembersSelectionProps> = ({ assignedMembers, onAssignmentChange }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const [searchTerm, setSearchTerm] = useState('');
+    const [users, setUsers] = useState<Member[]>([]);
     const [leftSelected, setLeftSelected] = useState<string[]>([]);
     const [rightSelected, setRightSelected] = useState<string[]>([]);
 
-    const availableMembers = mockMembers.filter(m => !assignedMembers.includes(m.id));
-    const assignedList = mockMembers.filter(m => assignedMembers.includes(m.id));
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const fetchedUsers = await getUserList();
+                setUsers(fetchedUsers?.map(elem => ({
+                    id: elem.identifier,
+                    name: (elem.firstName + ' ' + elem.lastName || '').trim()
+                })));
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    const availableMembers = users.filter(m => !assignedMembers.includes(m.id));
+    const assignedList = users.filter(m => assignedMembers.includes(m.id));
     const filteredAvailable = availableMembers.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const handleMoveRight = () => {
