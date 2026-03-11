@@ -19,7 +19,7 @@ interface Props {
 
 interface TreeNodeProps {
   node: AreaNode;
-  selectedAreas: string[];
+  selectedSet: Set<string>;
   onSelect: (id: string, checked: boolean) => void;
   filter: string;
   depth?: number;
@@ -34,7 +34,7 @@ interface TreeNodeProps {
 
 const TreeNode = React.memo<TreeNodeProps>(({ 
   node, 
-  selectedAreas, 
+  selectedSet, 
   onSelect, 
   filter, 
   depth = 0, 
@@ -47,11 +47,11 @@ const TreeNode = React.memo<TreeNodeProps>(({
   isDarkMode
 }) => {
   const [childrenLoaded, setChildrenLoaded] = useState(false);
-  const [isVisible, setIsVisible] = useState(depth === 0);
+  const [isVisible, setIsVisible] = useState(false);
   const checkboxRef = useRef<HTMLInputElement>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
 
-  const isSelected = selectedAreas.includes(node.identifier);
+  const isSelected = selectedSet.has(node.identifier);
   const hasChildren = !!(node.children && node.children.length > 0);
 
   // Use pre-calculated stats from enriched node
@@ -66,11 +66,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
   const expanded = isExpandedByFilter || expandedNodeIds.includes(node.identifier);
 
   useEffect(() => {
-    if (filter) {
-      setIsVisible(true);
-      return;
-    }
-    if (depth === 0 || !nodeRef.current) return;
+    if (!nodeRef.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -83,7 +79,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
       },
       {
         root: null,
-        rootMargin: '100px',
+        rootMargin: '200px', // More margin for smoother scrolling
         threshold: 0.01
       }
     );
@@ -109,9 +105,14 @@ const TreeNode = React.memo<TreeNodeProps>(({
     }
   });
 
-  // Optimized match check using pre-calculated values
+  // 1. First check if we should prune this node based on filter
   if (filter && !inheritedMatch && !_isMatch && !_hasChildMatch) {
     return null;
+  }
+
+  // 2. Then check if we should render a placeholder (lazy loading)
+  if (!isVisible) {
+    return <div ref={nodeRef} style={{ height: '40px', background: isDarkMode ? '#212529' : '' }} />;
   }
 
   const handleExpand = (e: React.MouseEvent) => {
@@ -122,10 +123,6 @@ const TreeNode = React.memo<TreeNodeProps>(({
   const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSelect(node.identifier, e.target.checked);
   };
-
-  if (!isVisible && depth > 0 && !filter) {
-    return <div ref={nodeRef} style={{ height: '40px' }} />;
-  }
 
   return (
     <div ref={nodeRef} className="mb-1" style={{ background: isDarkMode ? '#212529' : '', paddingLeft: depth === 0 ? 0 : '1rem' }}>
@@ -211,14 +208,14 @@ const TreeNode = React.memo<TreeNodeProps>(({
         </div>
       </div>
       {hasChildren && (
-        <Collapse in={expanded}>
+        <Collapse in={expanded} unmountOnExit>
           <div className="ms-2 border-start border-secondary-subtle">
             {childrenLoaded ? (
               node.children!.map((child) => (
                 <TreeNode
                   key={child.identifier}
                   node={child}
-                  selectedAreas={selectedAreas}
+                  selectedSet={selectedSet}
                   onSelect={onSelect}
                   filter={filter}
                   depth={depth + 1}
@@ -290,30 +287,34 @@ const AreasSelection: React.FC<Props> = ({
       let leafIds: string[] = [];
       let mappedChildren: any[] = [];
       let hasChildMatch = false;
+      let totalCount = 0;
+      let selectedCount = 0;
       
       const isMatch = node.properties.name.toLowerCase().includes(searchLower);
       
       if (node.children && node.children.length > 0) {
-        node.children.forEach(child => {
-          const enrichedChild = enrich(child);
-          leafIds = [...leafIds, ...enrichedChild._leafIds];
+        for (let i = 0; i < node.children.length; i++) {
+          const enrichedChild = enrich(node.children[i]);
+          leafIds.push(...enrichedChild._leafIds); 
           mappedChildren.push(enrichedChild);
+          totalCount += enrichedChild._stats.total;
+          selectedCount += enrichedChild._stats.selected;
           if (enrichedChild._stats._isMatch || enrichedChild._stats._hasChildMatch) {
             hasChildMatch = true;
           }
-        });
+        }
       } else {
         leafIds = [node.identifier];
+        totalCount = 1;
+        selectedCount = selectedSet.has(node.identifier) ? 1 : 0;
       }
-
-      const selectedCount = leafIds.filter(id => selectedSet.has(id)).length;
       
       return {
         ...node,
         children: mappedChildren,
         _leafIds: leafIds,
         _stats: { 
-          total: leafIds.length, 
+          total: totalCount, 
           selected: selectedCount,
           _isMatch: isMatch,
           _hasChildMatch: hasChildMatch
@@ -491,7 +492,7 @@ const AreasSelection: React.FC<Props> = ({
                           <TreeNode
                             key={area.identifier}
                             node={area}
-                            selectedAreas={selectedAreas}
+                            selectedSet={selectedSet}
                             onSelect={handleSelect}
                             filter={debouncedSearchTerm}
                             depth={0}

@@ -60,7 +60,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
   // and convert it or use the Set if we change the prop type.
   // For now, let's stick to the parent providing the optimization.
   const [childrenLoaded, setChildrenLoaded] = useState(false);
-  const [isVisible, setIsVisible] = useState(depth === 0);
+  const [isVisible, setIsVisible] = useState(false);
   const checkboxRef = useRef<HTMLInputElement>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -87,10 +87,6 @@ const TreeNode = React.memo<TreeNodeProps>(({
   // Lazy loading with Intersection Observer (only for nested items)
   useEffect(() => {
     // Disable lazy loading when filtering to prevent whitespace gaps
-    if (filter) {
-      setIsVisible(true);
-      return;
-    }
     if (!nodeRef.current) return;
 
     const observer = new IntersectionObserver(
@@ -135,27 +131,24 @@ const TreeNode = React.memo<TreeNodeProps>(({
     }
   }); // Run on every render to ensure indeterminate state persists
 
-  // Optimized match check using pre-calculated values
+  // 1. First check if we should prune this node based on filter
   if (filter && !inheritedMatch && !_isMatch && !_hasChildMatch) {
     return null;
   }
 
+  // 2. Then check if we should render a placeholder (lazy loading)
+  if (!isVisible) {
+    return <div ref={nodeRef} style={{ height: '40px', background: isDarkMode ? '#212529' : '' }} />;
+  }
+
   const handleExpand = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Toggle: Add or remove this node's ID from the expanded array
     onToggleExpand(node.identifier);
   };
 
   const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSelect(node.identifier, e.target.checked);
   };
-
-  // Render placeholder until visible (lazy loading for nested items)
-  // DISABLE placeholder if filtering
-  // Render placeholder until visible (lazy loading)
-  if (!isVisible && !filter) {
-    return <div ref={nodeRef} style={{ height: '40px', background: isDarkMode ? '#212529' : '' }} />;
-  }
 
   return (
     <div ref={nodeRef} className="mb-1" style={{ background: isDarkMode ? '#212529' : '', paddingLeft: depth === 0 ? 0 : '1rem' }}>
