@@ -111,7 +111,7 @@ export const datasetsByHierarchy: Record<string, AreaNode[]> = {
             ]
         }
     ],
-    'Large Test Dataset': generateLargeDataset(100, 10, 30)
+    'Large Test Dataset': generateLargeDataset(100, 10, 30, 2)
 };
 
 export const hierarchyOptions = Object.keys(datasetsByHierarchy);
