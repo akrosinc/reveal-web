@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
-import { Button, Col, Row } from 'react-bootstrap';
+import { Button, Col, Row, Spinner } from 'react-bootstrap';
 import { DebounceInput } from 'react-debounce-input';
 import DefaultTable from '../../../../components/Table/DefaultTable';
 import { MOCK_INSTANCES, InstanceModel } from './mockInstances';
@@ -16,10 +16,20 @@ const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
   const { t } = useTranslation();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
+  const [instances, setInstances] = useState<InstanceModel[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     getInstances().then(res => {
-      console.log('Instances data:', res);
+      if (res && (res as any).content) {
+        setInstances((res as any).content);
+      } 
+      setLoading(false);
+    }).catch(err => {
+      console.error('Failed to fetch instances:', err);
+      setInstances(MOCK_INSTANCES);
+      setLoading(false);
     });
   }, []);
 
@@ -37,18 +47,18 @@ const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
   };
 
   const filteredData = useMemo(() => {
-    let data = [...MOCK_INSTANCES];
+    let data = [...instances];
 
-    // 🔍 Search
+    // Search
     if (search) {
       data = data.filter(
         item =>
-          item.instanceName.toLowerCase().includes(search.toLowerCase()) ||
-          item.title.toLowerCase().includes(search.toLowerCase())
+          item.instanceName?.toLowerCase().includes(search.toLowerCase()) ||
+          item.planTitle?.toLowerCase().includes(search.toLowerCase())
       );
     }
 
-    // ↕️ Sort
+    // Sort
     if (currentSortField) {
       data.sort((a: any, b: any) => {
         const aVal = a[currentSortField];
@@ -57,8 +67,8 @@ const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
         if (aVal == null) return 1;
         if (bVal == null) return -1;
 
-        // Date sorting
-        if (!isNaN(Date.parse(aVal))) {
+        // Date sorting check
+        if (typeof aVal === 'string' && !isNaN(Date.parse(aVal)) && (aVal.includes('-') || aVal.includes(':'))) {
           return currentSortDirection
             ? new Date(bVal).getTime() - new Date(aVal).getTime()
             : new Date(aVal).getTime() - new Date(bVal).getTime();
@@ -79,12 +89,12 @@ const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
     }
 
     return data;
-  }, [search, currentSortField, currentSortDirection]);
+  }, [instances, search, currentSortField, currentSortDirection]);
 
   const tableData = filteredData.map(row => ({
     ...row,
     action:
-      row.status === 'Draft' ? (
+      row.planStatus === 'DRAFT' ? (
         <Button size="sm" variant="primary" onClick={() => activateHandler(row)}>
           Activate
         </Button>
@@ -112,12 +122,19 @@ const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
 
       <hr className="my-3" />
 
-      <DefaultTable
-        pageKey="instancesPage.table."
-        columns={INSTANCE_TABLE_COLUMNS}
-        data={tableData}
-        sortHandler={sortHandler}
-      />
+      {loading ? (
+        <div className="text-center my-5">
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-2 text-muted">Loading instances...</p>
+        </div>
+      ) : (
+        <DefaultTable
+          pageKey="instancesPage.table."
+          columns={INSTANCE_TABLE_COLUMNS}
+          data={tableData}
+          sortHandler={sortHandler}
+        />
+      )}
     </>
   );
 };

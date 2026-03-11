@@ -126,24 +126,24 @@ export const INSTANCE_TABLE_COLUMNS = [
     accessor: 'instanceName'
   },
   {
-    name: 'title',
-    sortValue: 'title',
-    accessor: 'title'
-  },
-  {
-    name: 'status',
-    sortValue: 'status',
-    accessor: 'status'
-  },
-  {
     name: 'interventionType',
     sortValue: 'interventionType',
     accessor: 'interventionType'
   },
   {
-    name: 'createdDate',
-    sortValue: 'createdDate',
-    accessor: 'createdDate'
+    name: 'planTitle',
+    sortValue: 'planTitle',
+    accessor: 'planTitle'
+  },
+  {
+    name: 'planStatus',
+    sortValue: 'planStatus',
+    accessor: 'planStatus'
+  },
+  {
+    name: 'createdDatetime',
+    sortValue: 'createdDatetime',
+    accessor: 'createdDatetime'
   },
   {
     name: 'startDate',

@@ -1,42 +1,42 @@
 export type InstanceModel = {
-  id: string;
+  identifier: string;
   instanceName: string;
-  title: string;
-  status: 'Draft' | 'Active';
   interventionType: string;
-  createdDate: string;
+  createdDatetime: string;
+  planTitle: string;
+  planStatus: string;
   startDate: string;
   endDate: string;
 };
 
 export const MOCK_INSTANCES: InstanceModel[] = [
   {
-    id: '1',
+    identifier: '1',
     instanceName: 'Boko Instance',
-    title: 'Boko plan',
-    status: 'Draft',
+    planTitle: 'Boko plan',
+    planStatus: 'DRAFT',
     interventionType: 'Survey',
-    createdDate: '2025-11-19',
+    createdDatetime: '2025-11-19T08:00:00',
     startDate: '2025-11-19',
     endDate: '2025-11-19'
   },
   {
-    id: '2',
+    identifier: '2',
     instanceName: 'Laka Instance',
-    title: 'Laka plan',
-    status: 'Draft',
+    planTitle: 'Laka plan',
+    planStatus: 'DRAFT',
     interventionType: 'MDA',
-    createdDate: '2025-11-17',
+    createdDatetime: '2025-11-17T08:00:00',
     startDate: '2025-11-17',
     endDate: '2025-11-14'
   },
   {
-    id: '3',
+    identifier: '3',
     instanceName: 'Lagos Instance',
-    title: 'Lagos plan',
-    status: 'Draft',
+    planTitle: 'Lagos plan',
+    planStatus: 'DRAFT',
     interventionType: 'Survey',
-    createdDate: '2025-11-19',
+    createdDatetime: '2025-11-19T08:00:00',
     startDate: '2025-11-19',
     endDate: '2025-11-19'
   }
