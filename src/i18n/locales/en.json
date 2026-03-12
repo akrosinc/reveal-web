@@ -249,7 +249,10 @@
       "interventionType": "Intervention Type",
       "createdDate": "Created Date",
       "startDate": "Start Date",
-      "endDate": "End Date"
+      "endDate": "End Date",
+      "planTitle":"Plan title",
+      "planStatus":"Plan status",
+      "createdDatetime":"Created at"
     }
   },
   "groupConfigurationPage": {

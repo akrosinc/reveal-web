@@ -1,97 +1,113 @@
-import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Col, Row, Spinner } from 'react-bootstrap';
 import { DebounceInput } from 'react-debounce-input';
 import DefaultTable from '../../../../components/Table/DefaultTable';
-import { MOCK_INSTANCES, InstanceModel } from './mockInstances';
 import { INSTANCE_TABLE_COLUMNS } from '../../../../constants/constants';
 import { useTranslation } from 'react-i18next';
 import { getInstances } from '../../api';
+import Paginator from '../../../../components/Pagination';
+import { toast } from 'react-toastify';
 
 interface InstancesProps {
   onCreate?: () => void;
 }
 
+const PAGINATION_DEFAULT_SIZE = 10;
+
 const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
-  const [search, setSearch] = useState('');
   const { t } = useTranslation();
+
+  const [instances, setInstances] = useState<any>();
+  const [loading, setLoading] = useState(false);
+
+  const [search, setSearch] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
-  const [instances, setInstances] = useState<InstanceModel[]>([]);
-  const [loading, setLoading] = useState(true);
 
+  const activateHandler = (row: any) => {
+    console.log('Activate clicked for:', row);
+  };
+
+  /**
+   * Load instances from API
+   */
+  const loadData = useCallback(
+    (size: number, page: number, field?: string, direction?: boolean) => {
+      setLoading(true);
+
+      getInstances(size, page, field, direction)
+        .then(res => {
+          setInstances(res);
+        })
+        .catch(err => {
+          toast.error('Failed to fetch instances');
+          console.error(err);
+        })
+        .finally(() => setLoading(false));
+    },
+    []
+  );
+
+  /**
+   * Initial load
+   */
   useEffect(() => {
-    setLoading(true);
-    getInstances().then(res => {
-      if (res && (res as any).content) {
-        setInstances((res as any).content);
-      } 
-      setLoading(false);
-    }).catch(err => {
-      console.error('Failed to fetch instances:', err);
-      setInstances(MOCK_INSTANCES);
-      setLoading(false);
-    });
-  }, []);
+    loadData(PAGINATION_DEFAULT_SIZE, 0);
+  }, [loadData]);
 
+  /**
+   * Search filter
+   */
   const filterData = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
   };
 
-  const sortHandler = (field: string, sortDirection: boolean) => {
+  /**
+   * Sorting
+   */
+//  const sortHandler = (field: string, direction: boolean) => {
+//   setCurrentSortField(field);
+//   setCurrentSortDirection(direction);
+
+//   loadData(instances?.size ?? PAGINATION_DEFAULT_SIZE, 0, field, direction);
+// };
+const sortHandler = (field: string, direction: boolean) => {
+  if (instances !== undefined) {
     setCurrentSortField(field);
-    setCurrentSortDirection(sortDirection);
+    setCurrentSortDirection(direction);
+
+    getInstances(instances.size, 0, field, direction)
+      .then(res => setInstances(res))
+      .catch(err => toast.error(err));
+  }
+};
+
+
+  /**
+   * Pagination
+   */
+  const paginationHandler = (size: number, page: number) => {
+    loadData(size, page, currentSortField, currentSortDirection);
   };
 
-  const activateHandler = (row: InstanceModel) => {
-    console.log('Activate clicked for:', row);
-  };
-
+  /**
+   * Client-side search filtering
+   */
   const filteredData = useMemo(() => {
-    let data = [...instances];
+    if (!instances?.content) return [];
 
-    // Search
-    if (search) {
-      data = data.filter(
-        item =>
-          item.instanceName?.toLowerCase().includes(search.toLowerCase()) ||
-          item.planTitle?.toLowerCase().includes(search.toLowerCase())
-      );
-    }
+    if (!search) return instances.content;
 
-    // Sort
-    if (currentSortField) {
-      data.sort((a: any, b: any) => {
-        const aVal = a[currentSortField];
-        const bVal = b[currentSortField];
+    return instances.content.filter((item: any) =>
+      item.instanceName?.toLowerCase().includes(search.toLowerCase()) ||
+      item.planTitle?.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [instances, search]);
 
-        if (aVal == null) return 1;
-        if (bVal == null) return -1;
-
-        // Date sorting check
-        if (typeof aVal === 'string' && !isNaN(Date.parse(aVal)) && (aVal.includes('-') || aVal.includes(':'))) {
-          return currentSortDirection
-            ? new Date(bVal).getTime() - new Date(aVal).getTime()
-            : new Date(aVal).getTime() - new Date(bVal).getTime();
-        }
-
-        // String sorting
-        if (typeof aVal === 'string') {
-          return currentSortDirection ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
-        }
-
-        // Number sorting
-        if (typeof aVal === 'number') {
-          return currentSortDirection ? bVal - aVal : aVal - bVal;
-        }
-
-        return 0;
-      });
-    }
-
-    return data;
-  }, [instances, search, currentSortField, currentSortDirection]);
-
-  const tableData = filteredData.map(row => ({
+  /**
+   * Table Data
+   */
+  const tableData = filteredData.map((row: any) => ({
     ...row,
     action:
       row.planStatus === 'DRAFT' ? (
@@ -103,20 +119,25 @@ const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
 
   return (
     <>
-      <h2>{t('instancesPage.title')}</h2>
+      <h2>
+        {t('instancesPage.title')} ({instances?.totalElements ?? 0})
+      </h2>
 
       <Row className="my-4 align-items-center">
         <Col md={4}>
           <DebounceInput
             className="form-control"
             placeholder={t('instancesPage.search')}
-            debounceTimeout={500}
+            debounceTimeout={600}
             onChange={filterData}
+            disabled={instances?.totalElements === 0 && search === ''}
           />
         </Col>
 
         <Col md={8}>
-          <Button className="btn btn-primary float-end" onClick={onCreate}>{t('buttons.create')}</Button>
+          <Button className="btn btn-primary float-end" onClick={onCreate}>
+            {t('buttons.create')}
+          </Button>
         </Col>
       </Row>
 
@@ -127,13 +148,25 @@ const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
           <Spinner animation="border" variant="primary" />
           <p className="mt-2 text-muted">Loading instances...</p>
         </div>
+      ) : instances && instances.content.length > 0 ? (
+        <>
+          <DefaultTable
+            pageKey="instancesPage.table."
+            columns={INSTANCE_TABLE_COLUMNS}
+            data={tableData}
+            sortHandler={sortHandler}
+          />
+
+          <Paginator
+            totalElements={instances.totalElements}
+            page={instances.pageable.pageNumber}
+            size={instances.size}
+            totalPages={instances.totalPages}
+            paginationHandler={paginationHandler}
+          />
+        </>
       ) : (
-        <DefaultTable
-          pageKey="instancesPage.table."
-          columns={INSTANCE_TABLE_COLUMNS}
-          data={tableData}
-          sortHandler={sortHandler}
-        />
+        <p className="text-center text-muted">No instances found</p>
       )}
     </>
   );
