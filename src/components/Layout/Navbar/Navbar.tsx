@@ -1,7 +1,7 @@
 import { Button, Container, Nav, Navbar, NavDropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import logo from '../../../assets/logos/reveal-logo.png';
 import logoWhite from '../../../assets/logos/reveal-logo-white.png';
-import { BsPerson } from 'react-icons/bs';
+import { BsPerson, BsArrowLeftRight } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
 import { MAIN_MENU } from './menuItems';
@@ -16,25 +16,35 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { setToBrowser } from '../../../utils';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { setDarkMode } from '../../../features/reducers/darkMode';
+import { setCurrentInstance, clearCurrentInstance } from '../../../features/reducers/instanceContext';
+import { getInstanceContext } from '../../../features/instance/api';
+import SwitchInstanceModal from './SwitchInstanceModal';
 
 const NavbarComponent = () => {
   const { t } = useTranslation();
   const { keycloak, initialized } = useKeycloak();
   const [user, setUser] = useState<KeycloakProfile>();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
+  const currentInstance = useAppSelector(state => state.instanceContext.currentInstance);
   const dispatch = useAppDispatch();
   const [expanded, setExpanded] = useState(false);
+  const [showSwitchModal, setShowSwitchModal] = useState(false);
 
   useEffect(() => {
     if (initialized && keycloak.authenticated) {
       keycloak.loadUserProfile().then(userProfile => {
         setUser(userProfile);
       });
+      // Fetch and persist the user's default instance after login
+      getInstanceContext()
+        .then(instance => dispatch(setCurrentInstance(instance)))
+        .catch(() => {/* silently ignore if no instance context yet */});
       keycloak.onAuthLogout = () => {
         setUser(undefined);
+        dispatch(clearCurrentInstance());
       };
     }
-  }, [keycloak, initialized]);
+  }, [keycloak, initialized, dispatch]);
 
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode);
@@ -111,13 +121,25 @@ const NavbarComponent = () => {
             </Nav>
           ) : null}
           {initialized && user ? (
-            <Nav className="d-inline">
-              <BsPerson size="1.2rem" className="mt-2 me-2 float-start" />
+            <Nav className="d-inline-flex align-items-center">
+              {/* Switch Instance button */}
+              <Button
+                id="switch-instance-button-nav"
+                variant="link"
+                className="switch-instance-nav-btn me-2"
+                onClick={() => setShowSwitchModal(true)}
+                title={currentInstance ? `Current: ${currentInstance.name}` : 'Switch Instance'}
+              >
+                <BsArrowLeftRight className="me-1" />
+                {t('topNav.switchInstance') || 'Switch Instance'}
+              </Button>
+              <BsPerson size="1.2rem" className="mt-1 me-1" />
               <NavDropdown title={user.username} id="logout-nav-dropdown" align="end" className="me-md-4">
                 <NavDropdown.Item
                   id="logout-button"
                   className="text-center"
                   onClick={() => {
+                    dispatch(clearCurrentInstance());
                     keycloak.logout();
                   }}
                 >
@@ -174,6 +196,10 @@ const NavbarComponent = () => {
           </Nav>
         </Navbar.Collapse>
       </Container>
+      <SwitchInstanceModal
+        show={showSwitchModal}
+        onClose={() => setShowSwitchModal(false)}
+      />
     </Navbar>
   );
 };

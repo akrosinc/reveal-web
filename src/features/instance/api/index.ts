@@ -1,0 +1,23 @@
+import api from '../../../api/axios';
+import { InstanceModel } from '../../reducers/instanceContext';
+
+const INSTANCE_CONTEXT = 'instance/context';
+const INSTANCE_USER_LIST = 'instance/user/instancelist';
+const INSTANCE_SELECT = (instanceId: string) => `instance/instances/${instanceId}/select`;
+
+export const getInstanceContext = async (): Promise<InstanceModel> => {
+  const data = await api.get<InstanceModel>(INSTANCE_CONTEXT).then(response => response.data);
+  return data;
+};
+
+export const getUserInstanceList = async (): Promise<InstanceModel[]> => {
+  const data = await api.get<InstanceModel[]>(INSTANCE_USER_LIST).then(response => response.data);
+  return data;
+};
+
+export const selectInstance = async (instanceId: string): Promise<InstanceModel> => {
+  const data = await api
+    .post<InstanceModel>(INSTANCE_SELECT(instanceId))
+    .then(response => response.data);
+  return data;
+};
