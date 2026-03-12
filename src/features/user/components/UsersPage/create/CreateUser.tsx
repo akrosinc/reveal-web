@@ -38,7 +38,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
   const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
-  const [userType, setUserType] = useState('Standard User');
+  const [userType, setUserType] = useState('standard_user');
 
   const {
     reset,
@@ -51,32 +51,32 @@ const CreateUser = ({ show, handleClose }: Props) => {
   const [organizations, setOrganizations] = useState<Options[]>([]);
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
-  const getData = useCallback(() => {
-    getSecurityGroups().then(res => {
-      setGroups(
-        res.map(el => {
-          return {
-            value: el.name,
-            label: el.name
-          };
-        })
-      );
-    });
-    getOrganizationListSummary().then(res => {
-      setOrganizations(
-        res.content.map(el => {
-          return {
-            value: el.identifier,
-            label: el.name
-          };
-        })
-      );
-    });
-  }, []);
+  // const getData = useCallback(() => {
+  //   getSecurityGroups().then(res => {
+  //     setGroups(
+  //       res.map(el => {
+  //         return {
+  //           value: el.name,
+  //           label: el.name
+  //         };
+  //       })
+  //     );
+  //   }).catch(e=>console.log("ERror",e));
+  //   getOrganizationListSummary().then(res => {
+  //     setOrganizations(
+  //       res.content.map(el => {
+  //         return {
+  //           value: el.identifier,
+  //           label: el.name
+  //         };
+  //       })
+  //     );
+  //   });
+  // }, []);
 
-  useEffect(() => {
-    getData();
-  }, [getData]);
+  // useEffect(() => {
+  //   getData();
+  // }, [getData]);
 
   const selectHandler = (selectedOption: MultiValue<{ value: string; label: string }>) => {
     const values = selectedOption.map(selected => {
@@ -139,12 +139,12 @@ const CreateUser = ({ show, handleClose }: Props) => {
   };
 
   const userTypeOptions = [
-    { name: 'Admin', value: 'Admin' },
-    { name: 'Standard User', value: 'Standard User' }
+    { name: 'Admin', value: 'super_admin' },
+    { name: 'Standard User', value: 'standard_user' }
   ];
 
   const instanceOptions = MOCK_INSTANCES.map(inst => ({
-    value: inst.id,
+    value: inst.identifier,
     label: inst.instanceName
   }));
 
@@ -193,7 +193,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             />
             {errors.username && <Form.Label className="text-danger">{errors.username.message}</Form.Label>}
           </Form.Group>
-          {userType === 'Standard User' && <Form.Group className="mb-2">
+          {/* {userType === 'Standard User' && <Form.Group className="mb-2">
             <Form.Label>Select Instances</Form.Label>
             <Select
               className="custom-react-select-container"
@@ -206,7 +206,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
               onChange={instanceSelectHandler}
               placeholder="Select instances..."
             />
-          </Form.Group>}
+          </Form.Group>} */}
           <Row>
             <Col>
               <Form.Group className="mb-2">
@@ -276,7 +276,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             {errors.email && <Form.Label className="text-danger">Please enter a valid email.</Form.Label>}
           </Form.Group>
 
-          {/* 
+          {/* <>
           <Form.Group className="mb-2">
             <Form.Label>Security groups</Form.Label>
             <Select
@@ -303,7 +303,8 @@ const CreateUser = ({ show, handleClose }: Props) => {
               options={organizations}
               onChange={organizationSelectHandler}
             />
-          </Form.Group> */}
+          </Form.Group>
+          </> */}
 
 
         </Form>
