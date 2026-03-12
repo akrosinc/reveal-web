@@ -1,75 +1,91 @@
-import React, { ChangeEvent, useMemo, useState } from 'react';
-import { Button, Col, Row } from 'react-bootstrap';
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { Button, Col, Row, Spinner } from 'react-bootstrap';
 import { DebounceInput } from 'react-debounce-input';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import DefaultTable from '../../components/Table/DefaultTable';
-import { MOCK_GROUPS, GroupModel } from './mockGroups';
 import CreateGroup from './CreateGroup';
+import { getGroupList, GroupModel } from './api';
+import { PAGINATION_DEFAULT_SIZE } from '../../constants';
 
 const GroupConfiguration: React.FC = () => {
     const { t } = useTranslation();
+
+    // ─── Table / pagination state ───────────────────────────────────────────────
+    const [groups, setGroups] = useState<GroupModel[]>([]);
+    const [totalElements, setTotalElements] = useState(0);
+    const [currentPage, setCurrentPage] = useState(0);
     const [search, setSearch] = useState('');
     const [currentSortField, setCurrentSortField] = useState('');
     const [currentSortDirection, setCurrentSortDirection] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    // ─── View state ─────────────────────────────────────────────────────────────
     const [showCreate, setShowCreate] = useState(false);
 
+    // ─── Data fetch ─────────────────────────────────────────────────────────────
+    const loadGroups = useCallback(
+        (page: number, searchTerm: string, sortField: string, sortDirection: boolean) => {
+            setLoading(true);
+            getGroupList(PAGINATION_DEFAULT_SIZE, page, searchTerm, sortField, sortDirection)
+                .then(res => {
+                    setGroups(res?.content ?? []);
+                    setTotalElements(res?.totalElements ?? 0);
+                })
+                .catch(() => toast.error('Failed to load groups.'))
+                .finally(() => setLoading(false));
+        },
+        []
+    );
+
+    // Load on mount and whenever page/search/sort changes
+    useEffect(() => {
+        loadGroups(currentPage, search, currentSortField, currentSortDirection);
+    }, [currentPage, search, currentSortField, currentSortDirection, loadGroups]);
+
+    // ─── Handlers ───────────────────────────────────────────────────────────────
     const filterData = (e: ChangeEvent<HTMLInputElement>) => {
         setSearch(e.target.value);
+        setCurrentPage(0); // reset to first page on new search
     };
 
     const sortHandler = (field: string, sortDirection: boolean) => {
         setCurrentSortField(field);
         setCurrentSortDirection(sortDirection);
+        setCurrentPage(0);
     };
 
-    const filteredData = useMemo(() => {
-        let data = [...MOCK_GROUPS];
-
-        // 🔍 Search
-        if (search) {
-            data = data.filter(item => item.groupName.toLowerCase().includes(search.toLowerCase()));
-        }
-
-        // ↕️ Sort
-        if (currentSortField) {
-            data.sort((a: any, b: any) => {
-                const aVal = a[currentSortField];
-                const bVal = b[currentSortField];
-
-                if (aVal == null) return 1;
-                if (bVal == null) return -1;
-
-                if (typeof aVal === 'string') {
-                    return currentSortDirection ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
-                }
-
-                if (typeof aVal === 'boolean') {
-                    return currentSortDirection ? (aVal === bVal ? 0 : aVal ? -1 : 1) : (aVal === bVal ? 0 : aVal ? 1 : -1);
-                }
-
-                return 0;
-            });
-        }
-
-        return data;
-    }, [search, currentSortField, currentSortDirection]);
-
+    // ─── Table columns (only name + type/team) ──────────────────────────────────
     const columns = [
-        { name: 'groupName', sortValue: 'groupName', accessor: 'groupName' },
-        { name: 'team', sortValue: 'team', accessor: 'team' }
+        { name: 'name', sortValue: 'name', accessor: 'name' },
+        { name: 'type', sortValue: 'type', accessor: 'type' }
     ];
 
-    const tableData = filteredData.map(row => ({
-        ...row,
-        team: (
-            <span style={{ color: row.team ? 'green' : 'red' }}>
-                {row.team ? t('groupConfigurationPage.table.yes') : t('groupConfigurationPage.table.no')}
-            </span>
-        )
-    }));
+    const tableData = useMemo(
+        () =>
+            (groups ?? []).map(row => ({
+                ...row,
+                type: (
+                    <span style={{ color: row.type === 'TEAM' ? 'green' : '#555' }}>
+                        {row.type === 'TEAM'
+                            ? t('groupConfigurationPage.table.yes')
+                            : row.type || t('groupConfigurationPage.table.no')}
+                    </span>
+                )
+            })),
+        [groups, t]
+    );
 
+    // ─── After create: refresh list ─────────────────────────────────────────────
+    const handleSave = () => {
+        setShowCreate(false);
+        // Reload with current filters
+        loadGroups(currentPage, search, currentSortField, currentSortDirection);
+    };
+
+    // ─── Render ─────────────────────────────────────────────────────────────────
     if (showCreate) {
-        return <CreateGroup onCancel={() => setShowCreate(false)} onSave={() => setShowCreate(false)} />;
+        return <CreateGroup onCancel={() => setShowCreate(false)} onSave={handleSave} />;
     }
 
     return (
@@ -95,12 +111,45 @@ const GroupConfiguration: React.FC = () => {
 
             <hr className="my-3" />
 
-            <DefaultTable
-                pageKey="groupConfigurationPage.table."
-                columns={columns}
-                data={tableData}
-                sortHandler={sortHandler}
-            />
+            {loading ? (
+                <div className="d-flex justify-content-center align-items-center py-5">
+                    <Spinner animation="border" variant="primary" />
+                </div>
+            ) : (
+                <DefaultTable
+                    pageKey="groupConfigurationPage.table."
+                    columns={columns}
+                    data={tableData}
+                    sortHandler={sortHandler}
+                />
+            )}
+
+            {/* Simple pagination info */}
+            {!loading && totalElements > 0 && (
+                <div className="d-flex justify-content-between align-items-center mt-3">
+                    <small className="text-muted">
+                        Showing {groups.length} of {totalElements} groups
+                    </small>
+                    <div className="d-flex gap-2">
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            disabled={currentPage === 0}
+                            onClick={() => setCurrentPage(p => p - 1)}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            disabled={(currentPage + 1) * PAGINATION_DEFAULT_SIZE >= totalElements}
+                            onClick={() => setCurrentPage(p => p + 1)}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

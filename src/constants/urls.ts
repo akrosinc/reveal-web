@@ -11,3 +11,5 @@ export const LOCATION = 'location';
 export const PLAN = 'plan';
 export const REPORTS = 'dashboard';
 export const INSTANCE = 'instance';
+export const GROUP_MANAGEMENT = 'groupmanagement';
+
