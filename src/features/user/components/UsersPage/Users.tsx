@@ -113,7 +113,7 @@ const Users = () => {
             columns={USER_TABLE_COLUMNS}
             data={userList.content.map((user, index) => ({
               ...user,
-              role: index % 2 === 0 ? 'Admin' : 'User'
+              role: user?.securityGroups?.includes('super_admin')?'Admin':'User'
             }))}
             clickHandler={openUserById}
             sortHandler={sortHanlder}
