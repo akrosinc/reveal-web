@@ -1,6 +1,8 @@
 import api from '../../../api/axios';
 import { INSTANCE } from '../../../constants/urls';
 import { PageableModel } from '../../../api/providers';
+import { LOCATION_HIERARCHY } from '../../../constants/urls';
+import { LocationModel } from '../../location/providers/types';
 
 export interface InstanceResponse {
   identifier: string;
@@ -163,4 +165,30 @@ export interface CreateInstanceRequest {
 export const createInstance = async (payload: CreateInstanceRequest): Promise<InstanceResponse> => {
   const response = await api.post<InstanceResponse>(INSTANCE, payload);
   return response.data;
+};
+
+/**
+ * Get locations by hierarchy identifier
+ * @returns LocationModel
+ */
+export const getLocationsByHierarchyIdentifier = async (
+  size: number,
+  page: number,
+  identifier: string,
+  summary: boolean,
+  search?: string,
+  sortField?: string,
+  direction?: boolean
+): Promise<LocationModel[]> => {
+  const data = await api
+    .get<LocationModel[]>(
+      `locationHierarchy/location/byhierarchy/${identifier}?search=${
+        search !== undefined ? search : ''
+      }&size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ''},${
+        direction ? 'asc' : 'desc'
+      }&_summary=${summary.toString()}`
+    )
+    .then(response => response.data);
+
+  return data;
 };

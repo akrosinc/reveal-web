@@ -5,8 +5,9 @@ import { faChevronRight, faChevronDown } from '@fortawesome/free-solid-svg-icons
 import { useAppSelector } from '../../../../store/hooks';
 import { datasetsByHierarchy, hierarchyOptions, AreaNode } from './mockLargeDataset';
 import { getHierarchy } from '../../../planSimulation/components/SimulationMapView/api/hierarchyAPI';
-import { getLocationHierarchyList, getLocationListByHierarchyId, getLocationById } from '../../../location/api';
+import { getLocationHierarchyList, getLocationById } from '../../../location/api';
 import { toast } from 'react-toastify';
+import { getLocationsByHierarchyIdentifier } from '../../api';
 interface Options {
   value: string;
   label: string;
@@ -345,10 +346,10 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
     (hierarchyId: string, size: number, page: number, searchData?: string, sortField?: string, sortDirection?: boolean) => {
       if (!hierarchyId) return;
       setIsLoading(true);
-      getLocationListByHierarchyId(size, page, hierarchyId, true, searchData, sortField, sortDirection)
+      getLocationsByHierarchyIdentifier(size, page, hierarchyId, true, searchData, sortField, sortDirection)
         .then(locRes => {
-          if (locRes.content && locRes.content.length > 0) {
-            setCurrentAreas(locRes.content);
+          if (locRes && locRes?.length > 0) {
+            setCurrentAreas(locRes);
             setIsLoading(false);
           } else {
             setCurrentAreas([]);
