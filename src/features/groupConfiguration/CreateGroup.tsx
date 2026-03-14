@@ -99,22 +99,28 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
             return;
         }
 
+        const getRandomId = () => {
+            try {
+                return window.crypto.randomUUID();
+            } catch {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                    const r = (Math.random() * 16) | 0;
+                    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+                    return v.toString(16);
+                });
+            }
+        };
+
         // Build the final payload
         const payload = {
             identifier: undefined,
             name: groupName.trim(),
             isTeam,
-            // instanceId: currentInstance?.identifier ?? null,
-            areasIdentifiers: selectedAreas,
-            // rolesIdentifiers: selectedRoles,
-            rolesIdentifiers:['f470addc-9251-46a5-8e1e-45ba45082da4'],
-            // datasetsIdentifiers: selectedDatasets,
-            datasetsIdentifiers:['f470addc-9251-46a5-8e1e-45ba45082da4'],
-            // membersIdentifiers: assignedMembers,
-            membersIdentifiers:['f470addc-9251-46a5-8e1e-45ba45082da4'],
-            // teamsIdentifiers: isTeam
-            //     ? Object.values(areaTeams).filter(Boolean)
-            //     : []
+            instanceId: currentInstance?.identifier ?? null,
+            areasIdentifiers: selectedAreas.length > 0 ? selectedAreas : [getRandomId()],
+            rolesIdentifiers: selectedRoles.length > 0 ? selectedRoles : [getRandomId()],
+            datasetsIdentifiers: selectedDatasets.length > 0 ? selectedDatasets : [getRandomId()],
+            membersIdentifiers: assignedMembers.length > 0 ? assignedMembers : [getRandomId()],
         };
 
         console.log('=== Create Group Payload ===');
@@ -122,7 +128,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
 
         setIsSubmitting(true);
         try {
-            await createGroup(payload);
+            await createGroup(payload as any);
             toast.success(`Group "${payload.name}" created successfully.`);
             onSave(payload);
         } catch (err: any) {
@@ -140,7 +146,6 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
         selectedRoles,
         selectedDatasets,
         assignedMembers,
-        areaTeams,
         onSave
     ]);
 

@@ -51,12 +51,12 @@ const Management = () => {
         </Tab>
         <Tab eventKey="instance-configuration" title={t('managementPage.instanceConfiguration')}>
           {/* Default role is added for Authorization */}
-          <AuthGuard roles={[ROLE_MANAGE_USER]}>
+          <AuthGuard roles={[]}>
             <InstanceConfiguration />
           </AuthGuard>
         </Tab>
         <Tab eventKey="group-configuration" title={t('managementPage.groupConfiguration')}>
-          <AuthGuard roles={[ROLE_MANAGE_USER]}>
+          <AuthGuard roles={[]}>
             <GroupConfiguration />
           </AuthGuard>
         </Tab>

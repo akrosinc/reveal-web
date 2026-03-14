@@ -18,7 +18,6 @@ export interface CreateGroupPayload {
   rolesIdentifiers: string[];
   datasetsIdentifiers: string[];
   membersIdentifiers: string[];
-  teamsIdentifiers: string[];
 }
 
 export interface AssignedUserModel {
