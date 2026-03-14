@@ -21,7 +21,7 @@ api.interceptors.request.use(function (config) {
     console.log(config.url)
     console.log(requiresInstance)
   if(requiresInstance){
-  const rawCurrentInstance= localStorage.getItem('currentInstance')
+  const rawCurrentInstance= localStorage.getItem('currentInstanceContext')
   instanceId=rawCurrentInstance? JSON.parse(rawCurrentInstance):null
   }
   config.headers = {

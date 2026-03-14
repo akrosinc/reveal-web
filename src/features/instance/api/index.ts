@@ -5,8 +5,15 @@ const INSTANCE_CONTEXT = 'instance/context';
 const INSTANCE_USER_LIST = 'instance/user/instancelist';
 const INSTANCE_SELECT = (instanceId: string) => `instance/instances/${instanceId}/select`;
 
-export const getInstanceContext = async (): Promise<InstanceModel> => {
-  const data = await api.get<InstanceModel>(INSTANCE_CONTEXT).then(response => response.data);
+export interface InstanceSelectResponse {
+  selectedInstance: InstanceModel;
+  roleIdentifier: string;
+  roleName: string;
+  permissions: string[];
+}
+
+export const getInstanceContext = async (): Promise<InstanceSelectResponse> => {
+  const data = await api.get<InstanceSelectResponse>(INSTANCE_CONTEXT).then(response => response.data);
   return data;
 };
 
@@ -15,9 +22,9 @@ export const getUserInstanceList = async (): Promise<InstanceModel[]> => {
   return data;
 };
 
-export const selectInstance = async (instanceId: string): Promise<InstanceModel> => {
+export const selectInstance = async (instanceId: string): Promise<InstanceSelectResponse> => {
   const data = await api
-    .post<InstanceModel>(INSTANCE_SELECT(instanceId))
+    .post<InstanceSelectResponse>(INSTANCE_SELECT(instanceId))
     .then(response => response.data);
   return data;
 };

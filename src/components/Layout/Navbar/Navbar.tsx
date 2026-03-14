@@ -25,7 +25,7 @@ const NavbarComponent = () => {
   const { keycloak, initialized } = useKeycloak();
   const [user, setUser] = useState<KeycloakProfile>();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
-  const currentInstance = useAppSelector(state => state.instanceContext.currentInstance);
+  const selectedInstance = useAppSelector(state => state.instanceContext.selectedInstance);
   const dispatch = useAppDispatch();
   const [expanded, setExpanded] = useState(false);
   const [showSwitchModal, setShowSwitchModal] = useState(false);
@@ -37,8 +37,12 @@ const NavbarComponent = () => {
       });
       // Fetch and persist the user's default instance after login
       getInstanceContext()
-        .then(instance => dispatch(setCurrentInstance(instance)))
-        .catch(() => {/* silently ignore if no instance context yet */});
+        .then(res => dispatch(setCurrentInstance(res)))
+        .catch(err => {
+          if (err?.response?.status === 404) {
+            dispatch(clearCurrentInstance());
+          }
+        });
       keycloak.onAuthLogout = () => {
         setUser(undefined);
         dispatch(clearCurrentInstance());
@@ -123,16 +127,16 @@ const NavbarComponent = () => {
           {initialized && user ? (
             <Nav className="d-inline-flex align-items-center">
               {/* Switch Instance button */}
-              <Button
+             {((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user') && <Button
                 id="switch-instance-button-nav"
                 variant="link"
                 className="switch-instance-nav-btn me-2"
                 onClick={() => setShowSwitchModal(true)}
-                title={currentInstance ? `Current: ${currentInstance.name}` : 'Switch Instance'}
+                title={selectedInstance ? `Current: ${selectedInstance.name}` : 'No Instance Selected'}
               >
                 <BsArrowLeftRight className="me-1" />
-                {t('topNav.switchInstance') || 'Switch Instance'}
-              </Button>
+                {selectedInstance?.name || t('topNav.switchInstance') || 'No Instance Selected'}
+              </Button>}
               <BsPerson size="1.2rem" className="mt-1 me-1" />
               <NavDropdown title={user.username} id="logout-nav-dropdown" align="end" className="me-md-4">
                 <NavDropdown.Item

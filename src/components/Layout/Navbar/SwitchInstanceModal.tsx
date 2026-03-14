@@ -13,38 +13,38 @@ interface Props {
 
 const SwitchInstanceModal = ({ show, onClose }: Props) => {
   const dispatch = useAppDispatch();
-  const currentInstance = useAppSelector(state => state.instanceContext.currentInstance);
+  const selectedInstance = useAppSelector(state => state.instanceContext.selectedInstance);
 
   const [instanceList, setInstanceList] = useState<InstanceModel[]>([]);
-  const [selectedId, setSelectedId] = useState<string | undefined>(currentInstance?.identifier);
+  const [selectedId, setSelectedId] = useState<string | undefined>(selectedInstance?.identifier);
   const [loading, setLoading] = useState(false);
   const [switching, setSwitching] = useState(false);
 
   useEffect(() => {
     if (show) {
-      setSelectedId(currentInstance?.identifier);
+      setSelectedId(selectedInstance?.identifier);
       setLoading(true);
       getUserInstanceList()
         .then(list => setInstanceList(list))
         .catch(() => toast.error('Failed to load instance list.'))
         .finally(() => setLoading(false));
     }
-  }, [show, currentInstance?.identifier]);
+  }, [show, selectedInstance?.identifier]);
 
   const handleSelect = (id: string) => {
     setSelectedId(id);
   };
 
   const handleSwitch = async () => {
-    if (!selectedId || selectedId === currentInstance?.identifier) {
+    if (!selectedId || selectedId === selectedInstance?.identifier) {
       onClose();
       return;
     }
     setSwitching(true);
     try {
-      const updated = await selectInstance(selectedId);
-      dispatch(setCurrentInstance(updated));
-      toast.success(`Switched to ${updated.name}`);
+      const res = await selectInstance(selectedId);
+      dispatch(setCurrentInstance(res));
+      toast.success(`Switched to ${res.selectedInstance.name}`);
       onClose();
     } catch {
       toast.error('Failed to switch instance.');
