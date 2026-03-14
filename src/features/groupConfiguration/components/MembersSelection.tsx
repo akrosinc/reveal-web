@@ -14,8 +14,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../store/hooks';
 import { getUserList } from '../../planSimulation/components/User/api/userAPI';
-import { AssignedUserModel } from '../api';
-import { getAssignedUserList } from '../api';
+// import { AssignedUserModel } from '../api';
+// import { getAssignedUserList } from '../api';
 
 interface Member {
     id: string;
@@ -37,10 +37,10 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const fetchedUsers = await getAssignedUserList();
+                const fetchedUsers = await getUserList();
                 setUsers(fetchedUsers?.map(elem => ({
                     id: elem.identifier,
-                    name: elem?.name?.trim?.()
+          name: (elem.firstName + ' ' + elem.lastName || '').trim()
                 })));
             } catch (err) {
                 console.log(err);
@@ -90,7 +90,7 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
                 {/* Available */}
                 <Card
                     className={`flex-grow-1 shadow-sm ${isDarkMode ? 'text-white border-white' : ''}`}
-                    style={{ background: isDarkMode ? '#212529' : '', minHeight: '300px' }}
+                    style={{ background: isDarkMode ? '#212529' : '', minHeight: '300px', minWidth: 0 }}
                 >
                     <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
                         All
@@ -110,14 +110,14 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
                         </div>
                         <div className="overflow-auto flex-grow-1 px-3 pb-3" style={{ maxHeight: '300px' }}>
                             {filteredAvailable.map(member => (
-                                <div key={member.id} className="d-flex justify-content-between align-items-center py-2 ">
+                                <div key={member.id} className="d-flex justify-content-between align-items-center py-2 w-100 overflow-hidden">
                                     <Form.Check
                                         type="checkbox"
                                         id={`member-left-${member.id}`}
-                                        label={member.name}
+                                        label={<span className="text-break">{member.name}</span>}
                                         checked={leftSelected.includes(member.id)}
                                         onChange={() => toggleSelection(member.id, 'left')}
-                                        className="mb-0"
+                                        className="mb-0 flex-grow-1"
                                     />
                                     {/* <FontAwesomeIcon icon={faPencilAlt} size="xs" className="text-secondary opacity-50 cursor-pointer" /> */}
                                 </div>
@@ -153,7 +153,7 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
                 {/* Assigned */}
                 <Card
                     className={`flex-grow-1 shadow-sm ${isDarkMode ? 'text-white border-white' : ''}`}
-                    style={{ background: isDarkMode ? '#212529' : '', minHeight: '300px' }}
+                    style={{ background: isDarkMode ? '#212529' : '', minHeight: '300px', minWidth: 0 }}
                 >
                     <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
                         Assigned
@@ -161,14 +161,14 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
                     <Card.Body className="d-flex flex-column p-0">
                         <div className="overflow-auto flex-grow-1 p-3" style={{ maxHeight: '350px' }}>
                             {assignedList.map(member => (
-                                <div key={member.id} className="d-flex justify-content-between align-items-center py-2">
+                                <div key={member.id} className="d-flex justify-content-between align-items-center py-2 w-100 overflow-hidden">
                                     <Form.Check
                                         type="checkbox"
                                         id={`member-right-${member.id}`}
-                                        label={member.name}
+                                        label={<span className="text-break">{member.name}</span>}
                                         checked={rightSelected.includes(member.id)}
                                         onChange={() => toggleSelection(member.id, 'right')}
-                                        className="mb-0"
+                                        className="mb-0 flex-grow-1"
                                     />
                                     {/* <FontAwesomeIcon icon={faPencilAlt} size="xs" className="text-secondary opacity-50 cursor-pointer" /> */}
                                 </div>

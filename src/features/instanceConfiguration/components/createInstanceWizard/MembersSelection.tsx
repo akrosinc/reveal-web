@@ -93,13 +93,13 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Pr
   return (
     <div className="d-flex flex-column flex-md-row align-items-center gap-3">
       {/* Available Members */}
-      <Card className={`flex-grow-1 w-100 ${isDarkMode ? ' border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '', height: '400px' }}>
+      <Card className={`flex-grow-1 w-100 ${isDarkMode ? ' border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '', minHeight: '300px', minWidth: 0 }}>
         <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>All</Card.Header>
         <Card.Body style={{ background: isDarkMode ? '#212529' : '' }} className="d-flex flex-column">
           <InputGroup className="mb-3">
             <Form.Control placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </InputGroup>
-          <div className="overflow-auto flex-grow-1 rounded p-2">
+          <div className="overflow-auto flex-grow-1 rounded p-2" style={{ maxHeight: '300px' }}>
             {filteredAvailable.map(member => (
               <Form.Check
                 key={member.id}
