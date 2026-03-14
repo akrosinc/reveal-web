@@ -10,9 +10,26 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(function (config) {
-  // Inject Bearer token in every request
+  let instanceId = null
+  
+    const requiresInstance =
+    config?.url?.includes('groupmanagement') ||
+    config?.url?.includes('instance/assigned/user/list') ||
+    config?.url?.includes('instance/assigned/dataset/list') ||
+    config?.url?.includes('instance/assigned/area/tree') ||
+    config?.url?.includes('instance/roles/list');
+    console.log(config.url)
+    console.log(requiresInstance)
+  if(requiresInstance){
+  const rawCurrentInstance= localStorage.getItem('currentInstance')
+  instanceId=rawCurrentInstance? JSON.parse(rawCurrentInstance):null
+  }
   config.headers = {
-    Authorization: `Bearer ${keycloak.token}`
+   
+    ...(requiresInstance && {
+      'X-Instance-ID':instanceId?.selectedInstance?.identifier
+    }),
+     Authorization: `Bearer ${keycloak.token}`,
   };
   return config;
 });

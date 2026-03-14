@@ -61,7 +61,7 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
     [users, assignedSet]);
 
     const filteredAvailable = useMemo(() => 
-        availableMembers.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())),
+        availableMembers?.filter(m => m?.name?.toLowerCase?.()?.includes?.(searchTerm.toLowerCase())),
     [availableMembers, searchTerm]);
 
     const handleMoveRight = useCallback(() => {
