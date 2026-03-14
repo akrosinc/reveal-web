@@ -1,6 +1,7 @@
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { GROUP_MANAGEMENT } from '../../../constants';
+import { LocationModel } from '../../location/providers/types';
 
 export interface GroupModel {
   identifier: string;
@@ -20,6 +21,21 @@ export interface CreateGroupPayload {
   teamsIdentifiers: string[];
 }
 
+export interface AssignedUserModel {
+  identifier: string;
+  name: string;
+}
+
+export interface AssignedDatasetModel {
+  identifier: string;
+  name: string;
+}
+
+export interface AssignedRoleModel {
+  identifier: string;
+  name: string;
+}
+
 export const getGroupList = async (
   size: number,
   page: number,
@@ -31,7 +47,7 @@ export const getGroupList = async (
   const sortParam = sortField !== undefined ? sortField : '';
   const data = await api
     .get<PageableModel<GroupModel>>(
-      `${GROUP_MANAGEMENT}?search=${searchParam}&size=${size}&page=${page}&sort=${sortParam},${direction ? 'asc' : 'desc'}`
+      `${GROUP_MANAGEMENT}?size=${size}&page=${page}`
     )
     .then(response => response.data);
   return data;
@@ -42,4 +58,44 @@ export const createGroup = async (payload: CreateGroupPayload): Promise<GroupMod
     .post<GroupModel>(GROUP_MANAGEMENT, payload)
     .then(response => response.data);
   return data;
+};
+
+export const getAssignedUserList = async (): Promise<AssignedUserModel[]> => {
+  try {
+    const response = await api.get<AssignedUserModel[]>('instance/assigned/user/list');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching assigned user list:', error);
+    throw error;
+  }
+};
+
+export const getAssignedAreaTree = async (): Promise<LocationModel[]> => {
+  try {
+    const response = await api.get<LocationModel[]>('instance/assigned/area/tree');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching assigned area tree:', error);
+    throw error;
+  }
+};
+
+export const getAssignedDatasetList = async (): Promise<AssignedDatasetModel[]> => {
+  try {
+    const response = await api.get<AssignedDatasetModel[]>('instance/assigned/dataset/list');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching assigned dataset list:', error);
+    throw error;
+  }
+};
+
+export const getAssignedRoleList = async (): Promise<AssignedRoleModel[]> => {
+  try {
+    const response = await api.get<AssignedRoleModel[]>('instance/roles/list');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching assigned role list:', error);
+    throw error;
+  }
 };

@@ -14,6 +14,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../store/hooks';
 import { getUserList } from '../../planSimulation/components/User/api/userAPI';
+import { AssignedUserModel } from '../api';
+import { getAssignedUserList } from '../api';
 
 interface Member {
     id: string;
@@ -35,10 +37,10 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const fetchedUsers = await getUserList();
+                const fetchedUsers = await getAssignedUserList();
                 setUsers(fetchedUsers?.map(elem => ({
                     id: elem.identifier,
-                    name: (elem.firstName + ' ' + elem.lastName || '').trim()
+                    name: elem?.name?.trim?.()
                 })));
             } catch (err) {
                 console.log(err);

@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight, faChevronDown, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../store/hooks';
 import { datasetsByHierarchy, AreaNode } from './mockLargeDataset';
-import { getLocationHierarchyList, getLocationListByHierarchyId } from '../../location/api';
+import { getAssignedAreaTree } from '../api';
 import { toast } from 'react-toastify';
 import SelectTeamModal from './SelectTeamModal';
 
@@ -262,13 +262,9 @@ const AreasSelection: React.FC<Props> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [hierarchyOpen, setHierarchyOpen] = useState(false);
-  const [hierarchyList, setHierarchyList] = useState<{label: string, value: string}[]>([]);
-  
   const displayLabel = useMemo(() => {
-    const found = hierarchyList.find(h => h.value === selectedHierarchy);
-    if (found) return found.label;
-    return selectedHierarchy || '';
-  }, [hierarchyList, selectedHierarchy]);
+    return selectedHierarchy || 'Location Hierarchy';
+  }, [selectedHierarchy]);
 
   const [currentAreas, setCurrentAreas] = useState<AreaNode[]>(datasetsByHierarchy[selectedHierarchy || 'Niagara'] || []);
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([]);
@@ -330,57 +326,30 @@ const AreasSelection: React.FC<Props> = ({
   }, []);
 
   const loadData = useCallback(
-    (size: number, page: number, searchData?: string, sortField?: string, sortDirection?: boolean) => {
+    () => {
       setIsLoading(true);
-      getLocationHierarchyList(0, 0, true)
+      getAssignedAreaTree()
         .then((res: any) => {
-          if (res.content && res.content.length > 0) {
-            const hierarchyId = res.content[0].identifier;
-            getLocationListByHierarchyId(size, page, hierarchyId!, true, searchData, sortField, sortDirection)
-              .then((locRes: any) => {
-                if (locRes.content && locRes.content.length > 0) {
-                  setCurrentAreas(locRes?.content)
-                  setIsLoading(false);
-                } else {
-                  setCurrentAreas([]);
-                  setIsLoading(false);
-                }
-              })
-              .catch(err => {
-                toast.error(err.message || 'Error fetching locations');
-                setIsLoading(false);
-              });
+          if (res && res.length > 0) {
+            setCurrentAreas(res);
           } else {
-            setIsLoading(false);
+            setCurrentAreas([]);
           }
+          setIsLoading(false);
         })
         .catch(err => {
-          toast.error(err.message || 'Error fetching hierarchies');
+          toast.error(err.message || 'Error fetching areas');
           setIsLoading(false);
         });
     },
     []
   );
 
-  useEffect(() => {
-    getLocationHierarchyList(0, 0, true)
-      .then((res: any) => {
-        setHierarchyList(res.content.map((el: any) => ({
-          label: el.name,
-          value: el.identifier ?? ''
-        })));
-      })
-      .catch(err => toast.error(err));
-  }, []);
+
 
   useEffect(() => {
-    const dh = selectedHierarchy || 'Niagara';
-    if (dh === 'Global' || dh === 'f470addc-9251-46a5-8e1e-45ba45082da4'){
-      loadData(10, 0);
-    } else {
-      setCurrentAreas(datasetsByHierarchy[dh] || []);
-    }
-  }, [selectedHierarchy, loadData]);
+    loadData();
+  }, [loadData]);
 
   const getAllLeafIds = useCallback((node: AreaNode): string[] => {
     let ids: string[] = [];

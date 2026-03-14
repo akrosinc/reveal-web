@@ -82,9 +82,9 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
             }
         } else {
             // 3. Non-team mode: at least one role must be selected
-            if (selectedRoles.length === 0) {
-                errs.roles = 'Please select at least one permission role.';
-            }
+            // if (selectedRoles.length === 0) {
+            //     errs.roles = 'Please select at least one permission role.';
+            // }
         }
 
         return errs;
@@ -104,14 +104,17 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
             identifier: undefined,
             name: groupName.trim(),
             isTeam,
-            instanceId: currentInstance?.identifier ?? null,
+            // instanceId: currentInstance?.identifier ?? null,
             areasIdentifiers: selectedAreas,
-            rolesIdentifiers: selectedRoles,
-            datasetsIdentifiers: selectedDatasets,
-            membersIdentifiers: assignedMembers,
-            teamsIdentifiers: isTeam
-                ? Object.values(areaTeams).filter(Boolean)
-                : []
+            // rolesIdentifiers: selectedRoles,
+            rolesIdentifiers:['f470addc-9251-46a5-8e1e-45ba45082da4'],
+            // datasetsIdentifiers: selectedDatasets,
+            datasetsIdentifiers:['f470addc-9251-46a5-8e1e-45ba45082da4'],
+            // membersIdentifiers: assignedMembers,
+            membersIdentifiers:['f470addc-9251-46a5-8e1e-45ba45082da4'],
+            // teamsIdentifiers: isTeam
+            //     ? Object.values(areaTeams).filter(Boolean)
+            //     : []
         };
 
         console.log('=== Create Group Payload ===');

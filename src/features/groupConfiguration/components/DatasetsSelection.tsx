@@ -1,10 +1,10 @@
-import React from 'react';
-import { Card, Form } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Card, Form, Spinner } from 'react-bootstrap';
 import { useAppSelector } from '../../../store/hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
-
-const datasets = ['SMC 1', 'SMC 2', 'SMC 3'];
+import { getAssignedDatasetList, AssignedDatasetModel } from '../api';
+import { toast } from 'react-toastify';
 
 interface DatasetsSelectionProps {
     selectedDatasets?: string[];
@@ -22,12 +22,27 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
     variant = 'default'
 }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
+    const [datasets, setDatasets] = useState<AssignedDatasetModel[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleToggle = (dataset: string) => {
+    useEffect(() => {
+        setIsLoading(true);
+        getAssignedDatasetList()
+            .then(data => {
+                setDatasets(data);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                toast.error('Error fetching datasets');
+                setIsLoading(false);
+            });
+    }, []);
+
+    const handleToggle = (datasetId: string) => {
         if (!onDatasetChange) return;
-        const newDatasets = selectedDatasets.includes(dataset)
-            ? selectedDatasets.filter(d => d !== dataset)
-            : [...selectedDatasets, dataset];
+        const newDatasets = selectedDatasets.includes(datasetId)
+            ? selectedDatasets.filter(id => id !== datasetId)
+            : [...selectedDatasets, datasetId];
         onDatasetChange(newDatasets);
     };
 
@@ -51,17 +66,23 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
                 </Card.Header>
             )}
             <Card.Body className="p-3">
-                {datasets.map(dataset => (
-                    <Form.Check
-                        key={dataset}
-                        type="checkbox"
-                        id={`dataset-${dataset}`}
-                        label={<span style={{ color: effectiveTextColor }}>{dataset}</span>}
-                        className="mb-2"
-                        checked={selectedDatasets.includes(dataset)}
-                        onChange={() => handleToggle(dataset)}
-                    />
-                ))}
+                {isLoading ? (
+                    <div className="text-center p-3">
+                        <Spinner animation="border" size="sm" variant="primary" />
+                    </div>
+                ) : (
+                    datasets.map(dataset => (
+                        <Form.Check
+                            key={dataset.identifier}
+                            type="checkbox"
+                            id={`dataset-${dataset.identifier}`}
+                            label={<span style={{ color: effectiveTextColor }}>{dataset.name}</span>}
+                            className="mb-2"
+                            checked={selectedDatasets.includes(dataset.identifier)}
+                            onChange={() => handleToggle(dataset.identifier)}
+                        />
+                    ))
+                )}
             </Card.Body>
         </Card>
     );
