@@ -147,24 +147,16 @@ const TreeNode = React.memo<TreeNodeProps>(({
           <div className="form-check mb-0 d-flex align-items-center">
             {!hasChildren ? (
               <>
-                {readOnly ? (
-                  isSelected ? (
-                    <FontAwesomeIcon icon={faCheck} className="text-primary me-2" />
-                  ) : (
-                    <div style={{ width: '20px' }} className="me-2" />
-                  )
-                ) : (
-                  <input
-                    ref={checkboxRef}
-                    className="form-check-input child-checkbox me-2 mt-0"
-                    type="checkbox"
-                    id={`area-${node.identifier}`}
-                    checked={isSelected}
-                    onChange={handleCheck}
-                    disabled={readOnly}
-                    style={{ cursor: readOnly ? 'default' : 'pointer' }}
-                  />
-                )}
+                <input
+                  ref={checkboxRef}
+                  className="form-check-input child-checkbox me-2 mt-0"
+                  type="checkbox"
+                  id={`area-${node.identifier}`}
+                  checked={true}
+                  onChange={readOnly ? undefined : handleCheck}
+                  onClick={readOnly ? (e) => e.preventDefault() : undefined}
+                  style={{ cursor: readOnly ? 'not-allowed' : 'pointer' }}
+                />
                 <label
                   className="form-check-label"
                   htmlFor={`area-${node.identifier}`}
@@ -195,7 +187,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
           </div>
         </div>
 
-        <div className="d-flex align-items-center">
+        {/* <div className="d-flex align-items-center">
           {hasChildren && (
             <Button
               variant="link"
@@ -219,7 +211,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
               />
             </div>
           )}
-        </div>
+        </div> */}
       </div>
       {hasChildren && (
         <Collapse in={expanded} unmountOnExit>
@@ -420,13 +412,29 @@ const AreasSelection: React.FC<Props> = ({
     if (activeAreaId) onAreaTeamChange(activeAreaId, team);
   }, [activeAreaId, onAreaTeamChange]);
 
+  const isEditUser = variant === 'editUser';
+
   return (
     <div>
-      <Card className={`shadow-sm ${isDarkMode ? 'border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '#f8f9fa' }}>
-        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-white border-bottom'} fw-bold`}>
-          Areas
-        </Card.Header>
-        <Card.Body className="p-3" style={{ background: isDarkMode ? '#282828' : '#fff' }}>
+      <Card 
+        className={`shadow-sm ${isEditUser ? 'border-0' : (isDarkMode ? 'border-white' : '')}`}
+        style={{ 
+          background: isEditUser ? '#F0F2F5' : (isDarkMode ? '#212529' : '#f8f9fa'),
+          height: '200px'
+        }}
+      >
+        {!isEditUser && (
+          <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-white border-bottom'} fw-bold`}>
+            Areas
+          </Card.Header>
+        )}
+        <Card.Body 
+          className="p-3 d-flex flex-column" 
+          style={{ 
+            background: isEditUser ? '#F0F2F5' : (isDarkMode ? '#282828' : '#fff'),
+            overflowY: 'auto'
+          }}
+        >
           <div className="area-selection-content">
             <div className="mb-3">
               <div className="mb-2">
@@ -473,7 +481,7 @@ const AreasSelection: React.FC<Props> = ({
                           <Spinner animation="border" variant="primary" />
                           <span>Loading hierarchy data...</span>
                         </div>
-                      ) : (
+                      ) : enrichedAreas.length > 0 ? (
                         enrichedAreas.map((area: any) => (
                           <TreeNode
                             key={area.identifier}
@@ -491,6 +499,8 @@ const AreasSelection: React.FC<Props> = ({
                             readOnly={readOnly}
                           />
                         ))
+                      ) : (
+                        <div className="text-muted text-center p-3">No areas found</div>
                       )}
                     </div>
                   </div>

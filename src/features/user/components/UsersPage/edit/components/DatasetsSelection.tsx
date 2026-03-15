@@ -57,43 +57,52 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
             className={`flex-fill shadow-sm ${isEditUser ? 'border-0' : (isDarkMode ? 'text-white border-white' : '')}`}
             style={{
                 background: isEditUser ? '#F0F2F5' : (isDarkMode ? '#212529' : ''),
-                height: isEditUser ? '100%' : 'auto',
-                minHeight: isEditUser ? '0' : '300px'
+                height: '200px',
             }}
         >
-            {showHeader && (
+            {/* {showHeader && (
                 <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold d-flex justify-content-between align-items-center`}>
                     Datasets
                     <FontAwesomeIcon icon={faPlusCircle} className="text-primary cursor-pointer" />
                 </Card.Header>
-            )}
-            <Card.Body className="p-3">
+            )} */}
+            <Card.Body className="p-3" style={{ overflowY: 'auto' }}>
                 {isLoading ? (
                     <div className="text-center p-3">
                         <Spinner animation="border" size="sm" variant="primary" />
                     </div>
                 ) : (
-                     datasets.map(dataset => {
-                        const isSelected = selectedDatasets.includes(dataset.identifier);
-                        if (readOnly && !isSelected) return null;
-                        return (
-                            <div key={dataset.identifier} className="d-flex align-items-center mb-2">
-                                {readOnly ? (
-                                    <FontAwesomeIcon icon={faCheck} className="text-primary me-2" />
-                                ) : (
-                                    <Form.Check
-                                        type="checkbox"
-                                        id={`dataset-${dataset.identifier}`}
-                                        checked={isSelected}
-                                        onChange={() => handleToggle(dataset.identifier)}
-                                        disabled={readOnly}
-                                        className="me-2"
-                                    />
-                                )}
-                                <span style={{ color: effectiveTextColor }}>{dataset.name}</span>
-                            </div>
-                        );
-                    })
+                    (() => {
+                        const itemsToRender = datasets.filter(dataset => {
+                            const isSelected = selectedDatasets.includes(dataset.identifier);
+                            return !(readOnly && !isSelected);
+                        });
+
+                        if (itemsToRender.length === 0) {
+                            return <div className="text-muted text-center p-3">No datasets found</div>;
+                        }
+
+                        return itemsToRender.map(dataset => {
+                            const isSelected = selectedDatasets.includes(dataset.identifier);
+                            return (
+                                <div key={dataset.identifier} className="d-flex align-items-center mb-2">
+                                    {readOnly ? (
+                                        <FontAwesomeIcon icon={faCheck} className="text-primary me-2" />
+                                    ) : (
+                                        <Form.Check
+                                            type="checkbox"
+                                            id={`dataset-${dataset.identifier}`}
+                                            checked={isSelected}
+                                            onChange={() => handleToggle(dataset.identifier)}
+                                            disabled={readOnly}
+                                            className="me-2"
+                                        />
+                                    )}
+                                    <span style={{ color: effectiveTextColor }}>{dataset.name}</span>
+                                </div>
+                            );
+                        });
+                    })()
                 )}
             </Card.Body>
         </Card>

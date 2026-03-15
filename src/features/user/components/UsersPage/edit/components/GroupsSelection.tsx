@@ -59,42 +59,51 @@ const GroupsSelection: React.FC<GroupsSelectionProps> = ({
             className={`flex-fill shadow-sm ${isEditUser ? 'border-0' : (isDarkMode ? 'text-white border-white' : '')}`}
             style={{
                 background: isEditUser ? '#F0F2F5' : (isDarkMode ? '#212529' : ''),
-                height: isEditUser ? '100%' : 'auto',
-                minHeight: isEditUser ? '0' : '300px'
+                height: '200px',
             }}
         >
-            {showHeader && (
+            {/* {showHeader && (
                 <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
                     Groups
                 </Card.Header>
-            )}
-            <Card.Body className="p-3">
+            )} */}
+            <Card.Body className="p-3" style={{ overflowY: 'auto' }}>
                 {isLoading ? (
                     <div className="text-center p-3">
                         <Spinner animation="border" size="sm" variant="primary" />
                     </div>
                 ) : (
-                     groups.map(group => {
-                        const isSelected = selectedGroups.includes(group.identifier) || selectedGroups.includes(group.name);
-                        if (readOnly && !isSelected) return null;
-                        return (
-                            <div key={group.identifier} className="d-flex align-items-center mb-2">
-                                {readOnly ? (
-                                    <FontAwesomeIcon icon={faCheck} className="text-primary me-2" />
-                                ) : (
-                                    <Form.Check
-                                        type="checkbox"
-                                        id={`group-${group.identifier}`}
-                                        checked={isSelected}
-                                        onChange={() => handleToggle(group)}
-                                        disabled={readOnly}
-                                        className="me-2"
-                                    />
-                                )}
-                                <span style={{ color: effectiveTextColor }}>{group.name}</span>
-                            </div>
-                        );
-                    })
+                    (() => {
+                        const itemsToRender = groups.filter(group => {
+                            const isSelected = selectedGroups.includes(group.identifier) || selectedGroups.includes(group.name);
+                            return !(readOnly && !isSelected);
+                        });
+
+                        if (itemsToRender.length === 0) {
+                            return <div className="text-muted text-center p-3">No roles found</div>;
+                        }
+
+                        return itemsToRender.map(group => {
+                            const isSelected = selectedGroups.includes(group.identifier) || selectedGroups.includes(group.name);
+                            return (
+                                <div key={group.identifier} className="d-flex align-items-center mb-2">
+                                    {readOnly ? (
+                                        <FontAwesomeIcon icon={faCheck} className="text-primary me-2" />
+                                    ) : (
+                                        <Form.Check
+                                            type="checkbox"
+                                            id={`group-${group.identifier}`}
+                                            checked={isSelected}
+                                            onChange={() => handleToggle(group)}
+                                            disabled={readOnly}
+                                            className="me-2"
+                                        />
+                                    )}
+                                    <span style={{ color: effectiveTextColor }}>{group.name}</span>
+                                </div>
+                            );
+                        });
+                    })()
                 )}
             </Card.Body>
         </Card>
