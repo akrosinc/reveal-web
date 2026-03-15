@@ -2,8 +2,9 @@ import { AxiosResponse } from 'axios';
 import { toast } from 'react-toastify';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
-import { USER } from '../../../constants';
+import { USER, GROUP_MANAGEMENT } from '../../../constants';
 import { BulkDetailsModel, CreateUserModel, EditUserModel, UserBulk, UserModel } from '../providers/types';
+import { LocationModel } from '../../location/providers/types';
 
 export const getUserList = async (
   size: number,
@@ -87,6 +88,27 @@ export const getBulkById = async (
 ): Promise<PageableModel<BulkDetailsModel>> => {
   const data = await api
     .get<PageableModel<BulkDetailsModel>>(USER + `/bulk/${id}?size=${size}&page=${page}`)
+    .then(response => response.data);
+  return data;
+};
+
+export const getUserLocationsTree = async (userId: string): Promise<LocationModel[]> => {
+  const data = await api
+    .get<LocationModel[]>(`${GROUP_MANAGEMENT}/user/${userId}/locationstree`)
+    .then(response => response.data);
+  return data;
+};
+
+export const getUserGroupsData = async (userId: string): Promise<string[]> => {
+  const data = await api
+    .get<string[]>(`${GROUP_MANAGEMENT}/user/${userId}/groups`)
+    .then(response => response.data);
+  return data;
+};
+
+export const getUserDatasetTags = async (userId: string): Promise<string[]> => {
+  const data = await api
+    .get<string[]>(`${GROUP_MANAGEMENT}/user/${userId}/datasettags`)
     .then(response => response.data);
   return data;
 };
