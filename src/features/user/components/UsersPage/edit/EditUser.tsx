@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, Form, Row, Col, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import { deleteUserById, resetUserPassword, updateUser } from '../../../../user/api';
 import { EditUserModel, UserModel } from '../../../../user/providers/types';
+import { getUserInstanceList } from '../../../../instance/api';
+import { InstanceModel } from '../../../../reducers/instanceContext';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
 import { useAppSelector } from '../../../../../store/hooks';
 import { useForm } from 'react-hook-form';
@@ -47,6 +49,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
   const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
+  const [instanceList, setInstanceList] = useState<InstanceModel[]>([]);
   const [userType, setUserType] = useState('Standard User');
   const [selectedGroup, setSelectedGroup] = useState<Options | null>(null);
   const [selectedUserAreas, setSelectedUserAreas] = useState<string[]>([]);
@@ -125,6 +128,9 @@ const EditUser = ({ user, handleClose }: Props) => {
           };
         })
       );
+    });
+    getUserInstanceList().then(res => {
+      setInstanceList(res);
     });
     setStartValues(user);
   }, [setStartValues, user]);
@@ -249,8 +255,8 @@ const EditUser = ({ user, handleClose }: Props) => {
   };
 
   const userTypeOptions = [
-    { name: 'Admin', value: 'Admin' },
-    { name: 'Standard User', value: 'Standard User' }
+    { name: 'Admin', value: 'super_admin' },
+    { name: 'Standard User', value: 'standard_user' }
   ];
 
   return (
@@ -260,6 +266,7 @@ const EditUser = ({ user, handleClose }: Props) => {
         <ButtonGroup className="border rounded overflow-hidden" style={{ padding: 3 }}>
           {userTypeOptions.map((option, idx) => (
             <ToggleButton
+              disabled
               key={idx}
               id={`user-type-${idx}`}
               type="radio"
@@ -383,42 +390,57 @@ const EditUser = ({ user, handleClose }: Props) => {
             />
             {errors.email && <Form.Label className="text-danger">{errors.email.message}</Form.Label>}
           </Form.Group>
-          {level === 'Global' && <div
-            className="d-flex"
-            style={{
-              overflowX: "auto",
-              overflowY: "hidden",
-              whiteSpace: "nowrap",
-              gap: "8px",
-              scrollbarWidth: "none", marginTop: 4
-            }}
-          >
-            {['Instance 1', 'Instance 2'].map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "11px 20px",
-                  borderRadius: "999px",
-                  background: "#E2EDFe",
-                  cursor: "pointer",
-                  fontWeight: 400,
-                  fontStyle: "normal",
-                  fontSize: "14px",
-                  lineHeight: "100%",
-                  letterSpacing: "0%",
-                  whiteSpace: "nowrap",
-                  flexShrink: 0,
-                  transition: "all 0.2s ease",
-                  color: "#0D6EFD"
-                }}
-              >
-                {item}
-              </div>
-            ))}
-          </div>}
+          {/* {level === 'Global' && <div */}
+          <Form.Group className="mb-3">
+            <Form.Label>Instance</Form.Label>
+            <div
+              className="d-flex"
+              style={{
+                overflowX: "auto",
+                overflowY: "hidden",
+                whiteSpace: "nowrap",
+                gap: "8px",
+                scrollbarWidth: "none", marginTop: 4
+              }}
+            >
+            {instanceList.map((item, index) => {
+              const isSelected = selectedInstances.some(inst => inst.value === item.name);
+              return (
+                <div
+                  key={index}
+                  onClick={() => {
+                    if (!edit) return;
+                    const newSelected = isSelected
+                      ? selectedInstances.filter(inst => inst.value !== item.name)
+                      : [...selectedInstances, { label: item.name, value: item.name }];
+                    setSelectedInstances(newSelected);
+                    setValue('instances', newSelected as any, { shouldDirty: true });
+                  }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "11px 20px",
+                    borderRadius: "999px",
+                    background: isSelected ? "#0D6EFD" : "#E2EDFe",
+                    cursor: edit ? "pointer" : "default",
+                    fontWeight: 400,
+                    fontStyle: "normal",
+                    fontSize: "14px",
+                    lineHeight: "100%",
+                    letterSpacing: "0%",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                    transition: "all 0.2s ease",
+                    color: isSelected ? "#FFFFFF" : "#0D6EFD"
+                  }}
+                >
+                  {item.name}
+                </div>
+              );
+            })}
+          </div>
+          </Form.Group>
           {/* <Form.Group className="mb-3">
             <Form.Label>Security groups</Form.Label>
             <Select

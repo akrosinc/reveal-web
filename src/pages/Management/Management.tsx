@@ -40,7 +40,8 @@ const Management = () => {
         )}
 
         <Tab eventKey="user" title={t('managementPage.user')}>
-          <AuthGuard roles={[ROLE_MANAGE_USER]}>
+          {/* <AuthGuard roles={[ROLE_MANAGE_USER]}> */}
+          <AuthGuard roles={[]}>
             <Users />
           </AuthGuard>
         </Tab>
