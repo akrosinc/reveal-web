@@ -53,7 +53,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
   const [instanceList, setInstanceList] = useState<InstanceModel[]>([]);
   const [userType, setUserType] = useState('Standard User');
-  const [selectedGroup, setSelectedGroup] = useState<Options | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<Options | Options[] | null>(null);
   const [selectedUserAreas, setSelectedUserAreas] = useState<string[]>([]);
   const [selectedUserRoles, setSelectedUserRoles] = useState<string[]>([]);
   const [selectedUserDatasets, setSelectedUserDatasets] = useState<string[]>([]);
@@ -62,6 +62,10 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [userGroups, setUserGroups] = useState<string[]>([]);
   const [userDatasets, setUserDatasets] = useState<string[]>([]);
   
+  const assignedDatasetData = useMemo(() => {
+    return userDatasets.map(d => ({ identifier: d, name: d }));
+  }, [userDatasets]);
+
   const assignedAreaIds = useMemo(() => {
     const getIds = (locs: LocationModel[]): string[] => {
       let ids: string[] = [];
@@ -154,8 +158,21 @@ const EditUser = ({ user, handleClose }: Props) => {
       getUserLocationsTree(user.identifier).then(setUserLocations);
       getUserGroupsData(user.identifier).then(res => {
         setUserGroups(res);
+         setGroups(
+          res?.map(el => {
+            return {
+              label: el,
+              value: el
+            };
+          }) || []
+        );
         if (res.length > 0) {
-          setSelectedGroup({ label: res[0], value: res[0] });
+          setSelectedGroup(res?.map(el => {
+            return {
+              label: el,
+              value: el
+            }
+          }) || []);
         }
       });
       getUserDatasetTags(user.identifier).then(setUserDatasets);
@@ -506,10 +523,10 @@ const EditUser = ({ user, handleClose }: Props) => {
                 className="custom-react-select-container"
                 classNamePrefix="custom-react-select"
                 id="group-select"
-                isDisabled={true}
+                isDisabled={!edit}
                 value={selectedGroup}
                 options={groups}
-                onChange={(opt) => setSelectedGroup(opt as Options)}
+                onChange={(opt) => setSelectedGroup(opt as Options[])}
                 placeholder="Select a group..."
                 isMulti
               />
@@ -530,6 +547,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                     onAreaTeamChange={(id, team) => setAreaTeams(prev => ({ ...prev, [id]: team }))}
                     variant="editUser"
                     readOnly={true}
+                    data={userLocations}
                   />
                 </div>
               </Col>
@@ -561,6 +579,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                     onDatasetChange={setSelectedUserDatasets}
                     variant="editUser"
                     readOnly={true}
+                    data={assignedDatasetData}
                   />
                 </div>
               </Col>

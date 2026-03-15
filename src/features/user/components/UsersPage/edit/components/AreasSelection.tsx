@@ -17,6 +17,7 @@ interface Props {
   onAreaTeamChange: (areaId: string, team: string) => void;
   variant?: 'default' | 'editUser';
   readOnly?: boolean;
+  data?: AreaNode[];
 }
 
 interface TreeNodeProps {
@@ -265,7 +266,8 @@ const AreasSelection: React.FC<Props> = ({
   areaTeams, 
   onAreaTeamChange,
   variant = 'default',
-  readOnly = false
+  readOnly = false,
+  data
 }) => {
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [searchTerm, setSearchTerm] = useState('');
@@ -275,7 +277,7 @@ const AreasSelection: React.FC<Props> = ({
     return selectedHierarchy || 'Location Hierarchy';
   }, [selectedHierarchy]);
 
-  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>(datasetsByHierarchy[selectedHierarchy || 'Niagara'] || []);
+  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>(data || []);
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -356,9 +358,13 @@ const AreasSelection: React.FC<Props> = ({
 
 
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+   useEffect(() => {
+    if (data) {
+      setCurrentAreas(data);
+    } else {
+      loadData();
+    }
+  }, [loadData, data]);
 
   const getAllLeafIds = useCallback((node: AreaNode): string[] => {
     let ids: string[] = [];

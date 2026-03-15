@@ -13,6 +13,7 @@ interface DatasetsSelectionProps {
     textColor?: string;
     variant?: 'default' | 'editUser';
     readOnly?: boolean;
+    data?: AssignedDatasetModel[];
 }
 
 const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
@@ -21,24 +22,29 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
     hideHeader,
     textColor,
     variant = 'default',
-    readOnly = false
+    readOnly = false,
+    data
 }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
-    const [datasets, setDatasets] = useState<AssignedDatasetModel[]>([]);
+    const [datasets, setDatasets] = useState<AssignedDatasetModel[]>(data || []);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        setIsLoading(true);
-        getAssignedDatasetList()
-            .then(data => {
-                setDatasets(data);
-                setIsLoading(false);
-            })
-            .catch(err => {
-                toast.error('Error fetching datasets');
-                setIsLoading(false);
-            });
-    }, []);
+        if (data) {
+            setDatasets(data);
+        } else {
+            setIsLoading(true);
+            getAssignedDatasetList()
+                .then(data => {
+                    setDatasets(data);
+                    setIsLoading(false);
+                })
+                .catch(err => {
+                    toast.error('Error fetching datasets');
+                    setIsLoading(false);
+                });
+        }
+    }, [data]);
 
     const handleToggle = (datasetId: string) => {
         if (!onDatasetChange) return;
