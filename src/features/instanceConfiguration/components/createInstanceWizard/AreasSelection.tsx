@@ -283,7 +283,7 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
     return selectedHierarchy || '';
   }, [hierarchyList, selectedHierarchy]);
 
-  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>(datasetsByHierarchy[selectedHierarchy || 'Niagara'] || []);
+  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>([]);
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([]); // State for multiple expanded nodes
   const [isLoading, setIsLoading] = useState(false);
 

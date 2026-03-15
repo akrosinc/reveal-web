@@ -266,7 +266,7 @@ const AreasSelection: React.FC<Props> = ({
     return selectedHierarchy || 'Location Hierarchy';
   }, [selectedHierarchy]);
 
-  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>(datasetsByHierarchy[selectedHierarchy || 'Niagara'] || []);
+  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>([]);
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
