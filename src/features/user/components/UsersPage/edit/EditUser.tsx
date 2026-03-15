@@ -519,9 +519,9 @@ const EditUser = ({ user, handleClose }: Props) => {
               <Col md={4}>
                 <Form.Label>Areas</Form.Label>
                 <div style={{ position: 'relative' }} className={!edit ? 'opacity-75 pointer-events-none' : ''}>
-                  {!edit && <div style={{
+                  {/* {!edit && <div style={{
                     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
-                  }}></div>}
+                  }}></div>} */}
                    <AreasSelection
                     isTeamMode={false}
                     selectedAreas={assignedAreaIds}
@@ -536,9 +536,9 @@ const EditUser = ({ user, handleClose }: Props) => {
                 <Col md={4}>
                   <Form.Label>Roles</Form.Label>
                   <div style={{ position: 'relative' }} className={edit ? 'opacity-75' : ''}>
-                    {!edit && <div style={{
+                    {/* {!edit && <div style={{
                       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
-                    }}></div>}
+                    }}></div>} */}
                      <GroupsSelection
                       selectedGroups={userGroups}
                       onGroupChange={setSelectedUserRoles}
@@ -550,12 +550,12 @@ const EditUser = ({ user, handleClose }: Props) => {
               <Col md={4}>
                 <Form.Label>Datasets</Form.Label>
                 <div style={{ position: 'relative' }} className={!edit ? 'opacity-75 pointer-events-none' : ''}>
-                  {!edit && <div style={{
+                  {/* {!edit && <div style={{
                     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
 
                   }}>
 
-                  </div>}
+                  </div>} */}
                    <DatasetsSelection
                     selectedDatasets={userDatasets}
                     onDatasetChange={setSelectedUserDatasets}
