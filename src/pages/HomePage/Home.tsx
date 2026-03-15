@@ -26,21 +26,30 @@ function Home() {
       <hr className="w-75 mx-auto" />
       <Row className="justify-content-center">
         <Col md={4}>
-          <AuthorizedElement roles={[REVEAL_MANAGE]}>
+          <AuthorizedElement 
+          // roles={[REVEAL_MANAGE]}
+          roles={[]}
+          >
             <Link id="management-button" to={MANAGEMENT} className="m-2 w-100 btn btn-success">
               {t('buttons.management')}
             </Link>
           </AuthorizedElement>
         </Col>
         <Col md={4}>
-          <AuthorizedElement roles={[REVEAL_MANAGE]}>
+          <AuthorizedElement 
+          // roles={[REVEAL_MANAGE]}
+          roles={[]}
+          >
             <Link id="management-button" to={MANAGEMENT + "/instance-configuration"} className="m-2 w-100 btn btn-success">
               {t('buttons.instanceConfiguration')}
             </Link>
           </AuthorizedElement>
         </Col>
         <Col md={4}>
-          <AuthorizedElement roles={[REVEAL_MANAGE]}>
+          <AuthorizedElement 
+          // roles={[REVEAL_MANAGE]}
+          roles={[]}
+          >
             <Link id="management-button" to={MANAGEMENT + "/group-configuration"} className="m-2 w-100 btn btn-success">
               {t('buttons.groupConfiguration')}
             </Link>
@@ -49,28 +58,40 @@ function Home() {
       </Row>
       <Row className="justify-content-center">
         <Col md={3}>
-          <AuthorizedElement roles={[PLAN_MANAGEMENT]}>
+          <AuthorizedElement 
+          // roles={[PLAN_MANAGEMENT]}
+          roles={[]}
+          >
             <Link id="plans-button" to={PLANS} className="m-2 w-100 btn btn-success">
               {t('buttons.plans')}
             </Link>
           </AuthorizedElement>
         </Col>
         <Col md={3}>
-          <AuthorizedElement roles={[REVEAL_MANAGE]}>
+          <AuthorizedElement 
+          // roles={[REVEAL_MANAGE]}
+          roles={[]}
+          >
             <Link id="locations-button" to={LOCATION_PAGE} className="m-2 w-100 btn btn-success">
               {t('buttons.locationManagement')}
             </Link>
           </AuthorizedElement>
         </Col>
         <Col md={3}>
-          <AuthorizedElement roles={[PLAN_MANAGEMENT]}>
+          <AuthorizedElement 
+          // roles={[PLAN_MANAGEMENT]}
+          roles={[]}
+          >
             <Link id="assign-button" to={ASSIGNMENT_PAGE} className="m-2 w-100 btn btn-success">
               {t('buttons.assign')}
             </Link>
           </AuthorizedElement>
         </Col>
         <Col md={3}>
-          <AuthorizedElement roles={[REPORT_VIEW]}>
+          <AuthorizedElement 
+          // roles={[REPORT_VIEW]}
+          roles={[]}
+          >
             <Link id="report-button" to={REPORTING_PAGE} className="m-2 w-100 btn btn-success">
               {t('buttons.report')}
             </Link>

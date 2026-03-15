@@ -70,7 +70,10 @@ const Dashboard = () => {
   }, [t, dispatch]);
 
   return (
-    <AuthorizedElement roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}>
+    <AuthorizedElement 
+    // roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}
+    roles={[]}
+    >
       <>
         <Row className="mb-5 justify-content-center">
           {numbers.map((el, index) => (

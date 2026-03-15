@@ -150,7 +150,10 @@ const ComplexTagging = () => {
             />
           </Col>
           <Col className="mb-2" md={8}>
-            <AuthorizedElement roles={[REVEAL_SIMULATION_EDIT]}>
+            <AuthorizedElement 
+            // roles={[REVEAL_SIMULATION_EDIT]}
+            roles={[]}
+            >
               <Button className="float-end" onClick={() => setShowCreateComplexTagPanel(true)}>
                 {t('buttons.create')}
               </Button>

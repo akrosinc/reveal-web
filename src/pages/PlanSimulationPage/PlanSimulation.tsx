@@ -15,7 +15,10 @@ const PlanSimulation = () => {
         <Route
           path="/"
           element={
-            <AuthGuard roles={[REVEAL_SIMULATION]}>
+            <AuthGuard 
+            // roles={[REVEAL_SIMULATION]}
+            roles={[]}
+            >
               <Simulation />
             </AuthGuard>
           }
@@ -23,7 +26,10 @@ const PlanSimulation = () => {
         <Route
           path="/planId/:planId"
           element={
-            <AuthGuard roles={[REVEAL_SIMULATION]}>
+            <AuthGuard 
+            // roles={[REVEAL_SIMULATION]}
+            roles={[]}
+            >
               <p>Simulation page</p>
             </AuthGuard>
           }

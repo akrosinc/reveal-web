@@ -16,7 +16,10 @@ const Campaign = () => {
         <Route
           path="/"
           element={
-            <AuthGuard roles={[REVEAL_SIMULATION]}>
+            <AuthGuard 
+            // roles={[REVEAL_SIMULATION]}
+            roles={[]}
+            >
               <Campaign_Management />
             </AuthGuard>
           }

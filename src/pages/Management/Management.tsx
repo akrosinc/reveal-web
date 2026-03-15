@@ -33,7 +33,10 @@ const Management = () => {
       >
         {keycloak.hasRealmRole(ORGANIZATION_VIEW) && (
           <Tab eventKey="organization" title={t('managementPage.organization')}>
-            <AuthGuard roles={[ORGANIZATION_VIEW]}>
+            <AuthGuard 
+            // roles={[ORGANIZATION_VIEW]}
+            roles={[]}
+            >
               <Organization />
             </AuthGuard>
           </Tab>
@@ -46,7 +49,10 @@ const Management = () => {
           </AuthGuard>
         </Tab>
         <Tab eventKey="user-import" title={t('managementPage.userImport')}>
-          <AuthGuard roles={[ROLE_MANAGE_USER]}>
+          <AuthGuard 
+          // roles={[ROLE_MANAGE_USER]}
+          roles={[]}
+          >
             <UserImport />
           </AuthGuard>
         </Tab>

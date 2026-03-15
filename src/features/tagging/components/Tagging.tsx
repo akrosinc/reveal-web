@@ -166,7 +166,10 @@ const Tagging = () => {
         Tags({tagList?.totalElements})
         <Row className="my-4">
           <Col md={8} className="mb-2">
-            <AuthorizedElement roles={[REVEAL_SIMULATION_EDIT]}>
+            <AuthorizedElement 
+            // roles={[REVEAL_SIMULATION_EDIT]}
+            roles={[]}
+            >
               <Button className="float-end" onClick={() => setShowCreate(true)}>
                 Create Tag
               </Button>

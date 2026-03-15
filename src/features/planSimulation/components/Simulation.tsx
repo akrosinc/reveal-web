@@ -1837,7 +1837,10 @@ const Simulation = () => {
               </Button>
               {highestLocations && showResult && (
                 <>
-                  <AuthorizedElement roles={[REVEAL_SIMULATION_EDIT]}>
+                  <AuthorizedElement 
+                  // roles={[REVEAL_SIMULATION_EDIT]}
+                  roles={[]}
+                  >
                     <Button
                       className="float-end my-3 ms-2"
                       variant="secondary"
