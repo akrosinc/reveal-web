@@ -118,10 +118,10 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
             isTeam,
             // instanceId: currentInstance?.identifier ,
             // areasIdentifiers: selectedAreas.length > 0 ? selectedAreas : [getRandomId()],
-            areasIdentifiers: selectedAreas || [],
-            rolesIdentifiers: selectedRoles || [],
+            ...(!isTeam ? { areasIdentifiers: selectedAreas || [], 
+                rolesIdentifiers: selectedRoles || [],
             datasetsIdentifiers: selectedDatasets || [],
-            membersIdentifiers: assignedMembers || [],
+            membersIdentifiers: assignedMembers || [], } : {areasIdentifiers: selectedAreas || [],membersIdentifiers: assignedMembers || []}),
         };
 
         console.log('=== Create Group Payload ===');
