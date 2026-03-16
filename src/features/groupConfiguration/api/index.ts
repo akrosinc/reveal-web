@@ -76,7 +76,7 @@ export const getAssignedUserList = async (): Promise<AssignedUserModel[]> => {
 
 export const getAssignedAreaTree = async (): Promise<LocationModel[]> => {
   try {
-    const response = await api.get<LocationModel[]>('instance/assigned/area/tree');
+    const response = await api.get<LocationModel[]>('groupmanagement/instance/locationassigments');
     return response.data;
   } catch (error) {
     console.error('Error fetching assigned area tree:', error);
