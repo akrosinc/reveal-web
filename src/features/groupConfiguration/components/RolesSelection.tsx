@@ -53,8 +53,8 @@ const RolesSelection: React.FC<RolesSelectionProps> = ({
             className={`flex-fill shadow-sm ${isEditUser ? 'border-0' : (isDarkMode ? 'text-white border-white' : '')}`}
             style={{
                 background: isEditUser ? '#F0F2F5' : (isDarkMode ? '#212529' : ''),
-                height: isEditUser ? '100%' : 'auto',
-                minHeight: isEditUser ? '0' : '300px'
+                // height: isEditUser ? '100%' : 'auto',
+                // minHeight: isEditUser ? '0' : '300px'
             }}
         >
             {showHeader && (
@@ -62,7 +62,8 @@ const RolesSelection: React.FC<RolesSelectionProps> = ({
                     Roles
                 </Card.Header>
             )}
-            <Card.Body className="p-3">
+            <Card.Body style={{overflowY:'auto',height:266}} className="p-3">
+                 
                 {isLoading ? (
                     <div className="text-center p-3">
                         <Spinner animation="border" size="sm" variant="primary" />

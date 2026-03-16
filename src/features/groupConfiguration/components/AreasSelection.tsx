@@ -405,11 +405,11 @@ const AreasSelection: React.FC<Props> = ({
 
   return (
     <div>
-      <Card className={`shadow-sm ${isDarkMode ? 'border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '#f8f9fa' }}>
-        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-white border-bottom'} fw-bold`}>
+      <Card className={`shadow-sm ${isDarkMode ? 'border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '#f8f9fa',}}>
+        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light border-bottom'} fw-bold`}>
           Areas
         </Card.Header>
-        <Card.Body className="p-3" style={{ background: isDarkMode ? '#282828' : '#fff' }}>
+        <Card.Body className="p-3" style={{ background: isDarkMode ? '#282828' : '#fff',height:266,overflowY:'auto' }}>
           <div className="area-selection-content">
             <div className="mb-3">
               <div className="mb-2">
@@ -418,7 +418,8 @@ const AreasSelection: React.FC<Props> = ({
                   className="d-flex align-items-center justify-content-between p-3 border-bottom"
                   style={{ cursor: 'pointer', fontSize: '1rem', color: isDarkMode ? '#fff' : '#000' }}
                 >
-                  <span className="fw-bold">{displayLabel}</span>
+                  {/* <span className="fw-bold">{displayLabel}</span> */}
+                   <span className="fw-bold">Areas Hierarchy</span>
                   <FontAwesomeIcon icon={hierarchyOpen ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
                 </div>
                 <Collapse in={hierarchyOpen}>

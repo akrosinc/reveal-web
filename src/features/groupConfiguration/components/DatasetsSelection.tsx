@@ -55,8 +55,8 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
             className={`flex-fill shadow-sm ${isEditUser ? 'border-0' : (isDarkMode ? 'text-white border-white' : '')}`}
             style={{
                 background: isEditUser ? '#F0F2F5' : (isDarkMode ? '#212529' : ''),
-                height: isEditUser ? '100%' : 'auto',
-                minHeight: isEditUser ? '0' : '300px'
+                // height: isEditUser ? '100%' : 'auto',
+                // minHeight: isEditUser ? '0' : '300px'
             }}
         >
             {showHeader && (
@@ -65,7 +65,8 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
                     <FontAwesomeIcon icon={faPlusCircle} className="text-primary cursor-pointer" />
                 </Card.Header>
             )}
-            <Card.Body className="p-3">
+            <Card.Body style={{height:266,overflowY:'auto'}} className="p-3">
+               
                 {isLoading ? (
                     <div className="text-center p-3">
                         <Spinner animation="border" size="sm" variant="primary" />
