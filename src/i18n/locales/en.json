@@ -259,8 +259,8 @@
     "title": "Group configuration",
     "search": "Search group name",
     "table": {
-      "groupName": "Group Name",
-      "team": "Team",
+      "name": "Group Name",
+      "type": "Team",
       "yes": "Yes",
       "no": "No"
     }

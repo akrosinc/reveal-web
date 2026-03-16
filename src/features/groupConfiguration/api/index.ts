@@ -42,15 +42,18 @@ export const getGroupList = async (
   sortField?: string,
   direction?: boolean
 ): Promise<PageableModel<GroupModel>> => {
-  const searchParam = search !== undefined ? search : '';
-  const sortParam = sortField !== undefined ? sortField : '';
   const data = await api
     .get<PageableModel<GroupModel>>(
-      `${GROUP_MANAGEMENT}?size=${size}&page=${page}`
+      GROUP_MANAGEMENT +
+        `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&sort=${
+          sortField !== undefined ? sortField : ''
+        },${direction ? 'asc' : 'desc'}`
     )
     .then(response => response.data);
   return data;
 };
+
+
 
 export const createGroup = async (payload: CreateGroupPayload): Promise<GroupModel> => {
   const data = await api
