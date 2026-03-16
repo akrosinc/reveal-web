@@ -2,8 +2,10 @@ import React from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { Goal } from '../../../../../plan/providers/types';
+import { createGoal, updateGoal } from '../../../../../plan/api';
 import { useAppSelector } from '../../../../../../store/hooks';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 
 interface Props {
     show: boolean;
@@ -19,7 +21,7 @@ interface goalForm {
     priority: string;
 }
 
-const CreateGoal = ({ show, currentGoal, closeHandler, goalList, onSave }: Props) => {
+const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList, onSave }: Props) => {
     const isDarkMode = useAppSelector((state) => state.darkMode.value);
     const {
         register,
@@ -34,24 +36,50 @@ const CreateGoal = ({ show, currentGoal, closeHandler, goalList, onSave }: Props
     const { t } = useTranslation();
 
     const submitHandler = (form: goalForm) => {
-        // Logic for static data (no API calls)
-        if (currentGoal) {
-            currentGoal.description = form.description;
-            currentGoal.priority = form.priority;
-            if (onSave) onSave(currentGoal);
-            closeHandler();
+        if (planId) {
+            //planId is not undefined we are editing an existing plan
+            //calling backend on submit
+            if (currentGoal) {
+                //update plan
+                currentGoal.description = form.description;
+                currentGoal.priority = form.priority;
+                toast
+                    .promise(updateGoal(currentGoal, planId), {
+                        pending: 'Loading...',
+                        success: 'Goal updated successfully',
+                        error: 'There was an error creating goal'
+                    })
+                    .finally(() => closeHandler());
+            } else {
+                toast
+                    .promise(createGoal(form as Goal, planId), {
+                        pending: 'Loading...',
+                        success: 'Goal added successfully',
+                        error: 'There was an error creating goal'
+                    })
+                    .finally(() => closeHandler());
+            }
         } else {
-            let newGoal: Goal = {
-                actions: [],
-                description: form.description,
-                identifier: String(goalList.length + 1),
-                priority: form.priority
-            };
-            goalList.push(newGoal);
-            if (onSave) onSave(newGoal);
-            closeHandler();
+            // edit goal on new plan or create a new one
+            if (currentGoal) {
+                currentGoal.description = form.description;
+                currentGoal.priority = form.priority;
+                if (onSave) onSave(currentGoal);
+                closeHandler();
+            } else {
+                let newGoal: Goal = {
+                    actions: [],
+                    description: form.description,
+                    identifier: String(goalList.length + 1),
+                    priority: form.priority
+                };
+                goalList.push(newGoal);
+                if (onSave) onSave(newGoal);
+                closeHandler();
+            }
         }
     };
+
 
     return (
         <Modal

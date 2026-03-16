@@ -4,6 +4,8 @@ import Actions from './Actions';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Action, Goal } from '../../../../plan/providers/types';
+import { createAction, deleteAction, updateAction } from '../../../../plan/api';
+import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../../../store/hooks';
 
@@ -117,33 +119,67 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                         selectedAction={selectedAction}
                         closeHandler={(action?: Action, isDelete?: boolean) => {
                             if (action !== undefined) {
-                                // Logic replaced to use local state instead of API calls
-                                if (isDelete) {
-                                    const newActions = [...actionsList];
-                                    newActions.splice(selectedIndex, 1);
-                                    setActionsList(newActions);
-                                    goal.actions = newActions;
-                                } else {
-                                    const newActions = [...actionsList];
-                                    if (selectedAction) {
-                                        // Update
-                                        newActions[selectedIndex] = action;
+                                action.type = action.identifier ? 'UPDATE' : 'CREATE';
+                                if (planId) {
+                                    if (isDelete) {
+                                        toast
+                                            .promise(deleteAction(action.identifier, planId, goal.identifier), {
+                                                pending: 'Loading...',
+                                                success: 'Action deleted successfully.',
+                                                error: 'There was an error deleting action.'
+                                            })
+                                            .finally(() => {
+                                                loadData();
+                                            });
                                     } else {
-                                        // Create
-                                        // Generate a mock identifier if not present
-                                        if (!action.identifier) action.identifier = Date.now().toString();
-                                        newActions.push(action);
+                                        if (selectedAction) {
+                                            toast
+                                                .promise(updateAction(action, planId, goal.identifier), {
+                                                    pending: 'Loading...',
+                                                    success: 'Action updated successfully.',
+                                                    error: 'There was an error updating action.'
+                                                })
+                                                .finally(() => {
+                                                    loadData();
+                                                });
+                                        } else {
+                                            toast
+                                                .promise(createAction(action, planId, goal.identifier), {
+                                                    pending: 'Loading...',
+                                                    success: 'Action created successfully.',
+                                                    error: 'There was an error creating action.'
+                                                })
+                                                .finally(() => {
+                                                    loadData();
+                                                });
+                                        }
                                     }
-                                    setActionsList(newActions);
-                                    goal.actions = newActions;
+                                } else {
+                                    if (isDelete) {
+                                        const newActions = [...actionsList];
+                                        newActions.splice(selectedIndex, 1);
+                                        setActionsList(newActions);
+                                        goal.actions = newActions;
+                                    } else {
+                                        const newActions = [...actionsList];
+                                        if (selectedAction) {
+                                            newActions[selectedIndex] = action;
+                                        } else {
+                                            if (!action.identifier) action.identifier = Date.now().toString();
+                                            newActions.push(action);
+                                        }
+                                        setActionsList(newActions);
+                                        goal.actions = newActions;
+                                    }
                                 }
-                                loadData(); // Trigger parent reload if needed
+                                loadData();
                             }
                             setShow(false);
                             setSelectedAction(undefined);
                         }}
                     />
                 )}
+
             </Accordion.Body>
         </Accordion.Item>
     );
