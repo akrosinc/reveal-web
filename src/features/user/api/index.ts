@@ -115,7 +115,7 @@ export const getUserDatasetTags = async (userId: string): Promise<string[]> => {
 
 export const getUserInstanceList = async (userId: string): Promise<UserInstanceModel[]> => {
   const data = await api
-    .get<UserInstanceModel[]>(USER + `/${userId}/instancelist`)
+    .get<UserInstanceModel[]>('instance/'+USER + `/${userId}/instancelist`)
     .then(response => response.data);
   return data;
 };
