@@ -99,7 +99,7 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Pr
           <InputGroup className="mb-3">
             <Form.Control placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </InputGroup>
-          <div className="overflow-auto flex-grow-1 rounded p-2" style={{ maxHeight: '300px' }}>
+          <div className="overflow-auto flex-grow-1 rounded p-2" style={{ height: '300px' }}>
             {filteredAvailable.map(member => (
               <Form.Check
                 key={member.id}
@@ -140,7 +140,7 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Pr
         <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>Assigned</Card.Header>
         <Card.Body className="d-flex flex-column">
           <div
-            style={{ backgroundColor: isDarkMode ? '#212529' : undefined }}
+            style={{ backgroundColor: isDarkMode ? '#212529' : undefined ,height:300}}
             className="overflow-auto flex-grow-1 rounded p-2 mt-3"
           >
             {assignedList.map(member => (
