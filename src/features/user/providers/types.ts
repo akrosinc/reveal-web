@@ -59,3 +59,8 @@ export enum BulkEntryStatus {
   ERROR,
   SUCCESSFUL
 }
+
+export interface UserInstanceModel {
+  identifier: string;
+  name: string;
+}

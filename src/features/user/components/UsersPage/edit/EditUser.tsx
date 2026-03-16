@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Button, Form, Row, Col, ButtonGroup, ToggleButton } from 'react-bootstrap';
-import { deleteUserById, resetUserPassword, updateUser, getUserLocationsTree, getUserGroupsData, getUserDatasetTags } from '../../../../user/api';
+import { deleteUserById, resetUserPassword, updateUser, getUserLocationsTree, getUserGroupsData, getUserDatasetTags, getUserInstanceList } from '../../../../user/api';
 import { EditUserModel, UserModel } from '../../../../user/providers/types';
-import { getUserInstanceList } from '../../../../instance/api';
+
 import { InstanceModel } from '../../../../reducers/instanceContext';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
 import { useAppSelector } from '../../../../../store/hooks';
@@ -151,11 +151,12 @@ const EditUser = ({ user, handleClose }: Props) => {
         })
       );
     });
-    getUserInstanceList().then(res => {
-      setInstanceList(res);
-    });
     if (user.identifier) {
+      getUserInstanceList(user.identifier).then(res => {
+        setInstanceList(res);
+      });
       getUserLocationsTree(user.identifier).then(setUserLocations);
+
       getUserGroupsData(user.identifier).then(res => {
         setUserGroups(res);
          setGroups(

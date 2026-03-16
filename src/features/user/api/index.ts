@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { USER, GROUP_MANAGEMENT } from '../../../constants';
-import { BulkDetailsModel, CreateUserModel, EditUserModel, UserBulk, UserModel } from '../providers/types';
+import { BulkDetailsModel, CreateUserModel, EditUserModel, UserBulk, UserModel, UserInstanceModel } from '../providers/types';
 import { LocationModel } from '../../location/providers/types';
 
 export const getUserList = async (
@@ -112,3 +112,11 @@ export const getUserDatasetTags = async (userId: string): Promise<string[]> => {
     .then(response => response.data);
   return data;
 };
+
+export const getUserInstanceList = async (userId: string): Promise<UserInstanceModel[]> => {
+  const data = await api
+    .get<UserInstanceModel[]>(USER + `/${userId}/instancelist`)
+    .then(response => response.data);
+  return data;
+};
+
