@@ -7,7 +7,9 @@ export interface GroupModel {
   identifier: string;
   name: string;
   type: string;
+  organizationType: string;
 }
+
 
 export interface CreateGroupPayload {
   identifier?: string;

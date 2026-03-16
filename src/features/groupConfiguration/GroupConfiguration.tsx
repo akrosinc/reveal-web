@@ -86,9 +86,9 @@ const GroupConfiguration: React.FC = () => {
         return sortedGroups.filter(
             group => {
                 const nameMatch = group.name?.toLowerCase().includes(lowercaseSearch);
-                const typeText = group.type === 'TEAM' 
+                const typeText = group.organizationType === 'TEAM' 
                     ? t('groupConfigurationPage.table.yes').toLowerCase() 
-                    : (group.type?.toLowerCase() || t('groupConfigurationPage.table.no').toLowerCase());
+                    : t('groupConfigurationPage.table.no').toLowerCase();
                 const typeMatch = typeText.includes(lowercaseSearch);
                 return nameMatch || typeMatch;
             }
@@ -101,15 +101,16 @@ const GroupConfiguration: React.FC = () => {
             filteredGroups.map(row => ({
                 ...row,
                 type: (
-                    <span style={{ color: row.type === 'TEAM' ? 'green' : '#555' }}>
-                        {row.type === 'TEAM'
+                    <span style={{ color: row.organizationType === 'TEAM' ? 'green' : '#555' }}>
+                        {row.organizationType === 'TEAM'
                             ? t('groupConfigurationPage.table.yes')
-                            : row.type || t('groupConfigurationPage.table.no')}
+                            : t('groupConfigurationPage.table.no')}
                     </span>
                 )
             })),
         [filteredGroups, t]
     );
+
 
     // ─── After create: refresh list ─────────────────────────────────────────────
     const handleSave = () => {
