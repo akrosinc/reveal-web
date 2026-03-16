@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { getAssignedDatasetList, AssignedDatasetModel } from '../api';
 import { toast } from 'react-toastify';
+import UploadModal from '../../metaDataImport/components/fileImport/uploadModal/UploadModal';
 
 interface DatasetsSelectionProps {
     selectedDatasets?: string[];
@@ -25,7 +26,7 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
     const [datasets, setDatasets] = useState<AssignedDatasetModel[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
+    const fetchDatasets = () => {
         setIsLoading(true);
         getAssignedDatasetList()
             .then(data => {
@@ -36,7 +37,13 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
                 toast.error('Error fetching datasets');
                 setIsLoading(false);
             });
+    };
+
+    useEffect(() => {
+        fetchDatasets();
     }, []);
+
+    const [showUploadModal, setShowUploadModal] = useState(false);
 
     const handleToggle = (datasetId: string) => {
         if (!onDatasetChange) return;
@@ -62,7 +69,12 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
             {showHeader && (
                 <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold d-flex justify-content-between align-items-center`}>
                     Datasets
-                    <FontAwesomeIcon icon={faPlusCircle} className="text-primary cursor-pointer" />
+                    <FontAwesomeIcon 
+                    
+                        icon={faPlusCircle} 
+                        className="text-primary cursor-pointer" 
+                        onClick={() => setShowUploadModal(true)}
+                    />
                 </Card.Header>
             )}
             <Card.Body style={{height:266,overflowY:'auto'}} className="p-3">
@@ -85,6 +97,15 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
                     ))
                 )}
             </Card.Body>
+            {showUploadModal && (
+                <UploadModal
+                    closeHandler={() => {
+                        setShowUploadModal(false);
+                        fetchDatasets();
+                    }}
+                    setTagsCreated={() => {}}
+                />
+            )}
         </Card>
     );
 };
