@@ -450,7 +450,7 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
         className={`shadow-sm ${isDarkMode ? 'border-white' : ''}`}
         style={{ background: isDarkMode ? '#212529' : '#f8f9fa' }}
       >
-        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-white border-bottom'} fw-bold`}>
+        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light border-bottom'} fw-bold`}>
           Areas
         </Card.Header>
         <Card.Body className="p-3" style={{ background: isDarkMode ? '#282828' : '#fff' }}>
