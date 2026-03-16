@@ -3,7 +3,7 @@ import { Modal, ListGroup, Button, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { getOrganizationListSummary } from '../../organization/api';
-import { saveLocationsAssignedToTeam } from '../../assignment/api';
+import { assignLocationToGroup } from '../api';
 import { toast } from 'react-toastify';
 
 interface Props {
@@ -45,7 +45,7 @@ const SelectTeamModal: React.FC<Props> = ({ show, onHide, onSelect, planId, area
             locationIdentifiers: locationIdentifiers
         };
 
-        saveLocationsAssignedToTeam(requestBody, planId)
+        assignLocationToGroup(requestBody)
             .then(() => {
                 toast.success('Team assigned successfully');
                 onSelect(selectedTeam.name);

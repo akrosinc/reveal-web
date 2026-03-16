@@ -103,3 +103,10 @@ export const getAssignedRoleList = async (): Promise<AssignedRoleModel[]> => {
     throw error;
   }
 };
+
+export const assignLocationToGroup = async (requestBody: { organizationIdentifier: string; locationIdentifiers: string[] }): Promise<any> => {
+  const data = await api
+    .post(`${GROUP_MANAGEMENT}/assignlocation`, requestBody)
+    .then(response => response.data);
+  return data;
+};
