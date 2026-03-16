@@ -28,7 +28,7 @@ interface CreateGroupProps {
 
 const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
-    const currentInstance = useAppSelector((state: any) => state.instanceContext.currentInstance);
+    const selectedInstance = useAppSelector((state: any) => state.instanceContext.selectedInstance);
 
     // Form fields
     const [groupName, setGroupName] = useState('');
@@ -116,7 +116,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
             // identifier: undefined,
             name: groupName.trim(),
             isTeam,
-            // instanceId: currentInstance?.identifier ,
+            // instanceId: selectedInstance?.identifier ,
             // areasIdentifiers: selectedAreas.length > 0 ? selectedAreas : [getRandomId()],
             ...(!isTeam ? { areasIdentifiers: selectedAreas || [], 
                 rolesIdentifiers: selectedRoles || [],
@@ -142,7 +142,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
         validate,
         groupName,
         isTeam,
-        currentInstance,
+        selectedInstance,
         selectedAreas,
         selectedRoles,
         selectedDatasets,

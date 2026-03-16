@@ -3,7 +3,7 @@ import { Card, Form, Collapse, Button, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight, faChevronDown, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../store/hooks';
-import { datasetsByHierarchy, AreaNode } from './mockLargeDataset';
+import { AreaNode } from './mockLargeDataset';
 import { getAssignedAreaTree } from '../api';
 import { toast } from 'react-toastify';
 import SelectTeamModal from './SelectTeamModal';
@@ -18,7 +18,7 @@ interface Props {
 }
 
 interface TreeNodeProps {
-  node: AreaNode;
+  node: any; // Using any because it's enriched and comes from LocationModel
   selectedSet: Set<string>;
   onSelect: (id: string, checked: boolean) => void;
   filter: string;
@@ -28,7 +28,7 @@ interface TreeNodeProps {
   inheritedMatch?: boolean;
   isTeamMode?: boolean;
   areaTeams?: Record<string, string>;
-  onTeamClick?: (id: string) => void;
+  onTeamClick?: (id: string | string[]) => void;
   isDarkMode: boolean;
 }
 
@@ -55,7 +55,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
   const hasChildren = !!(node.children && node.children.length > 0);
 
   // Use pre-calculated stats from enriched node
-  const { total, selected, _isMatch, _hasChildMatch } = (node as any)._stats || { 
+  const { total, selected, _isMatch, _hasChildMatch } = node._stats || { 
     total: hasChildren ? 0 : 1, 
     selected: isSelected ? 1 : 0,
     _isMatch: true,
@@ -140,22 +140,24 @@ const TreeNode = React.memo<TreeNodeProps>(({
             <span style={{ width: '20px', display: 'inline-block' }} className="me-2"></span>
           )}
 
-          <div className="form-check mb-0 d-flex align-items-center">
+          <div className={`form-check mb-0 d-flex align-items-center ${isTeamMode ? 'ps-0' : ''}`}>
             {!hasChildren ? (
               <>
-                <input
-                  ref={checkboxRef}
-                  className="form-check-input child-checkbox me-2 mt-0"
-                  type="checkbox"
-                  id={`area-${node.identifier}`}
-                  checked={isSelected}
-                  onChange={handleCheck}
-                  style={{ cursor: 'pointer' }}
-                />
+                {!isTeamMode && (
+                  <input
+                    ref={checkboxRef}
+                    className="form-check-input child-checkbox me-2 mt-0"
+                    type="checkbox"
+                    id={`area-${node.identifier}`}
+                    checked={isSelected}
+                    onChange={handleCheck}
+                    style={{ cursor: 'pointer' }}
+                  />
+                )}
                 <label
                   className="form-check-label"
                   htmlFor={`area-${node.identifier}`}
-                  style={{ cursor: 'pointer', userSelect: 'none', color: isDarkMode ? '#fff' : '#000' }}
+                  style={{ cursor: 'pointer', userSelect: 'none', color: isDarkMode ? '#fff' : '#000', paddingLeft: isTeamMode ? '0' : undefined }}
                 >
                   {node.properties.name}
                 </label>
@@ -167,12 +169,12 @@ const TreeNode = React.memo<TreeNodeProps>(({
                   cursor: 'pointer', 
                   userSelect: 'none', 
                   fontSize: depth === 0 ? '1.1rem' : '1rem', 
-                  color: (isFullySelected || indeterminate) ? '#0d6efd' : isDarkMode ? '#fff' : '#000' 
+                  color: (!isTeamMode && (isFullySelected || indeterminate)) ? '#0d6efd' : isDarkMode ? '#fff' : '#000' 
                 }}
                 onClick={handleExpand}
               >
                 {node.properties.name}
-                {(isFullySelected || indeterminate) && (
+                {!isTeamMode && (isFullySelected || indeterminate) && (
                   <span className="ms-2 badge rounded-pill bg-primary border-0" style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}>
                     {selected} / {total}
                   </span>
@@ -184,24 +186,48 @@ const TreeNode = React.memo<TreeNodeProps>(({
 
         <div className="d-flex align-items-center">
           {hasChildren && (
-            <Button
-              variant="link"
-              size="sm"
-              className="p-0 text-decoration-none me-2 h-auto"
-              style={{ fontSize: '0.75rem' }}
-              onClick={() => onSelect(node.identifier, selected < total)}
-            >
-              {isFullySelected ? 'Deselect All' : 'Select All'}
-            </Button>
+            isTeamMode ? (
+              <div className="d-flex align-items-center gap-2">
+                {node.properties?.geographicLevel && (
+                  <span className="text-muted small px-2 py-1 bg-light rounded border">
+                    {node.properties.geographicLevel}
+                  </span>
+                )}
+                <FontAwesomeIcon
+                  icon={faEllipsisV}
+                  className="text-secondary cursor-pointer ms-2"
+                  onClick={() => onTeamClick?.((node as any)._leafIds)}
+                />
+              </div>
+            ) : (
+              <Button
+                variant="link"
+                size="sm"
+                className="p-0 text-decoration-none me-2 h-auto"
+                style={{ fontSize: '0.75rem' }}
+                onClick={() => onSelect(node.identifier, selected < total)}
+              >
+                {isFullySelected ? 'Deselect All' : 'Select All'}
+              </Button>
+            )
           )}
 
           {isTeamMode && !hasChildren && (
-            <div className={`d-flex align-items-center gap-2 ${!isSelected ? 'opacity-25' : ''}`}>
-              <span className="text-muted small">{areaTeams[node.identifier] || ''}</span>
+            <div className={`d-flex align-items-center gap-2`}>
+              {/* <span className="text-muted small">
+                {node.teams && node.teams.length > 0 
+                  ? node.teams.map((t: any) => t.name).join(', ') 
+                  : areaTeams[node.identifier] || }
+              </span> */}
+              {node.properties?.geographicLevel && (
+                <span className="text-muted small px-2 py-1 bg-light rounded border">
+                  {node.properties.geographicLevel || 'Not Assigned'}
+                </span>
+              )}
               <FontAwesomeIcon
                 icon={faEllipsisV}
-                className={`text-secondary ${isSelected ? 'cursor-pointer' : ''} ms-2`}
-                onClick={() => isSelected && onTeamClick?.(node.identifier)}
+                className={`text-secondary cursor-pointer ms-2`}
+                onClick={() => onTeamClick?.(node.identifier)}
               />
             </div>
           )}
@@ -211,7 +237,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
         <Collapse in={expanded} unmountOnExit>
           <div className="ms-2 border-start border-secondary-subtle">
             {childrenLoaded ? (
-              node.children!.map((child) => (
+              node.children.map((child: any) => (
                 <TreeNode
                   key={child.identifier}
                   node={child}
@@ -259,18 +285,17 @@ const AreasSelection: React.FC<Props> = ({
   onAreaTeamChange 
 }) => {
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
+  const selectedInstance = useAppSelector((state: any) => state.instanceContext.selectedInstance);
+  const planId = selectedInstance?.identifier || '';
+
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [hierarchyOpen, setHierarchyOpen] = useState(false);
-  const displayLabel = useMemo(() => {
-    return selectedHierarchy || 'Location Hierarchy';
-  }, [selectedHierarchy]);
-
-  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>([]);
+  const [currentAreas, setCurrentAreas] = useState<any[]>([]);
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
+  const [activeAreaId, setActiveAreaId] = useState<string | string[] | null>(null);
 
   // Optimized lookup Set
   const selectedSet = useMemo(() => new Set(selectedAreas), [selectedAreas]);
@@ -279,14 +304,15 @@ const AreasSelection: React.FC<Props> = ({
   const enrichedAreas = useMemo(() => {
     const searchLower = debouncedSearchTerm.toLowerCase();
     
-    const enrich = (node: AreaNode): any => {
+    const enrich = (node: any): any => {
       let leafIds: string[] = [];
       let mappedChildren: any[] = [];
       let hasChildMatch = false;
       let totalCount = 0;
       let selectedCount = 0;
       
-      const isMatch = node.properties.name.toLowerCase().includes(searchLower);
+      const name = node.properties?.name || '';
+      const isMatch = name.toLowerCase().includes(searchLower);
       
       if (node.children && node.children.length > 0) {
         for (let i = 0; i < node.children.length; i++) {
@@ -325,45 +351,28 @@ const AreasSelection: React.FC<Props> = ({
     setExpandedNodeIds(prev => prev.includes(nodeId) ? prev.filter(id => id !== nodeId) : [...prev, nodeId]);
   }, []);
 
-  const loadData = useCallback(
-    () => {
-      setIsLoading(true);
-      getAssignedAreaTree()
-        .then((res: any) => {
-          if (res && res.length > 0) {
-            setCurrentAreas(res);
-          } else {
-            setCurrentAreas([]);
-          }
-          setIsLoading(false);
-        })
-        .catch(err => {
-          toast.error(err.message || 'Error fetching areas');
-          setIsLoading(false);
-        });
-    },
-    []
-  );
-
-
+  const loadData = useCallback(() => {
+    setIsLoading(true);
+    getAssignedAreaTree()
+      .then((res: any) => {
+        if (res && res.length > 0) {
+          setCurrentAreas(res);
+        } else {
+          setCurrentAreas([]);
+        }
+        setIsLoading(false);
+      })
+      .catch(err => {
+        toast.error(err.message || 'Error fetching areas');
+        setIsLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  const getAllLeafIds = useCallback((node: AreaNode): string[] => {
-    let ids: string[] = [];
-    if (node.children && node.children.length > 0) {
-      node.children.forEach((child) => {
-        ids = [...ids, ...getAllLeafIds(child)];
-      });
-    } else {
-      ids.push(node.identifier);
-    }
-    return ids;
-  }, []);
-
-  const findNode = useCallback((nodes: AreaNode[], targetId: string): AreaNode | null => {
+  const findNode = useCallback((nodes: any[], targetId: string): any | null => {
     for (const node of nodes) {
       if (node.identifier === targetId) return node;
       if (node.children) {
@@ -378,30 +387,35 @@ const AreasSelection: React.FC<Props> = ({
     const node = findNode(enrichedAreas, id);
     if (!node) return;
     
-    const leafIds = (node as any)._leafIds;
+    const leafIds = node._leafIds;
     const currentSelectedSet = new Set(selectedAreas);
     
     if (isChecked) {
-      // O(L) instead of O(L*S)
       const toAdd = leafIds.filter((leafId: string) => !currentSelectedSet.has(leafId));
       if (toAdd.length > 0) {
         onSelectionChange([...selectedAreas, ...toAdd]);
       }
     } else {
-      // O(S) instead of O(S*L)
       const toRemoveSet = new Set(leafIds);
       onSelectionChange(selectedAreas.filter(sid => !toRemoveSet.has(sid)));
     }
   }, [enrichedAreas, selectedAreas, findNode, onSelectionChange]);
 
-  const handleTeamClick = useCallback((id: string) => {
+  const handleTeamClick = useCallback((id: string | string[]) => {
     setActiveAreaId(id);
     setShowModal(true);
   }, []);
 
   const handleTeamSelect = useCallback((team: string) => {
-    if (activeAreaId) onAreaTeamChange(activeAreaId, team);
-  }, [activeAreaId, onAreaTeamChange]);
+    if (activeAreaId) {
+      if (Array.isArray(activeAreaId)) {
+        activeAreaId.forEach(id => onAreaTeamChange(id, team));
+      } else {
+        onAreaTeamChange(activeAreaId, team);
+      }
+      loadData(); // Re-render / re-fetch after team assignment
+    }
+  }, [activeAreaId, onAreaTeamChange, loadData]);
 
   return (
     <div>
@@ -418,7 +432,6 @@ const AreasSelection: React.FC<Props> = ({
                   className="d-flex align-items-center justify-content-between p-3 border-bottom"
                   style={{ cursor: 'pointer', fontSize: '1rem', color: isDarkMode ? '#fff' : '#000' }}
                 >
-                  {/* <span className="fw-bold">{displayLabel}</span> */}
                    <span className="fw-bold">Areas Hierarchy</span>
                   <FontAwesomeIcon icon={hierarchyOpen ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
                 </div>
@@ -439,12 +452,6 @@ const AreasSelection: React.FC<Props> = ({
                             border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
                           }}
                         />
-                        {searchTerm && searchTerm !== debouncedSearchTerm && (
-                          <div className="d-flex align-items-center gap-2 mt-2">
-                            <Spinner animation="border" size="sm" variant="primary" style={{ width: '0.8rem', height: '0.8rem', borderWidth: '1px' }} />
-                            <small className="text-muted">Searching...</small>
-                          </div>
-                        )}
                       </div>
                     </div>
 
@@ -483,7 +490,13 @@ const AreasSelection: React.FC<Props> = ({
           </div>
         </Card.Body>
       </Card>
-      <SelectTeamModal show={showModal} onHide={() => setShowModal(false)} onSelect={handleTeamSelect} />
+      <SelectTeamModal 
+        show={showModal} 
+        onHide={() => setShowModal(false)} 
+        onSelect={handleTeamSelect}
+        planId={planId}
+        areaId={activeAreaId}
+      />
     </div>
   );
 };
