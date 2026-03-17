@@ -6,13 +6,24 @@ import DatasetDetails from './components/createInstanceWizard/DatasetDetails';
 
 export default function InstanceConfiguration() {
   const [showWizard, setShowWizard] = useState(false);
+  const [selectedIdentifier, setSelectedIdentifier] = useState<string | null>(null);
+
+  const handleEdit = (identifier: string) => {
+    setSelectedIdentifier(identifier);
+    setShowWizard(true);
+  };
+
+  const handleCancel = () => {
+    setShowWizard(false);
+    setSelectedIdentifier(null);
+  };
 
   return (
     <>
       {!showWizard ? (
-        <InstancesListing onCreate={() => setShowWizard(true)} />
+        <InstancesListing onCreate={() => setShowWizard(true)} onEdit={handleEdit} />
       ) : (
-        <CreateInstanceWizard onCancel={() => setShowWizard(false)} />
+        <CreateInstanceWizard onCancel={handleCancel} identifier={selectedIdentifier} />
       )}
     </>
   );

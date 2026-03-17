@@ -10,11 +10,12 @@ import { toast } from 'react-toastify';
 
 interface InstancesProps {
   onCreate?: () => void;
+  onEdit?: (identifier: string) => void;
 }
 
 const PAGINATION_DEFAULT_SIZE = 10;
 
-const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
+const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
   const { t } = useTranslation();
 
   const [instances, setInstances] = useState<any>();
@@ -23,6 +24,12 @@ const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
   const [search, setSearch] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
+
+  const editHandler = (identifier: string) => {
+    if (onEdit) {
+      onEdit(identifier);
+    }
+  };
 
   const activateHandler = (row: any) => {
     console.log('Activate clicked for:', row);
@@ -155,6 +162,8 @@ const sortHandler = (field: string, direction: boolean) => {
             columns={INSTANCE_TABLE_COLUMNS}
             data={tableData}
             sortHandler={sortHandler}
+            clickHandler={editHandler}
+            clickAccessor="identifier"
           />
 
           <Paginator

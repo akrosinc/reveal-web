@@ -7,10 +7,12 @@ import { LocationModel } from '../../location/providers/types';
 export interface InstanceResponse {
   identifier: string;
   name: string;
-  planResponse: PlanResponse;
+  planResponse?: PlanResponse;
+  plan?: PlanResponse;
   members: InstanceMember[];
   areas: InstanceArea[];
   locationHierarchy: InstanceLocationHierarchy[];
+  datasets?: any[];
 }
 
 export interface PlanResponse {
@@ -189,6 +191,65 @@ export const getLocationsByHierarchyIdentifier = async (
       }&_summary=${summary.toString()}`
     )
     .then(response => response.data);
-
   return data;
+};
+
+/**
+ * Get instance by identifier
+ * @param identifier
+ * @returns InstanceResponse
+ */
+export const getInstanceByIdentifier = async (
+  identifier: string
+): Promise<InstanceResponse> => {
+  const response = await api.get<InstanceResponse>(`${INSTANCE}/${identifier}`);
+  return response.data;
+};
+
+export interface UpdateInstanceRequest {
+  planRequest: {
+    name: string;
+    title: string;
+    effectivePeriod: {
+      start: string;
+      end: string;
+    };
+    interventionType: string;
+    locationHierarchy: string;
+    goals: {
+      description: string;
+      priority: string;
+      actions: {
+        title: string;
+        description: string;
+        timingPeriod: {
+          start: string;
+          end: string;
+        };
+        formIdentifier: string;
+        type: string;
+        conditions?: any[];
+      }[];
+    }[];
+    hierarchyLevelTarget?: string;
+  };
+  instanceName: string;
+  locationHierarchy: string;
+  areas: string[];
+  members: string[];
+  datasets_tags: string[];
+}
+
+/**
+ * Update instance by identifier
+ * @param identifier
+ * @param payload UpdateInstanceRequest
+ * @returns InstanceResponse
+ */
+export const updateInstance = async (
+  identifier: string,
+  payload: UpdateInstanceRequest
+): Promise<InstanceResponse> => {
+  const response = await api.put<InstanceResponse>(`${INSTANCE}/${identifier}`, payload);
+  return response.data;
 };

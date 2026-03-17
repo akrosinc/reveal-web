@@ -317,7 +317,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
               members: defaultValues?.members || [],
               datasets_tags: datasetsTags
             };
-
+            console.log('final payload--instance configuration', finalPayload)
             if (onNext) {
               onNext(finalPayload);
             }

@@ -62,6 +62,15 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
     setError(null);
     onNext && onNext(formData);
   };
+
+  useEffect(() => {
+    if (defaultValues) {
+      if (defaultValues.instanceName) setInstanceName(defaultValues.instanceName);
+      if (defaultValues.areas?.length) setSelectedAreas(defaultValues.areas);
+      if (defaultValues.members?.length) setAssignedMembers(defaultValues.members);
+    }
+  }, [defaultValues]);
+
   useEffect(() => {
     getLocationHierarchyList(0, 0, true)
       .then((locationHierarchyList) => {

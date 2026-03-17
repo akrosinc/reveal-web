@@ -39,12 +39,15 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
   const [selectedHierarchy, setSelectedHierarchy] = useState<Options | null>(null);
   const [selectedIntervention, setSelectedIntervention] = useState<Options | null>(null);
 
+  console.log('Wizard defaultValues passed to AddInstance ==>', defaultValues);
+
   const {
     register,
     handleSubmit,
     control,
     watch,
     setValue,
+    reset,
     formState: { errors }
   } = useForm<RegisterValues>({
     mode: 'onChange',
@@ -61,6 +64,18 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
   });
 
   useEffect(() => {
+    if (defaultValues && Object.keys(defaultValues).length > 0) {
+      reset({
+        name: defaultValues?.name || '',
+        title: defaultValues?.title || '',
+        effectivePeriod: {
+          start: defaultValues?.effectivePeriod?.start ? new Date(defaultValues.effectivePeriod.start) : undefined,
+          end: defaultValues?.effectivePeriod?.end ? new Date(defaultValues.effectivePeriod.end) : undefined
+        },
+        interventionType: defaultValues?.interventionType || '',
+      });
+    }
+
     Promise.all([getLocationHierarchyList(0, 0, true), getInterventionTypeList(), getGeographicLevelList(0, 0)])
       .then(([locationHierarchyList, interventionTypeList, geoLevelList]) => {
         const hList = locationHierarchyList.content.map<Options>(el => ({

@@ -18,11 +18,12 @@ interface WizardProps {
   steps: Step[];
   onComplete: (finalData: any) => void;
   onCancel?: () => void;
+  initialData?: any;
 }
 
-const Wizard: React.FC<WizardProps> = ({ steps, onComplete, onCancel }) => {
+const Wizard: React.FC<WizardProps> = ({ steps, onComplete, onCancel, initialData }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<any>(initialData || {});
 
   const handleNext = (stepData: any) => {
     const updatedData = { ...formData, ...stepData };
