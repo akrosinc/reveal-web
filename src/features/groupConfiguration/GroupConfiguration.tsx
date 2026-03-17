@@ -101,7 +101,7 @@ const GroupConfiguration: React.FC = () => {
             filteredGroups.map(row => ({
                 ...row,
                 type: (
-                    <span style={{ color: row.organizationType === 'TEAM' ? 'green' : '#555' }}>
+                    <span style={{ color: row.organizationType === 'TEAM' ? 'green' : 'red' }}>
                         {row.organizationType === 'TEAM'
                             ? t('groupConfigurationPage.table.yes')
                             : t('groupConfigurationPage.table.no')}
