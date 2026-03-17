@@ -169,19 +169,18 @@ const TreeNode = React.memo<TreeNodeProps>(({
           )}
 
           <div className={`form-check mb-0 d-flex align-items-center ${isTeamMode ? 'ps-0' : ''}`}>
+            {!isTeamMode && (
+              <input
+                ref={checkboxRef}
+                className="form-check-input me-2 mt-0"
+                type="checkbox"
+                id={`area-${node.identifier}`}
+                checked={hasChildren ? isFullySelected : isSelected}
+                onChange={handleCheck}
+                style={{ cursor: 'pointer' }}
+              />
+            )}
             {!hasChildren ? (
-              <>
-                {!isTeamMode && (
-                  <input
-                    ref={checkboxRef}
-                    className="form-check-input child-checkbox me-2 mt-0"
-                    type="checkbox"
-                    id={`area-${node.identifier}`}
-                    checked={isSelected}
-                    onChange={handleCheck}
-                    style={{ cursor: 'pointer' }}
-                  />
-                )}
                 <label
                   className="form-check-label"
                   htmlFor={`area-${node.identifier}`}
@@ -189,7 +188,6 @@ const TreeNode = React.memo<TreeNodeProps>(({
                 >
                   {node.properties.name}
                 </label>
-              </>
             ) : (
               <div
                 className="fw-bold"
@@ -246,17 +244,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
                   </Dropdown.Menu>
                 </Dropdown>
               </div>
-            ) : (
-              <Button
-                variant="link"
-                size="sm"
-                className="p-0 text-decoration-none me-2 h-auto"
-                style={{ fontSize: '0.75rem' }}
-                onClick={() => onSelect(node.identifier, selected < total)}
-              >
-                {isFullySelected ? 'Deselect All' : 'Select All'}
-              </Button>
-            )
+            ) : null
           )}
 
           {isTeamMode && !hasChildren && (
