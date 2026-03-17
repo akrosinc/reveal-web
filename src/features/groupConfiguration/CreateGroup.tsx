@@ -8,7 +8,7 @@ import TeamStats from './components/TeamStats';
 import MembersSelection from './components/MembersSelection';
 import { getLocationHierarchyList } from '../location/api';
 import { toast } from 'react-toastify';
-import { createGroup } from './api';
+import { createGroup, getGroupByIdentifier, updateGroup, GroupMember, GroupDataset, GroupRole } from './api';
 
 interface Options {
     value: string;
@@ -24,9 +24,20 @@ interface FormErrors {
 interface CreateGroupProps {
     onCancel: () => void;
     onSave: (data: any) => void;
+    identifier?: string | null;
 }
 
-const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
+const getSelectedLeafNodeIds = (nodes: any[]): string[] =>
+  nodes.flatMap(node =>
+    !node.children?.length
+      ? node.selected
+        ? [node.identifier]
+        : []
+      : getSelectedLeafNodeIds(node.children)
+  );
+
+
+const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const selectedInstance = useAppSelector((state: any) => state.instanceContext.selectedInstance);
 
@@ -41,23 +52,52 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
     const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
     const [selectedDatasets, setSelectedDatasets] = useState<string[]>([]);
 
+    // Loading state for fetching data
+    const [isLoadingData, setIsLoadingData] = useState(false);
+
     // Validation errors
     const [errors, setErrors] = useState<FormErrors>({});
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        getLocationHierarchyList(0, 0, true)
-            .then((res: any) => {
-                const list = res.content.map((el: any) => ({
-                    label: el.name,
-                    value: el.identifier ?? ''
-                }));
-                setHierarchyList(list);
-                if (list.length > 0) setSelectedHierarchy(list[0]);
-            })
-            .catch(() => toast.error('Error fetching hierarchies'));
-    }, []);
+        setIsLoadingData(true);
+        Promise.all([
+            getLocationHierarchyList(0, 0, true),
+            identifier ? getGroupByIdentifier(identifier) : Promise.resolve(null)
+        ])
+        .then(([hierarchiesRes, groupRes]) => {
+            const list = hierarchiesRes.content.map((el: any) => ({
+                label: el.name,
+                value: el.identifier ?? ''
+            }));
+            setHierarchyList(list);
+            if (list.length > 0) setSelectedHierarchy(list[0]);
+
+            if (groupRes) {
+                setGroupName(groupRes.name);
+                setIsTeam(groupRes.type === 'TEAM');
+                if (groupRes.members) {
+                    setAssignedMembers(groupRes.members.map((m: GroupMember) => m.identifier));
+                }
+                if (groupRes.datasets) {
+                    setSelectedDatasets(groupRes.datasets.map((d: GroupDataset) => d.identifier));
+                }
+                if (groupRes.roles) {
+                    setSelectedRoles(groupRes.roles.map((r: GroupRole) => r.identifier));
+                }
+                if (groupRes.areas) {
+                    console.log(groupRes?.areas,'areas groupres')
+                    setSelectedAreas(getSelectedLeafNodeIds(groupRes.areas));
+                }
+            }
+        })
+        .catch((err) => {
+            console.error('Error loading group data:', err);
+            toast.error('Error fetching group/hierarchies');
+        })
+        .finally(() => setIsLoadingData(false));
+    }, [identifier]);
 
     const handleAreaTeamChange = useCallback((areaId: string, team: string) => {
         setAreaTeams(prev => ({ ...prev, [areaId]: team }));
@@ -99,41 +139,34 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
             return;
         }
 
-        const getRandomId = () => {
-            try {
-                return window.crypto.randomUUID();
-            } catch {
-                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-                    const r = (Math.random() * 16) | 0;
-                    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-                    return v.toString(16);
-                });
-            }
-        };
-
         // Build the final payload
         const payload = {
-            // identifier: undefined,
             name: groupName.trim(),
             isTeam,
-            // instanceId: selectedInstance?.identifier ,
-            // areasIdentifiers: selectedAreas.length > 0 ? selectedAreas : [getRandomId()],
-            ...(!isTeam ? { areasIdentifiers: selectedAreas || [], 
+            instanceId: selectedInstance?.identifier || null,
+            ...(!isTeam ? { 
+                areasIdentifiers: selectedAreas || [], 
                 rolesIdentifiers: selectedRoles || [],
-            datasetsIdentifiers: selectedDatasets || [],
-            membersIdentifiers: assignedMembers || [], } : {areasIdentifiers: selectedAreas || [],membersIdentifiers: assignedMembers || []}),
+                datasetsIdentifiers: selectedDatasets || [],
+                membersIdentifiers: assignedMembers || [], 
+            } : {
+                areasIdentifiers: selectedAreas || [],
+                membersIdentifiers: assignedMembers || []
+            }),
         };
-
-        console.log('=== Create Group Payload ===');
-        console.log(JSON.stringify(payload, null, 2));
 
         setIsSubmitting(true);
         try {
-            await createGroup(payload as any);
-            toast.success(`Group "${payload.name}" created successfully.`);
+            if (identifier) {
+                await updateGroup(identifier, payload as any);
+                toast.success(`Group "${payload.name}" updated successfully.`);
+            } else {
+                await createGroup(payload as any);
+                toast.success(`Group "${payload.name}" created successfully.`);
+            }
             onSave(payload);
         } catch (err: any) {
-            const message = err?.response?.data?.message || err?.message || 'Failed to create group.';
+            const message = err?.response?.data?.message || err?.message || 'Failed to save group.';
             toast.error(message);
         } finally {
             setIsSubmitting(false);
@@ -147,7 +180,8 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
         selectedRoles,
         selectedDatasets,
         assignedMembers,
-        onSave
+        onSave,
+        identifier
     ]);
 
     const handleTeamToggle = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,9 +196,16 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
 
     return (
         <div className={`p-4 ${isDarkMode ? 'text-white' : ''}`}>
-            <h3 className="mb-4">Create Group</h3>
+             <h3 className="mb-4">{identifier ? 'Edit' : 'Create'} Group</h3>
 
-            <Row className="mb-4 g-3 align-items-start">
+            {isLoadingData ? (
+                <div className="text-center py-5">
+                    <Spinner animation="border" variant="primary" />
+                    <p className="mt-2 text-muted">Loading group details...</p>
+                </div>
+            ) : (
+                <>
+                    <Row className="mb-4 g-3 align-items-start">
                 <Col md={4} xs={12}>
                     <Form.Group>
                         <Form.Control
@@ -268,9 +309,11 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave }) => {
                 </Button>
                 <Button variant="primary" onClick={handleSave} disabled={isSubmitting}>
                     {isSubmitting && <Spinner animation="border" size="sm" className="me-2" />}
-                    {isSubmitting ? 'Creating...' : 'Create'}
+                    {isSubmitting ? (identifier ? 'Updating...' : 'Creating...') : (identifier ? 'Update' : 'Create')}
                 </Button>
             </div>
+        </>
+        )}
         </div>
     );
 };

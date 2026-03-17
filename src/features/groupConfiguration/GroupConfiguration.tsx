@@ -28,6 +28,7 @@ const GroupConfiguration: React.FC = () => {
 
     // ─── View state ─────────────────────────────────────────────────────────────
     const [showCreate, setShowCreate] = useState(false);
+    const [selectedIdentifier, setSelectedIdentifier] = useState<string | null>(null);
 
     // ─── Data fetch ─────────────────────────────────────────────────────────────
     const loadGroups = useCallback(
@@ -86,7 +87,7 @@ const GroupConfiguration: React.FC = () => {
         return sortedGroups.filter(
             group => {
                 const nameMatch = group.name?.toLowerCase().includes(lowercaseSearch);
-                const typeText = group.organizationType === 'TEAM' 
+                const typeText = group.type === 'TEAM' 
                     ? t('groupConfigurationPage.table.yes').toLowerCase() 
                     : t('groupConfigurationPage.table.no').toLowerCase();
                 const typeMatch = typeText.includes(lowercaseSearch);
@@ -101,8 +102,8 @@ const GroupConfiguration: React.FC = () => {
             filteredGroups.map(row => ({
                 ...row,
                 type: (
-                    <span style={{ color: row.organizationType === 'TEAM' ? 'green' : 'red' }}>
-                        {row.organizationType === 'TEAM'
+                    <span style={{ color: row?.organizationType === 'TEAM' ? 'green' : 'red' }}>
+                        {row?.organizationType === 'TEAM'
                             ? t('groupConfigurationPage.table.yes')
                             : t('groupConfigurationPage.table.no')}
                     </span>
@@ -112,17 +113,29 @@ const GroupConfiguration: React.FC = () => {
     );
 
 
+    const handleEdit = (identifier: string) => {
+        setSelectedIdentifier(identifier);
+        setShowCreate(true);
+    };
+
+
     // ─── After create: refresh list ─────────────────────────────────────────────
     const handleSave = () => {
         setShowCreate(false);
+        setSelectedIdentifier(null);
         // Reload with current filters
         loadGroups(pageSize, currentPage, search, currentSortField, currentSortDirection);
+    };
+
+    const handleCancel = () => {
+        setShowCreate(false);
+        setSelectedIdentifier(null);
     };
 
 
     // ─── Render ─────────────────────────────────────────────────────────────────
     if (showCreate) {
-        return <CreateGroup onCancel={() => setShowCreate(false)} onSave={handleSave} />;
+        return <CreateGroup identifier={selectedIdentifier} onCancel={handleCancel} onSave={handleSave} />;
     }
 
     return (
@@ -158,6 +171,8 @@ const GroupConfiguration: React.FC = () => {
                     columns={columns}
                     data={tableData}
                     sortHandler={sortHandler}
+                    clickHandler={handleEdit}
+                    clickAccessor="identifier"
                 />
             )}
 

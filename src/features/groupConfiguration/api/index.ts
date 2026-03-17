@@ -3,11 +3,40 @@ import { PageableModel } from '../../../api/providers';
 import { GROUP_MANAGEMENT } from '../../../constants';
 import { LocationModel } from '../../location/providers/types';
 
+export interface GroupMember {
+  identifier: string;
+  name: string;
+}
+
+export interface GroupDataset {
+  identifier: string;
+  name: string;
+}
+
+export interface GroupRole {
+  identifier: string;
+  name: string;
+}
+
+export interface GroupArea {
+  identifier: string;
+  properties: {
+    name: string;
+    geographicLevel: string;
+    [key: string]: any;
+  };
+  children?: GroupArea[];
+}
+
 export interface GroupModel {
   identifier: string;
   name: string;
   type: string;
-  organizationType: string;
+  active: boolean;
+  members?: GroupMember[];
+  datasets?: GroupDataset[];
+  roles?: GroupRole[];
+  areas?: GroupArea[];
 }
 
 
@@ -109,4 +138,14 @@ export const assignLocationToGroup = async (requestBody: { organizationIdentifie
     .post(`${GROUP_MANAGEMENT}/assignlocation`, requestBody)
     .then(response => response.data);
   return data;
+};
+
+export const getGroupByIdentifier = async (identifier: string): Promise<GroupModel> => {
+  const response = await api.get<GroupModel>(`${GROUP_MANAGEMENT}/${identifier}`);
+  return response.data;
+};
+
+export const updateGroup = async (identifier: string, payload: CreateGroupPayload): Promise<GroupModel> => {
+  const response = await api.put<GroupModel>(`${GROUP_MANAGEMENT}/${identifier}`, payload);
+  return response.data;
 };
