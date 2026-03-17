@@ -168,25 +168,23 @@ const TreeNode = React.memo<TreeNodeProps>(({
           )}
 
           <div className="form-check mb-0 d-flex align-items-center">
+            <input
+              ref={checkboxRef}
+              className="form-check-input me-2 mt-0"
+              type="checkbox"
+              id={`edit-${node.identifier}`}
+              checked={hasChildren ? isFullySelected : isSelected}
+              onChange={handleCheck}
+              style={{ cursor: 'pointer' }}
+            />
             {!hasChildren ? (
-              <>
-                <input
-                  ref={checkboxRef}
-                  className="form-check-input child-checkbox me-2 mt-0"
-                  type="checkbox"
-                  id={`edit-${node.identifier}`}
-                  checked={isSelected}
-                  onChange={handleCheck}
-                  style={{ cursor: 'pointer' }}
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor={`edit-${node.identifier}`}
-                  style={{ cursor: 'pointer', userSelect: 'none' }}
-                >
-                  {node.properties.name}
-                </label>
-              </>
+              <label
+                className="form-check-label"
+                htmlFor={`edit-${node.identifier}`}
+                style={{ cursor: 'pointer', userSelect: 'none', color: isDarkMode ? '#fff' : '#000' }}
+              >
+                {node.properties.name}
+              </label>
             ) : (
               <div
                 className="fw-bold"
@@ -209,19 +207,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
           </div>
         </div>
 
-        {hasChildren && (
-          <div className="d-flex align-items-center">
-            <Button
-              variant="link"
-              size="sm"
-              className="p-0 text-decoration-none me-2 h-auto"
-              style={{ fontSize: '0.75rem' }}
-              onClick={() => onSelect(node.identifier, selected < total)}
-            >
-              {isFullySelected ? 'Deselect All' : 'Select All'}
-            </Button>
-          </div>
-        )}
+
       </div>
       {hasChildren && (
         <Collapse in={expanded} unmountOnExit>
@@ -272,6 +258,7 @@ const useDebounce = (value: string, delay: number = 300) => {
 };
 
 const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onSelectionChange }) => {
+  console.log(selectedAreas?.length)
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300); // 300ms debounce
