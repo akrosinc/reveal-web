@@ -489,14 +489,14 @@ const AreasSelection: React.FC<Props> = ({
           <div className="area-selection-content" >
             <div className="mb-3">
               <div className="mb-2">
-                <div
+                {/* <div
                   onClick={() => setHierarchyOpen(!hierarchyOpen)}
                   className="d-flex align-items-center justify-content-between p-3 border-bottom"
                   style={{ cursor: 'pointer', fontSize: '1rem', color: isDarkMode ? '#fff' : '#000' }}
                 >
                    <span className="fw-bold">Areas Hierarchy</span>
                   <FontAwesomeIcon icon={hierarchyOpen ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
-                </div>
+                </div> */}
                 {/* <Collapse in={hierarchyOpen}> */}
                   <div>
                     <div className="p-3 border-bottom">
