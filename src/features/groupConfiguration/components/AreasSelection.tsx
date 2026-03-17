@@ -220,26 +220,55 @@ const TreeNode = React.memo<TreeNodeProps>(({
                   </span>
                 )}
                 <Dropdown 
-                  align="end" 
                   show={openDropdownId === node.identifier} 
                   onToggle={(isOpen) => onDropdownToggle(isOpen ? node.identifier : null)}
-                  onClick={(e: any) => e.stopPropagation()}
+                  drop="end"
                 >
                   <Dropdown.Toggle as={CustomToggle}>
-                    <FontAwesomeIcon icon={faEllipsisV} />
+                    <div className="p-1 rounded-circle d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', transition: 'all 0.2s', backgroundColor: openDropdownId === node.identifier ? (isDarkMode ? '#444' : '#e9ecef') : 'transparent' }}>
+                      <FontAwesomeIcon icon={faEllipsisV} className={isDarkMode ? 'text-light' : 'text-secondary'} size="sm" />
+                    </div>
                   </Dropdown.Toggle>
                   <Dropdown.Menu 
-                    className="shadow-sm border-0 py-0" 
-                    style={{ borderRadius: '4px', zIndex: 9999 }}
+                    popperConfig={{ 
+                      strategy: 'fixed',
+                      modifiers: [
+                        {
+                          name: 'offset',
+                          options: {
+                            offset: [0, 8],
+                          },
+                        },
+                        {
+                          name: 'flip',
+                          enabled: false,
+                        },
+                        {
+                          name: 'preventOverflow',
+                          options: {
+                            boundary: 'viewport',
+                          },
+                        },
+                      ],
+                    }}
+                    className={`shadow border-0 py-0 ${isDarkMode ? 'bg-dark border-secondary' : 'bg-white'}`} 
+                    style={{ borderRadius: '10px', overflow: 'hidden', minWidth: '180px', zIndex: 1060 }}
+                    renderOnMount
                   >
-                    <Dropdown.Item onClick={() => { onTeamClick?.((node as any)._leafIds); onDropdownToggle(null); }} className="py-2 border-bottom">
-                      <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> Change team
+                    <div className={`p-2 small fw-bold border-bottom ${isDarkMode ? 'text-muted border-secondary' : 'text-secondary bg-light'}`}>
+                      Area Actions
+                    </div>
+                    <Dropdown.Item onClick={() => { onTeamClick?.((node as any)._leafIds); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                       <FontAwesomeIcon icon={faShareSquare} className="text-primary" style={{ transform: 'scaleX(-1)' }} />
+                       <span>Change team</span>
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={() => { onViewTeam?.(node.properties?.geographicLevel || 'Not Assigned'); onDropdownToggle(null); }} className="py-2 border-bottom">
-                      <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> View team
+                    <Dropdown.Item onClick={() => { onViewTeam?.(node.properties?.geographicLevel || 'Not Assigned'); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                       <FontAwesomeIcon icon={faShareSquare} className="text-info" style={{ transform: 'scaleX(-1)' }} />
+                       <span>View team</span>
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={() => { navigate('/plans/campaign-management'); onDropdownToggle(null); }} className="py-2">
-                      <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> View in map
+                    <Dropdown.Item onClick={() => { navigate('/plans/campaign-management'); onDropdownToggle(null); }} className="py-2 px-3 d-flex align-items-center gap-2">
+                       <FontAwesomeIcon icon={faShareSquare} className="text-success" style={{ transform: 'scaleX(-1)' }} />
+                       <span>Open Map</span>
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
@@ -255,26 +284,55 @@ const TreeNode = React.memo<TreeNodeProps>(({
                 </span>
               )}
               <Dropdown 
-                align="end" 
                 show={openDropdownId === node.identifier} 
                 onToggle={(isOpen) => onDropdownToggle(isOpen ? node.identifier : null)}
-                onClick={(e: any) => e.stopPropagation()}
+                drop="end"
               >
                 <Dropdown.Toggle as={CustomToggle}>
-                  <FontAwesomeIcon icon={faEllipsisV} />
+                  <div className="p-1 rounded-circle d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', transition: 'all 0.2s', backgroundColor: openDropdownId === node.identifier ? (isDarkMode ? '#444' : '#e9ecef') : 'transparent' }}>
+                    <FontAwesomeIcon icon={faEllipsisV} className={isDarkMode ? 'text-light' : 'text-secondary'} size="sm" />
+                  </div>
                 </Dropdown.Toggle>
                 <Dropdown.Menu 
-                  className="shadow-sm border-0 py-0" 
-                  style={{ borderRadius: '4px', zIndex: 9999 }}
-                >
-                  <Dropdown.Item onClick={() => { onTeamClick?.(node.identifier); onDropdownToggle(null); }} className="py-2 border-bottom">
-                    <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> Change team
+                  popperConfig={{ 
+                    strategy: 'fixed',
+                    modifiers: [
+                      {
+                        name: 'offset',
+                        options: {
+                          offset: [0, 8],
+                        },
+                      },
+                      {
+                        name: 'flip',
+                        enabled: false,
+                      },
+                      {
+                        name: 'preventOverflow',
+                        options: {
+                          boundary: 'viewport',
+                        },
+                      },
+                    ],
+                  }}
+                  className={`shadow border-0 py-0 ${isDarkMode ? 'bg-dark border-secondary' : 'bg-white'}`} 
+                  style={{ borderRadius: '10px', overflow: 'hidden', minWidth: '180px', zIndex: 1060 }}
+                  renderOnMount
+               >
+                  <div className={`p-2 small fw-bold border-bottom ${isDarkMode ? 'text-muted border-secondary' : 'text-secondary bg-light'}`}>
+                    Location Actions
+                  </div>
+                  <Dropdown.Item onClick={() => { onTeamClick?.(node.identifier); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                    <FontAwesomeIcon icon={faShareSquare} className="text-primary" style={{ transform: 'scaleX(-1)' }} />
+                    <span>Change team</span>
                   </Dropdown.Item>
-                  <Dropdown.Item onClick={() => { onViewTeam?.(node.properties?.geographicLevel || 'Not Assinged'); onDropdownToggle(null); }} className="py-2 border-bottom">
-                    <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> View team
+                  <Dropdown.Item onClick={() => { onViewTeam?.(node.properties?.geographicLevel || 'Not Assinged'); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                    <FontAwesomeIcon icon={faShareSquare} className="text-info" style={{ transform: 'scaleX(-1)' }} />
+                    <span>View team</span>
                   </Dropdown.Item>
-                  <Dropdown.Item onClick={() => { navigate('/plans/campaign-management'); onDropdownToggle(null); }} className="py-2">
-                    <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> View in map
+                  <Dropdown.Item onClick={() => { navigate('/plans/campaign-management'); onDropdownToggle(null); }} className="py-2 px-3 d-flex align-items-center gap-2">
+                    <FontAwesomeIcon icon={faShareSquare} className="text-success" style={{ transform: 'scaleX(-1)' }} />
+                    <span>Open Map</span>
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
