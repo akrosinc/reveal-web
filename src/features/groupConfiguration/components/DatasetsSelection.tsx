@@ -70,7 +70,7 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
                 <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold d-flex justify-content-between align-items-center`}>
                     Datasets
                     <FontAwesomeIcon 
-                    
+                        style={{cursor:'pointer'}}
                         icon={faPlusCircle} 
                         className="text-primary cursor-pointer" 
                         onClick={() => setShowUploadModal(true)}
