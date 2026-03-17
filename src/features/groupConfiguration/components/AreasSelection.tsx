@@ -1,12 +1,28 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Card, Form, Collapse, Button, Spinner } from 'react-bootstrap';
+import { Card, Form, Collapse, Button, Spinner, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronRight, faChevronDown, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faChevronDown, faEllipsisV, faShareSquare } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../store/hooks';
 import { AreaNode } from './mockLargeDataset';
 import { getAssignedAreaTree } from '../api';
 import { toast } from 'react-toastify';
 import SelectTeamModal from './SelectTeamModal';
+import ViewTeamModal from './ViewTeamModal';
+import { useNavigate } from 'react-router-dom';
+
+const CustomToggle = React.forwardRef(({ children, onClick }: any, ref: any) => (
+  <div
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick(e);
+    }}
+    className="text-secondary cursor-pointer ms-2 d-inline-block"
+  >
+    {children}
+  </div>
+));
 
 interface Props {
   isTeamMode: boolean;
@@ -29,6 +45,9 @@ interface TreeNodeProps {
   isTeamMode?: boolean;
   areaTeams?: Record<string, string>;
   onTeamClick?: (id: string | string[]) => void;
+  onViewTeam?: (teamName: string) => void;
+  openDropdownId: string | null;
+  onDropdownToggle: (id: string | null) => void;
   isDarkMode: boolean;
 }
 
@@ -44,6 +63,9 @@ const TreeNode = React.memo<TreeNodeProps>(({
   isTeamMode = false,
   areaTeams = {},
   onTeamClick,
+  onViewTeam,
+  openDropdownId,
+  onDropdownToggle,
   isDarkMode
 }) => {
   const [childrenLoaded, setChildrenLoaded] = useState(false);
@@ -61,6 +83,12 @@ const TreeNode = React.memo<TreeNodeProps>(({
     _isMatch: true,
     _hasChildMatch: false
   };
+
+  const navigate = useNavigate();
+
+  const currentTeamName = node.teams && node.teams.length > 0 
+                  ? node.teams.map((t: any) => t.name).join(', ') 
+                  : areaTeams[node.identifier] || 'Not Assigned';
 
   const isExpandedByFilter = !!(filter && (inheritedMatch || _isMatch || _hasChildMatch));
   const expanded = isExpandedByFilter || expandedNodeIds.includes(node.identifier);
@@ -193,11 +221,30 @@ const TreeNode = React.memo<TreeNodeProps>(({
                     {node.properties.geographicLevel}
                   </span>
                 )}
-                <FontAwesomeIcon
-                  icon={faEllipsisV}
-                  className="text-secondary cursor-pointer ms-2"
-                  onClick={() => onTeamClick?.((node as any)._leafIds)}
-                />
+                <Dropdown 
+                  align="end" 
+                  show={openDropdownId === node.identifier} 
+                  onToggle={(isOpen) => onDropdownToggle(isOpen ? node.identifier : null)}
+                  onClick={(e: any) => e.stopPropagation()}
+                >
+                  <Dropdown.Toggle as={CustomToggle}>
+                    <FontAwesomeIcon icon={faEllipsisV} />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu 
+                    className="shadow-sm border-0 py-0" 
+                    style={{ borderRadius: '4px', zIndex: 9999 }}
+                  >
+                    <Dropdown.Item onClick={() => { onTeamClick?.((node as any)._leafIds); onDropdownToggle(null); }} className="py-2 border-bottom">
+                      <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> Change team
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => { onViewTeam?.(node.properties?.geographicLevel || 'Not Assigned'); onDropdownToggle(null); }} className="py-2 border-bottom">
+                      <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> View team
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => { navigate('/plans/campaign-management'); onDropdownToggle(null); }} className="py-2">
+                      <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> View in map
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
               </div>
             ) : (
               <Button
@@ -214,21 +261,35 @@ const TreeNode = React.memo<TreeNodeProps>(({
 
           {isTeamMode && !hasChildren && (
             <div className={`d-flex align-items-center gap-2`}>
-              {/* <span className="text-muted small">
-                {node.teams && node.teams.length > 0 
-                  ? node.teams.map((t: any) => t.name).join(', ') 
-                  : areaTeams[node.identifier] || }
-              </span> */}
               {node.properties?.geographicLevel && (
                 <span className="text-muted small px-2 py-1 bg-light rounded border">
                   {node.properties.geographicLevel || 'Not Assigned'}
                 </span>
               )}
-              <FontAwesomeIcon
-                icon={faEllipsisV}
-                className={`text-secondary cursor-pointer ms-2`}
-                onClick={() => onTeamClick?.(node.identifier)}
-              />
+              <Dropdown 
+                align="end" 
+                show={openDropdownId === node.identifier} 
+                onToggle={(isOpen) => onDropdownToggle(isOpen ? node.identifier : null)}
+                onClick={(e: any) => e.stopPropagation()}
+              >
+                <Dropdown.Toggle as={CustomToggle}>
+                  <FontAwesomeIcon icon={faEllipsisV} />
+                </Dropdown.Toggle>
+                <Dropdown.Menu 
+                  className="shadow-sm border-0 py-0" 
+                  style={{ borderRadius: '4px', zIndex: 9999 }}
+                >
+                  <Dropdown.Item onClick={() => { onTeamClick?.(node.identifier); onDropdownToggle(null); }} className="py-2 border-bottom">
+                    <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> Change team
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => { onViewTeam?.(node.properties?.geographicLevel || 'Not Assinged'); onDropdownToggle(null); }} className="py-2 border-bottom">
+                    <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> View team
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => { navigate('/plans/campaign-management'); onDropdownToggle(null); }} className="py-2">
+                    <FontAwesomeIcon icon={faShareSquare} className="text-muted me-2" style={{ transform: 'scaleX(-1)' }} /> View in map
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
             </div>
           )}
         </div>
@@ -251,6 +312,9 @@ const TreeNode = React.memo<TreeNodeProps>(({
                   isTeamMode={isTeamMode}
                   areaTeams={areaTeams}
                   onTeamClick={onTeamClick}
+                  onViewTeam={onViewTeam}
+                  openDropdownId={openDropdownId}
+                  onDropdownToggle={onDropdownToggle}
                   isDarkMode={isDarkMode}
                 />
               ))
@@ -295,7 +359,10 @@ const AreasSelection: React.FC<Props> = ({
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewTeamName, setViewTeamName] = useState('');
   const [activeAreaId, setActiveAreaId] = useState<string | string[] | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   // Optimized lookup Set
   const selectedSet = useMemo(() => new Set(selectedAreas), [selectedAreas]);
@@ -406,6 +473,11 @@ const AreasSelection: React.FC<Props> = ({
     setShowModal(true);
   }, []);
 
+  const handleViewTeam = useCallback((teamName: string) => {
+    setViewTeamName(teamName);
+    setShowViewModal(true);
+  }, []);
+
   const handleTeamSelect = useCallback((team: string) => {
     if (activeAreaId) {
       if (Array.isArray(activeAreaId)) {
@@ -478,6 +550,9 @@ const AreasSelection: React.FC<Props> = ({
                             isTeamMode={isTeamMode}
                             areaTeams={areaTeams}
                             onTeamClick={handleTeamClick}
+                            onViewTeam={handleViewTeam}
+                            openDropdownId={openDropdownId}
+                            onDropdownToggle={setOpenDropdownId}
                             isDarkMode={isDarkMode}
                           />
                         ))
@@ -496,6 +571,11 @@ const AreasSelection: React.FC<Props> = ({
         onSelect={handleTeamSelect}
         planId={planId}
         areaId={activeAreaId}
+      />
+      <ViewTeamModal
+        show={showViewModal}
+        onHide={() => setShowViewModal(false)}
+        teamName={viewTeamName}
       />
     </div>
   );
