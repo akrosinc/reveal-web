@@ -37,6 +37,7 @@ export interface GroupModel {
   datasets?: GroupDataset[];
   roles?: GroupRole[];
   areas?: GroupArea[];
+  organizationType?:string
 }
 
 
