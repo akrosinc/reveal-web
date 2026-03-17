@@ -45,6 +45,12 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
                     : planPeriod
         }
     });
+    useEffect(() => {
+        if (selectedAction?.title && actionTitles.length > 0) {
+            setValue('title', selectedAction.title);
+        }
+    }, [actionTitles, selectedAction, setValue]);
+
     const { t } = useTranslation();
 
     useEffect(() => {
@@ -78,14 +84,11 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
                         <Form.Label>{t('planPage.Title')}</Form.Label>
                         <Form.Select
                             id="action-title-input"
-                            placeholder="Enter action title"
                             {...register('title', {
                                 required: 'Action title must be selected.',
-                                minLength: 1
                             })}
-                            defaultValue={selectedAction?.title}
                         >
-                            <option></option>
+                            <option value="">Select an action title</option>
                             {actionTitles.map((el, index) => (
                                 <option key={index} value={el}>
                                     {el}

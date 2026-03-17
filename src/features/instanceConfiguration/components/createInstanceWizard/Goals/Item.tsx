@@ -120,57 +120,21 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                         closeHandler={(action?: Action, isDelete?: boolean) => {
                             if (action !== undefined) {
                                 action.type = action.identifier ? 'UPDATE' : 'CREATE';
-                                if (planId) {
-                                    if (isDelete) {
-                                        toast
-                                            .promise(deleteAction(action.identifier, planId, goal.identifier), {
-                                                pending: 'Loading...',
-                                                success: 'Action deleted successfully.',
-                                                error: 'There was an error deleting action.'
-                                            })
-                                            .finally(() => {
-                                                loadData();
-                                            });
-                                    } else {
-                                        if (selectedAction) {
-                                            toast
-                                                .promise(updateAction(action, planId, goal.identifier), {
-                                                    pending: 'Loading...',
-                                                    success: 'Action updated successfully.',
-                                                    error: 'There was an error updating action.'
-                                                })
-                                                .finally(() => {
-                                                    loadData();
-                                                });
-                                        } else {
-                                            toast
-                                                .promise(createAction(action, planId, goal.identifier), {
-                                                    pending: 'Loading...',
-                                                    success: 'Action created successfully.',
-                                                    error: 'There was an error creating action.'
-                                                })
-                                                .finally(() => {
-                                                    loadData();
-                                                });
-                                        }
-                                    }
+                                if (isDelete) {
+                                    const newActions = [...actionsList];
+                                    newActions.splice(selectedIndex, 1);
+                                    setActionsList(newActions);
+                                    goal.actions = newActions;
                                 } else {
-                                    if (isDelete) {
-                                        const newActions = [...actionsList];
-                                        newActions.splice(selectedIndex, 1);
-                                        setActionsList(newActions);
-                                        goal.actions = newActions;
+                                    const newActions = [...actionsList];
+                                    if (selectedAction) {
+                                        newActions[selectedIndex] = action;
                                     } else {
-                                        const newActions = [...actionsList];
-                                        if (selectedAction) {
-                                            newActions[selectedIndex] = action;
-                                        } else {
-                                            if (!action.identifier) action.identifier = Date.now().toString();
-                                            newActions.push(action);
-                                        }
-                                        setActionsList(newActions);
-                                        goal.actions = newActions;
+                                        if (!action.identifier) action.identifier = Date.now().toString();
+                                        newActions.push(action);
                                     }
+                                    setActionsList(newActions);
+                                    goal.actions = newActions;
                                 }
                                 loadData();
                             }

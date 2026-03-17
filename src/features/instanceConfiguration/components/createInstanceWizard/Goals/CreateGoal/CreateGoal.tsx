@@ -36,47 +36,22 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList, onSave 
     const { t } = useTranslation();
 
     const submitHandler = (form: goalForm) => {
-        if (planId) {
-            //planId is not undefined we are editing an existing plan
-            //calling backend on submit
-            if (currentGoal) {
-                //update plan
-                currentGoal.description = form.description;
-                currentGoal.priority = form.priority;
-                toast
-                    .promise(updateGoal(currentGoal, planId), {
-                        pending: 'Loading...',
-                        success: 'Goal updated successfully',
-                        error: 'There was an error creating goal'
-                    })
-                    .finally(() => closeHandler());
-            } else {
-                toast
-                    .promise(createGoal(form as Goal, planId), {
-                        pending: 'Loading...',
-                        success: 'Goal added successfully',
-                        error: 'There was an error creating goal'
-                    })
-                    .finally(() => closeHandler());
-            }
+        // edit goal on new plan or create a new one
+        if (currentGoal) {
+            currentGoal.description = form.description;
+            currentGoal.priority = form.priority;
+            if (onSave) onSave(currentGoal);
+            closeHandler();
         } else {
-            // edit goal on new plan or create a new one
-            if (currentGoal) {
-                currentGoal.description = form.description;
-                currentGoal.priority = form.priority;
-                if (onSave) onSave(currentGoal);
-                closeHandler();
-            } else {
-                let newGoal: Goal = {
-                    actions: [],
-                    description: form.description,
-                    identifier: String(goalList.length + 1),
-                    priority: form.priority
-                };
-                goalList.push(newGoal);
-                if (onSave) onSave(newGoal);
-                closeHandler();
-            }
+            let newGoal: Goal = {
+                actions: [],
+                description: form.description,
+                identifier: String(goalList.length + 1),
+                priority: form.priority
+            };
+            // goalList.push(newGoal); // Best to let onSave handle the list update
+            if (onSave) onSave(newGoal);
+            closeHandler();
         }
     };
 
@@ -110,6 +85,21 @@ const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList, onSave 
                         />
                         {errors.description && <Form.Label className="text-danger">{errors.description.message}</Form.Label>}
                     </Form.Group>
+                    {/* <Form.Group className="mb-2">
+                        <Form.Label>{t('planPage.priority')}</Form.Label>
+                        <Form.Select
+                            id="goal-priority-input"
+                            {...register('priority', {
+                                required: 'Priority must be selected.',
+                            })}
+                        >
+                            <option value="">Select Priority</option>
+                            <option value="low-priority">Low Priority</option>
+                            <option value="medium-priority">Medium Priority</option>
+                            <option value="high-priority">High Priority</option>
+                        </Form.Select>
+                        {errors.priority && <Form.Label className="text-danger">{errors.priority.message}</Form.Label>}
+                    </Form.Group> */}
                 </Form>
             </Modal.Body>
             <Modal.Footer>

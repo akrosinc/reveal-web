@@ -43,17 +43,8 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
       />
     )).then(res => {
       if (res) {
-        if (planId) {
-          // we are in edit mode call api to delete goal
-          deleteGoalById(goalId, planId).then(_ => {
-            // In a wizard context, we might need a way to reload the plan data if it was fetched from a planId
-            const newArr = goalList.filter(el => el.identifier !== goalId);
-            setGoalList(newArr);
-          });
-        } else {
-          const newArr = goalList.filter(el => el.identifier !== goalId);
-          setGoalList(newArr);
-        }
+        const newArr = goalList.filter(el => el.identifier !== goalId);
+        setGoalList(newArr);
       }
     });
   };
