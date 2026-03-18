@@ -145,7 +145,7 @@ const LocationHierarchy = () => {
       <Row className="align-items-center mb-1">
         <Col>
           <h3 className="m-0 fw-bold" style={{ color: '#444', fontSize: '20px' }}>
-            {baseHierarchy?.name ?? 'Base Hierarchy'}
+            {'Base Hierarchy'}
           </h3>
         </Col>
         {!baseHierarchyFound && <Col>
@@ -257,7 +257,7 @@ const LocationHierarchy = () => {
               geographyLevelList={geographyLevelList ?? []} 
               closeHandler={closeHandler} 
               isBase={isBase} 
-              baseHierarchyName={baseHierarchy?.name}
+              baseHierarchyName={baseHierarchy?.nodeOrder.join(', ') || ''}
             />
           }
           closeHandler={closeHandler}
