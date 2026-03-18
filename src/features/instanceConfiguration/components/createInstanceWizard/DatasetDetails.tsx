@@ -11,11 +11,11 @@ import DetailsModal from './DatasetDetails/detailsModal';
 import UploadModal from './DatasetDetails/uploadModal';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../../store/hooks';
-import { getMetadataImportList } from '../../../metaDataImport/api';
-import { toast } from 'react-toastify';
-import { EntityTagResponse } from '../../../planSimulation/providers/types';
 import { MetadataFileImportResponse } from '../../../metaDataImport/type';
 import { PageableModel } from '../../../../api/providers';
+import { getInstanceDatasets, DatasetResponse, DatasetEntityTag } from '../../api/instanceAPI';
+import { EntityTagResponse } from '../../../planSimulation/providers/types';
+import { toast } from 'react-toastify';
 
 const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValues }) => {
   const { t } = useTranslation();
@@ -31,37 +31,27 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
   const [statusFilter, setStatusFilter] = useState('All');
 
   const loadData = useCallback(
-    (
-      size: number = PAGINATION_DEFAULT_SIZE,
-      page: number = 0,
-      search?: string,
-      status?: string,
-      sortField?: string,
-      direction?: boolean
-    ) => {
-      getMetadataImportList(size, page, sortField, direction)
-        .then(res => {
+    () => {
+      getInstanceDatasets()
+        .then((res: PageableModel<DatasetResponse>) => {
           const previouslySelectedTags = new Set(defaultValues?.datasets_tags || []);
 
-          let transformedMetadataList: MetadataFileImportResponse[] = res.content.map(fileImport => {
-            let entityTagsNotAggregate: EntityTagResponse[] | undefined = fileImport.entityTagEvents?.filter(
-              entityTag => !entityTag.aggregate
-            );
-
-            let entityTagWithChildren = entityTagsNotAggregate?.map(entityTag => {
+          let transformedMetadataList: MetadataFileImportResponse[] = res.content.map((dataset: DatasetResponse) => {
+            let entityTagWithChildren = dataset.datasetEntityTags?.map((tag: DatasetEntityTag) => {
               // Sync with previous selections
-              const isTagSelected = previouslySelectedTags.has(entityTag.identifier);
+              const isTagSelected = previouslySelectedTags.has(tag.identifier);
+
+              const tagResponse: EntityTagResponse = {
+                identifier: tag.identifier,
+                tag: tag.tag,
+                public: tag.isPublic,
+                selected: isTagSelected,
+                aggregate: false, // Defaulting as not specified in new API but needed for type
+                children: [], // No children in new structure
+                instances: tag.instances // Pass instances to the table
+              } as any; // Using any as EntityTagResponse might have mandatory fields not present here
               
-              entityTag.selected = isTagSelected;
-              entityTag.children = fileImport.entityTagEvents?.filter(entityTagEvent => {
-                const isChild = entityTagEvent.aggregate && entityTagEvent.referencedTag === entityTag.identifier;
-                if (isChild) {
-                    // Match child selection to parent or its own if tracked separately
-                    entityTagEvent.selected = isTagSelected;
-                }
-                return isChild;
-              });
-              return entityTag;
+              return tagResponse;
             });
 
             // A file is selected if all its tags are selected
@@ -70,63 +60,66 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
 
             let newFileImport: MetadataFileImportResponse = {
               selected: fileSelected || false,
-              entityTagEvents: entityTagWithChildren,
-              filename: fileImport.filename,
-              status: fileImport.status,
-              identifier: fileImport.identifier,
-              uploadDatetime: fileImport.uploadDatetime,
-              uploadedBy: fileImport.uploadedBy,
-              owner: fileImport.owner,
-              owners: fileImport.owners
+              entityTagEvents: entityTagWithChildren as any,
+              filename: dataset.datasetName || '',
+              status: 'Imported', // New response doesn't have status, defaulting
+              identifier: dataset.identifier,
+              uploadDatetime: dataset.uploadDatetime,
+              uploadedBy: dataset.uploadedBy || '',
+              owner: true, // Defaulting as not specified
+              owners: [] // Defaulting as not specified
             };
 
             return newFileImport;
           });
 
           // Local filtering for search and status if API doesn't support it yet
-          // But looking at getMetadataImportList, it only takes size, page, field, direction
-          const s = search ?? searchTerm;
-          const st = status ?? statusFilter;
+          const s = searchTerm;
+          const st = statusFilter;
 
           let filtered = transformedMetadataList.filter(item => {
             const matchesSearch =
-              item.filename.toLowerCase().includes(s.toLowerCase()) ||
-              item.uploadedBy.toLowerCase().includes(s.toLowerCase());
+              (item.filename || '').toLowerCase().includes(s.toLowerCase()) ||
+              (item.uploadedBy || '').toLowerCase().includes(s.toLowerCase());
             const matchesStatus = st === 'All' || (st === 'Public' && item.owner) || (st === 'Private' && !item.owner);
             return matchesSearch && matchesStatus;
           });
 
           setMetadataImportList(filtered);
           setMetadataImportPaged({
-            ...res,
-            content: filtered
-          });
+            content: filtered,
+            totalElements: filtered.length,
+            totalPages: 1,
+            size: filtered.length,
+            pageable: { pageNumber: 0 },
+            empty: filtered.length === 0
+          } as any);
         })
-        .catch(err => toast.error(err));
+        .catch((err: any) => toast.error(err));
     },
-    [searchTerm, statusFilter]
+    [searchTerm, statusFilter, defaultValues?.datasets_tags]
   );
 
   useEffect(() => {
-    loadData(PAGINATION_DEFAULT_SIZE, 0);
+    loadData();
   }, [loadData]);
 
   const paginationHandler = (size: number, page: number) => {
-    loadData(size, page, searchTerm, statusFilter);
+    loadData();
   };
 
   const sortHandler = (field: string, direction: boolean) => {
-    loadData(PAGINATION_DEFAULT_SIZE, 0, searchTerm, statusFilter, field, direction);
+    loadData();
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value, statusFilter);
+    loadData();
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value);
-    loadData(PAGINATION_DEFAULT_SIZE, 0, searchTerm, e.target.value);
+    loadData();
   };
   console.log(selectedMetadata)
 
@@ -315,7 +308,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
               locationHierarchy: defaultValues?.hierarchy || defaultValues?.locationHierarchy || '',
               areas: defaultValues?.areas || [],
               members: defaultValues?.members || [],
-              datasets_tags: datasetsTags
+              datasets_tags: datasetsTags ||[]
             };
             console.log('final payload--instance configuration', finalPayload)
             if (onNext) {

@@ -337,8 +337,14 @@
     "tagFilters": "Tag Filters",
     "analysis": "Perform analysis",
     "removeOrgGrants": "Remove Organization Access",
-    "removeUserGrants": "Remove User Access"
+    "removeUserGrants": "Remove User Access",
+    "instances":"Current Instances",
+    "datasetName": "Dataset Name",
+    "uploadDate": "Upload Date",
+    "uploadedBy": "Uploaded By",
+    "selected":""
   },
+
   "label": {
     "layerOpacity": "Layer opacity"
   },
@@ -358,6 +364,7 @@
     "uploadFile": "Upload File",
     "table": {
       "fileName": "Filename",
+      "datasetName": "Dataset Name",
       "uploadDate": "Upload Date",
       "status": "Status",
       "uploadedBy": "Uploaded By",

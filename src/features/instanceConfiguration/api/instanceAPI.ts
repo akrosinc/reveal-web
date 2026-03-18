@@ -1,5 +1,5 @@
 import api from '../../../api/axios';
-import { INSTANCE } from '../../../constants/urls';
+import { INSTANCE, META_IMPORT_DATASET } from '../../../constants/urls';
 import { PageableModel } from '../../../api/providers';
 import { LOCATION_HIERARCHY } from '../../../constants/urls';
 import { LocationModel } from '../../location/providers/types';
@@ -251,5 +251,29 @@ export const updateInstance = async (
   payload: UpdateInstanceRequest
 ): Promise<InstanceResponse> => {
   const response = await api.put<InstanceResponse>(`${INSTANCE}/${identifier}`, payload);
+  return response.data;
+};
+
+export interface DatasetEntityTag {
+  identifier: string;
+  tag: string;
+  instances: string[];
+  isPublic: boolean;
+}
+
+export interface DatasetResponse {
+  identifier: string;
+  datasetName: string;
+  uploadDatetime: string;
+  uploadedBy: string;
+  datasetEntityTags: DatasetEntityTag[];
+}
+
+/**
+ * Get list of datasets for instances
+ * @returns DatasetResponse[]
+ */
+export const getInstanceDatasets = async (): Promise<PageableModel<DatasetResponse>> => {
+  const response = await api.get<PageableModel<DatasetResponse>>(`${META_IMPORT_DATASET}`);
   return response.data;
 };

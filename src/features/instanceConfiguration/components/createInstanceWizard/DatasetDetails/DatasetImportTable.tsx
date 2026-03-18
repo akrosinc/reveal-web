@@ -25,13 +25,10 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
     const { t } = useTranslation();
     const columnsForMetadataTables = React.useMemo<Column<EntityTagResponse>[]>(
         () => [
-            { Header: 'selected', id: 'selected' },
+            { Header: '', id: 'selected' },
             { Header: 'tag', accessor: 'tag' },
-            { Header: 'owner', accessor: 'owner' },
-            { Header: 'owner', id: 'owner2', accessor: 'owner' },
             { Header: 'isPublic', accessor: 'public' },
-            { Header: 'orgGrants' },
-            { Header: 'userGrants' },
+            { Header: 'instances', accessor: 'instances' as any },
         ],
         []
     );
@@ -78,12 +75,9 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
                         </span>
                     ) : null
             },
-            { Header: 'fileName', accessor: 'filename' },
+            { Header: 'datasetName', accessor: 'filename' },
             { Header: 'uploadDate', accessor: 'uploadDatetime' },
-            { Header: 'status', accessor: 'status' },
             { Header: 'uploadedBy', accessor: 'uploadedBy' },
-            { Header: 'owner', accessor: 'owner' },
-            { Header: 'owners', accessor: 'owners' },
 
         ],
         []
