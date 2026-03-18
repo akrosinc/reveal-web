@@ -17,9 +17,10 @@ interface Props {
     clickHandler?: (identifier: any) => void;
     clickAccessor?: string;
     setMetadataList: (list: MetadataFileImportResponse[]) => void;
+    searchTerm?: string;
 }
 
-const DatasetImportTable = ({ data, setMetadataList }: Props) => {
+const DatasetImportTable = ({ data, setMetadataList, searchTerm }: Props) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const { keycloak } = useKeycloak();
     const { t } = useTranslation();
@@ -92,6 +93,21 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
         },
         useExpanded
     );
+
+    // Auto-expand if search term matches a tag
+    React.useEffect(() => {
+        if (searchTerm) {
+            const s = searchTerm.toLowerCase();
+            rows.forEach(row => {
+                const hasMatchingTag = row.original.entityTagEvents?.some(tagEvent => 
+                    (tagEvent.tag || '').toLowerCase().includes(s)
+                );
+                if (hasMatchingTag && !(row as any).isExpanded) {
+                    (row as any).toggleRowExpanded(true);
+                }
+            });
+        }
+    }, [rows, searchTerm]);
 
     const setSelected = useCallback(
         (evt: ChangeEvent<HTMLInputElement>, identifier: string) => {
