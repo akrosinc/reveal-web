@@ -444,7 +444,7 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
           <div className="area-selection-content">
             <div className="mb-3">
               <div className="mb-2">
-                <div
+                {/* <div
                   onClick={() => setHierarchyOpen(!hierarchyOpen)}
                   className="d-flex align-items-center justify-content-between p-3 border-bottom"
                   style={{
@@ -456,8 +456,8 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
                     {displayLabel}
                   </span>
                   <FontAwesomeIcon icon={hierarchyOpen ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
-                </div>
-                <Collapse in={hierarchyOpen}>
+                </div> */}
+                {/* <Collapse in={hierarchyOpen}> */}
                   <div
                     className=""
                   >
@@ -513,7 +513,7 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
                       )}
                     </div>
                   </div>
-                </Collapse>
+                {/* </Collapse> */}
               </div>
             </div>
           </div>
