@@ -87,7 +87,10 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList, isBase, bas
         <Form.Label>Current Node List</Form.Label>
         <Form.Control
           id="nodeOrder-display"
-          value={(baseHierarchyName && !isBase ? `${baseHierarchyName}, ` : '') + locationHierarchy.join(', ')}
+          value={[
+            ...(baseHierarchyName && !isBase ? [baseHierarchyName] : []),
+            ...locationHierarchy
+          ].join(', ')}
           type="text"
           readOnly
           placeholder="Pick geo levels from dropdown"
