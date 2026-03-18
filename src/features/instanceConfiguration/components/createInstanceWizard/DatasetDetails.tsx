@@ -32,7 +32,11 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
 
   const loadData = useCallback(
     () => {
-      getInstanceDatasets()
+      let isPublic: boolean | undefined = undefined;
+      if (statusFilter === 'Public') isPublic = true;
+      else if (statusFilter === 'Private') isPublic = false;
+
+      getInstanceDatasets(isPublic)
         .then((res: PageableModel<DatasetResponse>) => {
           const previouslySelectedTags = new Set(defaultValues?.datasets_tags || []);
 
@@ -75,14 +79,12 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
 
           // Local filtering for search and status if API doesn't support it yet
           const s = searchTerm;
-          const st = statusFilter;
 
           let filtered = transformedMetadataList.filter(item => {
             const matchesSearch =
               (item.filename || '').toLowerCase().includes(s.toLowerCase()) ||
               (item.uploadedBy || '').toLowerCase().includes(s.toLowerCase());
-            const matchesStatus = st === 'All' || (st === 'Public' && item.owner) || (st === 'Private' && !item.owner);
-            return matchesSearch && matchesStatus;
+            return matchesSearch;
           });
 
           setMetadataImportList(filtered);
@@ -114,12 +116,10 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    loadData();
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value);
-    loadData();
   };
   console.log(selectedMetadata)
 

@@ -271,9 +271,14 @@ export interface DatasetResponse {
 
 /**
  * Get list of datasets for instances
- * @returns DatasetResponse[]
+ * @param isPublic optional boolean filter
+ * @returns PageableModel<DatasetResponse>
  */
-export const getInstanceDatasets = async (): Promise<PageableModel<DatasetResponse>> => {
-  const response = await api.get<PageableModel<DatasetResponse>>(`${META_IMPORT_DATASET}`);
+export const getInstanceDatasets = async (isPublic?: boolean): Promise<PageableModel<DatasetResponse>> => {
+  let url = `${META_IMPORT_DATASET}`;
+  if (isPublic !== undefined) {
+    url += `?isPublic=${isPublic}`;
+  }
+  const response = await api.get<PageableModel<DatasetResponse>>(url);
   return response.data;
 };
