@@ -3,13 +3,15 @@ import { Form, Button } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import Select, { MultiValue } from 'react-select';
-import { createLocationHierarchy } from '../../../api';
+import { createLocationHierarchy, createLocationHierarchyBase } from '../../../api';
 import { LocationHierarchyModel } from '../../../providers/types';
 import { FieldValidationError } from '../../../../../api/providers';
 
 interface Props {
   closeHandler: () => void;
   geographyLevelList: Options[];
+  isBase?: boolean;
+  baseHierarchyName?: string;
 }
 
 interface Options {
@@ -17,7 +19,7 @@ interface Options {
   label: string;
 }
 
-const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) => {
+const CreateLocationHierarchy = ({ closeHandler, geographyLevelList, isBase, baseHierarchyName }: Props) => {
   const {
     register,
     handleSubmit,
@@ -35,12 +37,15 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) =>
 
   const submitHandler = (formData: LocationHierarchyModel) => {
     if (locationHierarchy.length > 0) {
-      toast.promise(createLocationHierarchy({ name: formData.name, nodeOrder: formData.nodeOrder }), {
+      const apiCall = isBase ? createLocationHierarchyBase : createLocationHierarchy;
+      toast.promise(apiCall({ name: formData.name, nodeOrder: formData.nodeOrder }), {
         pending: 'Loading...',
         success: {
-          render({ data }: { data: LocationHierarchyModel }) {
+          render({ data }: { data: any }) {
             closeHandler();
-            return 'Successfully created location hierarchy with id: ' + data.identifier;
+            return (
+              'Successfully created ' + (isBase ? 'base ' : '') + 'location hierarchy with id: ' + data.identifier
+            );
           }
         },
         error: {
@@ -81,13 +86,18 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList }: Props) =>
       <Form.Group>
         <Form.Label>Current Node List</Form.Label>
         <Form.Control
-          {...register('nodeOrder', {
-            required: 'Node order must not be empty. Select at least one level'
-          })}
+          id="nodeOrder-display"
+          value={(baseHierarchyName && !isBase ? `${baseHierarchyName}, ` : '') + locationHierarchy.join(', ')}
           type="text"
           readOnly
           placeholder="Pick geo levels from dropdown"
         ></Form.Control>
+        <input
+          type="hidden"
+          {...register('nodeOrder', {
+            required: 'Node order must not be empty. Select at least one level'
+          })}
+        />
         {errors.nodeOrder && <Form.Label className="text-danger">{errors.nodeOrder.message}</Form.Label>}
       </Form.Group>
       <Form.Group className="mt-2">
