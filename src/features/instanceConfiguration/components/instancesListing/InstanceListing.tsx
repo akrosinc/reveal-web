@@ -1,4 +1,5 @@
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import moment from 'moment';
 import { Button, Col, Row, Spinner } from 'react-bootstrap';
 import { DebounceInput } from 'react-debounce-input';
 import DefaultTable from '../../../../components/Table/DefaultTable';
@@ -116,6 +117,8 @@ const sortHandler = (field: string, direction: boolean) => {
    */
   const tableData = filteredData.map((row: any) => ({
     ...row,
+    startDate: row.startDate ? moment(row.startDate).format('DD/MM/YYYY') : '',
+    endDate: row.endDate ? moment(row.endDate).format('DD/MM/YYYY') : '',
     action:
       row.planStatus === 'DRAFT' ? (
         <Button size="sm" variant="primary" onClick={() => activateHandler(row)}>
