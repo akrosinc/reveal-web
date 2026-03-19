@@ -25,7 +25,8 @@
     "CampaignManage": "Campaign Management",
     "Instance Configuration": "Instance Configuration",
     "Group Configuration": "Group Configuration",
-    "switchInstance": "Switch Instance"
+    "switchInstance": "Switch Instance",
+    "Instance Management": "Instance Management"
   },
   "publicPage": {
     "supportedBy": "supported by",

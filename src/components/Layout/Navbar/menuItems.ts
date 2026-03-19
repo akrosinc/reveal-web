@@ -62,7 +62,7 @@ export const MAIN_MENU = [
       },
       {
         // Instance Configuration moved here for superadmin (shown under 'Instance' dropdown)
-        pageTitle: 'Instance Configuration',
+        pageTitle: 'Instance Management',
         route: '/instance-configuration',
         roles: []
       }
