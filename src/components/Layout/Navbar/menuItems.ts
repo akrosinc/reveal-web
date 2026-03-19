@@ -48,12 +48,12 @@ export const MAIN_MENU = [
         // roles: [REVEAL_SIMULATION]
         roles: []
       },
-      {
-        pageTitle: 'Resource Planning',
-        route: RESOURCE_PLANNING_PAGE,
-        // roles: [PLAN_VIEW]
-        roles: []
-      },
+      // {
+      //   pageTitle: 'Resource Planning',
+      //   route: RESOURCE_PLANNING_PAGE,
+      //   // roles: [PLAN_VIEW]
+      //   roles: []
+      // },
       {
         pageTitle: 'CampaignManage',
         route: CampaignManage,
