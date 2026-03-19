@@ -19,6 +19,9 @@ const Management = () => {
 
   const { keycloak } = useKeycloak();
 
+  // Standard users see Organization tab; superadmin does NOT
+  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user');
+
   return (
     <PageWrapper>
       <Tabs
@@ -31,9 +34,10 @@ const Management = () => {
           navigate(MANAGEMENT + '/' + tabName);
         }}
       >
-        {keycloak.hasRealmRole(ORGANIZATION_VIEW) && (
+        {/* Organization tab: visible only for standard users */}
+        {isStandardUser && keycloak.hasRealmRole(ORGANIZATION_VIEW) && (
           <Tab eventKey="organization" title={t('managementPage.organization')}>
-            <AuthGuard 
+            <AuthGuard
             // roles={[ORGANIZATION_VIEW]}
             roles={[]}
             >
@@ -56,17 +60,14 @@ const Management = () => {
             <UserImport />
           </AuthGuard>
         </Tab>
-        <Tab eventKey="instance-configuration" title={t('managementPage.instanceConfiguration')}>
-          {/* Default role is added for Authorization */}
-          <AuthGuard roles={[]}>
-            <InstanceConfiguration />
-          </AuthGuard>
-        </Tab>
-        <Tab eventKey="group-configuration" title={t('managementPage.groupConfiguration')}>
-          <AuthGuard roles={[]}>
-            <GroupConfiguration />
-          </AuthGuard>
-        </Tab>
+        {/* Group configuration tab: visible only for standard users */}
+        {isStandardUser && (
+          <Tab eventKey="group-configuration" title={t('managementPage.groupConfiguration')}>
+            <AuthGuard roles={[]}>
+              <GroupConfiguration />
+            </AuthGuard>
+          </Tab>
+        )}
       </Tabs>
     </PageWrapper>
   );

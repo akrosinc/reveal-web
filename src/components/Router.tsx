@@ -29,6 +29,7 @@ import ResourcePlanning from '../pages/ResourcePlanning';
 import DataProcessingProgress from '../features/technical/components/DataProcessingProgress';
 import TagManagement2 from '../pages/TagManagement/TagManagement2';
 import Campaign from '../pages/Campaign';
+import InstanceConfiguration from '../features/instanceConfiguration';
 
 const Router = () => {
   const { keycloak, initialized } = useKeycloak();
@@ -43,6 +44,7 @@ const Router = () => {
           <Route path={MANAGEMENT + '/*'} element={<Management />}>
             <Route path=":tab" element={<Management />} />
           </Route>
+          <Route path="/instance-configuration" element={<InstanceConfiguration />} />
           <Route path={LOCATION_PAGE + '/*'} element={<Location />}>
             <Route path=":tab" element={<Location />} />
           </Route>
@@ -58,6 +60,7 @@ const Router = () => {
           <Route path={RESOURCE_PLANNING_PAGE + '/*'} element={<ResourcePlanning />}>
             <Route path=":tab" element={<ResourcePlanning />} />
           </Route>
+           
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       );

@@ -19,84 +19,75 @@ import Dashboard from '../../features/dashboard';
 function Home() {
   const { t } = useTranslation();
 
+  const features = [
+    {
+      id: 'management',
+      to: MANAGEMENT,
+      path: MANAGEMENT,
+      title: t('buttons.management'),
+    },
+    {
+      id: 'instance-configuration',
+      to: '/instance-configuration',
+      path: '/instance-configuration',
+      title: t('buttons.instanceConfiguration'),
+    },
+    {
+      id: 'group-configuration',
+      to: MANAGEMENT + "/group-configuration",
+      path: MANAGEMENT + "/group-configuration",
+      title: t('buttons.groupConfiguration'),
+    },
+    {
+      id: 'plans',
+      to: PLANS,
+      path: PLANS,
+      title: t('buttons.plans'),
+    },
+    {
+      id: 'locations',
+      to: LOCATION_PAGE,
+      path: LOCATION_PAGE,
+      title: t('buttons.locationManagement'),
+    },
+    {
+      id: 'assign',
+      to: ASSIGNMENT_PAGE,
+      path: ASSIGNMENT_PAGE,
+      title: t('buttons.assign'),
+    },
+    {
+      id: 'report',
+      to: REPORTING_PAGE,
+      path: REPORTING_PAGE,
+      title: t('buttons.report'),
+    },
+  ];
+
   return (
     <Container fluid className="text-center my-4">
       <h2 className='my-5'>{t('homePage.welcomeMessage')}</h2>
+      
       <Dashboard />
-      <hr className="w-75 mx-auto" />
+      
       <Row className="justify-content-center">
-        <Col md={4}>
+        {features.map((feature) => (
           <AuthorizedElement 
-          // roles={[REVEAL_MANAGE]}
-          roles={[]}
+            key={feature.id}
+            roles={[]}
+            path={feature.path}
           >
-            <Link id="management-button" to={MANAGEMENT} className="m-2 w-100 btn btn-success">
-              {t('buttons.management')}
-            </Link>
+            <Col xs={12} md={4} className="mb-3">
+              <Link 
+                to={feature.to} 
+                className="w-100 btn btn-success py-3 d-flex align-items-center justify-content-center"
+                style={{ fontSize: '1.1rem', fontWeight: '400' }}
+              >
+                {feature.title}
+              </Link>
+            </Col>
           </AuthorizedElement>
-        </Col>
-        <Col md={4}>
-          <AuthorizedElement 
-          // roles={[REVEAL_MANAGE]}
-          roles={[]}
-          >
-            <Link id="management-button" to={MANAGEMENT + "/instance-configuration"} className="m-2 w-100 btn btn-success">
-              {t('buttons.instanceConfiguration')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
-        <Col md={4}>
-          <AuthorizedElement 
-          // roles={[REVEAL_MANAGE]}
-          roles={[]}
-          >
-            <Link id="management-button" to={MANAGEMENT + "/group-configuration"} className="m-2 w-100 btn btn-success">
-              {t('buttons.groupConfiguration')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
-      </Row>
-      <Row className="justify-content-center">
-        <Col md={3}>
-          <AuthorizedElement 
-          // roles={[PLAN_MANAGEMENT]}
-          roles={[]}
-          >
-            <Link id="plans-button" to={PLANS} className="m-2 w-100 btn btn-success">
-              {t('buttons.plans')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
-        <Col md={3}>
-          <AuthorizedElement 
-          // roles={[REVEAL_MANAGE]}
-          roles={[]}
-          >
-            <Link id="locations-button" to={LOCATION_PAGE} className="m-2 w-100 btn btn-success">
-              {t('buttons.locationManagement')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
-        <Col md={3}>
-          <AuthorizedElement 
-          // roles={[PLAN_MANAGEMENT]}
-          roles={[]}
-          >
-            <Link id="assign-button" to={ASSIGNMENT_PAGE} className="m-2 w-100 btn btn-success">
-              {t('buttons.assign')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
-        <Col md={3}>
-          <AuthorizedElement 
-          // roles={[REPORT_VIEW]}
-          roles={[]}
-          >
-            <Link id="report-button" to={REPORTING_PAGE} className="m-2 w-100 btn btn-success">
-              {t('buttons.report')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
+        ))}
       </Row>
     </Container>
   );

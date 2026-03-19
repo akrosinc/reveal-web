@@ -29,6 +29,7 @@ const NavbarComponent = () => {
   const dispatch = useAppDispatch();
   const [expanded, setExpanded] = useState(false);
   const [showSwitchModal, setShowSwitchModal] = useState(false);
+  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user');
 
   useEffect(() => {
     if (initialized && keycloak.authenticated) {
@@ -81,17 +82,28 @@ const NavbarComponent = () => {
             <Nav className="me-auto ms-md-2">
               {MAIN_MENU.map((el, index) => {
                 if (el.dropdown !== undefined && el.dropdown.length > 0) {
+                  // Collect visible children first; hide parent dropdown if no children visible
+                  const visibleChildren = el.dropdown;
+                  // For superadmin: rename "Plan Management" dropdown to "Instances"
+                  const dropdownTitle =
+                    !isStandardUser && el.pageTitle === 'Plan Management'
+                      ? 'Instances'
+                      : t('topNav.' + el.pageTitle);
                   return (
-                    <AuthorizedElement key={index} roles={el.roles}>
+                    <AuthorizedElement key={index} roles={el.roles} path={el.route}>
                       <NavDropdown
                         align="start"
-                        title={t('topNav.' + el.pageTitle)}
+                        title={dropdownTitle}
                         id={el.pageTitle + '-navbar-button'}
                         className="my-1 mx-1 mx-md-2"
                       >
-                        {el.dropdown.map((child, childIndex) => {
+                        {visibleChildren.map((child, childIndex) => {
+                          const childTitle =
+                            !isStandardUser && child.pageTitle === 'Simulation'
+                              ? 'Data viewer'
+                              : t('topNav.' + child.pageTitle);
                           return (
-                            <AuthorizedElement key={index + '.' + childIndex} roles={child.roles}>
+                            <AuthorizedElement key={index + '.' + childIndex} roles={child.roles} path={child.route}>
                               <NavDropdown.Item
                                 as={Link}
                                 role="button"
@@ -99,7 +111,7 @@ const NavbarComponent = () => {
                                 className="text-center"
                                 onClick={() => setExpanded(false)}
                               >
-                                {t('topNav.' + child.pageTitle)}
+                                {childTitle}
                               </NavDropdown.Item>
                             </AuthorizedElement>
                           );
@@ -109,7 +121,7 @@ const NavbarComponent = () => {
                   );
                 } else {
                   return (
-                    <AuthorizedElement key={index} roles={el.roles}>
+                    <AuthorizedElement key={index} roles={el.roles} path={el.route}>
                       <Link
                         onClick={() => setExpanded(false)}
                         id={el.pageTitle + '-navbar-button'}
