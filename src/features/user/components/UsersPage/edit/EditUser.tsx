@@ -52,7 +52,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
   const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
   const [instanceList, setInstanceList] = useState<InstanceModel[]>([]);
-  const [userType, setUserType] = useState('Standard User');
+  const [userType, setUserType] = useState('standard_user');
   const [selectedGroup, setSelectedGroup] = useState<Options | Options[] | null>(null);
   const [selectedUserAreas, setSelectedUserAreas] = useState<string[]>([]);
   const [selectedUserRoles, setSelectedUserRoles] = useState<string[]>([]);
@@ -99,7 +99,7 @@ const EditUser = ({ user, handleClose }: Props) => {
       setValue('lastname', userDetails.lastName);
       setValue('email', userDetails.email);
 
-      setUserType(userDetails.userType || 'Standard User');
+      setUserType(userDetails.securityGroups?.[0] || 'standard_user');
       setSelectedInstances(
         userDetails.instances
           ? userDetails.instances.map(inst => ({ label: inst, value: inst }))
@@ -184,7 +184,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   useEffect(() => {
     getData();
   }, [getData]);
-
+// console.log(user)
   const deleteHandler = (action: boolean) => {
     setShowDialog(false);
     if (action) {
@@ -320,7 +320,7 @@ const EditUser = ({ user, handleClose }: Props) => {
               name="userType"
               value={option.value}
               checked={userType === option.value}
-              onChange={(e) => setUserType(e.currentTarget.value)}
+              // onChange={(e) => setUserType(e.currentTarget.value)}
               className={`py-2 border-0 rounded-0 ${userType !== option.value ? 'text-secondary bg-light bg-opacity-75' : ''}`}
               style={{ padding: '11px 30px' }}
             >
