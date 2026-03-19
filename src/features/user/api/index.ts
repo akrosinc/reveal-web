@@ -15,7 +15,7 @@ export const getUserList = async (
 ): Promise<PageableModel<UserModel>> => {
   const data = await api
     .get<PageableModel<UserModel>>(
-      USER +
+      USER + '/global' +
         `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&sort=${
           sortField !== undefined ? sortField : ''
         },${direction ? 'asc' : 'desc'}`
