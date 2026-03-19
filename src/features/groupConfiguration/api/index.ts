@@ -126,7 +126,7 @@ export const getAssignedDatasetList = async (): Promise<AssignedDatasetModel[]> 
 
 export const getAssignedRoleList = async (): Promise<AssignedRoleModel[]> => {
   try {
-    const response = await api.get<AssignedRoleModel[]>('instance/roles/list');
+    const response = await api.get<AssignedRoleModel[]>(GROUP_MANAGEMENT + '/roles/list');
     return response.data;
   } catch (error) {
     console.error('Error fetching assigned role list:', error);
