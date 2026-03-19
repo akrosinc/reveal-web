@@ -61,7 +61,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [userLocations, setUserLocations] = useState<LocationModel[]>([]);
   const [userGroups, setUserGroups] = useState<string[]>([]);
   const [userDatasets, setUserDatasets] = useState<string[]>([]);
-  
+
   const assignedDatasetData = useMemo(() => {
     return userDatasets.map(d => ({ identifier: d, name: d }));
   }, [userDatasets]);
@@ -77,7 +77,7 @@ const EditUser = ({ user, handleClose }: Props) => {
     };
     return getIds(userLocations);
   }, [userLocations]);
-  
+
   // const level="Instance"
   let level = "Instance"
 
@@ -117,7 +117,7 @@ const EditUser = ({ user, handleClose }: Props) => {
           : []
       );
       setSelectedOrganizations(
-        userDetails.organizations.map(org => {
+        userDetails?.organizations?.map(org => {
           return {
             label: org.name,
             value: org.identifier
@@ -140,7 +140,7 @@ const EditUser = ({ user, handleClose }: Props) => {
           })
         );
       })
-      .catch(err => {});
+      .catch(err => { });
     getOrganizationListSummary().then(res => {
       setOrganizations(
         res.content.map(org => {
@@ -159,7 +159,7 @@ const EditUser = ({ user, handleClose }: Props) => {
 
       getUserGroupsData(user.identifier).then(res => {
         setUserGroups(res);
-         setGroups(
+        setGroups(
           res?.map(el => {
             return {
               label: el,
@@ -449,43 +449,44 @@ const EditUser = ({ user, handleClose }: Props) => {
                 scrollbarWidth: "none", marginTop: 4
               }}
             >
-            {instanceList.map((item, index) => {
-              const isSelected = selectedInstances.some(inst => inst.value === item.name);
-              return (
-                <div
-                  key={index}
-                  onClick={() => {
-                    if (!edit) return;
-                    const newSelected = isSelected
-                      ? selectedInstances.filter(inst => inst.value !== item.name)
-                      : [...selectedInstances, { label: item.name, value: item.name }];
-                    setSelectedInstances(newSelected);
-                    setValue('instances', newSelected as any, { shouldDirty: true });
-                  }}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "11px 20px",
-                    borderRadius: "999px",
-                    background: isSelected ? "#0D6EFD" : "#E2EDFe",
-                    cursor: edit ? "pointer" : "default",
-                    fontWeight: 400,
-                    fontStyle: "normal",
-                    fontSize: "14px",
-                    lineHeight: "100%",
-                    letterSpacing: "0%",
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
-                    transition: "all 0.2s ease",
-                    color: isSelected ? "#FFFFFF" : "#0D6EFD"
-                  }}
-                >
-                  {item.name}
-                </div>
-              );
-            })}
-          </div>
+              {instanceList?.length === 0 && <p>No instances found</p>}
+              {instanceList?.map((item, index) => {
+                const isSelected = selectedInstances.some(inst => inst.value === item.name);
+                return (
+                  <div
+                    key={index}
+                    // onClick={() => {
+                    //   if (!edit) return;
+                    //   const newSelected = isSelected
+                    //     ? selectedInstances.filter(inst => inst.value !== item.name)
+                    //     : [...selectedInstances, { label: item.name, value: item.name }];
+                    //   setSelectedInstances(newSelected);
+                    //   setValue('instances', newSelected as any, { shouldDirty: true });
+                    // }}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "11px 20px",
+                      borderRadius: "999px",
+                      background: isSelected ? "#0D6EFD" : "#E2EDFe",
+                      cursor: edit ? "pointer" : "default",
+                      fontWeight: 400,
+                      fontStyle: "normal",
+                      fontSize: "14px",
+                      lineHeight: "100%",
+                      letterSpacing: "0%",
+                      whiteSpace: "nowrap",
+                      flexShrink: 0,
+                      transition: "all 0.2s ease",
+                      color: isSelected ? "#FFFFFF" : "#0D6EFD"
+                    }}
+                  >
+                    {item.name}
+                  </div>
+                );
+              })}
+            </div>
           </Form.Group>
           {/* <Form.Group className="mb-3">
             <Form.Label>Security groups</Form.Label>
@@ -518,7 +519,7 @@ const EditUser = ({ user, handleClose }: Props) => {
           </Form.Group> */}
           {/* For Instance level  */}
           {level === 'Instance' && <>
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
               <Form.Label>Group</Form.Label>
               <Select
                 className="custom-react-select-container"
@@ -531,7 +532,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                 placeholder="Select a group..."
                 isMulti
               />
-            </Form.Group>
+            </Form.Group> */}
 
             <Row className="mb-4 g-3">
               <Col md={4}>
@@ -540,7 +541,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                   {/* {!edit && <div style={{
                     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
                   }}></div>} */}
-                   <AreasSelection
+                  <AreasSelection
                     isTeamMode={false}
                     selectedAreas={assignedAreaIds}
                     onSelectionChange={setSelectedUserAreas}
@@ -552,20 +553,20 @@ const EditUser = ({ user, handleClose }: Props) => {
                   />
                 </div>
               </Col>
-                <Col md={4}>
-                  <Form.Label>Roles</Form.Label>
-                  <div style={{ position: 'relative' }} className={edit ? 'opacity-75' : ''}>
-                    {/* {!edit && <div style={{
+              <Col md={4}>
+                <Form.Label>Roles</Form.Label>
+                <div style={{ position: 'relative' }} className={edit ? 'opacity-75' : ''}>
+                  {/* {!edit && <div style={{
                       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
                     }}></div>} */}
-                     <GroupsSelection
-                      selectedGroups={userGroups}
-                      onGroupChange={setSelectedUserRoles}
-                      variant="editUser"
-                      readOnly={true}
-                    />
-                  </div>
-                </Col>
+                  <GroupsSelection
+                    selectedGroups={selectedUserRoles}
+                    onGroupChange={setSelectedUserRoles}
+                    variant="editUser"
+                    readOnly={true}
+                  />
+                </div>
+              </Col>
               <Col md={4}>
                 <Form.Label>Datasets</Form.Label>
                 <div style={{ position: 'relative' }} className={!edit ? 'opacity-75 pointer-events-none' : ''}>
@@ -575,7 +576,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                   }}>
 
                   </div>} */}
-                   <DatasetsSelection
+                  <DatasetsSelection
                     selectedDatasets={userDatasets}
                     onDatasetChange={setSelectedUserDatasets}
                     variant="editUser"

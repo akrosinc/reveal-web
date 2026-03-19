@@ -230,7 +230,9 @@
       "tag": "Tag",
       "lookupEntityType": "Entity Type",
       "simulationDisplay": "Display Tag",
-      "aggregate": "Is an aggregate"
+      "aggregate": "Is an aggregate",
+      "instances": "Instances",
+      "role": "Role"
     },
     "locationName": "Location Name",
     "locationType": "Location Type",

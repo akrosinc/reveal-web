@@ -9,7 +9,8 @@ export interface UserModel {
   email: string;
   password?: string;
   tempPassword?: boolean;
-  organizations: OrganizationModel[];
+  organizations?: OrganizationModel[];
+  instances?: string[];
   securityGroups: string[];
   selectedAll?: boolean;
 }
