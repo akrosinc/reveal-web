@@ -27,7 +27,7 @@ export const MAIN_MENU = [
   {
     pageTitle: 'Home',
     route: HOME_PAGE,
-    roles: [MENU_HOME_VIEW]
+    roles: []
   },
 
   {
