@@ -26,7 +26,16 @@
     "Instance Configuration": "Instance Configuration",
     "Group Configuration": "Group Configuration",
     "switchInstance": "Switch Instance",
-    "Instance Management": "Instance Management"
+    "Instance Management": "Management",
+    "Data Viewer": "Data Viewer",
+    "Instance": "Instance",
+    "Group": "Group",
+    "Group Management": "Group Management",
+    "Plan Reporting": "Plan Reporting",
+    "Performance Reporting": "Performance Reporting",
+    "Survey Reporting": "Survey Reporting",
+    "User Management": "User Management",
+    "Location Management": "Location Management"
   },
   "publicPage": {
     "supportedBy": "supported by",

@@ -41,7 +41,7 @@ export const MAIN_MENU = [
         roles: [REVEAL_SIMULATION]
       },
       {
-        pageTitle: 'Management',
+        pageTitle: 'Instance Management',
         route: '/instance-configuration',
         roles: [INSTANE_MANAGEMENT_VIEW]
       }
