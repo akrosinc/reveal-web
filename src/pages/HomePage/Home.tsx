@@ -17,7 +17,8 @@ import {
   ASSIGNMENT_VIEW,
   ASSIGNMENT_PLAN,
   LOCATION_VIEW,
-  REVEAL_SIMULATION_USER
+  REVEAL_SIMULATION_USER,
+  ROLE_MANAGE_USER
 } from '../../constants';
 import { Col, Row } from 'react-bootstrap';
 import Dashboard from '../../features/dashboard';
@@ -31,7 +32,7 @@ function Home() {
       to: MANAGEMENT,
       path: MANAGEMENT,
       title: t('buttons.management'),
-      role:[]
+      role:[ ROLE_MANAGE_USER]
     },
     {
       id: 'instance-configuration',
