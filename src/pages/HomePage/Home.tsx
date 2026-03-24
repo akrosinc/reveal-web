@@ -11,7 +11,13 @@ import {
   REPORTING_PAGE,
   REPORT_VIEW,
   REVEAL_MANAGE,
-  PLAN_MANAGEMENT
+  PLAN_MANAGEMENT,
+  INSTANE_MANAGEMENT_VIEW,
+  GROUP_MANAGEMENT_VIEW,
+  ASSIGNMENT_VIEW,
+  ASSIGNMENT_PLAN,
+  LOCATION_VIEW,
+  REVEAL_SIMULATION_USER
 } from '../../constants';
 import { Col, Row } from 'react-bootstrap';
 import Dashboard from '../../features/dashboard';
@@ -25,42 +31,49 @@ function Home() {
       to: MANAGEMENT,
       path: MANAGEMENT,
       title: t('buttons.management'),
+      role:[]
     },
     {
       id: 'instance-configuration',
       to: '/instance-configuration',
       path: '/instance-configuration',
       title: t('buttons.instanceConfiguration'),
+      role:[INSTANE_MANAGEMENT_VIEW]
     },
     {
       id: 'group-configuration',
       to: "/group-configuration",
       path: "/group-configuration",
       title: t('buttons.groupConfiguration'),
+      role:[GROUP_MANAGEMENT_VIEW]
     },
     {
       id: 'plans',
       to: PLANS,
       path: PLANS,
       title: t('buttons.plans'),
+      role:[REVEAL_SIMULATION_USER]
     },
     {
       id: 'locations',
       to: LOCATION_PAGE,
       path: LOCATION_PAGE,
       title: t('buttons.locationManagement'),
+      role:[LOCATION_VIEW]
     },
     {
       id: 'assign',
       to: ASSIGNMENT_PAGE,
       path: ASSIGNMENT_PAGE,
       title: t('buttons.assign'),
+      role:[ASSIGNMENT_PLAN]
     },
     {
       id: 'report',
       to: REPORTING_PAGE,
       path: REPORTING_PAGE,
       title: t('buttons.report'),
+      role:[REPORT_VIEW]
     },
   ];
 
@@ -74,7 +87,7 @@ function Home() {
         {features.map((feature) => (
           <AuthorizedElement 
             key={feature.id}
-            roles={[]}
+            roles={feature?.role || []}
             path={feature.path}
           >
             <Col xs={12} md={4} className="mb-3">
