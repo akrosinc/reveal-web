@@ -34,8 +34,8 @@ function Home() {
     },
     {
       id: 'group-configuration',
-      to: MANAGEMENT + "/group-configuration",
-      path: MANAGEMENT + "/group-configuration",
+      to: "/group-configuration",
+      path: "/group-configuration",
       title: t('buttons.groupConfiguration'),
     },
     {

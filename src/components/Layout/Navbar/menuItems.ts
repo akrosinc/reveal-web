@@ -78,7 +78,7 @@ export const MAIN_MENU = [
     dropdown: [
       {
         pageTitle: 'Group Management',
-        route: MANAGEMENT + '/group-configuration',
+        route: '/group-configuration',
         roles: [GROUP_MANAGEMENT_VIEW]
       }
     ]

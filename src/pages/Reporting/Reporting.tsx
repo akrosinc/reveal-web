@@ -32,8 +32,8 @@ const Reporting = () => {
           path="/"
           element={
             <AuthGuard 
-            // roles={[REPORT_VIEW]}
-            roles={[]}
+            roles={[REPORT_VIEW]}
+            // roles={[]}
             >
               <Reports />
             </AuthGuard>
@@ -43,8 +43,8 @@ const Reporting = () => {
           path="/report/:planId/reportType/:reportType"
           element={
             <AuthGuard 
-            // roles={[REPORT_VIEW]}
-            roles={[]}
+            roles={[REPORT_VIEW]}
+            // roles={[]}
             >
               <Report />
             </AuthGuard>
@@ -54,8 +54,8 @@ const Reporting = () => {
           path="/performance-reports"
           element={
             <AuthGuard 
-            // roles={[REPORT_VIEW]}
-            roles={[]}
+            roles={[REPORT_VIEW]}
+            // roles={[]}
             >
               <Reports />
             </AuthGuard>
@@ -65,8 +65,8 @@ const Reporting = () => {
           path="/performance-report/:planId"
           element={
             <AuthGuard 
-            // roles={[REPORT_VIEW]}
-            roles={[]}
+            roles={[REPORT_VIEW]}
+            // roles={[]}
             >
               <PerformanceDashboard />
             </AuthGuard>
@@ -76,8 +76,8 @@ const Reporting = () => {
           path="/survey-data"
           element={
             <AuthGuard 
-            // roles={['view_survey_data']}
-            roles={[]}
+            roles={['view_survey_data',REPORT_VIEW]}
+            // roles={[]}
             >
               <SurveyDashboard />
             </AuthGuard>

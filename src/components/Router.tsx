@@ -30,6 +30,7 @@ import DataProcessingProgress from '../features/technical/components/DataProcess
 import TagManagement2 from '../pages/TagManagement/TagManagement2';
 import Campaign from '../pages/Campaign';
 import InstanceConfiguration from '../features/instanceConfiguration';
+import GroupConfiguration from '../features/groupConfiguration';
 
 const Router = () => {
   const { keycloak, initialized } = useKeycloak();
@@ -45,6 +46,7 @@ const Router = () => {
             <Route path=":tab" element={<Management />} />
           </Route>
           <Route path="/instance-configuration" element={<InstanceConfiguration />} />
+          <Route path="/group-configuration" element={<GroupConfiguration />} />
           <Route path={LOCATION_PAGE + '/*'} element={<Location />}>
             <Route path=":tab" element={<Location />} />
           </Route>

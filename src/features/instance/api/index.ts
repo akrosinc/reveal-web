@@ -7,10 +7,15 @@ const INSTANCE_SELECT = (instanceId: string) => `instance/instances/${instanceId
 
 export interface InstanceSelectResponse {
   selectedInstance: InstanceModel;
-  roleIdentifier: string;
-  roleName: string;
-  permissions: string[];
+  instancePlan: InstanceModel;
+  role: {
+    identifier: string;
+    name: string;
+    permissions: string[];
+  };
+  groups: any[];
 }
+
 
 export const getInstanceContext = async (): Promise<InstanceSelectResponse> => {
   const data = await api.get<InstanceSelectResponse>(INSTANCE_CONTEXT).then(response => response.data);

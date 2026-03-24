@@ -17,8 +17,8 @@ const Campaign = () => {
           path="/"
           element={
             <AuthGuard 
-            // roles={[REVEAL_SIMULATION]}
-            roles={[]}
+            roles={[REVEAL_SIMULATION]}
+            // roles={[]}
             >
               <Campaign_Management />
             </AuthGuard>
