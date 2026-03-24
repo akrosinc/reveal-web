@@ -6,12 +6,19 @@ export interface InstanceModel {
   name: string;
 }
 
-export interface InstanceContextModel {
-  selectedInstance: InstanceModel | null;
-  roleIdentifier: string | null;
-  roleName: string | null;
+export interface RoleModel {
+  identifier: string | null;
+  name: string | null;
   permissions: string[];
 }
+
+export interface InstanceContextModel {
+  selectedInstance: InstanceModel | null;
+  instancePlan: InstanceModel | null;
+  role: RoleModel | null;
+  groups: any[];
+}
+
 
 const LOCAL_STORAGE_KEY = 'currentInstanceContext';
 
@@ -20,16 +27,16 @@ const getPersistedContext = (): InstanceContextModel => {
     const raw = getFromBrowser(LOCAL_STORAGE_KEY);
     return raw ? JSON.parse(raw) : {
       selectedInstance: null,
-      roleIdentifier: null,
-      roleName: null,
-      permissions: []
+      instancePlan: null,
+      role: null,
+      groups: []
     };
   } catch {
     return {
       selectedInstance: null,
-      roleIdentifier: null,
-      roleName: null,
-      permissions: []
+      instancePlan: null,
+      role: null,
+      groups: []
     };
   }
 };
@@ -41,19 +48,20 @@ const instanceContextSlice = createSlice({
     setCurrentInstance: (state, action: PayloadAction<InstanceContextModel>) => {
       setToBrowser(LOCAL_STORAGE_KEY, JSON.stringify(action.payload));
       state.selectedInstance = action.payload.selectedInstance;
-      state.roleIdentifier = action.payload.roleIdentifier;
-      state.roleName = action.payload.roleName;
-      state.permissions = action.payload.permissions;
+      state.instancePlan = action.payload.instancePlan;
+      state.role = action.payload.role;
+      state.groups = action.payload.groups;
     },
     clearCurrentInstance: state => {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       state.selectedInstance = null;
-      state.roleIdentifier = null;
-      state.roleName = null;
-      state.permissions = [];
+      state.instancePlan = null;
+      state.role = null;
+      state.groups = [];
     }
   }
 });
+
 
 export const { setCurrentInstance, clearCurrentInstance } = instanceContextSlice.actions;
 

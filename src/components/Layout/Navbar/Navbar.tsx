@@ -32,24 +32,26 @@ const NavbarComponent = () => {
   const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user');
 
   useEffect(() => {
-    if (initialized && keycloak.authenticated) {
-      keycloak.loadUserProfile().then(userProfile => {
-        setUser(userProfile);
-      });
-      // Fetch and persist the user's default instance after login
-      getInstanceContext()
-        .then(res => dispatch(setCurrentInstance(res)))
-        .catch(err => {
-          if (err?.response?.status === 404) {
-            dispatch(clearCurrentInstance());
-          }
+    if (initialized) {
+      if (keycloak.authenticated) {
+        keycloak.loadUserProfile().then(userProfile => {
+          setUser(userProfile);
         });
-      keycloak.onAuthLogout = () => {
+        // Fetch and persist the user's default instance after login
+        getInstanceContext()
+          .then(res => dispatch(setCurrentInstance(res)))
+          .catch(err => {
+            if (err?.response?.status === 404) {
+              dispatch(clearCurrentInstance());
+            }
+          });
+      } else {
         setUser(undefined);
         dispatch(clearCurrentInstance());
-      };
+      }
     }
-  }, [keycloak, initialized, dispatch]);
+  }, [keycloak.authenticated, initialized, dispatch]);
+
 
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode);

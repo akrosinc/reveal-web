@@ -66,3 +66,26 @@ export const METADATA_FILE_IMPORT = 'metadata_file_import';
 
 //METADATA IMPORT
 export const TAG_ACCESS_OVERRIDE = 'tag_access_override';
+export const TAG_MANAGEMENT = 'tag_management';
+export const METADATA_IMPORT_VIEW = 'metadata_import_view';
+
+
+//HOME PAGE
+export const MENU_HOME_VIEW = 'menu_home_view'
+
+//INSTANCE
+export const INSTANE_MANAGEMENT_VIEW = 'instance_management_view'
+export const INSTANE_MANAGEMENT_CREATE = 'instance_management_create'
+export const INSTANE_MANAGEMENT_EDIT = 'instance_management_edit'
+export const INSTANE_MANAGEMENT_DELETE = 'instance_management_delete'
+
+//GROUP CONFIGURATION
+export const GROUP_MANAGEMENT_VIEW = 'group_management_view'
+export const GROUP_MANAGEMENT_CREATE = 'group_management_create'
+export const GROUP_MANAGEMENT_EDIT = 'group_management_edit'
+export const GROUP_MANAGEMENT_DELETE = 'group_management_delete'
+//
+export const CAMPAIGN_MANAGEMENT = 'campaign_management_view'
+export const ASSIGNMENT_PLAN = 'assignment_plan'
+
+export const REVEAL_SIMULATION_USER = 'reveal_simulation_user'

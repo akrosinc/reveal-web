@@ -5,142 +5,139 @@ import {
   LOCATION_PAGE,
   ASSIGNMENT_PAGE,
   REPORTING_PAGE,
-  REPORT_VIEW,
-  LOCATION_VIEW,
-  PLAN_VIEW,
   SIMULATION_PAGE,
   TAG_MANAGEMENT,
   METADATA_IMPORT,
-  PLAN_MANAGEMENT,
-  REVEAL_MANAGE,
-  RESOURCE_PLANNING_PAGE,
-  DATA_PROCESSING_PROGRESS,
+  CampaignManage,
+  MENU_HOME_VIEW,
+  REPORT_VIEW,
   REVEAL_SIMULATION,
-  CampaignManage
+  ROLE_MANAGE_USER,
+  LOCATION_VIEW,
+  METADATA_IMPORT_VIEW,
+  GROUP_MANAGEMENT_VIEW,
+  CAMPAIGN_MANAGEMENT,
+  ASSIGNMENT_PLAN,
+  INSTANE_MANAGEMENT_VIEW,
+  REVEAL_SIMULATION_USER
 } from '../../../constants';
+
 
 export const MAIN_MENU = [
   {
     pageTitle: 'Home',
     route: HOME_PAGE,
-    roles: []
+    roles: [MENU_HOME_VIEW]
   },
+
   {
-    pageTitle: 'Plan Management',
-    route: '/plan',
-    // roles: [PLAN_MANAGEMENT],
-    roles: [],
+    pageTitle: 'Instance',
+    route: '/instance',
+    roles: [INSTANE_MANAGEMENT_VIEW, REVEAL_SIMULATION],
     dropdown: [
       {
-        pageTitle: 'Plans',
-        route: PLANS,
-        roles: ['manage-users']
-      },
-      {
-        pageTitle: 'Assign',
-        route: ASSIGNMENT_PAGE,
-        // roles: [PLAN_VIEW]
-        roles: []
-      },
-      {
-        pageTitle: 'Simulation',
+        pageTitle: 'Data Viewer',
         route: SIMULATION_PAGE,
-        // roles: [REVEAL_SIMULATION]
-        roles: []
-      },
-      // {
-      //   pageTitle: 'Resource Planning',
-      //   route: RESOURCE_PLANNING_PAGE,
-      //   // roles: [PLAN_VIEW]
-      //   roles: []
-      // },
-      {
-        pageTitle: 'CampaignManage',
-        route: CampaignManage,
-        // roles: [REVEAL_SIMULATION]
-        roles: []
+        roles: [REVEAL_SIMULATION]
       },
       {
-        // Instance Configuration moved here for superadmin (shown under 'Instance' dropdown)
-        pageTitle: 'Instance Management',
+        pageTitle: 'Management',
         route: '/instance-configuration',
-        roles: []
+        roles: [INSTANE_MANAGEMENT_VIEW]
       }
     ]
   },
+
+  {
+    pageTitle: 'Plan',
+    route: '/plan',
+    roles: [CAMPAIGN_MANAGEMENT, ASSIGNMENT_PLAN, REVEAL_SIMULATION_USER],
+    dropdown: [
+      {
+        pageTitle: 'Campaign Management',
+        route: CampaignManage,
+        roles: [CAMPAIGN_MANAGEMENT]
+      },
+      {
+        pageTitle: 'Assignment',
+        route: ASSIGNMENT_PAGE,
+        roles: [ASSIGNMENT_PLAN]
+      },
+      {
+        pageTitle: 'Simulations',
+        route: SIMULATION_PAGE,
+        roles: [REVEAL_SIMULATION_USER]
+      }
+    ]
+  },
+
+  {
+    pageTitle: 'Group',
+    route: '/group',
+    roles: [GROUP_MANAGEMENT_VIEW],
+    dropdown: [
+      {
+        pageTitle: 'Group Management',
+        route: MANAGEMENT + '/group-configuration',
+        roles: [GROUP_MANAGEMENT_VIEW]
+      }
+    ]
+  },
+
   {
     pageTitle: 'Reporting',
     route: '#',
-    roles: [REPORT_VIEW, 'view_survey_data'],
+    roles: [REPORT_VIEW],
     dropdown: [
       {
-        pageTitle: 'planReporting',
+        pageTitle: 'Plan Reporting',
         route: REPORTING_PAGE,
-        // roles: ['plan_reporting']
-        roles: []
+        roles: [REPORT_VIEW]
       },
       {
-        pageTitle: 'performanceReporting',
+        pageTitle: 'Performance Reporting',
         route: REPORTING_PAGE + '/performance-reports',
-        // roles: ['performance_reporting']
-        roles: []
+        roles: [REPORT_VIEW]
       },
       {
-        pageTitle: 'surveyReporting',
+        pageTitle: 'Survey Reporting',
         route: REPORTING_PAGE + '/survey-data',
-        // roles: ['view_survey_data']
-        roles: []
+        roles: [REPORT_VIEW]
       }
     ]
   },
+
   {
     pageTitle: 'Admin',
     route: '/admin',
-    // roles: [REVEAL_MANAGE],
-    roles: [],
+    roles: [
+      ROLE_MANAGE_USER,
+      LOCATION_VIEW,
+      TAG_MANAGEMENT,
+      METADATA_IMPORT_VIEW
+    ],
     dropdown: [
       {
-        pageTitle: 'Management',
+        pageTitle: 'User Management',
         route: MANAGEMENT,
-        // roles: ['manage-users']
-        roles: []
+        roles: [ROLE_MANAGE_USER]
       },
       {
-        pageTitle: 'Group Configuration',
-        route: MANAGEMENT + '/group-configuration',
-        // roles: ['manage-users']
-        roles: []
-      },
-      // {
-      //   pageTitle: 'Instance Configuration',
-      //   route: MANAGEMENT + '/instance-configuration',
-      //   // roles: ['manage-users']
-      //   roles: []
-      // },
-      {
-        pageTitle: 'Location',
+        pageTitle: 'Location Management',
         route: LOCATION_PAGE,
-        // roles: [LOCATION_VIEW]
-        roles: []
+        roles: [LOCATION_VIEW]
       },
       {
-        pageTitle: 'TagManagement',
+        pageTitle: 'Tag Management',
         route: TAG_MANAGEMENT,
-        // roles: ['tag_management']
-        roles: []
+        roles: [TAG_MANAGEMENT]
       },
       {
-        pageTitle: 'MetaDataImport',
+        pageTitle: 'Metadata Import',
         route: METADATA_IMPORT,
-        // roles: ['metadata_import']
-        roles: []
-      },
-      {
-        pageTitle: 'dataProcessingProgress',
-        route: DATA_PROCESSING_PROGRESS,
-        // roles: ['data_processing_progress']
-        roles: []
+        roles: [METADATA_IMPORT_VIEW]
       }
     ]
   }
 ];
+
