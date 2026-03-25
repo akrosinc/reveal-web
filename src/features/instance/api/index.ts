@@ -6,14 +6,29 @@ const INSTANCE_USER_LIST = 'instance/user/instancelist';
 const INSTANCE_SELECT = (instanceId: string) => `instance/instances/${instanceId}/select`;
 
 export interface InstanceSelectResponse {
-  selectedInstance: InstanceModel;
-  instancePlan: InstanceModel;
+  selectedInstance: {
+    identifier: string;
+    name: string;
+  };
+  instancePlan: {
+    identifier: string;
+    name: string;
+  };
   role: {
     identifier: string;
     name: string;
     permissions: string[];
   };
-  groups: any[];
+  groups: {
+    identifier: string;
+    name: string;
+    type: string;
+    roles: {
+      identifier: string;
+      name: string;
+      permissions: string[];
+    }[];
+  }[];
 }
 
 

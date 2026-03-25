@@ -3,7 +3,14 @@ import { getFromBrowser, setToBrowser } from '../../utils';
 
 export interface InstanceModel {
   identifier: string;
-  name: string;
+  interventionType: string;
+  planIdentifier: string;
+  instanceName: string;
+  createdDatetime: string;
+  planStatus: string;
+  startDate: string;
+  endDate: string;
+  planTitle: string;
 }
 
 export interface RoleModel {
@@ -12,11 +19,30 @@ export interface RoleModel {
   permissions: string[];
 }
 
+export interface GroupRoleModel {
+  identifier: string;
+  name: string;
+  permissions: string[];
+}
+
+export interface GroupModel {
+  identifier: string;
+  name: string;
+  type: string;
+  roles: GroupRoleModel[];
+}
+
 export interface InstanceContextModel {
-  selectedInstance: InstanceModel | null;
-  instancePlan: InstanceModel | null;
+  selectedInstance: {
+    identifier: string;
+    name: string;
+  } | null;
+  instancePlan: {
+    identifier: string;
+    name: string;
+  } | null;
   role: RoleModel | null;
-  groups: any[];
+  groups: GroupModel[];
 }
 
 

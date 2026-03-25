@@ -2,6 +2,7 @@ export type InstanceModel = {
   identifier: string;
   instanceName: string;
   interventionType: string;
+  planIdentifier: string;
   createdDatetime: string;
   planTitle: string;
   planStatus: string;
@@ -13,6 +14,7 @@ export const MOCK_INSTANCES: InstanceModel[] = [
   {
     identifier: '1',
     instanceName: 'Boko Instance',
+    planIdentifier: 'plan-1',
     planTitle: 'Boko plan',
     planStatus: 'DRAFT',
     interventionType: 'Survey',
@@ -23,6 +25,7 @@ export const MOCK_INSTANCES: InstanceModel[] = [
   {
     identifier: '2',
     instanceName: 'Laka Instance',
+    planIdentifier: 'plan-2',
     planTitle: 'Laka plan',
     planStatus: 'DRAFT',
     interventionType: 'MDA',
@@ -33,6 +36,7 @@ export const MOCK_INSTANCES: InstanceModel[] = [
   {
     identifier: '3',
     instanceName: 'Lagos Instance',
+    planIdentifier: 'plan-3',
     planTitle: 'Lagos plan',
     planStatus: 'DRAFT',
     interventionType: 'Survey',

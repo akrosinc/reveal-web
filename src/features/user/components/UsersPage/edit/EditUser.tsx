@@ -451,15 +451,15 @@ const EditUser = ({ user, handleClose }: Props) => {
             >
               {instanceList?.length === 0 && <p>No instances found</p>}
               {instanceList?.map((item, index) => {
-                const isSelected = selectedInstances.some(inst => inst.value === item.name);
+                const isSelected = selectedInstances.some(inst => inst.value === item.instanceName);
                 return (
                   <div
                     key={index}
                     // onClick={() => {
                     //   if (!edit) return;
                     //   const newSelected = isSelected
-                    //     ? selectedInstances.filter(inst => inst.value !== item.name)
-                    //     : [...selectedInstances, { label: item.name, value: item.name }];
+                    //     ? selectedInstances.filter(inst => inst.value !== item.instanceName)
+                    //     : [...selectedInstances, { label: item.instanceName, value: item.instanceName }];
                     //   setSelectedInstances(newSelected);
                     //   setValue('instances', newSelected as any, { shouldDirty: true });
                     // }}
@@ -482,7 +482,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                       color: isSelected ? "#FFFFFF" : "#0D6EFD"
                     }}
                   >
-                    {item.name}
+                    {item.instanceName}
                   </div>
                 );
               })}

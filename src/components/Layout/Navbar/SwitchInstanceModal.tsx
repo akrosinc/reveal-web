@@ -75,7 +75,7 @@ const SwitchInstanceModal = ({ show, onClose }: Props) => {
                 {selectedId === instance.identifier && (
                   <span className="switch-instance-check">✓</span>
                 )}
-                <span className="switch-instance-name">{instance.name}</span>
+                <span className="switch-instance-name">{instance.instanceName}</span>
               </li>
             ))}
             {!loading && instanceList.length === 0 && (
