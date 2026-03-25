@@ -8,6 +8,22 @@ export interface LocationResponse {
   [key: string]: any;                  // optional if extra fields exist
 }
 
+export interface GeneStats {
+  wild: number;
+  mono: number;
+  mixed: number;
+  totalRecs: number;
+}
+
+export interface HaploGeneMap {
+  [geneKey: string]: GeneStats;
+}
+
+export interface HaploData {
+  [haploKey: string]: HaploGeneMap;
+}
+
+
 export interface FeatureSetResponse {
   identifier: string;                  // UUID → string
   type: string;
@@ -17,7 +33,11 @@ export interface FeatureSetResponse {
   noLocationData: boolean | null;
   noDashboardData: boolean | null;
   coords: CoordsByYearOrLocationWithTicks;
+  markers: HaploData;
+
 }
+
+
 
 export interface Coord {
   x: number[];

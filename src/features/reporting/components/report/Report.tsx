@@ -827,7 +827,7 @@ const Report = () => {
                                   onChange={_ => {
                                     setSelectedMdaLiteReport(el);
                                     setSelectedReportInfo(selectedReportInfo);
-                                    clearButtonRef.current.click();
+                                    clearButtonRef?.current?.click();
                                   }}
                                   name="report-group"
                                   inline

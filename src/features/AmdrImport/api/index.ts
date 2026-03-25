@@ -2,7 +2,8 @@ import api from "../../../api/axios";
 import {PageableModel} from "../../../api/providers";
 import {MetadataFileImportResponse} from "../../metaDataImport/type";
 import {EntityTagMap} from "../../planSimulation/providers/types";
-import {AmdrImportResponse, AmdrImportResultsResponse} from "../type";
+import {AmdrColumnType, AmdrImportResponse, AmdrImportResultsResponse, HeaderName} from "../type";
+import dashBoardApi from "../../../api/dashboard-axios";
 
 export const downloadAmdrImportTemplate = async (): Promise<BlobPart> => {
   const data = api
@@ -18,6 +19,14 @@ export const getAmdrKeys = async (): Promise<string[]> => {
   .then(res => res.data);
   return data;
 };
+
+export const getAmdrColumns = async (): Promise<Record<AmdrColumnType, {[key:string]: HeaderName}>> => {
+  const data = dashBoardApi
+  .get<Record<AmdrColumnType, {[key:string]: HeaderName}>>(`/dashboard/amdr/reportHeadings`)
+  .then(res => res.data);
+  return data;
+};
+
 
 export const uploadAmdrData = async (file: FormData): Promise<any> => {
   try {

@@ -18,6 +18,8 @@ export interface FoundCoverage {
   isHidden: boolean;
   description: string;
   hslColor?:HslColor;
+  amdrParent?: string;
+
 }
 
 
@@ -51,6 +53,7 @@ export interface ReportLocationProperties {
   statusColor: string | undefined;
   evaluatedColor: string;
   reportLevel: string;
+
 }
 
 export enum IrsStructureStatus {

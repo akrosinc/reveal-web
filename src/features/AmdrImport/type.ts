@@ -1,3 +1,9 @@
+import {HslColor} from "../reporting/providers/types";
+
+export enum AmdrColumnType {
+  DRUG = "DRUG",
+  HAPLOTYPE = "HAPLOTYPE"
+}
 
 export interface AmdrImportResponse {
   identifier: string;
@@ -9,4 +15,8 @@ export interface AmdrImportResponse {
 
 export interface AmdrImportResultsResponse {
   sampleIds: number;
+}
+export interface HeaderName {
+  color: HslColor;
+  name: string;
 }
