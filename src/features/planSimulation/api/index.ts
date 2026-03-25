@@ -200,6 +200,6 @@ export const getInstances = async (
 };
 
 export const getInstanceHierarchy = async (instanceId: string): Promise<InstanceHierarchyNode[]> => {
-  const data = await api.get<InstanceHierarchyNode[]>(`instance/hierarchy?instanceIdentifier=${instanceId}`).then(res => res.data);
-  return data;
+  const data = await api.get<any>(`instance/hierarchy?instanceIdentifier=${instanceId}`).then(res => res.data);
+  return data?.geoTree || [];
 };
