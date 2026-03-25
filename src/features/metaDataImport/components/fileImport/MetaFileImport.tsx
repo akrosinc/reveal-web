@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
-import { METADATA_FILE_IMPORT, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
+import { METADATA_FILE_IMPORT, METADATA_FILE_IMPORT_GRANT_ACCESS, METADATA_FILE_IMPORT_REMOVE_ACCESS, METADATA_FILE_IMPORT_UPLOAD_FILE, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import { getMetadataImportList } from '../../api';
 import DetailsModal from './detailsModal';
 import UploadModal from './uploadModal';
@@ -149,7 +149,7 @@ const MetaFileImport = () => {
           <Col>
             <AuthorizedElement 
             // roles={[METADATA_FILE_IMPORT]}
-            roles={[]}
+            roles={[METADATA_FILE_IMPORT_UPLOAD_FILE]}
             >
               <Button onClick={() => setOpen(!open)} className={''} style={{ float: 'right' }}>
                 {t('metadataImport.uploadFile')}
@@ -157,7 +157,7 @@ const MetaFileImport = () => {
             </AuthorizedElement>
             <AuthorizedElement 
             // roles={[METADATA_FILE_IMPORT]}
-            roles={[]}
+            roles={[METADATA_FILE_IMPORT_GRANT_ACCESS]}
             >
               <Button
                 disabled={selectedMetadata.length === 0}
@@ -170,7 +170,7 @@ const MetaFileImport = () => {
             </AuthorizedElement>
             <AuthorizedElement 
             // roles={[METADATA_FILE_IMPORT]}
-            roles={[]}
+            roles={[METADATA_FILE_IMPORT_REMOVE_ACCESS]}
             >
               <Button
                 variant={'outline-primary'}

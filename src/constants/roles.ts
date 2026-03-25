@@ -105,3 +105,12 @@ export const CAMPAIGN_MANAGEMENT_ASSIGN_TO_TEAM = 'campaign_management_assign_to
 export const LOCATION_BULK_IMPORT = 'location_bulk_import'
 export const LOCATION_VALIDATE_IMPORT = 'location_validate_import'
 
+export const SIMPLE_TAG_CREATE = 'simple_tag_create'
+export const COMPLEX_TAG_CREATE = 'complex_tag_create'
+export const COMPLEX_TAG_VIEW_VARIABLES= 'complex_tag_view_variables'
+
+export const METADATA_FILE_IMPORT_REMOVE_ACCESS = 'metadata_file_import_remove_access'
+export const METADATA_FILE_IMPORT_GRANT_ACCESS = 'metadata_file_import_grant_access'
+export const METADATA_FILE_IMPORT_UPLOAD_FILE = 'metadata_file_import_upload_file'
+
+

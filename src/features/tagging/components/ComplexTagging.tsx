@@ -11,12 +11,13 @@ import MetadataFormulaPanel, {
   TagWithFormulaSymbol
 } from '../../planSimulation/components/MetadataFormula/MetadataFormulaPanel';
 import ComplexTagTable from '../../../components/Table/ComplexTagTable';
-import { REVEAL_SIMULATION_EDIT } from '../../../constants';
+import { COMPLEX_TAG_CREATE, COMPLEX_TAG_VIEW_VARIABLES, REVEAL_SIMULATION_EDIT } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import TagAccess from '../../access/TagAccess';
 import MetadataFormulaPanelViewOnly from '../../planSimulation/components/MetadataFormula/MetadataFormulaPanelViewOnly';
 import DeleteTag from './DeleteTag';
 import RemoveTagAccess from '../../access/RemoveTagAccess';
+import { useAuthorization } from '../../../hooks/useAuthorization';
 
 export interface ComplexTagRequest {
   hierarchyId: string;
@@ -33,6 +34,7 @@ export interface TagToDelete {
   children?: TagToDelete[];
 }
 const ComplexTagging = () => {
+  const isAuthorizedViewVariables = useAuthorization([COMPLEX_TAG_VIEW_VARIABLES])
   const [combinedHierarchyList, setCombinedHierarchyList] = useState<LocationHierarchyModel[]>();
   const { t } = useTranslation();
   const [showCreateComplexTagPanel, setShowCreateComplexTagPanel] = useState(false);
@@ -152,7 +154,7 @@ const ComplexTagging = () => {
           <Col className="mb-2" md={8}>
             <AuthorizedElement 
             // roles={[REVEAL_SIMULATION_EDIT]}
-            roles={[]}
+            roles={[COMPLEX_TAG_CREATE]}
             >
               <Button className="float-end" onClick={() => setShowCreateComplexTagPanel(true)}>
                 {t('buttons.create')}
@@ -168,13 +170,13 @@ const ComplexTagging = () => {
           columns={[
             { name: 'complexTagName', accessor: 'tagName', sortValue: 'tagName', key: 'tagName' },
             { name: 'complexTagFormula', accessor: 'formula', sortValue: 'formula', key: 'formula' },
-            { name: 'complexTagVariables', accessor: 'complexTagVariables', sortValue: 'tags', key: 'tags' },
+           isAuthorizedViewVariables && { name: 'complexTagVariables', accessor: 'complexTagVariables', sortValue: 'tags', key: 'tags' },
             { name: 'owners', accessor: 'owners', sortValue: 'owners', key: 'owners' },
             { name: 'public', accessor: 'public', sortValue: 'public', key: 'public' },
             { name: 'access', accessor: 'access', sortValue: 'access', key: 'access' },
             { name: 'removeAccess', accessor: 'removeAccess', sortValue: 'removeAccess', key: 'removeAccess' },
             { name: 'delete', accessor: 'delete', sortValue: 'delete', key: 'delete' }
-          ]}
+          ].filter(Boolean) as { name: string; accessor: string; sortValue: string; key: string }[]}
           data={complexTags}
           clickHandler={dataEl => {
             setSelectedComplexTag(dataEl);

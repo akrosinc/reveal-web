@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
 import EntityTagTable from '../../../components/Table/EntityTagTable';
-import { PAGINATION_DEFAULT_SIZE, REVEAL_SIMULATION_EDIT } from '../../../constants';
+import { PAGINATION_DEFAULT_SIZE, REVEAL_SIMULATION_EDIT, SIMPLE_TAG_CREATE } from '../../../constants';
 import { getAllGlobalTags, updateTag } from '../api';
 import { Tag, TagUpdateRequest } from '../providers/types';
 import CreateTag from './createModal';
@@ -167,8 +167,8 @@ const Tagging = () => {
         <Row className="my-4">
           <Col md={8} className="mb-2">
             <AuthorizedElement 
-            // roles={[REVEAL_SIMULATION_EDIT]}
-            roles={[]}
+            roles={[SIMPLE_TAG_CREATE]}
+            // roles={[]}
             >
               <Button className="float-end" onClick={() => setShowCreate(true)}>
                 Create Tag

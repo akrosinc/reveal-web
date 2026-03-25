@@ -55,7 +55,7 @@ const Router = () => {
           <Route path={SIMULATION_PAGE + '/*'} element={<PlanSimulation />} />
           <Route path={CampaignManage + '/*'} element={<Campaign />} />
           <Route path={TAG_MANAGEMENT + '/*'} element={<TagManagement2 />} />
-          <Route path={DATA_PROCESSING_PROGRESS + '/*'} element={<DataProcessingProgress />} />
+          {/* <Route path={DATA_PROCESSING_PROGRESS + '/*'} element={<DataProcessingProgress />} /> */}
           <Route path={METADATA_IMPORT + '/*'} element={<MetaDataImport />}>
             <Route path=":tab" element={<MetaDataImport />} />
           </Route>
