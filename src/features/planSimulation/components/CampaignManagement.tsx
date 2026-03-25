@@ -38,6 +38,8 @@ import {
   getEntityList,
   getEventBasedEntityTags,
   getFullLocationsSSE,
+  getInstanceHierarchy,
+  getInstances,
   getLocationsSSE,
   submitSimulationRequest,
   updateSimulationRequest
@@ -73,6 +75,9 @@ import { getPlanTargetLevelName } from '../../../utils';
 import Select, { SingleValue } from 'react-select';
 import styles from './Simulation.module.css';
 import AuthorizedElement from '../../../components/AuthorizedElement';
+import { useAppSelector } from '../../../store/hooks';
+import { useAuthorization } from '../../../hooks/useAuthorization';
+import { CAMPAIGN_MANAGEMENT_INSTANCE_SELECTION } from '../../../constants';
 
 export interface Stats {
   [key: string]: Metadata;
@@ -96,6 +101,9 @@ export interface AnalysisLayer {
 
 const CampaignManagement = () => {
   const divRef = useRef<HTMLDivElement>(null);
+  const isAuthorizedForRenderingInstances = useAuthorization([CAMPAIGN_MANAGEMENT_INSTANCE_SELECTION])
+  const instanceContext = useAppSelector(state => state.instanceContext);
+  console.log("ISNTANCE", instanceContext)
   const divHeight = useWindowResize(divRef.current);
   const [mapFullScreen, setMapFullScreen] = useState(true);
   const [showResult, setShowResult] = useState(false);
@@ -152,7 +160,9 @@ const CampaignManagement = () => {
   const { state } = usePolygonContext();
   const [labels, setLabels] = useState<string[]>([]);
   const [plans, setPlans] = useState<any[]>();
+  const [instances, setInstances] = useState<any>(null)
   const [selectedPlan, setSelectedPlan] = useState<any>();
+  const [selectedInstance, setSelectedInstance] = useState<any>()
 
   const fetchSimulationAndData = async (selectedPlan: any) => {
     const simulationIdentifier = await fetchPlanInfo(selectedPlan);
@@ -326,16 +336,31 @@ const CampaignManagement = () => {
   }, [state.selected]);
 
   useEffect(() => {
+    if (Array.isArray(instances) && instances?.length === 0) {
+      // instanceContext
+      // alert("Empty..")
+      // console.log(instanceContext, 'IC')
+      fetchHierarchy(instanceContext?.selectedInstance?.identifier as any);
+      fetchSimulationAndData(instanceContext?.instancePlan as any);
+      fetchDefaultHierarchyData();
+    }
     if (selectedPlan) {
-      fetchHierarchy();
+      fetchHierarchy(selectedPlan.identifier);
       fetchSimulationAndData(selectedPlan);
       fetchDefaultHierarchyData();
     }
-  }, [selectedPlan]);
+  }, [selectedPlan, instances]);
+
 
   useEffect(() => {
     getPlans().then(planInfo => {
       setPlans(planInfo);
+    });
+    getInstances(0, 1000).then(instanceInfo => {
+      // setInstances(instanceInfo);
+      // console.log(instanceInfo?.content, 'Instances Listing')
+      setInstances(instanceInfo?.content)
+      // setInstances([])
     });
   }, []);
 
@@ -542,8 +567,9 @@ const CampaignManagement = () => {
     }
   }, [mapData, getLocationHierarchyFromLowestLocation, markedLocations]);
 
-  const fetchHierarchy = async () => {
-    const hierarchyData = await getHierarchy();
+  const fetchHierarchy = async (instanceId: string) => {
+    // const hierarchyData = await getHierarchy();
+    const hierarchyData = await getInstanceHierarchy(instanceId)
     try {
       setHighestLocations(hierarchyData);
       dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData });
@@ -555,8 +581,8 @@ const CampaignManagement = () => {
     try {
       const planInfo = selectedPlan;
       dispatch({ type: 'SET_PLANID', payload: planInfo.identifier });
-      dispatch({ type: 'SET_PLAN_TARGET_TYPE', payload: planInfo.planTargetType });
-      return planInfo.identifier;
+      dispatch({ type: 'SET_PLAN_TARGET_TYPE', payload: planInfo?.planTargetType });
+      return planInfo?.planIdentifier || planInfo?.identifier;
     } catch (error) {
       console.error('Failed to fetch plan info:', error);
     }
@@ -715,19 +741,20 @@ const CampaignManagement = () => {
   };
 
   const handlePlanSelectionChange = (option: SingleValue<{ value: string; label: string }>) => {
-    let found = plans?.find(plan => plan.identifier === option?.value);
+    let found = instances?.find((plan: any) => plan.identifier === option?.value);
     if (found) {
       setSelectedPlan(found);
     }
   };
+  console.log(instances, 'Selected plan')
   return (
     <>
       <Container fluid ref={divRef}>
         <div style={{ display: 'flex', position: 'relative' }}>
           <Drawer open={leftOpen} anchor="left" heading="Campaign Manager">
-            {plans && (
+            {(isAuthorizedForRenderingInstances && instances?.length > 0) && (
               <Accordion title="Plans" open={selectedPlan == null}>
-                <Select
+                {/* <Select
                   placeholder={'Select Plan'}
                   className={styles.select_small}
                   options={plans.map((plan: any) => {
@@ -739,13 +766,22 @@ const CampaignManagement = () => {
                   onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
                     handlePlanSelectionChange(selectedOption);
                   }}
-                />
-                {plans.map(plan => (
-                  <>
-                    <br></br>
-                    <br></br>
-                  </>
-                ))}
+                /> */}
+                <div style={{ height: '400px', overflowY: 'auto' }}>
+                  <Select
+                    placeholder={'Select Instances'}
+                    className={styles.select_small}
+                    options={instances?.map((instance: any) => {
+                      return {
+                        value: instance.identifier,
+                        label: instance.instanceName
+                      };
+                    })}
+                    onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
+                      handlePlanSelectionChange(selectedOption);
+                    }}
+                  />
+                </div>
               </Accordion>
             )}
             {highestLocations && (

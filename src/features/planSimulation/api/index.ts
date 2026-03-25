@@ -3,7 +3,10 @@ import { GENERATED_LOCATION_HIERARCHY } from '../../../constants';
 import {
   ComplexTagResponse,
   EntityTag,
+  Instance,
+  InstanceHierarchyNode,
   LookupEntityType,
+  PaginatedResponse,
   PersonMeta,
   PlanningLocationResponse,
   TagResponse
@@ -135,8 +138,8 @@ export const getFullLocationsSSE = (
 ) => {
   const events = new EventSource(
     process.env.REACT_APP_API_URL +
-      '/entityTag/inactive-locations?simulationRequestId=' +
-      requestData.simulationRequestId
+    '/entityTag/inactive-locations?simulationRequestId=' +
+    requestData.simulationRequestId
   );
 
   events.addEventListener('open', _ => {
@@ -183,5 +186,20 @@ export const deleteComplexTag = async (tag: TagToDelete): Promise<string> => {
 
 export const deleteSimpleTags = async (tag: TagToDelete[]): Promise<string> => {
   const data = await api.post<string>(`entityTag/delete`, tag).then(res => res.data);
+  return data;
+};
+
+export const getInstances = async (
+  pageNumber: number,
+  pageSize: number
+): Promise<PaginatedResponse<Instance>> => {
+  const data = await api
+    .get<PaginatedResponse<Instance>>(`instance?pageNumber=${pageNumber}&pageSize=${pageSize}`)
+    .then(res => res.data);
+  return data;
+};
+
+export const getInstanceHierarchy = async (instanceId: string): Promise<InstanceHierarchyNode[]> => {
+  const data = await api.get<InstanceHierarchyNode[]>(`instance/hierarchy?instanceIdentifier=${instanceId}`).then(res => res.data);
   return data;
 };

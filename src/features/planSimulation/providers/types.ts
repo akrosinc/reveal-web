@@ -279,3 +279,143 @@ export interface LocationMetadataObj {
 export interface MetadataDefinition {
   [key: string]: string;
 }
+
+export interface Instance {
+  identifier: string;
+  interventionType: string;
+  planIdentifier: string;
+  instanceName: string;
+  createdDatetime: string;
+  planStatus: string;
+  startDate: string;
+  endDate: string;
+  planTitle: string;
+}
+
+export interface Sort {
+  unsorted: boolean;
+  sorted: boolean;
+  empty: boolean;
+}
+
+export interface Pageable {
+  sort: Sort;
+  paged: boolean;
+  unpaged: boolean;
+  pageNumber: number;
+  pageSize: number;
+  offset: number;
+}
+
+export interface PaginatedResponse<T> {
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  last: boolean;
+  number: number;
+  sort: Sort;
+  numberOfElements: number;
+  pageable: Pageable;
+  size: number;
+  content: T[];
+  empty: boolean;
+}
+
+export interface InstanceHierarchyNode {
+  identifier: string;
+  type: string;
+  geometry: {
+    type: string;
+    coordinates: any[];
+  };
+  properties: HierarchyProperties;
+  active: boolean;
+  teams: Team[];
+  selected: boolean;
+}
+
+export interface HierarchyProperties {
+  name: string;
+  status: string;
+  externalId: string;
+  geographicLevel: string;
+  numberOfTeams: number;
+  assigned: boolean;
+  parentIdentifier: string;
+  childrenNumber: number;
+  distCoveragePercent: any;
+  numberOfChildrenTreated: any;
+  numberOfChildrenEligible: any;
+  sprayCoverage: any;
+  id: string;
+  columnDataMap: {
+    [key: string]: {
+      value: any;
+      isPercentage: boolean;
+      meta: string;
+      dataType: string;
+      key: string;
+    };
+  };
+  persons: {
+    coreFields: {
+      identifier: string;
+      firstName: string;
+      lastName: string;
+      gender: string;
+      birthDate: string;
+      birthDateApprox: boolean;
+    };
+    metadata: Metadata[];
+  }[];
+  metadata: Metadata[];
+  businessStatus: string;
+  statusColor: string;
+  levelColor: string;
+  geographicLevelNodeNumber: number;
+  parent: string;
+  population: Population;
+  numberOfStructures: number;
+  xcentroid: number;
+  ycentroid: number;
+  simulationSearchResult: boolean;
+}
+
+export interface Population {
+  female: number;
+  male: number;
+  sum: number;
+  Pyramids: AgeGroupPop[];
+}
+
+export interface AgeGroupPop {
+  AgeGroup: string;
+  MalePop: number;
+  FemalePop: number;
+  TotalPop: number;
+}
+
+export interface Team {
+  identifier: string;
+  name: string;
+  type: TeamType;
+  active: boolean;
+  partOf: string;
+  headOf: string[];
+  members: TeamMember[];
+}
+
+export interface TeamType {
+  code: string;
+  valueCodableConcept: string;
+}
+
+export interface TeamMember {
+  identifier: string;
+  sid: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  securityGroups: string[];
+}
