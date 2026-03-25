@@ -102,3 +102,6 @@ export const CAMPAIGN_MANAGEMENT_ADD_TO_CAMPAIGN = 'campaign_management_add_to_c
 export const CAMPAIGN_MANAGEMENT_REMOVE_FROM_CAMPAIGN = 'campaign_management_remove_from_campaign'
 export const CAMPAIGN_MANAGEMENT_ASSIGN_TO_TEAM = 'campaign_management_assign_to_team'
 
+export const LOCATION_BULK_IMPORT = 'location_bulk_import'
+export const LOCATION_VALIDATE_IMPORT = 'location_validate_import'
+
