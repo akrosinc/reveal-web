@@ -72,6 +72,7 @@ import { getOrganizatonsWithMembers } from './Teams/api/teamAPI';
 import { getPlanTargetLevelName } from '../../../utils';
 import Select, { SingleValue } from 'react-select';
 import styles from './Simulation.module.css';
+import AuthorizedElement from '../../../components/AuthorizedElement';
 
 export interface Stats {
   [key: string]: Metadata;
@@ -754,7 +755,9 @@ const CampaignManagement = () => {
             )}
             <Accordion title="Teams" open>
               <Teams teamsList={teamsList} fetchTeamsData={fetchTeamsData} />
+              {/* <AuthorizedElement roles={[]}>
               <DrawerButton onClick={() => setOpenCustomModal(1)}>Manage Teams</DrawerButton>
+              </AuthorizedElement> */}
               <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                 <UserModal fetchTeamsData={fetchTeamsData} />
               </CustomPopup>
