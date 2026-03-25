@@ -7,7 +7,10 @@ import {
   LOCATION_ASSIGNMENT_TAB,
   LOCATION_ASSIGN_TABLE_COLUMNS,
   LOCATION_TEAM_ASSIGNMENT_SUMMARY,
-  LOCATION_TEAM_ASSIGNMENT_TAB
+  LOCATION_TEAM_ASSIGNMENT_TAB,
+  PLAN_ASSIGNMENT_SUMMARY,
+  PLAN_LOCATION_ASSIGNMENT,
+  PLAN_TEAM_ASSIGNMENT
 } from '../../../../constants';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
@@ -31,6 +34,7 @@ import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
 import TeamAssignment from './TeamAssignment';
 import { LocationAssignmentRequest } from '../../providers/types';
+import AuthorizedElement from '../../../../components/AuthorizedElement';
 
 interface Option {
   label: string;
@@ -332,6 +336,7 @@ const Assign = () => {
                 ? `${t('assignPage.titleLocations') + ' | ' + t('assignPage.titleTeams')}: ${assignedLocations}`
                 : t('assignPage.selectLocations')}
             </span>
+            <AuthorizedElement roles={[PLAN_LOCATION_ASSIGNMENT, PLAN_TEAM_ASSIGNMENT]}>
             <Button
               id="save-assignments-button"
               className="w-25"
@@ -340,6 +345,7 @@ const Assign = () => {
             >
               {t('buttons.save')}
             </Button>
+            </AuthorizedElement>
           </div>
           <SimpleBar style={{ maxHeight: tableHeight > 0 ? tableHeight : 'auto' }}>
             <hr />
@@ -360,6 +366,7 @@ const Assign = () => {
               }}
               className="mt-2"
             >
+              <AuthorizedElement roles={[PLAN_LOCATION_ASSIGNMENT]}>
               <Tab eventKey={LOCATION_ASSIGNMENT_TAB} title={t('assignPage.titleLocations')}>
                 <div>
                   <LocationAssignmentsTable
@@ -371,6 +378,8 @@ const Assign = () => {
                   />
                 </div>
               </Tab>
+              </AuthorizedElement>
+              <AuthorizedElement roles={[ PLAN_TEAM_ASSIGNMENT]}>
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title={t('assignPage.titleTeams')}>
                 <TeamAssignment
                   columns={columns}
@@ -380,6 +389,8 @@ const Assign = () => {
                   selectTeams={setSelectedTeams}
                 />
               </Tab>
+              </AuthorizedElement>
+              <AuthorizedElement roles={[PLAN_ASSIGNMENT_SUMMARY]}>
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_SUMMARY} title={t('assignPage.assignmentPreview')}>
                 <LocationAssignmentsTable
                   teamTab={true}
@@ -399,6 +410,7 @@ const Assign = () => {
                   data={showAssignedOnly(tableData)}
                 />
               </Tab>
+              </AuthorizedElement>
             </Tabs>
           </SimpleBar>
         </Col>
