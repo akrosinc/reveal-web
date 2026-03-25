@@ -51,7 +51,7 @@ import SimulationMapView from './SimulationMapView/SimulationMapView';
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
 import { hex } from 'color-convert';
-import { REVEAL_SIMULATION_EDIT } from '../../../constants';
+import { REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import { Drawer } from '../../location/components/drawer/Drawer';
 import Accordion from '../../location/components/accordion/Accordion';
@@ -1705,6 +1705,7 @@ const Simulation = () => {
               </Accordion>
             )}
             {/* {highestLocations && showResult && ( */}
+             <AuthorizedElement roles={[SIMULATION_DATASET_MENU]}>
             {highestLocations && (
               <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
                 {state.datasets?.length !== 0 && (
@@ -1746,6 +1747,7 @@ const Simulation = () => {
                     )}
                   </div>
                 )}
+               
                 {state.datasets?.map(dataset => (
                   <DatasetsAccordion
                     key={dataset.identifier}
@@ -1754,9 +1756,12 @@ const Simulation = () => {
                     removeDatasetHandler={removeDatasetHandler}
                   />
                 ))}
+                
+                <AuthorizedElement roles={[SIMULATION_ADD_DATASET]}>
                 <DrawerButton onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>
                   Add dataset
                 </DrawerButton>
+                </AuthorizedElement>
                 <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                   <div className="p-6">
                     <AddDatasetForm
@@ -1768,6 +1773,7 @@ const Simulation = () => {
                 </CustomPopup>
               </Accordion>
             )}
+            </AuthorizedElement>
           </Drawer>
           <SimulationMapView
             showDatasetsAgainstParentLevel={showDatasetsAgainstParentLevel}

@@ -94,3 +94,6 @@ export const REVEAL_SIMULATION_USER = 'reveal_simulation_user'
 export const PLAN_LOCATION_ASSIGNMENT = 'plan_location_assignment'
 export const PLAN_TEAM_ASSIGNMENT = 'plan_team_assignment'
 export const PLAN_ASSIGNMENT_SUMMARY = 'plan_assignment_summary'
+
+export const SIMULATION_ADD_DATASET = 'simulation_add_dataset'
+export const SIMULATION_DATASET_MENU = 'simulation_dataset_menu'
