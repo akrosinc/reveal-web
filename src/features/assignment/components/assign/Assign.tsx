@@ -75,7 +75,7 @@ const Assign = () => {
               setLocationHierarchy(hierarchy);
               setAssignedLocations(assignedLocationCount.count);
               setActiveTab(assignedLocationCount.count ? LOCATION_TEAM_ASSIGNMENT_SUMMARY : LOCATION_ASSIGNMENT_TAB);
-              let orgList = organizations.content.map(el => {
+              let orgList = organizations.map(el => {
                 return {
                   value: el.identifier,
                   label: el.name
@@ -386,8 +386,8 @@ const Assign = () => {
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title={t('assignPage.titleTeams')}>
                 <TeamAssignment
                   columns={columns}
-                  // data={showAssignedOnly(tableData)}
-                  data={tableData}
+                  data={showAssignedOnly(tableData)}
+                  // data={tableData}
                   planId={planId ?? ''}
                   organizationsList={organizationsList}
                   selectTeams={setSelectedTeams}
@@ -411,8 +411,8 @@ const Assign = () => {
                         .catch(err => toast.error(err));
                     }
                   }}
-                  // data={showAssignedOnly(tableData)}
-                  data={tableData}
+                  data={showAssignedOnly(tableData)}
+                // data={tableData}
                 />
               </Tab>
               {/* </AuthorizedElement> */}

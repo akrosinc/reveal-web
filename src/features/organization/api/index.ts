@@ -25,10 +25,10 @@ export const getOrganizationCount = async (): Promise<{ count: number }> => {
   return data;
 };
 
-export const getOrganizationListSummary = async (): Promise<PageableModel<OrganizationModel>> => {
+export const getOrganizationListSummary = async (): Promise<OrganizationModel[]> => {
   const data = await api
     // .get<PageableModel<OrganizationModel>>(ORGANIZATION + '?_summary=TRUE&root=false&size=500&page=0')
-    .get<PageableModel<OrganizationModel>>(ORGANIZATION + '?_summary=TRUE&root=false&size=500&page=0')
+    .get<OrganizationModel[]>('groupmanagement/bytype/teams')
     .then(response => response.data);
   return data;
 };

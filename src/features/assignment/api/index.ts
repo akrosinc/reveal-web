@@ -7,9 +7,9 @@ import { TeamAssignHierarchyRequest } from '../providers/types';
 
 export const getLocationHierarchyByPlanId = async (planId: string): Promise<PageableModel<LocationModel>> => {
   const data = await api
-    .get<any[]>(`instance/hierarchy`)
+    .get<any>(`instance/hierarchy`)
     .then(response => {
-      const content = (response.data || []) as unknown as LocationModel[];
+      const content = (response.data?.geoTree || []) as unknown as LocationModel[];
 
       const mapActive = (nodes: any[]) => {
         nodes.forEach(node => {
