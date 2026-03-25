@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Row, Col, Container, Button, Tabs, Tab } from 'react-bootstrap';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ASSIGNMENT_PAGE,
   LOCATION_ASSIGNMENT_TAB,
@@ -59,6 +59,7 @@ const Assign = () => {
   const [isEdited, setIsEdited] = useState(false);
   const { t } = useTranslation();
   const [selectedTeams, setSelectedTeams] = useState<LocationAssignmentRequest>();
+  const location = useLocation()
 
   const loadData = useCallback(() => {
     if (planId !== undefined) {
@@ -88,7 +89,7 @@ const Assign = () => {
                   setGeoLocation(res);
                   setTableHeight(
                     (document.getElementsByClassName('mapboxgl-canvas')[0] as any)?.height -
-                      (document.getElementById('title-div')?.clientHeight ?? 0)
+                    (document.getElementById('title-div')?.clientHeight ?? 0)
                   );
                 });
               }
@@ -115,17 +116,17 @@ const Assign = () => {
 
   const showAssignedOnly = (locations: LocationModel[]) => {
     //creates a clone of location object to remove any references
-    const loc = JSON.parse(JSON.stringify(locations)) as LocationModel[];
-    loc.forEach((el, index) => {
-      if (!el.active) {
-        loc.splice(index, 1);
-      } else {
-        if (el.children.length) {
+    const loc = JSON.parse(JSON.stringify(locations || [])) as LocationModel[];
+    const result: LocationModel[] = [];
+    loc.forEach((el) => {
+      if (el.active) {
+        if (el.children && el.children.length) {
           removeNotAssigned(el.children);
         }
+        result.push(el);
       }
     });
-    return loc;
+    return result;
   };
 
   const removeNotAssigned = (locations: LocationModel[]) => {
@@ -134,7 +135,7 @@ const Assign = () => {
       if (!el.active) {
         indexes.push(index);
       } else {
-        if (el.children.length) {
+        if (el.children && el.children.length) {
           removeNotAssigned(el.children);
         }
       }
@@ -182,7 +183,7 @@ const Assign = () => {
       if (location.identifier === id) {
         location.active = checked;
         checkChildren(location, checked);
-      } else if (location.children.length) {
+      } else if (location.children && location.children.length) {
         findLocationToCheck(id, location.children, checked);
       }
     });
@@ -195,34 +196,36 @@ const Assign = () => {
         childEl.active = checked;
         checkChildren(childEl, checked);
         selectParent(childEl, checked);
-      } else if (childEl.children.length) {
+      } else if (childEl.children && childEl.children.length) {
         findLocationToCheck(id, childEl.children, checked);
       }
     });
   };
 
   const checkChildren = (parentLocation: LocationModel, checked: boolean) => {
-    parentLocation.children.forEach(el => {
-      el.active = checked;
-      if (el.children.length) {
-        checkChildren(el, checked);
-      }
-    });
+    if (parentLocation.children) {
+      parentLocation.children.forEach(el => {
+        el.active = checked;
+        if (el.children && el.children.length) {
+          checkChildren(el, checked);
+        }
+      });
+    }
   };
 
   const selectParent = (location: LocationModel, selected: boolean) => {
     locationHierarchy?.content.forEach(el => {
-      if (el.identifier === location.properties.parentIdentifier) {
+      if (el.identifier === location.properties?.parentIdentifier) {
         if (selected) {
           el.active = selected;
         } else {
-          if (!el.children.some(el => el.active)) {
+          if (!el.children || !el.children.some(el => el.active)) {
             el.active = selected;
           }
         }
       } else {
-        if (el.children.length) {
-          findParent(el.children, location.properties.parentIdentifier, selected);
+        if (el.children && el.children.length) {
+          findParent(el.children, location.properties?.parentIdentifier || '', selected);
         }
       }
     });
@@ -235,12 +238,12 @@ const Assign = () => {
           el.active = selected;
           selectParent(el, selected);
         } else {
-          if (!el.children.some(el => el.active)) {
+          if (!el.children || !el.children.some(el => el.active)) {
             el.active = selected;
             selectParent(el, selected);
           }
         }
-      } else if (el.children.length) {
+      } else if (el.children && el.children.length) {
         findParent(el.children, identifier, selected);
       }
     });
@@ -253,7 +256,7 @@ const Assign = () => {
       selectedLocationsIdentifiers.push(location.identifier);
       selectedLocationsTeams.push(location);
     }
-    if (location.children.length) {
+    if (location.children && location.children.length) {
       location.children.forEach(childLocation => {
         filterChildren(childLocation);
       });
@@ -313,9 +316,9 @@ const Assign = () => {
     <Container fluid className="my-4">
       <Row className="mt-3 align-items-center">
         <Col md={3}>
-          <Link id="assign-back-button" to={ASSIGNMENT_PAGE} className="btn btn-primary mb-2">
+          {location?.state?.hideBackButton ? <div></div> : <Link id="assign-back-button" to={ASSIGNMENT_PAGE} className="btn btn-primary mb-2">
             <FontAwesomeIcon size="lg" icon="arrow-left" className="me-2" /> {t('assignPage.subTitle')}
-          </Link>
+          </Link>}
         </Col>
         <Col md={6} className="text-center">
           <h4 className="mx-0 my-3 my-md-0">
@@ -336,7 +339,7 @@ const Assign = () => {
                 ? `${t('assignPage.titleLocations') + ' | ' + t('assignPage.titleTeams')}: ${assignedLocations}`
                 : t('assignPage.selectLocations')}
             </span>
-            <AuthorizedElement roles={[PLAN_LOCATION_ASSIGNMENT, PLAN_TEAM_ASSIGNMENT]}>
+            {/* <AuthorizedElement roles={[PLAN_LOCATION_ASSIGNMENT, PLAN_TEAM_ASSIGNMENT]}> */}
             <Button
               id="save-assignments-button"
               className="w-25"
@@ -345,7 +348,7 @@ const Assign = () => {
             >
               {t('buttons.save')}
             </Button>
-            </AuthorizedElement>
+            {/* </AuthorizedElement> */}
           </div>
           <SimpleBar style={{ maxHeight: tableHeight > 0 ? tableHeight : 'auto' }}>
             <hr />
@@ -366,7 +369,7 @@ const Assign = () => {
               }}
               className="mt-2"
             >
-              <AuthorizedElement roles={[PLAN_LOCATION_ASSIGNMENT]}>
+              {/* <AuthorizedElement roles={[PLAN_LOCATION_ASSIGNMENT]}> */}
               <Tab eventKey={LOCATION_ASSIGNMENT_TAB} title={t('assignPage.titleLocations')}>
                 <div>
                   <LocationAssignmentsTable
@@ -378,19 +381,20 @@ const Assign = () => {
                   />
                 </div>
               </Tab>
-              </AuthorizedElement>
-              <AuthorizedElement roles={[ PLAN_TEAM_ASSIGNMENT]}>
+              {/* </AuthorizedElement> */}
+              {/* <AuthorizedElement roles={[PLAN_TEAM_ASSIGNMENT]}> */}
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title={t('assignPage.titleTeams')}>
                 <TeamAssignment
                   columns={columns}
-                  data={showAssignedOnly(tableData)}
+                  // data={showAssignedOnly(tableData)}
+                  data={tableData}
                   planId={planId ?? ''}
                   organizationsList={organizationsList}
                   selectTeams={setSelectedTeams}
                 />
               </Tab>
-              </AuthorizedElement>
-              <AuthorizedElement roles={[PLAN_ASSIGNMENT_SUMMARY]}>
+              {/* </AuthorizedElement> */}
+              {/* <AuthorizedElement roles={[PLAN_ASSIGNMENT_SUMMARY]}> */}
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_SUMMARY} title={t('assignPage.assignmentPreview')}>
                 <LocationAssignmentsTable
                   teamTab={true}
@@ -407,10 +411,11 @@ const Assign = () => {
                         .catch(err => toast.error(err));
                     }
                   }}
-                  data={showAssignedOnly(tableData)}
+                  // data={showAssignedOnly(tableData)}
+                  data={tableData}
                 />
               </Tab>
-              </AuthorizedElement>
+              {/* </AuthorizedElement> */}
             </Tabs>
           </SimpleBar>
         </Col>

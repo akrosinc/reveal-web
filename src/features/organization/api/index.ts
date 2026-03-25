@@ -13,9 +13,8 @@ export const getOrganizationList = async (
   const data = await api
     .get<PageableModel<OrganizationModel>>(
       ORGANIZATION +
-        `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${
-          sortField !== undefined ? sortField : ''
-        },${direction ? 'asc' : 'desc'}`
+      `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField !== undefined ? sortField : ''
+      },${direction ? 'asc' : 'desc'}`
     )
     .then(response => response.data);
   return data;
@@ -28,6 +27,7 @@ export const getOrganizationCount = async (): Promise<{ count: number }> => {
 
 export const getOrganizationListSummary = async (): Promise<PageableModel<OrganizationModel>> => {
   const data = await api
+    // .get<PageableModel<OrganizationModel>>(ORGANIZATION + '?_summary=TRUE&root=false&size=500&page=0')
     .get<PageableModel<OrganizationModel>>(ORGANIZATION + '?_summary=TRUE&root=false&size=500&page=0')
     .then(response => response.data);
   return data;

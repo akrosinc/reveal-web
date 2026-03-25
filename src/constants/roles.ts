@@ -114,3 +114,5 @@ export const METADATA_FILE_IMPORT_UPLOAD_FILE = 'metadata_file_import_upload_fil
 
 export const CAMPAIGN_MANAGEMENT_INSTANCE_SELECTION = 'campaign_management_instance_selection';
 export const SIMULATION_INSTANCE_SELECTION = 'simulation_instance_selection'
+
+export const PLAN_ASSIGNMENT_INSTANCE_SELECTION = 'plan_assignment_instance_selection'
