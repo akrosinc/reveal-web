@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Button } from 'react-bootstrap';
-import { GEOGRAPHY_LEVEL_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
+import { GEOGRAPHIC_LEVEL_CREATE, GEOGRAPHIC_LEVEL_UPDATE, GEOGRAPHY_LEVEL_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE } from '../../../../constants';
 import Paginator from '../../../../components/Pagination';
 import CreateGeoLevel from './create';
 import { ActionDialog } from '../../../../components/Dialogs';
@@ -12,12 +12,15 @@ import { toast } from 'react-toastify';
 import GeoLevelDetails from './details/GeoLevelDetails';
 import { useTranslation } from 'react-i18next';
 import DefaultTable from '../../../../components/Table/DefaultTable';
+import { useAuthorization } from '../../../../hooks/useAuthorization';
+import AuthorizedElement from '../../../../components/AuthorizedElement';
 
 const GeographicLevels = () => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
+  const isAuthorizedToEdit = useAuthorization([GEOGRAPHIC_LEVEL_UPDATE])
   const [selectedGeoLevel, setSelectedGeoLocation] = useState<GeographicLevel>();
   const [geoLevelList, setGeoLevelList] = useState<PageableModel<GeographicLevel>>();
   const dispatch = useAppDispatch();
@@ -78,11 +81,13 @@ const GeographicLevels = () => {
             {t('locationsPage.geographicLevels')} ({geoLevelList?.totalElements ?? 0})
           </h2>
         </Col>
+        <AuthorizedElement roles={[GEOGRAPHIC_LEVEL_CREATE]}>
         <Col>
           <Button id="create-button" className="float-end" onClick={() => setOpenCreate(true)}>
             {t('buttons.create')}
           </Button>
         </Col>
+        </AuthorizedElement>
       </Row>
       <hr className="my-4" />
       {geoLevelList !== undefined && geoLevelList.totalElements > 0 ? (
@@ -92,7 +97,12 @@ const GeographicLevels = () => {
             data={geoLevelList.content}
             sortHandler={sortHandler}
             clickAccessor="identifier"
-            clickHandler={(identifier: string) => openDetails(identifier)}
+            clickHandler={(identifier: string) =>{
+              if(!isAuthorizedToEdit){
+                return
+              }
+               openDetails(identifier)}
+              }
           />
           <Paginator
             page={geoLevelList.pageable.pageNumber}
