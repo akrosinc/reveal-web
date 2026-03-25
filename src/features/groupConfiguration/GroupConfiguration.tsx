@@ -7,12 +7,14 @@ import DefaultTable from '../../components/Table/DefaultTable';
 import Paginator from '../../components/Pagination';
 import CreateGroup from './CreateGroup';
 import { getGroupList, GroupModel } from './api';
-import { PAGINATION_DEFAULT_SIZE } from '../../constants';
+import { GROUP_MANAGEMENT_CREATE, GROUP_MANAGEMENT_EDIT, PAGINATION_DEFAULT_SIZE } from '../../constants';
+import { useAuthorization } from '../../hooks/useAuthorization';
+import AuthorizedElement from '../../components/AuthorizedElement';
 
 
 const GroupConfiguration: React.FC = () => {
     const { t } = useTranslation();
-
+    const isAuthorizedForEdit = useAuthorization([GROUP_MANAGEMENT_EDIT])
     // ─── Table / pagination state ───────────────────────────────────────────────
     const [groups, setGroups] = useState<GroupModel[]>([]);
     const [totalElements, setTotalElements] = useState(0);
@@ -114,6 +116,7 @@ const GroupConfiguration: React.FC = () => {
 
 
     const handleEdit = (identifier: string) => {
+        if(!isAuthorizedForEdit) return;
         setSelectedIdentifier(identifier);
         setShowCreate(true);
     };
@@ -151,12 +154,13 @@ const GroupConfiguration: React.FC = () => {
                         onChange={filterData}
                     />
                 </Col>
-
+                <AuthorizedElement roles={[GROUP_MANAGEMENT_CREATE]}>
                 <Col md={8}>
                     <Button className="btn btn-primary float-end" onClick={() => setShowCreate(true)}>
                         {t('buttons.create')}
                     </Button>
                 </Col>
+                </AuthorizedElement>
             </Row>
 
             <hr className="my-3" />

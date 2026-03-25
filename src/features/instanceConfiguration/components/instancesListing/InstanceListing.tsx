@@ -8,6 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { getInstances } from '../../api';
 import Paginator from '../../../../components/Pagination';
 import { toast } from 'react-toastify';
+import AuthorizedElement from '../../../../components/AuthorizedElement';
+import { INSTANE_MANAGEMENT_CREATE, INSTANE_MANAGEMENT_EDIT } from '../../../../constants';
+import { useAuthorization } from '../../../../hooks/useAuthorization';
 
 interface InstancesProps {
   onCreate?: () => void;
@@ -25,8 +28,9 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
   const [search, setSearch] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
-
+  const isAuthorizedToEdit = useAuthorization([INSTANE_MANAGEMENT_EDIT])
   const editHandler = (identifier: string) => {
+    if(!isAuthorizedToEdit) return
     if (onEdit) {
       onEdit(identifier);
     }
@@ -143,12 +147,13 @@ const sortHandler = (field: string, direction: boolean) => {
             disabled={instances?.totalElements === 0 && search === ''}
           />
         </Col>
-
+      <AuthorizedElement roles={[INSTANE_MANAGEMENT_CREATE]}>
         <Col md={8}>
           <Button className="btn btn-primary float-end" onClick={onCreate}>
             {t('buttons.create')}
           </Button>
         </Col>
+        </AuthorizedElement>
       </Row>
 
       <hr className="my-3" />
