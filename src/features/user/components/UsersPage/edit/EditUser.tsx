@@ -13,12 +13,13 @@ import { getOrganizationListSummary, getSecurityGroups } from '../../../../organ
 import { toast } from 'react-toastify';
 import { FieldValidationError } from '../../../../../api/providers';
 import { AxiosResponse } from 'axios';
-import { REGEX_EMAIL_VALIDATION } from '../../../../../constants';
+import { REGEX_EMAIL_VALIDATION, USER_PASSWORD } from '../../../../../constants';
 import { LocationModel } from '../../../../location/providers/types';
 import AreasSelection from './components/AreasSelection';
 import RolesSelection from './components/RolesSelection';
 import GroupsSelection from './components/GroupsSelection';
 import DatasetsSelection from './components/DatasetsSelection';
+import AuthorizedElement from '../../../../../components/AuthorizedElement';
 
 
 interface Props {
@@ -592,6 +593,7 @@ const EditUser = ({ user, handleClose }: Props) => {
       <hr />
       {edit ? (
         <>
+        <AuthorizedElement roles={[USER_PASSWORD]}>
           <Button
             id="change-password-button"
             className="float-start"
@@ -600,6 +602,7 @@ const EditUser = ({ user, handleClose }: Props) => {
           >
             Change password
           </Button>
+          </AuthorizedElement>
           <Button
             id="save-button"
             className="float-end"
