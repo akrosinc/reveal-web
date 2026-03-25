@@ -44,6 +44,7 @@ export const PLAN_MANAGEMENT = 'plan_manage';
 export const PLAN_CREATE = 'plan_create';
 export const PLAN_UPDATE = 'plan_update';
 export const PLAN_DELETE = 'plan_delete';
+export const PLAN_ACTIVATE = 'plan_activate';
 
 //REPORTS
 export const REPORT_VIEW = 'report_view';
