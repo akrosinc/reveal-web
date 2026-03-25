@@ -3,14 +3,7 @@ import { getFromBrowser, setToBrowser } from '../../utils';
 
 export interface InstanceModel {
   identifier: string;
-  interventionType: string;
-  planIdentifier: string;
-  instanceName: string;
-  createdDatetime: string;
-  planStatus: string;
-  startDate: string;
-  endDate: string;
-  planTitle: string;
+  name: string;
 }
 
 export interface RoleModel {

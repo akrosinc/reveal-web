@@ -63,12 +63,5 @@ export enum BulkEntryStatus {
 
 export interface UserInstanceModel {
   identifier: string;
-  interventionType: string;
-  planIdentifier: string;
-  instanceName: string;
-  createdDatetime: string;
-  planStatus: string;
-  startDate: string;
-  endDate: string;
-  planTitle: string;
+  name: string;
 }
