@@ -1,7 +1,7 @@
 import { EventData, Expression, GeoJSONSource, MapLayerEventType, Popup } from 'mapbox-gl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Col, Container, Form, Row } from 'react-bootstrap';
-import { MAPBOX_STYLE_STREETS } from '../../../../constants';
+import { CAMPAIGN_MANAGEMENT_ADD_TO_CAMPAIGN, CAMPAIGN_MANAGEMENT_ASSIGN_TO_TEAM, CAMPAIGN_MANAGEMENT_REMOVE_FROM_CAMPAIGN, MAPBOX_STYLE_STREETS } from '../../../../constants';
 import {
   createLocationLabel,
   disableMapInteractions,
@@ -71,6 +71,7 @@ import { getSimulationData } from './api/datasetsAPI';
 import { getPlanInfo } from './api/hierarchyAPI';
 import { findNodeById, getIdsByGeographicLevel } from './util';
 import { AssignToTeamsDialog } from '../AssignToTeamsDialog/AssignToTeamsDialog';
+import { useAuthorization } from '../../../../hooks/useAuthorization';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -117,7 +118,9 @@ const SimulationMapView = ({
   const [lng, setLng] = useState(20.33);
   const [lat, setLat] = useState(4.44);
   const [zoom, setZoom] = useState(2.5);
-
+  const isAuthorizedAddToCampaign = useAuthorization([CAMPAIGN_MANAGEMENT_ADD_TO_CAMPAIGN])
+  const isAuthorizedRemoveFromCampaign = useAuthorization([CAMPAIGN_MANAGEMENT_REMOVE_FROM_CAMPAIGN])
+  const isAuthorizedAssignToTeam = useAuthorization([CAMPAIGN_MANAGEMENT_ASSIGN_TO_TEAM])
   // DATASET MIGRATION TO PARENT
 
   const hoverPopup = useRef<Popup>(
@@ -1008,11 +1011,11 @@ const SimulationMapView = ({
                 const condition = assignedLocationsRef.current
                   ? !assignedLocationsRef.current?.[clickedFeature.properties?.id]
                   : !clickedFeature.properties?.assigned;
-                if (condition) {
+                if (condition && isAuthorizedAddToCampaign) {
                   button.textContent = 'Add to campaign';
                   button.className = styles.addToCampaignButton;
                 } else {
-                  if ((teamsList ?? []).length > 0) {
+                  if ((teamsList ?? []).length > 0 && isAuthorizedAssignToTeam) {
                     assignToATeamButton.textContent = 'Assign to a team';
                     assignToATeamButton.className = styles.addToCampaignButton;
                   }
