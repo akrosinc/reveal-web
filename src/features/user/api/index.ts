@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import { USER, GROUP_MANAGEMENT } from '../../../constants';
-import { BulkDetailsModel, CreateUserModel, EditUserModel, UserBulk, UserModel, UserInstanceModel } from '../providers/types';
+import { BulkDetailsModel, CreateUserModel, EditUserModel, UserBulk, UserModel, UserInstanceModel, UserRolesResponse } from '../providers/types';
 import { LocationModel } from '../../location/providers/types';
 
 export const getUserList = async (
@@ -94,7 +94,7 @@ export const getBulkById = async (
 
 export const getUserLocationsTree = async (userId: string): Promise<LocationModel[]> => {
   const data = await api
-    .get<LocationModel[]>(`${GROUP_MANAGEMENT}/user/${userId}/locationstree`)
+    .get<LocationModel[]>(`instance/user/${userId}/arealist`)
     .then(response => response.data);
   return data;
 };
@@ -106,9 +106,16 @@ export const getUserGroupsData = async (userId: string): Promise<string[]> => {
   return data;
 };
 
-export const getUserDatasetTags = async (userId: string): Promise<string[]> => {
+export const getUserDatasetTags = async (userId: string): Promise<UserInstanceModel[]> => {
   const data = await api
-    .get<string[]>(`${GROUP_MANAGEMENT}/user/${userId}/datasettags`)
+    .get<UserInstanceModel[]>(`instance/user/${userId}/datalist`)
+    .then(response => response.data);
+  return data;
+};
+
+export const getUserRoles = async (userId: string): Promise<UserRolesResponse> => {
+  const data = await api
+    .get<UserRolesResponse>(`instance/user/${userId}/roles`)
     .then(response => response.data);
   return data;
 };

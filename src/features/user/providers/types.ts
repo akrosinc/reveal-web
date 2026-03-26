@@ -65,3 +65,16 @@ export interface UserInstanceModel {
   identifier: string;
   name: string;
 }
+
+export interface UserRole {
+  identifier: string;
+  name: string;
+  permissions?: string[];
+}
+
+export interface UserInstanceRole {
+  instanceRole: UserRole;
+  groupRoles: string[];
+}
+
+export type UserRolesResponse = UserInstanceRole[];

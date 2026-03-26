@@ -68,7 +68,7 @@ const Users = () => {
   };
 
   const openUserById = (id: string) => {
-    if(!isAuthorizedUserEdit) return
+    // if(!isAuthorizedUserEdit) return
     getUserById(id)
       .then(res => {
         setCurrentUser(res);
@@ -94,10 +94,10 @@ const Users = () => {
       </h2>
       <Row className="my-4">
         <Col md={8} className="mb-2">
-        <AuthorizedElement roles={[USER_CREATE]}>
-          <Button id="create-user-button" className="btn btn-primary float-end" onClick={() => handleShow()}>
-            {t('buttons.create')}
-          </Button>
+          <AuthorizedElement roles={[USER_CREATE]}>
+            <Button id="create-user-button" className="btn btn-primary float-end" onClick={() => handleShow()}>
+              {t('buttons.create')}
+            </Button>
           </AuthorizedElement>
         </Col>
         <Col sm={12} md={4} className="order-md-first">
@@ -118,7 +118,7 @@ const Users = () => {
             columns={USER_TABLE_COLUMNS}
             data={userList.content.map((user, index) => ({
               ...user,
-              role: user?.securityGroups?.includes('standard_user')?'User':'Admin',
+              role: user?.securityGroups?.includes('standard_user') ? 'User' : 'Admin',
               instances: user.instances?.join(', ') || ''
             }))}
             clickHandler={openUserById}

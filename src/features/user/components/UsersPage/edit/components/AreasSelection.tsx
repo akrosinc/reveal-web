@@ -5,6 +5,7 @@ import { faChevronRight, faChevronDown, faEllipsisV, faCheck } from '@fortawesom
 import { useAppSelector } from '../../../../../../store/hooks';
 import { datasetsByHierarchy, AreaNode } from './mockLargeDataset';
 import { getAssignedAreaTree } from '../../../../../groupConfiguration/api';
+import { getUserLocationsTree } from '../../../../api';
 import { toast } from 'react-toastify';
 import SelectTeamModal from './SelectTeamModal';
 
@@ -18,6 +19,7 @@ interface Props {
   variant?: 'default' | 'editUser';
   readOnly?: boolean;
   data?: AreaNode[];
+  userId?: string;
 }
 
 interface TreeNodeProps {
@@ -267,7 +269,8 @@ const AreasSelection: React.FC<Props> = ({
   onAreaTeamChange,
   variant = 'default',
   readOnly = false,
-  data
+  data,
+  userId
 }) => {
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [searchTerm, setSearchTerm] = useState('');
@@ -339,10 +342,23 @@ const AreasSelection: React.FC<Props> = ({
   const loadData = useCallback(
     () => {
       setIsLoading(true);
-      getAssignedAreaTree()
+      const fetchPromise = userId ? getUserLocationsTree(userId) : getAssignedAreaTree();
+      
+      fetchPromise
         .then((res: any) => {
           if (res && res.length > 0) {
             setCurrentAreas(res);
+            if (userId && onSelectionChange) {
+              const getIds = (locs: any[]): string[] => {
+                let ids: string[] = [];
+                locs.forEach(l => {
+                  if (l.properties.assigned) ids.push(l.identifier);
+                  if (l.children) ids = [...ids, ...getIds(l.children)];
+                });
+                return ids;
+              };
+              onSelectionChange(getIds(res));
+            }
           } else {
             setCurrentAreas([]);
           }
@@ -353,7 +369,7 @@ const AreasSelection: React.FC<Props> = ({
           setIsLoading(false);
         });
     },
-    []
+    [userId]
   );
 
 

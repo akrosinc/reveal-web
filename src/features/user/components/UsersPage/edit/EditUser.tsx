@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Button, Form, Row, Col, ButtonGroup, ToggleButton } from 'react-bootstrap';
-import { deleteUserById, resetUserPassword, updateUser, getUserLocationsTree, getUserGroupsData, getUserDatasetTags, getUserInstanceList } from '../../../../user/api';
-import { EditUserModel, UserModel } from '../../../../user/providers/types';
+import { deleteUserById, resetUserPassword, updateUser, getUserLocationsTree, getUserGroupsData, getUserDatasetTags, getUserInstanceList, getUserRoles } from '../../../../user/api';
+import { EditUserModel, UserModel, UserInstanceModel, UserRole } from '../../../../user/providers/types';
 
 import { InstanceModel } from '../../../../reducers/instanceContext';
 import { ConfirmDialog } from '../../../../../components/Dialogs';
@@ -59,25 +59,25 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [selectedUserRoles, setSelectedUserRoles] = useState<string[]>([]);
   const [selectedUserDatasets, setSelectedUserDatasets] = useState<string[]>([]);
   const [areaTeams, setAreaTeams] = useState<Record<string, string>>({});
-  const [userLocations, setUserLocations] = useState<LocationModel[]>([]);
   const [userGroups, setUserGroups] = useState<string[]>([]);
-  const [userDatasets, setUserDatasets] = useState<string[]>([]);
+  const [userDatasets, setUserDatasets] = useState<UserInstanceModel[]>([]);
+  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
 
   const assignedDatasetData = useMemo(() => {
-    return userDatasets.map(d => ({ identifier: d, name: d }));
+    return userDatasets;
   }, [userDatasets]);
 
-  const assignedAreaIds = useMemo(() => {
-    const getIds = (locs: LocationModel[]): string[] => {
-      let ids: string[] = [];
-      locs.forEach(l => {
-        if (l.properties.assigned) ids.push(l.identifier);
-        if (l.children) ids = [...ids, ...getIds(l.children)];
-      });
-      return ids;
-    };
-    return getIds(userLocations);
-  }, [userLocations]);
+  const assignedDatasetIds = useMemo(() => {
+    return userDatasets.map(d => d.identifier);
+  }, [userDatasets]);
+
+  const groupRoleNames = useMemo(() => {
+    return userRoles.map(r => r.name);
+  }, [userRoles]);
+
+  const groupRoleIds = useMemo(() => {
+    return userRoles.map(r => r.identifier);
+  }, [userRoles]);
 
   // const level="Instance"
   let level = "Instance"
@@ -144,7 +144,7 @@ const EditUser = ({ user, handleClose }: Props) => {
       .catch(err => { });
     getOrganizationListSummary().then(res => {
       setOrganizations(
-        res.content.map(org => {
+        res.map(org => {
           return {
             label: org.name,
             value: org.identifier
@@ -156,7 +156,6 @@ const EditUser = ({ user, handleClose }: Props) => {
       getUserInstanceList(user.identifier).then(res => {
         setInstanceList(res);
       });
-      getUserLocationsTree(user.identifier).then(setUserLocations);
 
       getUserGroupsData(user.identifier).then(res => {
         setUserGroups(res);
@@ -178,6 +177,20 @@ const EditUser = ({ user, handleClose }: Props) => {
         }
       });
       getUserDatasetTags(user.identifier).then(setUserDatasets);
+      getUserRoles(user.identifier).then(res => {
+        if (res && Array.isArray(res)) {
+          const roles = res.flatMap(info => info.groupRoles || []);
+          const uniqueRoles: string[] = Array.from(new Set(roles));
+          setUserRoles(uniqueRoles.map(r => ({ identifier: r, name: r })));
+        } else if (res && (res as any).instanceInfos && Array.isArray((res as any).instanceInfos)) {
+          // Fallback to instanceInfos structure if that's what's actually returned
+          const roles = (res as any).instanceInfos.flatMap((info: any) => info.groupRoles || []);
+          const uniqueRoles: string[] = Array.from(new Set(roles.map((r: any) => typeof r === 'string' ? r : r.name)));
+          setUserRoles(uniqueRoles.map(r => ({ identifier: r, name: r })));
+        }
+      }).catch(err => {
+        console.error('Error fetching user roles:', err);
+      });
     }
     setStartValues(user);
   }, [setStartValues, user]);
@@ -185,7 +198,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   useEffect(() => {
     getData();
   }, [getData]);
-// console.log(user)
+  // console.log(user)
   const deleteHandler = (action: boolean) => {
     setShowDialog(false);
     if (action) {
@@ -544,13 +557,13 @@ const EditUser = ({ user, handleClose }: Props) => {
                   }}></div>} */}
                   <AreasSelection
                     isTeamMode={false}
-                    selectedAreas={assignedAreaIds}
+                    selectedAreas={[]}
                     onSelectionChange={setSelectedUserAreas}
                     areaTeams={areaTeams}
                     onAreaTeamChange={(id, team) => setAreaTeams(prev => ({ ...prev, [id]: team }))}
                     variant="editUser"
                     readOnly={true}
-                    data={userLocations}
+                    userId={user.identifier}
                   />
                 </div>
               </Col>
@@ -561,10 +574,10 @@ const EditUser = ({ user, handleClose }: Props) => {
                       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
                     }}></div>} */}
                   <GroupsSelection
-                    selectedGroups={selectedUserRoles}
-                    onGroupChange={setSelectedUserRoles}
+                    selectedGroups={groupRoleIds}
                     variant="editUser"
                     readOnly={true}
+                    data={userRoles}
                   />
                 </div>
               </Col>
@@ -578,11 +591,10 @@ const EditUser = ({ user, handleClose }: Props) => {
 
                   </div>} */}
                   <DatasetsSelection
-                    selectedDatasets={userDatasets}
-                    onDatasetChange={setSelectedUserDatasets}
+                    selectedDatasets={assignedDatasetIds}
                     variant="editUser"
                     readOnly={true}
-                    data={assignedDatasetData}
+                    data={userDatasets}
                   />
                 </div>
               </Col>
@@ -593,15 +605,15 @@ const EditUser = ({ user, handleClose }: Props) => {
       <hr />
       {edit ? (
         <>
-        <AuthorizedElement roles={[USER_PASSWORD]}>
-          <Button
-            id="change-password-button"
-            className="float-start"
-            onClick={() => setChangePassword(!changePassword)}
-            hidden={changePassword}
-          >
-            Change password
-          </Button>
+          <AuthorizedElement roles={[USER_PASSWORD]}>
+            <Button
+              id="change-password-button"
+              className="float-start"
+              onClick={() => setChangePassword(!changePassword)}
+              hidden={changePassword}
+            >
+              Change password
+            </Button>
           </AuthorizedElement>
           <Button
             id="save-button"
