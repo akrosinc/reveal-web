@@ -17,7 +17,7 @@ api.interceptors.request.use(function (config) {
     config?.url?.includes('instance/assigned/user/list') ||
     config?.url?.includes('instance/assigned/dataset/list') ||
     config?.url?.includes('instance/assigned/area/tree') ||
-    config?.url?.includes('instance/roles/list');
+    config?.url?.includes('instance/roles/list') || config?.url?.includes('instance/context');;
     console.log(config.url)
     console.log(requiresInstance)
   if(requiresInstance){
