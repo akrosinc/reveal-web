@@ -1,5 +1,6 @@
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Col, Row, Spinner } from 'react-bootstrap';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { DebounceInput } from 'react-debounce-input';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
@@ -7,7 +8,7 @@ import DefaultTable from '../../components/Table/DefaultTable';
 import Paginator from '../../components/Pagination';
 import CreateGroup from './CreateGroup';
 import { getGroupList, GroupModel } from './api';
-import { GROUP_MANAGEMENT_CREATE, GROUP_MANAGEMENT_EDIT, PAGINATION_DEFAULT_SIZE } from '../../constants';
+import { GROUP_MANAGEMENT, GROUP_MANAGEMENT_CREATE, GROUP_MANAGEMENT_EDIT, PAGINATION_DEFAULT_SIZE } from '../../constants';
 import { useAuthorization } from '../../hooks/useAuthorization';
 import AuthorizedElement from '../../components/AuthorizedElement';
 
@@ -26,11 +27,13 @@ const GroupConfiguration: React.FC = () => {
     const [currentSortDirection, setCurrentSortDirection] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { id } = useParams();
 
-
-    // ─── View state ─────────────────────────────────────────────────────────────
-    const [showCreate, setShowCreate] = useState(false);
-    const [selectedIdentifier, setSelectedIdentifier] = useState<string | null>(null);
+    const isCreate = location.pathname.endsWith('/create');
+    const isEdit = !!id;
+    const showCreateOrEdit = isCreate || isEdit;
 
     // ─── Data fetch ─────────────────────────────────────────────────────────────
     const loadGroups = useCallback(
@@ -117,28 +120,22 @@ const GroupConfiguration: React.FC = () => {
 
     const handleEdit = (identifier: string) => {
         if(!isAuthorizedForEdit) return;
-        setSelectedIdentifier(identifier);
-        setShowCreate(true);
+        navigate(`${GROUP_MANAGEMENT}/${identifier}/edit`);
     };
 
-
-    // ─── After create: refresh list ─────────────────────────────────────────────
     const handleSave = () => {
-        setShowCreate(false);
-        setSelectedIdentifier(null);
-        // Reload with current filters
+        navigate(GROUP_MANAGEMENT);
         loadGroups(pageSize, currentPage, search, currentSortField, currentSortDirection);
     };
 
     const handleCancel = () => {
-        setShowCreate(false);
-        setSelectedIdentifier(null);
+        navigate(GROUP_MANAGEMENT);
     };
 
 
     // ─── Render ─────────────────────────────────────────────────────────────────
-    if (showCreate) {
-        return <CreateGroup identifier={selectedIdentifier} onCancel={handleCancel} onSave={handleSave} />;
+    if (showCreateOrEdit) {
+        return <CreateGroup identifier={id} onCancel={handleCancel} onSave={handleSave} />;
     }
 
     return (
@@ -156,7 +153,7 @@ const GroupConfiguration: React.FC = () => {
                 </Col>
                 <AuthorizedElement roles={[GROUP_MANAGEMENT_CREATE]}>
                 <Col md={8}>
-                    <Button className="btn btn-primary float-end" onClick={() => setShowCreate(true)}>
+                    <Button className="btn btn-primary float-end" onClick={() => navigate(GROUP_MANAGEMENT + '/create')}>
                         {t('buttons.create')}
                     </Button>
                 </Col>

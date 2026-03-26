@@ -19,7 +19,8 @@ import {
   CAMPAIGN_MANAGEMENT,
   ASSIGNMENT_PLAN,
   INSTANE_MANAGEMENT_VIEW,
-  REVEAL_SIMULATION_USER
+  REVEAL_SIMULATION_USER,
+  GROUP_MANAGEMENT
 } from '../../../constants';
 
 
@@ -78,7 +79,7 @@ export const MAIN_MENU = [
     dropdown: [
       {
         pageTitle: 'Group Management',
-        route: '/group-configuration',
+        route: GROUP_MANAGEMENT,
         roles: [GROUP_MANAGEMENT_VIEW]
       }
     ]
