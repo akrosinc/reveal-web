@@ -68,7 +68,7 @@ const Users = () => {
   };
 
   const openUserById = (id: string) => {
-    // if(!isAuthorizedUserEdit) return
+    if(!isAuthorizedUserEdit) return
     getUserById(id)
       .then(res => {
         setCurrentUser(res);
