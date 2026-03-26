@@ -12,7 +12,7 @@ import {
   faAngleDoubleUp
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../../store/hooks';
-import { getUserList } from '../../../planSimulation/components/User/api/userAPI';
+import { getUserList, getUserList1 } from '../../../planSimulation/components/User/api/userAPI';
 
 interface Member {
   id: string;
@@ -34,8 +34,10 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Pr
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const fetchedUsers = await getUserList();
-        setUsers(fetchedUsers?.map(elem => ({
+        const fetchedUsers = await getUserList1();
+        const ids = fetchedUsers?.map(elem => elem?.identifier)
+        const idsOfUsers = Array.from(new Set(ids));
+        setUsers(idsOfUsers?.map(elem => fetchedUsers?.find(i => i?.identifier === elem))?.map((elem: any) => ({
           id: elem.identifier,
           name: (elem.firstName + ' ' + elem.lastName || '').trim()
         })));

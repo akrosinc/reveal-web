@@ -147,13 +147,13 @@ const sortHandler = (field: string, direction: boolean) => {
             disabled={instances?.totalElements === 0 && search === ''}
           />
         </Col>
-      <AuthorizedElement roles={[INSTANE_MANAGEMENT_CREATE]}>
+      {/* <AuthorizedElement roles={[INSTANE_MANAGEMENT_CREATE]}> */}
         <Col md={8}>
           <Button className="btn btn-primary float-end" onClick={onCreate}>
             {t('buttons.create')}
           </Button>
         </Col>
-        </AuthorizedElement>
+        {/* </AuthorizedElement> */}
       </Row>
 
       <hr className="my-3" />

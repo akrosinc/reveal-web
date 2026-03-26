@@ -91,13 +91,13 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, i
         toast.success('Instance updated successfully!');
       } else {
         const response = await createInstance(finalData);
-        console.log('API Response:', response);
+        // console.log('API Response:', response);
         toast.success('Instance created successfully!');
       }
       onCancel(); // Close wizard on success
     } catch (error: any) {
-      console.error('Error saving instance:', error);
-      toast.error(error.response?.data?.message || error?.message || 'Failed to save instance');
+      // console.log('Error saving instance:', error);
+      toast.error(error.response?.data?.message || error?.message ||error || 'Failed to save instance');
     }
   };
 
