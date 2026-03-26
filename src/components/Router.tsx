@@ -13,7 +13,8 @@ import {
   SIMULATION_PAGE,
   TAG_MANAGEMENT,
   CampaignManage,
-  GROUP_MANAGEMENT
+  GROUP_MANAGEMENT,
+  INSTANCE_CONFIGURATION
 } from '../constants/';
 import Home from '../pages/HomePage';
 import Plan from '../pages/Plan';
@@ -46,7 +47,9 @@ const Router = () => {
           <Route path={MANAGEMENT + '/*'} element={<Management />}>
             <Route path=":tab" element={<Management />} />
           </Route>
-          <Route path="/instance-configuration" element={<InstanceConfiguration />} />
+          <Route path={INSTANCE_CONFIGURATION} element={<InstanceConfiguration />} />
+          <Route path={INSTANCE_CONFIGURATION + '/create'} element={<InstanceConfiguration />} />
+          <Route path={INSTANCE_CONFIGURATION + '/:id/edit'} element={<InstanceConfiguration />} />
           <Route path={GROUP_MANAGEMENT} element={<GroupConfiguration />} />
           <Route path={GROUP_MANAGEMENT + '/create'} element={<GroupConfiguration />} />
           <Route path={GROUP_MANAGEMENT + '/:id/edit'} element={<GroupConfiguration />} />

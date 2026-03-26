@@ -1,29 +1,34 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { INSTANCE_CONFIGURATION } from '../../constants';
 import InstancesListing from './components/instancesListing/InstanceListing';
 //TESTING..
 import CreateInstanceWizard from './components/createInstanceWizard/CreateInstanceWizard';
 import DatasetDetails from './components/createInstanceWizard/DatasetDetails';
 
 export default function InstanceConfiguration() {
-  const [showWizard, setShowWizard] = useState(false);
-  const [selectedIdentifier, setSelectedIdentifier] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { id } = useParams();
+
+  const isCreate = location.pathname.endsWith('/create');
+  const isEdit = !!id;
+  const showWizard = isCreate || isEdit;
 
   const handleEdit = (identifier: string) => {
-    setSelectedIdentifier(identifier);
-    setShowWizard(true);
+    navigate(`${INSTANCE_CONFIGURATION}/${identifier}/edit`);
   };
 
   const handleCancel = () => {
-    setShowWizard(false);
-    setSelectedIdentifier(null);
+    navigate(INSTANCE_CONFIGURATION);
   };
 
   return (
     <>
       {!showWizard ? (
-        <InstancesListing onCreate={() => setShowWizard(true)} onEdit={handleEdit} />
+        <InstancesListing onCreate={() => navigate(INSTANCE_CONFIGURATION + '/create')} onEdit={handleEdit} />
       ) : (
-        <CreateInstanceWizard onCancel={handleCancel} identifier={selectedIdentifier} />
+        <CreateInstanceWizard onCancel={handleCancel} identifier={id} />
       )}
     </>
   );

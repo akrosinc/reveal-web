@@ -34,3 +34,4 @@ export const METADATA_IMPORT = '/admin/metadata-import';
 
 export const DATA_PROCESSING_PROGRESS = '/admin/kafka-messaging';
 export const GROUP_MANAGEMENT = '/groupmanagement';
+export const INSTANCE_CONFIGURATION = '/instance-configuration';

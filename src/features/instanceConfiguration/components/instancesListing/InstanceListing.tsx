@@ -30,7 +30,7 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const isAuthorizedToEdit = useAuthorization([INSTANE_MANAGEMENT_EDIT])
   const editHandler = (identifier: string) => {
-    if(!isAuthorizedToEdit) return
+    if (!isAuthorizedToEdit) return
     if (onEdit) {
       onEdit(identifier);
     }
@@ -77,22 +77,22 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
   /**
    * Sorting
    */
-//  const sortHandler = (field: string, direction: boolean) => {
-//   setCurrentSortField(field);
-//   setCurrentSortDirection(direction);
+  //  const sortHandler = (field: string, direction: boolean) => {
+  //   setCurrentSortField(field);
+  //   setCurrentSortDirection(direction);
 
-//   loadData(instances?.size ?? PAGINATION_DEFAULT_SIZE, 0, field, direction);
-// };
-const sortHandler = (field: string, direction: boolean) => {
-  if (instances !== undefined) {
-    setCurrentSortField(field);
-    setCurrentSortDirection(direction);
+  //   loadData(instances?.size ?? PAGINATION_DEFAULT_SIZE, 0, field, direction);
+  // };
+  const sortHandler = (field: string, direction: boolean) => {
+    if (instances !== undefined) {
+      setCurrentSortField(field);
+      setCurrentSortDirection(direction);
 
-    getInstances(instances.size, 0, field, direction)
-      .then(res => setInstances(res))
-      .catch(err => toast.error(err));
-  }
-};
+      getInstances(instances.size, 0, field, direction)
+        .then(res => setInstances(res))
+        .catch(err => toast.error(err));
+    }
+  };
 
 
   /**
@@ -147,13 +147,13 @@ const sortHandler = (field: string, direction: boolean) => {
             disabled={instances?.totalElements === 0 && search === ''}
           />
         </Col>
-      {/* <AuthorizedElement roles={[INSTANE_MANAGEMENT_CREATE]}> */}
-        <Col md={8}>
-          <Button className="btn btn-primary float-end" onClick={onCreate}>
-            {t('buttons.create')}
-          </Button>
-        </Col>
-        {/* </AuthorizedElement> */}
+        <AuthorizedElement roles={[INSTANE_MANAGEMENT_CREATE]}>
+          <Col md={8}>
+            <Button className="btn btn-primary float-end" onClick={onCreate}>
+              {t('buttons.create')}
+            </Button>
+          </Col>
+        </AuthorizedElement>
       </Row>
 
       <hr className="my-3" />
