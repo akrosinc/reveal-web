@@ -24,10 +24,9 @@ const SwitchInstanceModal = ({ show, onClose }: Props) => {
   const [selectedId, setSelectedId] = useState<string | undefined | null>((isSuperAdmin && selectedInstance?.identifier == null)
     ? "GLOBAL"
     : selectedInstance?.identifier);
-  console.log(selectedId, selectedInstance)
   const [loading, setLoading] = useState(false);
   const [switching, setSwitching] = useState(false);
-  console.log(((keycloak?.tokenParsed as any)?.groups || []))
+
   useEffect(() => {
     if (show) {
 
@@ -77,7 +76,7 @@ const SwitchInstanceModal = ({ show, onClose }: Props) => {
       if (superAdminDataRaw) {
         const superAdminData = JSON.parse(superAdminDataRaw);
         dispatch(setCurrentInstance(superAdminData));
-        toast.success(`Switched back to Global`);
+        // toast.success(`Switched back to Global`);
         onClose();
         return;
       }
@@ -85,7 +84,7 @@ const SwitchInstanceModal = ({ show, onClose }: Props) => {
 
 
   };
-  console.log(selectedId)
+
   return (
     <Modal show={show} onHide={onClose} centered className="switch-instance-modal">
       <Modal.Header closeButton>

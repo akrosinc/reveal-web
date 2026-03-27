@@ -38,22 +38,34 @@ const NavbarComponent = () => {
         keycloak.loadUserProfile().then(userProfile => {
           setUser(userProfile);
         });
-        // Fetch and persist the user's default instance after login
+
+        const rawCurrentInstance = localStorage.getItem('currentInstanceContext');
         const isSuperAdminValue = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/super_admin');
-        getInstanceContext()
-          .then(res => {
-            const result = isSuperAdminValue ? { ...res, selectedInstance: null } : res;
-            console.log(res)
-            if (isSuperAdminValue) {
-              localStorage.setItem('SUPERADMIN_DATA', JSON.stringify(result));
-            }
-            dispatch(setCurrentInstance(result));
-          })
-          .catch(err => {
-            if (err?.response?.status === 404) {
-              dispatch(clearCurrentInstance());
-            }
+
+        // Only fetch default context if we don't have a persisted one
+        if (!rawCurrentInstance) {
+          getInstanceContext()
+            .then(res => {
+              let result: any = res;
+              if (isSuperAdminValue) {
+                const globalTemplate = { ...res, selectedInstance: null };
+                localStorage.setItem('SUPERADMIN_DATA', JSON.stringify(globalTemplate));
+                result = globalTemplate;
+              }
+              dispatch(setCurrentInstance(result));
+            })
+            .catch(err => {
+              if (err?.response?.status === 404) {
+                dispatch(clearCurrentInstance());
+              }
+            });
+        } else if (isSuperAdminValue && !localStorage.getItem('SUPERADMIN_DATA')) {
+          // If super admin and we have an instance context but missing SUPERADMIN_DATA, fetch it once
+          getInstanceContext().then(res => {
+            const globalTemplate = { ...res, selectedInstance: null };
+            localStorage.setItem('SUPERADMIN_DATA', JSON.stringify(globalTemplate));
           });
+        }
       } else {
         setUser(undefined);
         localStorage.removeItem('SUPERADMIN_DATA');
