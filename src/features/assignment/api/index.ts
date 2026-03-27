@@ -7,22 +7,23 @@ import { TeamAssignHierarchyRequest } from '../providers/types';
 
 export const getLocationHierarchyByPlanId = async (planId: string): Promise<PageableModel<LocationModel>> => {
   const data = await api
-    .get<any>(`instance/hierarchy`)
+    // .get<any>(`instance/hierarchy`)
+    .get<any>(`groupmanagement/instance/locationassigments`)
     .then(response => {
       
       const content = (response.data?.geoTree || []) as unknown as LocationModel[];
-
-      const mapActive = (nodes: any[]) => {
-        nodes.forEach(node => {
-          if (node.properties && (node.properties.assigned || node.properties.active)) {
-            node.active = true;
-          }
-          if (node.children && node.children.length > 0) {
-            mapActive(node.children);
-          }
-        });
-      };
-      mapActive(content);
+      // console.log(content,'CH')
+      // const mapActive = (nodes: any[]) => {
+      //   nodes.forEach(node => {
+      //     if (node.properties && (node.properties.assigned || node.properties.active)) {
+      //       node.active = true;
+      //     }
+      //     if (node.children && node.children.length > 0) {
+      //       mapActive(node.children);
+      //     }
+      //   });
+      // };
+      // mapActive(content);
 
       return {
         content: content,
@@ -39,7 +40,7 @@ export const getLocationHierarchyByPlanId = async (planId: string): Promise<Page
           sort: { empty: true, sorted: false, unsorted: true },
           unpaged: false
         },
-        size: content.length || 10,
+        size: content.length || 9999,
         sort: { empty: true, sorted: false, unsorted: true },
         totalElements: content.length,
         totalPages: 1
@@ -88,7 +89,8 @@ export const assignTeamsToMultiplePlanLocations = async (
 
 export const getAssignedLocationHierarcyCount = async (planId: string): Promise<{ count: number }> => {
   const data = await api
-    .get<{ count: number }>(PLAN + `/${planId}/locationHierarchy?_summary=COUNT`)
+    // .get<{ count: number }>(PLAN + `/${planId}/locationHierarchy?_summary=COUNT`)
+    .get<{ count: number }>(`groupmanagement?_summary=count`)
     .then(response => response.data);
   return data;
 };
