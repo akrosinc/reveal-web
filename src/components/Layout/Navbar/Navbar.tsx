@@ -30,6 +30,7 @@ const NavbarComponent = () => {
   const [expanded, setExpanded] = useState(false);
   const [showSwitchModal, setShowSwitchModal] = useState(false);
   const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user');
+  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/super_admin');
 
   useEffect(() => {
     if (initialized) {
@@ -38,8 +39,16 @@ const NavbarComponent = () => {
           setUser(userProfile);
         });
         // Fetch and persist the user's default instance after login
+        const isSuperAdminValue = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/super_admin');
         getInstanceContext()
-          .then(res => dispatch(setCurrentInstance(res)))
+          .then(res => {
+            const result = isSuperAdminValue ? { ...res, selectedInstance: null } : res;
+            console.log(res)
+            if (isSuperAdminValue) {
+              localStorage.setItem('SUPERADMIN_DATA', JSON.stringify(result));
+            }
+            dispatch(setCurrentInstance(result));
+          })
           .catch(err => {
             if (err?.response?.status === 404) {
               dispatch(clearCurrentInstance());
@@ -47,11 +56,11 @@ const NavbarComponent = () => {
           });
       } else {
         setUser(undefined);
+        localStorage.removeItem('SUPERADMIN_DATA');
         dispatch(clearCurrentInstance());
       }
     }
   }, [keycloak.authenticated, initialized, dispatch]);
-
 
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode);
@@ -141,16 +150,18 @@ const NavbarComponent = () => {
           {initialized && user ? (
             <Nav className="d-inline-flex align-items-center">
               {/* Switch Instance button */}
-             {((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user') && <Button
-                id="switch-instance-button-nav"
-                variant="link"
-                className="switch-instance-nav-btn me-2"
-                onClick={() => setShowSwitchModal(true)}
-                title={selectedInstance ? `Current: ${selectedInstance.name}` : 'No Instance Selected'}
-              >
-                <BsArrowLeftRight className="me-1" />
-                {selectedInstance?.name || t('topNav.switchInstance') || 'No Instance Selected'}
-              </Button>}
+              {
+                <Button
+                  id="switch-instance-button-nav"
+                  variant="link"
+                  className="switch-instance-nav-btn me-2"
+                  onClick={() => setShowSwitchModal(true)}
+                  title={selectedInstance ? `Current: ${selectedInstance?.name}` : 'No Instance Selected'}
+                >
+                  <BsArrowLeftRight className="me-1" />
+                  {isSuperAdmin && selectedInstance?.identifier == null ? "Global" : selectedInstance?.name || t('topNav.switchInstance') || 'No Instance Selected'}
+                </Button>
+              }
               <BsPerson size="1.2rem" className="mt-1 me-1" />
               <NavDropdown title={user.username} id="logout-nav-dropdown" align="end" className="me-md-4">
                 <NavDropdown.Item

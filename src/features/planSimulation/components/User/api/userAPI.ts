@@ -129,7 +129,7 @@ export const getUserList1 = async (
     params.append('sort', `${sortField},${direction ? 'asc' : 'desc'}`);
   }
 
-  const response = await api.get<UserListResponse>(`${USER}/global?${params.toString()}`);
+  const response = await api.get<UserListResponse>(`${USER}/global?size=10000&${params.toString()}`);
 
   return response.data.content;
 };

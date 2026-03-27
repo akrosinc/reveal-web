@@ -11,19 +11,27 @@ import { useAppSelector } from '../store/hooks';
 export const useAuthorization = (roles: string[] = []): boolean => {
   const { keycloak } = useKeycloak();
   const ctx = useAppSelector(state => state.instanceContext);
-
+  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/super_admin');
+  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user');
   const permissions = ctx?.role?.permissions || [];
 
-  if (!roles || roles.length === 0) return true;
+  const isAuthorized = (roles: string[]) => {
+    if (!roles || roles.length === 0) return true;
+    return roles.some((r) => {
+      // Check Keycloak roles
+      const hasRealmRole = keycloak?.hasRealmRole(r);
+      const hasResourceRole = keycloak?.hasResourceRole(r, 'realm-management');
 
-  return roles.some((r) => {
-    // Check Keycloak roles
-    const hasRealmRole = keycloak?.hasRealmRole(r);
-    const hasResourceRole = keycloak?.hasResourceRole(r, 'realm-management');
-
-    // Check backend permissions
-    const hasPermission = permissions.includes(r);
-
-    return hasRealmRole || hasResourceRole || hasPermission;
-  });
+      // Check backend permissions
+      const hasPermission = permissions.includes(r);
+      if (isSuperAdmin && ctx?.selectedInstance?.identifier == null) {
+        return hasRealmRole || hasResourceRole
+      }
+      if (isStandardUser || (isSuperAdmin && ctx?.selectedInstance)) {
+        return hasPermission
+      }
+      // return hasRealmRole || hasResourceRole || hasPermission;
+    });
+  };
+  return isAuthorized(roles)
 };

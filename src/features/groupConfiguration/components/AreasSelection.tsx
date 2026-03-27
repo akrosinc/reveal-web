@@ -51,15 +51,15 @@ interface TreeNodeProps {
   isDarkMode: boolean;
 }
 
-const TreeNode = React.memo<TreeNodeProps>(({ 
-  node, 
-  selectedSet, 
-  onSelect, 
-  filter, 
-  depth = 0, 
-  expandedNodeIds, 
-  onToggleExpand, 
-  inheritedMatch = false ,
+const TreeNode = React.memo<TreeNodeProps>(({
+  node,
+  selectedSet,
+  onSelect,
+  filter,
+  depth = 0,
+  expandedNodeIds,
+  onToggleExpand,
+  inheritedMatch = false,
   isTeamMode = false,
   areaTeams = {},
   onTeamClick,
@@ -77,8 +77,8 @@ const TreeNode = React.memo<TreeNodeProps>(({
   const hasChildren = !!(node.children && node.children.length > 0);
 
   // Use pre-calculated stats from enriched node
-  const { total, selected, _isMatch, _hasChildMatch } = node._stats || { 
-    total: hasChildren ? 0 : 1, 
+  const { total, selected, _isMatch, _hasChildMatch } = node._stats || {
+    total: hasChildren ? 0 : 1,
     selected: isSelected ? 1 : 0,
     _isMatch: true,
     _hasChildMatch: false
@@ -86,9 +86,9 @@ const TreeNode = React.memo<TreeNodeProps>(({
 
   const navigate = useNavigate();
 
-  const currentTeamName = node.teams && node.teams.length > 0 
-                  ? node.teams.map((t: any) => t.name).join(', ') 
-                  : areaTeams[node.identifier] || 'Not Assigned';
+  const currentTeamName = node.teams && node.teams.length > 0
+    ? node.teams.map((t: any) => t.name).join(', ')
+    : areaTeams[node.identifier] || 'Not Assigned';
 
   const isExpandedByFilter = !!(filter && (inheritedMatch || _isMatch || _hasChildMatch));
   const expanded = isExpandedByFilter || expandedNodeIds.includes(node.identifier);
@@ -181,21 +181,21 @@ const TreeNode = React.memo<TreeNodeProps>(({
               />
             )}
             {!hasChildren ? (
-                <label
-                  className="form-check-label"
-                  htmlFor={`area-${node.identifier}`}
-                  style={{ cursor: 'pointer', userSelect: 'none', color: isDarkMode ? '#fff' : '#000', paddingLeft: isTeamMode ? '0' : undefined }}
-                >
-                  {node.properties.name}
-                </label>
+              <label
+                className="form-check-label"
+                htmlFor={`area-${node.identifier}`}
+                style={{ cursor: 'pointer', userSelect: 'none', color: isDarkMode ? '#fff' : '#000', paddingLeft: isTeamMode ? '0' : undefined }}
+              >
+                {node.properties.name}
+              </label>
             ) : (
               <div
                 className="fw-bold"
-                style={{ 
-                  cursor: 'pointer', 
-                  userSelect: 'none', 
-                  fontSize: depth === 0 ? '1.1rem' : '1rem', 
-                  color: (!isTeamMode && (isFullySelected || indeterminate)) ? '#0d6efd' : isDarkMode ? '#fff' : '#000' 
+                style={{
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  fontSize: depth === 0 ? '1.1rem' : '1rem',
+                  color: (!isTeamMode && (isFullySelected || indeterminate)) ? '#0d6efd' : isDarkMode ? '#fff' : '#000'
                 }}
                 onClick={handleExpand}
               >
@@ -219,8 +219,8 @@ const TreeNode = React.memo<TreeNodeProps>(({
                     {node.properties.geographicLevel}
                   </span>
                 )}
-                <Dropdown 
-                  show={openDropdownId === node.identifier} 
+                <Dropdown
+                  show={openDropdownId === node.identifier}
                   onToggle={(isOpen) => onDropdownToggle(isOpen ? node.identifier : null)}
                   drop="end"
                 >
@@ -229,8 +229,8 @@ const TreeNode = React.memo<TreeNodeProps>(({
                       <FontAwesomeIcon icon={faEllipsisV} className={isDarkMode ? 'text-light' : 'text-secondary'} size="sm" />
                     </div>
                   </Dropdown.Toggle>
-                  <Dropdown.Menu 
-                    popperConfig={{ 
+                  <Dropdown.Menu
+                    popperConfig={{
                       strategy: 'fixed',
                       modifiers: [
                         {
@@ -251,7 +251,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
                         },
                       ],
                     }}
-                    className={`shadow border-0 py-0 ${isDarkMode ? 'bg-dark border-secondary' : 'bg-white'}`} 
+                    className={`shadow border-0 py-0 ${isDarkMode ? 'bg-dark border-secondary' : 'bg-white'}`}
                     style={{ borderRadius: '10px', overflow: 'hidden', minWidth: '180px', zIndex: 1060 }}
                     renderOnMount
                   >
@@ -259,16 +259,16 @@ const TreeNode = React.memo<TreeNodeProps>(({
                       Area Actions
                     </div>
                     <Dropdown.Item onClick={() => { onTeamClick?.((node as any)._leafIds); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
-                       <FontAwesomeIcon icon={faShareSquare} className="text-primary" style={{ transform: 'scaleX(-1)' }} />
-                       <span>Change team</span>
+                      <FontAwesomeIcon icon={faShareSquare} className="text-primary" style={{ transform: 'scaleX(-1)' }} />
+                      <span>Change team</span>
                     </Dropdown.Item>
                     <Dropdown.Item onClick={() => { onViewTeam?.(node.properties?.geographicLevel || 'Not Assigned'); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
-                       <FontAwesomeIcon icon={faShareSquare} className="text-info" style={{ transform: 'scaleX(-1)' }} />
-                       <span>View team</span>
+                      <FontAwesomeIcon icon={faShareSquare} className="text-info" style={{ transform: 'scaleX(-1)' }} />
+                      <span>View team</span>
                     </Dropdown.Item>
                     <Dropdown.Item onClick={() => { navigate('/plans/campaign-management'); onDropdownToggle(null); }} className="py-2 px-3 d-flex align-items-center gap-2">
-                       <FontAwesomeIcon icon={faShareSquare} className="text-success" style={{ transform: 'scaleX(-1)' }} />
-                       <span>Open Map</span>
+                      <FontAwesomeIcon icon={faShareSquare} className="text-success" style={{ transform: 'scaleX(-1)' }} />
+                      <span>Open Map</span>
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
@@ -283,8 +283,8 @@ const TreeNode = React.memo<TreeNodeProps>(({
                   {node.properties.geographicLevel || 'Not Assigned'}
                 </span>
               )}
-              <Dropdown 
-                show={openDropdownId === node.identifier} 
+              <Dropdown
+                show={openDropdownId === node.identifier}
                 onToggle={(isOpen) => onDropdownToggle(isOpen ? node.identifier : null)}
                 drop="end"
               >
@@ -293,8 +293,8 @@ const TreeNode = React.memo<TreeNodeProps>(({
                     <FontAwesomeIcon icon={faEllipsisV} className={isDarkMode ? 'text-light' : 'text-secondary'} size="sm" />
                   </div>
                 </Dropdown.Toggle>
-                <Dropdown.Menu 
-                  popperConfig={{ 
+                <Dropdown.Menu
+                  popperConfig={{
                     strategy: 'fixed',
                     modifiers: [
                       {
@@ -315,10 +315,10 @@ const TreeNode = React.memo<TreeNodeProps>(({
                       },
                     ],
                   }}
-                  className={`shadow border-0 py-0 ${isDarkMode ? 'bg-dark border-secondary' : 'bg-white'}`} 
+                  className={`shadow border-0 py-0 ${isDarkMode ? 'bg-dark border-secondary' : 'bg-white'}`}
                   style={{ borderRadius: '10px', overflow: 'hidden', minWidth: '180px', zIndex: 1060 }}
                   renderOnMount
-               >
+                >
                   <div className={`p-2 small fw-bold border-bottom ${isDarkMode ? 'text-muted border-secondary' : 'text-secondary bg-light'}`}>
                     Location Actions
                   </div>
@@ -386,13 +386,13 @@ const useDebounce = (value: string, delay: number = 300) => {
   return debouncedValue;
 };
 
-const AreasSelection: React.FC<Props> = ({ 
-  isTeamMode, 
-  selectedHierarchy, 
-  selectedAreas, 
-  onSelectionChange, 
-  areaTeams, 
-  onAreaTeamChange 
+const AreasSelection: React.FC<Props> = ({
+  isTeamMode,
+  selectedHierarchy,
+  selectedAreas,
+  onSelectionChange,
+  areaTeams,
+  onAreaTeamChange
 }) => {
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const selectedInstance = useAppSelector((state: any) => state.instanceContext.selectedInstance);
@@ -416,21 +416,21 @@ const AreasSelection: React.FC<Props> = ({
   // Recursively enrich nodes with their leaf IDs, stats, AND search match results
   const enrichedAreas = useMemo(() => {
     const searchLower = debouncedSearchTerm.toLowerCase();
-    
+
     const enrich = (node: any): any => {
       let leafIds: string[] = [];
       let mappedChildren: any[] = [];
       let hasChildMatch = false;
       let totalCount = 0;
       let selectedCount = 0;
-      
+
       const name = node.properties?.name || '';
       const isMatch = name.toLowerCase().includes(searchLower);
-      
+
       if (node.children && node.children.length > 0) {
         for (let i = 0; i < node.children.length; i++) {
           const enrichedChild = enrich(node.children[i]);
-          leafIds.push(...enrichedChild._leafIds); 
+          leafIds.push(...enrichedChild._leafIds);
           mappedChildren.push(enrichedChild);
           totalCount += enrichedChild._stats.total;
           selectedCount += enrichedChild._stats.selected;
@@ -443,13 +443,13 @@ const AreasSelection: React.FC<Props> = ({
         totalCount = 1;
         selectedCount = selectedSet.has(node.identifier) ? 1 : 0;
       }
-      
+
       return {
         ...node,
         children: mappedChildren,
         _leafIds: leafIds,
-        _stats: { 
-          total: totalCount, 
+        _stats: {
+          total: totalCount,
           selected: selectedCount,
           _isMatch: isMatch,
           _hasChildMatch: hasChildMatch
@@ -468,10 +468,10 @@ const AreasSelection: React.FC<Props> = ({
     setIsLoading(true);
     getAssignedAreaTree()
       .then((res: any) => {
-        if (res && res.length > 0) {
-          setCurrentAreas(res);
+        if (res?.geoTree && res?.geoTree.length > 0) {
+          setCurrentAreas(res.geoTree);
           // Set expandedNodeIds to contain the identifiers of all top-level nodes to expand the first level by default
-          setExpandedNodeIds(res.map((node: any) => node.identifier));
+          setExpandedNodeIds(res.geoTree.map((node: any) => node.identifier));
         } else {
           setCurrentAreas([]);
         }
@@ -501,10 +501,10 @@ const AreasSelection: React.FC<Props> = ({
   const handleSelect = useCallback((id: string, isChecked: boolean) => {
     const node = findNode(enrichedAreas, id);
     if (!node) return;
-    
+
     const leafIds = node._leafIds;
     const currentSelectedSet = new Set(selectedAreas);
-    
+
     if (isChecked) {
       const toAdd = leafIds.filter((leafId: string) => !currentSelectedSet.has(leafId));
       if (toAdd.length > 0) {
@@ -539,11 +539,11 @@ const AreasSelection: React.FC<Props> = ({
 
   return (
     <div>
-      <Card className={`shadow-sm ${isDarkMode ? 'border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '#f8f9fa',}}>
+      <Card className={`shadow-sm ${isDarkMode ? 'border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '#f8f9fa', }}>
         <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light border-bottom'} fw-bold`}>
           Areas
         </Card.Header>
-        <Card.Body className="p-3" style={{ background: isDarkMode ? '#282828' : '#fff',height:266,overflowY:'auto' }}>
+        <Card.Body className="p-3" style={{ background: isDarkMode ? '#282828' : '#fff', height: 266, overflowY: 'auto' }}>
           <div className="area-selection-content" >
             <div className="mb-3">
               <div className="mb-2">
@@ -556,66 +556,66 @@ const AreasSelection: React.FC<Props> = ({
                   <FontAwesomeIcon icon={hierarchyOpen ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
                 </div> */}
                 {/* <Collapse in={hierarchyOpen}> */}
-                  <div>
-                    <div className="p-3 border-bottom">
-                      <div className="position-relative">
-                        <Form.Control
-                          type="text"
-                          placeholder="Search..."
-                          value={searchTerm}
-                          onChange={e => setSearchTerm(e.target.value)}
-                          className="ps-2"
-                          style={{
-                            fontSize: '0.9rem',
-                            backgroundColor: isDarkMode ? '#212529' : '#fff',
-                            color: isDarkMode ? '#fff' : '#000',
-                            border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div
-                      style={{ maxHeight: '400px', overflowY: 'auto', background: isDarkMode ? '#212529' : '#FFF' }}
-                      className="rounded p-2 area-selection-tree"
-                    >
-                      {isLoading ? (
-                        <div className="text-muted text-center p-5 d-flex flex-column align-items-center gap-3">
-                          <Spinner animation="border" variant="primary" />
-                          <span>Loading hierarchy data...</span>
-                        </div>
-                      ) : (
-                        enrichedAreas.map((area: any) => (
-                          <TreeNode
-                            key={area.identifier}
-                            node={area}
-                            selectedSet={selectedSet}
-                            onSelect={handleSelect}
-                            filter={debouncedSearchTerm}
-                            depth={0}
-                            expandedNodeIds={expandedNodeIds}
-                            onToggleExpand={toggleNodeExpansion}
-                            isTeamMode={isTeamMode}
-                            areaTeams={areaTeams}
-                            onTeamClick={handleTeamClick}
-                            onViewTeam={handleViewTeam}
-                            openDropdownId={openDropdownId}
-                            onDropdownToggle={setOpenDropdownId}
-                            isDarkMode={isDarkMode}
-                          />
-                        ))
-                      )}
+                <div>
+                  <div className="p-3 border-bottom">
+                    <div className="position-relative">
+                      <Form.Control
+                        type="text"
+                        placeholder="Search..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="ps-2"
+                        style={{
+                          fontSize: '0.9rem',
+                          backgroundColor: isDarkMode ? '#212529' : '#fff',
+                          color: isDarkMode ? '#fff' : '#000',
+                          border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
+                        }}
+                      />
                     </div>
                   </div>
+
+                  <div
+                    style={{ maxHeight: '400px', overflowY: 'auto', background: isDarkMode ? '#212529' : '#FFF' }}
+                    className="rounded p-2 area-selection-tree"
+                  >
+                    {isLoading ? (
+                      <div className="text-muted text-center p-5 d-flex flex-column align-items-center gap-3">
+                        <Spinner animation="border" variant="primary" />
+                        <span>Loading hierarchy data...</span>
+                      </div>
+                    ) : (
+                      enrichedAreas.map((area: any) => (
+                        <TreeNode
+                          key={area.identifier}
+                          node={area}
+                          selectedSet={selectedSet}
+                          onSelect={handleSelect}
+                          filter={debouncedSearchTerm}
+                          depth={0}
+                          expandedNodeIds={expandedNodeIds}
+                          onToggleExpand={toggleNodeExpansion}
+                          isTeamMode={isTeamMode}
+                          areaTeams={areaTeams}
+                          onTeamClick={handleTeamClick}
+                          onViewTeam={handleViewTeam}
+                          openDropdownId={openDropdownId}
+                          onDropdownToggle={setOpenDropdownId}
+                          isDarkMode={isDarkMode}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
                 {/* </Collapse> */}
               </div>
             </div>
           </div>
         </Card.Body>
       </Card>
-      <SelectTeamModal 
-        show={showModal} 
-        onHide={() => setShowModal(false)} 
+      <SelectTeamModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
         onSelect={handleTeamSelect}
         planId={planId}
         areaId={activeAreaId}

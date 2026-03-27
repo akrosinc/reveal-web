@@ -5,6 +5,8 @@ import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { InstanceModel, setCurrentInstance } from '../../../features/reducers/instanceContext';
 import { getUserInstanceList, selectInstance } from '../../../features/instance/api';
 import './SwitchInstanceModal.css';
+import { useKeycloak } from '@react-keycloak/web';
+import { set } from 'lodash';
 
 interface Props {
   show: boolean;
@@ -12,47 +14,78 @@ interface Props {
 }
 
 const SwitchInstanceModal = ({ show, onClose }: Props) => {
+  const { keycloak } = useKeycloak();
+  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/super_admin');
+  console.log(((keycloak?.tokenParsed as any)?.groups || []))
   const dispatch = useAppDispatch();
   const selectedInstance = useAppSelector(state => state.instanceContext.selectedInstance);
 
   const [instanceList, setInstanceList] = useState<InstanceModel[]>([]);
-  const [selectedId, setSelectedId] = useState<string | undefined>(selectedInstance?.identifier);
+  const [selectedId, setSelectedId] = useState<string | undefined | null>((isSuperAdmin && selectedInstance?.identifier == null)
+    ? "GLOBAL"
+    : selectedInstance?.identifier);
+  console.log(selectedId, selectedInstance)
   const [loading, setLoading] = useState(false);
   const [switching, setSwitching] = useState(false);
-
+  console.log(((keycloak?.tokenParsed as any)?.groups || []))
   useEffect(() => {
     if (show) {
-      setSelectedId(selectedInstance?.identifier);
+
       setLoading(true);
       getUserInstanceList()
-        .then(list => setInstanceList(list))
+        .then(list => {
+          if (isSuperAdmin) {
+            setInstanceList([{ identifier: 'GLOBAL', name: 'Global' }, ...list]);
+            setSelectedId((isSuperAdmin && selectedInstance?.identifier == null)
+              ? "GLOBAL"
+              : selectedInstance?.identifier);
+          } else {
+            setInstanceList(list);
+            setSelectedId(selectedInstance?.identifier);
+          }
+        })
         .catch(() => toast.error('Failed to load instance list.'))
         .finally(() => setLoading(false));
     }
-  }, [show, selectedInstance?.identifier]);
+  }, [show, selectedInstance?.identifier, isSuperAdmin]);
 
   const handleSelect = (id: string) => {
     setSelectedId(id);
   };
 
   const handleSwitch = async () => {
-    if (!selectedId || selectedId === selectedInstance?.identifier) {
-      onClose();
-      return;
+    // if (!selectedId || selectedId === selectedInstance?.identifier) {
+    //   onClose();
+    //   return;
+    // }
+    if (selectedId !== 'GLOBAL') {
+      setSwitching(true);
+      try {
+        const res = await selectInstance(selectedId as string);
+        dispatch(setCurrentInstance(res));
+        toast.success(`Switched to ${res.selectedInstance.name}`);
+        onClose();
+      } catch (e) {
+        console.log(e)
+        toast.error('Failed to switch instance.');
+      } finally {
+        setSwitching(false);
+      }
     }
-    setSwitching(true);
-    try {
-      const res = await selectInstance(selectedId);
-      dispatch(setCurrentInstance(res));
-      toast.success(`Switched to ${res.selectedInstance.name}`);
-      onClose();
-    } catch {
-      toast.error('Failed to switch instance.');
-    } finally {
-      setSwitching(false);
+    if (selectedId === 'GLOBAL') {
+      const superAdminDataRaw = localStorage.getItem('SUPERADMIN_DATA');
+      if (superAdminDataRaw) {
+        const superAdminData = JSON.parse(superAdminDataRaw);
+        dispatch(setCurrentInstance(superAdminData));
+        toast.success(`Switched back to Global`);
+        onClose();
+        return;
+      }
     }
-  };
 
+
+  };
+  console.log(selectedId)
   return (
     <Modal show={show} onHide={onClose} centered className="switch-instance-modal">
       <Modal.Header closeButton>
