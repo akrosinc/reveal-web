@@ -13,6 +13,7 @@ export interface InstanceResponse {
   areas: InstanceArea[];
   locationHierarchy: InstanceLocationHierarchy[];
   datasets?: any[];
+  instanceName?:string;
 }
 
 export interface PlanResponse {

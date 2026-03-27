@@ -32,7 +32,7 @@ export const getUserById = async (id: string): Promise<UserModel> => {
 };
 
 export const createUser = async (user: CreateUserModel): Promise<UserModel> => {
-  const data = await api.post<UserModel>(USER, user).then(response => response.data);
+  const data = await api.post<UserModel>(USER+'/global', user).then(response => response.data);
   return data;
 };
 
@@ -124,6 +124,23 @@ export const getUserInstanceList = async (userId: string): Promise<UserInstanceM
   const data = await api
     .get<UserInstanceModel[]>('instance/'+USER + `/${userId}/instancelist`)
     .then(response => response.data);
+  return data;
+};
+
+export interface CreateInstanceUserPayload {
+  username: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  password: string;
+  tempPassword: boolean;
+  securityGroups: string[];
+  instanceIdentifier: string;
+  isInstanceAdmin: boolean;
+}
+
+export const createInstanceUser = async (payload: CreateInstanceUserPayload): Promise<UserModel> => {
+  const data = await api.post<UserModel>(`instance/user`, payload).then(response => response.data);
   return data;
 };
 
