@@ -20,6 +20,7 @@ import RolesSelection from './components/RolesSelection';
 import GroupsSelection from './components/GroupsSelection';
 import DatasetsSelection from './components/DatasetsSelection';
 import AuthorizedElement from '../../../../../components/AuthorizedElement';
+import { STANDARD_USER, SUPER_ADMIN } from '../../../../../constants/userRoles';
 
 
 interface Props {
@@ -53,7 +54,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
   const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
   const [instanceList, setInstanceList] = useState<InstanceModel[]>([]);
-  const [userType, setUserType] = useState('standard_user');
+  const [userType, setUserType] = useState(STANDARD_USER);
   const [selectedGroup, setSelectedGroup] = useState<Options | Options[] | null>(null);
   const [selectedUserAreas, setSelectedUserAreas] = useState<string[]>([]);
   const [selectedUserRoles, setSelectedUserRoles] = useState<string[]>([]);
@@ -315,8 +316,8 @@ const EditUser = ({ user, handleClose }: Props) => {
   };
 
   const userTypeOptions = [
-    { name: 'Admin', value: 'super_admin' },
-    { name: 'Standard User', value: 'standard_user' }
+    { name: 'Admin', value: SUPER_ADMIN },
+    { name: 'Standard User', value: STANDARD_USER }
   ];
 
   return (
