@@ -51,7 +51,7 @@ export const PLAN_ACTIVATE = 'plan_activate';
 export const REPORT_VIEW = 'report_view';
 
 //ASSIGN
-export const ASSIGNMENT_VIEW = 'assignment_view';
+export const ASSIGNMENT_VIEW = 'assignment_plan';
 export const ASSIGNMENT_CREATE = 'assignment_create';
 export const ASSIGNMENT_UPDATE = 'assignment_update';
 export const ASSIGNMENT_DELETE = 'assignment_delete';

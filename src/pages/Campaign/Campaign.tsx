@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import AuthGuard from '../../components/AuthGuard';
 import { ErrorPage } from '../../components/pages';
 import PageWrapper from '../../components/PageWrapper';
-import { REVEAL_SIMULATION } from '../../constants';
+import { CAMPAIGN_MANAGEMENT, REVEAL_SIMULATION } from '../../constants';
 import Simulation from '../../features/planSimulation/components/Simulation';
 import Campaign_Management from '../../features/planSimulation/components/CampaignManagement';
 
@@ -17,7 +17,7 @@ const Campaign = () => {
           path="/"
           element={
             <AuthGuard 
-            roles={[REVEAL_SIMULATION]}
+            roles={[CAMPAIGN_MANAGEMENT]}
             // roles={[]}
             >
               <Campaign_Management />
