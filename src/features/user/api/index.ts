@@ -16,9 +16,8 @@ export const getUserList = async (
   const data = await api
     .get<PageableModel<UserModel>>(
       USER + '/global' +
-        `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&sort=${
-          sortField !== undefined ? sortField : ''
-        },${direction ? 'asc' : 'desc'}`
+      `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ''
+      },${direction ? 'asc' : 'desc'}`
     )
     .then(response => response.data);
   return data;
@@ -32,7 +31,7 @@ export const getUserById = async (id: string): Promise<UserModel> => {
 };
 
 export const createUser = async (user: CreateUserModel): Promise<UserModel> => {
-  const data = await api.post<UserModel>(USER+'/global', user).then(response => response.data);
+  const data = await api.post<UserModel>(USER + '/global', user).then(response => response.data);
   return data;
 };
 
@@ -55,7 +54,7 @@ export const uploadUserCsv = async (csv: FormData, toastId: string): Promise<str
   const data = await api.post(USER + '/bulk', csv, {
     onUploadProgress: p => {
       const progress = p.loaded / p.total;
-      toast.update(toastId, { progress, render: 'JSON file is uploading... ' + Math.round(progress * 100) + '%'});
+      toast.update(toastId, { progress, render: 'JSON file is uploading... ' + Math.round(progress * 100) + '%' });
       toast.dismiss(toastId);
     }
   }).then(response => response.data);
@@ -72,9 +71,8 @@ export const getBulkList = async (
   const data = await api
     .get<PageableModel<UserBulk>>(
       USER +
-        `/bulk?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&sort=${
-          sortField !== undefined ? sortField : ''
-        },${direction ? 'asc' : 'desc'}`
+      `/bulk?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ''
+      },${direction ? 'asc' : 'desc'}`
     )
     .then(response => response.data);
   return data;
@@ -122,7 +120,7 @@ export const getUserRoles = async (userId: string): Promise<UserRolesResponse> =
 
 export const getUserInstanceList = async (userId: string): Promise<UserInstanceModel[]> => {
   const data = await api
-    .get<UserInstanceModel[]>('instance/'+USER + `/${userId}/instancelist`)
+    .get<UserInstanceModel[]>('instance/' + USER + `/${userId}/instancelist`)
     .then(response => response.data);
   return data;
 };
@@ -141,6 +139,27 @@ export interface CreateInstanceUserPayload {
 
 export const createInstanceUser = async (payload: CreateInstanceUserPayload): Promise<UserModel> => {
   const data = await api.post<UserModel>(`instance/user`, payload).then(response => response.data);
+  return data;
+};
+
+export interface GroupModel {
+  identifier: string;
+  name: string;
+}
+
+export const getGroupManagementList = async (instanceIdentifier: string): Promise<PageableModel<GroupModel>> => {
+  const data = await api
+    .get<PageableModel<GroupModel>>(`${GROUP_MANAGEMENT}?instanceIdentifier=${instanceIdentifier}&size=9999`)
+    .then(response => response.data);
+  return data;
+};
+
+export interface CreateGroupAuthUserPayload extends CreateInstanceUserPayload {
+  groupIdentifier: string;
+}
+
+export const createGroupAuthUser = async (payload: CreateGroupAuthUserPayload): Promise<UserModel> => {
+  const data = await api.post<UserModel>(`${GROUP_MANAGEMENT}/org/user`, payload).then(response => response.data);
   return data;
 };
 
