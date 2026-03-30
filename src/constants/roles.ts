@@ -59,7 +59,7 @@ export const ASSIGNMENT_DELETE = 'assignment_delete';
 export const REVEAL_MANAGE = 'reveal_manage';
 
 //ADMIN
-export const REVEAL_SIMULATION = 'reveal_simulation';
+export const REVEAL_SIMULATION = 'reveal_simulation_view';
 export const REVEAL_SIMULATION_EDIT = 'reveal_simulation_edit';
 
 //METADATA IMPORT
@@ -88,7 +88,7 @@ export const GROUP_MANAGEMENT_DELETE = 'group_management_delete';
 export const CAMPAIGN_MANAGEMENT = 'campaign_management_view';
 export const ASSIGNMENT_PLAN = 'assignment_plan';
 
-export const REVEAL_SIMULATION_USER = 'reveal_simulation_user';
+export const REVEAL_SIMULATION_USER = 'reveal_plan_simulation_view';
 
 export const PLAN_LOCATION_ASSIGNMENT = 'plan_location_assignment';
 export const PLAN_TEAM_ASSIGNMENT = 'plan_team_assignment';
