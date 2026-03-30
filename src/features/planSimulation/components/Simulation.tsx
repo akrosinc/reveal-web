@@ -1689,7 +1689,7 @@ const Simulation = () => {
         <div style={{ display: 'flex', position: 'relative' }}>
           <Drawer open={leftOpen} anchor="left" heading="Plan Simulation">
             {isAuthorized && instances?.length > 0 && (
-              <Accordion title="Plans" open={selectedPlan == null}>
+              <Accordion title="Instances" open={selectedPlan == null}>
                 {/* <Select
                   placeholder={'Select Plan'}
                   className={styles.select_small}

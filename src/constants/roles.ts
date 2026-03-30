@@ -1,5 +1,5 @@
 //REALM ROLES
-export const ROLE_MANAGE_USER = 'manage-users';
+export const ROLE_MANAGE_USER = 'user_management_view_menu';
 export const REALM_ROLE_QUERY_GROUPS = 'query-groups';
 export const REALM_ROLE_QUERY_USERS = 'query-users';
 export const REALM_ROLE_VIEW_USERS = 'view-users';
@@ -11,11 +11,12 @@ export const ORGANIZATION_UPDATE = 'organization_update';
 export const ORGANIZATION_DELETE = 'organization_delete';
 
 //USER
-export const USER_VIEW = 'user_view';
+// export const USER_VIEW = 'user_view';
+export const USER_VIEW = 'user_management_user_view';
 export const USER_PASSWORD = 'user_password';
-export const USER_CREATE = 'user_create';
-export const USER_UPDATE = 'user_update';
-export const USER_DELETE = 'user_delete';
+export const USER_CREATE = 'user_management_user_create';
+export const USER_UPDATE = 'user_management_user_update';
+export const USER_DELETE = 'user_management_user_delete';
 
 //USER BULK
 export const USER_BULK_VIEW = 'user_bulk_view';
@@ -67,8 +68,8 @@ export const METADATA_FILE_IMPORT = 'metadata_file_import';
 
 //METADATA IMPORT
 export const TAG_ACCESS_OVERRIDE = 'tag_access_override';
-export const TAG_MANAGEMENT = 'tag_management';
-export const METADATA_IMPORT_VIEW = 'metadata_import_view';
+export const TAG_MANAGEMENT_VIEW = 'tag_menu_view';
+export const METADATA_IMPORT_VIEW = 'metadata_menu_view';
 
 //HOME PAGE
 export const MENU_HOME_VIEW = 'menu_home_view';

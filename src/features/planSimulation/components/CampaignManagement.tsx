@@ -753,7 +753,7 @@ const CampaignManagement = () => {
         <div style={{ display: 'flex', position: 'relative' }}>
           <Drawer open={leftOpen} anchor="left" heading="Campaign Manager">
             {(isAuthorizedForRenderingInstances && instances?.length > 0) && (
-              <Accordion title="Plans" open={selectedPlan == null}>
+              <Accordion title="Instances" open={selectedPlan == null}>
                 {/* <Select
                   placeholder={'Select Plan'}
                   className={styles.select_small}

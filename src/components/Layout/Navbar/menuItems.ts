@@ -20,7 +20,8 @@ import {
   ASSIGNMENT_PLAN,
   INSTANE_MANAGEMENT_VIEW,
   REVEAL_SIMULATION_USER,
-  GROUP_MANAGEMENT
+  GROUP_MANAGEMENT,
+  TAG_MANAGEMENT_VIEW
 } from '../../../constants';
 
 
@@ -115,7 +116,7 @@ export const MAIN_MENU = [
     roles: [
       ROLE_MANAGE_USER,
       LOCATION_VIEW,
-      TAG_MANAGEMENT,
+     TAG_MANAGEMENT_VIEW,
       METADATA_IMPORT_VIEW
     ],
     dropdown: [
@@ -132,7 +133,7 @@ export const MAIN_MENU = [
       {
         pageTitle: 'Tag Management',
         route: TAG_MANAGEMENT,
-        roles: [TAG_MANAGEMENT]
+        roles: [TAG_MANAGEMENT_VIEW]
       },
       {
         pageTitle: 'Metadata Import',
