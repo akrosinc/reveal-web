@@ -10,6 +10,7 @@ import Users from '../../features/user/components/UsersPage';
 import InstanceConfiguration from '../../features/instanceConfiguration';
 import GroupConfiguration from '../../features/groupConfiguration';
 import { useKeycloak } from '@react-keycloak/web';
+import { useAppSelector } from '../../store/hooks';
 
 const Management = () => {
   const { t } = useTranslation();
@@ -18,10 +19,11 @@ const Management = () => {
   let navigate = useNavigate();
 
   const { keycloak } = useKeycloak();
-
+  const isInstanceAdmin = useAppSelector(state => state?.instanceContext)?.role?.name !== 'ADMIN'
+  
   // Standard users see Organization tab; superadmin does NOT
   const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user');
-
+  
   return (
     <PageWrapper>
       <Tabs
@@ -35,7 +37,7 @@ const Management = () => {
         }}
       >
         {/* Organization tab: visible only for standard users */}
-        {isStandardUser && keycloak.hasRealmRole(ORGANIZATION_VIEW) && (
+        {isStandardUser && isInstanceAdmin && keycloak.hasRealmRole(ORGANIZATION_VIEW) && (
           <Tab eventKey="organization" title={t('managementPage.organization')}>
             <AuthGuard
             roles={[ORGANIZATION_VIEW]}

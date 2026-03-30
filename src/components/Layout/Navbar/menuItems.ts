@@ -36,16 +36,17 @@ export const MAIN_MENU = [
     route: '/instance',
     roles: [INSTANE_MANAGEMENT_VIEW, REVEAL_SIMULATION],
     dropdown: [
+        {
+        pageTitle: 'Instance Management',
+        route: '/instance-configuration',
+        roles: [INSTANE_MANAGEMENT_VIEW]
+      },
       {
         pageTitle: 'Data Viewer',
         route: SIMULATION_PAGE,
         roles: [REVEAL_SIMULATION]
       },
-      {
-        pageTitle: 'Instance Management',
-        route: '/instance-configuration',
-        roles: [INSTANE_MANAGEMENT_VIEW]
-      }
+    
     ]
   },
 

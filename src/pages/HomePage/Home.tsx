@@ -43,8 +43,8 @@ function Home() {
     },
     {
       id: 'group-configuration',
-      to: "/group-configuration",
-      path: "/group-configuration",
+      to: "/groupmanagement",
+      path: "/groupmanagement",
       title: t('buttons.groupConfiguration'),
       role:[GROUP_MANAGEMENT_VIEW]
     },
