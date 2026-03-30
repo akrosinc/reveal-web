@@ -1,21 +1,20 @@
 import { useKeycloak } from '@react-keycloak/web';
-import { useAppSelector } from '../../store/hooks';
-import { STANDARD_USER, SUPER_ADMIN } from '../../constants/userRoles';
+import { useAppSelector } from '../store/hooks';
+import { STANDARD_USER, SUPER_ADMIN } from '../constants/userRoles';
 
-interface Props {
-  children: JSX.Element;
-  roles?: string[];
-  /** Pass the nav item's own route so visibility is checked against it, not the current URL */
-  path?: string;
-}
-
-const AuthorizedElement = ({ roles = [], children }: Props) => {
+/**
+ * Custom hook for authorization checks.
+ * Returns true if the user has at least one of the required roles or permissions.
+ * 
+ * @param roles Array of roles or permissions to check against.
+ * @returns boolean indicating if the user is authorized.
+ */
+export const useAuthorization = (roles: string[] = []): boolean => {
   const { keycloak } = useKeycloak();
   const ctx = useAppSelector(state => state.instanceContext);
   const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
   const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(STANDARD_USER);
   const permissions = ctx?.role?.permissions || [];
-  console.log(ctx?.selectedInstance)
 
   const isAuthorized = (roles: string[]) => {
     if (!roles || roles.length === 0) return true;
@@ -26,20 +25,14 @@ const AuthorizedElement = ({ roles = [], children }: Props) => {
 
       // Check backend permissions
       const hasPermission = permissions.includes(r);
-      if(isSuperAdmin && ctx?.selectedInstance?.identifier == null){
-        console.log('Super Admin Access Granted');
-          return hasRealmRole || hasResourceRole
+      if (isSuperAdmin && ctx?.selectedInstance?.identifier == null) {
+        return hasRealmRole || hasResourceRole
       }
-      if(isStandardUser || (isSuperAdmin && ctx?.selectedInstance)){
-        console.log('Standard User or Super Admin with Global Access Granted');
+      if (isStandardUser || (isSuperAdmin && ctx?.selectedInstance)) {
         return hasPermission
       }
       // return hasRealmRole || hasResourceRole || hasPermission;
     });
   };
-
-  return isAuthorized(roles) ? children : null;
+  return isAuthorized(roles)
 };
-
-export default AuthorizedElement;
-

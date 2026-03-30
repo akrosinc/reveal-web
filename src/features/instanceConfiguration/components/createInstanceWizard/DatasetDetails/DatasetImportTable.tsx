@@ -17,21 +17,19 @@ interface Props {
     clickHandler?: (identifier: any) => void;
     clickAccessor?: string;
     setMetadataList: (list: MetadataFileImportResponse[]) => void;
+    searchTerm?: string;
 }
 
-const DatasetImportTable = ({ data, setMetadataList }: Props) => {
+const DatasetImportTable = ({ data, setMetadataList, searchTerm }: Props) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const { keycloak } = useKeycloak();
     const { t } = useTranslation();
     const columnsForMetadataTables = React.useMemo<Column<EntityTagResponse>[]>(
         () => [
-            { Header: 'selected', id: 'selected' },
+            { Header: '', id: 'selected' },
             { Header: 'tag', accessor: 'tag' },
-            { Header: 'owner', accessor: 'owner' },
-            { Header: 'owner', id: 'owner2', accessor: 'owner' },
             { Header: 'isPublic', accessor: 'public' },
-            { Header: 'orgGrants' },
-            { Header: 'userGrants' },
+            { Header: 'instances', accessor: 'instances' as any },
         ],
         []
     );
@@ -78,12 +76,9 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
                         </span>
                     ) : null
             },
-            { Header: 'fileName', accessor: 'filename' },
+            { Header: 'datasetName', accessor: 'filename' },
             { Header: 'uploadDate', accessor: 'uploadDatetime' },
-            { Header: 'status', accessor: 'status' },
             { Header: 'uploadedBy', accessor: 'uploadedBy' },
-            { Header: 'owner', accessor: 'owner' },
-            { Header: 'owners', accessor: 'owners' },
 
         ],
         []
@@ -98,6 +93,21 @@ const DatasetImportTable = ({ data, setMetadataList }: Props) => {
         },
         useExpanded
     );
+
+    // Auto-expand if search term matches a tag
+    React.useEffect(() => {
+        if (searchTerm) {
+            const s = searchTerm.toLowerCase();
+            rows.forEach(row => {
+                const hasMatchingTag = row.original.entityTagEvents?.some(tagEvent => 
+                    (tagEvent.tag || '').toLowerCase().includes(s)
+                );
+                if (hasMatchingTag && !(row as any).isExpanded) {
+                    (row as any).toggleRowExpanded(true);
+                }
+            });
+        }
+    }, [rows, searchTerm]);
 
     const setSelected = useCallback(
         (evt: ChangeEvent<HTMLInputElement>, identifier: string) => {

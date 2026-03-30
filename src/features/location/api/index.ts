@@ -7,8 +7,122 @@ import {
 } from '../providers/types';
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
-import { GENERATED_LOCATION_HIERARCHY, GEOGRAPHIC_LEVEL, LOCATION, LOCATION_HIERARCHY } from '../../../constants';
+import { GENERATED_LOCATION_HIERARCHY, GEOGRAPHIC_LEVEL, LOCATION, LOCATION_HIERARCHY, LOCATION_HIERARCHY_BASE, LOCATION_HIERARCHY_ACTIVATE } from '../../../constants';
 import { toast } from 'react-toastify';
+
+export interface LocationHierarchyBaseResponse {
+  identifier: string;
+  name: string;
+  type: string;
+  nodeOrder: string[];
+  geoTree: GeoTreeNode[];
+}
+
+export interface GeoTreeNode {
+  identifier: string;
+  type: string;
+  geometry: {
+    type: string;
+    coordinates: any[];
+  };
+  properties: GeoTreeProperties;
+  active: boolean;
+  teams: Team[];
+  selected: boolean;
+}
+
+export interface GeoTreeProperties {
+  name: string;
+  status: string;
+  externalId: string;
+  geographicLevel: string;
+  numberOfTeams: number;
+  assigned: boolean;
+  parentIdentifier: string;
+  childrenNumber: number;
+  distCoveragePercent: any;
+  numberOfChildrenTreated: any;
+  numberOfChildrenEligible: any;
+  sprayCoverage: any;
+  id: string;
+  columnDataMap: Record<string, ColumnData>;
+  persons: Person[];
+  metadata: Metadata[];
+  businessStatus: string;
+  statusColor: string;
+  levelColor: string;
+  geographicLevelNodeNumber: number;
+  parent: string;
+  population: Population;
+  numberOfStructures: number;
+  xcentroid: number;
+  ycentroid: number;
+  simulationSearchResult: boolean;
+}
+
+export interface ColumnData {
+  value: any;
+  isPercentage: boolean;
+  meta: string;
+  dataType: string;
+  key: string;
+}
+
+export interface Person {
+  coreFields: {
+    identifier: string;
+    firstName: string;
+    lastName: string;
+    gender: string;
+    birthDate: string;
+    birthDateApprox: boolean;
+  };
+  metadata: Metadata[];
+}
+
+export interface Metadata {
+  value: any;
+  type: string;
+  fieldType: string;
+  datasetId: string;
+}
+
+export interface Population {
+  female: number;
+  male: number;
+  sum: number;
+  Pyramids: PopulationPyramid[];
+}
+
+export interface PopulationPyramid {
+  AgeGroup: string;
+  MalePop: number;
+  FemalePop: number;
+  TotalPop: number;
+}
+
+export interface Team {
+  identifier: string;
+  name: string;
+  type: {
+    code: string;
+    valueCodableConcept: string;
+  };
+  active: boolean;
+  partOf: string;
+  headOf: string[];
+  members: TeamMember[];
+}
+
+export interface TeamMember {
+  identifier: string;
+  sid: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  securityGroups: string[];
+}
 
 export const getGeographicLevelList = async (
   size: number,
@@ -93,6 +207,14 @@ export const createLocationHierarchy = async (formData: {
   nodeOrder: string[];
 }): Promise<LocationHierarchyModel> => {
   const data = await api.post<LocationHierarchyModel>(LOCATION_HIERARCHY, formData).then(response => response.data);
+  return data;
+};
+
+export const createLocationHierarchyBase = async (formData: {
+  name: string;
+  nodeOrder: string[];
+}): Promise<LocationHierarchyBaseResponse> => {
+  const data = await api.post<LocationHierarchyBaseResponse>(LOCATION_HIERARCHY_BASE, formData).then(response => response.data);
   return data;
 };
 
@@ -199,5 +321,15 @@ export const validateLocationJSON = async (json: FormData, toastId: string): Pro
       }
     })
     .then(response => response.data);
+  return data;
+};
+
+export const getLocationHierarchyBase = async (): Promise<LocationHierarchyBaseResponse> => {
+  const data = await api.get<LocationHierarchyBaseResponse>(LOCATION_HIERARCHY_BASE).then(response => response.data);
+  return data;
+};
+
+export const activateLocationHierarchy = async (identifier: string): Promise<LocationHierarchyBaseResponse> => {
+  const data = await api.post<LocationHierarchyBaseResponse>(LOCATION_HIERARCHY_ACTIVATE + `/${identifier}`).then(response => response.data);
   return data;
 };

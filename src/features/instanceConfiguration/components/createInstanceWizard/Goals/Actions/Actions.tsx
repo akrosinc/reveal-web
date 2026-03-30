@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { Action } from '../../../../../plan/providers/types';
+import { getActionTitles, getformList } from '../../../../../plan/api';
 import Moment from 'moment';
 import { toUtcString } from '../../../../../../utils';
 import { useAppSelector } from '../../../../../../store/hooks';
@@ -21,8 +22,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
     const isDarkMode = useAppSelector(state => state.darkMode.value);
 
     useEffect(() => {
-        // Static data instead of API call
-        setActionTitles(['IRS', 'Bednet Distribution', 'Larval Dipping', 'Case Management']);
+        getActionTitles().then(res => setActionTitles(res));
     }, []);
 
     const {
@@ -45,12 +45,20 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
                     : planPeriod
         }
     });
+    useEffect(() => {
+        if (selectedAction?.title && actionTitles.length > 0) {
+            setValue('title', selectedAction.title);
+        }
+    }, [actionTitles, selectedAction, setValue]);
+
     const { t } = useTranslation();
 
     useEffect(() => {
-        // Static data instead of API call
-        setValue('formIdentifier', selectedAction?.formIdentifier ?? 'form-1');
+        getformList().then(res => {
+            setValue('formIdentifier', selectedAction?.formIdentifier ?? '');
+        });
     }, [setValue, selectedAction]);
+
 
     const submitHandler = (formData: any) => {
         formData.timingPeriod.start = toUtcString(formData.timingPeriod.start);
@@ -76,14 +84,11 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
                         <Form.Label>{t('planPage.Title')}</Form.Label>
                         <Form.Select
                             id="action-title-input"
-                            placeholder="Enter action title"
                             {...register('title', {
                                 required: 'Action title must be selected.',
-                                minLength: 1
                             })}
-                            defaultValue={selectedAction?.title}
                         >
-                            <option></option>
+                            <option value="">Select an action title</option>
                             {actionTitles.map((el, index) => (
                                 <option key={index} value={el}>
                                     {el}

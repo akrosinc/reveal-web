@@ -5,19 +5,24 @@ import {
   LOCATION_PAGE,
   ASSIGNMENT_PAGE,
   REPORTING_PAGE,
-  REPORT_VIEW,
-  LOCATION_VIEW,
-  PLAN_VIEW,
   SIMULATION_PAGE,
   TAG_MANAGEMENT,
   METADATA_IMPORT,
-  PLAN_MANAGEMENT,
-  REVEAL_MANAGE,
-  RESOURCE_PLANNING_PAGE,
-  DATA_PROCESSING_PROGRESS,
+  CampaignManage,
+  MENU_HOME_VIEW,
+  REPORT_VIEW,
   REVEAL_SIMULATION,
-  CampaignManage
+  ROLE_MANAGE_USER,
+  LOCATION_VIEW,
+  METADATA_IMPORT_VIEW,
+  GROUP_MANAGEMENT_VIEW,
+  CAMPAIGN_MANAGEMENT,
+  ASSIGNMENT_PLAN,
+  INSTANE_MANAGEMENT_VIEW,
+  REVEAL_SIMULATION_USER,
+  GROUP_MANAGEMENT
 } from '../../../constants';
+
 
 export const MAIN_MENU = [
   {
@@ -25,102 +30,116 @@ export const MAIN_MENU = [
     route: HOME_PAGE,
     roles: []
   },
+
   {
-    pageTitle: 'Plan Management',
-    route: '/plan',
-    roles: [PLAN_MANAGEMENT],
+    pageTitle: 'Instance',
+    route: '/instance',
+    roles: [INSTANE_MANAGEMENT_VIEW, REVEAL_SIMULATION],
     dropdown: [
-      {
-        pageTitle: 'Plans',
-        route: PLANS,
-        roles: ['manage-users']
+        {
+        pageTitle: 'Instance Management',
+        route: '/instance-configuration',
+        roles: [INSTANE_MANAGEMENT_VIEW]
       },
       {
-        pageTitle: 'Assign',
-        route: ASSIGNMENT_PAGE,
-        roles: [PLAN_VIEW]
-      },
-      {
-        pageTitle: 'Simulation',
+        pageTitle: 'Data Viewer',
         route: SIMULATION_PAGE,
         roles: [REVEAL_SIMULATION]
       },
+    
+    ]
+  },
+
+  {
+    pageTitle: 'Plan',
+    route: '/plan',
+    roles: [CAMPAIGN_MANAGEMENT, ASSIGNMENT_PLAN, REVEAL_SIMULATION_USER],
+    dropdown: [
       {
-        pageTitle: 'Resource Planning',
-        route: RESOURCE_PLANNING_PAGE,
-        roles: [PLAN_VIEW]
+        pageTitle: 'Campaign Management',
+        route: CampaignManage,
+        roles: [CAMPAIGN_MANAGEMENT]
       },
       {
-        pageTitle: 'CampaignManage',
-        route: CampaignManage,
-        roles: [REVEAL_SIMULATION]
+        pageTitle: 'Assignment',
+        route: ASSIGNMENT_PAGE,
+        roles: [ASSIGNMENT_PLAN]
+      },
+      {
+        pageTitle: 'Simulations',
+        route: SIMULATION_PAGE,
+        roles: [REVEAL_SIMULATION_USER]
       }
     ]
   },
+
+  {
+    pageTitle: 'Group',
+    route: '/group',
+    roles: [GROUP_MANAGEMENT_VIEW],
+    dropdown: [
+      {
+        pageTitle: 'Group Management',
+        route: GROUP_MANAGEMENT,
+        roles: [GROUP_MANAGEMENT_VIEW]
+      }
+    ]
+  },
+
   {
     pageTitle: 'Reporting',
     route: '#',
-    roles: [REPORT_VIEW, 'view_survey_data'],
+    roles: [REPORT_VIEW],
     dropdown: [
       {
-        pageTitle: 'planReporting',
+        pageTitle: 'Plan Reporting',
         route: REPORTING_PAGE,
-        roles: ['plan_reporting']
+        roles: [REPORT_VIEW]
       },
       {
-        pageTitle: 'performanceReporting',
+        pageTitle: 'Performance Reporting',
         route: REPORTING_PAGE + '/performance-reports',
-        roles: ['performance_reporting']
+        roles: [REPORT_VIEW]
       },
       {
-        pageTitle: 'surveyReporting',
+        pageTitle: 'Survey Reporting',
         route: REPORTING_PAGE + '/survey-data',
-        roles: ['view_survey_data']
+        roles: [REPORT_VIEW]
       }
     ]
   },
+
   {
     pageTitle: 'Admin',
     route: '/admin',
-    roles: [REVEAL_MANAGE],
+    roles: [
+      ROLE_MANAGE_USER,
+      LOCATION_VIEW,
+      TAG_MANAGEMENT,
+      METADATA_IMPORT_VIEW
+    ],
     dropdown: [
       {
-        pageTitle: 'Management',
+        pageTitle: 'User Management',
         route: MANAGEMENT,
-        roles: ['manage-users']
+        roles: [ROLE_MANAGE_USER]
       },
       {
-        pageTitle: 'Group Configuration',
-        route: MANAGEMENT + '/group-configuration',
-        // roles: ['manage-users']
-        roles: []
-      },
-      {
-        pageTitle: 'Instance Configuration',
-        route: MANAGEMENT + '/instance-configuration',
-        // roles: ['manage-users']
-        roles: []
-      },
-      {
-        pageTitle: 'Location',
+        pageTitle: 'Location Management',
         route: LOCATION_PAGE,
         roles: [LOCATION_VIEW]
       },
       {
-        pageTitle: 'TagManagement',
+        pageTitle: 'Tag Management',
         route: TAG_MANAGEMENT,
-        roles: ['tag_management']
+        roles: [TAG_MANAGEMENT]
       },
       {
-        pageTitle: 'MetaDataImport',
+        pageTitle: 'Metadata Import',
         route: METADATA_IMPORT,
-        roles: ['metadata_import']
-      },
-      {
-        pageTitle: 'dataProcessingProgress',
-        route: DATA_PROCESSING_PROGRESS,
-        roles: ['data_processing_progress']
+        roles: [METADATA_IMPORT_VIEW]
       }
     ]
   }
 ];
+

@@ -12,7 +12,7 @@ import {
   faAngleDoubleUp
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../../store/hooks';
-import { getUserList } from '../../../planSimulation/components/User/api/userAPI';
+import { getUserList, getUserList1 } from '../../../planSimulation/components/User/api/userAPI';
 
 interface Member {
   id: string;
@@ -34,8 +34,10 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Pr
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const fetchedUsers = await getUserList();
-        setUsers(fetchedUsers?.map(elem => ({
+        const fetchedUsers = await getUserList1();
+        const ids = fetchedUsers?.map(elem => elem?.identifier)
+        const idsOfUsers = Array.from(new Set(ids));
+        setUsers(idsOfUsers?.map(elem => fetchedUsers?.find(i => i?.identifier === elem))?.map((elem: any) => ({
           id: elem.identifier,
           name: (elem.firstName + ' ' + elem.lastName || '').trim()
         })));
@@ -99,7 +101,7 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Pr
           <InputGroup className="mb-3">
             <Form.Control placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </InputGroup>
-          <div className="overflow-auto flex-grow-1 rounded p-2" style={{ maxHeight: '300px' }}>
+          <div className="overflow-auto flex-grow-1 rounded p-2" style={{ height: '300px' }}>
             {filteredAvailable.map(member => (
               <Form.Check
                 key={member.id}
@@ -140,7 +142,7 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Pr
         <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>Assigned</Card.Header>
         <Card.Body className="d-flex flex-column">
           <div
-            style={{ backgroundColor: isDarkMode ? '#212529' : undefined }}
+            style={{ backgroundColor: isDarkMode ? '#212529' : undefined ,height:300}}
             className="overflow-auto flex-grow-1 rounded p-2 mt-3"
           >
             {assignedList.map(member => (

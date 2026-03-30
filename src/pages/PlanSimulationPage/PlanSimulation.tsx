@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import AuthGuard from '../../components/AuthGuard';
 import { ErrorPage } from '../../components/pages';
 import PageWrapper from '../../components/PageWrapper';
-import { REVEAL_SIMULATION } from '../../constants';
+import { REVEAL_SIMULATION, REVEAL_SIMULATION_USER } from '../../constants';
 import Simulation from '../../features/planSimulation/components/Simulation';
 
 const PlanSimulation = () => {
@@ -15,7 +15,10 @@ const PlanSimulation = () => {
         <Route
           path="/"
           element={
-            <AuthGuard roles={[REVEAL_SIMULATION]}>
+            <AuthGuard 
+            roles={[REVEAL_SIMULATION,REVEAL_SIMULATION_USER]}
+            // roles={[]}
+            >
               <Simulation />
             </AuthGuard>
           }
@@ -23,7 +26,10 @@ const PlanSimulation = () => {
         <Route
           path="/planId/:planId"
           element={
-            <AuthGuard roles={[REVEAL_SIMULATION]}>
+            <AuthGuard 
+            // roles={[REVEAL_SIMULATION]}
+            roles={[]}
+            >
               <p>Simulation page</p>
             </AuthGuard>
           }

@@ -19,6 +19,7 @@ import { setDarkMode } from '../../../features/reducers/darkMode';
 import { setCurrentInstance, clearCurrentInstance } from '../../../features/reducers/instanceContext';
 import { getInstanceContext } from '../../../features/instance/api';
 import SwitchInstanceModal from './SwitchInstanceModal';
+import { STANDARD_USER, SUPER_ADMIN } from '../../../constants/userRoles';
 
 const NavbarComponent = () => {
   const { t } = useTranslation();
@@ -29,26 +30,50 @@ const NavbarComponent = () => {
   const dispatch = useAppDispatch();
   const [expanded, setExpanded] = useState(false);
   const [showSwitchModal, setShowSwitchModal] = useState(false);
+  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(STANDARD_USER);
+  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
 
   useEffect(() => {
-    if (initialized && keycloak.authenticated) {
-      keycloak.loadUserProfile().then(userProfile => {
-        setUser(userProfile);
-      });
-      // Fetch and persist the user's default instance after login
-      getInstanceContext()
-        .then(res => dispatch(setCurrentInstance(res)))
-        .catch(err => {
-          if (err?.response?.status === 404) {
-            dispatch(clearCurrentInstance());
-          }
+    if (initialized) {
+      if (keycloak.authenticated) {
+        keycloak.loadUserProfile().then(userProfile => {
+          setUser(userProfile);
         });
-      keycloak.onAuthLogout = () => {
+
+        const rawCurrentInstance = localStorage.getItem('currentInstanceContext');
+        const isSuperAdminValue = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
+
+        // Only fetch default context if we don't have a persisted one
+        if (!rawCurrentInstance) {
+          getInstanceContext()
+            .then(res => {
+              let result: any = res;
+              if (isSuperAdminValue) {
+                const globalTemplate = { ...res, selectedInstance: null };
+                localStorage.setItem('SUPERADMIN_DATA', JSON.stringify(globalTemplate));
+                result = globalTemplate;
+              }
+              dispatch(setCurrentInstance(result));
+            })
+            .catch(err => {
+              if (err?.response?.status === 404) {
+                dispatch(clearCurrentInstance());
+              }
+            });
+        } else if (isSuperAdminValue && !localStorage.getItem('SUPERADMIN_DATA')) {
+          // If super admin and we have an instance context but missing SUPERADMIN_DATA, fetch it once
+          getInstanceContext().then(res => {
+            const globalTemplate = { ...res, selectedInstance: null };
+            localStorage.setItem('SUPERADMIN_DATA', JSON.stringify(globalTemplate));
+          });
+        }
+      } else {
         setUser(undefined);
+        localStorage.removeItem('SUPERADMIN_DATA');
         dispatch(clearCurrentInstance());
-      };
+      }
     }
-  }, [keycloak, initialized, dispatch]);
+  }, [keycloak.authenticated, initialized, dispatch]);
 
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode);
@@ -81,17 +106,28 @@ const NavbarComponent = () => {
             <Nav className="me-auto ms-md-2">
               {MAIN_MENU.map((el, index) => {
                 if (el.dropdown !== undefined && el.dropdown.length > 0) {
+                  // Collect visible children first; hide parent dropdown if no children visible
+                  const visibleChildren = el.dropdown;
+                  // For superadmin: rename "Plan Management" dropdown to "Instances"
+                  const dropdownTitle =
+                    !isStandardUser && el.pageTitle === 'Plan Management'
+                      ? 'Instances'
+                      : t('topNav.' + el.pageTitle);
                   return (
-                    <AuthorizedElement key={index} roles={el.roles}>
+                    <AuthorizedElement key={index} roles={el.roles} path={el.route}>
                       <NavDropdown
                         align="start"
-                        title={t('topNav.' + el.pageTitle)}
+                        title={dropdownTitle}
                         id={el.pageTitle + '-navbar-button'}
                         className="my-1 mx-1 mx-md-2"
                       >
-                        {el.dropdown.map((child, childIndex) => {
+                        {visibleChildren.map((child, childIndex) => {
+                          const childTitle =
+                            !isStandardUser && child.pageTitle === 'Simulation'
+                              ? 'Data viewer'
+                              : t('topNav.' + child.pageTitle);
                           return (
-                            <AuthorizedElement key={index + '.' + childIndex} roles={child.roles}>
+                            <AuthorizedElement key={index + '.' + childIndex} roles={child.roles} path={child.route}>
                               <NavDropdown.Item
                                 as={Link}
                                 role="button"
@@ -99,7 +135,7 @@ const NavbarComponent = () => {
                                 className="text-center"
                                 onClick={() => setExpanded(false)}
                               >
-                                {t('topNav.' + child.pageTitle)}
+                                {childTitle}
                               </NavDropdown.Item>
                             </AuthorizedElement>
                           );
@@ -109,7 +145,7 @@ const NavbarComponent = () => {
                   );
                 } else {
                   return (
-                    <AuthorizedElement key={index} roles={el.roles}>
+                    <AuthorizedElement key={index} roles={el.roles} path={el.route}>
                       <Link
                         onClick={() => setExpanded(false)}
                         id={el.pageTitle + '-navbar-button'}
@@ -127,16 +163,18 @@ const NavbarComponent = () => {
           {initialized && user ? (
             <Nav className="d-inline-flex align-items-center">
               {/* Switch Instance button */}
-             {((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user') && <Button
-                id="switch-instance-button-nav"
-                variant="link"
-                className="switch-instance-nav-btn me-2"
-                onClick={() => setShowSwitchModal(true)}
-                title={selectedInstance ? `Current: ${selectedInstance.name}` : 'No Instance Selected'}
-              >
-                <BsArrowLeftRight className="me-1" />
-                {selectedInstance?.name || t('topNav.switchInstance') || 'No Instance Selected'}
-              </Button>}
+              {
+                <Button
+                  id="switch-instance-button-nav"
+                  variant="link"
+                  className="switch-instance-nav-btn me-2"
+                  onClick={() => setShowSwitchModal(true)}
+                  title={selectedInstance ? `Current: ${selectedInstance?.name}` : 'No Instance Selected'}
+                >
+                  <BsArrowLeftRight className="me-1" />
+                  {isSuperAdmin && selectedInstance?.identifier == null ? "Global" : selectedInstance?.name || t('topNav.switchInstance') || 'No Instance Selected'}
+                </Button>
+              }
               <BsPerson size="1.2rem" className="mt-1 me-1" />
               <NavDropdown title={user.username} id="logout-nav-dropdown" align="end" className="me-md-4">
                 <NavDropdown.Item

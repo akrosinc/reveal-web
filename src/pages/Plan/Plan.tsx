@@ -14,7 +14,10 @@ const Plan = () => {
         <Route
           path="/"
           element={
-            <AuthGuard roles={[PLAN_VIEW]}>
+            <AuthGuard
+              roles={[PLAN_VIEW]}
+            // roles={[]}
+            >
               <Plans />
             </AuthGuard>
           }

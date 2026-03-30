@@ -1,12 +1,28 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Card, Form, Collapse, Button, Spinner } from 'react-bootstrap';
+import { Card, Form, Collapse, Button, Spinner, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronRight, faChevronDown, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faChevronDown, faEllipsisV, faShareSquare } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../store/hooks';
-import { datasetsByHierarchy, AreaNode } from './mockLargeDataset';
+import { AreaNode } from './mockLargeDataset';
 import { getAssignedAreaTree } from '../api';
 import { toast } from 'react-toastify';
 import SelectTeamModal from './SelectTeamModal';
+import ViewTeamModal from './ViewTeamModal';
+import { useNavigate } from 'react-router-dom';
+
+const CustomToggle = React.forwardRef(({ children, onClick }: any, ref: any) => (
+  <div
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick(e);
+    }}
+    className="text-secondary cursor-pointer ms-2 d-inline-block"
+  >
+    {children}
+  </div>
+));
 
 interface Props {
   isTeamMode: boolean;
@@ -18,7 +34,7 @@ interface Props {
 }
 
 interface TreeNodeProps {
-  node: AreaNode;
+  node: any; // Using any because it's enriched and comes from LocationModel
   selectedSet: Set<string>;
   onSelect: (id: string, checked: boolean) => void;
   filter: string;
@@ -28,22 +44,28 @@ interface TreeNodeProps {
   inheritedMatch?: boolean;
   isTeamMode?: boolean;
   areaTeams?: Record<string, string>;
-  onTeamClick?: (id: string) => void;
+  onTeamClick?: (id: string | string[]) => void;
+  onViewTeam?: (teamName: string) => void;
+  openDropdownId: string | null;
+  onDropdownToggle: (id: string | null) => void;
   isDarkMode: boolean;
 }
 
-const TreeNode = React.memo<TreeNodeProps>(({ 
-  node, 
-  selectedSet, 
-  onSelect, 
-  filter, 
-  depth = 0, 
-  expandedNodeIds, 
-  onToggleExpand, 
-  inheritedMatch = false ,
+const TreeNode = React.memo<TreeNodeProps>(({
+  node,
+  selectedSet,
+  onSelect,
+  filter,
+  depth = 0,
+  expandedNodeIds,
+  onToggleExpand,
+  inheritedMatch = false,
   isTeamMode = false,
   areaTeams = {},
   onTeamClick,
+  onViewTeam,
+  openDropdownId,
+  onDropdownToggle,
   isDarkMode
 }) => {
   const [childrenLoaded, setChildrenLoaded] = useState(false);
@@ -55,12 +77,18 @@ const TreeNode = React.memo<TreeNodeProps>(({
   const hasChildren = !!(node.children && node.children.length > 0);
 
   // Use pre-calculated stats from enriched node
-  const { total, selected, _isMatch, _hasChildMatch } = (node as any)._stats || { 
-    total: hasChildren ? 0 : 1, 
+  const { total, selected, _isMatch, _hasChildMatch } = node._stats || {
+    total: hasChildren ? 0 : 1,
     selected: isSelected ? 1 : 0,
     _isMatch: true,
     _hasChildMatch: false
   };
+
+  const navigate = useNavigate();
+
+  const currentTeamName = node.teams && node.teams.length > 0
+    ? node.teams.map((t: any) => t.name).join(', ')
+    : areaTeams[node.identifier] || 'Not Assigned';
 
   const isExpandedByFilter = !!(filter && (inheritedMatch || _isMatch || _hasChildMatch));
   const expanded = isExpandedByFilter || expandedNodeIds.includes(node.identifier);
@@ -140,39 +168,39 @@ const TreeNode = React.memo<TreeNodeProps>(({
             <span style={{ width: '20px', display: 'inline-block' }} className="me-2"></span>
           )}
 
-          <div className="form-check mb-0 d-flex align-items-center">
+          <div className={`form-check mb-0 d-flex align-items-center ${isTeamMode ? 'ps-0' : ''}`}>
+            {!isTeamMode && (
+              <input
+                ref={checkboxRef}
+                className="form-check-input me-2 mt-0"
+                type="checkbox"
+                id={`area-${node.identifier}`}
+                checked={hasChildren ? isFullySelected : isSelected}
+                onChange={handleCheck}
+                style={{ cursor: 'pointer' }}
+              />
+            )}
             {!hasChildren ? (
-              <>
-                <input
-                  ref={checkboxRef}
-                  className="form-check-input child-checkbox me-2 mt-0"
-                  type="checkbox"
-                  id={`area-${node.identifier}`}
-                  checked={isSelected}
-                  onChange={handleCheck}
-                  style={{ cursor: 'pointer' }}
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor={`area-${node.identifier}`}
-                  style={{ cursor: 'pointer', userSelect: 'none', color: isDarkMode ? '#fff' : '#000' }}
-                >
-                  {node.properties.name}
-                </label>
-              </>
+              <label
+                className="form-check-label"
+                htmlFor={`area-${node.identifier}`}
+                style={{ cursor: 'pointer', userSelect: 'none', color: isDarkMode ? '#fff' : '#000', paddingLeft: isTeamMode ? '0' : undefined }}
+              >
+                {node.properties.name}
+              </label>
             ) : (
               <div
                 className="fw-bold"
-                style={{ 
-                  cursor: 'pointer', 
-                  userSelect: 'none', 
-                  fontSize: depth === 0 ? '1.1rem' : '1rem', 
-                  color: (isFullySelected || indeterminate) ? '#0d6efd' : isDarkMode ? '#fff' : '#000' 
+                style={{
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  fontSize: depth === 0 ? '1.1rem' : '1rem',
+                  color: (!isTeamMode && (isFullySelected || indeterminate)) ? '#0d6efd' : isDarkMode ? '#fff' : '#000'
                 }}
                 onClick={handleExpand}
               >
                 {node.properties.name}
-                {(isFullySelected || indeterminate) && (
+                {!isTeamMode && (isFullySelected || indeterminate) && (
                   <span className="ms-2 badge rounded-pill bg-primary border-0" style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}>
                     {selected} / {total}
                   </span>
@@ -184,25 +212,130 @@ const TreeNode = React.memo<TreeNodeProps>(({
 
         <div className="d-flex align-items-center">
           {hasChildren && (
-            <Button
-              variant="link"
-              size="sm"
-              className="p-0 text-decoration-none me-2 h-auto"
-              style={{ fontSize: '0.75rem' }}
-              onClick={() => onSelect(node.identifier, selected < total)}
-            >
-              {isFullySelected ? 'Deselect All' : 'Select All'}
-            </Button>
+            isTeamMode ? (
+              <div className="d-flex align-items-center gap-2">
+                {node.properties?.geographicLevel && (
+                  <span className="text-muted small px-2 py-1 bg-light rounded border">
+                    {node.properties.geographicLevel}
+                  </span>
+                )}
+                <Dropdown
+                  show={openDropdownId === node.identifier}
+                  onToggle={(isOpen) => onDropdownToggle(isOpen ? node.identifier : null)}
+                  drop="end"
+                >
+                  <Dropdown.Toggle as={CustomToggle}>
+                    <div className="p-1 rounded-circle d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', transition: 'all 0.2s', backgroundColor: openDropdownId === node.identifier ? (isDarkMode ? '#444' : '#e9ecef') : 'transparent' }}>
+                      <FontAwesomeIcon icon={faEllipsisV} className={isDarkMode ? 'text-light' : 'text-secondary'} size="sm" />
+                    </div>
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu
+                    popperConfig={{
+                      strategy: 'fixed',
+                      modifiers: [
+                        {
+                          name: 'offset',
+                          options: {
+                            offset: [0, 8],
+                          },
+                        },
+                        {
+                          name: 'flip',
+                          enabled: false,
+                        },
+                        {
+                          name: 'preventOverflow',
+                          options: {
+                            boundary: 'viewport',
+                          },
+                        },
+                      ],
+                    }}
+                    className={`shadow border-0 py-0 ${isDarkMode ? 'bg-dark border-secondary' : 'bg-white'}`}
+                    style={{ borderRadius: '10px', overflow: 'hidden', minWidth: '180px', zIndex: 1060 }}
+                    renderOnMount
+                  >
+                    <div className={`p-2 small fw-bold border-bottom ${isDarkMode ? 'text-muted border-secondary' : 'text-secondary bg-light'}`}>
+                      Area Actions
+                    </div>
+                    <Dropdown.Item onClick={() => { onTeamClick?.((node as any)._leafIds); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                      <FontAwesomeIcon icon={faShareSquare} className="text-primary" style={{ transform: 'scaleX(-1)' }} />
+                      <span>Change team</span>
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => { onViewTeam?.(node.properties?.geographicLevel || 'Not Assigned'); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                      <FontAwesomeIcon icon={faShareSquare} className="text-info" style={{ transform: 'scaleX(-1)' }} />
+                      <span>View team</span>
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => { navigate('/plans/campaign-management'); onDropdownToggle(null); }} className="py-2 px-3 d-flex align-items-center gap-2">
+                      <FontAwesomeIcon icon={faShareSquare} className="text-success" style={{ transform: 'scaleX(-1)' }} />
+                      <span>Open Map</span>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
+            ) : null
           )}
 
           {isTeamMode && !hasChildren && (
-            <div className={`d-flex align-items-center gap-2 ${!isSelected ? 'opacity-25' : ''}`}>
-              <span className="text-muted small">{areaTeams[node.identifier] || ''}</span>
-              <FontAwesomeIcon
-                icon={faEllipsisV}
-                className={`text-secondary ${isSelected ? 'cursor-pointer' : ''} ms-2`}
-                onClick={() => isSelected && onTeamClick?.(node.identifier)}
-              />
+            <div className={`d-flex align-items-center gap-2`}>
+              {node.properties?.geographicLevel && (
+                <span className="text-muted small px-2 py-1 bg-light rounded border">
+                  {node.properties.geographicLevel || 'Not Assigned'}
+                </span>
+              )}
+              <Dropdown
+                show={openDropdownId === node.identifier}
+                onToggle={(isOpen) => onDropdownToggle(isOpen ? node.identifier : null)}
+                drop="end"
+              >
+                <Dropdown.Toggle as={CustomToggle}>
+                  <div className="p-1 rounded-circle d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', transition: 'all 0.2s', backgroundColor: openDropdownId === node.identifier ? (isDarkMode ? '#444' : '#e9ecef') : 'transparent' }}>
+                    <FontAwesomeIcon icon={faEllipsisV} className={isDarkMode ? 'text-light' : 'text-secondary'} size="sm" />
+                  </div>
+                </Dropdown.Toggle>
+                <Dropdown.Menu
+                  popperConfig={{
+                    strategy: 'fixed',
+                    modifiers: [
+                      {
+                        name: 'offset',
+                        options: {
+                          offset: [0, 8],
+                        },
+                      },
+                      {
+                        name: 'flip',
+                        enabled: false,
+                      },
+                      {
+                        name: 'preventOverflow',
+                        options: {
+                          boundary: 'viewport',
+                        },
+                      },
+                    ],
+                  }}
+                  className={`shadow border-0 py-0 ${isDarkMode ? 'bg-dark border-secondary' : 'bg-white'}`}
+                  style={{ borderRadius: '10px', overflow: 'hidden', minWidth: '180px', zIndex: 1060 }}
+                  renderOnMount
+                >
+                  <div className={`p-2 small fw-bold border-bottom ${isDarkMode ? 'text-muted border-secondary' : 'text-secondary bg-light'}`}>
+                    Location Actions
+                  </div>
+                  <Dropdown.Item onClick={() => { onTeamClick?.(node.identifier); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                    <FontAwesomeIcon icon={faShareSquare} className="text-primary" style={{ transform: 'scaleX(-1)' }} />
+                    <span>Change team</span>
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => { onViewTeam?.(node.properties?.geographicLevel || 'Not Assinged'); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                    <FontAwesomeIcon icon={faShareSquare} className="text-info" style={{ transform: 'scaleX(-1)' }} />
+                    <span>View team</span>
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => { navigate('/plans/campaign-management'); onDropdownToggle(null); }} className="py-2 px-3 d-flex align-items-center gap-2">
+                    <FontAwesomeIcon icon={faShareSquare} className="text-success" style={{ transform: 'scaleX(-1)' }} />
+                    <span>Open Map</span>
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
             </div>
           )}
         </div>
@@ -211,7 +344,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
         <Collapse in={expanded} unmountOnExit>
           <div className="ms-2 border-start border-secondary-subtle">
             {childrenLoaded ? (
-              node.children!.map((child) => (
+              node.children.map((child: any) => (
                 <TreeNode
                   key={child.identifier}
                   node={child}
@@ -225,6 +358,9 @@ const TreeNode = React.memo<TreeNodeProps>(({
                   isTeamMode={isTeamMode}
                   areaTeams={areaTeams}
                   onTeamClick={onTeamClick}
+                  onViewTeam={onViewTeam}
+                  openDropdownId={openDropdownId}
+                  onDropdownToggle={onDropdownToggle}
                   isDarkMode={isDarkMode}
                 />
               ))
@@ -250,27 +386,29 @@ const useDebounce = (value: string, delay: number = 300) => {
   return debouncedValue;
 };
 
-const AreasSelection: React.FC<Props> = ({ 
-  isTeamMode, 
-  selectedHierarchy, 
-  selectedAreas, 
-  onSelectionChange, 
-  areaTeams, 
-  onAreaTeamChange 
+const AreasSelection: React.FC<Props> = ({
+  isTeamMode,
+  selectedHierarchy,
+  selectedAreas,
+  onSelectionChange,
+  areaTeams,
+  onAreaTeamChange
 }) => {
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
+  const selectedInstance = useAppSelector((state: any) => state.instanceContext.selectedInstance);
+  const planId = selectedInstance?.identifier || '';
+
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [hierarchyOpen, setHierarchyOpen] = useState(false);
-  const displayLabel = useMemo(() => {
-    return selectedHierarchy || 'Location Hierarchy';
-  }, [selectedHierarchy]);
-
-  const [currentAreas, setCurrentAreas] = useState<AreaNode[]>(datasetsByHierarchy[selectedHierarchy || 'Niagara'] || []);
+  const [currentAreas, setCurrentAreas] = useState<any[]>([]);
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewTeamName, setViewTeamName] = useState('');
+  const [activeAreaId, setActiveAreaId] = useState<string | string[] | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   // Optimized lookup Set
   const selectedSet = useMemo(() => new Set(selectedAreas), [selectedAreas]);
@@ -278,20 +416,21 @@ const AreasSelection: React.FC<Props> = ({
   // Recursively enrich nodes with their leaf IDs, stats, AND search match results
   const enrichedAreas = useMemo(() => {
     const searchLower = debouncedSearchTerm.toLowerCase();
-    
-    const enrich = (node: AreaNode): any => {
+
+    const enrich = (node: any): any => {
       let leafIds: string[] = [];
       let mappedChildren: any[] = [];
       let hasChildMatch = false;
       let totalCount = 0;
       let selectedCount = 0;
-      
-      const isMatch = node.properties.name.toLowerCase().includes(searchLower);
-      
+
+      const name = node.properties?.name || '';
+      const isMatch = name.toLowerCase().includes(searchLower);
+
       if (node.children && node.children.length > 0) {
         for (let i = 0; i < node.children.length; i++) {
           const enrichedChild = enrich(node.children[i]);
-          leafIds.push(...enrichedChild._leafIds); 
+          leafIds.push(...enrichedChild._leafIds);
           mappedChildren.push(enrichedChild);
           totalCount += enrichedChild._stats.total;
           selectedCount += enrichedChild._stats.selected;
@@ -304,13 +443,13 @@ const AreasSelection: React.FC<Props> = ({
         totalCount = 1;
         selectedCount = selectedSet.has(node.identifier) ? 1 : 0;
       }
-      
+
       return {
         ...node,
         children: mappedChildren,
         _leafIds: leafIds,
-        _stats: { 
-          total: totalCount, 
+        _stats: {
+          total: totalCount,
           selected: selectedCount,
           _isMatch: isMatch,
           _hasChildMatch: hasChildMatch
@@ -325,45 +464,30 @@ const AreasSelection: React.FC<Props> = ({
     setExpandedNodeIds(prev => prev.includes(nodeId) ? prev.filter(id => id !== nodeId) : [...prev, nodeId]);
   }, []);
 
-  const loadData = useCallback(
-    () => {
-      setIsLoading(true);
-      getAssignedAreaTree()
-        .then((res: any) => {
-          if (res && res.length > 0) {
-            setCurrentAreas(res);
-          } else {
-            setCurrentAreas([]);
-          }
-          setIsLoading(false);
-        })
-        .catch(err => {
-          toast.error(err.message || 'Error fetching areas');
-          setIsLoading(false);
-        });
-    },
-    []
-  );
-
-
+  const loadData = useCallback(() => {
+    setIsLoading(true);
+    getAssignedAreaTree()
+      .then((res: any) => {
+        if (res?.geoTree && res?.geoTree.length > 0) {
+          setCurrentAreas(res.geoTree);
+          // Set expandedNodeIds to contain the identifiers of all top-level nodes to expand the first level by default
+          setExpandedNodeIds(res.geoTree.map((node: any) => node.identifier));
+        } else {
+          setCurrentAreas([]);
+        }
+        setIsLoading(false);
+      })
+      .catch(err => {
+        toast.error(err.message || 'Error fetching areas');
+        setIsLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  const getAllLeafIds = useCallback((node: AreaNode): string[] => {
-    let ids: string[] = [];
-    if (node.children && node.children.length > 0) {
-      node.children.forEach((child) => {
-        ids = [...ids, ...getAllLeafIds(child)];
-      });
-    } else {
-      ids.push(node.identifier);
-    }
-    return ids;
-  }, []);
-
-  const findNode = useCallback((nodes: AreaNode[], targetId: string): AreaNode | null => {
+  const findNode = useCallback((nodes: any[], targetId: string): any | null => {
     for (const node of nodes) {
       if (node.identifier === targetId) return node;
       if (node.children) {
@@ -377,112 +501,130 @@ const AreasSelection: React.FC<Props> = ({
   const handleSelect = useCallback((id: string, isChecked: boolean) => {
     const node = findNode(enrichedAreas, id);
     if (!node) return;
-    
-    const leafIds = (node as any)._leafIds;
+
+    const leafIds = node._leafIds;
     const currentSelectedSet = new Set(selectedAreas);
-    
+
     if (isChecked) {
-      // O(L) instead of O(L*S)
       const toAdd = leafIds.filter((leafId: string) => !currentSelectedSet.has(leafId));
       if (toAdd.length > 0) {
         onSelectionChange([...selectedAreas, ...toAdd]);
       }
     } else {
-      // O(S) instead of O(S*L)
       const toRemoveSet = new Set(leafIds);
       onSelectionChange(selectedAreas.filter(sid => !toRemoveSet.has(sid)));
     }
   }, [enrichedAreas, selectedAreas, findNode, onSelectionChange]);
 
-  const handleTeamClick = useCallback((id: string) => {
+  const handleTeamClick = useCallback((id: string | string[]) => {
     setActiveAreaId(id);
     setShowModal(true);
   }, []);
 
+  const handleViewTeam = useCallback((teamName: string) => {
+    setViewTeamName(teamName);
+    setShowViewModal(true);
+  }, []);
+
   const handleTeamSelect = useCallback((team: string) => {
-    if (activeAreaId) onAreaTeamChange(activeAreaId, team);
-  }, [activeAreaId, onAreaTeamChange]);
+    if (activeAreaId) {
+      if (Array.isArray(activeAreaId)) {
+        activeAreaId.forEach(id => onAreaTeamChange(id, team));
+      } else {
+        onAreaTeamChange(activeAreaId, team);
+      }
+      loadData(); // Re-render / re-fetch after team assignment
+    }
+  }, [activeAreaId, onAreaTeamChange, loadData]);
 
   return (
     <div>
-      <Card className={`shadow-sm ${isDarkMode ? 'border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '#f8f9fa' }}>
-        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-white border-bottom'} fw-bold`}>
+      <Card className={`shadow-sm ${isDarkMode ? 'border-white' : ''}`} style={{ background: isDarkMode ? '#212529' : '#f8f9fa', }}>
+        <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light border-bottom'} fw-bold`}>
           Areas
         </Card.Header>
-        <Card.Body className="p-3" style={{ background: isDarkMode ? '#282828' : '#fff' }}>
-          <div className="area-selection-content">
+        <Card.Body className="p-3" style={{ background: isDarkMode ? '#282828' : '#fff', height: 266, overflowY: 'auto' }}>
+          <div className="area-selection-content" >
             <div className="mb-3">
               <div className="mb-2">
-                <div
+                {/* <div
                   onClick={() => setHierarchyOpen(!hierarchyOpen)}
                   className="d-flex align-items-center justify-content-between p-3 border-bottom"
                   style={{ cursor: 'pointer', fontSize: '1rem', color: isDarkMode ? '#fff' : '#000' }}
                 >
-                  <span className="fw-bold">{displayLabel}</span>
+                   <span className="fw-bold">Areas Hierarchy</span>
                   <FontAwesomeIcon icon={hierarchyOpen ? faChevronDown : faChevronRight} size="xs" className="text-secondary" />
-                </div>
-                <Collapse in={hierarchyOpen}>
-                  <div>
-                    <div className="p-3 border-bottom">
-                      <div className="position-relative">
-                        <Form.Control
-                          type="text"
-                          placeholder="Search..."
-                          value={searchTerm}
-                          onChange={e => setSearchTerm(e.target.value)}
-                          className="ps-2"
-                          style={{
-                            fontSize: '0.9rem',
-                            backgroundColor: isDarkMode ? '#212529' : '#fff',
-                            color: isDarkMode ? '#fff' : '#000',
-                            border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
-                          }}
-                        />
-                        {searchTerm && searchTerm !== debouncedSearchTerm && (
-                          <div className="d-flex align-items-center gap-2 mt-2">
-                            <Spinner animation="border" size="sm" variant="primary" style={{ width: '0.8rem', height: '0.8rem', borderWidth: '1px' }} />
-                            <small className="text-muted">Searching...</small>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div
-                      style={{ maxHeight: '400px', overflowY: 'auto', background: isDarkMode ? '#212529' : '#FFF' }}
-                      className="rounded p-2 area-selection-tree"
-                    >
-                      {isLoading ? (
-                        <div className="text-muted text-center p-5 d-flex flex-column align-items-center gap-3">
-                          <Spinner animation="border" variant="primary" />
-                          <span>Loading hierarchy data...</span>
-                        </div>
-                      ) : (
-                        enrichedAreas.map((area: any) => (
-                          <TreeNode
-                            key={area.identifier}
-                            node={area}
-                            selectedSet={selectedSet}
-                            onSelect={handleSelect}
-                            filter={debouncedSearchTerm}
-                            depth={0}
-                            expandedNodeIds={expandedNodeIds}
-                            onToggleExpand={toggleNodeExpansion}
-                            isTeamMode={isTeamMode}
-                            areaTeams={areaTeams}
-                            onTeamClick={handleTeamClick}
-                            isDarkMode={isDarkMode}
-                          />
-                        ))
-                      )}
+                </div> */}
+                {/* <Collapse in={hierarchyOpen}> */}
+                <div>
+                  <div className="p-3 border-bottom">
+                    <div className="position-relative">
+                      <Form.Control
+                        type="text"
+                        placeholder="Search..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="ps-2"
+                        style={{
+                          fontSize: '0.9rem',
+                          backgroundColor: isDarkMode ? '#212529' : '#fff',
+                          color: isDarkMode ? '#fff' : '#000',
+                          border: isDarkMode ? '1px solid #495057' : '1px solid #ced4da'
+                        }}
+                      />
                     </div>
                   </div>
-                </Collapse>
+
+                  <div
+                    style={{ maxHeight: '400px', overflowY: 'auto', background: isDarkMode ? '#212529' : '#FFF' }}
+                    className="rounded p-2 area-selection-tree"
+                  >
+                    {isLoading ? (
+                      <div className="text-muted text-center p-5 d-flex flex-column align-items-center gap-3">
+                        <Spinner animation="border" variant="primary" />
+                        <span>Loading hierarchy data...</span>
+                      </div>
+                    ) : (
+                      enrichedAreas.map((area: any) => (
+                        <TreeNode
+                          key={area.identifier}
+                          node={area}
+                          selectedSet={selectedSet}
+                          onSelect={handleSelect}
+                          filter={debouncedSearchTerm}
+                          depth={0}
+                          expandedNodeIds={expandedNodeIds}
+                          onToggleExpand={toggleNodeExpansion}
+                          isTeamMode={isTeamMode}
+                          areaTeams={areaTeams}
+                          onTeamClick={handleTeamClick}
+                          onViewTeam={handleViewTeam}
+                          openDropdownId={openDropdownId}
+                          onDropdownToggle={setOpenDropdownId}
+                          isDarkMode={isDarkMode}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
+                {/* </Collapse> */}
               </div>
             </div>
           </div>
         </Card.Body>
       </Card>
-      <SelectTeamModal show={showModal} onHide={() => setShowModal(false)} onSelect={handleTeamSelect} />
+      <SelectTeamModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        onSelect={handleTeamSelect}
+        planId={planId}
+        areaId={activeAreaId}
+      />
+      <ViewTeamModal
+        show={showViewModal}
+        onHide={() => setShowViewModal(false)}
+        teamName={viewTeamName}
+      />
     </div>
   );
 };

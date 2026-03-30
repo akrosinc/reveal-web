@@ -4,7 +4,7 @@
     "logIn": "Login",
     "Home": "Home",
     "Plan": "Plan",
-    "Assign": "Assignment",
+    "Assignment": "Assignment",
     "Reporting": "Reporting",
     "planReporting": "Plan Reporting",
     "performanceReporting": "Performance Reporting",
@@ -18,14 +18,25 @@
     "Management": "User Management",
     "Location": "Location Management",
     "Simulation": "Simulation",
-    "TagManagement": "Tag Management",
-    "MetaDataImport": "Metadata Import",
+    "Tag Management": "Tag Management",
+    "Metadata Import": "Metadata Import",
     "Resource Planning": "Resource Planning",
     "dataProcessingProgress": "Data Processing Progress",
-    "CampaignManage": "Campaign Management",
+    "Campaign Management": "Campaign Management",
     "Instance Configuration": "Instance Configuration",
     "Group Configuration": "Group Configuration",
-    "switchInstance": "Switch Instance"
+    "switchInstance": "Switch Instance",
+    "Instance Management": "Management",
+    "Data Viewer": "Data Viewer",
+    "Instance": "Instance",
+    "Group": "Group",
+    "Group Management": "Group Management",
+    "Plan Reporting": "Plan Reporting",
+    "Performance Reporting": "Performance Reporting",
+    "Survey Reporting": "Survey Reporting",
+    "User Management": "User Management",
+    "Location Management": "Location Management",
+    "Simulations": "Simulations"
   },
   "publicPage": {
     "supportedBy": "supported by",
@@ -230,7 +241,9 @@
       "tag": "Tag",
       "lookupEntityType": "Entity Type",
       "simulationDisplay": "Display Tag",
-      "aggregate": "Is an aggregate"
+      "aggregate": "Is an aggregate",
+      "instances": "Instances",
+      "role": "Role"
     },
     "locationName": "Location Name",
     "locationType": "Location Type",
@@ -259,8 +272,8 @@
     "title": "Group configuration",
     "search": "Search group name",
     "table": {
-      "groupName": "Group Name",
-      "team": "Team",
+      "name": "Group Name",
+      "type": "Team",
       "yes": "Yes",
       "no": "No"
     }
@@ -337,8 +350,14 @@
     "tagFilters": "Tag Filters",
     "analysis": "Perform analysis",
     "removeOrgGrants": "Remove Organization Access",
-    "removeUserGrants": "Remove User Access"
+    "removeUserGrants": "Remove User Access",
+    "instances":"Current Instances",
+    "datasetName": "Dataset Name",
+    "uploadDate": "Upload Date",
+    "uploadedBy": "Uploaded By",
+    "selected":""
   },
+
   "label": {
     "layerOpacity": "Layer opacity"
   },
@@ -358,6 +377,7 @@
     "uploadFile": "Upload File",
     "table": {
       "fileName": "Filename",
+      "datasetName": "Dataset Name",
       "uploadDate": "Upload Date",
       "status": "Status",
       "uploadedBy": "Uploaded By",

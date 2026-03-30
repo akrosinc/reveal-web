@@ -7,6 +7,8 @@ import CreateGoal from './Goals/CreateGoal/CreateGoal';
 import { useTranslation } from 'react-i18next';
 import { WizardStepProps } from '../Wizard/Wizard';
 import { useAppSelector } from '../../../../store/hooks';
+import { deleteGoalById } from '../../../plan/api';
+import { ConfirmDialog, ConfirmDialogService } from '../../../../components/Dialogs';
 
 const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues }) => {
   // Initialize from defaultValues if present
@@ -17,10 +19,12 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
 
-  // Mock plan period for static data
+  const planId = defaultValues?.planId || defaultValues?.id;
+
+  // Use plan period from previous step if available
   const planPeriod = {
-    start: new Date(),
-    end: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+    start: defaultValues?.effectivePeriod?.start ? new Date(defaultValues.effectivePeriod.start) : new Date(),
+    end: defaultValues?.effectivePeriod?.end ? new Date(defaultValues.effectivePeriod.end) : new Date(new Date().setFullYear(new Date().getFullYear() + 1))
   };
 
   const createGoalHandler = (goal?: Goal) => {
@@ -29,13 +33,22 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
   };
 
   const deleteGoal = (goalId: string) => {
-    if (window.confirm(t('planPage.deleteGoalMessage') + goalId + '?')) {
-      const newArr = goalList.filter(el => el.identifier !== goalId);
-      setGoalList(newArr);
-      // Clear error if they delete a goal, though they might be in an invalid state again
-      // We'll re-validate on Next click anyway
-    }
+    ConfirmDialogService(({ giveAnswer }) => (
+      <ConfirmDialog
+        closeHandler={giveAnswer}
+        backdrop
+        message={t('planPage.deleteGoalMessage') + goalId + '?'}
+        title={t('planPage.deleteGoal')}
+        isDarkMode={isDarkMode}
+      />
+    )).then(res => {
+      if (res) {
+        const newArr = goalList.filter(el => el.identifier !== goalId);
+        setGoalList(newArr);
+      }
+    });
   };
+
 
   const saveGoalHandler = (savedGoal: Goal) => {
     // Check if goal already exists (update) or is new (add)
@@ -93,7 +106,7 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
             {goalList.map(el => {
               return (
                 <Item
-                  planId={undefined}
+                  planId={planId}
                   loadData={() => {
                     setGoalList([...goalList]);
                   }}
@@ -121,10 +134,10 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
           </div>
         </Col>
       </Row>
-
+ 
       {showCreateGoal && (
         <CreateGoal
-          planId={undefined}
+          planId={planId}
           goalList={goalList} // Passed for reference if needed
           currentGoal={currentGoal}
           closeHandler={() => {
@@ -134,6 +147,7 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
           onSave={saveGoalHandler}
         />
       )}
+
     </div>
   );
 };

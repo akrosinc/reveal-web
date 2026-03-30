@@ -12,4 +12,7 @@ export const PLAN = 'plan';
 export const REPORTS = 'dashboard';
 export const INSTANCE = 'instance';
 export const GROUP_MANAGEMENT = 'groupmanagement';
+export const META_IMPORT_DATASET = 'metaImport/dataset';
+export const LOCATION_HIERARCHY_BASE = 'locationHierarchy/base';
+export const LOCATION_HIERARCHY_ACTIVATE = 'locationHierarchy/activate';
 

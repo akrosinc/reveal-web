@@ -5,16 +5,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
-import { PAGINATION_DEFAULT_SIZE, PLANS, PLAN_TABLE_COLUMNS } from '../../../constants';
+import { PAGINATION_DEFAULT_SIZE, PLANS, PLAN_ACTIVATE, PLAN_CREATE, PLAN_TABLE_COLUMNS, PLAN_UPDATE } from '../../../constants';
 import { useAppSelector } from '../../../store/hooks';
 import { getPlanList } from '../api';
 import { PlanModel } from '../providers/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ActivatePlan from './activate';
 import { useTranslation } from 'react-i18next';
-
+import AuthorizedElement from '../../../components/AuthorizedElement';
+import { useKeycloak } from '@react-keycloak/web';
+import { useAuthorization } from '../../../hooks/useAuthorization';
 const Plans = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
+  const isAuthorizedForEdit = useAuthorization([PLAN_UPDATE])
   const navigate = useNavigate();
   const [currentSearchInput, setCurrentSearchInput] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
@@ -24,7 +27,6 @@ const Plans = () => {
   const [currentPlanId, setCurrentPlanId] = useState('');
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
-
   const loadData = useCallback(
     (size: number, page: number, search?: string, sortDirection?: boolean, sortField?: string) => {
       getPlanList(size, page, false, search, sortField, sortDirection)
@@ -65,11 +67,13 @@ const Plans = () => {
       <h2>
         {t('planPage.title')} ({planList?.totalElements ?? 0})
         <Row className="my-4">
-          <Col md={8} className="mb-2">
-            <Link id="create-button" to={PLANS + '/create'} className="btn btn-primary float-end">
-              {t('buttons.create')}
-            </Link>
-          </Col>
+          <AuthorizedElement roles={[PLAN_CREATE]}>
+            <Col md={8} className="mb-2">
+              <Link id="create-button" to={PLANS + '/create'} className="btn btn-primary float-end">
+                {t('buttons.create')}
+              </Link>
+            </Col>
+          </AuthorizedElement>
           <Col sm={12} md={4} className="order-md-first">
             <DebounceInput
               id="search-plans-input"
@@ -117,6 +121,9 @@ const Plans = () => {
                 <tr
                   key={el.identifier}
                   onClick={() => {
+                    if(!isAuthorizedForEdit){              
+                      return
+                    }
                     navigate(PLANS + '/planId/' + el.identifier);
                   }}
                 >
@@ -127,6 +134,7 @@ const Plans = () => {
                   <td>{el.date}</td>
                   <td>{el.effectivePeriod.start}</td>
                   <td>{el.effectivePeriod.end}</td>
+                  <AuthorizedElement roles={[PLAN_ACTIVATE]}>
                   <td className="text-center">
                     <Button
                       onClick={(e: React.MouseEvent<HTMLElement>) => {
@@ -139,6 +147,7 @@ const Plans = () => {
                       {el.status === 'DRAFT' ? t('planPage.activate') : t('planPage.active')}
                     </Button>
                   </td>
+                  </AuthorizedElement>
                 </tr>
               ))}
             </tbody>

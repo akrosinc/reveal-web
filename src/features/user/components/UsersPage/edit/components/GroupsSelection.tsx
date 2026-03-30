@@ -13,6 +13,7 @@ interface GroupsSelectionProps {
     textColor?: string;
     variant?: 'default' | 'editUser';
     readOnly?: boolean;
+    data?: { identifier: string; name: string }[];
 }
 
 const GroupsSelection: React.FC<GroupsSelectionProps> = ({
@@ -21,27 +22,32 @@ const GroupsSelection: React.FC<GroupsSelectionProps> = ({
     hideHeader,
     textColor,
     variant = 'default',
-    readOnly = false
+    readOnly = false,
+    data
 }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
-    const [groups, setGroups] = useState<GroupModel[]>([]);
+    const [groups, setGroups] = useState<{ identifier: string; name: string }[]>(data || []);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        setIsLoading(true);
-        // Fetching first 100 groups as we don't have a non-paged list API for groups here
-        getGroupList(100, 0)
-            .then(data => {
-                setGroups(data.content);
-                setIsLoading(false);
-            })
-            .catch(err => {
-                toast.error('Error fetching groups');
-                setIsLoading(false);
-            });
-    }, []);
+        if (data) {
+            setGroups(data);
+        } else {
+            setIsLoading(true);
+            // Fetching first 100 groups as we don't have a non-paged list API for groups here
+            getGroupList(100, 0)
+                .then(data => {
+                    setGroups(data.content);
+                    setIsLoading(false);
+                })
+                .catch(err => {
+                    toast.error('Error fetching groups');
+                    setIsLoading(false);
+                });
+        }
+    }, [data]);
 
-    const handleToggle = (group: GroupModel) => {
+    const handleToggle = (group: { identifier: string; name: string }) => {
         if (!onGroupChange) return;
         const isSelected = selectedGroups.includes(group.identifier) || selectedGroups.includes(group.name);
         const newGroups = isSelected

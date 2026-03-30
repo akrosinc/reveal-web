@@ -13,7 +13,7 @@ import {
     faPencilAlt
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../store/hooks';
-import { getUserList } from '../../planSimulation/components/User/api/userAPI';
+import { getUserList, getUserList1 } from '../../planSimulation/components/User/api/userAPI';
 // import { AssignedUserModel } from '../api';
 // import { getAssignedUserList } from '../api';
 
@@ -37,10 +37,13 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const fetchedUsers = await getUserList();
-                setUsers(fetchedUsers?.map(elem => ({
+                const fetchedUsers = await getUserList1();
+                const ids = fetchedUsers?.map(elem => elem?.identifier)
+                const idsOfUsers = Array.from(new Set(ids));
+                console.log(fetchUsers.length)
+                setUsers(idsOfUsers?.map(elem => fetchedUsers?.find(i => i?.identifier === elem))?.map((elem: any) => ({
                     id: elem.identifier,
-          name: (elem.firstName + ' ' + elem.lastName || '').trim()
+                    name: (elem.firstName + ' ' + elem.lastName || '').trim()
                 })));
             } catch (err) {
                 console.log(err);
@@ -48,21 +51,21 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
         };
         fetchUsers();
     }, []);
-
+    console.log(users?.length)
     // Optimized lookups using Set
     const assignedSet = useMemo(() => new Set(assignedMembers), [assignedMembers]);
-    
-    const availableMembers = useMemo(() => 
+
+    const availableMembers = useMemo(() =>
         users.filter(m => !assignedSet.has(m.id)),
-    [users, assignedSet]);
+        [users, assignedSet]);
 
-    const assignedList = useMemo(() => 
+    const assignedList = useMemo(() =>
         users.filter(m => assignedSet.has(m.id)),
-    [users, assignedSet]);
+        [users, assignedSet]);
 
-    const filteredAvailable = useMemo(() => 
+    const filteredAvailable = useMemo(() =>
         availableMembers?.filter(m => m?.name?.toLowerCase?.()?.includes?.(searchTerm.toLowerCase())),
-    [availableMembers, searchTerm]);
+        [availableMembers, searchTerm]);
 
     const handleMoveRight = useCallback(() => {
         onAssignmentChange([...assignedMembers, ...leftSelected]);

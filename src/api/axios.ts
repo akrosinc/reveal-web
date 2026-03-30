@@ -11,25 +11,25 @@ const api = axios.create({
 
 api.interceptors.request.use(function (config) {
   let instanceId = null
-  
-    const requiresInstance =
+
+  const requiresInstance =
     config?.url?.includes('groupmanagement') ||
     config?.url?.includes('instance/assigned/user/list') ||
     config?.url?.includes('instance/assigned/dataset/list') ||
     config?.url?.includes('instance/assigned/area/tree') ||
-    config?.url?.includes('instance/roles/list');
-    console.log(config.url)
-    console.log(requiresInstance)
-  if(requiresInstance){
-  const rawCurrentInstance= localStorage.getItem('currentInstanceContext')
-  instanceId=rawCurrentInstance? JSON.parse(rawCurrentInstance):null
+    config?.url?.includes('instance/roles/list') || config?.url?.includes('instance/context');;
+  console.log(config.url)
+  console.log(requiresInstance)
+  if (requiresInstance) {
+    const rawCurrentInstance = localStorage.getItem('currentInstanceContext')
+    instanceId = rawCurrentInstance ? JSON.parse(rawCurrentInstance) : null
   }
   config.headers = {
-   
-    ...(requiresInstance && {
-      'X-Instance-ID':instanceId?.selectedInstance?.identifier
+
+    ...(requiresInstance && instanceId?.selectedInstance?.identifier && {
+      'X-Instance-ID': instanceId?.selectedInstance?.identifier
     }),
-     Authorization: `Bearer ${keycloak.token}`,
+    Authorization: `Bearer ${keycloak.token}`,
   };
   return config;
 });

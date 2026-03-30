@@ -11,7 +11,14 @@ import {
   REPORTING_PAGE,
   REPORT_VIEW,
   REVEAL_MANAGE,
-  PLAN_MANAGEMENT
+  PLAN_MANAGEMENT,
+  INSTANE_MANAGEMENT_VIEW,
+  GROUP_MANAGEMENT_VIEW,
+  ASSIGNMENT_VIEW,
+  ASSIGNMENT_PLAN,
+  LOCATION_VIEW,
+  REVEAL_SIMULATION_USER,
+  ROLE_MANAGE_USER
 } from '../../constants';
 import { Col, Row } from 'react-bootstrap';
 import Dashboard from '../../features/dashboard';
@@ -19,63 +26,82 @@ import Dashboard from '../../features/dashboard';
 function Home() {
   const { t } = useTranslation();
 
+  const features = [
+    {
+      id: 'management',
+      to: MANAGEMENT,
+      path: MANAGEMENT,
+      title: t('buttons.management'),
+      role:[ ROLE_MANAGE_USER]
+    },
+    {
+      id: 'instance-configuration',
+      to: '/instance-configuration',
+      path: '/instance-configuration',
+      title: t('buttons.instanceConfiguration'),
+      role:[INSTANE_MANAGEMENT_VIEW]
+    },
+    {
+      id: 'group-configuration',
+      to: "/groupmanagement",
+      path: "/groupmanagement",
+      title: t('buttons.groupConfiguration'),
+      role:[GROUP_MANAGEMENT_VIEW]
+    },
+    {
+      id: 'plans',
+      to: PLANS,
+      path: PLANS,
+      title: t('buttons.plans'),
+      role:[REVEAL_SIMULATION_USER]
+    },
+    {
+      id: 'locations',
+      to: LOCATION_PAGE,
+      path: LOCATION_PAGE,
+      title: t('buttons.locationManagement'),
+      role:[LOCATION_VIEW]
+    },
+    {
+      id: 'assign',
+      to: ASSIGNMENT_PAGE,
+      path: ASSIGNMENT_PAGE,
+      title: t('buttons.assign'),
+      role:[ASSIGNMENT_PLAN]
+    },
+    {
+      id: 'report',
+      to: REPORTING_PAGE,
+      path: REPORTING_PAGE,
+      title: t('buttons.report'),
+      role:[REPORT_VIEW]
+    },
+  ];
+
   return (
     <Container fluid className="text-center my-4">
       <h2 className='my-5'>{t('homePage.welcomeMessage')}</h2>
+      
       <Dashboard />
-      <hr className="w-75 mx-auto" />
+      
       <Row className="justify-content-center">
-        <Col md={4}>
-          <AuthorizedElement roles={[REVEAL_MANAGE]}>
-            <Link id="management-button" to={MANAGEMENT} className="m-2 w-100 btn btn-success">
-              {t('buttons.management')}
-            </Link>
+        {features.map((feature) => (
+          <AuthorizedElement 
+            key={feature.id}
+            roles={feature?.role || []}
+            path={feature.path}
+          >
+            <Col xs={12} md={4} className="mb-3">
+              <Link 
+                to={feature.to} 
+                className="w-100 btn btn-success py-3 d-flex align-items-center justify-content-center"
+                style={{ fontSize: '1.1rem', fontWeight: '400' }}
+              >
+                {feature.title}
+              </Link>
+            </Col>
           </AuthorizedElement>
-        </Col>
-        <Col md={4}>
-          <AuthorizedElement roles={[REVEAL_MANAGE]}>
-            <Link id="management-button" to={MANAGEMENT + "/instance-configuration"} className="m-2 w-100 btn btn-success">
-              {t('buttons.instanceConfiguration')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
-        <Col md={4}>
-          <AuthorizedElement roles={[REVEAL_MANAGE]}>
-            <Link id="management-button" to={MANAGEMENT + "/group-configuration"} className="m-2 w-100 btn btn-success">
-              {t('buttons.groupConfiguration')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
-      </Row>
-      <Row className="justify-content-center">
-        <Col md={3}>
-          <AuthorizedElement roles={[PLAN_MANAGEMENT]}>
-            <Link id="plans-button" to={PLANS} className="m-2 w-100 btn btn-success">
-              {t('buttons.plans')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
-        <Col md={3}>
-          <AuthorizedElement roles={[REVEAL_MANAGE]}>
-            <Link id="locations-button" to={LOCATION_PAGE} className="m-2 w-100 btn btn-success">
-              {t('buttons.locationManagement')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
-        <Col md={3}>
-          <AuthorizedElement roles={[PLAN_MANAGEMENT]}>
-            <Link id="assign-button" to={ASSIGNMENT_PAGE} className="m-2 w-100 btn btn-success">
-              {t('buttons.assign')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
-        <Col md={3}>
-          <AuthorizedElement roles={[REPORT_VIEW]}>
-            <Link id="report-button" to={REPORTING_PAGE} className="m-2 w-100 btn btn-success">
-              {t('buttons.report')}
-            </Link>
-          </AuthorizedElement>
-        </Col>
+        ))}
       </Row>
     </Container>
   );

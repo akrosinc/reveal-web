@@ -9,7 +9,8 @@ export interface UserModel {
   email: string;
   password?: string;
   tempPassword?: boolean;
-  organizations: OrganizationModel[];
+  organizations?: OrganizationModel[];
+  instances?: string[];
   securityGroups: string[];
   selectedAll?: boolean;
 }
@@ -59,3 +60,21 @@ export enum BulkEntryStatus {
   ERROR,
   SUCCESSFUL
 }
+
+export interface UserInstanceModel {
+  identifier: string;
+  name: string;
+}
+
+export interface UserRole {
+  identifier: string;
+  name: string;
+  permissions?: string[];
+}
+
+export interface UserInstanceRole {
+  instanceRole: UserRole;
+  groupRoles: string[];
+}
+
+export type UserRolesResponse = UserInstanceRole[];

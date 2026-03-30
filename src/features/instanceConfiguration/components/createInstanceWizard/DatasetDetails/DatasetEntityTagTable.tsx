@@ -121,71 +121,23 @@ const DatasetEntityTagTable = ({ data, setMetadataList, metadataList, columns }:
                             {row.cells.map(cell => {
                                 return cell.column.id === 'selected' ? (
                                     <td {...cell.getCellProps()}>
-                                        {/* 
-                                            Show checkbox for main parent tags
-                                            USER Request: "only 1st element hiv_prevalance and covid_prevalance should be shown... we should be able to select those"
-                                        */}
-                                        <FormCheck
-                                            checked={cellData.selected}
-                                            onChange={evt => setSelected(evt, row.original.identifier)}
-                                        />
+                                        {cellData.public && (
+                                            <FormCheck
+                                                checked={cellData.selected}
+                                                onChange={evt => setSelected(evt, row.original.identifier)}
+                                            />
+                                        )}
                                     </td>
                                 ) : cell.column.id === 'tag' ? (
                                     <td {...cell.getCellProps()}>
                                         {cell.render('Cell')}
                                     </td>
-                                ) : cell.column.id === 'orgGrants' ? (
+                                ) : cell.column.id === 'instances' ? (
                                     <td {...cell.getCellProps()}>
-                                        {cellData.tagAccGrantsOrganization?.map(org => (
-                                            <Row key={org.id}>
-                                                <Col>
-                                                    <div>{org.name}</div>
-                                                </Col>
-                                            </Row>
-                                        ))}
-                                    </td>
-                                ) : cell.column.id === 'userGrants' ? (
-                                    <td {...cell.getCellProps()}>
-                                        {cellData.tagAccGrantsUser?.map(user => (
-                                            <Row key={user.id}>
-                                                <Col>
-                                                    <div>{user.username}</div>
-                                                </Col>
-                                            </Row>
-                                        ))}
-                                    </td>
-                                ) : cell.column.id === 'resultingOrgGrants' ? (
-                                    <td {...cell.getCellProps()}>
-                                        {cellData.resultingOrgs?.map(org => (
-                                            <Row key={org.id}>
-                                                <Col>
-                                                    <div>{org.name}</div>
-                                                </Col>
-                                            </Row>
-                                        ))}
-                                    </td>
-                                ) : cell.column.id === 'resultingUserGrants' ? (
-                                    <td {...cell.getCellProps()}>
-                                        {cellData.resultingUsers?.map(user => (
-                                            <Row key={user.id}>
-                                                <Col>
-                                                    <div>{user.username}</div>
-                                                </Col>
-                                            </Row>
-                                        ))}
+                                        {Array.isArray((cellData as any).instances) ? (cellData as any).instances.join(', ') : ''}
                                     </td>
                                 ) : cell.column.id === 'public' || cell.column.id === 'isPublic' ? (
                                     <td {...cell.getCellProps()}>{cellData.public ? 'true' : 'false'}</td>
-                                ) : cell.column.id === 'aggregate' ? (
-                                    <td {...cell.getCellProps()}>{cellData.aggregate ? 'true' : 'false'}</td>
-                                ) : cell.column.id === 'owner' ? (
-                                    <td {...cell.getCellProps()}>{cellData.owner ? 'true' : 'false'}</td>
-                                ) : cell.column.id === 'owners' ? (
-                                    <td {...cell.getCellProps()}>
-                                        {cellData.owners?.map(owner => (
-                                            <p key={owner.id}>{owner.username}</p>
-                                        ))}
-                                    </td>
                                 ) : (
                                     <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
                                 );

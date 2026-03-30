@@ -1,36 +1,49 @@
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Col, Row, Spinner } from 'react-bootstrap';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { DebounceInput } from 'react-debounce-input';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import DefaultTable from '../../components/Table/DefaultTable';
+import Paginator from '../../components/Pagination';
 import CreateGroup from './CreateGroup';
 import { getGroupList, GroupModel } from './api';
-import { PAGINATION_DEFAULT_SIZE } from '../../constants';
+import { GROUP_MANAGEMENT, GROUP_MANAGEMENT_CREATE, GROUP_MANAGEMENT_EDIT, PAGINATION_DEFAULT_SIZE } from '../../constants';
+import { useAuthorization } from '../../hooks/useAuthorization';
+import AuthorizedElement from '../../components/AuthorizedElement';
+
 
 const GroupConfiguration: React.FC = () => {
     const { t } = useTranslation();
-
+    const isAuthorizedForEdit = useAuthorization([GROUP_MANAGEMENT_EDIT])
     // ─── Table / pagination state ───────────────────────────────────────────────
     const [groups, setGroups] = useState<GroupModel[]>([]);
     const [totalElements, setTotalElements] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
     const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(PAGINATION_DEFAULT_SIZE);
     const [search, setSearch] = useState('');
     const [currentSortField, setCurrentSortField] = useState('');
     const [currentSortDirection, setCurrentSortDirection] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // ─── View state ─────────────────────────────────────────────────────────────
-    const [showCreate, setShowCreate] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { id } = useParams();
+
+    const isCreate = location.pathname.endsWith('/create');
+    const isEdit = !!id;
+    const showCreateOrEdit = isCreate || isEdit;
 
     // ─── Data fetch ─────────────────────────────────────────────────────────────
     const loadGroups = useCallback(
-        (page: number, searchTerm: string, sortField: string, sortDirection: boolean) => {
+        (size: number, page: number, searchTerm: string, sortField: string, sortDirection: boolean) => {
             setLoading(true);
-            getGroupList(PAGINATION_DEFAULT_SIZE, page, searchTerm, sortField, sortDirection)
+            getGroupList(size, page, searchTerm, sortField, sortDirection)
                 .then(res => {
                     setGroups(res?.content ?? []);
                     setTotalElements(res?.totalElements ?? 0);
+                    setTotalPages(res?.totalPages ?? 0);
                 })
                 .catch(() => toast.error('Failed to load groups.'))
                 .finally(() => setLoading(false));
@@ -38,10 +51,12 @@ const GroupConfiguration: React.FC = () => {
         []
     );
 
-    // Load on mount and whenever page/search/sort changes
+
+    // Load on mount and whenever page/size/search/sort changes
     useEffect(() => {
-        loadGroups(currentPage, search, currentSortField, currentSortDirection);
-    }, [currentPage, search, currentSortField, currentSortDirection, loadGroups]);
+        loadGroups(pageSize, currentPage, search, currentSortField, currentSortDirection);
+    }, [pageSize, currentPage, search, currentSortField, currentSortDirection, loadGroups]);
+
 
     // ─── Handlers ───────────────────────────────────────────────────────────────
     const filterData = (e: ChangeEvent<HTMLInputElement>) => {
@@ -55,37 +70,72 @@ const GroupConfiguration: React.FC = () => {
         setCurrentPage(0);
     };
 
+    const paginationHandler = (size: number, page: number) => {
+        setPageSize(size);
+        setCurrentPage(page);
+    };
+
     // ─── Table columns (only name + type/team) ──────────────────────────────────
+
     const columns = [
         { name: 'name', sortValue: 'name', accessor: 'name' },
         { name: 'type', sortValue: 'type', accessor: 'type' }
     ];
 
+    const sortedGroups = useMemo(() => {
+        return groups ?? [];
+    }, [groups]);
+
+    const filteredGroups = useMemo(() => {
+        if (!search) return sortedGroups;
+        const lowercaseSearch = search.toLowerCase();
+        return sortedGroups.filter(
+            group => {
+                const nameMatch = group.name?.toLowerCase().includes(lowercaseSearch);
+                const typeText = group.type === 'TEAM' 
+                    ? t('groupConfigurationPage.table.yes').toLowerCase() 
+                    : t('groupConfigurationPage.table.no').toLowerCase();
+                const typeMatch = typeText.includes(lowercaseSearch);
+                return nameMatch || typeMatch;
+            }
+        );
+    }, [sortedGroups, search, t]);
+
+
     const tableData = useMemo(
         () =>
-            (groups ?? []).map(row => ({
+            filteredGroups.map(row => ({
                 ...row,
                 type: (
-                    <span style={{ color: row.type === 'TEAM' ? 'green' : '#555' }}>
-                        {row.type === 'TEAM'
+                    <span style={{ color: row?.organizationType === 'TEAM' ? 'green' : 'red' }}>
+                        {row?.organizationType === 'TEAM'
                             ? t('groupConfigurationPage.table.yes')
-                            : row.type || t('groupConfigurationPage.table.no')}
+                            : t('groupConfigurationPage.table.no')}
                     </span>
                 )
             })),
-        [groups, t]
+        [filteredGroups, t]
     );
 
-    // ─── After create: refresh list ─────────────────────────────────────────────
-    const handleSave = () => {
-        setShowCreate(false);
-        // Reload with current filters
-        loadGroups(currentPage, search, currentSortField, currentSortDirection);
+
+    const handleEdit = (identifier: string) => {
+        if(!isAuthorizedForEdit) return;
+        navigate(`${GROUP_MANAGEMENT}/${identifier}/edit`);
     };
 
+    const handleSave = () => {
+        navigate(GROUP_MANAGEMENT);
+        loadGroups(pageSize, currentPage, search, currentSortField, currentSortDirection);
+    };
+
+    const handleCancel = () => {
+        navigate(GROUP_MANAGEMENT);
+    };
+
+
     // ─── Render ─────────────────────────────────────────────────────────────────
-    if (showCreate) {
-        return <CreateGroup onCancel={() => setShowCreate(false)} onSave={handleSave} />;
+    if (showCreateOrEdit) {
+        return <CreateGroup identifier={id} onCancel={handleCancel} onSave={handleSave} />;
     }
 
     return (
@@ -101,12 +151,13 @@ const GroupConfiguration: React.FC = () => {
                         onChange={filterData}
                     />
                 </Col>
-
+                <AuthorizedElement roles={[GROUP_MANAGEMENT_CREATE]}>
                 <Col md={8}>
-                    <Button className="btn btn-primary float-end" onClick={() => setShowCreate(true)}>
+                    <Button className="btn btn-primary float-end" onClick={() => navigate(GROUP_MANAGEMENT + '/create')}>
                         {t('buttons.create')}
                     </Button>
                 </Col>
+                </AuthorizedElement>
             </Row>
 
             <hr className="my-3" />
@@ -121,35 +172,22 @@ const GroupConfiguration: React.FC = () => {
                     columns={columns}
                     data={tableData}
                     sortHandler={sortHandler}
+                    clickHandler={handleEdit}
+                    clickAccessor="identifier"
                 />
             )}
 
-            {/* Simple pagination info */}
             {!loading && totalElements > 0 && (
-                <div className="d-flex justify-content-between align-items-center mt-3">
-                    <small className="text-muted">
-                        Showing {groups.length} of {totalElements} groups
-                    </small>
-                    <div className="d-flex gap-2">
-                        <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            disabled={currentPage === 0}
-                            onClick={() => setCurrentPage(p => p - 1)}
-                        >
-                            Previous
-                        </Button>
-                        <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            disabled={(currentPage + 1) * PAGINATION_DEFAULT_SIZE >= totalElements}
-                            onClick={() => setCurrentPage(p => p + 1)}
-                        >
-                            Next
-                        </Button>
-                    </div>
-                </div>
+                <Paginator
+                    totalElements={totalElements}
+                    page={currentPage}
+                    size={pageSize}
+                    totalPages={totalPages}
+                    paginationHandler={paginationHandler}
+                />
             )}
+
+
         </>
     );
 };

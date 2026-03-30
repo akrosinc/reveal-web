@@ -1,4 +1,5 @@
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import moment from 'moment';
 import { Button, Col, Row, Spinner } from 'react-bootstrap';
 import { DebounceInput } from 'react-debounce-input';
 import DefaultTable from '../../../../components/Table/DefaultTable';
@@ -7,14 +8,18 @@ import { useTranslation } from 'react-i18next';
 import { getInstances } from '../../api';
 import Paginator from '../../../../components/Pagination';
 import { toast } from 'react-toastify';
+import AuthorizedElement from '../../../../components/AuthorizedElement';
+import { INSTANE_MANAGEMENT_CREATE, INSTANE_MANAGEMENT_EDIT } from '../../../../constants';
+import { useAuthorization } from '../../../../hooks/useAuthorization';
 
 interface InstancesProps {
   onCreate?: () => void;
+  onEdit?: (identifier: string) => void;
 }
 
 const PAGINATION_DEFAULT_SIZE = 10;
 
-const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
+const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
   const { t } = useTranslation();
 
   const [instances, setInstances] = useState<any>();
@@ -23,6 +28,13 @@ const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
   const [search, setSearch] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
+  const isAuthorizedToEdit = useAuthorization([INSTANE_MANAGEMENT_EDIT])
+  const editHandler = (identifier: string) => {
+    if (!isAuthorizedToEdit) return
+    if (onEdit) {
+      onEdit(identifier);
+    }
+  };
 
   const activateHandler = (row: any) => {
     console.log('Activate clicked for:', row);
@@ -65,22 +77,22 @@ const Instances: React.FC<InstancesProps> = ({ onCreate }) => {
   /**
    * Sorting
    */
-//  const sortHandler = (field: string, direction: boolean) => {
-//   setCurrentSortField(field);
-//   setCurrentSortDirection(direction);
+  //  const sortHandler = (field: string, direction: boolean) => {
+  //   setCurrentSortField(field);
+  //   setCurrentSortDirection(direction);
 
-//   loadData(instances?.size ?? PAGINATION_DEFAULT_SIZE, 0, field, direction);
-// };
-const sortHandler = (field: string, direction: boolean) => {
-  if (instances !== undefined) {
-    setCurrentSortField(field);
-    setCurrentSortDirection(direction);
+  //   loadData(instances?.size ?? PAGINATION_DEFAULT_SIZE, 0, field, direction);
+  // };
+  const sortHandler = (field: string, direction: boolean) => {
+    if (instances !== undefined) {
+      setCurrentSortField(field);
+      setCurrentSortDirection(direction);
 
-    getInstances(instances.size, 0, field, direction)
-      .then(res => setInstances(res))
-      .catch(err => toast.error(err));
-  }
-};
+      getInstances(instances.size, 0, field, direction)
+        .then(res => setInstances(res))
+        .catch(err => toast.error(err));
+    }
+  };
 
 
   /**
@@ -109,6 +121,8 @@ const sortHandler = (field: string, direction: boolean) => {
    */
   const tableData = filteredData.map((row: any) => ({
     ...row,
+    startDate: row.startDate ? moment(row.startDate).format('DD/MM/YYYY') : '',
+    endDate: row.endDate ? moment(row.endDate).format('DD/MM/YYYY') : '',
     action:
       row.planStatus === 'DRAFT' ? (
         <Button size="sm" variant="primary" onClick={() => activateHandler(row)}>
@@ -133,12 +147,13 @@ const sortHandler = (field: string, direction: boolean) => {
             disabled={instances?.totalElements === 0 && search === ''}
           />
         </Col>
-
-        <Col md={8}>
-          <Button className="btn btn-primary float-end" onClick={onCreate}>
-            {t('buttons.create')}
-          </Button>
-        </Col>
+        <AuthorizedElement roles={[INSTANE_MANAGEMENT_CREATE]}>
+          <Col md={8}>
+            <Button className="btn btn-primary float-end" onClick={onCreate}>
+              {t('buttons.create')}
+            </Button>
+          </Col>
+        </AuthorizedElement>
       </Row>
 
       <hr className="my-3" />
@@ -155,6 +170,8 @@ const sortHandler = (field: string, direction: boolean) => {
             columns={INSTANCE_TABLE_COLUMNS}
             data={tableData}
             sortHandler={sortHandler}
+            clickHandler={editHandler}
+            clickAccessor="identifier"
           />
 
           <Paginator

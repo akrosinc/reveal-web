@@ -2,6 +2,8 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 import { Button, Col, Container, Form, Modal, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '../../../store/hooks';
+import { useAuthorization } from '../../../hooks/useAuthorization';
 import { toast } from 'react-toastify';
 import 'simplebar/dist/simplebar.min.css';
 import { ActionDialog } from '../../../components/Dialogs';
@@ -51,7 +53,7 @@ import SimulationMapView from './SimulationMapView/SimulationMapView';
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
 import { hex } from 'color-convert';
-import { REVEAL_SIMULATION_EDIT } from '../../../constants';
+import { REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_INSTANCE_SELECTION } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import { Drawer } from '../../location/components/drawer/Drawer';
 import Accordion from '../../location/components/accordion/Accordion';
@@ -89,6 +91,7 @@ import {
 import { assignLocationsToPlan } from '../../assignment/api';
 import { getPlanTargetLevelName } from '../../../utils';
 import { auto } from '@popperjs/core';
+import { getInstances, getInstanceHierarchy } from '../api';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -164,6 +167,8 @@ interface PolygonsState {
 
 const Simulation = () => {
   const { t } = useTranslation();
+  const isAuthorized = useAuthorization([SIMULATION_INSTANCE_SELECTION])
+  const instanceContext = useAppSelector(state => state.instanceContext);
   // const [showModal, setShowModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -272,6 +277,7 @@ const Simulation = () => {
   const { state } = usePolygonContext();
   const prevDatasetsLengthRef = useRef<number>(state.datasets.length);
   const [plans, setPlans] = useState<any[]>();
+  const [instances, setInstances] = useState<any>(null);
   const [selectedPlan, setSelectedPlan] = useState<any>();
 
   const fetchSimulationAndData = async (selectedPlan: any) => {
@@ -314,8 +320,8 @@ const Simulation = () => {
     });
   };
 
-  const fetchHierarchy = async () => {
-    const hierarchyData = await getHierarchy();
+  const fetchHierarchy = async (instanceId: string) => {
+    const hierarchyData = await getInstanceHierarchy(instanceId);
     try {
       setHighestLocations(hierarchyData);
       dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData });
@@ -329,7 +335,7 @@ const Simulation = () => {
       const planInfo = selectedPlan;
       dispatch({ type: 'SET_PLANID', payload: planInfo.identifier });
       dispatch({ type: 'SET_PLAN_TARGET_TYPE', payload: planInfo.planTargetType });
-      return planInfo.identifier;
+      return planInfo?.planIdentifier || planInfo?.identifier;
     } catch (error) {
       console.error('Failed to fetch plan info:', error);
     }
@@ -454,16 +460,28 @@ const Simulation = () => {
   }, [state.selected, showDatasetsAgainstParentLevel]);
 
   useEffect(() => {
+    if (Array.isArray(instances) && instances?.length === 0) {
+      // instanceContext
+      // alert("Empty..")
+      // console.log(instanceContext, 'IC')
+      fetchHierarchy(instanceContext?.selectedInstance?.identifier as any);
+      fetchSimulationAndData(instanceContext?.instancePlan as any);
+      fetchDefaultHierarchyData();
+    }
     if (selectedPlan) {
-      fetchHierarchy();
+      fetchHierarchy(selectedPlan.identifier as any);
       fetchSimulationAndData(selectedPlan);
       fetchDefaultHierarchyData();
     }
-  }, [selectedPlan]);
+  }, [selectedPlan, instances]);
 
   useEffect(() => {
     getPlans().then(planInfo => {
       setPlans(planInfo);
+    });
+    getInstances(0, 1000).then(instances => {
+      setInstances(instances?.content);
+      // setInstances([])
     });
   }, []);
 
@@ -1659,7 +1677,7 @@ const Simulation = () => {
   };
 
   const handlePlanSelectionChange = (option: SingleValue<{ value: string; label: string }>) => {
-    let found = plans?.find(plan => plan.identifier === option?.value);
+    let found = instances?.find((plan: any) => plan.identifier === option?.value);
     if (found) {
       setSelectedPlan(found);
     }
@@ -1670,9 +1688,9 @@ const Simulation = () => {
       <Container fluid ref={divRef}>
         <div style={{ display: 'flex', position: 'relative' }}>
           <Drawer open={leftOpen} anchor="left" heading="Plan Simulation">
-            {plans && (
+            {isAuthorized && instances?.length > 0 && (
               <Accordion title="Plans" open={selectedPlan == null}>
-                <Select
+                {/* <Select
                   placeholder={'Select Plan'}
                   className={styles.select_small}
                   options={plans.map((plan: any) => {
@@ -1684,13 +1702,28 @@ const Simulation = () => {
                   onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
                     handlePlanSelectionChange(selectedOption);
                   }}
-                />
-                {plans.map(plan => (
+                /> */}
+                <div style={{ height: 400 }}>
+                  <Select
+                    placeholder={'Select Instances'}
+                    className={styles.select_small}
+                    options={instances?.map((plan: any) => {
+                      return {
+                        value: plan.identifier,
+                        label: plan.instanceName
+                      };
+                    })}
+                    onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
+                      handlePlanSelectionChange(selectedOption);
+                    }}
+                  />
+                </div>
+                {/* {plans.map(plan => (
                   <>
                     <br></br>
                     <br></br>
                   </>
-                ))}
+                ))} */}
               </Accordion>
             )}
 
@@ -1705,69 +1738,75 @@ const Simulation = () => {
               </Accordion>
             )}
             {/* {highestLocations && showResult && ( */}
-            {highestLocations && (
-              <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
-                {state.datasets?.length !== 0 && (
-                  <div className={styles.WrapperDasasetsButton}>
-                    <button className={styles.dasasetsButton} onClick={handleDatasetsButtonClick}>
-                      Display datasets by parent level
-                    </button>
-                    {nodeOrderListVisible && (
-                      <>
-                        <Select
-                          components={{
-                            IndicatorSeparator: () => null
-                          }}
-                          placeholder={'Select Parent Level'}
-                          className={styles.select}
-                          isClearable
-                          onMenuOpen={() => setShowingParentLevelsMenu(true)}
-                          onMenuClose={() => setShowingParentLevelsMenu(false)}
-                          options={state.defaultHierarchyData?.nodeOrder.map((node: string) => {
-                            return {
-                              value: node,
-                              label: node
-                            };
-                          })}
-                          value={selectedParentLevel}
-                          onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
-                            handleParentSelectionChange(selectedOption);
-                          }}
-                        />
+            <AuthorizedElement roles={[SIMULATION_DATASET_MENU]}>
+              {highestLocations && (
+                <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
+                  {state.datasets?.length !== 0 && (
+                    <div className={styles.WrapperDasasetsButton}>
+                      <button className={styles.dasasetsButton} onClick={handleDatasetsButtonClick}>
+                        Display datasets by parent level
+                      </button>
+                      {nodeOrderListVisible && (
+                        <>
+                          <Select
+                            components={{
+                              IndicatorSeparator: () => null
+                            }}
+                            placeholder={'Select Parent Level'}
+                            className={styles.select}
+                            isClearable
+                            onMenuOpen={() => setShowingParentLevelsMenu(true)}
+                            onMenuClose={() => setShowingParentLevelsMenu(false)}
+                            options={state.defaultHierarchyData?.nodeOrder.map((node: string) => {
+                              return {
+                                value: node,
+                                label: node
+                              };
+                            })}
+                            value={selectedParentLevel}
+                            onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
+                              handleParentSelectionChange(selectedOption);
+                            }}
+                          />
 
-                        {showingParentLevelsMenu && (
-                          <>
-                            <br></br>
-                            <br></br>
-                            <br></br>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
-                {state.datasets?.map(dataset => (
-                  <DatasetsAccordion
-                    key={dataset.identifier}
-                    dataset={dataset}
-                    updateDatasetHandler={updateDatasetHandler}
-                    removeDatasetHandler={removeDatasetHandler}
-                  />
-                ))}
-                <DrawerButton onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>
-                  Add dataset
-                </DrawerButton>
-                <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
-                  <div className="p-6">
-                    <AddDatasetForm
-                      onClose={() => setOpenCustomModal(undefined)}
-                      onDatasetAdded={handleAddDataset}
-                      selectedLocationId={currentLocationId}
+                          {showingParentLevelsMenu && (
+                            <>
+                              <br></br>
+                              <br></br>
+                              <br></br>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {state.datasets?.map(dataset => (
+                    <DatasetsAccordion
+                      key={dataset.identifier}
+                      dataset={dataset}
+                      updateDatasetHandler={updateDatasetHandler}
+                      removeDatasetHandler={removeDatasetHandler}
                     />
-                  </div>
-                </CustomPopup>
-              </Accordion>
-            )}
+                  ))}
+
+                  <AuthorizedElement roles={[SIMULATION_ADD_DATASET]}>
+                    <DrawerButton onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>
+                      Add dataset
+                    </DrawerButton>
+                  </AuthorizedElement>
+                  <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
+                    <div className="p-6">
+                      <AddDatasetForm
+                        onClose={() => setOpenCustomModal(undefined)}
+                        onDatasetAdded={handleAddDataset}
+                        selectedLocationId={currentLocationId}
+                      />
+                    </div>
+                  </CustomPopup>
+                </Accordion>
+              )}
+            </AuthorizedElement>
           </Drawer>
           <SimulationMapView
             showDatasetsAgainstParentLevel={showDatasetsAgainstParentLevel}
@@ -1837,7 +1876,10 @@ const Simulation = () => {
               </Button>
               {highestLocations && showResult && (
                 <>
-                  <AuthorizedElement roles={[REVEAL_SIMULATION_EDIT]}>
+                  <AuthorizedElement
+                    // roles={[REVEAL_SIMULATION_EDIT]}
+                    roles={[]}
+                  >
                     <Button
                       className="float-end my-3 ms-2"
                       variant="secondary"

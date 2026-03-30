@@ -109,13 +109,38 @@ export const getUserList = async (
   return response.data.content;
 };
 
+export const getUserList1 = async (
+  search?: string,
+  filters?: { firstName?: string; lastName?: string; email?: string },
+  sortField?: string,
+  direction?: boolean
+): Promise<UserModel[]> => {
+  const params = new URLSearchParams();
+
+  if (search) params.append('search', search);
+
+  if (filters) {
+    if (filters.firstName) params.append('firstName', filters.firstName);
+    if (filters.lastName) params.append('lastName', filters.lastName);
+    if (filters.email) params.append('email', filters.email);
+  }
+
+  if (sortField) {
+    params.append('sort', `${sortField},${direction ? 'asc' : 'desc'}`);
+  }
+
+  const response = await api.get<UserListResponse>(`${USER}/global?size=10000&${params.toString()}`);
+
+  return response.data.content;
+};
+
 export const createUser = async (data: CreateUserRequest): Promise<AxiosResponse | null> => {
   try {
     const response: AxiosResponse = await api.post('/user', data);
-    return response; 
+    return response;
   } catch (error) {
     console.error('Error creating user:', error);
-    return null; 
+    return null;
   }
 };
 

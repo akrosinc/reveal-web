@@ -46,22 +46,34 @@ const ResourcePlanning = () => {
         }}
       >
         <Tab eventKey="config" title="Config">
-          <AuthGuard roles={[PLAN_VIEW]}>
+          <AuthGuard 
+          // roles={[PLAN_VIEW]}
+          roles={[]}
+          >
             <ConfigTab />
           </AuthGuard>
         </Tab>
         <Tab eventKey="inputs" title="Inputs">
-          <AuthGuard roles={[PLAN_VIEW]}>
+          <AuthGuard 
+          roles={[]}
+          // roles={[PLAN_VIEW]}
+          >
             <InputsTab />
           </AuthGuard>
         </Tab>
         <Tab eventKey="dashboard" title="Dashboard">
-          <AuthGuard roles={[PLAN_VIEW]}>
+          <AuthGuard 
+          roles={[]}
+          // roles={[PLAN_VIEW]}
+          >
             <DashboardTab />
           </AuthGuard>
         </Tab>
         <Tab eventKey="history" title="History" unmountOnExit={true}>
-          <AuthGuard roles={[PLAN_VIEW]}>
+          <AuthGuard 
+          // roles={[PLAN_VIEW]
+          roles={[]}
+          >
             <HistoryTab />
           </AuthGuard>
         </Tab>

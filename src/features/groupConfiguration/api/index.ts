@@ -3,11 +3,43 @@ import { PageableModel } from '../../../api/providers';
 import { GROUP_MANAGEMENT } from '../../../constants';
 import { LocationModel } from '../../location/providers/types';
 
+export interface GroupMember {
+  identifier: string;
+  name: string;
+}
+
+export interface GroupDataset {
+  identifier: string;
+  name: string;
+}
+
+export interface GroupRole {
+  identifier: string;
+  name: string;
+}
+
+export interface GroupArea {
+  identifier: string;
+  properties: {
+    name: string;
+    geographicLevel: string;
+    [key: string]: any;
+  };
+  children?: GroupArea[];
+}
+
 export interface GroupModel {
   identifier: string;
   name: string;
   type: string;
+  active: boolean;
+  members?: GroupMember[];
+  datasets?: GroupDataset[];
+  roles?: GroupRole[];
+  areas?: GroupArea[];
+  organizationType?:string
 }
+
 
 export interface CreateGroupPayload {
   identifier?: string;
@@ -42,15 +74,18 @@ export const getGroupList = async (
   sortField?: string,
   direction?: boolean
 ): Promise<PageableModel<GroupModel>> => {
-  const searchParam = search !== undefined ? search : '';
-  const sortParam = sortField !== undefined ? sortField : '';
   const data = await api
     .get<PageableModel<GroupModel>>(
-      `${GROUP_MANAGEMENT}?size=${size}&page=${page}`
+      GROUP_MANAGEMENT +
+        `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&sort=${
+          sortField !== undefined ? sortField : ''
+        },${direction ? 'asc' : 'desc'}`
     )
     .then(response => response.data);
   return data;
 };
+
+
 
 export const createGroup = async (payload: CreateGroupPayload): Promise<GroupModel> => {
   const data = await api
@@ -71,7 +106,7 @@ export const getAssignedUserList = async (): Promise<AssignedUserModel[]> => {
 
 export const getAssignedAreaTree = async (): Promise<LocationModel[]> => {
   try {
-    const response = await api.get<LocationModel[]>('instance/assigned/area/tree');
+    const response = await api.get<LocationModel[]>('groupmanagement/instance/locationassigments');
     return response.data;
   } catch (error) {
     console.error('Error fetching assigned area tree:', error);
@@ -91,10 +126,27 @@ export const getAssignedDatasetList = async (): Promise<AssignedDatasetModel[]> 
 
 export const getAssignedRoleList = async (): Promise<AssignedRoleModel[]> => {
   try {
-    const response = await api.get<AssignedRoleModel[]>('instance/roles/list');
+    const response = await api.get<AssignedRoleModel[]>(GROUP_MANAGEMENT + '/roles/list');
     return response.data;
   } catch (error) {
     console.error('Error fetching assigned role list:', error);
     throw error;
   }
+};
+
+export const assignLocationToGroup = async (requestBody: { organizationIdentifier: string; locationIdentifiers: string[] }): Promise<any> => {
+  const data = await api
+    .post(`${GROUP_MANAGEMENT}/assignlocation`, requestBody)
+    .then(response => response.data);
+  return data;
+};
+
+export const getGroupByIdentifier = async (identifier: string): Promise<GroupModel> => {
+  const response = await api.get<GroupModel>(`${GROUP_MANAGEMENT}/${identifier}`);
+  return response.data;
+};
+
+export const updateGroup = async (identifier: string, payload: CreateGroupPayload): Promise<GroupModel> => {
+  const response = await api.put<GroupModel>(`${GROUP_MANAGEMENT}/${identifier}`, payload);
+  return response.data;
 };

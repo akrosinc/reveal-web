@@ -2,8 +2,10 @@ import React from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { Goal } from '../../../../../plan/providers/types';
+import { createGoal, updateGoal } from '../../../../../plan/api';
 import { useAppSelector } from '../../../../../../store/hooks';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 
 interface Props {
     show: boolean;
@@ -19,7 +21,7 @@ interface goalForm {
     priority: string;
 }
 
-const CreateGoal = ({ show, currentGoal, closeHandler, goalList, onSave }: Props) => {
+const CreateGoal = ({ show, planId, currentGoal, closeHandler, goalList, onSave }: Props) => {
     const isDarkMode = useAppSelector((state) => state.darkMode.value);
     const {
         register,
@@ -34,7 +36,7 @@ const CreateGoal = ({ show, currentGoal, closeHandler, goalList, onSave }: Props
     const { t } = useTranslation();
 
     const submitHandler = (form: goalForm) => {
-        // Logic for static data (no API calls)
+        // edit goal on new plan or create a new one
         if (currentGoal) {
             currentGoal.description = form.description;
             currentGoal.priority = form.priority;
@@ -47,11 +49,12 @@ const CreateGoal = ({ show, currentGoal, closeHandler, goalList, onSave }: Props
                 identifier: String(goalList.length + 1),
                 priority: form.priority
             };
-            goalList.push(newGoal);
+            // goalList.push(newGoal); // Best to let onSave handle the list update
             if (onSave) onSave(newGoal);
             closeHandler();
         }
     };
+
 
     return (
         <Modal
@@ -82,6 +85,21 @@ const CreateGoal = ({ show, currentGoal, closeHandler, goalList, onSave }: Props
                         />
                         {errors.description && <Form.Label className="text-danger">{errors.description.message}</Form.Label>}
                     </Form.Group>
+                    {/* <Form.Group className="mb-2">
+                        <Form.Label>{t('planPage.priority')}</Form.Label>
+                        <Form.Select
+                            id="goal-priority-input"
+                            {...register('priority', {
+                                required: 'Priority must be selected.',
+                            })}
+                        >
+                            <option value="">Select Priority</option>
+                            <option value="low-priority">Low Priority</option>
+                            <option value="medium-priority">Medium Priority</option>
+                            <option value="high-priority">High Priority</option>
+                        </Form.Select>
+                        {errors.priority && <Form.Label className="text-danger">{errors.priority.message}</Form.Label>}
+                    </Form.Group> */}
                 </Form>
             </Modal.Body>
             <Modal.Footer>

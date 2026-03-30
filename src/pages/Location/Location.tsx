@@ -36,22 +36,34 @@ const Location = () => {
         }}
       >
         <Tab eventKey="geographic-levels" title={t('locationsPage.geographicLevels')}>
-          <AuthGuard roles={[GEOGRAPHIC_LEVEL_VIEW]}>
+          <AuthGuard 
+          roles={[GEOGRAPHIC_LEVEL_VIEW,LOCATION_VIEW]}
+          // roles={[]}
+          >
             <GeographicLevels />
           </AuthGuard>
         </Tab>
         <Tab eventKey="locations-bulk" title={t('locationsPage.locationsBulk')}>
-          <AuthGuard roles={[LOCATION_VIEW]}>
+          <AuthGuard 
+          roles={[LOCATION_VIEW]}
+          // roles={[]}
+          >
             <LocationBulk />
           </AuthGuard>
         </Tab>
         <Tab eventKey="location-hierarchy" title={t('locationsPage.locationHierarchy')}>
-          <AuthGuard roles={[LOCATION_VIEW]}>
+          <AuthGuard 
+          roles={[LOCATION_VIEW]}
+          // roles={[]}
+          >
             <LocationHierarchy />
           </AuthGuard>
         </Tab>
         <Tab eventKey="locations" title={t('locationsPage.locations')}>
-          <AuthGuard roles={[LOCATION_VIEW]}>
+          <AuthGuard 
+          roles={[LOCATION_VIEW]}
+          // roles={[]}
+          >
             <Locations />
           </AuthGuard>
         </Tab>

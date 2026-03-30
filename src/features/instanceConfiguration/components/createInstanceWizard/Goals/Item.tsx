@@ -4,6 +4,8 @@ import Actions from './Actions';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Action, Goal } from '../../../../plan/providers/types';
+import { createAction, deleteAction, updateAction } from '../../../../plan/api';
+import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../../../store/hooks';
 
@@ -117,7 +119,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                         selectedAction={selectedAction}
                         closeHandler={(action?: Action, isDelete?: boolean) => {
                             if (action !== undefined) {
-                                // Logic replaced to use local state instead of API calls
+                                action.type = action.identifier ? 'UPDATE' : 'CREATE';
                                 if (isDelete) {
                                     const newActions = [...actionsList];
                                     newActions.splice(selectedIndex, 1);
@@ -126,24 +128,22 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                                 } else {
                                     const newActions = [...actionsList];
                                     if (selectedAction) {
-                                        // Update
                                         newActions[selectedIndex] = action;
                                     } else {
-                                        // Create
-                                        // Generate a mock identifier if not present
                                         if (!action.identifier) action.identifier = Date.now().toString();
                                         newActions.push(action);
                                     }
                                     setActionsList(newActions);
                                     goal.actions = newActions;
                                 }
-                                loadData(); // Trigger parent reload if needed
+                                loadData();
                             }
                             setShow(false);
                             setSelectedAction(undefined);
                         }}
                     />
                 )}
+
             </Accordion.Body>
         </Accordion.Item>
     );

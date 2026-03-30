@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Form, Modal, Row, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import Select, { MultiValue } from 'react-select';
-import { createUser } from '../../../api';
+import { createUser, createInstanceUser, getGroupManagementList, createGroupAuthUser, GroupModel } from '../../../api';
 import { getOrganizationListSummary, getSecurityGroups } from '../../../../organization/api';
 import { useForm } from 'react-hook-form';
 import { CreateUserModel } from '../../../providers/types';
 import { useAppSelector } from '../../../../../store/hooks';
 import { toast } from 'react-toastify';
-import { REGEX_EMAIL_VALIDATION, REGEX_USERNAME_VALIDATION } from '../../../../../constants';
+import { REGEX_EMAIL_VALIDATION, REGEX_USERNAME_VALIDATION, USER_MANAGEMENT_ADD_USER_TO_INSTANE } from '../../../../../constants';
 import { FieldValidationError } from '../../../../../api/providers';
-import { MOCK_INSTANCES } from '../../../../instanceConfiguration/components/instancesListing/mockInstances';
+import { getInstances } from '../../../../instanceConfiguration/api';
+import { useAuthorization } from '../../../../../hooks/useAuthorization';
 
 interface RegisterValues {
   username: string;
@@ -37,8 +38,11 @@ interface Props {
 const CreateUser = ({ show, handleClose }: Props) => {
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
-  const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
+  const [selectedInstance, setSelectedInstance] = useState<Options | null>(null);
   const [userType, setUserType] = useState('standard_user');
+  const [isInstanceAdmin, setIsInstanceAdmin] = useState(false);
+  // const isAuthorized = true
+  const isAuthorized = useAuthorization([USER_MANAGEMENT_ADD_USER_TO_INSTANE])
 
   const {
     reset,
@@ -49,34 +53,47 @@ const CreateUser = ({ show, handleClose }: Props) => {
   } = useForm<RegisterValues>();
   const [groups, setGroups] = useState<Options[]>();
   const [organizations, setOrganizations] = useState<Options[]>([]);
+  const [instances, setInstances] = useState<Options[]>([]);
+  const [groupOptions, setGroupOptions] = useState<Options[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<Options | null>(null);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
-  // const getData = useCallback(() => {
-  //   getSecurityGroups().then(res => {
-  //     setGroups(
-  //       res.map(el => {
-  //         return {
-  //           value: el.name,
-  //           label: el.name
-  //         };
-  //       })
-  //     );
-  //   }).catch(e=>console.log("ERror",e));
-  //   getOrganizationListSummary().then(res => {
-  //     setOrganizations(
-  //       res.content.map(el => {
-  //         return {
-  //           value: el.identifier,
-  //           label: el.name
-  //         };
-  //       })
-  //     );
-  //   });
-  // }, []);
+  useEffect(() => {
+    if (show && isAuthorized) {
+      getInstances(1000, 0).then(res => {
+        const fetchedInstances = res.content.map(inst => ({
+          value: inst.identifier,
+          label: inst?.instanceName as string
+        }));
+        setInstances(fetchedInstances);
+        if (fetchedInstances.length === 0) {
+          toast.warn('No instances found. User creation might be restricted.');
+        }
+      });
+    }
+  }, [show, isAuthorized]);
 
-  // useEffect(() => {
-  //   getData();
-  // }, [getData]);
+  useEffect(() => {
+    if (selectedInstance && !isInstanceAdmin && isAuthorized) {
+      setIsLoadingGroups(true);
+      getGroupManagementList(selectedInstance.value)
+        .then(res => {
+          const groups = res.content.map((g: GroupModel) => ({
+            value: g.identifier,
+            label: g.name
+          }));
+          setGroupOptions(groups);
+          if (groups.length === 0) {
+            toast.warn('No groups found for this instance.');
+          }
+        })
+        .finally(() => setIsLoadingGroups(false));
+    } else {
+      setGroupOptions([]);
+      setSelectedGroup(null);
+    }
+  }, [selectedInstance, isInstanceAdmin, isAuthorized]);
 
   const selectHandler = (selectedOption: MultiValue<{ value: string; label: string }>) => {
     const values = selectedOption.map(selected => {
@@ -92,34 +109,78 @@ const CreateUser = ({ show, handleClose }: Props) => {
     setSelectedOrganizations(values);
   };
 
-  const instanceSelectHandler = (selectedOption: MultiValue<Options>) => {
-    setSelectedInstances([...selectedOption]);
+  const instanceSelectHandler = (selectedOption: any) => {
+    setSelectedInstance(selectedOption);
   };
 
   const submitHandler = (formValues: RegisterValues) => {
-    let newUser: CreateUserModel & { userType: string; instances: string[] } = {
+    if (isAuthorized) {
+      if (!selectedInstance) {
+        toast.error('Please select an instance.');
+        return;
+      }
+      if (!isInstanceAdmin && !selectedGroup) {
+        toast.error('Please select a group.');
+        return;
+      }
+
+      const payloadBase = {
+        username: formValues.username,
+        firstName: formValues.firstname,
+        lastName: formValues.lastname,
+        email: formValues.email === '' ? null : formValues.email,
+        password: formValues.password,
+        tempPassword: true,
+        securityGroups: [userType],
+        instanceIdentifier: selectedInstance.value,
+        isInstanceAdmin: isInstanceAdmin
+      };
+
+      const apiCall = isInstanceAdmin
+        ? createInstanceUser(payloadBase)
+        : createGroupAuthUser({ ...payloadBase, groupIdentifier: selectedGroup!.value });
+
+      toast.promise(apiCall, {
+        pending: isInstanceAdmin ? 'Creating instance user...' : 'Creating group user...',
+        success: {
+          render() {
+            reset();
+            setSelectedInstance(null);
+            setSelectedGroup(null);
+            setIsInstanceAdmin(false);
+            handleClose();
+            return `User ${payloadBase.username} created successfully.`;
+          }
+        },
+        error: {
+
+          render({ data: err }: { data: any }) {
+            // console.log(err)
+            return err?.message || err?.data?.message || err || 'Failed to create instance user';
+          }
+        }
+      });
+      return;
+    }
+
+    let newUser: CreateUserModel = {
       username: formValues.username,
       email: formValues.email === '' ? null : formValues.email,
       firstName: formValues.firstname,
       lastName: formValues.lastname,
       organizations: selectedOrganizations?.map(el => el.value) ?? [],
-      // securityGroups: selectedSecurityGroups?.map(el => el.value) ?? [],
-      securityGroups:[userType],
+      securityGroups: [userType],
       password: formValues.password,
       tempPassword: false,
-      userType: userType,
-      instances: selectedInstances.map(el => el.value)
     };
 
-    toast.promise(createUser(newUser as any), {
+    toast.promise(createUser(newUser), {
       pending: 'Loading...',
       success: {
         render() {
           reset();
           setSelectedOrganizations([]);
           setSelectedSecurityGroups([]);
-          setSelectedInstances([]);
-          setUserType('Standard User');
           handleClose();
           return `User ${newUser.username} created successfully.`;
         }
@@ -144,11 +205,6 @@ const CreateUser = ({ show, handleClose }: Props) => {
     { name: 'Standard User', value: 'standard_user' }
   ];
 
-  const instanceOptions = MOCK_INSTANCES.map(inst => ({
-    value: inst.identifier,
-    label: inst.instanceName
-  }));
-
   return (
     <Modal show={show} onHide={handleClose} backdrop="static" keyboard={false} centered scrollable contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}>
       <Modal.Header closeButton>
@@ -156,8 +212,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
       </Modal.Header>
       <Modal.Body>
         <Form>
-
-          <Form.Group className="mb-3">
+          {!isAuthorized && <Form.Group className="mb-3">
             <Form.Label className="d-block">User Type</Form.Label>
             <ButtonGroup className="border rounded overflow-hidden" style={{ padding: 3 }}>
               {userTypeOptions.map((option, idx) => (
@@ -177,7 +232,10 @@ const CreateUser = ({ show, handleClose }: Props) => {
                 </ToggleButton>
               ))}
             </ButtonGroup>
-          </Form.Group>
+          </Form.Group>}
+
+
+
           <Form.Group className="mb-2">
             <Form.Label>Username</Form.Label>
             <Form.Control
@@ -194,20 +252,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             />
             {errors.username && <Form.Label className="text-danger">{errors.username.message}</Form.Label>}
           </Form.Group>
-          {/* {userType === 'Standard User' && <Form.Group className="mb-2">
-            <Form.Label>Select Instances</Form.Label>
-            <Select
-              className="custom-react-select-container"
-              classNamePrefix="custom-react-select"
-              id="instances-select"
-              menuPosition="fixed"
-              isMulti
-              value={selectedInstances}
-              options={instanceOptions}
-              onChange={instanceSelectHandler}
-              placeholder="Select instances..."
-            />
-          </Form.Group>} */}
+
           <Row>
             <Col>
               <Form.Group className="mb-2">
@@ -274,40 +319,60 @@ const CreateUser = ({ show, handleClose }: Props) => {
               type="email"
               placeholder="Enter Email"
             />
-            {errors.email && <Form.Label className="text-danger">Please enter a valid email.</Form.Label>}
+            {errors.email && <Form.Label className="text-danger">Please enter a valid email address.</Form.Label>}
           </Form.Group>
-
-          {/* <>
-          <Form.Group className="mb-2">
-            <Form.Label>Security groups</Form.Label>
-            <Select
-              className="custom-react-select-container"
-              classNamePrefix="custom-react-select"
-              id="security-groups-select"
-              menuPosition="fixed"
-              isMulti
-              value={selectedSecurityGroups}
-              options={groups}
-              onChange={selectHandler}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-2">
-            <Form.Label>Organization</Form.Label>
-            <Select
-              className="custom-react-select-container"
-              classNamePrefix="custom-react-select"
-              id="organizations-select"
-              menuPosition="fixed"
-              isMulti
-              value={selectedOrganizations}
-              options={organizations}
-              onChange={organizationSelectHandler}
-            />
-          </Form.Group>
-          </> */}
+          {isAuthorized && (
+            <>
+              {instances.length === 0 && (
+                <div className="alert alert-warning py-2 mb-3 small">
+                  No instances found. Please ensure at least one instance exists.
+                </div>
+              )}
+              <Form.Group className="mb-3">
+                <Form.Check
+                  type="checkbox"
+                  id="is-instance-admin-checkbox"
+                  label="Is Instance Admin"
+                  checked={isInstanceAdmin}
+                  onChange={(e) => setIsInstanceAdmin(e.target.checked)}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Select Instance</Form.Label>
+                <Select
+                  className="custom-react-select-container"
+                  classNamePrefix="custom-react-select"
+                  id="instance-select"
+                  value={selectedInstance}
+                  options={instances}
+                  onChange={instanceSelectHandler}
+                  placeholder="Select instance..."
+                />
+              </Form.Group>
 
 
+              {!isInstanceAdmin && (
+                <Form.Group className="mb-3">
+                  <Form.Label>Select Group</Form.Label>
+                  <Select
+                    className="custom-react-select-container"
+                    classNamePrefix="custom-react-select"
+                    id="group-select"
+                    value={selectedGroup}
+                    options={groupOptions}
+                    onChange={(option) => setSelectedGroup(option as Options)}
+                    placeholder={isLoadingGroups ? "Loading groups..." : "Select group..."}
+                    isDisabled={isLoadingGroups || groupOptions.length === 0}
+                  />
+                  {groupOptions.length === 0 && !isLoadingGroups && selectedInstance && (
+                    <Form.Text className="text-danger mt-1 d-block">
+                      No groups available for this instance.
+                    </Form.Text>
+                  )}
+                </Form.Group>
+              )}
+            </>
+          )}
         </Form>
       </Modal.Body>
       <Modal.Footer>
