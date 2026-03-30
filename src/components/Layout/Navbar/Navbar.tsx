@@ -19,6 +19,7 @@ import { setDarkMode } from '../../../features/reducers/darkMode';
 import { setCurrentInstance, clearCurrentInstance } from '../../../features/reducers/instanceContext';
 import { getInstanceContext } from '../../../features/instance/api';
 import SwitchInstanceModal from './SwitchInstanceModal';
+import { STANDARD_USER, SUPER_ADMIN } from '../../../constants/userRoles';
 
 const NavbarComponent = () => {
   const { t } = useTranslation();
@@ -29,8 +30,8 @@ const NavbarComponent = () => {
   const dispatch = useAppDispatch();
   const [expanded, setExpanded] = useState(false);
   const [showSwitchModal, setShowSwitchModal] = useState(false);
-  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user');
-  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/super_admin');
+  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(STANDARD_USER);
+  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
 
   useEffect(() => {
     if (initialized) {
@@ -40,7 +41,7 @@ const NavbarComponent = () => {
         });
 
         const rawCurrentInstance = localStorage.getItem('currentInstanceContext');
-        const isSuperAdminValue = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/super_admin');
+        const isSuperAdminValue = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
 
         // Only fetch default context if we don't have a persisted one
         if (!rawCurrentInstance) {

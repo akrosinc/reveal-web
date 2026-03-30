@@ -1,5 +1,6 @@
 import { useKeycloak } from '@react-keycloak/web';
 import { useAppSelector } from '../store/hooks';
+import { STANDARD_USER, SUPER_ADMIN } from '../constants/userRoles';
 
 /**
  * Custom hook for authorization checks.
@@ -11,8 +12,8 @@ import { useAppSelector } from '../store/hooks';
 export const useAuthorization = (roles: string[] = []): boolean => {
   const { keycloak } = useKeycloak();
   const ctx = useAppSelector(state => state.instanceContext);
-  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/super_admin');
-  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user');
+  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
+  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(STANDARD_USER);
   const permissions = ctx?.role?.permissions || [];
 
   const isAuthorized = (roles: string[]) => {

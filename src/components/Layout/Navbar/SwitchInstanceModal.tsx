@@ -7,6 +7,7 @@ import { getUserInstanceList, selectInstance } from '../../../features/instance/
 import './SwitchInstanceModal.css';
 import { useKeycloak } from '@react-keycloak/web';
 import { set } from 'lodash';
+import { SUPER_ADMIN } from '../../../constants/userRoles';
 
 interface Props {
   show: boolean;
@@ -15,7 +16,7 @@ interface Props {
 
 const SwitchInstanceModal = ({ show, onClose }: Props) => {
   const { keycloak } = useKeycloak();
-  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/super_admin');
+  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
   console.log(((keycloak?.tokenParsed as any)?.groups || []))
   const dispatch = useAppDispatch();
   const selectedInstance = useAppSelector(state => state.instanceContext.selectedInstance);

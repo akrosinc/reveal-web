@@ -11,6 +11,7 @@ import InstanceConfiguration from '../../features/instanceConfiguration';
 import GroupConfiguration from '../../features/groupConfiguration';
 import { useKeycloak } from '@react-keycloak/web';
 import { useAppSelector } from '../../store/hooks';
+import { STANDARD_USER } from '../../constants/userRoles';
 
 const Management = () => {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ const Management = () => {
   const isInstanceAdmin = useAppSelector(state => state?.instanceContext)?.role?.name !== 'ADMIN'
   
   // Standard users see Organization tab; superadmin does NOT
-  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user');
+  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(STANDARD_USER);
   
   return (
     <PageWrapper>
