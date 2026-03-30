@@ -194,7 +194,7 @@ export const getInstances = async (
   pageSize: number
 ): Promise<PaginatedResponse<Instance>> => {
   const data = await api
-    .get<PaginatedResponse<Instance>>(`instance?pageNumber=${pageNumber}&pageSize=${pageSize}`)
+    .get<PaginatedResponse<Instance>>(`instance?page=${pageNumber}&size=${pageSize}`)
     .then(res => res.data);
   return data;
 };
