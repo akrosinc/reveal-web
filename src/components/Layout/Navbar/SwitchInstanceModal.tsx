@@ -7,7 +7,9 @@ import { getUserInstanceList, selectInstance } from '../../../features/instance/
 import './SwitchInstanceModal.css';
 import { useKeycloak } from '@react-keycloak/web';
 import { set } from 'lodash';
-import { SUPER_ADMIN } from '../../../constants/userRoles';
+import { STANDARD_USER, SUPER_ADMIN } from '../../../constants/userRoles';
+import { useNavigate } from 'react-router-dom';
+import { HOME_PAGE, REVEAL_SIMULATION_USER, SIMULATION_PAGE } from '../../../constants';
 
 interface Props {
   show: boolean;
@@ -17,16 +19,19 @@ interface Props {
 const SwitchInstanceModal = ({ show, onClose }: Props) => {
   const { keycloak } = useKeycloak();
   const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
-  console.log(((keycloak?.tokenParsed as any)?.groups || []))
+  const isStandardUser =((keycloak?.tokenParsed as any)?.groups || []).includes(STANDARD_USER);
+  // console.log(((keycloak?.tokenParsed as any)?.groups || []))
   const dispatch = useAppDispatch();
+  const ctx = useAppSelector(state => state.instanceContext);
   const selectedInstance = useAppSelector(state => state.instanceContext.selectedInstance);
-
+  console.log('selectedInstance', ctx?.role?.name)
   const [instanceList, setInstanceList] = useState<InstanceModel[]>([]);
   const [selectedId, setSelectedId] = useState<string | undefined | null>((isSuperAdmin && selectedInstance?.identifier == null)
     ? "GLOBAL"
     : selectedInstance?.identifier);
   const [loading, setLoading] = useState(false);
   const [switching, setSwitching] = useState(false);
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (show) {
@@ -64,6 +69,7 @@ const SwitchInstanceModal = ({ show, onClose }: Props) => {
         const res = await selectInstance(selectedId as string);
         dispatch(setCurrentInstance(res));
         toast.success(`Switched to ${res.selectedInstance.name}`);
+        navigate(res.role.name ==="ADMIN" ? HOME_PAGE : SIMULATION_PAGE);
         onClose();
       } catch (e) {
         console.log(e)
@@ -78,6 +84,7 @@ const SwitchInstanceModal = ({ show, onClose }: Props) => {
         const superAdminData = JSON.parse(superAdminDataRaw);
         dispatch(setCurrentInstance(superAdminData));
         // toast.success(`Switched back to Global`);
+         navigate(HOME_PAGE)
         onClose();
         return;
       }
