@@ -54,7 +54,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
   const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
   const [instanceList, setInstanceList] = useState<InstanceModel[]>([]);
-  const [userType, setUserType] = useState(STANDARD_USER);
+  const [userType, setUserType] = useState(STANDARD_USER?.replace('/',''));
   const [selectedGroup, setSelectedGroup] = useState<Options | Options[] | null>(null);
   const [selectedUserAreas, setSelectedUserAreas] = useState<string[]>([]);
   const [selectedUserRoles, setSelectedUserRoles] = useState<string[]>([]);
@@ -101,7 +101,7 @@ const EditUser = ({ user, handleClose }: Props) => {
       setValue('lastname', userDetails.lastName);
       setValue('email', userDetails.email);
 
-      setUserType(userDetails.securityGroups?.[0] || 'standard_user');
+      setUserType(userDetails.securityGroups?.[0]);
       setSelectedInstances(
         userDetails.instances
           ? userDetails.instances.map(inst => ({ label: inst, value: inst }))
@@ -316,8 +316,8 @@ const EditUser = ({ user, handleClose }: Props) => {
   };
 
   const userTypeOptions = [
-    { name: 'Admin', value: SUPER_ADMIN },
-    { name: 'Standard User', value: STANDARD_USER }
+    { name: 'Admin', value: SUPER_ADMIN?.replace('/','') },
+    { name: 'Standard User', value: STANDARD_USER?.replace('/','') }
   ];
 
   return (
