@@ -118,7 +118,7 @@ const Users = () => {
             columns={USER_TABLE_COLUMNS}
             data={userList.content.map((user, index) => ({
               ...user,
-              role: user?.securityGroups?.includes('standard_user') ? 'User' : 'Admin',
+              role: user?.securityGroups?.includes('/standard_user') ? 'User' : 'Admin',
               instances: user.instances?.join(', ') || ''
             }))}
             clickHandler={openUserById}

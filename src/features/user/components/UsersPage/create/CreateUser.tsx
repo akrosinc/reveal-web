@@ -40,7 +40,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
   const [selectedSecurityGroups, setSelectedSecurityGroups] = useState<Options[]>();
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
   const [selectedInstance, setSelectedInstance] = useState<Options | null>(null);
-  const [userType, setUserType] = useState(STANDARD_USER);
+  const [userType, setUserType] = useState(STANDARD_USER?.replace('/', ''));
   const [isInstanceAdmin, setIsInstanceAdmin] = useState(false);
   // const isAuthorized = true
   const isAuthorized = useAuthorization([USER_MANAGEMENT_ADD_USER_TO_INSTANE])
@@ -202,8 +202,8 @@ const CreateUser = ({ show, handleClose }: Props) => {
   };
 
   const userTypeOptions = [
-    { name: 'Admin', value: SUPER_ADMIN },
-    { name: 'Standard User', value: STANDARD_USER }
+    { name: 'Admin', value: SUPER_ADMIN?.replace('/', '') },
+    { name: 'Standard User', value: STANDARD_USER?.replace('/', '') }
   ];
 
   return (
