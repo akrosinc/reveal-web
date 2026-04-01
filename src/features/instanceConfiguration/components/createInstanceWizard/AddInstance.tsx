@@ -178,7 +178,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                       // style={isDarkMode ? { backgroundColor: '#282828' } : {}}
                       dateFormat="yyyy-MM-dd"
                       minDate={new Date()}
-                      calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
+                      // calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
                     />
                   )}
                 />
@@ -207,7 +207,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                       dateFormat="yyyy-MM-dd"
                       minDate={startDate}
                       disabled={!startDate}
-                      calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
+                      // calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
                     />
                   )}
                 />
