@@ -37,7 +37,7 @@ const Paginator = ({ totalElements, totalPages, size, page, paginationHandler }:
         <Pagination.Next disabled={page === totalPages - 1} onClick={() => paginationHandler(size, page + 1)} />
         <Pagination.Last disabled={page === totalPages - 1} onClick={() => paginationHandler(size, totalPages - 1)} />
       </Pagination>
-      <Form.Select
+      {/* <Form.Select
         className={isDarkMode ? 'ms-2 text-light bg-dark border-0' : "ms-2"}
         style={{ width: '70px' }}
         value={size}
@@ -47,7 +47,7 @@ const Paginator = ({ totalElements, totalPages, size, page, paginationHandler }:
         <option value={10}>10</option>
         <option value={20}>20</option>
         <option value={50}>50</option>
-      </Form.Select>
+      </Form.Select> */}
     </div>
   );
 };
