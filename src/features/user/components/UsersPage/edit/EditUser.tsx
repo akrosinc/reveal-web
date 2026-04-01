@@ -186,8 +186,11 @@ const EditUser = ({ user, handleClose }: Props) => {
         } else if (res && (res as any).instanceInfos && Array.isArray((res as any).instanceInfos)) {
           // Fallback to instanceInfos structure if that's what's actually returned
           const roles = (res as any).instanceInfos.flatMap((info: any) => info.groupRoles || []);
-          const uniqueRoles: string[] = Array.from(new Set(roles.map((r: any) => typeof r === 'string' ? r : r.name)));
-          setUserRoles(uniqueRoles.map(r => ({ identifier: r, name: r })));
+          // const uniqueRoles: string[] = Array.from(new Set(roles.map((r: any) => typeof r === 'string' ? r : r.name)));
+          const uniqueRoles:string[] = Array.from(new Set(
+         roles.flatMap((item:any) => item.roles)
+        ));
+         setUserRoles(uniqueRoles.map(r => ({ identifier: r, name: r })));
         }
       }).catch(err => {
         console.error('Error fetching user roles:', err);
