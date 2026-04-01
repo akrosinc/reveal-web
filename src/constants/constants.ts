@@ -31,7 +31,7 @@ export const USER_ROW_DEPTH_COLOR_3 = 'rgba(202,236,255,0.6)';
 //REGEX
 export const REGEX_NAME_VALIDATION = new RegExp('^[-\\a-zA-Z0-9][ a-zA-Z0-9_.-]*[^- _]$');
 export const REGEX_TITLE_VALIDATION = new RegExp('^[^-\\s][a-zA-Z0-9._\\s-]*$');
-export const REGEX_USERNAME_VALIDATION = new RegExp('^[a-z0-9]+([._]?[a-z0-9]+)*$');
+export const REGEX_USERNAME_VALIDATION = new RegExp('^[a-z]+([._]?[a-z]+)*$');
 export const REGEX_EMAIL_VALIDATION = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
 
 export const PAGINATION_DEFAULT_SIZE = 10;

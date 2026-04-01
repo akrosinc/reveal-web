@@ -160,7 +160,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
         : createGroupAuthUser({ ...payloadBase, groupIdentifier: selectedGroup!.value });
 
       toast.promise(apiCall, {
-        pending: isInstanceAdmin ? 'Creating instance user...' : 'Creating group user...',
+        pending: isInstanceAdmin ? 'Creating instance admin...' : 'Creating standard user...',
         success: {
           render() {
             reset();
@@ -168,7 +168,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             setSelectedGroup(null);
             setIsInstanceAdmin(false);
             handleClose();
-            return `User ${payloadBase.username} created successfully.`;
+            return `${ isInstanceAdmin ? 'Instance admin' : 'Standard user' } (${payloadBase.username}) created successfully.`;
           }
         },
         error: {
@@ -205,7 +205,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
         
 
       toast.promise(apiCall, {
-        pending:'Creating instance user...',
+        pending: groupOptions?.length === 0 ? 'Creating instance admin...' : 'Creating standard user...',
         success: {
           render() {
             reset();
@@ -213,7 +213,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
             setSelectedGroup(null);
             setIsInstanceAdmin(false);
             handleClose();
-            return `User ${payloadBase.username} created successfully.`;
+            return `${groupOptions?.length === 0 ? 'Instance admin' : 'Standard user'} (${payloadBase.username}) created successfully.`;
           }
         },
         error: {
@@ -246,7 +246,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
           setSelectedOrganizations([]);
           setSelectedSecurityGroups([]);
           handleClose();
-          return `User ${newUser.username} created successfully.`;
+          return `${userType === SUPER_ADMIN?.replace('/', '') ? 'Global Admin' : 'Standard User'} (${newUser.username}) created successfully.`;
         }
       },
       error: {
@@ -308,7 +308,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
                 required: 'Username must not be empty',
                 pattern: {
                   value: REGEX_USERNAME_VALIDATION,
-                  message: 'Username containts unsupported characters.'
+                  message: 'Username contains unsupported characters.'
                 }
               })}
               type="username"
