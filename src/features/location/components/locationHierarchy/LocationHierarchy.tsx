@@ -26,6 +26,7 @@ const LocationHierarchy = () => {
   const [loadingForBaseHierarchy,setLoadingForBaseHierarchy]=useState<boolean>(true)
   const [isBase, setIsBase] = useState<boolean>(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showConfirmActivate, setShowConfirmActivate] = useState(false);
   const [selectedHierarchy, setSelectedHierarchy] = useState<LocationHierarchyModel>();
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
@@ -93,6 +94,7 @@ const LocationHierarchy = () => {
   const closeHandler = () => {
     setShowConfirm(false);
     setShowCreate(false);
+    setShowConfirmActivate(false);
 
     getLocationHierarchyList(
       locationHierarchy?.size ?? PAGINATION_DEFAULT_SIZE,
@@ -123,8 +125,13 @@ const LocationHierarchy = () => {
       .catch(err => toast.error(err));
   };
 
-  const activateHandler = (identifier: string) => {
-    toast.promise(activateLocationHierarchy(identifier), {
+  const activateHandler = (action:boolean) => {
+    if(!selectedHierarchy?.identifier)  return
+    if(!action){
+      setShowConfirmActivate(false);
+      return
+    }
+    toast.promise(activateLocationHierarchy(selectedHierarchy?.identifier), {
       pending: 'Activating...',
       success: {
         render() {
@@ -224,7 +231,9 @@ const LocationHierarchy = () => {
                         variant="primary"
                         onClick={() => {
                           if (el.identifier) {
-                            activateHandler(el.identifier);
+                            // activateHandler(el.identifier);
+                            setSelectedHierarchy(el);
+                            setShowConfirmActivate(true);
                           }
                         }}
                         className="float-end me-2"
@@ -268,6 +277,15 @@ const LocationHierarchy = () => {
           closeHandler={deleteHandler}
           message={'Are you sure you want to permanently delete hierarchy: ' + selectedHierarchy?.nodeOrder.toString()}
           title="Delete hierarchy"
+          backdrop
+          isDarkMode={isDarkMode}
+        />
+      )}
+      {showConfirmActivate && (
+        <ConfirmDialog
+          closeHandler={activateHandler}
+          message={'Are you sure you want to activate hierarchy: ' + selectedHierarchy?.nodeOrder.toString()}
+          title="Activate hierarchy"
           backdrop
           isDarkMode={isDarkMode}
         />

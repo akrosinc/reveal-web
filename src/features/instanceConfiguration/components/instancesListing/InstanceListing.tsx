@@ -11,7 +11,8 @@ import { toast } from 'react-toastify';
 import AuthorizedElement from '../../../../components/AuthorizedElement';
 import { ACTIVATE_ADMIN_INSTANCE_PLAN, ACTIVATE_INSTANCE_PLAN, INSTANE_MANAGEMENT_CREATE, INSTANE_MANAGEMENT_EDIT } from '../../../../constants';
 import { useAuthorization } from '../../../../hooks/useAuthorization';
-
+import { ConfirmDialog } from '../../../../components/Dialogs';
+import { useAppSelector } from '../../../../store/hooks';
 interface InstancesProps {
   onCreate?: () => void;
   onEdit?: (identifier: string) => void;
@@ -21,14 +22,16 @@ const PAGINATION_DEFAULT_SIZE = 10;
 
 const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
   const { t } = useTranslation();
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
   const isAuthorizedToActivate = useAuthorization([ACTIVATE_ADMIN_INSTANCE_PLAN, ACTIVATE_INSTANCE_PLAN])
   const [instances, setInstances] = useState<any>();
   const [loading, setLoading] = useState(false);
-
+  const [showConfirmActivate, setShowConfirmActivate] = useState(false);
   const [search, setSearch] = useState('');
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const isAuthorizedToEdit = useAuthorization([INSTANE_MANAGEMENT_EDIT])
+  const [selectedElem,setSelectedElem]=useState<any>();
   const editHandler = (identifier: string) => {
     if (!isAuthorizedToEdit) return
     if (onEdit) {
@@ -36,16 +39,31 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
     }
   };
 
-  const activateHandler = (row: any) => {
-    activateInstance(row.identifier)
-      .then(() => {
-        toast.success("Instance activated successfully");
-        loadData(PAGINATION_DEFAULT_SIZE, instances?.pageable?.pageNumber ?? 0);
-      })
-      .catch(err => {
-        toast.error("Failed to activate instance");
-        console.error(err);
-      });
+  const activateHandler = (action:boolean) => {
+    if(!selectedElem) return
+    if(!action){
+      setShowConfirmActivate(false);
+      return
+    }
+     toast.promise(activateInstance(selectedElem?.identifier), {
+          pending: 'Activating...',
+          success: {
+            render() {
+               toast.success("Instance activated successfully");
+          loadData(PAGINATION_DEFAULT_SIZE, instances?.pageable?.pageNumber ?? 0);
+          setShowConfirmActivate(false);
+              return 'Successfully activated instance!';
+            }
+            
+          },
+          error: {
+            render({ data: err }: { data: any }) {
+              //  setShowConfirmActivate(false);
+              return err?.message || err;
+            }
+           
+          }
+        });
   };
 
   /**
@@ -140,7 +158,9 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
             onClick={e => {
               e.stopPropagation();
               e.preventDefault();
-              activateHandler(row);
+              // activateHandler(row);
+              setSelectedElem(row)
+              setShowConfirmActivate(true);
             }}
           >
             Activate
@@ -175,7 +195,15 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
       </Row>
 
       <hr className="my-3" />
-
+      {showConfirmActivate && (
+        <ConfirmDialog
+          closeHandler={activateHandler}
+          message={'Are you sure you want to activate instance'}
+          title="Activate Instance"
+          backdrop
+          isDarkMode={isDarkMode}
+        />
+      )}
       {loading ? (
         <div className="text-center my-5">
           <Spinner animation="border" variant="primary" />
