@@ -219,7 +219,7 @@ const LocationHierarchy = () => {
                       >
                         <FontAwesomeIcon className="m-0" icon="trash" />
                       </Button>
-                      <Button
+                     { el.hierarchyStatus==='ACTIVE'?<Button style={{cursor:'default',background:"#198754",outline:0,border:0}} className='float-end me-2'>Active</Button>: <Button
                         id="activate-button"
                         variant="primary"
                         onClick={() => {
@@ -230,7 +230,7 @@ const LocationHierarchy = () => {
                         className="float-end me-2"
                       >
                         <FontAwesomeIcon className="m-0" icon="check" /> Activate
-                      </Button>
+                      </Button>}
                     </td>
                   </tr>
                 );
