@@ -263,9 +263,10 @@
       "createdDate": "Created Date",
       "startDate": "Start Date",
       "endDate": "End Date",
-      "planTitle":"Plan title",
-      "planStatus":"Plan status",
-      "createdDatetime":"Created at"
+      "planTitle": "Plan title",
+      "planStatus": "Plan status",
+      "createdDatetime": "Created at",
+      "activate": "Activate"
     }
   },
   "groupConfigurationPage": {
@@ -351,13 +352,12 @@
     "analysis": "Perform analysis",
     "removeOrgGrants": "Remove Organization Access",
     "removeUserGrants": "Remove User Access",
-    "instances":"Current Instances",
+    "instances": "Current Instances",
     "datasetName": "Dataset Name",
     "uploadDate": "Upload Date",
     "uploadedBy": "Uploaded By",
-    "selected":""
+    "selected": ""
   },
-
   "label": {
     "layerOpacity": "Layer opacity"
   },

@@ -122,3 +122,6 @@ export const USER_MANAGEMENT_ADD_USER_TO_INSTANE = 'user_management_add_user_to_
 
 export const USER_MANAGEMENT_ADD_GLOBAL_ADMIN = 'user_management_add_global_admin'
 export const INSTANCE_USER_MANAGEMENT = 'instance_user_managment'
+
+export const ACTIVATE_INSTANCE_PLAN = 'activate_instance_plan'
+export const ACTIVATE_ADMIN_INSTANCE_PLAN = 'activate_admin_instance_plan'

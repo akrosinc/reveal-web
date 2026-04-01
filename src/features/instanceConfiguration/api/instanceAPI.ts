@@ -13,7 +13,7 @@ export interface InstanceResponse {
   areas: InstanceArea[];
   locationHierarchy: InstanceLocationHierarchy[];
   datasets?: any[];
-  instanceName?:string;
+  instanceName?: string;
 }
 
 export interface PlanResponse {
@@ -185,10 +185,8 @@ export const getLocationsByHierarchyIdentifier = async (
 ): Promise<LocationModel[]> => {
   const data = await api
     .get<LocationModel[]>(
-      `locationHierarchy/location/byhierarchy/${identifier}?search=${
-        search !== undefined ? search : ''
-      }&size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ''},${
-        direction ? 'asc' : 'desc'
+      `locationHierarchy/location/byhierarchy/${identifier}?search=${search !== undefined ? search : ''
+      }&size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ''},${direction ? 'asc' : 'desc'
       }&_summary=${summary.toString()}`
     )
     .then(response => response.data);
@@ -281,5 +279,14 @@ export const getInstanceDatasets = async (isPublic?: boolean): Promise<PageableM
     url += `?isPublic=${isPublic}`;
   }
   const response = await api.get<PageableModel<DatasetResponse>>(url);
+  return response.data;
+};
+/**
+ * Activate an instance plan
+ * @param identifier
+ * @returns
+ */
+export const activateInstance = async (identifier: string): Promise<any> => {
+  const response = await api.post(`${INSTANCE}/${identifier}/plan/activate`);
   return response.data;
 };

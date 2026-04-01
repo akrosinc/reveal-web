@@ -5,11 +5,11 @@ import { DebounceInput } from 'react-debounce-input';
 import DefaultTable from '../../../../components/Table/DefaultTable';
 import { INSTANCE_TABLE_COLUMNS } from '../../../../constants/constants';
 import { useTranslation } from 'react-i18next';
-import { getInstances } from '../../api';
+import { activateInstance, getInstances } from '../../api';
 import Paginator from '../../../../components/Pagination';
 import { toast } from 'react-toastify';
 import AuthorizedElement from '../../../../components/AuthorizedElement';
-import { INSTANE_MANAGEMENT_CREATE, INSTANE_MANAGEMENT_EDIT } from '../../../../constants';
+import { ACTIVATE_ADMIN_INSTANCE_PLAN, ACTIVATE_INSTANCE_PLAN, INSTANE_MANAGEMENT_CREATE, INSTANE_MANAGEMENT_EDIT } from '../../../../constants';
 import { useAuthorization } from '../../../../hooks/useAuthorization';
 
 interface InstancesProps {
@@ -21,7 +21,7 @@ const PAGINATION_DEFAULT_SIZE = 10;
 
 const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
   const { t } = useTranslation();
-
+  const isAuthorizedToActivate = useAuthorization([ACTIVATE_ADMIN_INSTANCE_PLAN, ACTIVATE_INSTANCE_PLAN])
   const [instances, setInstances] = useState<any>();
   const [loading, setLoading] = useState(false);
 
@@ -37,7 +37,15 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
   };
 
   const activateHandler = (row: any) => {
-    console.log('Activate clicked for:', row);
+    activateInstance(row.identifier)
+      .then(() => {
+        toast.success("Instance activated successfully");
+        loadData(PAGINATION_DEFAULT_SIZE, instances?.pageable?.pageNumber ?? 0);
+      })
+      .catch(err => {
+        toast.error("Failed to activate instance");
+        console.error(err);
+      });
   };
 
   /**
@@ -123,12 +131,22 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
     ...row,
     startDate: row.startDate ? moment(row.startDate).format('DD/MM/YYYY') : '',
     endDate: row.endDate ? moment(row.endDate).format('DD/MM/YYYY') : '',
-    action:
-      row.planStatus === 'DRAFT' ? (
-        <Button size="sm" variant="primary" onClick={() => activateHandler(row)}>
-          Activate
-        </Button>
-      ) : null
+    ...(isAuthorizedToActivate && {
+      action:
+        row.planStatus === 'DRAFT' ? (
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={e => {
+              e.stopPropagation();
+              e.preventDefault();
+              activateHandler(row);
+            }}
+          >
+            Activate
+          </Button>
+        ) : null
+    })
   }));
 
   return (
@@ -167,7 +185,11 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
         <>
           <DefaultTable
             pageKey="instancesPage.table."
-            columns={INSTANCE_TABLE_COLUMNS}
+            columns={[...INSTANCE_TABLE_COLUMNS, ...(isAuthorizedToActivate ? [{
+              name: 'activate',
+              sortValue: undefined,
+              accessor: 'action'
+            }] : [])]}
             data={tableData}
             sortHandler={sortHandler}
             clickHandler={editHandler}
