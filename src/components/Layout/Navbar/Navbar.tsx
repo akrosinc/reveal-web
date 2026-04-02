@@ -164,18 +164,17 @@ const NavbarComponent = () => {
             <Nav className="d-inline-flex align-items-center">
               {/* Switch Instance button */}
               {
-                <Button
+                <Nav.Link
                   id="switch-instance-button-nav"
-                  variant="link"
-                  className="switch-instance-nav-btn me-2"
+                  className="switch-instance-nav-btn me-2 d-flex align-items-center"
                   onClick={() => setShowSwitchModal(true)}
                   title={selectedInstance ? `Current: ${selectedInstance?.name}` : 'No Instance Selected'}
                 >
-                  <BsArrowLeftRight className="me-1" />
+                  <BsArrowLeftRight size="1.2rem" className="me-1" />
                   {isSuperAdmin && selectedInstance?.identifier == null ? "Global" : selectedInstance?.name || t('topNav.switchInstance') || 'No Instance Selected'}
-                </Button>
+                </Nav.Link>
               }
-              <BsPerson size="1.2rem" className="mt-1 me-1" />
+              <BsPerson size="1.18rem" className="me-1" />
               <NavDropdown title={user.username} id="logout-nav-dropdown" align="end" className="me-md-4">
                 <NavDropdown.Item
                   id="logout-button"

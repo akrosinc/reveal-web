@@ -39,32 +39,27 @@
   transition: 1000ms ease;
 }
 
-/* Switch Instance nav button */
+/* Switch Instance nav button styling */
 .switch-instance-nav-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.875rem;
+  gap: 0.2rem;
   font-weight: 500;
-  color: #333 !important;
   text-decoration: none !important;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.15s ease, color 0.15s ease;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .switch-instance-nav-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: transparent !important;
   color: #198754 !important;
 }
 
-/* Dark mode variant */
-body.dark-mode .switch-instance-nav-btn {
-  color: rgba(255, 255, 255, 0.75) !important;
+/* Ensure consistent hover for all nav items in both modes */
+.navbar-light .navbar-nav .nav-link.switch-instance-nav-btn:hover {
+  color: #198754 !important;
 }
 
 body.dark-mode .switch-instance-nav-btn:hover {
-  background-color: rgba(255, 255, 255, 0.08);
   color: #4caf50 !important;
 }
