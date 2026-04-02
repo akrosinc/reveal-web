@@ -53,7 +53,7 @@ import SimulationMapView from './SimulationMapView/SimulationMapView';
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
 import { hex } from 'color-convert';
-import { REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_INSTANCE_SELECTION } from '../../../constants';
+import { REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_INSTANCE_SELECTION } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import { Drawer } from '../../location/components/drawer/Drawer';
 import Accordion from '../../location/components/accordion/Accordion';
@@ -167,6 +167,7 @@ interface PolygonsState {
 
 const Simulation = () => {
   const { t } = useTranslation();
+  const isAuthorizedForRedirectingToAPlan = useAuthorization([REDIRECT_TO_ASSIGNED_PLAN_SIMULATION])
   const isAuthorized = useAuthorization([SIMULATION_INSTANCE_SELECTION])
   const instanceContext = useAppSelector(state => state.instanceContext);
   // const [showModal, setShowModal] = useState(false);
@@ -460,7 +461,8 @@ const Simulation = () => {
   }, [state.selected, showDatasetsAgainstParentLevel]);
 
   useEffect(() => {
-    if (Array.isArray(instances) && instances?.length === 0) {
+    // if (Array.isArray(instances) && instances?.length === 0) {
+    if(isAuthorizedForRedirectingToAPlan && instanceContext?.selectedInstance?.identifier){
       // instanceContext
       // alert("Empty..")
       // console.log(instanceContext, 'IC')

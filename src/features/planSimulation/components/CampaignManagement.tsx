@@ -77,7 +77,7 @@ import styles from './Simulation.module.css';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import { useAppSelector } from '../../../store/hooks';
 import { useAuthorization } from '../../../hooks/useAuthorization';
-import { CAMPAIGN_MANAGEMENT_INSTANCE_SELECTION } from '../../../constants';
+import { CAMPAIGN_MANAGEMENT_INSTANCE_SELECTION, REDIRECT_TO_ASSIGNED_CAMPAIGN } from '../../../constants';
 
 export interface Stats {
   [key: string]: Metadata;
@@ -101,6 +101,7 @@ export interface AnalysisLayer {
 
 const CampaignManagement = () => {
   const divRef = useRef<HTMLDivElement>(null);
+  const isAuthorizedForRedirectingToACampaign = useAuthorization([REDIRECT_TO_ASSIGNED_CAMPAIGN])
   const isAuthorizedForRenderingInstances = useAuthorization([CAMPAIGN_MANAGEMENT_INSTANCE_SELECTION])
   const instanceContext = useAppSelector(state => state.instanceContext);
   console.log("ISNTANCE", instanceContext)
@@ -336,7 +337,8 @@ const CampaignManagement = () => {
   }, [state.selected]);
 
   useEffect(() => {
-    if (Array.isArray(instances) && instances?.length === 0) {
+    // if (Array.isArray(instances) && instances?.length === 0) {
+    if(isAuthorizedForRedirectingToACampaign && instanceContext?.selectedInstance?.identifier){
       // instanceContext
       // alert("Empty..")
       // console.log(instanceContext, 'IC')
