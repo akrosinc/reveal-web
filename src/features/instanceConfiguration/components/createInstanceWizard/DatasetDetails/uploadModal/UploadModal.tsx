@@ -49,7 +49,7 @@ const UploadModal = ({ closeHandler, setTagsCreated }: Props) => {
     return (
         <Modal show centered>
             <Modal.Header>
-                <Modal.Title>Upload Meta Data</Modal.Title>
+                <Modal.Title className='text-black'>Upload Meta Data</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form.Group className="mb-3">
