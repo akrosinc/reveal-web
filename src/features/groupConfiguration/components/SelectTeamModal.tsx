@@ -12,14 +12,19 @@ interface Props {
     onSelect: (team: string) => void;
     planId: string;
     areaId: string | string[] | null;
+    selectedTeam: { name: string, identifier: string } | null;
+
 }
 
-const SelectTeamModal: React.FC<Props> = ({ show, onHide, onSelect, planId, areaId }) => {
+const SelectTeamModal: React.FC<Props> = ({ show, onHide, onSelect, planId, areaId, selectedTeam: initialSelectedTeam }) => {
     const [organizations, setOrganizations] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [selectedTeam, setSelectedTeam] = useState<any>(null);
+    const [selectedTeam, setSelectedTeam] = useState<any>(initialSelectedTeam || null);
     const [isSaving, setIsSaving] = useState(false);
-
+// console.log('Selected team in modal:', selectedTeam);
+//     useEffect(() => {
+//         setSelectedTeam(initialSelectedTeam || null);
+//     }, [initialSelectedTeam]);
     useEffect(() => {
         if (show) {
             setLoading(true);
@@ -74,6 +79,10 @@ const SelectTeamModal: React.FC<Props> = ({ show, onHide, onSelect, planId, area
                     <div className="text-center p-4">
                         <Spinner animation="border" variant="primary" />
                     </div>
+                ) : organizations.length === 0 ? (
+                    <div className="text-center p-5 text-muted small">
+                        No teams found
+                    </div>
                 ) : (
                     <ListGroup variant="flush" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                         {organizations.map((team, index) => (
@@ -91,7 +100,9 @@ const SelectTeamModal: React.FC<Props> = ({ show, onHide, onSelect, planId, area
                 )}
             </Modal.Body>
             <Modal.Footer className="border-0">
-                <Button variant="secondary" onClick={onHide} disabled={isSaving}>
+                <Button variant="secondary" onClick={() => {
+                    onHide()
+                }} disabled={isSaving}>
                     Cancel
                 </Button>
                 <Button variant="primary" onClick={handleSave} disabled={!selectedTeam || isSaving}>

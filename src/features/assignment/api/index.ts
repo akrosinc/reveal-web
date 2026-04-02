@@ -89,8 +89,8 @@ export const assignTeamsToMultiplePlanLocations = async (
 
 export const getAssignedLocationHierarcyCount = async (planId: string): Promise<{ count: number }> => {
   const data = await api
-    // .get<{ count: number }>(PLAN + `/${planId}/locationHierarchy?_summary=COUNT`)
-    .get<{ count: number }>(`groupmanagement?_summary=count`)
+    .get<{ count: number }>(PLAN + `/${planId}/locationHierarchy?_summary=COUNT`)
+    // .get<{ count: number }>(`groupmanagement?_summary=count`)
     .then(response => response.data);
   return data;
 };

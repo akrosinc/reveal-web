@@ -140,7 +140,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
         if (Object.keys(validationErrors).length > 0) {
             return;
         }
-
+        if(isTeam && assignedMembers?.length===0) return toast.error('Please assign at least one member to the team.');
         // Build the final payload
         const payload = {
             name: groupName.trim(),
