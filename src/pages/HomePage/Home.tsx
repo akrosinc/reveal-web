@@ -18,7 +18,8 @@ import {
   ASSIGNMENT_PLAN,
   LOCATION_VIEW,
   REVEAL_SIMULATION_USER,
-  ROLE_MANAGE_USER
+  ROLE_MANAGE_USER,
+  SIMULATION_PAGE
 } from '../../constants';
 import { Col, Row } from 'react-bootstrap';
 import Dashboard from '../../features/dashboard';
@@ -50,8 +51,8 @@ function Home() {
     },
     {
       id: 'plans',
-      to: PLANS,
-      path: PLANS,
+      to: SIMULATION_PAGE,
+      path: SIMULATION_PAGE,
       title: t('buttons.plans'),
       role:[REVEAL_SIMULATION_USER]
     },
