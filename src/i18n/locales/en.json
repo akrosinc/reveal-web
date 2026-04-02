@@ -164,6 +164,7 @@
     "planActivationBody": "Are you sure you want to active plan with identifier",
     "planActivationTitle": "Activate plan",
     "planTitle": "Title",
+    "Title":"Action title",
     "status": "Status",
     "interventionType": "Intervention Type",
     "locationHierarchy": "Location Hierarchy",
