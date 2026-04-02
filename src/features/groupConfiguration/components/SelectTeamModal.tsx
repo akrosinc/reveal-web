@@ -25,7 +25,7 @@ const SelectTeamModal: React.FC<Props> = ({ show, onHide, onSelect, planId, area
             setLoading(true);
             getOrganizationListSummary()
                 .then(res => {
-                    setOrganizations(res.content || []);
+                    setOrganizations(res || []);
                     setLoading(false);
                 })
                 .catch(() => {
