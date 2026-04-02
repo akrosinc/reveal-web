@@ -125,3 +125,4 @@ export const INSTANCE_USER_MANAGEMENT = 'instance_user_managment'
 
 export const ACTIVATE_INSTANCE_PLAN = 'activate_instance_plan'
 export const ACTIVATE_ADMIN_INSTANCE_PLAN = 'activate_admin_instance_plan'
+export const REDIRECT_TO_ASSIGNED_INSTANCE = 'redirect_to_assigned_instance'

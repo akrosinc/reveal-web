@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Paginator from '../../../../components/Pagination';
 import DefaultTable from '../../../../components/Table/DefaultTable';
-import { ASSIGNMENT_PAGE, INSTANCE_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE, PLAN_ASSIGNMENT_INSTANCE_SELECTION } from '../../../../constants';
+import { ASSIGNMENT_PAGE, INSTANCE_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE, PLAN_ASSIGNMENT_INSTANCE_SELECTION, REDIRECT_TO_ASSIGNED_INSTANCE } from '../../../../constants';
 import { getInstances } from '../../../planSimulation/api';
 import { Instance, PaginatedResponse } from '../../../planSimulation/providers/types';
 import { useAppSelector } from '../../../../store/hooks';
@@ -12,6 +12,7 @@ import { useAuthorization } from '../../../../hooks/useAuthorization';
 
 const PlanList = () => {
   const isAuthorized = useAuthorization([PLAN_ASSIGNMENT_INSTANCE_SELECTION])
+  const isAuthorizedForRedirectToAssignedInstance = useAuthorization([REDIRECT_TO_ASSIGNED_INSTANCE])
   const ctx = useAppSelector(state => state.instanceContext)
   // console.log(ctx?.instancePlan?.identifier, 'Selected instance')
   const [planList, setPlanList] = useState<PaginatedResponse<Instance>>();
@@ -49,7 +50,7 @@ const PlanList = () => {
       getInstances(page, size)
         .then(res => {
 
-          if (res?.content?.length === 0 && ctx?.instancePlan?.identifier) {
+          if (isAuthorizedForRedirectToAssignedInstance && ctx?.instancePlan?.identifier) {
             navigate(ASSIGNMENT_PAGE + '/planId/' + ctx.instancePlan.identifier, { state: { hideBackButton: true } });
           } else {
             setPlanList(res);

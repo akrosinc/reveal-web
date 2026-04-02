@@ -457,19 +457,23 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Row, Col, Container, Button, Tabs, Tab } from 'react-bootstrap';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ASSIGNMENT_PAGE,
   LOCATION_ASSIGNMENT_TAB,
   LOCATION_ASSIGN_TABLE_COLUMNS,
   LOCATION_TEAM_ASSIGNMENT_SUMMARY,
-  LOCATION_TEAM_ASSIGNMENT_TAB
+  LOCATION_TEAM_ASSIGNMENT_TAB,
+    PLAN_ASSIGNMENT_SUMMARY,
+  PLAN_LOCATION_ASSIGNMENT,
+  PLAN_TEAM_ASSIGNMENT
 } from '../../../../constants';
 import { getPlanById } from '../../../plan/api';
 import { PlanModel } from '../../../plan/providers/types';
 import LocationAssignmentsTable from '../../../../components/Table/LocationAssignmentsTable';
 import { ErrorModel, PageableModel } from '../../../../api/providers';
 import { LocationModel } from '../../../location/providers/types';
+import AuthorizedElement from '../../../../components/AuthorizedElement';
 import {
   assignLocationsToPlan,
   getAssignedLocationHierarcyCount,
@@ -494,6 +498,7 @@ interface Option {
 }
 
 const Assign = () => {
+  const location = useLocation()
   const [currentPlan, setCurrentPlan] = useState<PlanModel>();
   const [open, setOpen] = useState(false);
   const [showTable, setShowTable] = useState(false);
@@ -765,9 +770,9 @@ console.log(tableData,'TD')
     <Container fluid className="my-4">
       <Row className="mt-3 align-items-center">
         <Col md={3}>
-          <Link id="assign-back-button" to={ASSIGNMENT_PAGE} className="btn btn-primary mb-2">
+         {location?.state?.hideBackButton ?<div></div>: <Link id="assign-back-button" to={ASSIGNMENT_PAGE} className="btn btn-primary mb-2">
             <FontAwesomeIcon size="lg" icon="arrow-left" className="me-2" /> {t('assignPage.subTitle')}
-          </Link>
+          </Link>}
         </Col>
         <Col md={6} className="text-center">
           <h4 className="mx-0 my-3 my-md-0">
@@ -788,6 +793,7 @@ console.log(tableData,'TD')
                 ? `${t('assignPage.titleLocations') + ' | ' + t('assignPage.titleTeams')}: ${assignedLocations}`
                 : t('assignPage.selectLocations')}
             </span>
+            <AuthorizedElement roles={[PLAN_LOCATION_ASSIGNMENT, PLAN_TEAM_ASSIGNMENT]}>
             <Button
               id="save-assignments-button"
               className="w-25"
@@ -796,6 +802,7 @@ console.log(tableData,'TD')
             >
               {t('buttons.save')}
             </Button>
+            </AuthorizedElement>
           </div>
           <SimpleBar style={{ maxHeight: tableHeight > 0 ? tableHeight : 'auto' }}>
             <hr />
@@ -817,6 +824,52 @@ console.log(tableData,'TD')
               className="mt-2"
             >
               <Tab eventKey={LOCATION_ASSIGNMENT_TAB} title={t('assignPage.titleLocations')}>
+    <AuthorizedElement roles={[PLAN_LOCATION_ASSIGNMENT]}>
+      <LocationAssignmentsTable
+        organizationList={organizationsList}
+        checkHandler={checkHandler}
+        teamTab={false}
+        columns={columns}
+        data={tableData}
+      />
+    </AuthorizedElement>
+  </Tab>
+
+  <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title={t('assignPage.titleTeams')}>
+    <AuthorizedElement roles={[PLAN_TEAM_ASSIGNMENT]}>
+      <TeamAssignment
+        columns={columns}
+        data={showAssignedOnly(tableData)}
+        planId={planId ?? ''}
+        organizationsList={organizationsList}
+        selectTeams={setSelectedTeams}
+      />
+    </AuthorizedElement>
+  </Tab>
+
+  <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_SUMMARY} title={t('assignPage.assignmentPreview')}>
+    <AuthorizedElement roles={[PLAN_ASSIGNMENT_SUMMARY]}>
+      <LocationAssignmentsTable
+        teamTab={true}
+        organizationList={organizationsList}
+        checkHandler={checkHandler}
+        columns={columns}
+        clickHandler={(id: string, rowData: any) => {
+          if (rowData.active && notInMove && id !== (geoLocation?.identifier ?? '') && planId) {
+            getLocationByIdAndPlanId(id, planId)
+              .then(res => {
+                setNotInMove(false);
+                setGeoLocation(res);
+              })
+              .catch(err => toast.error(err));
+          }
+        }}
+        data={showAssignedOnly(tableData)}
+      />
+    </AuthorizedElement>
+  </Tab>
+              {/* <AuthorizedElement roles={[PLAN_LOCATION_ASSIGNMENT]}>
+              <Tab eventKey={LOCATION_ASSIGNMENT_TAB} title={t('assignPage.titleLocations')}>
                 <div>
                   <LocationAssignmentsTable
                     organizationList={organizationsList}
@@ -827,6 +880,8 @@ console.log(tableData,'TD')
                   />
                 </div>
               </Tab>
+              </AuthorizedElement>
+              <AuthorizedElement roles={[PLAN_TEAM_ASSIGNMENT]}>
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_TAB} title={t('assignPage.titleTeams')}>
                 <TeamAssignment
                   columns={columns}
@@ -836,6 +891,8 @@ console.log(tableData,'TD')
                   selectTeams={setSelectedTeams}
                 />
               </Tab>
+              </AuthorizedElement>
+              <AuthorizedElement roles={[PLAN_ASSIGNMENT_SUMMARY]}>
               <Tab eventKey={LOCATION_TEAM_ASSIGNMENT_SUMMARY} title={t('assignPage.assignmentPreview')}>
                 <LocationAssignmentsTable
                   teamTab={true}
@@ -855,6 +912,7 @@ console.log(tableData,'TD')
                   data={showAssignedOnly(tableData)}
                 />
               </Tab>
+              </AuthorizedElement> */}
             </Tabs>
           </SimpleBar>
         </Col>
