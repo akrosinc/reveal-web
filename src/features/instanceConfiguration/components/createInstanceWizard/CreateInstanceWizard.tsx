@@ -47,8 +47,8 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, i
       getInstanceByIdentifier(identifier)
         .then(res => {
           console.log('Fetched Instance Data:', getLeafNodeIds(res.areas) ?? []);
-          const planData = res.plan || res.planResponse;
-          
+          const planData: any = (res.plan && typeof res.plan === 'object') ? res.plan : (res.planResponse && typeof res.planResponse === 'object' ? res.planResponse : {});
+
           const extractId = (item: any) => typeof item === 'string' ? item : item?.identifier;
           
           const locHierarchy = Array.isArray(res.locationHierarchy) 
@@ -68,6 +68,7 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, i
             instanceName: res.name ?? '',
             hierarchy: locHierarchy ?? '',
             locationHierarchy: locHierarchy ?? '',
+            hierarchyLevelTarget: planData?.hierarchyLevelTarget || planData?.planTargetType || '',
             areas: getLeafNodeIds(res.areas) ?? [],
             members: res.members?.map(extractId) ?? [],
             datasets_tags: (res as any).datasets_tags || res.datasets?.map((d: any) => typeof d === 'string' ? d : (d.tag || d.identifier)) || [],

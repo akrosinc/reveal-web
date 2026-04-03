@@ -9,6 +9,7 @@ import { useAppSelector } from '../../../../store/hooks';
 import { getLocationHierarchyList, getGeographicLevelList } from '../../../location/api';
 import { getInterventionTypeList } from '../../../plan/api';
 import { toast } from 'react-toastify';
+import { set } from 'lodash';
 
 /* -------------------- Types -------------------- */
 interface Options {
@@ -24,9 +25,9 @@ interface RegisterValues {
     start: Date;
     end: Date;
   };
-  // locationHierarchy: string;
+  locationHierarchy: string;
   interventionType: string;
-  // hierarchyLevelTarget?: string;
+  hierarchyLevelTarget?: string;
 }
 
 const REGEX_TITLE_VALIDATION = /^[A-Za-z0-9\s-]+$/;
@@ -38,7 +39,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
   const [geographicLevelList, setGeographicLevelList] = useState<any[]>([]);
   const [selectedHierarchy, setSelectedHierarchy] = useState<Options | null>(null);
   const [selectedIntervention, setSelectedIntervention] = useState<Options | null>(null);
-
+  const [selectedHierarchyLevelTarget, setSelectedHierarchyLevelTarget] = useState<Options | null>(null);
   console.log('Wizard defaultValues passed to AddInstance ==>', defaultValues);
 
   const {
@@ -59,7 +60,8 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
         end: defaultValues?.effectivePeriod?.end ? new Date(defaultValues.effectivePeriod.end) : undefined
       },
       interventionType: defaultValues?.interventionType || '',
-      // hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || ''
+      locationHierarchy: defaultValues?.locationHierarchy || '',
+      hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || ''
     }
   });
 
@@ -73,6 +75,8 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
           end: defaultValues?.effectivePeriod?.end ? new Date(defaultValues.effectivePeriod.end) : undefined
         },
         interventionType: defaultValues?.interventionType || '',
+        locationHierarchy: defaultValues?.locationHierarchy || '',
+        hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || '',
       });
     }
 
@@ -88,12 +92,27 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
           value: el.identifier
         }));
 
-       
+        setHierarchyList(hList)
         setInterventionTypeList(iList);
         setGeographicLevelList(geoLevelList.content);
 
         if (defaultValues?.locationHierarchy) {
-          setSelectedHierarchy(hList.find(opt => opt.value === defaultValues.locationHierarchy) || null);
+          const selectedH = hList.find(opt => opt.value === defaultValues.locationHierarchy);
+          setSelectedHierarchy(selectedH || null);
+
+          if (defaultValues?.hierarchyLevelTarget && selectedH?.nodeOrder) {
+            const targetLevel = selectedH.nodeOrder
+              .filter(el => el !== 'structure')
+              .map(el => {
+                const geoLevel = geoLevelList.content.find((g: any) => g.name === el);
+                return {
+                  label: geoLevel ? geoLevel.title : el,
+                  value: el
+                };
+              })
+              .find(opt => opt.value === defaultValues.hierarchyLevelTarget);
+            setSelectedHierarchyLevelTarget(targetLevel || null);
+          }
         }
         if (defaultValues?.interventionType) {
           setSelectedIntervention(iList.find(opt => opt.value === defaultValues.interventionType) || null);
@@ -178,7 +197,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                       // style={isDarkMode ? { backgroundColor: '#282828' } : {}}
                       dateFormat="yyyy-MM-dd"
                       minDate={new Date()}
-                      // calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
+                    // calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
                     />
                   )}
                 />
@@ -207,7 +226,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                       dateFormat="yyyy-MM-dd"
                       minDate={startDate}
                       disabled={!startDate}
-                      // calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
+                    // calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
                     />
                   )}
                 />
@@ -216,7 +235,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
             </Col>
           </Row>
           {/* Location Hierarchy */}
-          {/* <Form.Group className="mb-3">
+          <Form.Group className="mb-3">
             <Form.Label>Location Hierarchy</Form.Label>
             <Controller
               control={control}
@@ -233,12 +252,14 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                   onChange={(val: any) => {
                     setSelectedHierarchy(val);
                     field.onChange(val?.value);
+                    setValue('hierarchyLevelTarget', '');
+                    setSelectedHierarchyLevelTarget(null)
                   }}
                 />
               )}
             />
             <div className="text-danger small mt-1">{errors.locationHierarchy?.message}</div>
-          </Form.Group> */}
+          </Form.Group>
 
           {/* Intervention Type */}
           <Form.Group className="mb-3">
@@ -258,6 +279,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                   onChange={(val: any) => {
                     setSelectedIntervention(val);
                     field.onChange(val?.value);
+                    setSelectedHierarchyLevelTarget(null)
                   }}
                 />
               )}
@@ -266,15 +288,15 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
           </Form.Group>
 
           {/* Hierarchy Level Target (Conditional) */}
-          {/* {selectedIntervention?.label?.toLowerCase().includes('lite') && (
+          {selectedIntervention?.label?.toLowerCase().includes('lite') && (
             <Form.Group className="mb-3">
               <Form.Label>Hierarchy Level Target</Form.Label>
               <Controller
                 control={control}
                 name="hierarchyLevelTarget"
-                rules={{
-                  required: 'Hierarchy level target is required for Lite intervention'
-                }}
+                // rules={{
+                //   required: 'Hierarchy level target is required for Lite intervention'
+                // }}
                 render={({ field }) => (
                   <Select
                     className="custom-react-select-container"
@@ -290,23 +312,28 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                           };
                         }) || []
                     }
-                    value={selectedHierarchy?.nodeOrder
-                      ?.filter(el => el !== 'structure')
-                      .map((el: string) => {
-                        const geoLevel = geographicLevelList.find(g => g.name === el);
-                        return {
-                          label: geoLevel ? geoLevel.title : el,
-                          value: el
-                        };
-                      })
-                      .find((opt: any) => opt.value === watch('hierarchyLevelTarget'))}
-                    onChange={(val: any) => field.onChange(val?.value)}
+                    value={selectedHierarchyLevelTarget}
+                    onChange={(val: any) => {
+                      const options = selectedHierarchy?.nodeOrder
+                        ?.filter(el => el !== 'structure')
+                        ?.map((el: string) => {
+                          const geoLevel = geographicLevelList?.find(g => g.name === el);
+                          return {
+                            label: geoLevel ? geoLevel.title : el,
+                            value: el
+                          };
+                        });
+
+                      const selected = options?.find(opt => opt.value === val?.value) || null;
+                      setSelectedHierarchyLevelTarget(selected);
+                      field.onChange(val?.value);
+                    }}
                   />
                 )}
               />
               <div className="text-danger small mt-1">{errors.hierarchyLevelTarget?.message}</div>
             </Form.Group>
-          )} */}
+          )}
           <hr className="my-3" />
           <div className="d-flex  justify-content-between mt-4">
             {/* Step 1 Cancel Button */}
