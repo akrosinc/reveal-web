@@ -3,6 +3,7 @@ import Wizard from '../Wizard/Wizard';
 import AddGoalDetails from './AddGoalDetails';
 import CreateInstance from './AddInstance';
 import InstanceDetails from './InstanceDetails';
+import AddMembers from './AddMembers';
 import DatasetDetails from './DatasetDetails';
 
 import { createInstance, getInstanceByIdentifier, updateInstance } from '../../api/instanceAPI';
@@ -27,6 +28,7 @@ const steps = [
   { label: 'Add Plan details', component: CreateInstance },
   { label: 'Add Goals details', component: AddGoalDetails },
   { label: 'Add Instance details', component: InstanceDetails },
+  { label: 'Add Member details', component: AddMembers },
   { label: 'Add Dataset details', component: DatasetDetails },
 ];
 

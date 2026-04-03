@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import Select from 'react-select';
 import AreasSelection from './AreasSelection';
-import MembersSelection from './MembersSelection';
 import { WizardStepProps } from '../Wizard/Wizard';
 import { useAppSelector } from '../../../../store/hooks';
 
@@ -34,7 +33,6 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
   const [selectedIntervention, setSelectedIntervention] = useState<Options | null>(null);
   const [selectedHierarchyLevelTarget, setSelectedHierarchyLevelTarget] = useState<Options | null>(null);
   const [selectedAreas, setSelectedAreas] = useState<string[]>(defaultValues?.areas || []);
-  const [assignedMembers, setAssignedMembers] = useState<string[]>(defaultValues?.members || []);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -52,8 +50,8 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
       setError('At least one area must be selected.');
       return;
     }
-    if (assignedMembers.length === 0) {
-      setError('At least one member must be assigned.');
+    if (!selectedIntervention) {
+      setError('Intervention type is required.');
       return;
     }
     if (selectedIntervention?.label?.toLowerCase().includes('lite') && !selectedHierarchyLevelTarget) {
@@ -69,7 +67,6 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
       hierarchyLevelTarget: selectedHierarchyLevelTarget?.value,
       selectedHierarchyObject: selectedHierarchy,
       areas: selectedAreas,
-      members: assignedMembers
     };
     setError(null);
     onNext && onNext(formData);
@@ -79,7 +76,6 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
     if (defaultValues) {
       if (defaultValues.instanceName) setInstanceName(defaultValues.instanceName);
       if (defaultValues.areas?.length) setSelectedAreas(defaultValues.areas);
-      if (defaultValues.members?.length) setAssignedMembers(defaultValues.members);
     }
   }, [defaultValues]);
 
@@ -228,14 +224,6 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
           </div>
         </Col>
 
-        {/* Members Section */}
-        <h5 className="mb-3 fw-bold text-secondary">Members</h5>
-        <Col md={8}>
-          <div className="mb-5">
-            <MembersSelection assignedMembers={assignedMembers} onAssignmentChange={setAssignedMembers} />
-          </div>
-        </Col>
-
         <Col md={8}>
           <hr className="my-3" />
           {/* Footer Buttons */}
@@ -251,7 +239,6 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
                 hierarchyLevelTarget: selectedHierarchyLevelTarget?.value,
                 selectedHierarchyObject: selectedHierarchy,
                 areas: selectedAreas,
-                members: assignedMembers
               })}
               style={{ backgroundColor: '#6c757d', border: 'none' }}
             >
