@@ -28,6 +28,7 @@ interface RegisterValues {
   locationHierarchy: string;
   interventionType: string;
   hierarchyLevelTarget?: string;
+  hierarchy: string;
 }
 
 const REGEX_TITLE_VALIDATION = /^[A-Za-z0-9\s-]+$/;
@@ -60,8 +61,9 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
         end: defaultValues?.effectivePeriod?.end ? new Date(defaultValues.effectivePeriod.end) : undefined
       },
       interventionType: defaultValues?.interventionType || '',
-      locationHierarchy: defaultValues?.locationHierarchy || '',
-      hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || ''
+      locationHierarchy: defaultValues?.locationHierarchy || defaultValues?.hierarchy || '',
+      hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || '',
+      hierarchy: defaultValues?.hierarchy || defaultValues?.locationHierarchy || ''
     }
   });
 
@@ -75,8 +77,9 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
           end: defaultValues?.effectivePeriod?.end ? new Date(defaultValues.effectivePeriod.end) : undefined
         },
         interventionType: defaultValues?.interventionType || '',
-        locationHierarchy: defaultValues?.locationHierarchy || '',
+        locationHierarchy: defaultValues?.locationHierarchy || defaultValues?.hierarchy || '',
         hierarchyLevelTarget: defaultValues?.hierarchyLevelTarget || '',
+        hierarchy: defaultValues?.hierarchy || defaultValues?.locationHierarchy || '',
       });
     }
 
@@ -252,6 +255,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                   onChange={(val: any) => {
                     setSelectedHierarchy(val);
                     field.onChange(val?.value);
+                    setValue('hierarchy', val?.value);
                     setValue('hierarchyLevelTarget', '');
                     setSelectedHierarchyLevelTarget(null)
                   }}

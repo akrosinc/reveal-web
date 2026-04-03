@@ -82,8 +82,9 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
         setHierarchyList(hList);           
         
         // Sync selectedHierarchy with the real list item (to fix ID showing instead of label)
-        if (defaultValues?.hierarchy) {
-          const match = hList.find(opt => opt.value === defaultValues.hierarchy);
+        const hierarchyValue = defaultValues?.hierarchy || defaultValues?.locationHierarchy;
+        if (hierarchyValue) {
+          const match = hList.find(opt => opt.value === hierarchyValue);
           if (match) {
             setSelectedHierarchy(match);
           }
@@ -120,6 +121,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
             <Form.Group className="flex-grow-1" controlId="hierarchy">
               {/* <Form.Label>Hierarchy</Form.Label> */}
               <Select
+              isDisabled
                 className="custom-react-select-container"
                 classNamePrefix="custom-react-select"
                 options={hierarchyList}
