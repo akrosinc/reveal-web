@@ -54,7 +54,7 @@ const EditUser = ({ user, handleClose }: Props) => {
   const [selectedOrganizations, setSelectedOrganizations] = useState<Options[]>();
   const [selectedInstances, setSelectedInstances] = useState<Options[]>([]);
   const [instanceList, setInstanceList] = useState<InstanceModel[]>([]);
-  const [userType, setUserType] = useState(STANDARD_USER?.replace('/',''));
+  const [userType, setUserType] = useState(STANDARD_USER?.replace('/', ''));
   const [selectedGroup, setSelectedGroup] = useState<Options | Options[] | null>(null);
   const [selectedUserAreas, setSelectedUserAreas] = useState<string[]>([]);
   const [selectedUserRoles, setSelectedUserRoles] = useState<string[]>([]);
@@ -126,6 +126,9 @@ const EditUser = ({ user, handleClose }: Props) => {
           };
         })
       );
+      if (userDetails.instances) {
+        setInstanceList(userDetails.instances.map(inst => ({ name: inst, identifier: inst })));
+      }
     },
     [setValue]
   );
@@ -154,9 +157,9 @@ const EditUser = ({ user, handleClose }: Props) => {
       );
     });
     if (user.identifier) {
-      getUserInstanceList(user.identifier).then(res => {
-        setInstanceList(res);
-      });
+      // getUserInstanceList(user.identifier).then(res => {
+      //   setInstanceList(res);
+      // });
 
       getUserGroupsData(user.identifier).then(res => {
         setUserGroups(res);
@@ -187,10 +190,10 @@ const EditUser = ({ user, handleClose }: Props) => {
           // Fallback to instanceInfos structure if that's what's actually returned
           const roles = (res as any).instanceInfos.flatMap((info: any) => info.groupRoles || []);
           // const uniqueRoles: string[] = Array.from(new Set(roles.map((r: any) => typeof r === 'string' ? r : r.name)));
-          const uniqueRoles:string[] = Array.from(new Set(
-         roles.flatMap((item:any) => item.roles)
-        ));
-         setUserRoles(uniqueRoles.map(r => ({ identifier: r, name: r })));
+          const uniqueRoles: string[] = Array.from(new Set(
+            roles.flatMap((item: any) => item.roles)
+          ));
+          setUserRoles(uniqueRoles.map(r => ({ identifier: r, name: r })));
         }
       }).catch(err => {
         console.error('Error fetching user roles:', err);
@@ -319,8 +322,8 @@ const EditUser = ({ user, handleClose }: Props) => {
   };
 
   const userTypeOptions = [
-    { name: 'Admin', value: SUPER_ADMIN?.replace('/','') },
-    { name: 'Standard User', value: STANDARD_USER?.replace('/','') }
+    { name: 'Admin', value: SUPER_ADMIN?.replace('/', '') },
+    { name: 'Standard User', value: STANDARD_USER?.replace('/', '') }
   ];
 
   return (

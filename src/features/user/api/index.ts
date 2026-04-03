@@ -25,7 +25,7 @@ export const getUserList = async (
 
 export const getUserById = async (id: string): Promise<UserModel> => {
   const data = await api
-    .get<UserModel>(USER + `/${id}`)
+    .get<UserModel>(USER + `/global/${id}`)
     .then(response => response.data);
   return data;
 };
