@@ -133,7 +133,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
   };
 
   const submitHandler = (formValues: RegisterValues) => {
-    if (isAuthorized && userType === STANDARD_USER?.replace('/', '')) {
+    if (selectedInstance && isAuthorized && userType === STANDARD_USER?.replace('/', '')) {
       if (!selectedInstance) {
         toast.error('Please select an instance.');
         return;
@@ -182,7 +182,7 @@ const CreateUser = ({ show, handleClose }: Props) => {
       return;
     }
 //
-    if(isAuthorizedForInstanceUserMgmt && userType === STANDARD_USER?.replace('/', '')){
+    if(selectedInstance && isAuthorizedForInstanceUserMgmt && userType === STANDARD_USER?.replace('/', '')){
        const payloadBase = {
         username: formValues.username,
         firstName: formValues.firstname,
