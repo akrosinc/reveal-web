@@ -7,7 +7,8 @@ import { WizardStepProps } from '../Wizard/Wizard';
 import { useAppSelector } from '../../../../store/hooks';
 
 import { hierarchyOptions as baseHierarchyOptions } from './mockLargeDataset';
-import { getLocationHierarchyList } from '../../../location/api';
+import { getLocationHierarchyList, getGeographicLevelList } from '../../../location/api';
+import { getInterventionTypeList } from '../../../plan/api';
 import { toast } from 'react-toastify';
 interface Options {
   value: string;
@@ -28,6 +29,10 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
   const [selectedHierarchy, setSelectedHierarchy] = useState<any>(
     defaultValues?.selectedHierarchyObject || null
   );
+  const [interventionTypeList, setInterventionTypeList] = useState<Options[]>([]);
+  const [geographicLevelList, setGeographicLevelList] = useState<any[]>([]);
+  const [selectedIntervention, setSelectedIntervention] = useState<Options | null>(null);
+  const [selectedHierarchyLevelTarget, setSelectedHierarchyLevelTarget] = useState<Options | null>(null);
   const [selectedAreas, setSelectedAreas] = useState<string[]>(defaultValues?.areas || []);
   const [assignedMembers, setAssignedMembers] = useState<string[]>(defaultValues?.members || []);
   const [error, setError] = useState<string | null>(null);
@@ -51,10 +56,17 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
       setError('At least one member must be assigned.');
       return;
     }
+    if (selectedIntervention?.label?.toLowerCase().includes('lite') && !selectedHierarchyLevelTarget) {
+      setError('Hierarchy level target is required for Lite intervention.');
+      return;
+    }
 
     const formData = {
       instanceName,
       hierarchy: selectedHierarchy?.value,
+      locationHierarchy: selectedHierarchy?.value,
+      interventionType: selectedIntervention?.value,
+      hierarchyLevelTarget: selectedHierarchyLevelTarget?.value,
       selectedHierarchyObject: selectedHierarchy,
       areas: selectedAreas,
       members: assignedMembers
@@ -72,29 +84,56 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
   }, [defaultValues]);
 
   useEffect(() => {
-    getLocationHierarchyList(0, 0, true)
-      .then((locationHierarchyList) => {
-        const hList = locationHierarchyList.content.map<Options>(el => ({
+    Promise.all([getLocationHierarchyList(0, 0, true), getInterventionTypeList(), getGeographicLevelList(0, 0)])
+      .then(([locationHierarchyList, interventionTypeList, geoLevelList]) => {
+        const hList = locationHierarchyList.content.map<Options>((el: any) => ({
           label: el.name,
           value: el.identifier ?? '',
           nodeOrder: el.nodeOrder
         }));
-        setHierarchyList(hList);           
-        
-        // Sync selectedHierarchy with the real list item (to fix ID showing instead of label)
+        const iList = interventionTypeList.map<Options>((el: any) => ({
+          label: el.name,
+          value: el.identifier
+        }));
+
+        setHierarchyList(hList);
+        setInterventionTypeList(iList);
+        setGeographicLevelList(geoLevelList.content);
+
+        // Sync hierarchy
         const hierarchyValue = defaultValues?.hierarchy || defaultValues?.locationHierarchy;
+        let selectedH: Options | null = null;
         if (hierarchyValue) {
-          const match = hList.find(opt => opt.value === hierarchyValue);
-          if (match) {
-            setSelectedHierarchy(match);
-          }
+          selectedH = hList.find((opt: any) => opt.value === hierarchyValue) || null;
+          setSelectedHierarchy(selectedH);
         } else if (hList.length > 0 && !selectedHierarchy) {
-          // Auto-select 0th element if none provided
-          setSelectedHierarchy(hList[0]);
+          selectedH = hList[0];
+          setSelectedHierarchy(selectedH);
+        }
+
+        // Sync intervention
+        if (defaultValues?.interventionType) {
+          const selectedI = iList.find((opt: any) => opt.value === defaultValues.interventionType) || null;
+          setSelectedIntervention(selectedI);
+        }
+
+        // Sync target level
+        if (defaultValues?.hierarchyLevelTarget && selectedH?.nodeOrder) {
+          const targetLevel = selectedH.nodeOrder
+            .filter((el: string) => el !== 'structure')
+            .map((el: string) => {
+              const geoLevel = geoLevelList.content.find((g: any) => g.name === el);
+              return {
+                label: geoLevel ? geoLevel.title : el,
+                value: el
+              };
+            })
+            .find((opt: any) => opt.value === defaultValues.hierarchyLevelTarget);
+          setSelectedHierarchyLevelTarget(targetLevel || null);
         }
       })
       .catch(err => toast.error(String(err)));
-  }, [defaultValues?.hierarchy]); // Re-sync if defaultValues changes
+  }, [defaultValues]);
   return (
     <div style={isDarkMode ? { backgroundColor: '#282828' } : { background: '#FFF' }} className="p-4">
       <h4 className="mb-4 fw-bold">Create Instance</h4>
@@ -106,9 +145,9 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
             </Alert>
           )}
 
-          <div style={{ width: '100%' }} className="d-flex flex-column flex-md-row gap-4 mb-4">
-            <Form.Group className="flex-grow-1" controlId="instanceName">
-              {/* <Form.Label>Instance Name</Form.Label> */}
+          <div style={{ width: '100%' }} className="mb-4">
+            <Form.Group controlId="instanceName">
+              <Form.Label>Instance Name</Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Enter Instance name"
@@ -117,20 +156,66 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
                 className="py-2"
               />
             </Form.Group>
+          </div>
 
+          <div style={{ width: '100%' }} className="d-flex flex-column flex-md-row gap-4 mb-4">
             <Form.Group className="flex-grow-1" controlId="hierarchy">
-              {/* <Form.Label>Hierarchy</Form.Label> */}
+              <Form.Label>Location Hierarchy</Form.Label>
               <Select
-              isDisabled
                 className="custom-react-select-container"
                 classNamePrefix="custom-react-select"
                 options={hierarchyList}
                 value={selectedHierarchy}
-                onChange={setSelectedHierarchy}
+                onChange={(val: any) => {
+                  setSelectedHierarchy(val);
+                  setSelectedHierarchyLevelTarget(null);
+                  setSelectedAreas([]); // Clear areas when hierarchy changes
+                }}
                 placeholder="Select Hierarchy"
               />
             </Form.Group>
+
+            <Form.Group className="flex-grow-1" controlId="interventionType">
+              <Form.Label>Intervention Type</Form.Label>
+              <Select
+                className="custom-react-select-container"
+                classNamePrefix="custom-react-select"
+                options={interventionTypeList}
+                value={selectedIntervention}
+                onChange={(val: any) => {
+                  setSelectedIntervention(val);
+                  setSelectedHierarchyLevelTarget(null);
+                }}
+                placeholder="Select Intervention"
+              />
+            </Form.Group>
           </div>
+
+          {selectedIntervention?.label?.toLowerCase().includes('lite') && (
+            <div style={{ width: '100%' }} className="mb-4">
+              <Form.Group controlId="hierarchyLevelTarget">
+                <Form.Label>Hierarchy Level Target</Form.Label>
+                <Select
+                  className="custom-react-select-container"
+                  classNamePrefix="custom-react-select"
+                  options={
+                    selectedHierarchy?.nodeOrder
+                      ?.filter((el: string) => el !== 'structure')
+                      .map((el: string) => {
+                        const geoLevel = geographicLevelList.find(g => g.name === el);
+                        return {
+                          label: geoLevel ? geoLevel.title : el,
+                          value: el
+                        };
+                      }) || []
+                  }
+                  value={selectedHierarchyLevelTarget}
+                  onChange={setSelectedHierarchyLevelTarget}
+                  placeholder="Select Target Level"
+                />
+              </Form.Group>
+            </div>
+          )}
 
           {/* Areas Section - Render one AreaSelection tied to the dropdown */}
           <div className="mb-5">
@@ -161,6 +246,9 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
               onClick={() => onBack({
                 instanceName,
                 hierarchy: selectedHierarchy?.value,
+                locationHierarchy: selectedHierarchy?.value,
+                interventionType: selectedIntervention?.value,
+                hierarchyLevelTarget: selectedHierarchyLevelTarget?.value,
                 selectedHierarchyObject: selectedHierarchy,
                 areas: selectedAreas,
                 members: assignedMembers
