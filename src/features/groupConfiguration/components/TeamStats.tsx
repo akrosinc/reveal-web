@@ -29,7 +29,7 @@ const TeamStats: React.FC = () => {
             style={{ background: isDarkMode ? '#212529' : '', height: '100%' }}
         >
             <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>
-                Assigned
+                Statistics
             </Card.Header>
             <Card.Body className="p-3 d-flex flex-column justify-content-center">
                 {loading ? (
