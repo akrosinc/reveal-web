@@ -9,7 +9,7 @@ import MembersSelection from './components/MembersSelection';
 import { getLocationHierarchyList } from '../location/api';
 import { toast } from 'react-toastify';
 import { createGroup, getGroupByIdentifier, updateGroup, GroupMember, GroupDataset, GroupRole } from './api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface Options {
@@ -42,7 +42,9 @@ const getSelectedLeafNodeIds = (nodes: any[]): string[] =>
 const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const selectedInstance = useAppSelector((state: any) => state.instanceContext.selectedInstance);
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const location = useLocation();
+    const readOnlyMode = location.state?.readOnlyMode || false;
     // Form fields
     const [groupName, setGroupName] = useState('');
     const [isTeam, setIsTeam] = useState(false);
@@ -140,7 +142,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
         if (Object.keys(validationErrors).length > 0) {
             return;
         }
-        if(isTeam && assignedMembers?.length===0) return toast.error('Please assign at least one member to the team.');
+        if (assignedMembers?.length === 0) return toast.error('Please assign at least one member to the team.');
         // Build the final payload
         const payload = {
             name: groupName.trim(),
@@ -198,9 +200,16 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
 
     return (
         <div className={`p-4 ${isDarkMode ? 'text-white' : ''}`}>
-            <div className='d-flex align-items-center gap-1 mb-3'>
-                { <button style={{all:"unset",cursor:'pointer'}} onClick={() => navigate(-1)}>    <FontAwesomeIcon icon="arrow-left" className="me-2" /></button>}
-                <h3 className="">{identifier ? 'Edit' : 'Create'} Group</h3>
+            <div className='d-flex align-items-center justify-content-between mb-3'>
+                <div className='d-flex align-items-center gap-1'>
+                    {<button style={{ all: "unset", cursor: 'pointer' }} onClick={() => navigate(-1)}>    <FontAwesomeIcon icon="arrow-left" className="me-2" /></button>}
+                    <h3 className="">{readOnlyMode ? 'View' : (identifier ? 'Edit' : 'Create')} Group</h3>
+                </div>
+                {readOnlyMode && (
+                    <Alert variant="info" className="py-1 px-3 mb-0 border-0">
+                        <span className="small fw-bold text-uppercase">Read-only Mode</span>
+                    </Alert>
+                )}
             </div>
             {isLoadingData ? (
                 <div className="text-center py-5">
@@ -222,6 +231,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                                         }
                                     }}
                                     isInvalid={!!errors.name}
+                                    disabled={readOnlyMode}
                                 />
                                 <Form.Control.Feedback type="invalid">
                                     {errors.name}
@@ -236,6 +246,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                                 checked={isTeam}
                                 onChange={handleTeamToggle}
                                 className="mt-2"
+                                disabled={readOnlyMode}
                             />
                         </Col>
                     </Row>
@@ -247,9 +258,9 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                         </Alert>
                     )}
 
-                    <Row className={"g-4 items-stretch "+ (isTeam ? "" : "mb-4")}>
-                        {!isTeam &&  <Col md={4} xs={12}>
-                      <AreasSelection
+                    <Row className={"g-4 items-stretch " + (isTeam && !readOnlyMode ? "" : "mb-4")}>
+                        {(!isTeam || readOnlyMode) && <Col md={4} xs={12}>
+                            <AreasSelection
                                 isTeamMode={isTeam}
                                 selectedHierarchy={selectedHierarchy?.value}
                                 selectedAreas={selectedAreas}
@@ -263,6 +274,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                                     handleAreaTeamChange(areaId as string, team);
                                     if (submitted) setErrors(prev => ({ ...prev, areaTeams: undefined }));
                                 }}
+                                disabled={readOnlyMode}
                             />
                         </Col>}
                         {!isTeam ? (
@@ -277,6 +289,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                                                     setErrors(prev => ({ ...prev, roles: undefined }));
                                                 }
                                             }}
+
                                         />
                                         {errors.roles && (
                                             <div className="text-danger small mt-1">
@@ -289,34 +302,41 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                                     <DatasetsSelection
                                         selectedDatasets={selectedDatasets}
                                         onDatasetChange={setSelectedDatasets}
+
                                     />
                                 </Col>
                             </>
                         ) : (
                             <Col md={4} xs={12}>
-                                {/* <TeamStats /> */}
-                                <></>
+                                {readOnlyMode ? <TeamStats /> : <></>}
                             </Col>
                         )}
                     </Row>
 
                     <Row className="mb-4 g-4">
                         <Col md={12}>
-                            <MembersSelection assignedMembers={assignedMembers} onAssignmentChange={setAssignedMembers} />
+                            <MembersSelection
+                                assignedMembers={assignedMembers}
+                                onAssignmentChange={setAssignedMembers}
+                                disabled={readOnlyMode}
+
+                            />
                         </Col>
                     </Row>
 
                     <hr className="my-4" />
 
-                    <div className="d-flex justify-content-end gap-2">
+                    {!readOnlyMode && <div className="d-flex justify-content-end gap-2">
                         <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>
-                            Cancel
+                            {readOnlyMode ? 'Close' : 'Cancel'}
                         </Button>
-                        <Button variant="primary" onClick={handleSave} disabled={isSubmitting}>
-                            {isSubmitting && <Spinner animation="border" size="sm" className="me-2" />}
-                            {isSubmitting ? (identifier ? 'Updating...' : 'Creating...') : (identifier ? 'Update' : 'Create')}
-                        </Button>
-                    </div>
+                        {!readOnlyMode && (
+                            <Button variant="primary" onClick={handleSave} disabled={isSubmitting}>
+                                {isSubmitting && <Spinner animation="border" size="sm" className="me-2" />}
+                                {isSubmitting ? (identifier ? 'Updating...' : 'Creating...') : (identifier ? 'Update' : 'Create')}
+                            </Button>
+                        )}
+                    </div>}
                 </>
             )}
         </div>

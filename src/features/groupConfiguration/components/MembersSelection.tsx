@@ -25,9 +25,10 @@ interface Member {
 interface MembersSelectionProps {
     assignedMembers: string[];
     onAssignmentChange: (ids: string[]) => void;
+    disabled?: boolean;
 }
 
-const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assignedMembers, onAssignmentChange }) => {
+const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assignedMembers, onAssignmentChange, disabled = false }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const [searchTerm, setSearchTerm] = useState('');
     const [users, setUsers] = useState<Member[]>([]);
@@ -130,7 +131,7 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
                 </Card>
 
                 {/* Transfer Buttons */}
-                <div className="d-flex flex-row flex-lg-column align-items-center justify-content-center gap-2 my-2 my-lg-0">
+                {!disabled && <div className="d-flex flex-row flex-lg-column align-items-center justify-content-center gap-2 my-2 my-lg-0">
                     <Button variant="primary" className="btn-sm px-3" onClick={handleMoveRight} disabled={leftSelected.length === 0}>
                         <FontAwesomeIcon icon={faChevronRight} className="d-none d-lg-inline" />
                         <FontAwesomeIcon icon={faChevronDown} className="d-inline d-lg-none" />
@@ -151,7 +152,7 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
                         <FontAwesomeIcon icon={faAngleDoubleLeft} className="d-none d-lg-inline" />
                         <FontAwesomeIcon icon={faAngleDoubleUp} className="d-inline d-lg-none" />
                     </Button>
-                </div>
+                </div>}
 
                 {/* Assigned */}
                 <Card

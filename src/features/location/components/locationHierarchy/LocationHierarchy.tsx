@@ -21,9 +21,9 @@ const LocationHierarchy = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [geographyLevelList, setGeographyLevelList] = useState<Options[]>();
   const [locationHierarchy, setLocationHierarchy] = useState<PageableModel<LocationHierarchyModel>>();
-  const [baseHierarchy,setBaseHierarchy]= useState<LocationHierarchyBaseResponse | null>(null)
-  const [baseHierarchyFound,setBaseHierarchyFound] = useState<boolean>(false)
-  const [loadingForBaseHierarchy,setLoadingForBaseHierarchy]=useState<boolean>(true)
+  const [baseHierarchy, setBaseHierarchy] = useState<LocationHierarchyBaseResponse | null>(null)
+  const [baseHierarchyFound, setBaseHierarchyFound] = useState<boolean>(false)
+  const [loadingForBaseHierarchy, setLoadingForBaseHierarchy] = useState<boolean>(true)
   const [isBase, setIsBase] = useState<boolean>(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showConfirmActivate, setShowConfirmActivate] = useState(false);
@@ -43,13 +43,12 @@ const LocationHierarchy = () => {
         setBaseHierarchyFound(true);
         setBaseHierarchy(res);
       })
-      .catch(err =>
-        {
-          if(err?.statusCode === 404){
-            setBaseHierarchyFound(false);
-            setBaseHierarchy(null);
-          }
-        }).finally(()=>setLoadingForBaseHierarchy(_=>false));
+      .catch(err => {
+        if (err?.statusCode === 404) {
+          setBaseHierarchyFound(false);
+          setBaseHierarchy(null);
+        }
+      }).finally(() => setLoadingForBaseHierarchy(_ => false));
   }, []);
 
   const createHandler = (base: boolean = false) => {
@@ -125,9 +124,9 @@ const LocationHierarchy = () => {
       .catch(err => toast.error(err));
   };
 
-  const activateHandler = (action:boolean) => {
-    if(!selectedHierarchy?.identifier)  return
-    if(!action){
+  const activateHandler = (action: boolean) => {
+    if (!selectedHierarchy?.identifier) return
+    if (!action) {
       setShowConfirmActivate(false);
       return
     }
@@ -146,7 +145,7 @@ const LocationHierarchy = () => {
       }
     });
   };
-// console.log(baseHierarchyFound)
+  // console.log(baseHierarchyFound)
   return (
     <>
       <Row className="align-items-center mb-1">
@@ -186,7 +185,7 @@ const LocationHierarchy = () => {
           </h2>
         </Col>
         <Col>
-          <Button id="create-button" disabled={!baseHierarchyFound} style={{opacity:!baseHierarchyFound?0.7:1, cursor:!baseHierarchyFound?'not-allowed':'pointer'}}  className="float-end" onClick={() => createHandler(false)}>
+          <Button id="create-button" disabled={!baseHierarchyFound} style={{ opacity: !baseHierarchyFound ? 0.7 : 1, cursor: !baseHierarchyFound ? 'not-allowed' : 'pointer' }} className="float-end" onClick={() => createHandler(false)}>
             {t('buttons.create')}
           </Button>
         </Col>
@@ -213,7 +212,7 @@ const LocationHierarchy = () => {
                     <td>{el.name}</td>
                     <td>
                       {el.nodeOrder.toString()}{' '}
-                      <Button
+                      {/* <Button
                         id="delete-button"
                         variant="secondary"
                         onClick={() => {
@@ -225,8 +224,8 @@ const LocationHierarchy = () => {
                         className="float-end"
                       >
                         <FontAwesomeIcon className="m-0" icon="trash" />
-                      </Button>
-                     { el.hierarchyStatus==='ACTIVE'?<Button style={{cursor:'default',background:"#198754",outline:0,border:0}} className='float-end me-2'>Active</Button>: <Button
+                      </Button> */}
+                      {el.hierarchyStatus === 'ACTIVE' ? <></> : <Button
                         id="activate-button"
                         variant="primary"
                         onClick={() => {
@@ -262,10 +261,10 @@ const LocationHierarchy = () => {
         <ActionDialog
           title={isBase ? "Create Base Location Hierarchy" : "Create Location Hierarchy"}
           element={
-            <CreateLocationHierarchy 
-              geographyLevelList={geographyLevelList ?? []} 
-              closeHandler={closeHandler} 
-              isBase={isBase} 
+            <CreateLocationHierarchy
+              geographyLevelList={geographyLevelList ?? []}
+              closeHandler={closeHandler}
+              isBase={isBase}
               baseHierarchyName={baseHierarchy?.nodeOrder.join(', ') || ''}
             />
           }
