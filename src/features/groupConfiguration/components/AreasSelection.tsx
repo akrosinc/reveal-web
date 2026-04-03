@@ -30,7 +30,7 @@ interface Props {
   selectedAreas: string[];
   onSelectionChange: (selectedIds: string[]) => void;
   areaTeams: Record<string, string>;
-  onAreaTeamChange: (areaId: string, team: string) => void;
+  onAreaTeamChange: (areaId: string | string[], team: string) => void;
 }
 
 interface TreeNodeProps {
@@ -529,11 +529,7 @@ const AreasSelection: React.FC<Props> = ({
 
   const handleTeamSelect = useCallback((team: string) => {
     if (activeAreaId) {
-      if (Array.isArray(activeAreaId)) {
-        activeAreaId.forEach(id => onAreaTeamChange(id, team));
-      } else {
-        onAreaTeamChange(activeAreaId, team);
-      }
+      onAreaTeamChange(activeAreaId, team);
       loadData(); // Re-render / re-fetch after team assignment
     }
   }, [activeAreaId, onAreaTeamChange, loadData]);

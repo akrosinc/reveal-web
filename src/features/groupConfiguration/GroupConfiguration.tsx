@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import DefaultTable from '../../components/Table/DefaultTable';
 import Paginator from '../../components/Pagination';
 import CreateGroup from './CreateGroup';
+import TeamAssignmentModal from './components/TeamAssignmentModal';
 import { getGroupList, GroupModel } from './api';
 import { GROUP_MANAGEMENT, GROUP_MANAGEMENT_CREATE, GROUP_MANAGEMENT_EDIT, PAGINATION_DEFAULT_SIZE } from '../../constants';
 import { useAuthorization } from '../../hooks/useAuthorization';
@@ -26,6 +27,7 @@ const GroupConfiguration: React.FC = () => {
     const [currentSortField, setCurrentSortField] = useState('');
     const [currentSortDirection, setCurrentSortDirection] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [showAssignModal, setShowAssignModal] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -151,13 +153,21 @@ const GroupConfiguration: React.FC = () => {
                         onChange={filterData}
                     />
                 </Col>
-                <AuthorizedElement roles={[GROUP_MANAGEMENT_CREATE]}>
                 <Col md={8}>
-                    <Button className="btn btn-primary float-end" onClick={() => navigate(GROUP_MANAGEMENT + '/create')}>
-                        {t('buttons.create')}
-                    </Button>
+                    <AuthorizedElement roles={[GROUP_MANAGEMENT_CREATE]}>
+                        <div className="d-flex justify-content-end gap-2">
+                            <Button 
+                                variant="outline-primary" 
+                                onClick={() => setShowAssignModal(true)}
+                            >
+                                Assign teams
+                            </Button>
+                            <Button className="btn btn-primary" onClick={() => navigate(GROUP_MANAGEMENT + '/create')}>
+                                {t('buttons.create')}
+                            </Button>
+                        </div>
+                    </AuthorizedElement>
                 </Col>
-                </AuthorizedElement>
             </Row>
 
             <hr className="my-3" />
@@ -176,6 +186,12 @@ const GroupConfiguration: React.FC = () => {
                     clickAccessor="identifier"
                 />
             )}
+
+            <TeamAssignmentModal 
+                show={showAssignModal}
+                onHide={() => setShowAssignModal(false)}
+                onSaveSuccess={() => loadGroups(pageSize, currentPage, search, currentSortField, currentSortDirection)}
+            />
 
             {!loading && totalElements > 0 && (
                 <Paginator

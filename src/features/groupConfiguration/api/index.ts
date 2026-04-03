@@ -150,3 +150,15 @@ export const updateGroup = async (identifier: string, payload: CreateGroupPayloa
   const response = await api.put<GroupModel>(`${GROUP_MANAGEMENT}/${identifier}`, payload);
   return response.data;
 };
+
+export interface GroupStatsResponse {
+  targetAreas: number;
+  totalStructures: number;
+  totalPopulation: number;
+  completionPercentage: number;
+}
+
+export const getGroupStats = async (): Promise<GroupStatsResponse> => {
+  const response = await api.get<GroupStatsResponse>(`${GROUP_MANAGEMENT}/stats`);
+  return response.data;
+};

@@ -21,10 +21,10 @@ const SelectTeamModal: React.FC<Props> = ({ show, onHide, onSelect, planId, area
     const [loading, setLoading] = useState(false);
     const [selectedTeam, setSelectedTeam] = useState<any>(initialSelectedTeam || null);
     const [isSaving, setIsSaving] = useState(false);
-// console.log('Selected team in modal:', selectedTeam);
-//     useEffect(() => {
-//         setSelectedTeam(initialSelectedTeam || null);
-//     }, [initialSelectedTeam]);
+    // console.log('Selected team in modal:', selectedTeam);
+    useEffect(() => {
+        setSelectedTeam(initialSelectedTeam || null);
+    }, [initialSelectedTeam]);
     useEffect(() => {
         if (show) {
             setLoading(true);
@@ -57,6 +57,7 @@ const SelectTeamModal: React.FC<Props> = ({ show, onHide, onSelect, planId, area
                 onHide();
             })
             .catch(err => {
+                console.log(err, 'ERROR in select team modal')
                 toast.error(err.message || 'Failed to assign team');
             })
             .finally(() => {

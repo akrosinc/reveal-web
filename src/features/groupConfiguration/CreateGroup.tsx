@@ -247,9 +247,9 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                         </Alert>
                     )}
 
-                    <Row className="mb-4 g-4 items-stretch">
-                        <Col md={4} xs={12}>
-                            <AreasSelection
+                    <Row className={"g-4 items-stretch "+ (isTeam ? "" : "mb-4")}>
+                        {!isTeam &&  <Col md={4} xs={12}>
+                      <AreasSelection
                                 isTeamMode={isTeam}
                                 selectedHierarchy={selectedHierarchy?.value}
                                 selectedAreas={selectedAreas}
@@ -260,11 +260,11 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                                 }}
                                 areaTeams={areaTeams}
                                 onAreaTeamChange={(areaId, team) => {
-                                    handleAreaTeamChange(areaId, team);
+                                    handleAreaTeamChange(areaId as string, team);
                                     if (submitted) setErrors(prev => ({ ...prev, areaTeams: undefined }));
                                 }}
                             />
-                        </Col>
+                        </Col>}
                         {!isTeam ? (
                             <>
                                 <Col md={4} xs={12}>
@@ -294,7 +294,8 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                             </>
                         ) : (
                             <Col md={4} xs={12}>
-                                <TeamStats />
+                                {/* <TeamStats /> */}
+                                <></>
                             </Col>
                         )}
                     </Row>
