@@ -324,6 +324,7 @@ const Simulation = () => {
   const fetchHierarchy = async (instanceId: string) => {
     const hierarchyData = await getInstanceHierarchy(instanceId);
     try {
+      console.log("H-DATA", hierarchyData)
       setHighestLocations(hierarchyData);
       dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData });
     } catch (error) {
@@ -462,7 +463,7 @@ const Simulation = () => {
 
   useEffect(() => {
     // if (Array.isArray(instances) && instances?.length === 0) {
-    if(isAuthorizedForRedirectingToAPlan && instanceContext?.selectedInstance?.identifier){
+    if (isAuthorizedForRedirectingToAPlan && instanceContext?.selectedInstance?.identifier) {
       // instanceContext
       // alert("Empty..")
       // console.log(instanceContext, 'IC')
@@ -1684,7 +1685,7 @@ const Simulation = () => {
       setSelectedPlan(found);
     }
   };
-
+  console.log(highestLocations)
   return (
     <>
       <Container fluid ref={divRef}>
@@ -1741,7 +1742,7 @@ const Simulation = () => {
             )}
             {/* {highestLocations && showResult && ( */}
             <AuthorizedElement roles={[SIMULATION_DATASET_MENU]}>
-              {highestLocations && (
+              {highestLocations ? (
                 <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
                   {state.datasets?.length !== 0 && (
                     <div className={styles.WrapperDasasetsButton}>
@@ -1807,7 +1808,7 @@ const Simulation = () => {
                     </div>
                   </CustomPopup>
                 </Accordion>
-              )}
+              ) : <></>}
             </AuthorizedElement>
           </Drawer>
           <SimulationMapView
