@@ -157,6 +157,45 @@ export const INSTANCE_TABLE_COLUMNS = [
   }
 ];
 
+export const PLAN_MODEL_1_COLUMNS = [
+  {
+    name: 'instanceName',
+    sortValue: 'instanceName',
+    accessor: 'instanceName'
+  },
+  {
+    name: 'interventionType',
+    sortValue: 'interventionType',
+    accessor: 'interventionType'
+  },
+  {
+    name: 'planTitle',
+    sortValue: 'planTitle',
+    accessor: 'planTitle'
+  },
+  {
+    name: 'planStatus',
+    sortValue: 'planStatus',
+    accessor: 'planStatus'
+  },
+  {
+    name: 'createdDatetime',
+    sortValue: 'createdDatetime',
+    accessor: 'createdDatetime'
+  },
+  {
+    name: 'startDate',
+    sortValue: 'startDate',
+    accessor: 'startDate'
+  },
+  {
+    name: 'endDate',
+    sortValue: 'endDate',
+    accessor: 'endDate'
+  },
+
+];
+
 export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';
 export const LOCATION_TEAM_ASSIGNMENT_TAB = 'team-assignment';
 export const LOCATION_TEAM_ASSIGNMENT_SUMMARY = 'team-assignment-summary';

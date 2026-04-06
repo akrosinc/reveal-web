@@ -3,7 +3,7 @@ import api from '../../../api/axios';
 import dashBoardApi from '../../../api/dashboard-axios';
 import { PageableModel } from '../../../api/providers';
 import { PLAN, REPORTS } from '../../../constants';
-import { PlanModel } from '../../plan/providers/types';
+import { PlanModel, PlanModel1 } from '../../plan/providers/types';
 import {
   AdditionalReportInfo,
   MapDataReportRequest,
@@ -35,9 +35,8 @@ export const getMapReportData = async (
   const data = await prodAPI
     .get<any>(
       REPORTS +
-        `/reportData?reportType=${mapData.reportTypeEnum}&planIdentifier=${mapData.planIdentifier}${
-          mapData.parentLocationIdentifier !== null ? '&parentIdentifier=' + mapData.parentLocationIdentifier : ''
-        }${filters && filters.length ? '&filters=' + filters : ''}${type ? '&type=' + type : ''}`
+      `/reportData?reportType=${mapData.reportTypeEnum}&planIdentifier=${mapData.planIdentifier}${mapData.parentLocationIdentifier !== null ? '&parentIdentifier=' + mapData.parentLocationIdentifier : ''
+      }${filters && filters.length ? '&filters=' + filters : ''}${type ? '&type=' + type : ''}`
     )
     .then(response => response.data);
   return data;
@@ -51,13 +50,14 @@ export const getPlanReports = async (
   search?: string,
   sortField?: string,
   direction?: boolean
-): Promise<PageableModel<PlanModel>> => {
+  // ): Promise<PageableModel<PlanModel>> => {
+): Promise<PageableModel<PlanModel1>> => {
   const data = await api
     .get(
-      PLAN +
-        `/reports?reportType=${reportType ?? ''}&_summary=${summary}&search=${
-          search !== undefined ? search : ''
-        }&size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ''},${direction ? 'asc' : 'desc'}`
+      // PLAN +
+      // `/reports?reportType=${reportType ?? ''}&_summary=${summary}&search=${
+      `instance/reports?reportType=${reportType ?? ''}&_summary=${summary}&search=${search !== undefined ? search : ''
+      }&size=${size}&page=${page}&sort=${sortField !== undefined ? sortField : ''},${direction ? 'asc' : 'desc'}`
     )
     .then(response => response.data);
   return data;
