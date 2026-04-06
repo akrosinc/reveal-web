@@ -164,6 +164,7 @@ const CampaignManagement = () => {
   const [instances, setInstances] = useState<any>(null)
   const [selectedPlan, setSelectedPlan] = useState<any>();
   const [selectedInstance, setSelectedInstance] = useState<any>()
+  const [rfForTeam, setRfForTeam] = useState(false)
 
   const fetchSimulationAndData = async (selectedPlan: any) => {
     const simulationIdentifier = await fetchPlanInfo(selectedPlan);
@@ -725,7 +726,15 @@ const CampaignManagement = () => {
   };
 
   const fetchTeamsData = async () => {
-    getOrganizatonsWithMembers().then((data: any) => {
+    if (isAuthorizedForRedirectingToACampaign && instanceContext?.selectedInstance?.identifier) {
+      getOrganizatonsWithMembers(instanceContext?.selectedInstance?.identifier as any).then((data: any) => {
+        setTeamsList(data);
+      });
+      return
+    }
+    let found = instances?.find((plan: any) => plan.identifier === selectedPlan?.identifier);
+
+    getOrganizatonsWithMembers(found?.identifier as any).then((data: any) => {
       setTeamsList(data);
     });
   };
@@ -746,6 +755,7 @@ const CampaignManagement = () => {
     let found = instances?.find((plan: any) => plan.identifier === option?.value);
     if (found) {
       setSelectedPlan(found);
+      setRfForTeam(!rfForTeam)
     }
   };
   console.log(instances, 'Selected plan')
@@ -791,15 +801,15 @@ const CampaignManagement = () => {
                 <Hierarchy clickHandler={loadLocationHandler} />
               </Accordion>
             )}
-            <Accordion title="Teams" open>
-              <Teams teamsList={teamsList} fetchTeamsData={fetchTeamsData} />
+            {selectedPlan?.identifier && <Accordion title="Teams" open>
+              <Teams rf={rfForTeam} teamsList={teamsList} fetchTeamsData={fetchTeamsData} />
               {/* <AuthorizedElement roles={[]}>
               <DrawerButton onClick={() => setOpenCustomModal(1)}>Manage Teams</DrawerButton>
               </AuthorizedElement> */}
               <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
                 <UserModal fetchTeamsData={fetchTeamsData} />
               </CustomPopup>
-            </Accordion>
+            </Accordion>}
           </Drawer>
           <SimulationMapView
             teamsList={teamsList} //list of teams

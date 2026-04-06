@@ -53,11 +53,11 @@ export const getMainMenu = (context: InstanceContextModel | null) => {
           route: instanceManagementRoute,
           roles: [INSTANE_MANAGEMENT_VIEW]
         },
-        {
-          pageTitle: 'Data Viewer',
-          route: SIMULATION_PAGE,
-          roles: [REVEAL_SIMULATION]
-        }
+        // {
+        //   pageTitle: 'Data Viewer',
+        //   route: SIMULATION_PAGE,
+        //   roles: [REVEAL_SIMULATION]
+        // }
       ]
     },
 

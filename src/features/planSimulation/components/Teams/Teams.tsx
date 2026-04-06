@@ -6,6 +6,7 @@ import Users from '../../../../assets/svgs/users.svg';
 interface TeamsProps {
   teamsList: Team[];
   fetchTeamsData: () => void;
+  rf: boolean;
 }
 
 interface Member {
@@ -22,10 +23,10 @@ interface Team {
   active?: boolean;
 }
 
-const Teams = ({ teamsList, fetchTeamsData }: TeamsProps) => {
+const Teams = ({ teamsList, fetchTeamsData, rf }: TeamsProps) => {
   useEffect(() => {
     fetchTeamsData();
-  }, []);
+  }, [rf]);
 
   return (
     <>

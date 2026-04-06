@@ -15,9 +15,8 @@ export const getOrganizationList = async (
   const data = await api
     .get<PageableModel<OrganizationModel>>(
       ORGANIZATION +
-        `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${
-          sortField !== undefined ? sortField : ''
-        },${direction ? 'asc' : 'desc'}`
+      `?search=${search !== undefined ? search : ''}&size=${size}&page=${page}&_summary=FALSE&root=true&sort=${sortField !== undefined ? sortField : ''
+      },${direction ? 'asc' : 'desc'}`
     )
     .then(response => response.data);
   return data;
@@ -30,7 +29,8 @@ export const getOrganizationListSummary = async (): Promise<PageableModel<Organi
   return data;
 };
 
-export const getOrganizatonsWithMembers = async (): Promise<any[]> => {
-  const data = await api.get<any[]>('/organization/members').then(response => response.data);
+export const getOrganizatonsWithMembers = async (id: string): Promise<any[]> => {
+  // const data = await api.get<any[]>('/organization/members').then(response => response.data);
+  const data = await api.get<any[]>(`/organization/instance-members?instanceIdentifier=${id}`).then(response => response.data);
   return data;
 };
