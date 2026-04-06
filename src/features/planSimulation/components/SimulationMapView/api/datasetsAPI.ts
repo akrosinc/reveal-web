@@ -65,7 +65,7 @@ export interface SimulationDatasetRequest {
 
 export const getEntityTags = async () => {
   try {
-    const response = await api.get(`/entityTag/default-hierarchy`);
+    const response = await api.get(`/entityTag/instance-hierarchy`);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -158,7 +158,7 @@ export const filterDatasets = async (
   }
 };
 
-export const getStructuresWithinBoundingBox = async (topLeftLon: number, topLeftLat: number, bottomRightLon: number, bottomRightLat:number) => {
+export const getStructuresWithinBoundingBox = async (topLeftLon: number, topLeftLat: number, bottomRightLon: number, bottomRightLat: number) => {
   try {
     const response = await api.get(`/simulation/within?topLeftLon=${topLeftLon}&topLeftLat=${topLeftLat}&bottomRightLon=${bottomRightLon}&bottomRightLat=${bottomRightLat}`);
     return response.data;
