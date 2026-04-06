@@ -68,6 +68,16 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
       setError('At least one goal must be added before continuing.');
       return;
     }
+
+    const hasActionWithValue = goalList.some((goal) =>
+      goal.actions?.length >= 1
+    );
+
+    if (!hasActionWithValue) {
+      setError('At least one action should be selected with value.');
+      return;
+    }
+
     onNext && onNext({ goals: goalList });
   };
 
@@ -78,7 +88,7 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
         <Col md={8}>
           <div className="d-flex justify-content-between align-items-center">
             <h3>{t('planPage.goals')}</h3>
-           {goalList?.length === 0 && <Button
+            {goalList?.length === 0 && <Button
               id="add-goal-button "
               style={{ height: 20, width: 20 }}
               className="mb-3 rounded-circle d-flex align-items-center justify-content-center"
@@ -121,9 +131,9 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
           </Accordion>
           <hr className="my-3" />
           <div className="d-flex justify-content-between mt-4 ">
-            <Button 
-              variant="secondary" 
-              className="px-4 py-2" 
+            <Button
+              variant="secondary"
+              className="px-4 py-2"
               onClick={() => onBack({ goals: goalList })}
             >
               Back
@@ -134,7 +144,7 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
           </div>
         </Col>
       </Row>
- 
+
       {showCreateGoal && (
         <CreateGoal
           planId={planId}
