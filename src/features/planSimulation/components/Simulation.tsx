@@ -469,12 +469,12 @@ const Simulation = () => {
       // console.log(instanceContext, 'IC')
       fetchHierarchy(instanceContext?.selectedInstance?.identifier as any);
       fetchSimulationAndData(instanceContext?.instancePlan as any);
-      fetchDefaultHierarchyData();
+      // fetchDefaultHierarchyData();
     }
     if (selectedPlan) {
       fetchHierarchy(selectedPlan.identifier as any);
       fetchSimulationAndData(selectedPlan);
-      fetchDefaultHierarchyData();
+      // fetchDefaultHierarchyData();
     }
   }, [selectedPlan, instances]);
 

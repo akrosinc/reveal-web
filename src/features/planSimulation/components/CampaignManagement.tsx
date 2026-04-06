@@ -338,13 +338,13 @@ const CampaignManagement = () => {
 
   useEffect(() => {
     // if (Array.isArray(instances) && instances?.length === 0) {
-    if(isAuthorizedForRedirectingToACampaign && instanceContext?.selectedInstance?.identifier){
+    if (isAuthorizedForRedirectingToACampaign && instanceContext?.selectedInstance?.identifier) {
       // instanceContext
       // alert("Empty..")
       // console.log(instanceContext, 'IC')
       fetchHierarchy(instanceContext?.selectedInstance?.identifier as any);
       fetchSimulationAndData(instanceContext?.instancePlan as any);
-      fetchDefaultHierarchyData();
+      // fetchDefaultHierarchyData();
     }
     if (selectedPlan) {
       fetchHierarchy(selectedPlan.identifier);
