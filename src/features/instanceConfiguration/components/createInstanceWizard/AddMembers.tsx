@@ -4,7 +4,7 @@ import MembersSelection from './MembersSelection';
 import { WizardStepProps } from '../Wizard/Wizard';
 import { useAppSelector } from '../../../../store/hooks';
 
-const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues }) => {
+const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, viewOnly }) => {
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [assignedMembers, setAssignedMembers] = useState<string[]>(defaultValues?.members || []);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +39,7 @@ const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues }
           <MembersSelection 
             assignedMembers={assignedMembers} 
             onAssignmentChange={setAssignedMembers} 
+            viewOnly={viewOnly}
           />
         </div>
       </Col>

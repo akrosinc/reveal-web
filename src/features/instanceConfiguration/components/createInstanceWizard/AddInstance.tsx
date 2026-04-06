@@ -29,7 +29,7 @@ interface RegisterValues {
 
 const REGEX_TITLE_VALIDATION = /^[A-Za-z0-9\s-]+$/;
 
-const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultValues }) => {
+const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultValues, viewOnly }) => {
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [selectedIntervention, setSelectedIntervention] = useState<Options | null>(null);
   console.log('Wizard defaultValues passed to AddInstance ==>', defaultValues);
@@ -98,8 +98,7 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
             <Form.Control
               type="text"
               placeholder="Enter plan title"
-              // className={isDarkMode ? 'text-white border-secondary' : 'bg-light border-0'}
-              // style={isDarkMode ? { backgroundColor: '#282828' } : {}}
+              disabled={viewOnly}
               isInvalid={!!errors.title}
               {...register('title', {
                 required: 'Title is required',
@@ -138,12 +137,10 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                     <DatePicker
                       selected={field.value}
                       onChange={field.onChange}
+                      disabled={viewOnly}
                       className={`form-control ${errors.effectivePeriod?.start ? 'is-invalid' : ''}`}
-                      // className={`form-control ${isDarkMode ? 'text-white border-secondary' : 'bg-light border-0'} ${errors.effectivePeriod?.start ? 'is-invalid' : ''}`}
-                      // style={isDarkMode ? { backgroundColor: '#282828' } : {}}
                       dateFormat="yyyy-MM-dd"
                       minDate={new Date()}
-                    // calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
                     />
                   )}
                 />
@@ -167,12 +164,9 @@ const CreateInstance: React.FC<WizardStepProps> = ({ onNext, onCancel, defaultVa
                       selected={field.value}
                       onChange={field.onChange}
                       className={`form-control ${errors.effectivePeriod?.end ? 'is-invalid' : ''}`}
-                      // className={`form-control ${ 'text-white border-secondary' : 'bg-light border-0'} ${errors.effectivePeriod?.end ? 'is-invalid' : ''}`}
-                      // style={isDarkMode ? { backgroundColor: '#282828' } : {}}
                       dateFormat="yyyy-MM-dd"
                       minDate={startDate}
-                      disabled={!startDate}
-                    // calendarClassName={isDarkMode ? 'bg-dark text-white' : ''}
+                      disabled={viewOnly || !startDate}
                     />
                   )}
                 />

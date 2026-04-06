@@ -17,6 +17,7 @@ interface Props {
   selectedHierarchy?: string;
   selectedAreas: string[];
   onSelectionChange: (selectedIds: string[]) => void;
+  viewOnly?: boolean;
 }
 
 const mapLocationToAreaNode = (loc: any): AreaNode => ({
@@ -42,6 +43,7 @@ interface TreeNodeProps {
   onToggleExpand: (nodeId: string) => void;
   inheritedMatch?: boolean;
   isDarkMode: boolean;
+  viewOnly?: boolean;
 }
 
 // Custom comparison for memo to prevent nodes from re-rendering unless relevant state changed
@@ -54,7 +56,8 @@ const TreeNode = React.memo<TreeNodeProps>(({
   expandedNodeIds, 
   onToggleExpand, 
   inheritedMatch = false,
-  isDarkMode
+  isDarkMode,
+  viewOnly
 }) => {
   // We'll use a Set locally for ultra-fast lookup if passed as a prop, 
   // but since we are optimizing the parent, we'll expect an array here for compatibility 
@@ -175,13 +178,14 @@ const TreeNode = React.memo<TreeNodeProps>(({
               id={`edit-${node.identifier}`}
               checked={hasChildren ? isFullySelected : isSelected}
               onChange={handleCheck}
-              style={{ cursor: 'pointer' }}
+              disabled={viewOnly}
+              style={{ cursor: viewOnly ? 'default' : 'pointer' }}
             />
             {!hasChildren ? (
               <label
                 className="form-check-label"
                 htmlFor={`edit-${node.identifier}`}
-                style={{ cursor: 'pointer', userSelect: 'none', color: isDarkMode ? '#fff' : '#000' }}
+                style={{ cursor: viewOnly ? 'default' : 'pointer', userSelect: 'none', color: isDarkMode ? '#fff' : '#000' }}
               >
                 {node.properties.name}
               </label>
@@ -225,6 +229,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
                   onToggleExpand={onToggleExpand}
                   inheritedMatch={inheritedMatch || _isMatch}
                   isDarkMode={isDarkMode}
+                  viewOnly={viewOnly}
                 />
               ))
             ) : (
@@ -257,7 +262,7 @@ const useDebounce = (value: string, delay: number = 300) => {
   return debouncedValue;
 };
 
-const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onSelectionChange }) => {
+const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onSelectionChange, viewOnly }) => {
   console.log(selectedAreas?.length)
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [searchTerm, setSearchTerm] = useState('');
@@ -508,6 +513,7 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
                             expandedNodeIds={expandedNodeIds}
                             onToggleExpand={toggleNodeExpansion}
                             isDarkMode={isDarkMode}
+                            viewOnly={viewOnly}
                           />
                         ))
                       )}

@@ -18,9 +18,10 @@ interface Props {
     clickAccessor?: string;
     setMetadataList: (list: MetadataFileImportResponse[]) => void;
     searchTerm?: string;
+    viewOnly?: boolean;
 }
 
-const DatasetImportTable = ({ data, setMetadataList, searchTerm }: Props) => {
+const DatasetImportTable = ({ data, setMetadataList, searchTerm, viewOnly }: Props) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const { keycloak } = useKeycloak();
     const { t } = useTranslation();
@@ -46,10 +47,11 @@ const DatasetImportTable = ({ data, setMetadataList, searchTerm }: Props) => {
                         setMetadataList={setMetadataList}
                         metadataList={data}
                         columns={columnsForMetadataTables}
+                        viewOnly={viewOnly}
                     />
                 );
         },
-        [data, setMetadataList, columnsForMetadataTables]
+        [data, setMetadataList, columnsForMetadataTables, viewOnly]
     );
 
     const columns = React.useMemo<Column<MetadataFileImportResponse>[]>(
@@ -171,6 +173,7 @@ const DatasetImportTable = ({ data, setMetadataList, searchTerm }: Props) => {
                                                 <FormCheck
                                                     checked={cell.row.original.selected}
                                                     onChange={evt => setSelected(evt, row.original.identifier)}
+                                                    disabled={viewOnly}
                                                 />
                                             </td>
                                         );

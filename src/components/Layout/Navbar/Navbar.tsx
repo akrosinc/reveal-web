@@ -4,7 +4,7 @@ import logoWhite from '../../../assets/logos/reveal-logo-white.png';
 import { BsPerson, BsArrowLeftRight } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
-import { MAIN_MENU } from './menuItems';
+import { getMainMenu } from './menuItems';
 import AuthorizedElement from '../../AuthorizedElement';
 import i18n, { LOCALES } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
@@ -26,7 +26,8 @@ const NavbarComponent = () => {
   const { keycloak, initialized } = useKeycloak();
   const [user, setUser] = useState<KeycloakProfile>();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
-  const selectedInstance = useAppSelector(state => state.instanceContext.selectedInstance);
+  const instanceContext = useAppSelector(state => state.instanceContext);
+  const selectedInstance = instanceContext.selectedInstance;
   const dispatch = useAppDispatch();
   const [expanded, setExpanded] = useState(false);
   const [showSwitchModal, setShowSwitchModal] = useState(false);
@@ -89,6 +90,8 @@ const NavbarComponent = () => {
     return <span className={currentLanguage[0].flag}></span>;
   };
 
+  const mainMenu = getMainMenu(instanceContext);
+
   return (
     <Navbar expanded={expanded} collapseOnSelect expand="md" variant={isDarkMode ? 'dark' : 'light'}>
       <Container fluid className="px-4 pt-1">
@@ -104,7 +107,7 @@ const NavbarComponent = () => {
         <Navbar.Collapse id="responsive-navbar-nav" className={keycloak.authenticated ? '' : 'justify-content-end'}>
           {keycloak.authenticated ? (
             <Nav className="me-auto ms-md-2">
-              {MAIN_MENU.map((el, index) => {
+              {mainMenu.map((el, index) => {
                 if (el.dropdown !== undefined && el.dropdown.length > 0) {
                   // Collect visible children first; hide parent dropdown if no children visible
                   const visibleChildren = el.dropdown;

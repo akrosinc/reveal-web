@@ -1,4 +1,5 @@
 import React from 'react';
+import { Row, Col, Form, Button } from 'react-bootstrap';
 import Wizard from '../Wizard/Wizard';
 import AddGoalDetails from './AddGoalDetails';
 import CreateInstance from './AddInstance';
@@ -6,8 +7,10 @@ import InstanceDetails from './InstanceDetails';
 import AddMembers from './AddMembers';
 import DatasetDetails from './DatasetDetails';
 
-import { createInstance, getInstanceByIdentifier, updateInstance } from '../../api/instanceAPI';
+import { createInstance, getInstanceByIdentifier, updateInstance, activateInstance } from '../../api/instanceAPI';
 import { toast } from 'react-toastify';
+import { ConfirmDialog } from '../../../../components/Dialogs';
+import { useAppSelector } from '../../../../store/hooks';
 const getLeafNodeIds = (nodes: any[]): string[] => {
   let result: string[] = [];
 
@@ -24,7 +27,7 @@ const getLeafNodeIds = (nodes: any[]): string[] => {
 
   return result;
 };
-const steps = [  
+const steps = [
   { label: 'Add Plan details', component: CreateInstance },
   { label: 'Add Goals details', component: AddGoalDetails },
   { label: 'Add Instance details', component: InstanceDetails },
@@ -35,12 +38,16 @@ const steps = [
 interface CreateInstanceWizardProps {
   onCancel: () => void;
   identifier?: string | null;
+  viewOnly?: boolean;
 }
 
-const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, identifier }) => {
+const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, identifier, viewOnly }) => {
+  const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [initialData, setInitialData] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(false);
   const [fetchError, setFetchError] = React.useState<string | null>(null);
+  const [planStatus, setPlanStatus] = React.useState<string | null>(null);
+  const [showConfirmActivate, setShowConfirmActivate] = React.useState(false);
 
   React.useEffect(() => {
     if (identifier) {
@@ -52,9 +59,9 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, i
           const planData: any = (res.plan && typeof res.plan === 'object') ? res.plan : (res.planResponse && typeof res.planResponse === 'object' ? res.planResponse : {});
 
           const extractId = (item: any) => typeof item === 'string' ? item : item?.identifier;
-          
-          const locHierarchy = Array.isArray(res.locationHierarchy) 
-            ? res.locationHierarchy[0]?.identifier 
+
+          const locHierarchy = Array.isArray(res.locationHierarchy)
+            ? res.locationHierarchy[0]?.identifier
             : extractId(res.locationHierarchy);
 
           const mappedData = {
@@ -75,6 +82,7 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, i
             members: res.members?.map(extractId) ?? [],
             datasets_tags: (res as any).datasets_tags || res.datasets?.map((d: any) => typeof d === 'string' ? d : (d.tag || d.identifier)) || [],
           };
+          setPlanStatus(planData?.status || null);
           setInitialData(mappedData);
         })
         .catch(err => {
@@ -87,6 +95,10 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, i
   }, [identifier]);
 
   const handleComplete = async (finalData: any) => {
+    if (viewOnly) {
+      onCancel();
+      return;
+    }
     try {
       console.log('Submitting Final Payload:', finalData);
       if (identifier) {
@@ -100,7 +112,37 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, i
       onCancel(); // Close wizard on success
     } catch (error: any) {
       // console.log('Error saving instance:', error);
-      toast.error(error.response?.data?.message || error?.message ||error || 'Failed to save instance');
+      toast.error(error.response?.data?.message || error?.message || error || 'Failed to save instance');
+    }
+  };
+
+  const handleActivate = () => {
+    setShowConfirmActivate(true);
+  };
+
+  const onConfirmActivate = (action: boolean) => {
+    if (!action) {
+      setShowConfirmActivate(false);
+      return;
+    }
+
+    if (identifier) {
+      toast.promise(activateInstance(identifier), {
+        pending: 'Activating...',
+        success: {
+          render() {
+            toast.success('Instance activated successfully');
+            setShowConfirmActivate(false);
+            onCancel();
+            return 'Successfully activated instance!';
+          }
+        },
+        error: {
+          render({ data: err }: { data: any }) {
+            return err?.message || err || 'Failed to activate instance';
+          }
+        }
+      });
     }
   };
 
@@ -126,12 +168,29 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, i
 
   return (
     <div className="create-instance-wizard">
-      <Wizard 
-        steps={steps} 
-        onComplete={handleComplete} 
-        onCancel={onCancel} 
-        initialData={initialData || {}} 
-        key={identifier || 'new'} 
+      {showConfirmActivate && (
+        <ConfirmDialog
+          closeHandler={onConfirmActivate}
+          message={'Are you sure you want to activate instance'}
+          title="Activate Instance"
+          backdrop
+          isDarkMode={isDarkMode}
+        />
+      )}
+      {viewOnly && planStatus === 'DRAFT' && (
+        <div className="d-flex justify-content-end p-3 bg-transparent mb-4 border-bottom" style={{ zIndex: 1000 }}>
+          <Button variant="success" className="px-4" onClick={handleActivate}>
+            Activate Instance
+          </Button>
+        </div>
+      )}
+      <Wizard
+        steps={steps}
+        onComplete={handleComplete}
+        onCancel={onCancel}
+        initialData={initialData || {}}
+        key={identifier || 'new'}
+        viewOnly={viewOnly}
       />
     </div>
   );

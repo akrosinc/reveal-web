@@ -13,9 +13,10 @@ interface Props {
     setMetadataList: (list: MetadataFileImportResponse[]) => void;
     metadataList: MetadataFileImportResponse[];
     columns: Column<EntityTagResponse>[];
+    viewOnly?: boolean;
 }
 
-const DatasetEntityTagTable = ({ data, setMetadataList, metadataList, columns }: Props) => {
+const DatasetEntityTagTable = ({ data, setMetadataList, metadataList, columns, viewOnly }: Props) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const { t } = useTranslation();
 
@@ -125,6 +126,7 @@ const DatasetEntityTagTable = ({ data, setMetadataList, metadataList, columns }:
                                             <FormCheck
                                                 checked={cellData.selected}
                                                 onChange={evt => setSelected(evt, row.original.identifier)}
+                                                disabled={viewOnly}
                                             />
                                         )}
                                     </td>

@@ -10,18 +10,19 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../../../store/hooks';
 
 interface Props {
-    goal: Goal;
-    editGoalHandler: (goal?: Goal) => void;
-    deleteHandler: (num: string) => void;
-    planPeriod: {
-        start: Date;
-        end: Date;
-    };
-    planId?: string;
-    loadData: () => void;
+  goal: Goal;
+  editGoalHandler: (goal?: Goal) => void;
+  deleteHandler: (num: string) => void;
+  planPeriod: {
+    start: Date;
+    end: Date;
+  };
+  planId?: string;
+  loadData: () => void;
+  viewOnly?: boolean;
 }
 
-const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadData }: Props) => {
+const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadData, viewOnly }: Props) => {
     const [show, setShow] = useState(false);
     const [actionsList, setActionsList] = useState<Action[]>(goal.actions);
     const [selectedAction, setSelectedAction] = useState<Action>();
@@ -45,26 +46,30 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                         <Form.Label className="mt-3">{t('planPage.description')}</Form.Label>
                     </Col>
                     <Col>
-                        <Button
-                            id="edit-goal-button"
-                            variant="primary"
-                            className="float-end ms-2"
-                            onClick={() => {
-                                editGoalHandler(goal);
-                            }}
-                        >
-                            <FontAwesomeIcon className="ms-1" icon="edit" />
-                        </Button>
-                        <Button
-                            id="delete-goal-button"
-                            variant="primary"
-                            className="float-end"
-                            onClick={() => {
-                                deleteHandler(goal.identifier);
-                            }}
-                        >
-                            <FontAwesomeIcon className="mx-1" icon="trash" />
-                        </Button>
+                        {!viewOnly && (
+                            <>
+                                <Button
+                                    id="edit-goal-button"
+                                    variant="primary"
+                                    className="float-end ms-2"
+                                    onClick={() => {
+                                        editGoalHandler(goal);
+                                    }}
+                                >
+                                    <FontAwesomeIcon className="ms-1" icon="edit" />
+                                </Button>
+                                <Button
+                                    id="delete-goal-button"
+                                    variant="primary"
+                                    className="float-end"
+                                    onClick={() => {
+                                        deleteHandler(goal.identifier);
+                                    }}
+                                >
+                                    <FontAwesomeIcon className="mx-1" icon="trash" />
+                                </Button>
+                            </>
+                        )}
                     </Col>
                 </Row>
                 <Form.Control type="text" readOnly={true} value={goal.description} />
@@ -74,16 +79,18 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                         <h2>{t('planPage.actions')}</h2>
                     </Col>
                     <Col>
-                        <Button id="create-action-button" className="float-end" onClick={() => setShow(true)}>
-                            {t('buttons.create')}
-                        </Button>
+                        {!viewOnly && (
+                            <Button id="create-action-button" className="float-end" onClick={() => setShow(true)}>
+                                {t('buttons.create')}
+                            </Button>
+                        )}
                     </Col>
                 </Row>
                 <Table bordered responsive hover variant={isDarkMode ? 'dark' : 'light'}>
                     <thead className="border border-2">
                         <tr>
                             <th>{t('planPage.description')}</th>
-                            <th>{t('planPage.editAction')}</th>
+                            <th>{viewOnly ? 'View Action' : t('planPage.editAction')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -106,7 +113,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                                             setSelectedIndex(index);
                                         }}
                                     >
-                                        Edit
+                                        {viewOnly ? 'View' : 'Edit'}
                                     </Button>
                                 </td>
                             </tr>
@@ -117,6 +124,7 @@ const Item = ({ goal, deleteHandler, planPeriod, editGoalHandler, planId, loadDa
                     <Actions
                         planPeriod={planPeriod}
                         selectedAction={selectedAction}
+                        viewOnly={viewOnly}
                         closeHandler={(action?: Action, isDelete?: boolean) => {
                             if (action !== undefined) {
                                 action.type = action.identifier ? 'UPDATE' : 'CREATE';

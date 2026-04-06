@@ -16,7 +16,7 @@ import { getInstanceDatasets, DatasetResponse, DatasetEntityTag } from '../../ap
 import { EntityTagResponse } from '../../../planSimulation/providers/types';
 import { toast } from 'react-toastify';
 
-const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValues }) => {
+const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValues, viewOnly }) => {
   const { t } = useTranslation();
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [open, setOpen] = useState(false);
@@ -180,14 +180,16 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
             className={`d-flex align-items-center justify-content-between ${isDarkMode ? 'border-bottom text-white' : 'bg-light'} fw-bold`}
           >
             <h5 className="mb-0 fw-bold">Datasets</h5>
-            <Button
-              variant="primary"
-              className="rounded-circle p-0 d-flex align-items-center justify-content-center"
-              style={{ width: '24px', height: '24px', fontSize: '14px' }}
-              onClick={() => setOpen(true)}
-            >
-              +
-            </Button>
+            {!viewOnly && (
+              <Button
+                variant="primary"
+                className="rounded-circle p-0 d-flex align-items-center justify-content-center"
+                style={{ width: '24px', height: '24px', fontSize: '14px' }}
+                onClick={() => setOpen(true)}
+              >
+                +
+              </Button>
+            )}
           </Card.Header>
           <Card.Body style={isDarkMode ? { backgroundColor: '#282828' } : {}}>
             <Row className="mb-3 g-2">
@@ -198,6 +200,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
                     value={searchTerm}
                     onChange={handleSearch}
                     className="form-control"
+                    disabled={viewOnly}
                   />
                 </InputGroup>
               </Col>
@@ -206,6 +209,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
                   className="custom-react-select-container"
                   value={statusFilter}
                   onChange={handleFilterChange}
+                  disabled={viewOnly}
                 >
                   <option value="All">All</option>
                   <option value="Public">Public</option>
@@ -222,6 +226,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
                     sortHandler={sortHandler}
                     setMetadataList={handleUpdateFromTable}
                     searchTerm={searchTerm}
+                    viewOnly={viewOnly}
                   />
                   <Paginator
                     page={0}
@@ -336,7 +341,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
             }
           }}
         >
-          Finish
+          {viewOnly ? 'Finish View' : 'Finish'}
         </Button>
       </div>
     </div>

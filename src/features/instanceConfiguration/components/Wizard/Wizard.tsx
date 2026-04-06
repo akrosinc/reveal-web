@@ -7,6 +7,7 @@ export interface WizardStepProps {
   onBack: (data?: any) => void;
   onCancel?: () => void;
   defaultValues?: any;
+  viewOnly?: boolean;
 }
 
 interface Step {
@@ -19,9 +20,10 @@ interface WizardProps {
   onComplete: (finalData: any) => void;
   onCancel?: () => void;
   initialData?: any;
+  viewOnly?: boolean;
 }
 
-const Wizard: React.FC<WizardProps> = ({ steps, onComplete, onCancel, initialData }) => {
+const Wizard: React.FC<WizardProps> = ({ steps, onComplete, onCancel, initialData, viewOnly }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<any>(initialData || {});
 
@@ -66,12 +68,19 @@ const Wizard: React.FC<WizardProps> = ({ steps, onComplete, onCancel, initialDat
               onNext: handleNext,
               onBack: handleBack,
               onCancel: onCancel,
-              defaultValues: formData
+              defaultValues: formData,
+              viewOnly
             } as any
           )
         ) : (
           // @ts-ignore - Assuming it's a component type if not an element
-          <ActiveComponent onNext={handleNext} onBack={handleBack} onCancel={onCancel} defaultValues={formData} />
+          <ActiveComponent 
+            onNext={handleNext} 
+            onBack={handleBack} 
+            onCancel={onCancel} 
+            defaultValues={formData} 
+            viewOnly={viewOnly} 
+          />
         )}
       </div>
     </div>

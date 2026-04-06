@@ -9,15 +9,16 @@ import { useAppSelector } from '../../../../../../store/hooks';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
-    selectedAction?: Action;
-    closeHandler: (action?: Action, isDeleted?: boolean) => void;
-    planPeriod: {
-        start: Date;
-        end: Date;
-    };
+  selectedAction?: Action;
+  closeHandler: (action?: Action, isDeleted?: boolean) => void;
+  planPeriod: {
+    start: Date;
+    end: Date;
+  };
+  viewOnly?: boolean;
 }
 
-const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
+const Actions = ({ closeHandler, planPeriod, selectedAction, viewOnly }: Props) => {
     const [actionTitles, setActionTitles] = useState<string[]>([]);
     const isDarkMode = useAppSelector(state => state.darkMode.value);
 
@@ -76,7 +77,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
             contentClassName={isDarkMode ? 'bg-dark' : 'bg-white'}
         >
             <Modal.Header closeButton>
-                <Modal.Title>{selectedAction ? t('planPage.editAction') : t('planPage.createAction')}</Modal.Title>
+                <Modal.Title>{viewOnly ? 'View Action' : (selectedAction ? t('planPage.editAction') : t('planPage.createAction'))}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form>
@@ -84,6 +85,7 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
                         <Form.Label>{t('planPage.Title')}</Form.Label>
                         <Form.Select
                             id="action-title-input"
+                            disabled={viewOnly}
                             {...register('title', {
                                 required: 'Action title must be selected.',
                             })}
@@ -103,17 +105,21 @@ const Actions = ({ closeHandler, planPeriod, selectedAction }: Props) => {
                 <Button
                     id="action-discard-button"
                     variant="secondary"
-                    className="me-auto"
+                    className={viewOnly ? "mx-auto" : "me-auto"}
                     onClick={() => {
                         closeHandler();
                     }}
                 >
-                    Discard
+                    {viewOnly ? 'Close' : 'Discard'}
                 </Button>
-                {selectedAction && <Button onClick={() => closeHandler(selectedAction, true)}>Delete</Button>}
-                <Button id="action-save-button" disabled={!isDirty} onClick={handleSubmit(submitHandler)}>
-                    {selectedAction ? 'Save Changes' : 'Create Action'}
-                </Button>
+                {!viewOnly && (
+                    <>
+                        {selectedAction && <Button onClick={() => closeHandler(selectedAction, true)}>Delete</Button>}
+                        <Button id="action-save-button" disabled={!isDirty} onClick={handleSubmit(submitHandler)}>
+                            {selectedAction ? 'Save Changes' : 'Create Action'}
+                        </Button>
+                    </>
+                )}
             </Modal.Footer>
         </Modal>
     );

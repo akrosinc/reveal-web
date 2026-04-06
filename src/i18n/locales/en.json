@@ -1,5 +1,6 @@
 {
   "topNav": {
+    "Activate": "Activate",
     "logOut": "Sign out",
     "logIn": "Login",
     "Home": "Home",
@@ -164,7 +165,7 @@
     "planActivationBody": "Are you sure you want to active plan with identifier",
     "planActivationTitle": "Activate plan",
     "planTitle": "Title",
-    "Title":"Action title",
+    "Title": "Action title",
     "status": "Status",
     "interventionType": "Intervention Type",
     "locationHierarchy": "Location Hierarchy",

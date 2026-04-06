@@ -20,7 +20,7 @@ const hierarchyOptions = baseHierarchyOptions.map(opt => ({
   label: opt
 }));
 
-const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues }) => {
+const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, viewOnly }) => {
   // Form State - Initialize with defaultValues if present
   const [hierarchyList, setHierarchyList] = useState<Options[]>([]);
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
@@ -147,6 +147,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
               <Form.Control
                 type="text"
                 placeholder="Enter Instance name"
+                disabled={viewOnly}
                 value={instanceName}
                 onChange={e => setInstanceName(e.target.value)}
                 className="py-2"
@@ -161,6 +162,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
                 className="custom-react-select-container"
                 classNamePrefix="custom-react-select"
                 options={hierarchyList}
+                isDisabled={viewOnly}
                 value={selectedHierarchy}
                 onChange={(val: any) => {
                   setSelectedHierarchy(val);
@@ -177,6 +179,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
                 className="custom-react-select-container"
                 classNamePrefix="custom-react-select"
                 options={interventionTypeList}
+                isDisabled={viewOnly}
                 value={selectedIntervention}
                 onChange={(val: any) => {
                   setSelectedIntervention(val);
@@ -194,6 +197,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
                 <Select
                   className="custom-react-select-container"
                   classNamePrefix="custom-react-select"
+                  isDisabled={viewOnly}
                   options={
                     selectedHierarchy?.nodeOrder
                       ?.filter((el: string) => el !== 'structure')
@@ -220,6 +224,7 @@ const InstanceDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultVal
               selectedHierarchy={selectedHierarchy?.value}
               selectedAreas={selectedAreas}
               onSelectionChange={setSelectedAreas}
+              viewOnly={viewOnly}
             />
           </div>
         </Col>

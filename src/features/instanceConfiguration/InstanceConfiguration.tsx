@@ -11,6 +11,9 @@ export default function InstanceConfiguration() {
   const location = useLocation();
   const { id } = useParams();
 
+  const query = new URLSearchParams(location.search);
+  const viewOnly = query.get('viewOnly') === 'true';
+
   const isCreate = location.pathname.endsWith('/create');
   const isEdit = !!id;
   const showWizard = isCreate || isEdit;
@@ -20,7 +23,11 @@ export default function InstanceConfiguration() {
   };
 
   const handleCancel = () => {
-    navigate(INSTANCE_CONFIGURATION);
+    if (viewOnly) {
+      navigate('/');
+    } else {
+      navigate(INSTANCE_CONFIGURATION);
+    }
   };
 
   return (
@@ -28,7 +35,7 @@ export default function InstanceConfiguration() {
       {!showWizard ? (
         <InstancesListing onCreate={() => navigate(INSTANCE_CONFIGURATION + '/create')} onEdit={handleEdit} />
       ) : (
-        <CreateInstanceWizard onCancel={handleCancel} identifier={id} />
+        <CreateInstanceWizard onCancel={handleCancel} identifier={id} viewOnly={viewOnly} />
       )}
     </>
   );

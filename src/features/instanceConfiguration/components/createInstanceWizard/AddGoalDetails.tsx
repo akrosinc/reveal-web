@@ -10,7 +10,7 @@ import { useAppSelector } from '../../../../store/hooks';
 import { deleteGoalById } from '../../../plan/api';
 import { ConfirmDialog, ConfirmDialogService } from '../../../../components/Dialogs';
 
-const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues }) => {
+const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, viewOnly }) => {
   // Initialize from defaultValues if present
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [goalList, setGoalList] = useState<Goal[]>(defaultValues?.goals || []);
@@ -28,11 +28,13 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
   };
 
   const createGoalHandler = (goal?: Goal) => {
+    if (viewOnly) return;
     setCurrentGoal(goal);
     setShowCreateGoal(true);
   };
 
   const deleteGoal = (goalId: string) => {
+    if (viewOnly) return;
     ConfirmDialogService(({ giveAnswer }) => (
       <ConfirmDialog
         closeHandler={giveAnswer}
@@ -88,7 +90,7 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
         <Col md={8}>
           <div className="d-flex justify-content-between align-items-center">
             <h3>{t('planPage.goals')}</h3>
-            {goalList?.length === 0 && <Button
+            {goalList?.length === 0 && !viewOnly && <Button
               id="add-goal-button "
               style={{ height: 20, width: 20 }}
               className="mb-3 rounded-circle d-flex align-items-center justify-content-center"
@@ -125,6 +127,7 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
                   goal={el}
                   planPeriod={planPeriod}
                   deleteHandler={deleteGoal}
+                  viewOnly={viewOnly}
                 />
               );
             })}

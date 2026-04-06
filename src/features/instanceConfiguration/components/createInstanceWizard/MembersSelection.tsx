@@ -22,9 +22,10 @@ interface Member {
 interface Props {
   assignedMembers: string[];
   onAssignmentChange: (ids: string[]) => void;
+  viewOnly?: boolean;
 }
 
-const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Props) => {
+const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, viewOnly }: Props) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<Member[]>([]);
   const [leftSelected, setLeftSelected] = useState<string[]>([]);
@@ -99,7 +100,7 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Pr
         <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>All</Card.Header>
         <Card.Body style={{ background: isDarkMode ? '#212529' : '' }} className="d-flex flex-column">
           <InputGroup className="mb-3">
-            <Form.Control placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <Form.Control placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} disabled={viewOnly} />
           </InputGroup>
           <div className="overflow-auto flex-grow-1 rounded p-2" style={{ height: '300px' }}>
             {filteredAvailable.map(member => (
@@ -110,7 +111,9 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Pr
                 label={member.name}
                 checked={leftSelected.includes(member.id)}
                 onChange={() => toggleSelection(member.id, 'left')}
+                disabled={viewOnly}
                 className="mb-2"
+                style={{ cursor: viewOnly ? 'default' : 'pointer' }}
               />
             ))}
           </div>
@@ -119,19 +122,19 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Pr
 
       {/* Transfer Buttons */}
       <div className="d-flex flex-row flex-md-column gap-2">
-        <Button variant="primary" size="sm" onClick={handleMoveRight} disabled={leftSelected.length === 0}>
+        <Button variant="primary" size="sm" onClick={handleMoveRight} disabled={viewOnly || leftSelected.length === 0}>
           <FontAwesomeIcon icon={faChevronRight} className="d-none d-md-inline" />
           <FontAwesomeIcon icon={faChevronDown} className="d-inline d-md-none" />
         </Button>
-        <Button variant="primary" size="sm" onClick={handleMoveAllRight} disabled={filteredAvailable.length === 0}>
+        <Button variant="primary" size="sm" onClick={handleMoveAllRight} disabled={viewOnly || filteredAvailable.length === 0}>
           <FontAwesomeIcon icon={faAngleDoubleRight} className="d-none d-md-inline" />
           <FontAwesomeIcon icon={faAngleDoubleDown} className="d-inline d-md-none" />
         </Button>
-        <Button variant="primary" size="sm" onClick={handleMoveLeft} disabled={rightSelected.length === 0}>
+        <Button variant="primary" size="sm" onClick={handleMoveLeft} disabled={viewOnly || rightSelected.length === 0}>
           <FontAwesomeIcon icon={faChevronLeft} className="d-none d-md-inline" />
           <FontAwesomeIcon icon={faChevronUp} className="d-inline d-md-none" />
         </Button>
-        <Button variant="primary" size="sm" onClick={handleMoveAllLeft} disabled={assignedList.length === 0}>
+        <Button variant="primary" size="sm" onClick={handleMoveAllLeft} disabled={viewOnly || assignedList.length === 0}>
           <FontAwesomeIcon icon={faAngleDoubleLeft} className="d-none d-md-inline" />
           <FontAwesomeIcon icon={faAngleDoubleUp} className="d-inline d-md-none" />
         </Button>
@@ -153,7 +156,9 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange }: Pr
                 label={member.name}
                 checked={rightSelected.includes(member.id)}
                 onChange={() => toggleSelection(member.id, 'right')}
+                disabled={viewOnly}
                 className="mb-2"
+                style={{ cursor: viewOnly ? 'default' : 'pointer' }}
               />
             ))}
             {assignedList.length === 0 && (
