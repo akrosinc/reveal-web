@@ -41,6 +41,7 @@ import {
   getInstanceHierarchy,
   getInstances,
   getLocationsSSE,
+  getNodeOrder,
   submitSimulationRequest,
   updateSimulationRequest
 } from '../api';
@@ -350,7 +351,7 @@ const CampaignManagement = () => {
     if (selectedPlan) {
       fetchHierarchy(selectedPlan.identifier);
       fetchSimulationAndData(selectedPlan);
-      fetchDefaultHierarchyData();
+      // fetchDefaultHierarchyData();
     }
   }, [selectedPlan, instances]);
 
@@ -573,9 +574,11 @@ const CampaignManagement = () => {
   const fetchHierarchy = async (instanceId: string) => {
     // const hierarchyData = await getHierarchy();
     const hierarchyData = await getInstanceHierarchy(instanceId)
+    const nodeOrder = await getNodeOrder(instanceId)
     try {
       setHighestLocations(hierarchyData);
       dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData });
+      dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: { nodeOrder: nodeOrder || [] } });
     } catch (error) {
       console.error('Failed to fetch hierarchy:', error);
     }

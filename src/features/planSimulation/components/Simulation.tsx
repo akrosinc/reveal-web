@@ -19,6 +19,7 @@ import {
   getEventBasedEntityTags,
   getFullLocationsSSE,
   getLocationsSSE,
+  getNodeOrder,
   submitSimulationRequest,
   updateSimulationRequest
 } from '../api';
@@ -323,10 +324,12 @@ const Simulation = () => {
 
   const fetchHierarchy = async (instanceId: string) => {
     const hierarchyData = await getInstanceHierarchy(instanceId);
+    const nodeOrder = await getNodeOrder(instanceId);
     try {
-      console.log("H-DATA", hierarchyData)
+      // console.log("H-DATA", nodeOrder)
       setHighestLocations(hierarchyData);
       dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData });
+      dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: { nodeOrder: nodeOrder || [] } });
     } catch (error) {
       console.error('Failed to fetch hierarchy:', error);
     }
@@ -1426,8 +1429,8 @@ const Simulation = () => {
         simulationId: state.simulationId,
         campaignManagementFeatures: false
       };
-
-      const targetLevelName = getPlanTargetLevelName(state.defaultHierarchyData.nodeOrder, state.planTargetType);
+      // console.log(state.defaultHierarchyData?.nodeOrder, 'NODE ORDER.')
+      const targetLevelName = getPlanTargetLevelName(state.defaultHierarchyData?.nodeOrder || [], state.planTargetType);
       // If location clicked is level above structures, we need to load only its polygon
       // and show a tip to load structures in the area by zooming in on the map
       if (parentGeoLevel !== targetLevelName) {

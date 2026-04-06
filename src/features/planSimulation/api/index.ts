@@ -203,3 +203,8 @@ export const getInstanceHierarchy = async (instanceId: string): Promise<Instance
   const data = await api.get<any>(`instance/hierarchy?instanceIdentifier=${instanceId}`).then(res => res.data);
   return data?.geoTree || [];
 };
+export const getNodeOrder = async (instanceId: string): Promise<any> => {
+  const data = await api.get<any>(`instance/hierarchy?instanceIdentifier=${instanceId}`).then(res => res.data);
+  return data?.nodeOrder || [];
+};
+
