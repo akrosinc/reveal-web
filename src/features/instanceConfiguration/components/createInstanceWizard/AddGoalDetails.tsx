@@ -75,7 +75,7 @@ const AddGoalDetails: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValu
       goal.actions?.length >= 1
     );
 
-    if (!hasActionWithValue) {
+    if (!hasActionWithValue && !viewOnly) {
       setError('At least one action should be selected with value.');
       return;
     }
