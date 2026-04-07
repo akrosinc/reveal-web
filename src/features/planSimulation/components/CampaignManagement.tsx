@@ -41,7 +41,6 @@ import {
   getInstanceHierarchy,
   getInstances,
   getLocationsSSE,
-  getNodeOrder,
   submitSimulationRequest,
   updateSimulationRequest
 } from '../api';
@@ -575,12 +574,11 @@ const CampaignManagement = () => {
   const fetchHierarchy = async (instanceId: string) => {
     // const hierarchyData = await getHierarchy();
     const hierarchyData = await getInstanceHierarchy(instanceId)
-    const nodeOrder = await getNodeOrder(instanceId)
     try {
       setHighestLocations(hierarchyData);
-      dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData });
+      dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData?.geoTree || [] });
       // dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: { nodeOrder: nodeOrder || [] } });
-      dispatch({ type: "SET_NODE_ORDER", payload: nodeOrder })
+      dispatch({ type: "SET_NODE_ORDER", payload: hierarchyData?.nodeOrder || [] })
     } catch (error) {
       console.error('Failed to fetch hierarchy:', error);
     }

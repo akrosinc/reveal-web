@@ -334,6 +334,13 @@ export interface InstanceHierarchyNode {
   selected: boolean;
 }
 
+export interface GeoConfig {
+  identifier: string;
+  name: string;
+  nodeOrder: string[];
+  geoTree: InstanceHierarchyNode[];
+}
+
 export interface HierarchyProperties {
   name: string;
   status: string;

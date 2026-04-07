@@ -3,6 +3,7 @@ import { GENERATED_LOCATION_HIERARCHY } from '../../../constants';
 import {
   ComplexTagResponse,
   EntityTag,
+  GeoConfig,
   Instance,
   InstanceHierarchyNode,
   LookupEntityType,
@@ -199,12 +200,12 @@ export const getInstances = async (
   return data;
 };
 
-export const getInstanceHierarchy = async (instanceId: string): Promise<InstanceHierarchyNode[]> => {
+export const getInstanceHierarchy = async (instanceId: string): Promise<GeoConfig> => {
   const data = await api.get<any>(`instance/hierarchy?instanceIdentifier=${instanceId}`).then(res => res.data);
-  return data?.geoTree || [];
+  return data;
 };
-export const getNodeOrder = async (instanceId: string): Promise<any> => {
-  const data = await api.get<any>(`instance/hierarchy?instanceIdentifier=${instanceId}`).then(res => res.data);
-  return data?.nodeOrder || [];
-};
+// export const getNodeOrder = async (instanceId: string): Promise<any> => {
+//   const data = await api.get<any>(`instance/hierarchy?instanceIdentifier=${instanceId}`).then(res => res.data);
+//   return data?.nodeOrder || [];
+// };
 

@@ -19,7 +19,6 @@ import {
   getEventBasedEntityTags,
   getFullLocationsSSE,
   getLocationsSSE,
-  getNodeOrder,
   submitSimulationRequest,
   updateSimulationRequest
 } from '../api';
@@ -324,13 +323,12 @@ const Simulation = () => {
 
   const fetchHierarchy = async (instanceId: string) => {
     const hierarchyData = await getInstanceHierarchy(instanceId);
-    const nodeOrder = await getNodeOrder(instanceId);
     try {
       // console.log("H-DATA", nodeOrder)
       setHighestLocations(hierarchyData);
-      dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData });
+      dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData?.geoTree || [] });
       // dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: { nodeOrder: nodeOrder || [] } });
-      dispatch({ type: "SET_NODE_ORDER", payload: nodeOrder })
+      dispatch({ type: "SET_NODE_ORDER", payload: hierarchyData?.nodeOrder || [] })
     } catch (error) {
       console.error('Failed to fetch hierarchy:', error);
     }
