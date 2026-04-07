@@ -26,7 +26,7 @@ import ActionDialog from '../../../../components/Dialogs/ActionDialog';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import styles from './SimulationMapView.module.css';
 import Spinner from 'react-bootstrap/Spinner';
-
+import { getAllIdentifiers } from '../../../../utils';
 import { FeatureCollection, Geometry } from 'geojson';
 
 import locationTag from '../../../../assets/svgs/placeMarker.svg';
@@ -183,6 +183,7 @@ const SimulationMapView = ({
   // CONTEXT
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
+  console.log(getAllIdentifiers(state.polygons || []), 'state.polygons')
   const selectedState = state.selected;
   const multiselectState = state.multiselect;
   const locationsObject = state.polygons?.[0];
@@ -934,13 +935,22 @@ const SimulationMapView = ({
             });
           } else {
             dispatch({ type: 'SELECT_SINGLE', payload: clickedFeature });
-
+            // console.log("CLICKED FEATURE",)
+            // if (map.current && clickedFeature && getAllIdentifiers(state?.polygons).includes(clickedFeature?.properties?.id)) {
             if (map.current && clickedFeature) {
               const createPopupContent = () => {
-                const tagData = clickedFeature.properties?.metadata
-                  ? JSON.parse(clickedFeature.properties.metadata)
-                  : [];
+                // const tagData = clickedFeature.properties?.metadata
+                //   ? JSON.parse(clickedFeature.properties.metadata)
+                //   : [];
+                let tagData = [];
 
+                try {
+                  tagData = typeof clickedFeature.properties?.metadata === "string"
+                    ? JSON.parse(clickedFeature.properties.metadata)
+                    : (clickedFeature.properties?.metadata || []);
+                } catch (e) {
+                  console.error("Metadata parse error", e);
+                }
                 // Create the popup container
                 const container = document.createElement('div');
                 container.className = styles.card;
@@ -1010,15 +1020,15 @@ const SimulationMapView = ({
                 const condition = assignedLocationsRef.current
                   ? !assignedLocationsRef.current?.[clickedFeature.properties?.id]
                   : !clickedFeature.properties?.assigned;
-                if (condition && isAuthorizedAddToCampaign) {
+                if (condition && isAuthorizedAddToCampaign && getAllIdentifiers(state?.polygons).includes(clickedFeature?.properties?.id)) {
                   button.textContent = 'Add to campaign';
                   button.className = styles.addToCampaignButton;
                 } else {
-                  if ((teamsList ?? []).length > 0 && isAuthorizedAssignToTeam) {
+                  if ((teamsList ?? []).length > 0 && isAuthorizedAssignToTeam && getAllIdentifiers(state?.polygons).includes(clickedFeature?.properties?.id)) {
                     assignToATeamButton.textContent = 'Assign to a team';
                     assignToATeamButton.className = styles.addToCampaignButton;
                   }
-                  if (isAuthorizedRemoveFromCampaign) {
+                  if (isAuthorizedRemoveFromCampaign && getAllIdentifiers(state?.polygons).includes(clickedFeature?.properties?.id)) {
                     button.textContent = 'Remove from campaign';
                     button.className = styles.RemoveFromCampaignButton;
                   }

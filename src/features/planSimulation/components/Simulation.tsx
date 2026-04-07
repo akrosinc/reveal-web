@@ -427,7 +427,7 @@ const Simulation = () => {
       );
       dispatch({ type: 'SET_ASSIGNED', payload: assignedMap });
 
-      const selectedLocation = polygonsWithData[currentLocationId].polygonData;
+      const selectedLocation = polygonsWithData[currentLocationId]?.polygonData;
 
       if (selectedLocation && !showDatasetsAgainstParentLevel) {
         setGeometry(selectedLocation);
