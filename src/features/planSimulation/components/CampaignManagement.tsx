@@ -588,7 +588,7 @@ const CampaignManagement = () => {
   const fetchPlanInfo = async (selectedPlan: any) => {
     try {
       const planInfo = selectedPlan;
-      dispatch({ type: 'SET_PLANID', payload: planInfo.planIdentifier });
+      dispatch({ type: 'SET_PLANID', payload: planInfo.planIdentifier || planInfo?.identifier });
       dispatch({ type: 'SET_PLAN_TARGET_TYPE', payload: planInfo?.planTargetType });
       return planInfo?.planIdentifier || planInfo?.identifier;
     } catch (error) {

@@ -187,7 +187,7 @@ const SimulationMapView = ({
   const multiselectState = state.multiselect;
   const locationsObject = state.polygons?.[0];
   const planId = state.planid;
-
+  console.log(planId, 'planid')
   useMemo(() => {
     setSingleSelected(selectedState?.id ?? null);
     setMultiSelected(multiselectState as any[]);
@@ -225,13 +225,14 @@ const SimulationMapView = ({
   }, [resultsLoadingState, parentsLoadingState, map]);
 
   const handleCampaignClick = (clickedFeature: any) => {
+    // alert("CLICKED")
     // ancestry contains a list of all ids of levels above this polygon
     const ancestry = JSON.parse(clickedFeature.properties?.ancestry);
     // find polygon as object from hierarchy, as it contains a list of its children
     const currentLoc = findNodeById(state.polygons, clickedFeature.properties?.id);
 
     // get all children (except structures) ids
-    const results = getIdsByGeographicLevel(currentLoc.children);
+    const results = getIdsByGeographicLevel(currentLoc?.children || []);
 
     // as target areas lowest possible level for operational area, we just need their id and their ancestry (children are just structures)
     const assignedAreas = targetAreasRef.current?.flatMap(ta => [...ta.ancestry, ta.identifier]) || [];
@@ -971,15 +972,13 @@ const SimulationMapView = ({
                   populationCard.className = styles.populationCard;
                   populationCard.innerHTML = `
                     <div class="${styles.label}">Population</div>
-                    <div class="${styles.value}">${
-                    Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
+                    <div class="${styles.value}">${Math.round(JSON.parse(clickedFeature.properties?.population)?.sum)?.toLocaleString() ??
                     'Not Available'
-                  }</div>
+                    }</div>
                     <div class="${styles.subtotalValueContainer}">
                       <div class="${styles.sublabel}">Children Number</div>
-                      <p class="${styles.sublabelValue}">${
-                    clickedFeature.properties?.childrenNumber ?? 'Not Available'
-                  }</p>
+                      <p class="${styles.sublabelValue}">${clickedFeature.properties?.childrenNumber ?? 'Not Available'
+                    }</p>
                     </div>
                   `;
                   content.appendChild(populationCard);
@@ -1019,10 +1018,13 @@ const SimulationMapView = ({
                     assignToATeamButton.textContent = 'Assign to a team';
                     assignToATeamButton.className = styles.addToCampaignButton;
                   }
-                  button.textContent = 'Remove from campaign';
-                  button.className = styles.RemoveFromCampaignButton;
+                  if (isAuthorizedRemoveFromCampaign) {
+                    button.textContent = 'Remove from campaign';
+                    button.className = styles.RemoveFromCampaignButton;
+                  }
                 }
-                button.addEventListener('click', () => handleCampaignClick(clickedFeature));
+                // button.addEventListener('click', () => handleCampaignClick(clickedFeature));
+                button.onclick = () => handleCampaignClick(clickedFeature)
                 if ((teamsList ?? []).length > 0) {
                   assignToATeamButton.addEventListener('click', () => {
                     handleTeamAssignment(clickedFeature);
@@ -1563,7 +1565,7 @@ const SimulationMapView = ({
                         try {
                           let perc = parseFloat(selectedTagPercentageValue);
                           percDisplay = Math.trunc(Math.round(perc * 100));
-                        } catch (e) {}
+                        } catch (e) { }
                         htmlText = `
                                               <br> Layer: ${feature.layer.id?.split('-')[0]}
                                               <br> Tag: ${selectedTag}
