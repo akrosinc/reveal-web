@@ -360,13 +360,14 @@ const CampaignManagement = () => {
     // getPlans().then(planInfo => {
     //   setPlans(planInfo);
     // });
+    if (!isAuthorizedForRenderingInstances) return
     getInstances(0, 1000).then(instanceInfo => {
       // setInstances(instanceInfo);
       // console.log(instanceInfo?.content, 'Instances Listing')
       setInstances(instanceInfo?.content)
       // setInstances([])
     });
-  }, []);
+  }, [isAuthorizedForRenderingInstances]);
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 

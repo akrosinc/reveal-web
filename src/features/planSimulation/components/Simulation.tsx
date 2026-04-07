@@ -486,11 +486,12 @@ const Simulation = () => {
     // getPlans().then(planInfo => {
     //   setPlans(planInfo);
     // });
+    if (!isAuthorized) return
     getInstances(0, 1000).then(instances => {
       setInstances(instances?.content);
       // setInstances([])
     });
-  }, []);
+  }, [isAuthorized]);
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
