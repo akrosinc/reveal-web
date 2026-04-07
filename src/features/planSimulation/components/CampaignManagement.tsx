@@ -806,7 +806,7 @@ const CampaignManagement = () => {
                 <Hierarchy clickHandler={loadLocationHandler} />
               </Accordion>
             )}
-            {selectedPlan?.identifier && <Accordion title="Teams" open>
+            {<Accordion title="Teams" open>
               <Teams rf={rfForTeam} teamsList={teamsList} fetchTeamsData={fetchTeamsData} />
               {/* <AuthorizedElement roles={[]}>
               <DrawerButton onClick={() => setOpenCustomModal(1)}>Manage Teams</DrawerButton>

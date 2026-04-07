@@ -1024,6 +1024,7 @@ const SimulationMapView = ({
                   button.textContent = 'Add to campaign';
                   button.className = styles.addToCampaignButton;
                 } else {
+                  console.log("TEAM LIST", teamsList)
                   if ((teamsList ?? []).length > 0 && isAuthorizedAssignToTeam && getAllIdentifiers(state?.polygons).includes(clickedFeature?.properties?.id)) {
                     assignToATeamButton.textContent = 'Assign to a team';
                     assignToATeamButton.className = styles.addToCampaignButton;
