@@ -329,7 +329,8 @@ const Simulation = () => {
       // console.log("H-DATA", nodeOrder)
       setHighestLocations(hierarchyData);
       dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData });
-      dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: { nodeOrder: nodeOrder || [] } });
+      // dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: { nodeOrder: nodeOrder || [] } });
+      dispatch({ type: "SET_NODE_ORDER", payload: nodeOrder })
     } catch (error) {
       console.error('Failed to fetch hierarchy:', error);
     }
@@ -482,25 +483,28 @@ const Simulation = () => {
   }, [selectedPlan, instances]);
 
   useEffect(() => {
-    getPlans().then(planInfo => {
-      setPlans(planInfo);
-    });
+    // getPlans().then(planInfo => {
+    //   setPlans(planInfo);
+    // });
+    if (!isAuthorized) return
     getInstances(0, 1000).then(instances => {
       setInstances(instances?.content);
       // setInstances([])
     });
-  }, []);
+  }, [isAuthorized]);
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
   useEffect(() => {
     Promise.all([
-      getLocationHierarchyList(50, 0, true),
+      // getLocationHierarchyList(50, 0, true),
       getEntityList(),
       getGeneratedLocationHierarchyList()
       // getComplexTagReponses()
     ])
-      .then(([locationHierarchyList, entityList, generatedHierarchyList]) => {
+      .then(([
+        // locationHierarchyList, 
+        entityList, generatedHierarchyList]) => {
         let generatedHierarchyItems = generatedHierarchyList?.map(generatedHierarchy => {
           return {
             identifier: generatedHierarchy.identifier,
@@ -510,17 +514,17 @@ const Simulation = () => {
           };
         });
 
-        let list = locationHierarchyList?.content.map(savedHierarchy => {
-          return {
-            identifier: savedHierarchy.identifier,
-            name: savedHierarchy.name,
-            nodeOrder: savedHierarchy.nodeOrder,
-            type: HierarchyType.SAVED
-          };
-        });
+        // let list = locationHierarchyList?.content.map(savedHierarchy => {
+        //   return {
+        //     identifier: savedHierarchy.identifier,
+        //     name: savedHierarchy.name,
+        //     nodeOrder: savedHierarchy.nodeOrder,
+        //     type: HierarchyType.SAVED
+        //   };
+        // });
 
-        let combinedList = list.concat(generatedHierarchyItems);
-        setCombinedHierarchyList(combinedList);
+        // let combinedList = list.concat(generatedHierarchyItems);
+        // setCombinedHierarchyList(combinedList);
 
         let entityObj = entityList.find(entity => entity.code === 'Location');
         setSelectedEntity(entityObj?.identifier);
@@ -1416,7 +1420,7 @@ const Simulation = () => {
     }
 
     const includeGeometry = checkifChildrenLoaded(polygonsWithData, locationId);
-    const parentGeoLevel = polygonsWithData?.[locationId].polygonData?.properties?.geographicLevel || '';
+    const parentGeoLevel = polygonsWithData?.[locationId]?.polygonData?.properties?.geographicLevel || '';
     const datasetsChanged = prevDatasetsLengthRef.current !== state.datasets.length;
 
     if (datasetsChanged || includeGeometry) {
@@ -1429,8 +1433,8 @@ const Simulation = () => {
         simulationId: state.simulationId,
         campaignManagementFeatures: false
       };
-      // console.log(state.defaultHierarchyData?.nodeOrder, 'NODE ORDER.')
-      const targetLevelName = getPlanTargetLevelName(state.defaultHierarchyData?.nodeOrder || [], state.planTargetType);
+      // console.log(state?.nodeOrder, 'NODE_ORDR')
+      const targetLevelName = getPlanTargetLevelName(state.nodeOrder || [], state.planTargetType);
       // If location clicked is level above structures, we need to load only its polygon
       // and show a tip to load structures in the area by zooming in on the map
       if (parentGeoLevel !== targetLevelName) {

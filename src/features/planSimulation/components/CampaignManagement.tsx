@@ -19,7 +19,7 @@ import {
   getDefaultHierarchyData,
   getHierarchy,
   getHierarchyPolygon,
-  getPlanInfo,
+  // getPlanInfo,
   getPlans
 } from './SimulationMapView/api/hierarchyAPI';
 import Hierarchy from './Hierarchy/Hierarchy';
@@ -105,7 +105,7 @@ const CampaignManagement = () => {
   const isAuthorizedForRedirectingToACampaign = useAuthorization([REDIRECT_TO_ASSIGNED_CAMPAIGN])
   const isAuthorizedForRenderingInstances = useAuthorization([CAMPAIGN_MANAGEMENT_INSTANCE_SELECTION])
   const instanceContext = useAppSelector(state => state.instanceContext);
-  console.log("ISNTANCE", instanceContext)
+  // console.log("ISNTANCE", instanceContext)
   const divHeight = useWindowResize(divRef.current);
   const [mapFullScreen, setMapFullScreen] = useState(true);
   const [showResult, setShowResult] = useState(false);
@@ -357,52 +357,53 @@ const CampaignManagement = () => {
 
 
   useEffect(() => {
-    getPlans().then(planInfo => {
-      setPlans(planInfo);
-    });
+    // getPlans().then(planInfo => {
+    //   setPlans(planInfo);
+    // });
+    if (!isAuthorizedForRenderingInstances) return
     getInstances(0, 1000).then(instanceInfo => {
       // setInstances(instanceInfo);
       // console.log(instanceInfo?.content, 'Instances Listing')
       setInstances(instanceInfo?.content)
       // setInstances([])
     });
-  }, []);
+  }, [isAuthorizedForRenderingInstances]);
 
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
-  useEffect(() => {
-    Promise.all([
-      getLocationHierarchyList(50, 0, true),
-      getEntityList(),
-      getGeneratedLocationHierarchyList()
-      // getComplexTagReponses()
-    ])
-      .then(([locationHierarchyList, entityList, generatedHierarchyList]) => {
-        let generatedHierarchyItems = generatedHierarchyList?.map(generatedHierarchy => {
-          return {
-            identifier: generatedHierarchy.identifier,
-            name: generatedHierarchy.name,
-            nodeOrder: generatedHierarchy.nodeOrder,
-            type: HierarchyType.GENERATED
-          };
-        });
+  // useEffect(() => {
+  //   Promise.all([
+  //     getLocationHierarchyList(50, 0, true),
+  //     getEntityList(),
+  //     getGeneratedLocationHierarchyList()
+  //     // getComplexTagReponses()
+  //   ])
+  //     .then(([locationHierarchyList, entityList, generatedHierarchyList]) => {
+  //       let generatedHierarchyItems = generatedHierarchyList?.map(generatedHierarchy => {
+  //         return {
+  //           identifier: generatedHierarchy.identifier,
+  //           name: generatedHierarchy.name,
+  //           nodeOrder: generatedHierarchy.nodeOrder,
+  //           type: HierarchyType.GENERATED
+  //         };
+  //       });
 
-        let list = locationHierarchyList?.content.map(savedHierarchy => {
-          return {
-            identifier: savedHierarchy.identifier,
-            name: savedHierarchy.name,
-            nodeOrder: savedHierarchy.nodeOrder,
-            type: HierarchyType.SAVED
-          };
-        });
+  //       let list = locationHierarchyList?.content.map(savedHierarchy => {
+  //         return {
+  //           identifier: savedHierarchy.identifier,
+  //           name: savedHierarchy.name,
+  //           nodeOrder: savedHierarchy.nodeOrder,
+  //           type: HierarchyType.SAVED
+  //         };
+  //       });
 
-        let combinedList = list.concat(generatedHierarchyItems);
-        setCombinedHierarchyList(combinedList);
+  //       let combinedList = list.concat(generatedHierarchyItems);
+  //       setCombinedHierarchyList(combinedList);
 
-        // setComplexTags(complexTagResponses);
-      })
-      .catch(err => toast.error(err));
-  }, []);
+  //       // setComplexTags(complexTagResponses);
+  //     })
+  //     .catch(err => toast.error(err));
+  // }, []);
 
   const updateMarkedLocations = (identifier: string, ancestry: string[] | undefined, marked: boolean) => {
     setMarkedLocations(markedLocations => {
@@ -570,7 +571,7 @@ const CampaignManagement = () => {
       }
     }
   }, [mapData, getLocationHierarchyFromLowestLocation, markedLocations]);
-
+  // console.log("NODE_ORDER", state?.nodeOrder)
   const fetchHierarchy = async (instanceId: string) => {
     // const hierarchyData = await getHierarchy();
     const hierarchyData = await getInstanceHierarchy(instanceId)
@@ -578,7 +579,8 @@ const CampaignManagement = () => {
     try {
       setHighestLocations(hierarchyData);
       dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData });
-      dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: { nodeOrder: nodeOrder || [] } });
+      // dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: { nodeOrder: nodeOrder || [] } });
+      dispatch({ type: "SET_NODE_ORDER", payload: nodeOrder })
     } catch (error) {
       console.error('Failed to fetch hierarchy:', error);
     }
@@ -621,7 +623,7 @@ const CampaignManagement = () => {
     }
 
     const includeGeometry = checkifChildrenLoaded(polygonsWithData, locationId);
-    const parentGeoLevel = polygonsWithData?.[locationId].polygonData?.properties?.geographicLevel || '';
+    const parentGeoLevel = polygonsWithData?.[locationId]?.polygonData?.properties?.geographicLevel || '';
 
     if (includeGeometry) {
       const configObj: LocationData = {
@@ -631,8 +633,8 @@ const CampaignManagement = () => {
         simulationId: state.simulationId,
         campaignManagementFeatures: true
       };
-
-      const targetLevelName = getPlanTargetLevelName(state.defaultHierarchyData.nodeOrder, state.planTargetType);
+      // console.log("NODE_ORDR", state.nodeOrder)
+      const targetLevelName = getPlanTargetLevelName(state.nodeOrder, state.planTargetType);
       // If location clicked is level above structures, we need to load only its polygon
       // and show a tip to load structures in the area by zooming in on the map
       if (parentGeoLevel !== targetLevelName) {

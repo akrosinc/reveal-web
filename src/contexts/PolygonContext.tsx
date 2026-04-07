@@ -22,6 +22,7 @@ type PolygonActions =
   | { type: 'SET_DEFAULT_HIERARCHY_DATA'; payload: any }
   | { type: 'SET_LOCATIONS_TEAMS_MAP'; payload: any }
   | { type: 'SET_PLAN_TARGET_TYPE'; payload: string }
+  | { type: "SET_NODE_ORDER", payload: any }
   | { type: 'CLEAR_SELECTION' };
 
 // interface Team {
@@ -52,6 +53,7 @@ interface InitialStateInterface {
   defaultHierarchyData: any;
   locationsTeamsMap: any;
   planTargetType: string;
+  nodeOrder: any;
 }
 
 const initialState: InitialStateInterface = {
@@ -69,7 +71,8 @@ const initialState: InitialStateInterface = {
   targetAreas: [],
   defaultHierarchyData: null,
   locationsTeamsMap: {},
-  planTargetType: ''
+  planTargetType: '',
+  nodeOrder: []
 };
 
 export interface SelectedPolygon {
@@ -119,6 +122,8 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
       return { ...state, polygons: action.payload };
     case 'SET_DEFAULT_HIERARCHY_DATA':
       return { ...state, defaultHierarchyData: action.payload };
+    case 'SET_NODE_ORDER':
+      return { ...state, nodeOrder: action.payload };
     case 'SET_NEW_DATASETS':
       const datasets =
         action.payload.length === 0
