@@ -496,12 +496,14 @@ const Simulation = () => {
 
   useEffect(() => {
     Promise.all([
-      getLocationHierarchyList(50, 0, true),
+      // getLocationHierarchyList(50, 0, true),
       getEntityList(),
       getGeneratedLocationHierarchyList()
       // getComplexTagReponses()
     ])
-      .then(([locationHierarchyList, entityList, generatedHierarchyList]) => {
+      .then(([
+        // locationHierarchyList, 
+        entityList, generatedHierarchyList]) => {
         let generatedHierarchyItems = generatedHierarchyList?.map(generatedHierarchy => {
           return {
             identifier: generatedHierarchy.identifier,
@@ -511,17 +513,17 @@ const Simulation = () => {
           };
         });
 
-        let list = locationHierarchyList?.content.map(savedHierarchy => {
-          return {
-            identifier: savedHierarchy.identifier,
-            name: savedHierarchy.name,
-            nodeOrder: savedHierarchy.nodeOrder,
-            type: HierarchyType.SAVED
-          };
-        });
+        // let list = locationHierarchyList?.content.map(savedHierarchy => {
+        //   return {
+        //     identifier: savedHierarchy.identifier,
+        //     name: savedHierarchy.name,
+        //     nodeOrder: savedHierarchy.nodeOrder,
+        //     type: HierarchyType.SAVED
+        //   };
+        // });
 
-        let combinedList = list.concat(generatedHierarchyItems);
-        setCombinedHierarchyList(combinedList);
+        // let combinedList = list.concat(generatedHierarchyItems);
+        // setCombinedHierarchyList(combinedList);
 
         let entityObj = entityList.find(entity => entity.code === 'Location');
         setSelectedEntity(entityObj?.identifier);
