@@ -17,8 +17,11 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, LineElement,
 import { Doughnut, Pie } from 'react-chartjs-2';
 import { getPlanReports } from '../reporting/api';
 import { useTranslation } from 'react-i18next';
+import {MatrixController, MatrixElement} from "chartjs-chart-matrix";
 
-ChartJS.register(ArcElement, Tooltip, Legend,LineElement,CategoryScale,Title,LinearScale,PointElement,BarElement );
+
+ChartJS.register(ArcElement, Tooltip, Legend,LineElement,CategoryScale,Title,LinearScale,PointElement,BarElement,MatrixController,
+    MatrixElement );
 //
 const Dashboard = () => {
   const [data, setData] = useState<ChartData<'pie'>>();

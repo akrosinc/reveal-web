@@ -1,0 +1,14 @@
+.chart-row {
+  height: 500px; /* ONE source of truth */
+}
+
+.chart-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+}
+
+.chart-wrapper canvas {
+  flex: 1;              /* makes chart fill available space */
+}

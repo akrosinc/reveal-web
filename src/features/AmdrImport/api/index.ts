@@ -2,7 +2,7 @@ import api from "../../../api/axios";
 import {PageableModel} from "../../../api/providers";
 import {MetadataFileImportResponse} from "../../metaDataImport/type";
 import {EntityTagMap} from "../../planSimulation/providers/types";
-import {AmdrColumnType, AmdrImportResponse, AmdrImportResultsResponse, HeaderName} from "../type";
+import {LocationNode,  AmdrImportResponse, AmdrImportResultsResponse, HeaderName} from "../type";
 import dashBoardApi from "../../../api/dashboard-axios";
 
 export const downloadAmdrImportTemplate = async (): Promise<BlobPart> => {
@@ -13,16 +13,10 @@ export const downloadAmdrImportTemplate = async (): Promise<BlobPart> => {
   .then(res => res.data);
   return data;
 };
+
 export const getAmdrKeys = async (): Promise<string[]> => {
   const data = api
   .get<string[]>(`amdr/amdrKeys`)
-  .then(res => res.data);
-  return data;
-};
-
-export const getAmdrColumns = async (): Promise<Record<AmdrColumnType, {[key:string]: HeaderName}>> => {
-  const data = dashBoardApi
-  .get<Record<AmdrColumnType, {[key:string]: HeaderName}>>(`/dashboard/amdr/reportHeadings`)
   .then(res => res.data);
   return data;
 };
@@ -64,10 +58,11 @@ export const getAmdrImportList = async (
   .then(res => res.data);
   return data;
 };
-export const getAmdrImportResults = async (importId: string): Promise<AmdrImportResultsResponse> => {
+export const getAmdrImportResults = async (importId?: string): Promise<AmdrImportResultsResponse> => {
+  console.log("importId",importId)
   const data = await api
   .get<AmdrImportResultsResponse>(
-      `amdr/importResults?importId=${importId}`
+      "amdr/importResults" + (importId === undefined? "" : "?importId=" +importId)
   )
   .then(res => res.data);
   return data;

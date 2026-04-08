@@ -1,6 +1,6 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import React, {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
-import {Button, Col, Collapse, Container, Form, Row,} from 'react-bootstrap';
+import React, {ChangeEvent, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Badge, Button, Col, Collapse, Container, Form, Modal, Row, Stack,} from 'react-bootstrap';
 import {useNavigate} from 'react-router-dom';
 import {Column} from 'react-table';
 import {toast} from 'react-toastify';
@@ -8,22 +8,46 @@ import ReportsTable from '../../../../components/Table/ReportsTable';
 import {useAppSelector} from '../../../../store/hooks';
 import {getReportTypeInfo} from '../../api';
 import {Feature, FeatureCollection, MultiPolygon, Point, Polygon} from '@turf/turf';
-import {FeatureSetResponse, GeneStats, HaploData, HaploGeneMap} from './types';
+import {
+  AmdrColumnType,
+  AmdrDataType,
+  AmdrDateModes,
+  AmdrDrugYearlyMonthlyLocational,
+  AmdrDrugYearlyMonthlyLocationalItem,
+  AmdrHaplotypeYearlyMonthlyLocational,
+  FeatureSetResponse,
+  GeneStats,
+  HaploData,
+  HaploGeneMap,
+  HslColor,
+  Option
+} from './types';
 import {
   AdditionalReportInfo,
   FoundCoverage,
-  HslColor,
-  ReportLocationProperties
+  ReportLocationProperties,
+  RowData
 } from '../../providers/types';
 import {useTranslation} from 'react-i18next';
 import Select, {SingleValue} from 'react-select';
-import {getAmdrMapReportData} from "./index";
-import {ChartData, ChartOptions, ChartType} from "chart.js";
-import {Bar, Pie} from "react-chartjs-2";
+import {
+  getAmdrColumns,
+  getAmdrMapReportData,
+  getAmdrMapReportDataDate,
+  getAmdrMapReportDataDateLocationDrug,
+  getAmdrMapReportDataDateLocationHaplotype,
+  getColorMap,
+  getLocationTree
+} from "./api";
+import {ChartData, ChartDataset, ChartOptions, ChartType} from "chart.js";
+import {Bar, Line, Pie, Chart} from "react-chartjs-2";
+
+
 import {Coords, RibbonData} from "./RibbonPlot";
 import AmdrMapViewDetail from "../report/mapView/amdr/AmdrMapViewDetail";
-import {getAmdrColumns} from "../../../AmdrImport/api";
-import {AmdrColumnType, HeaderName} from "../../../AmdrImport/type";
+import {HeaderName, LocationNode} from "../../../AmdrImport/type";
+import LocationTree from "./LocationTree";
+import ReportsTableForDate from "../../../../components/Table/ReportsTableForDate";
 
 interface BreadcrumbModel {
   locationName: string;
@@ -41,15 +65,15 @@ type HeaderButton = {
 }
 
 
-const locationOrYearOptions = ['coordsByTypeAndLocation', 'coordsByTypeAndYear'] as const;
 
 const AmdrReport = () => {
   const [cols, setCols] = useState<{ [x: string]: FoundCoverage }>({});
   const [data, setData] = useState<ReportLocationProperties[]>([]);
-  const [selectedColor, setSelectedColor] = useState<string | undefined>();
+
   const [selectedHslColor, setSelectedHslColor] = useState<HslColor | undefined>();
 
   const [filterData, setFilterData] = useState<ReportLocationProperties[]>([]);
+  const [filterDataDate, setFilterDataDate] = useState<RowData[]>([]);
   const [hslColorMap, setHslColorMap] = useState<{ [key:string]:HslColor }>();
   const navigate = useNavigate();
   const [path, setPath] = useState<BreadcrumbModel[]>([]);
@@ -85,7 +109,8 @@ const AmdrReport = () => {
   const [ribbonData, setRibbonData] = useState<RibbonData>();
   const [plotSelector, setPlotSelector] = useState<string>();
   const [plotSelectedOption, setPlotSelectedOption] = useState<OptionType | null>(null);
-  const [locationOrYear, setLocationOrYear] = useState<string>('coordsByTypeAndLocation')
+  const [geographyOrDate, setGeographyOrDate] = useState<AmdrDataType>(AmdrDataType.DATE)
+  const [dateModes, setDateModes] = useState<AmdrDateModes>(AmdrDateModes.MONTHLY)
 
   const [defaultDisplayColumn, setDefaultDisplayColumn] = useState('');
   const [currentFeature, setCurrentFeature] =
@@ -101,6 +126,22 @@ const AmdrReport = () => {
   const [haploData, setHaploData] = useState<HaploData>();
   const [headerButtons, setHeaderButtons] = useState<Record<AmdrColumnType, { [id: string]: HeaderName }>>();
   const [selectedHeaderButtons, setSelectedHeaderButtons] = useState<HeaderButton[]>([]);
+  const [defaultHeaderButtons, setDefaultHeaderButtons] = useState<HeaderButton[]>([]);
+  const [selectedLocationsApi, setSelectedLocationsApi] = useState<string[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locationTree, setLocationTree] = useState<LocationNode[]>([]);
+  const [geoLevels, setGeoLevels] = useState<Option[]>([]);
+  const [geoLevel, setGeoLevel] = useState<Option | null>(null);
+  const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
+  const [locationMap, setLocationMap] = useState<Record<string, string>>({});
+  const [haplotypeYearlyMonthlyLocationList,setHaplotypeYearlyMonthlyLocationList] = useState<AmdrHaplotypeYearlyMonthlyLocational[]>([])
+  const [drugYearlyMonthlyLocationList,setDrugYearlyMonthlyLocationList] = useState<AmdrDrugYearlyMonthlyLocational[]>([])
+
+  const [haplotypeYearlyMonthlyLocationLineData,setHaplotypeYearlyMonthlyLocationLineData] = useState<ChartData<'line'>>()
+  const [drugYearlyMonthlyLocationLineData,setDrugYearlyMonthlyLocationLineData] = useState<ChartData<'line'>>()
+
+  const locations = ["USA", "Canada", "Germany", "Japan"];
   //Using useRef as a workaround for Mapbox issue that onClick event does not see state hooks changes
   const doubleClickHandler = (feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>, dashboardView: AmdrColumnType.DRUG | AmdrColumnType.HAPLOTYPE) => {
     loadChildHandler(
@@ -164,6 +205,20 @@ const AmdrReport = () => {
       [dashboardView]
   );
 
+  useEffect(()=>{
+    if (headerButtons && Object.entries(headerButtons).length > 0){
+      let entries:{[p: string]: HeaderName} = headerButtons[dashboardView]?? Object.entries(headerButtons[dashboardView])[0];
+      let innerEntries: [string, HeaderName] = Object.entries(entries)[0];
+      let headerNames:HeaderName = innerEntries[1];
+      let headerButton :HeaderButton = {
+        headerName:headerNames,
+        id: innerEntries[0]
+      }
+      setDefaultHeaderButtons([headerButton])
+      setSelectedHeaderButtons([headerButton])
+    }
+  },[headerButtons, dashboardView])
+
 
   const columns = React.useMemo<Column[]>(() => {
     return [{Header: 'Name', accessor: 'name', id: 'locationName'}
@@ -193,6 +248,12 @@ const AmdrReport = () => {
           },
 
         },
+        scales: {
+          y: {
+            min: 0,
+            max: 100,
+          }
+        },
 
         maintainAspectRatio: false
       };
@@ -200,6 +261,35 @@ const AmdrReport = () => {
     }
   }, [showGraphs])
 
+  useEffect(()=>{
+    getLocationTree().then(data => {
+      const formatted = data.geoLevels.map((val: string) => ({
+        value: val,
+        label: val.charAt(0).toUpperCase() + val.slice(1)
+      }));
+
+      setGeoLevels(formatted);
+      setLocationTree(data.nodes);
+    })
+  },[])
+
+
+  useEffect(() => {
+    if (locationTree.length === 0) return;
+
+    const map: Record<string, string> = {};
+
+    const buildMap = (nodes: LocationNode[]) => {
+      nodes.forEach((node) => {
+        map[node.id] = node.name;
+        if (node.children) buildMap(node.children);
+      });
+    };
+
+    buildMap(locationTree);
+    setLocationMap(map);
+    setSelectedLocations([locationTree?.[0]?.id])
+  }, [locationTree]);
 
   const sortDataHandler = (sortDirection: boolean, sortColumnName: string) => {
     if (filterData && filterData.length) {
@@ -278,24 +368,295 @@ const AmdrReport = () => {
   }, []);
 
   useEffect(() => {
-    getAmdrMapReportData(
-        parentLocationId ?? null,
-        dashboardView
-    )
-    .then(report => {
-      if (!report.features.length) return;
+    setCombinedPieGraphData(undefined)
+    setHaploData(undefined)
+    setFilterData([])
 
-      const tableData = report.features.map(el => el.properties);
+    getColorMap()
+    .then( colorMap => {
 
-      setData(tableData);
-      setFeatureSetResponse(report);
-      setHaploData(report.markers);
+      setHslColorMap(colorMap)
 
-    })
-    .catch(err => toast.error(err));
+      if (geographyOrDate === AmdrDataType.GEOGRAPHY){
+        getAmdrMapReportData(
+            parentLocationId ?? null,
+            dashboardView
+        )
+        .then(report => {
+          if (!report || report.toString() === "" || !report.features || report.features.length === 0) {
+            setData([]);
+            return;
+          }
 
-  }, [parentLocationId, dashboardView]);
+          const tableData = report.features.map(el => el.properties);
 
+          setData(tableData);
+          setFeatureSetResponse(report);
+          setHaploData(report.markers);
+
+        })
+        .catch(err => toast.error(err));
+      } else {
+        getAmdrMapReportDataDate(
+            parentLocationId ?? null,
+            dashboardView,
+            selectedLocationsApi,
+            dateModes,
+
+        )
+        .then(report => {
+          if (!report || report.toString() === "" || !report.features || report.features.length === 0) {
+            setData([]);
+            return;
+          }
+
+
+          const tableData =  report.rows;
+
+          if (tableData) {
+            setData(tableData);
+          }
+
+          setFeatureSetResponse(report);
+          if (report.markers){
+            setHaploData(report.markers);
+          }
+
+          setHaplotypeYearlyMonthlyLocationList([])
+          setDrugYearlyMonthlyLocationList([])
+          if (dashboardView === AmdrColumnType.DRUG){
+            getAmdrMapReportDataDateLocationDrug(selectedLocationsApi,dateModes)
+            .then(locationDrugData => {
+
+              setDrugYearlyMonthlyLocationList(locationDrugData)
+            })
+          } else {
+            getAmdrMapReportDataDateLocationHaplotype(selectedLocationsApi,dateModes)
+            .then(locationHaplotypeData => {
+
+              setHaplotypeYearlyMonthlyLocationList(locationHaplotypeData)
+            })
+          }
+        })
+        .catch(err => toast.error(err));
+      }
+        })
+
+
+  }, [parentLocationId, dashboardView, geographyOrDate, dateModes, selectedLocationsApi]);
+
+  useEffect(() => {
+    const labelSet = new Set(
+        haplotypeYearlyMonthlyLocationList.flatMap(location =>
+            location.items.map(
+                item => `${item.collectionYear}${dateModes === AmdrDateModes.MONTHLY ? "-".concat(String(item.collectionMonth).padStart(2, '0')):""}`
+            )
+        )
+    );
+
+    const labelList = Array.from(labelSet).sort();
+
+    const datasets: ChartDataset<'line'>[] = [];
+
+    // Helper to generate a consistent color from a string
+
+    haplotypeYearlyMonthlyLocationList.forEach(location => {
+      // Collect all gene keys across all items for selected haplotypes
+      const allGeneKeysPerHaplo: Record<string, Set<string>> = {};
+      location.items.forEach(item => {
+        Object.keys(item.data).forEach(haploKey => {
+          if (!selectedHeaderButtons.some(btn => btn.id === haploKey)) return;
+          if (!allGeneKeysPerHaplo[haploKey]) allGeneKeysPerHaplo[haploKey] = new Set();
+          Object.keys(item.data[haploKey]).forEach(geneKey => {
+            allGeneKeysPerHaplo[haploKey].add(geneKey);
+          });
+        });
+      });
+
+      // Build datasets per haplotype × gene
+      Object.entries(allGeneKeysPerHaplo).forEach(([haploKey, geneKeysSet]) => {
+        Array.from(geneKeysSet).forEach(geneKey => {
+          const dataPoints = labelList.map(label => {
+            // Align data points with global labels
+            const item = location.items.find(
+                i => `${i.collectionYear}${dateModes === AmdrDateModes.MONTHLY ? "-".concat(String(i.collectionMonth).padStart(2, '0')):""}` === label
+            );
+            const geneStats = item?.data?.[haploKey]?.[geneKey];
+            if (!geneStats) return 0;
+            return geneStats.rec > 0 ? geneStats.val / geneStats.rec * 100 : 0;
+          });
+
+          const lineLabel = `${locationMap?.[location.locationIdentifier]} (${geneKey})`;
+          datasets.push({
+            label: lineLabel,
+            data: dataPoints,
+            tension: 0,
+            borderColor: getDistinctHslColor(hslColorMap?.[geneKey]),
+            backgroundColor: getDistinctHslColor(hslColorMap?.[geneKey]), // semi-transparent fill if needed
+            fill: false, // set to true if you want area under line
+          });
+        });
+      });
+    });
+
+    const result: ChartData<'line'> = {
+      labels: labelList,
+      datasets: datasets,
+    };
+
+    setHaplotypeYearlyMonthlyLocationLineData(result);
+  }, [haplotypeYearlyMonthlyLocationList, selectedHeaderButtons, dateModes]);
+
+  const graphDateOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'left' as const,
+      },
+    },
+    scales: {
+      y: {
+        min: 0,
+        max: 100, // assuming percentage
+      },
+    },
+  }
+  const formatLabel = (item: AmdrDrugYearlyMonthlyLocationalItem) =>
+      `${item.collectionYear}${
+          dateModes === AmdrDateModes.MONTHLY
+              ? "-" + String(item.collectionMonth).padStart(2, "0")
+              : ""
+      }`;
+
+// Helper to generate a consistent color from a string
+  const stringToColor = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+    return "#" + "000000".substring(0, 6 - c.length) + c;
+  };
+
+  useEffect(() => {
+
+    const formatLabel = (item: AmdrDrugYearlyMonthlyLocationalItem) =>
+        `${item.collectionYear}${
+            dateModes === AmdrDateModes.MONTHLY
+                ? "-" + String(item.collectionMonth).padStart(2, "0")
+                : ""
+        }`;
+
+    // Build global label set
+    const labelSet = new Set(
+        drugYearlyMonthlyLocationList.flatMap(location =>
+            location.items.map(formatLabel)
+        )
+    );
+    const labelList = Array.from(labelSet).sort((a, b) => a.localeCompare(b));
+
+    const datasets: ChartDataset<'line'>[] = [];
+
+    // Stable hash → consistent index per location
+    const getIndexFromKey = (key: string) => {
+      let hash = 0;
+      for (let i = 0; i < key.length; i++) {
+        hash = key.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return Math.abs(hash);
+    };
+
+    // Precompute all locations per gene
+    const geneLocationMap: Record<string, string[]> = {};
+    drugYearlyMonthlyLocationList.forEach(location => {
+      location.items.forEach(item => {
+        Object.keys(item.data).forEach(geneKey => {
+          if (!selectedHeaderButtons.some(btn => btn.id === geneKey)) return;
+          if (!geneLocationMap[geneKey]) geneLocationMap[geneKey] = [];
+          if (!geneLocationMap[geneKey].includes(location.locationIdentifier))
+            geneLocationMap[geneKey].push(location.locationIdentifier);
+        });
+      });
+    });
+
+    // Generate color for each (geneKey, location)
+    const getLineColor = (geneKey: string, locationId: string) => {
+      const baseHsl = getDistinctHslColor(hslColorMap?.[geneKey]) || 'hsl(200, 70%, 50%)';
+      const match = baseHsl.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+      if (!match) return baseHsl;
+
+      let [_, baseH, s, l] = match.map(Number);
+
+      const locations = geneLocationMap[geneKey];
+      const index = locations.indexOf(locationId);
+      const total = locations.length;
+
+      // Wider hue spread ±40°
+      const spread = 15;
+      let newH = (baseH - spread + (index / Math.max(1, total - 1)) * 2 * spread + 360) % 360;
+
+      newH = baseH;
+      // Slight lightness variation
+      const lightnessSteps = [25, 45, 65, 75];
+      const newL = lightnessSteps[index % lightnessSteps.length];
+
+      // Optional: slight saturation tweak for extra separation
+      const saturationSteps = [35, 70, 95];
+      const newS = saturationSteps[index % saturationSteps.length];
+
+      return `hsl(${newH}, ${newS}%, ${newL}%)`;
+    };
+
+    // Build datasets
+    drugYearlyMonthlyLocationList.forEach(location => {
+      const allGeneKeys = new Set<string>();
+
+      location.items.forEach(item => {
+        Object.keys(item.data).forEach(geneKey => {
+          if (!selectedHeaderButtons.some(btn => btn.id === geneKey)) return;
+          allGeneKeys.add(geneKey);
+        });
+      });
+
+      const itemMap = new Map(location.items.map(i => [formatLabel(i), i]));
+
+      Array.from(allGeneKeys).forEach(geneKey => {
+        const dataPoints = labelList.map(label => {
+          const item = itemMap.get(label);
+          const geneStats = item?.data?.[geneKey];
+          if (!geneStats) return 0;
+          return geneStats.rec > 0 ? (geneStats.val / geneStats.rec) * 100 : 0;
+        });
+
+        const color = getLineColor(geneKey, location.locationIdentifier);
+        const locationName =
+            locationMap?.[location.locationIdentifier] ?? location.locationIdentifier;
+
+        datasets.push({
+          label: `${locationName} (${geneKey})`,
+          data: dataPoints,
+          tension: 0,
+          borderColor: color,
+          backgroundColor: color ,
+          fill: false,
+          borderWidth: 2,
+          pointRadius: 3,
+        });
+      });
+    });
+
+    setDrugYearlyMonthlyLocationLineData({
+      labels: labelList,
+      datasets,
+    });
+
+  }, [
+    drugYearlyMonthlyLocationList,
+    selectedHeaderButtons,
+    dateModes,
+    hslColorMap,
+    locationMap
+  ]);
 
   useEffect(() => {
     if (featureSetResponse && plotSelector && selectedHslColor) {
@@ -303,13 +664,14 @@ const AmdrReport = () => {
       let locIds: Record<string, number> = {};
 
       featureSetResponse.features.map(feature => {
-        let value = feature.properties.columnDataMap[plotSelector].value;
-        if (value.split(" ").length > 1){
-          locIds[feature.identifier] = value.split(" ")[0]
-        } else {
-          locIds[feature.identifier] = value
+        if (feature.properties.columnDataMap && feature.properties.columnDataMap[plotSelector]){
+          let value = feature.properties.columnDataMap[plotSelector].value;
+          if (value.split(" ").length > 1){
+            locIds[feature.identifier] = value.split(" ")[0]
+          } else {
+            locIds[feature.identifier] = value
+          }
         }
-
       })
       let values: number[] = []
       Object.keys(locIds).map(locId => {
@@ -353,7 +715,7 @@ const AmdrReport = () => {
 
       setFeatureSet([reportCollection, parentLocationId ? parentLocationId : 'main', []]);
     }
-  }, [featureSetResponse, selectedColor, parentLocationId, plotSelector, selectedHslColor, path])
+  }, [featureSetResponse, parentLocationId, plotSelector, selectedHslColor, path])
 
 
   const loadChildHandler = (
@@ -366,7 +728,6 @@ const AmdrReport = () => {
     setPlotSelector(undefined)
     setPlotSelectedOption(null)
     setSelectedHslColor(undefined)
-    setSelectedColor(undefined)
     setParentLocationId(id);
     getAmdrMapReportData(
         id,
@@ -397,6 +758,7 @@ const AmdrReport = () => {
               el.properties.defaultColumnValue = el.properties.columnDataMap[defaultDisplayColumn].value;
             }
           });
+
         } else {
           setDefaultDisplayColumn('');
         }
@@ -523,7 +885,10 @@ const AmdrReport = () => {
   }
 
   useEffect(() => {
-    if (!filterData || !filterData.length || !filterData[0].columnDataMap) return;
+    if (!filterData || !filterData.length || !filterData[0].columnDataMap) {
+      setCombinedGraphData(undefined)
+      return;
+    }
 
     const columnKeys = Object.keys(filterData[0].columnDataMap);
     const xAxisLabels = filterData.map(loc => loc.name);
@@ -532,7 +897,8 @@ const AmdrReport = () => {
 
     columnKeys.forEach((colKey, index) => {
       const columnDescription = filterData[0].columnDataMap[colKey].description;
-      const hslColor = filterData[0].columnDataMap[colKey].hslColor;
+
+      const hslColor = hslColorMap?.[colKey];
       const yValues = filterData.map(loc => {
         return loc.columnDataMap[colKey].value.toString().split(" ").length > 1 ?
             checkAndRemoveAndAddPerc(loc.columnDataMap[colKey].value.split(" ")[0]) : Number(loc.columnDataMap[colKey].value)
@@ -555,9 +921,16 @@ const AmdrReport = () => {
 
     setCombinedGraphData(combinedChartData);
 
-    setChartType('bar'); // only one X value → bar chart
+    if (geographyOrDate === AmdrDataType.GEOGRAPHY || filterData.length === 1){
+      setChartType('bar'); // only one X value → bar chart
+    } else {
+      setChartType('line');
+    }
+
   }, [
-    filterData
+    filterData,
+    geographyOrDate,
+      hslColorMap
   ]);
 
   useEffect(() => {
@@ -589,9 +962,9 @@ const AmdrReport = () => {
                       l: hslColorMap[header.id].l
                     };
                     hslColorLighter = {
-                      h: hslColorMap[header.id].h + 5,
-                      s: hslColorMap[header.id].s+ 20,
-                      l: hslColorMap[header.id].l - 10
+                      h: 0,
+                      s: 0,
+                      l: 93
                     };
                   hslColorDark = {
                     h: hslColorMap[header.id].h + 5,
@@ -606,9 +979,9 @@ const AmdrReport = () => {
                       l: 20
                     };
                   hslColorLighter = {
-                    h: 50,
-                    s: 50,
-                    l: 50
+                    h: 0,
+                    s: 0,
+                    l: 93
                   };
                   hslColorDark = {
                     h: 80,
@@ -631,8 +1004,9 @@ const AmdrReport = () => {
                       ],
                       backgroundColor: [
                         distinctHslColorNormal, // mixed
+                        distinctHslColorDark,
                         distinctHslColorLighter, // mono
-                        distinctHslColorDark // wild
+                         // wild
                       ],
                     }
                   ]
@@ -660,9 +1034,9 @@ const AmdrReport = () => {
                 l: hslColorMap[key].l
               };
               hslColorLighter = {
-                h: hslColorMap[key].h + 5,
-                s: hslColorMap[key].s+ 20,
-                l: hslColorMap[key].l - 10
+                h: 0,
+                s: 0,
+                l: 93
               };
               hslColorDark = {
                 h: hslColorMap[key].h + 5,
@@ -677,9 +1051,9 @@ const AmdrReport = () => {
                 l: 20
               };
               hslColorLighter = {
-                h: 50,
-                s: 50,
-                l: 50
+                h: 0,
+                s: 0,
+                l: 93
               };
               hslColorDark = {
                 h: 80,
@@ -701,9 +1075,10 @@ const AmdrReport = () => {
                     Number((haploDatumElement.wild / haploDatumElement.totalRecs * 100).toFixed(2))
                   ],
                   backgroundColor: [
-                    distinctHslColorNormal, // mixed
+                    distinctHslColorNormal,
+                    distinctHslColorDark,// mixed
                     distinctHslColorLighter, // mono
-                    distinctHslColorDark // wild
+                     // wild
                   ],
                 }
               ]
@@ -727,12 +1102,29 @@ const AmdrReport = () => {
     setPlotSelectedOption(null)
   }, [clickedColumn])
 
-  const handleToggle = () => {
-    setSelectedHeaderButtons([])
+  const handleDrugOrGeneToggle = () => {
+    setSelectedHeaderButtons(defaultHeaderButtons)
     setCombinedGraphData(undefined)
     setFilterData([])
     setCols({})
     setDashboardView(dashboardView === AmdrColumnType.HAPLOTYPE ? AmdrColumnType.DRUG : AmdrColumnType.HAPLOTYPE);
+  };
+
+  const handleGeographyOrDateToggle = (locationTree:LocationNode[]) => {
+    setSelectedHeaderButtons(defaultHeaderButtons)
+    setCombinedGraphData(undefined)
+    setFilterData([])
+    setCols({})
+    setSelectedLocations([locationTree?.[0]?.id])
+    setGeographyOrDate(geographyOrDate === AmdrDataType.GEOGRAPHY ? AmdrDataType.DATE : AmdrDataType.GEOGRAPHY);
+  };
+
+  const handleDateModesToggle = () => {
+    setSelectedHeaderButtons(defaultHeaderButtons)
+    setCombinedGraphData(undefined)
+    setFilterData([])
+    setCols({})
+    setDateModes(dateModes === AmdrDateModes.MONTHLY ? AmdrDateModes.YEARLY : AmdrDateModes.MONTHLY);
   };
 
 
@@ -782,211 +1174,533 @@ const AmdrReport = () => {
 
   }, [data, selectedHeaderButtons]);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //
+  //   if (filterData && filterData[0]) {
+  //     let hslColorMap: { [key: string]: HslColor } = {};
+  //     let columnKeys = filterData[0].columnDataMap;
+  //
+  //     Object.keys(columnKeys).map(key => {
+  //       if (columnKeys[key] && columnKeys[key].hslColor) {
+  //         hslColorMap[key] = columnKeys[key].hslColor!;
+  //       }
+  //     })
+  //     setHslColorMap(hslColorMap);
+  //   }
+  //
+  //
+  // }, [filterData]);
 
-    if (filterData && filterData[0]) {
-      let hslColorMap: { [key: string]: HslColor } = {};
-      let columnKeys = filterData[0].columnDataMap;
+  const toggleLocationModal = () => {
+    setGeoLevel(null)
+    setShowLocationModal(!showLocationModal);
+    setSelectedLocationsApi(selectedLocations);
+  }
 
-      Object.keys(columnKeys).map(key => {
-        if (columnKeys[key] && columnKeys[key].hslColor) {
-          hslColorMap[key] = columnKeys[key].hslColor!;
-        }
-      })
-      setHslColorMap(hslColorMap);
+  const getAllChildIds = (node: LocationNode): string[] => {
+    if (!node.children || node.children.length === 0) return [];
+    return node.children.flatMap((child) => [child.id, ...getAllChildIds(child)]);
+  };
+
+  const findNodeById = (nodes: LocationNode[], id: string): LocationNode | null => {
+    for (const node of nodes) {
+      if (node.id === id) return node;
+      if (node.children) {
+        const found = findNodeById(node.children, id);
+        if (found) return found;
+      }
     }
+    return null;
+  };
+  const findParentId = (nodes: LocationNode[], childId: string): string | null => {
+    for (const node of nodes) {
+      if (node.children?.some((c) => c.id === childId)) return node.id;
+      if (node.children) {
+        const found = findParentId(node.children, childId);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+  const getAllAncestorIds = (nodes: LocationNode[], childId: string): string[] => {
+    const parentId = findParentId(nodes, childId);
+    if (!parentId) return [];
+    return [parentId, ...getAllAncestorIds(nodes, parentId)];
+  };
 
 
-  }, [filterData]);
+  const handleLocationChange = (id: string) => {
+    const node = findNodeById(locationTree, id);
+    if (!node) return;
 
-  return (
-      <Container fluid className="my-4 px-2">
-        <Row className="mt-3 align-items-center">
-          <Col md={3}>
+    if (!selectedLocations.includes(id)) {
+      // Selecting a node
 
-          </Col>
-          <Col md={6} className="text-center">
-            <h2 className="m-0">
-              {dashboardView === AmdrColumnType.HAPLOTYPE ? 'Haplotype' : 'Drug'} ({"AMDR"})
-            </h2>
-          </Col>
-          <Col></Col>
-          <Col>
-            <div
-                className="d-inline-flex align-items-center gap-3 px-3 py-2"
-                style={{
-                  border: "1px solid #dee2e6",
-                  borderRadius: 10,
-                  background: "#f8f9fa"
-                }}
-            >
-              {/* Left Label */}
-              <span
-                  className={`fw-bold ${
-                      dashboardView !== AmdrColumnType.HAPLOTYPE
-                          ? "text-primary"
-                          : "text-muted"
-                  }`}
-              >
-              Drug
-              </span>
+      // 1️⃣ If it's a parent → deselect all children
+      const childIds = getAllChildIds(node);
+      let updated = [...selectedLocations.filter((x) => !childIds.includes(x)), id];
 
-              {/* Switch */}
-              <div className="form-check form-switch m-0">
-                <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={dashboardView === AmdrColumnType.HAPLOTYPE}
-                    onChange={handleToggle}
-                    style={{
-                      cursor: "pointer"
+      // 2️⃣ If it's a child → deselect all ancestors recursively
+      const ancestorIds = getAllAncestorIds(locationTree, id);
+      updated = updated.filter((x) => !ancestorIds.includes(x));
+
+      setSelectedLocations(updated);
+    } else {
+      // Deselecting a node → remove it
+      setSelectedLocations((prev) => prev.filter((x) => x !== id));
+    }
+  };
+
+
+  const toggleNode = (id: string) => {
+    setExpandedNodes((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  // const formatLabel = (item: AmdrDrugYearlyMonthlyLocationalItem) =>
+  //     `${item.collectionYear}${
+  //         dateModes === AmdrDateModes.MONTHLY
+  //             ? "-" + String(item.collectionMonth).padStart(2, "0")
+  //             : ""
+  //     }`;
+
+
+
+  // const { chartMatrixData, xLabels, yLabels } = useMemo(() => {
+  //   const rawData: { x: string; y: string; v: number }[] = [];
+  //   const xLabelSet = new Set<string>();
+  //   const yLabelSet = new Set<string>();
+  //
+  //   // Collect raw data and unique labels
+  //   drugYearlyMonthlyLocationList.forEach(location => {
+  //     const locationName =
+  //         locationMap?.[location.locationIdentifier] ?? location.locationIdentifier;
+  //
+  //     location.items.forEach(item => {
+  //       const x = formatLabel(item);
+  //       xLabelSet.add(x);
+  //
+  //       Object.entries(item.data).forEach(([geneKey, stats]) => {
+  //         if (!selectedHeaderButtons.some(btn => btn.id === geneKey)) return;
+  //
+  //         const y = `${geneKey} | ${locationName}`;
+  //         yLabelSet.add(y);
+  //
+  //         const value = stats.rec > 0 ? (stats.val / stats.rec) * 100 : 0;
+  //
+  //         rawData.push({ x, y, v: value });
+  //       });
+  //     });
+  //   });
+  //
+  //   // Sort labels
+  //   const xLabels = Array.from(xLabelSet).sort((a, b) => a.localeCompare(b));
+  //   const yLabels = Array.from(yLabelSet).sort();
+  //
+  //   // Map string labels to numeric indices for Chart.js
+  //   const mappedData = rawData.map(d => ({
+  //     x: xLabels.indexOf(d.x), // numeric index
+  //     y: yLabels.indexOf(d.y), // numeric index
+  //     v: d.v
+  //   }));
+  //
+  //   // Build chartData
+  //   const chartMatrixData = {
+  //     labels: xLabels, // x-axis labels
+  //     datasets: [
+  //       {
+  //         label: "Heatmap",
+  //         data: mappedData, // must be { x: number, y: number, v: number }[]
+  //         backgroundColor: (ctx: any) => {
+  //           if (!ctx.raw || ctx.raw.v === undefined) return "#eee"; // fallback
+  //           const v = ctx.raw.v;
+  //           const h = 120;
+  //           const s = 70;
+  //           const l = 95 - v * 0.7;
+  //           return `hsl(${h}, ${s}%, ${l}%)`;
+  //         },
+  //         borderColor: "#ccc",
+  //         borderWidth: 1,
+  //       },
+  //     ],
+  //   };
+  //
+  //   return { chartMatrixData, xLabels, yLabels };
+  // }, [
+  //   drugYearlyMonthlyLocationList,
+  //   selectedHeaderButtons,
+  //   dateModes,
+  //   locationMap
+  // ]);
+
+
+  // const optionsMatrix: ChartOptions<'matrix'> = {
+  //   responsive: true,
+  //       maintainAspectRatio: false,
+  //       scales: {
+  //     x: { type: 'category' as const, labels: xLabels, ticks: { autoSkip: false } },
+  //     y: { type: 'category' as const, labels: yLabels, ticks: { autoSkip: false, font: { size: 10 } } },
+  //   },
+  //   plugins: {
+  //     tooltip: {
+  //       callbacks: {
+  //         label: (ctx: any) => {
+  //           const d = ctx.raw;
+  //           return `${xLabels[d.x]} / ${yLabels[d.y]} : ${d.v.toFixed(1)}%`;
+  //         },
+  //       },
+  //     },
+  //     legend: { display: false },
+  //   },
+  // };
+
+  function getBreadCrumbRow() {
+    return <>
+      <Col xs sm md={10} className="mt-auto">
+        <p>
+          <FontAwesomeIcon
+              icon="align-left"
+              className={path.length ? 'me-3 link-primary pe-none' : 'me-3 text-secondary pe-none'}
+          />
+          <span
+              role="button"
+              className={path.length ? 'me-1 link-primary' : 'me-1 text-secondary pe-none'}
+              onClick={() => {
+                clearButtonRef.current.click();
+              }}
+          >
+               /
+            </span>
+          {path.map((el, index) => {
+            return (
+                <span
+                    role="button"
+                    className={index === path.length - 1 ? 'me-1 text-secondary pe-auto' : 'me-1 link-primary'}
+                    key={el.locationIdentifier}
+                    onClick={() => {
+                      if (index < path.length - 1) {
+                        breadCrumbClickHandler(el, index);
+                      }
                     }}
-                />
-              </div>
+                    title={el.locationProperties?.geographicLevel}
+                >
+                  {index !== 0 ? ' / ' : ''}
+                  {el.locationName}
+                </span>
+            );
+          })}
+        </p>
+      </Col>
+      <Col className="text-end p-2" xs sm md={2}>
+        <Button onClick={() => setShowGrid(!showGrid)}>
+          {showGrid ? <FontAwesomeIcon icon="chevron-up"/> :
+              <FontAwesomeIcon icon="chevron-down"/>}
+        </Button>
+      </Col>
+    </>;
+  }
 
-              {/* Right Label */}
-              <span
-                  className={`fw-bold ${
-                      dashboardView === AmdrColumnType.HAPLOTYPE
-                          ? "text-primary"
-                          : "text-muted"
-                  }`}
-              >
-                Haplotype
-              </span>
-            </div>
+  function getSearchBarRow() {
+    return <>
+      <Col
+          md={reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.ntd ? 3 : 6}>
+        <Form.Control
+            ref={searchInput}
+            placeholder={t('reportPage.search')}
+            type="text"
+            onChange={searchHandler}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                return false;
+              }
+            }}
+        />
+      </Col>
+      <Col
+          md={reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.ntd !== null}
+          className="text-end"
+      >
+        {/*<Button*/}
+        {/*    className="my-2 me-2 "*/}
+        {/*    onClick={() => {*/}
+        {/*      if (path.length) {*/}
+        {/*        loadChildHandler(*/}
+        {/*            path[path.length - 1].locationIdentifier,*/}
+        {/*            path[path.length - 1].locationName,*/}
+        {/*            dashboardView,*/}
+        {/*            selectedReportInfo?.value,*/}
+        {/*            path[path.length - 1].locationProperties*/}
+        {/*        );*/}
+        {/*      }*/}
+        {/*    }}*/}
+        {/*>*/}
+        {/*  {t('reportPage.refreshData')}*/}
+        {/*</Button>*/}
+
+      </Col>
+    </>;
+  }
+
+  function getTable() {
+    return <div
+        style={{
+          maxHeight: showMap ? '50vh' : '90vh',
+          overflow: 'auto'
+        }}
+    >
+
+      {geographyOrDate === AmdrDataType.GEOGRAPHY ?
+          (<ReportsTable
+              clickHandler={(locationId, locationName) =>
+                  loadChildHandler(
+                      locationId,
+                      locationName,
+                      dashboardView,
+                      selectedReportInfo?.value,
+                      undefined
+                  )
+              }
+              sortHandler={sortDataHandler}
+              columns={columns}
+              data={filterData}
+              rangeDeterminer={(_) => {
+                return {class: ''}
+              }}
+              columnClickable={columnClickable}
+              columnClickHandler={columnClickHandler}
+          />) : (
+              <ReportsTableForDate
+                  clickHandler={(locationId, locationName) =>
+                      loadChildHandler(
+                          locationId,
+                          locationName,
+                          dashboardView,
+                          selectedReportInfo?.value,
+                          undefined
+                      )
+                  }
+                  sortHandler={sortDataHandler}
+                  columns={columns}
+                  data={filterData}
+                  rangeDeterminer={(_) => {
+                    return {class: ''}
+                  }}
+                  columnClickable={columnClickable}
+                  columnClickHandler={columnClickHandler}
+              />
+          )}
+    </div>;
+  }
+
+  function getHeaderRow() {
+    return <Col className="text-center">
+      <h2 className="m-0">
+        {dashboardView === AmdrColumnType.HAPLOTYPE ? "Haplotype" : "Drug"} (AMDR)
+      </h2>
+    </Col>;
+  }
+
+  function getSwitchesRow() {
+    return <Col>
+      {/* Controls (now LEFT aligned) */}
+      <div className="d-flex align-items-center gap-3 flex-wrap">
+
+        {/* Drug / Haplotype */}
+        <div
+            className="d-inline-flex align-items-center gap-2 px-3 py-2 border rounded bg-light">
+          <Form.Label
+              className={`fw-bold m-0 ${
+                  dashboardView !== AmdrColumnType.HAPLOTYPE ? "text-primary" : "text-muted"
+              }`}
+          >
+            Drug
+          </Form.Label>
+
+          <Form.Check
+              type="switch"
+              className="m-0"
+              checked={dashboardView === AmdrColumnType.HAPLOTYPE}
+              onChange={handleDrugOrGeneToggle}
+          />
+
+          <Form.Label
+              className={`fw-bold m-0 ${
+                  dashboardView === AmdrColumnType.HAPLOTYPE ? "text-primary" : "text-muted"
+              }`}
+          >
+            Haplotype
+          </Form.Label>
+        </div>
+
+        {/* Geography / Date */}
+        <div
+            className="d-inline-flex align-items-center gap-2 px-3 py-2 border rounded bg-light">
+          <Form.Label
+              className={`fw-bold m-0 ${
+                  geographyOrDate === AmdrDataType.GEOGRAPHY ? "text-primary" : "text-muted"
+              }`}
+          >
+            Geography
+          </Form.Label>
+
+          <Form.Check
+              type="switch"
+              className="m-0"
+              checked={geographyOrDate !== AmdrDataType.GEOGRAPHY}
+              onChange={() => handleGeographyOrDateToggle(locationTree)}
+          />
+
+          <Form.Label
+              className={`fw-bold m-0 ${
+                  geographyOrDate !== AmdrDataType.GEOGRAPHY ? "text-primary" : "text-muted"
+              }`}
+          >
+            Date
+          </Form.Label>
+        </div>
+
+        {/* Monthly / Yearly */}
+        {geographyOrDate === AmdrDataType.DATE
+            && (
+                <>
+                  <div
+                      className="d-inline-flex align-items-center gap-2 px-3 py-2 border rounded bg-light">
+                    <Form.Label
+                        className={`fw-bold m-0 ${
+                            dateModes === AmdrDateModes.MONTHLY ? "text-primary" : "text-muted"
+                        }`}
+                    >
+                      Monthly
+                    </Form.Label>
+
+                    <Form.Check
+                        type="switch"
+                        className="m-0"
+                        checked={dateModes !== AmdrDateModes.MONTHLY}
+                        onChange={handleDateModesToggle}
+                    />
+
+                    <Form.Label
+                        className={`fw-bold m-0 ${
+                            dateModes === AmdrDateModes.YEARLY ? "text-primary" : "text-muted"
+                        }`}
+                    >
+                      Yearly
+                    </Form.Label>
+                  </div>
+
+
+                  <Stack direction="horizontal" gap={2}
+                         className="flex-wrap align-items-center">
+
+                    <Button variant="outline-primary" size="sm" onClick={toggleLocationModal}>
+                      Select Locations
+                    </Button>
+
+                    <Stack direction="horizontal" gap={2} className="flex-wrap">
+                      {selectedLocations.map((id) => (
+                          <Badge key={id} bg="primary" pill>
+                            {locationMap[id] || id}
+                          </Badge>
+                      ))}
+                    </Stack>
+
+                  </Stack>
+                </>
+            )}
+
+      </div>
+    </Col>;
+  }
+
+  function getLocationsModal() {
+    return <Modal show={showLocationModal} onHide={() => {
+      setShowLocationModal(false)
+    }}>
+      <Modal.Header closeButton>
+        <Modal.Title>Select Locations</Modal.Title>
+      </Modal.Header>
+      <Modal.Body style={{maxHeight: "60vh", overflowY: "auto"}}>
+        <LocationTree
+            nodes={locationTree}
+            selectedLocations={selectedLocations}
+            onToggle={handleLocationChange}
+            expandedNodes={expandedNodes}
+            toggleNode={toggleNode}
+            geoLevels={geoLevels}
+            geoLevel={geoLevel}
+        />
+      </Modal.Body>
+      <Modal.Footer>
+        <Row className="w-100 align-items-end">
+
+          <Col md={8}>
+            <Form.Group>
+              <Form.Label>Lowest Geographic Level</Form.Label>
+              <Select
+                  options={geoLevels}
+                  value={geoLevel}
+                  onChange={(selected) => setGeoLevel(selected)}
+                  placeholder="Select geographic level..."
+              />
+            </Form.Group>
           </Col>
-          <Col>
-            <div
-                className="d-inline-flex align-items-center gap-3 px-3 py-2"
-                style={{
-                  border: "1px solid #dee2e6",
-                  borderRadius: 10,
-                  background: "#f8f9fa"
-                }}
-            >
-              {/* Left Label */}
-              <span
-                  className={`fw-bold ${
-                      dashboardView !== AmdrColumnType.HAPLOTYPE
-                          ? "text-primary"
-                          : "text-muted"
-                  }`}
-              >
-              Drug
-              </span>
 
-              {/* Switch */}
-              <div className="form-check form-switch m-0">
-                <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={dashboardView === AmdrColumnType.HAPLOTYPE}
-                    onChange={handleToggle}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                />
-              </div>
+          <Col md={4} className="d-flex justify-content-end">
+            <Button variant="secondary" onClick={toggleLocationModal}>
+              Update
+            </Button>
 
-              {/* Right Label */}
-              <span
-                  className={`fw-bold ${
-                      dashboardView === AmdrColumnType.HAPLOTYPE
-                          ? "text-primary"
-                          : "text-muted"
-                  }`}
-              >
-              Haplotype
-              </span>
-            </div>
           </Col>
-          <Col>
-            <div
-                className="d-inline-flex align-items-center gap-3 px-3 py-2"
-                style={{
-                  border: "1px solid #dee2e6",
-                  borderRadius: 10,
-                  background: "#f8f9fa"
-                }}
-            >
-              {/* Left Label */}
-              <span
-                  className={`fw-bold ${
-                      dashboardView !== AmdrColumnType.HAPLOTYPE
-                          ? "text-primary"
-                          : "text-muted"
-                  }`}
-              >
-              Drug
-              </span>
 
-              {/* Switch */}
-              <div className="form-check form-switch m-0">
-                <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={dashboardView === AmdrColumnType.HAPLOTYPE}
-                    onChange={handleToggle}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                />
-              </div>
-
-              {/* Right Label */}
-              <span
-                  className={`fw-bold ${
-                      dashboardView === AmdrColumnType.HAPLOTYPE
-                          ? "text-primary"
-                          : "text-muted"
-                  }`}
-              >
-              Haplotype
-              </span>
-            </div>
-          </Col>
         </Row>
-        <Row className="mt-3 align-items-center">
-          <Col className="d-flex flex-wrap gap-2">
-            {Object.entries(headerButtons?.[dashboardView] || {}).map(
-                ([id, headerName]) => {
-                  const isSelected = selectedHeaderButtons.some(
-                      btn => btn.id === id
-                  );
+      </Modal.Footer>
+    </Modal>;
+  }
 
-                  const color = `hsl(${headerName.color?.h}, ${headerName.color?.s}%, ${headerName.color?.l}%)`;
+  function getHeaderButtonRow() {
+    return <Col className="d-flex flex-wrap gap-2">
+      {Object.entries(headerButtons?.[dashboardView] || {}).map(
+          ([id, headerName]) => {
+            const isSelected = selectedHeaderButtons.some(
+                btn => btn.id === id
+            );
 
-                  return (
-                      <Button
-                          key={id}
-                          id={id}
-                          onClick={() =>
-                              toggleSelectedHeaderButton({ id, headerName })
-                          }
-                          className="d-flex align-items-center"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 8,
+            const color = `hsl(${headerName.color?.h}, ${headerName.color?.s}%, ${headerName.color?.l}%)`;
 
-                            height: 34,
-                            padding: "0 12px",
+            return (
+                <Button
+                    key={id}
+                    id={id}
+                    onClick={() =>
+                        toggleSelectedHeaderButton({id, headerName})
+                    }
+                    className="d-flex align-items-center"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
 
-                            backgroundColor: isSelected ? "#eef4ff" : "#f8f9fa",
-                            color: "#333",
+                      height: 34,
+                      padding: "0 12px",
 
-                            border: isSelected
-                                ? "1px solid #1976d2"
-                                : "1px solid #dee2e6",
+                      backgroundColor: isSelected ? "#eef4ff" : "#f8f9fa",
+                      color: "#333",
 
-                            borderRadius: 8,
-                            fontSize: "0.85rem",
-                            fontWeight: 500,
+                      border: isSelected
+                          ? "1px solid #1976d2"
+                          : "1px solid #dee2e6",
 
-                            boxShadow: "none"
-                          }}
-                      >
+                      borderRadius: 8,
+                      fontSize: "0.85rem",
+                      fontWeight: 500,
+
+                      boxShadow: "none"
+                    }}
+                >
                         <span
                             style={{
                               width: 10,
@@ -997,198 +1711,78 @@ const AmdrReport = () => {
                             }}
                         />
 
-                        <span
-                            style={{
-                              whiteSpace: "nowrap",
-                              lineHeight: 1
-                            }}
-                        >
-            {headerName.name}
-          </span>
-                      </Button>
-                  );
-                }
-            )}
-          </Col>
-        </Row>
-        <hr/>
-        <Row className={isDarkMode ? 'm-0 p-0 rounded bg-dark' : 'm-0 p-0 rounded bg-light'}>
-          <Col xs sm md={10} className="mt-auto">
-            <p>
-              <FontAwesomeIcon
-                  icon="align-left"
-                  className={path.length ? 'me-3 link-primary pe-none' : 'me-3 text-secondary pe-none'}
-              />
-              <span
-                  role="button"
-                  className={path.length ? 'me-1 link-primary' : 'me-1 text-secondary pe-none'}
-                  onClick={() => {
-                    clearButtonRef.current.click();
-                  }}
-              >
-               /
-            </span>
-              {path.map((el, index) => {
-                return (
-                    <span
-                        role="button"
-                        className={index === path.length - 1 ? 'me-1 text-secondary pe-auto' : 'me-1 link-primary'}
-                        key={el.locationIdentifier}
-                        onClick={() => {
-                          if (index < path.length - 1) {
-                            breadCrumbClickHandler(el, index);
-                          }
-                        }}
-                        title={el.locationProperties?.geographicLevel}
-                    >
-                  {index !== 0 ? ' / ' : ''}
-                      {el.locationName}
-                </span>
-                );
-              })}
-            </p>
-          </Col>
-          <Col className="text-end p-2" xs sm md={2}>
-            <Button onClick={() => setShowGrid(!showGrid)}>
-              {showGrid ? <FontAwesomeIcon icon="chevron-up"/> :
-                  <FontAwesomeIcon icon="chevron-down"/>}
-            </Button>
-          </Col>
-        </Row>
-        {showGrid && (
-            <>
-              <Row className="mt-3 mb-2 align-items-center">
-                <Col
-                    md={reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.ntd ? 3 : 6}>
-                  <Form.Control
-                      ref={searchInput}
-                      placeholder={t('reportPage.search')}
-                      type="text"
-                      onChange={searchHandler}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          return false;
-                        }
-                      }}
-                  />
-                </Col>
-                <Col
-                    md={reportInfo && reportInfo.dashboardFilter !== null && reportInfo.dashboardFilter.ntd !== null}
-                    className="text-end"
-                >
-                  <Button
-                      className="my-2 me-2 "
-                      onClick={() => {
-                        if (path.length) {
-                          loadChildHandler(
-                              path[path.length - 1].locationIdentifier,
-                              path[path.length - 1].locationName,
-                              dashboardView,
-                              selectedReportInfo?.value,
-                              path[path.length - 1].locationProperties
-                          );
-                        }
+                  <span
+                      style={{
+                        whiteSpace: "nowrap",
+                        lineHeight: 1
                       }}
                   >
-                    {t('reportPage.refreshData')}
-                  </Button>
+            {headerName.name}
+          </span>
+                </Button>
+            );
+          }
+      )}
+    </Col>;
+  }
 
-                </Col>
-              </Row>
+  function getLineAndBarChartRow() {
+    return <Col md={showMap ? 10 : 2}>
+      <Collapse in={showMap}>
+        <div style={{
+          display: 'flex',
+          gap: '16px',            // optional spacing between charts
+          padding: '16px',        // optional padding
+          height: "400px", width: "100%"
+        }} className="mp-2 mx-2">
+          <div className="d-flex flex-wrap gap-2 mb-3">
+            {Object.entries(headerButtons?.[dashboardView] || {}).map(
+                ([id, headerName]) => {
+                  const isHaplotype = dashboardView === AmdrColumnType.HAPLOTYPE;
 
-              <div
-                  style={{
-                    maxHeight: showMap ? '50vh' : '90vh',
-                    overflow: 'auto'
-                  }}
-              >
+                  const isSelected = selectedHeaderButtons.some(
+                      s => s.id === id
+                  );
 
-                <ReportsTable
-                    clickHandler={(locationId, locationName) =>
-                        loadChildHandler(
-                            locationId,
-                            locationName,
-                            dashboardView,
-                            selectedReportInfo?.value,
-                            undefined
-                        )
-                    }
-                    sortHandler={sortDataHandler}
-                    columns={columns}
-                    data={filterData}
-                    rangeDeterminer={(_) => {
-                      return {class: ''}
-                    }}
-                    columnClickable={columnClickable}
-                    columnClickHandler={columnClickHandler}
-                />
-              </div>
-            </>
-        )}
-        {filterData.length === 0 && <p className="lead text-center">{t('general.noDataFound')}</p>}
-        {showGraphs && combinedGraphData ? <><Row className="my-3 align-items-center">
-          <Col md={showMap ? 10 : 2}>
-            <Collapse in={showMap}>
-              <div style={{
-                display: 'flex',
-                gap: '16px',            // optional spacing between charts
-                padding: '16px',        // optional padding
-                height: "400px", width: "100%"
-              }} className="mp-2 mx-2">
+                  const color = `hsl(${headerName.color?.h}, ${headerName.color?.s}%, ${headerName.color?.l}%)`;
 
-                {combinedGraphData && chartType === 'bar' && (
-                    <Bar data={combinedGraphData as ChartData<'bar'>} options={graphOptions}/>
-                )}
-
-                <div className="d-flex flex-wrap gap-2 mb-3">
-                  {Object.entries(headerButtons?.[dashboardView] || {}).map(
-                      ([id, headerName]) => {
-                        const isHaplotype = dashboardView === AmdrColumnType.HAPLOTYPE;
-
-                        const isSelected = selectedHeaderButtons.some(
-                            s => s.id === id
-                        );
-
-                        const color = `hsl(${headerName.color?.h}, ${headerName.color?.s}%, ${headerName.color?.l}%)`;
-
-                        return (
-                            <div key={id}>
-                              <input
-                                  type={isHaplotype ? "radio" : "checkbox"}
-                                  className="btn-check"
-                                  name={isHaplotype ? "header-radio-group" : undefined}
-                                  id={`check-${id}`}
-                                  checked={isSelected}
-                                  onChange={() =>
-                                      setSelectedHeaderButtons(prev => {
-                                        // RADIO BEHAVIOR (single select)
-                                        if (isHaplotype) {
-                                          return [{id, headerName}];
-                                        }
-
-                                        // CHECKBOX BEHAVIOR (multi select)
-                                        if (prev.some(s => s.id === id)) {
-                                          return prev.filter(s => s.id !== id);
-                                        }
-
-                                        return [...prev, {id, headerName}];
-                                      })
+                  return (
+                      <div key={id}>
+                        <input
+                            type={isHaplotype ? "radio" : "checkbox"}
+                            className="btn-check"
+                            name={isHaplotype ? "header-radio-group" : undefined}
+                            id={`check-${id}`}
+                            checked={isSelected}
+                            onChange={() =>
+                                setSelectedHeaderButtons(prev => {
+                                  // RADIO BEHAVIOR (single select)
+                                  if (isHaplotype) {
+                                    return [{id, headerName}];
                                   }
-                              />
 
-                              <label
-                                  htmlFor={`check-${id}`}
-                                  className={`btn ${
-                                      isSelected ? "btn-light border-primary" : "btn-light border"
-                                  }`}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                    borderRadius: 8
-                                  }}
-                              >
+                                  // CHECKBOX BEHAVIOR (multi select)
+                                  if (prev.some(s => s.id === id)) {
+                                    return prev.filter(s => s.id !== id);
+                                  }
+
+                                  return [...prev, {id, headerName}];
+                                })
+                            }
+                        />
+
+                        <label
+                            htmlFor={`check-${id}`}
+                            className={`btn ${
+                                isSelected ? "btn-light border-primary" : "btn-light border"
+                            }`}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              borderRadius: 8
+                            }}
+                        >
                                 <span
                                     style={{
                                       width: 10,
@@ -1199,141 +1793,370 @@ const AmdrReport = () => {
                                       flexShrink: 0
                                     }}
                                 />
-                                <span
-                                    style={{
-                                      whiteSpace: "nowrap",
-                                      fontSize: "0.85rem",
-                                      lineHeight: 1
-                                    }}
-                                >
+                          <span
+                              style={{
+                                whiteSpace: "nowrap",
+                                fontSize: "0.85rem",
+                                lineHeight: 1
+                              }}
+                          >
                                   {headerName.name}
                                 </span>
-                              </label>
-                            </div>
-                        );
+                        </label>
+                      </div>
+                  );
+                }
+            )}
+          </div>
+          <Bar style={{display: chartType === 'bar' ? 'block' : 'none'}}
+               data={combinedGraphData as ChartData<'bar'>}
+               options={graphOptions}
+          />
+
+          <Line style={{display: chartType === 'line' ? 'block' : 'none'}}
+                data={combinedGraphData as ChartData<'line'>}
+                options={graphOptions}
+          />
+        </div>
+
+
+      </Collapse>
+    </Col>;
+  }
+
+  function getHeaderButtonListForGraph() {
+    return <div className="d-flex flex-wrap gap-2 mb-3 justify-content-center">
+      {Object.entries(headerButtons?.[dashboardView] || {}).map(
+          ([id, headerName]) => {
+            const isHaplotype = dashboardView === AmdrColumnType.HAPLOTYPE;
+
+            const isSelected = selectedHeaderButtons.some(
+                s => s.id === id
+            );
+
+            const color = `hsl(${headerName.color?.h}, ${headerName.color?.s}%, ${headerName.color?.l}%)`;
+
+            return (
+                <div key={id}>
+                  <input
+                      type={isHaplotype ? "radio" : "checkbox"}
+                      className="btn-check"
+                      name={isHaplotype ? "header-radio-group" : undefined}
+                      id={`check-${id}`}
+                      checked={isSelected}
+                      onChange={() =>
+                          setSelectedHeaderButtons(prev => {
+                            // RADIO BEHAVIOR (single select)
+                            if (isHaplotype) {
+                              return [{id, headerName}];
+                            }
+
+                            // CHECKBOX BEHAVIOR (multi select)
+                            if (prev.some(s => s.id === id)) {
+                              return prev.filter(s => s.id !== id);
+                            }
+
+                            return [...prev, {id, headerName}];
+                          })
                       }
-                  )}
+                  />
+
+                  <label htmlFor={`check-${id}`} className={`btn ${isSelected ? "btn-light border-primary" : "btn-light border"}`}
+                      style={{display: "flex", alignItems: "center", gap: 8, borderRadius: 8}}>
+                    <span style={{width: 10, height: 10, backgroundColor: color, display: "inline-block", borderRadius: 2, flexShrink: 0}}/>
+                    <span style={{whiteSpace: "nowrap", fontSize: "0.85rem", lineHeight: 1}}>
+                      {headerName.name}
+                    </span>
+                  </label>
                 </div>
+            );
+          }
+      )}
+    </div>;
+  }
+
+  function getLineAndBarChartRowCombined() {
+    return (
+        <>
+          {/*{chartType === 'line' &&  <Row>*/}
+          {/*  <hr/>*/}
+          {/*  {getHeaderButtonListForGraph()}*/}
+          {/*  <hr/>*/}
+          {/*  /!*<Chart type="matrix" data={chartMatrixData} options={optionsMatrix} />*!/*/}
+          {/*</Row>}*/}
+          {chartType === 'bar' && <Row className="my-3 align-items-center">
+        <Col md={showMap ? 10 : 2}>
+
+        <div style={{
+          display: 'flex',
+          gap: '16px',            // optional spacing between charts
+          padding: '16px',        // optional padding
+          height: "400px", width: "100%"
+        }} className="mp-2 mx-2">
+          {getHeaderButtonListForGraph()}
+          <Bar style={{display: chartType === 'bar' ? 'block' : 'none',width:'100%'}}
+               data={combinedGraphData as ChartData<'bar'>}
+               options={{ responsive: true,
+                 plugins: {
+                   title:{
+                     display:true,
+                     position: 'top',
+                     text: 'Some title'
+                   },
+                   legend: {
+
+                     display: false,
+                     position: 'right',
+                     labels: {
+                       boxWidth: 10,
+                       boxHeight: 2
+                     },
+                   },
+                 },
+                 scales: {
+                   x: {
+                     title: {
+                       display: true,       // ✅ shows the title
+                       text: 'some x axis'
+                     },
+                   },
+                   y: {
+                     title: {
+                       display: true,       // ✅ shows the title
+                       text: 'some y axis'
+                     },
+                     min: 0,
+                     max: 100,
+                   }
+                 },
+                 maintainAspectRatio: false
+               }
+               }
+          />
+        </div>
+        </Col>
+      </Row>}
+          {chartType === 'line' && <>
+            <Row>
+              <Col md={"1"} className={"d-flex"} >
+                  {getHeaderButtonListForGraph()}
+              </Col>
+              <Col md={"11"}>
+                <Row>
+                  <Col md={"6"}>
+                    <Line style={{display: chartType === 'line' ? 'block' : 'none'}}
+                          data={combinedGraphData as ChartData<'line'>}
+                          options={{
+                            responsive: true,
+                            plugins: {
+
+                              title:{
+                                display:true,
+                                position: 'top',
+                                text: 'Some title'
+                              },
+                              legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                  boxWidth: 10,
+                                  boxHeight: 10
+                                },
+                              },
+                            },
+                            scales: {
+                              x: {
+                                title: {
+                                  display: true,       // ✅ shows the title
+                                  text: 'some x axis'
+                                },
+                              },
+                              y: {
+                                title: {
+                                  display: true,       // ✅ shows the title
+                                  text: 'some y axis'
+                                },
+                                min: 0,
+                                max: 100,
+                              }
+                            },
+                          }}
+                    />
+
+                  </Col>
+                  {chartType === 'line' && <Col md="6">
+                    {dashboardView === AmdrColumnType.HAPLOTYPE && chartType === 'line' && haplotypeYearlyMonthlyLocationLineData && (
+
+                        <Line
+                            data={haplotypeYearlyMonthlyLocationLineData}
+                            options={{
+                              responsive: true,
+
+                              plugins: {
+                                title:{
+                                  display:true,
+                                  position: 'top',
+                                  text: 'Some title'
+                                },
+                                legend: {
+                                  position: 'bottom' as const,
+                                  labels: {
+                                    boxWidth: 10,
+                                    boxHeight: 10
+                                  },
+                                },
+                              },
+
+                              scales: {
+                                x: {
+                                  title: {
+                                    display: true,       // ✅ shows the title
+                                    text: 'some x axis'
+                                  },
+                                },
+                                y: {
+                                  title: {
+                                    display: true,       // ✅ shows the title
+                                    text: 'some y axis'
+                                  },
+                                  min: 0,
+                                  max: 100, // assuming percentage
+                                },
+                              }
+                            }}
+                        />
+
+                    )}
+                    {dashboardView === AmdrColumnType.DRUG && chartType === 'line' && drugYearlyMonthlyLocationLineData && (
+                        <Line
+                            data={drugYearlyMonthlyLocationLineData}
+                            options={{
+                              responsive: true,
+
+                              plugins: {
+                                title:{
+                                  display:true,
+                                  position: 'top',
+                                  text: 'Some title'
+                                },
+                                legend: {
+                                  position: 'bottom' as const,
+                                },
+                              },
+                              scales: {
+                                y: {
+                                  min: 0,
+                                  max: 100, // assuming percentage
+                                },
+                              }
+                            }}
+                        />
+                    )}
+                  </Col>}
+                </Row>
+              </Col>
+            </Row>
+
+          </>
+          }
+    </>);
+  }
+
+  function getDatedLineChartRow() {
+    return <Col>
+      {dashboardView === AmdrColumnType.HAPLOTYPE && chartType === 'line' && haplotypeYearlyMonthlyLocationLineData && (
+          <div style={{width: '100%', height: '500px'}}> {/* fixed reasonable height */}
+            <Line
+                data={haplotypeYearlyMonthlyLocationLineData}
+                options={{
+                  ...graphDateOptions,
+                  responsive: true,
+                  maintainAspectRatio: false, // let it fill the div
+                }}
+            />
+          </div>
+      )}
+      {dashboardView === AmdrColumnType.DRUG && chartType === 'line' && drugYearlyMonthlyLocationLineData && (
+          <div style={{width: '100%', height: '500px'}}> {/* fixed reasonable height */}
+            <Line
+                data={drugYearlyMonthlyLocationLineData}
+                options={{
+                  ...graphDateOptions,
+                  responsive: true,
+                  maintainAspectRatio: false, // let it fill the div
+                }}
+            />
+            {/*<Chart type="matrix" data={chartMatrixData} options={optionsMatrix} />*/}
+          </div>
+      )}
+    </Col>;
+  }
+
+  function getPieChartRow() {
+    return <Col>
+      <div style={{display: "flex", gap: 16, flexWrap: "wrap"}}>
+        {combinedPieGraphData && Object.keys(combinedPieGraphData).map(key => (
+            <div key={key} style={{width: 180}}>
+              <div style={{marginBottom: 6, fontSize: 12, fontWeight: "bold"}}>
+                {key ?? "Untitled"}
               </div>
 
+              <div style={{width: "100%", height: 180}}>
+                <Pie
+                    data={combinedPieGraphData[key]}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {display: true},
+                      },
+                    }}
+                />
+              </div>
+            </div>
+        ))}
+      </div>
+    </Col>;
+  }
 
-            </Collapse>
-          </Col>
-        </Row>
-          {Array.isArray(selectedHeaderButtons) && selectedHeaderButtons.length > 0 && (
-              <Row>
-                <Col>
-                  <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                    {combinedPieGraphData && Object.keys(combinedPieGraphData).map(key => (
-                        <div key={key} style={{ width: 180 }}>
-                          <div style={{ marginBottom: 6, fontSize: 12, fontWeight: "bold" }}>
-                            {key ?? "Untitled"}
-                          </div>
+  function getMapViewRow() {
+    return <>
+      <Col md={showMap ? 10 : 2}>
+        <Collapse in={showMap}>
+          <div id="expand-table">
+            <AmdrMapViewDetail
+                defaultColumn={defaultDisplayColumn}
+                showModal={openModalHandler}
+                doubleClickEvent={(feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) =>
+                    handleDobuleClickRef.current(feature, dashboardView)
+                }
+                featureSet={featureSet}
+                clearMap={clearMap}
+                ref={clearButtonRef}
+            /></div>
+        </Collapse>
+      </Col>
+      <Col>
+        {filterData && filterData[0] && filterData[0].columnDataMap &&
+            <Select
+                placeholder="Select data to display..."
+                options={filterData[0].columnDataMap && Object.keys(filterData[0].columnDataMap).map(el => ({
+                  value: el ?? "",
+                  label: filterData[0].columnDataMap[el].description
+                }))}
+                formatOptionLabel={(option) => {
+                  if (!filterData?.[0]?.columnDataMap) return option.label;
 
-                          <div style={{ width: "100%", height: 180 }}>
-                            <Pie
-                                data={combinedPieGraphData[key]}
-                                options={{
-                                  responsive: true,
-                                  maintainAspectRatio: false,
-                                  plugins: {
-                                    legend: { display: true },
-                                  },
-                                }}
-                            />
-                          </div>
-                        </div>
-                    ))}
-                  </div>
-                </Col>
-              </Row>
-          )}
-          {/*{show3dGraphs &&*/}
-          {/*    <Row>*/}
-          {/*      <Col xs sm md={10}*/}
-          {/*           className="border pe-3 d-flex justify-content-center align-items-center">*/}
-          {/*        {plotSelector && ribbonData ?*/}
-          {/*            <RibbonPlot data={ribbonData}/> :*/}
-          {/*            <span>Select {dashboardView == AmdrColumnType.HAPLOTYPE ? "Drug" : "Gene"} to view data</span>}*/}
+                  const column = filterData[0].columnDataMap[option.value];
 
-          {/*      </Col>*/}
-          {/*      <Col xs sm md={2}>*/}
-          {/*        <h5 className="mb-2">Select {dashboardView == AmdrColumnType.HAPLOTYPE ? "Haplotype" : "Drug"}</h5>*/}
-          {/*        <Select*/}
-          {/*            placeholder={'Select data to display' + '...'}*/}
-          {/*            options={Object.keys(data[0].columnDataMap).map(el => {*/}
-          {/*              return {*/}
-          {/*                label: data[0].columnDataMap[el].description,*/}
-          {/*                value: el ?? ''*/}
-          {/*              };*/}
-          {/*            })}*/}
-          {/*            value={plotSelectedOption}*/}
-          {/*            onChange={(e: SingleValue<OptionType>) => {*/}
-          {/*              setPlotSelectedOption(e)*/}
-          {/*              if (e) {*/}
-          {/*                setPlotSelector(e?.value);*/}
-          {/*              }*/}
-          {/*            }}*/}
-          {/*        />*/}
-          {/*        <Select*/}
-          {/*            placeholder={'Select Direction...'}*/}
-          {/*            options={locationOrYearOptions.map(el => ({*/}
-          {/*              label: el.toString(),*/}
-          {/*              value: el*/}
-          {/*            }))}*/}
-          {/*            value={locationOrYearOptions*/}
-          {/*            .map(el => ({*/}
-          {/*              label: el.toString(),*/}
-          {/*              value: el*/}
-          {/*            }))*/}
-          {/*            .find(o => o.value === locationOrYear)}*/}
-          {/*            onChange={(e: SingleValue<{*/}
-          {/*              label: string;*/}
-          {/*              value: string;*/}
-          {/*            }>) => {*/}
-          {/*              if (e?.value) {*/}
-          {/*                setLocationOrYear(e.value);*/}
-          {/*              }*/}
-          {/*            }}*/}
-          {/*        />*/}
-          {/*      </Col>*/}
-          {/*    </Row>}*/}
-          {showMap && <Row className="my-3 align-items-center">
-            <Col md={showMap ? 10 : 2}>
-              <Collapse in={showMap}>
-                <div id="expand-table">
-                  <AmdrMapViewDetail
-                      defaultColumn={defaultDisplayColumn}
-                      showModal={openModalHandler}
-                      doubleClickEvent={(feature: Feature<Polygon | MultiPolygon, ReportLocationProperties>) =>
-                          handleDobuleClickRef.current(feature, dashboardView)
-                      }
-                      featureSet={featureSet}
-                      clearMap={clearMap}
-                      ref={clearButtonRef}
-                  /></div>
-              </Collapse>
-            </Col>
-            <Col>
-              <Select
-                  placeholder="Select data to display..."
-                  options={filterData[0].columnDataMap && Object.keys(filterData[0].columnDataMap).map(el => ({
-                    value: el ?? "",
-                    label: filterData[0].columnDataMap[el].description
-                  }))}
-                  formatOptionLabel={(option) => {
-                    if (!filterData?.[0]?.columnDataMap) return option.label;
+                  if (!column) {
+                    return <span>{option.label}</span>;
+                  }
 
-                    const column = filterData[0].columnDataMap[option.value];
+                  const color = `hsl(${hslColorMap?.[option.value].h}, ${hslColorMap?.[option.value].s}%, ${hslColorMap?.[option.value].l}%)`;
 
-                    if (!column) {
-                      return <span>{option.label}</span>;
-                    }
-
-                    const color = `hsl(${column.hslColor?.h}, ${column.hslColor?.s}%, ${column.hslColor?.l}%)`;
-
-                    return (
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  return (
+                      <div style={{display: "flex", alignItems: "center", gap: 8}}>
                           <span
                               style={{
                                 width: 10,
@@ -1344,49 +2167,92 @@ const AmdrReport = () => {
                                 flexShrink: 0
                               }}
                           />
-                          <span style={{ whiteSpace: "normal" }}>
+                        <span style={{whiteSpace: "normal"}}>
                             {option.label}
                           </span>
-                        </div>
-                    );
-                  }}
-                  styles={{
-                    control: (base) => ({
-                      ...base,
-                      minHeight: 48,          // ⬆️ taller select
-                      height: "auto"
-                    }),
-                    valueContainer: (base) => ({
-                      ...base,
-                      paddingTop: 6,
-                      paddingBottom: 6
-                    }),
-                    singleValue: (base) => ({
-                      ...base,
-                      whiteSpace: "normal",   // ⬅️ allow wrapping
-                      overflow: "visible"
-                    }),
-                    option: (base) => ({
-                      ...base,
-                      whiteSpace: "normal"    // ⬅️ wrap in dropdown too
-                    })
-                  }}
-                  value={plotSelectedOption}
-                  onChange={(e: SingleValue<OptionType>) => {
+                      </div>
+                  );
+                }}
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: 48,          // ⬆️ taller select
+                    height: "auto"
+                  }),
+                  valueContainer: (base) => ({
+                    ...base,
+                    paddingTop: 6,
+                    paddingBottom: 6
+                  }),
+                  singleValue: (base) => ({
+                    ...base,
+                    whiteSpace: "normal",   // ⬅️ allow wrapping
+                    overflow: "visible"
+                  }),
+                  option: (base) => ({
+                    ...base,
+                    whiteSpace: "normal"    // ⬅️ wrap in dropdown too
+                  })
+                }}
+                value={plotSelectedOption}
+                onChange={(e: SingleValue<OptionType>) => {
 
-                    if (e) {
-                      setPlotSelectedOption(e);
-                      const column = filterData[0].columnDataMap[e.value];
-                      const color = `hsl(${column.hslColor?.h}, ${column.hslColor?.s}%, ${column.hslColor?.l}%)`;
-                      setSelectedColor(color);
-                      setSelectedHslColor(column.hslColor)
-                      setPlotSelector(e.value);
-                    }
-                  }}
-              />
-            </Col>
-          </Row>}
+                  if (e) {
+                    setPlotSelectedOption(e);
+                    setSelectedHslColor(hslColorMap?.[e.value])
+                    setPlotSelector(e.value);
+                  }
+                }}
+            />}
+      </Col>
+    </>;
+  }
 
+  return (
+      <Container fluid className="my-4 px-2">
+        <Row className="mt-3 align-items-center">
+          {getHeaderRow()}
+        </Row>
+        <Row className="mt-5 align-items-center">
+          {getSwitchesRow()}
+        </Row>
+        {getLocationsModal()}
+        <Row className="mt-3 align-items-center">
+          {getHeaderButtonRow()}
+        </Row>
+        <hr/>
+        {geographyOrDate === AmdrDataType.GEOGRAPHY &&
+            <>
+              <Row className={isDarkMode ? 'm-0 p-0 rounded bg-dark' : 'm-0 p-0 rounded bg-light'}>
+                {getBreadCrumbRow()}
+              </Row>
+            </>
+        }
+        {showGrid && (
+            <>
+              <Row className="mt-3 mb-2 align-items-center">
+                {getSearchBarRow()}
+              </Row>
+              {getTable()}
+            </>
+        )}
+        {filterData.length === 0 && <p className="lead text-center">{t('general.noDataFound')}</p>}
+        {showGraphs && combinedGraphData ? <>
+          <Row className="my-3 align-items-center">
+            {getLineAndBarChartRowCombined()}
+          </Row>
+          <Row>
+            {/*{getDatedLineChartRow()}*/}
+          </Row>
+          {Array.isArray(selectedHeaderButtons) && selectedHeaderButtons.length > 0 && (
+              <Row>
+                {getPieChartRow()}
+              </Row>
+          )}
+          {geographyOrDate === AmdrDataType.GEOGRAPHY && showMap &&
+              <Row className="my-3 align-items-center">
+                {getMapViewRow()}
+              </Row>}
         </> : ""}
       </Container>
   );

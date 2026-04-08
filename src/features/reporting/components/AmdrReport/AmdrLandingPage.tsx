@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 
-import {getLandingPageResponse} from "./index";
+import {getLandingPageResponse} from "./api";
 import Container from "react-bootstrap/Container";
 import {
   AmdrTotalsLandingPageData,

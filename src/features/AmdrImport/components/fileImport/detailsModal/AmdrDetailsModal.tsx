@@ -28,15 +28,18 @@ const AmdrDetailsModal = ({selectedFile, closeHandler}: Props) => {
               <Table bordered responsive hover>
                 <thead className="border border-2">
                 <tr>
-                  <th>FileName</th>
-                  <th>{selectedFile.filename}</th>
+                  <th>Status</th>
+                  <th>Count</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                  <td>Samples Imported</td>
-                  <td>{importDetails.sampleIds}</td>
-                </tr>
+                {importDetails.statuses && importDetails.statuses.map(status =>
+                    <tr>
+                    <td>{status.status}</td>
+                    <td>{status.count}</td>
+                  </tr>
+                )}
+
                 </tbody>
               </Table>
           ) : (

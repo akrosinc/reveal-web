@@ -354,7 +354,8 @@
       "owner": "I am the owner",
       "owners": "Current Owners",
       "selected": "Selection"
-    }
+    },
+    "importStatus": "Import Status"
   },
   "locationHierarchyPage": {
     "name": "Name",

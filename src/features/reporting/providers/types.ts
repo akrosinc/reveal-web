@@ -1,14 +1,12 @@
+import {HslColor} from "../components/AmdrReport/types";
+
 export interface MapDataReportRequest {
   planIdentifier: string|null;
   reportTypeEnum: string;
   parentLocationIdentifier: string | null;
 }
 
-export interface HslColor{
-  h:number;
-  s:number;
-  l:number;
-}
+
 
 export interface FoundCoverage {
   value: any;
@@ -17,7 +15,6 @@ export interface FoundCoverage {
   dataType: string;
   isHidden: boolean;
   description: string;
-  hslColor?:HslColor;
   amdrParent?: string;
 
 }
@@ -54,6 +51,10 @@ export interface ReportLocationProperties {
   evaluatedColor: string;
   reportLevel: string;
 
+}
+
+export interface RowData{
+  columnDataMap: { [x: string]: FoundCoverage };
 }
 
 export enum IrsStructureStatus {

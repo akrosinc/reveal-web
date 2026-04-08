@@ -315,64 +315,68 @@ const AmdrMapViewDetail = React.forwardRef<any, Props>(
             const properties = feature.properties;
             if (properties && !hoverPopup.current.isOpen() && !contextMenuPopup.current.isOpen()) {
               //mapbox strigifies objects inside properties, parsing columnDataMap back to object
-              properties['columnDataMap'] = JSON.parse(properties['columnDataMap']);
               let htmlText = 'Data not parsed correctly.';
+              if (properties['columnDataMap']){
+              properties['columnDataMap'] = JSON.parse(properties['columnDataMap']);
+
               const defaultColumnName = defaultColumn; //(data as any).defaultDisplayColumn;
               if (
-                reportType === ReportType.MDA_LITE_COVERAGE &&
-                (defaultColumnName === 'SCH Treatment Coverage' || defaultColumnName === 'STH Treatment Coverage')
+                  reportType === ReportType.MDA_LITE_COVERAGE &&
+                  (defaultColumnName === 'SCH Treatment Coverage' || defaultColumnName === 'STH Treatment Coverage')
               ) {
                 let filteredAgeCoverage;
                 if (defaultColumnName === 'SCH Treatment Coverage') {
                   filteredAgeCoverage = AGE_COVERAGE_LEGEND.filter(
-                    e => e.key !== 'Male 1-4 years' && e.key !== 'Female 1-4 years'
+                      e => e.key !== 'Male 1-4 years' && e.key !== 'Female 1-4 years'
                   );
                 } else {
                   filteredAgeCoverage = AGE_COVERAGE_LEGEND;
                 }
 
                 let ageCoverageLegend = filteredAgeCoverage
-                  ?.map(e => {
-                    return `<div className="p-2"><span className="my-3">${e.label}: ${
+                ?.map(e => {
+                  return `<div className="p-2"><span className="my-3">${e.label}: ${
                       properties['columnDataMap'][e.key].value
-                    }</span></div>`;
-                  })
-                  .join(' ');
+                  }</span></div>`;
+                })
+                .join(' ');
 
                 htmlText = `<h4 class="bg-success text-light text-center">${properties['name']}</h4> ${ageCoverageLegend}`;
               } else if (reportType === ReportType.ONCHOCERCIASIS_SURVEY && properties['reportLevel'] !== 'Structure') {
                 let onchoCoverageLegend = ONCHO_COVERAGE_LEGEND.map(e => {
                   return `<div className="p-2"><span className="my-3">${e.label}: ${
-                    properties['columnDataMap'][e.key]?.value
+                      properties['columnDataMap'][e.key]?.value
                   }</span></div>`;
                 }).join(' ');
 
                 htmlText = `<h4 class="bg-success text-light text-center">${properties['name']}</h4> ${onchoCoverageLegend}`;
               } else if (defaultColumnName) {
                 htmlText = `<h4 class="bg-success text-light text-center">${properties['name']}</h4>
+
             <div class="p-2">
               ${`<small class="my-3">${defaultColumnName ?? 'Data not parsed correctly'}: ${
-                properties['columnDataMap'][defaultColumnName] !== undefined
-                  ? properties['columnDataMap'][defaultColumnName].isPercentage
-                    ? properties['columnDataMap'][defaultColumnName].value.toFixed(3) + '%'
-                    : properties['columnDataMap'][defaultColumnName].value
-                  : ''
-              }</small>`}
+                    properties['columnDataMap'][defaultColumnName] !== undefined
+                        ? properties['columnDataMap'][defaultColumnName].isPercentage
+                            ? properties['columnDataMap'][defaultColumnName].value.toFixed(3) + '%'
+                            : properties['columnDataMap'][defaultColumnName].value
+                        : ''
+                }</small>`}
             </div>`;
               } else if (properties['businessStatus']) {
                 htmlText = `<h4 class="bg-success text-light text-center">${properties['name']}</h4>
             <div class="p-2">
               ${`<small class="my-3">Business Status: ${
-                (reportType === ReportType.IRS_FULL_COVERAGE ||
-                  reportType === ReportType.IRS_LITE_COVERAGE ||
-                  reportType === ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL) &&
-                properties['businessStatus'] === 'Complete'
-                  ? 'Sprayed'
-                  : properties['businessStatus']
-              }
+                    (reportType === ReportType.IRS_FULL_COVERAGE ||
+                        reportType === ReportType.IRS_LITE_COVERAGE ||
+                        reportType === ReportType.IRS_LITE_COVERAGE_OPERATIONAL_AREA_LEVEL) &&
+                    properties['businessStatus'] === 'Complete'
+                        ? 'Sprayed'
+                        : properties['businessStatus']
+                }
               </small>`}
             </div>`;
               }
+            }
               currentMap.getCanvas().style.cursor = 'pointer';
               hoverPopup.current.setLngLat(e.lngLat).setHTML(htmlText).addTo(currentMap);
             }
@@ -476,9 +480,12 @@ const AmdrMapViewDetail = React.forwardRef<any, Props>(
       if (map.current && featureSet) {
         const mapInstance = map.current;
         //check if map is loaded completly
-        if (mapInstance){
+        if (!mapInstance || !mapInstance.loaded()) return;
+          const style = mapInstance.getStyle?.();
+          const sources:any = style?.sources;
+          if (!sources) return;
 
-          let sources:any = mapInstance.getStyle().sources;
+          // let sources:any = mapInstance.getStyle()?.sources;
           Object.keys(sources).map(key => {
 
             if (key!=="mapbox" && key !== featureSet[1]){
@@ -512,7 +519,7 @@ const AmdrMapViewDetail = React.forwardRef<any, Props>(
 
             (source as any).setData(data)
           }
-        }
+
       }
     }, [featureSet]);
 

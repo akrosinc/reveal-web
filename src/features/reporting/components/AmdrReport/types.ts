@@ -1,4 +1,4 @@
-import {ReportLocationProperties} from "../../providers/types";
+import {ReportLocationProperties, RowData} from "../../providers/types";
 
 export interface LocationResponse {
   id: string;                          // likely UUID
@@ -23,6 +23,24 @@ export interface HaploData {
   [haploKey: string]: HaploGeneMap;
 }
 
+export interface AmdrDrugMarkerStats {
+  wild: number;
+  mono: number;
+  mixed: number;
+  val: number;
+  rec: number;
+}
+
+export interface GeneMap {
+  [geneKey: string]: AmdrDrugMarkerStats;
+}
+
+export interface HaploMap {
+  [haploKey: string]: GeneMap;
+}
+
+
+
 
 export interface FeatureSetResponse {
   identifier: string;                  // UUID → string
@@ -34,7 +52,43 @@ export interface FeatureSetResponse {
   noDashboardData: boolean | null;
   coords: CoordsByYearOrLocationWithTicks;
   markers: HaploData;
+  rows?: ReportLocationProperties[];
 
+}
+
+
+
+export interface HslColor{
+  h:number;
+  s:number;
+  l:number;
+}
+
+export interface HslColorMap {
+  [key: string] : HslColor
+}
+
+export interface AmdrDrugYearlyMonthlyLocationalItem{
+  collectionYear:string;
+  collectionMonth:string;
+  data: GeneMap;
+}
+
+export interface AmdrDrugYearlyMonthlyLocational{
+  locationIdentifier:string;
+  items: AmdrDrugYearlyMonthlyLocationalItem[];
+}
+
+
+export interface AmdrHaplotypeYearlyMonthlyLocationalItem{
+  collectionYear:string;
+  collectionMonth:string;
+  data: HaploMap;
+}
+
+export interface AmdrHaplotypeYearlyMonthlyLocational{
+  locationIdentifier:string;
+  items: AmdrHaplotypeYearlyMonthlyLocationalItem[];
 }
 
 
@@ -165,5 +219,22 @@ export interface AmdrLandPageResponse {
   amdrTotalsLandingPageData: AmdrTotalsLandingPageData;
   amdrTotalsPercentageLandingPageData :AmdrTotalsPercentageLandingPageData;
 }
+export enum AmdrColumnType {
+  DRUG = "DRUG",
+  HAPLOTYPE = "HAPLOTYPE"
+}
 
+export enum AmdrDataType {
+  DATE = "DATE",
+  GEOGRAPHY = "TIME_BASED"
+}
 
+export enum AmdrDateModes {
+  YEARLY = "YEARLY",
+  MONTHLY = "MONTHLY"
+}
+
+export type Option = {
+  value: string; // original value (id)
+  label: string; // capitalized display
+};

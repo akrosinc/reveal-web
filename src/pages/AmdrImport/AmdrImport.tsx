@@ -8,6 +8,7 @@ import AuthGuard from "../../components/AuthGuard";
 import MetaFileImport from "../../features/metaDataImport/components/fileImport";
 import AmdrTemplateCreation from "../../features/AmdrImport/components/templateCreation";
 import AmdrFileImport from "../../features/AmdrImport/components/fileImport";
+import AmdrImportStatus from "../../features/AmdrImport/components/importStatus";
 
 const AmdrImport = () => {
 
@@ -19,7 +20,7 @@ const AmdrImport = () => {
   useEffect(() => {
     if (tab === undefined) {
       navigate(AMDR_IMPORT + '/create-template');
-    } else if (tab !== 'create-template' && tab !== 'file-import') {
+    } else if (tab !== 'create-template' && tab !== 'file-import' && tab !== 'import-status' ) {
       navigate('/error');
     }
   }, [tab, navigate]);
@@ -31,7 +32,6 @@ const AmdrImport = () => {
             id="test-tabs"
             className="mb-3"
             mountOnEnter={true}
-            unmountOnExit={true}
             onSelect={tabName => {
               navigate(AMDR_IMPORT + '/' + tabName);
             }}
@@ -44,6 +44,11 @@ const AmdrImport = () => {
           <Tab eventKey="file-import" title={t('amdrImport.fileImport')}>
             <AuthGuard roles={[]}>
               <AmdrFileImport />
+            </AuthGuard>
+          </Tab>
+          <Tab eventKey="import-status" title={t('amdrImport.importStatus')}>
+            <AuthGuard roles={[]}>
+              <AmdrImportStatus />
             </AuthGuard>
           </Tab>
         </Tabs>

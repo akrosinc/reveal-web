@@ -1,8 +1,18 @@
-import {HslColor} from "../reporting/providers/types";
+import {HslColor} from "../reporting/components/AmdrReport/types";
 
-export enum AmdrColumnType {
-  DRUG = "DRUG",
-  HAPLOTYPE = "HAPLOTYPE"
+
+export interface LocationNode {
+  id: string; // UUID as string
+  parentId?: string | null;
+  name: string;
+  children?: LocationNode[];
+  geoLevel:string;
+
+}
+
+export interface LocationNodeDetails{
+  geoLevels:string[];
+  nodes:LocationNode[];
 }
 
 export interface AmdrImportResponse {
@@ -13,8 +23,13 @@ export interface AmdrImportResponse {
   uploadedBy: string;
 }
 
+export interface AmdrImportStatus {
+  status :string;
+  count: number;
+}
+
 export interface AmdrImportResultsResponse {
-  sampleIds: number;
+  statuses: AmdrImportStatus[];
 }
 export interface HeaderName {
   color: HslColor;
