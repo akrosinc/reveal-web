@@ -27,3 +27,5 @@ yarn-error.log*
 docker-compose.yml
 ./.env.development
 ./.env
+./public/keycloak.json
+yarn.lock
