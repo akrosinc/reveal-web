@@ -13,6 +13,14 @@ export interface GroupDataset {
   name: string;
 }
 
+export interface AssignedComplexTagModel {
+  id: number;
+  tagName: string;
+  formula: string;
+  isPublic: boolean;
+  owner: string;
+}
+
 export interface GroupRole {
   identifier: string;
   name: string;
@@ -37,7 +45,9 @@ export interface GroupModel {
   datasets?: GroupDataset[];
   roles?: GroupRole[];
   areas?: GroupArea[];
-  organizationType?:string
+  organizationType?: string;
+  complexTags?: { id: number; name: string }[];
+  complexTagIdentifiers?: number[];
 }
 
 
@@ -50,6 +60,7 @@ export interface CreateGroupPayload {
   rolesIdentifiers: string[];
   datasetsIdentifiers: string[];
   membersIdentifiers: string[];
+  complexTagIdentifiers: number[];
 }
 
 export interface AssignedUserModel {
@@ -130,6 +141,16 @@ export const getAssignedRoleList = async (): Promise<AssignedRoleModel[]> => {
     return response.data;
   } catch (error) {
     console.error('Error fetching assigned role list:', error);
+    throw error;
+  }
+};
+
+export const getAssignedComplexTagList = async (): Promise<AssignedComplexTagModel[]> => {
+  try {
+    const response = await api.get<AssignedComplexTagModel[]>('instance/assigned/complextags/list');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching assigned complex tag list:', error);
     throw error;
   }
 };

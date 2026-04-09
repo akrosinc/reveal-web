@@ -55,6 +55,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
     const [areaTeams, setAreaTeams] = useState<Record<string, string>>({});
     const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
     const [selectedDatasets, setSelectedDatasets] = useState<string[]>([]);
+    const [selectedComplexTags, setSelectedComplexTags] = useState<number[]>([]);
 
     // Loading state for fetching data
     const [isLoadingData, setIsLoadingData] = useState(false);
@@ -89,6 +90,11 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                     }
                     if (groupRes.roles) {
                         setSelectedRoles(groupRes.roles.map((r: GroupRole) => r.identifier));
+                    }
+                    if (groupRes.complexTags) {
+                        setSelectedComplexTags(groupRes.complexTags.map(t => t.id));
+                    } else if (groupRes.complexTagIdentifiers) {
+                        setSelectedComplexTags(groupRes.complexTagIdentifiers);
                     }
                     if (groupRes.areas) {
                         console.log(groupRes?.areas, 'areas groupres')
@@ -143,6 +149,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
             return;
         }
         if (assignedMembers?.length === 0) return toast.error('Please assign at least one member to the team.');
+        if (selectedAreas?.length === 0 && !isTeam) return toast.error('Please assign at least one area to the team.');
         // Build the final payload
         const payload = {
             name: groupName.trim(),
@@ -153,6 +160,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                 rolesIdentifiers: selectedRoles || [],
                 datasetsIdentifiers: selectedDatasets || [],
                 membersIdentifiers: assignedMembers || [],
+                complexTagIdentifiers: selectedComplexTags || []
             } : {
                 areasIdentifiers: selectedAreas || [],
                 membersIdentifiers: assignedMembers || []
@@ -183,6 +191,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
         selectedAreas,
         selectedRoles,
         selectedDatasets,
+        selectedComplexTags,
         assignedMembers,
         onSave,
         identifier
@@ -195,6 +204,8 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
         setSelectedAreas([]);
         setAreaTeams({});
         setSelectedRoles([]);
+        setSelectedDatasets([])
+        setSelectedComplexTags([])
         if (submitted) setErrors({}); // reset errors on mode switch
     }, [submitted]);
 
@@ -302,7 +313,9 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                                     <DatasetsSelection
                                         selectedDatasets={selectedDatasets}
                                         onDatasetChange={setSelectedDatasets}
-
+                                        selectedComplexTags={selectedComplexTags}
+                                        onComplexTagChange={setSelectedComplexTags}
+                                        disabled={readOnlyMode}
                                     />
                                 </Col>
                             </>
