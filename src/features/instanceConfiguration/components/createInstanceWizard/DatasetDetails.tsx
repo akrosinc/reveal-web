@@ -32,7 +32,24 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
   const [activeTab, setActiveTab] = useState<'simple' | 'complex'>('simple');
   const [complexTagsList, setComplexTagsList] = useState<ComplexTagResponse[]>([]);
   const [selectedComplexTags, setSelectedComplexTags] = useState<number[]>(defaultValues?.complexTags || []);
+  // Persistent storage for selected tag identifiers across reloads/filters
+  const selectedTagIdsRef = React.useRef<Set<string>>(new Set(defaultValues?.datasets_tags || []));
 
+  useEffect(() => {
+    // Sync ref with current metadataImportList selections
+    // We only update the ref for items that are currently in the list (visible)
+    const nextIds = new Set(selectedTagIdsRef.current);
+    metadataImportList.forEach(item => {
+      item.entityTagEvents?.forEach((tag: any) => {
+        if (tag.selected) {
+          nextIds.add(tag.identifier);
+        } else {
+          nextIds.delete(tag.identifier);
+        }
+      });
+    });
+    selectedTagIdsRef.current = nextIds;
+  }, [metadataImportList]);
   const loadData = useCallback(
     () => {
       let isPublic: boolean | undefined = undefined;
@@ -41,7 +58,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
 
       getInstanceDatasets(defaultValues.locationHierarchy, isPublic)
         .then((res: PageableModel<DatasetResponse>) => {
-          const previouslySelectedTags = new Set(defaultValues?.datasets_tags || []);
+          const previouslySelectedTags = selectedTagIdsRef.current;
 
           let transformedMetadataList: MetadataFileImportResponse[] = res.content.map((dataset: DatasetResponse) => {
             let entityTagWithChildren = dataset.datasetEntityTags?.map((tag: DatasetEntityTag) => {
@@ -101,13 +118,22 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
     [statusFilter, defaultValues.locationHierarchy]
   );
 
+  const [lastSimpleFilter, setLastSimpleFilter] = useState<string | null>(null);
+  const [lastComplexFilter, setLastComplexFilter] = useState<string | null>(null);
+
   useEffect(() => {
     if (activeTab === 'simple') {
-      loadData();
+      if (statusFilter !== lastSimpleFilter || metadataImportList.length === 0) {
+        loadData();
+        setLastSimpleFilter(statusFilter);
+      }
     } else {
-      loadComplexTags();
+      if (statusFilter !== lastComplexFilter || complexTagsList.length === 0) {
+        loadComplexTags();
+        setLastComplexFilter(statusFilter);
+      }
     }
-  }, [loadData, loadComplexTags, activeTab]);
+  }, [activeTab, statusFilter, loadData, loadComplexTags, metadataImportList.length, complexTagsList.length, lastSimpleFilter, lastComplexFilter]);
 
   // Frontend search filter
   const filteredMetadataList = useMemo(() => {
@@ -241,13 +267,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
               <Col>
                 <Nav variant="tabs" activeKey={activeTab} onSelect={(k: any) => {
                   setActiveTab(k);
-                  setSearchTerm('')
-                  // setSelectedComplexTags([]);
-                  // setMetadataImportList(prev => prev.map(item => ({
-                  //   ...item,
-                  //   selected: false,
-                  //   entityTagEvents: item.entityTagEvents?.map((tag: any) => ({ ...tag, selected: false }))
-                  // })));
+                  setSearchTerm('');
                 }}>
                   <Nav.Item>
                     <Nav.Link eventKey="simple">Simple Tags</Nav.Link>
@@ -365,7 +385,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
         <Button
           variant="secondary"
           onClick={() => {
-            const datasetsTags = selectedMetadata.map((tag: any) => tag.identifier);
+            const datasetsTags = Array.from(selectedTagIdsRef.current);
             onBack({ datasets_tags: datasetsTags, complexTags: selectedComplexTags });
           }}
         >
@@ -374,7 +394,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
         <Button
           variant="primary"
           onClick={() => {
-            const datasetsTags = selectedMetadata.map((tag: any) => tag.identifier);
+            const datasetsTags = Array.from(selectedTagIdsRef.current);
 
             const formatDate = (date: any) => {
               if (!date) return '';

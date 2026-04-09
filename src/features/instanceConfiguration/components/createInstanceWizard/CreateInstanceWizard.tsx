@@ -81,7 +81,7 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, i
             areas: getLeafNodeIds(res.areas) ?? [],
             members: res.members?.map(extractId) ?? [],
             datasets_tags: res.datasets_tags || res.datasets?.map((d: any) => typeof d === 'string' ? d : (d.tag || d.identifier)) || [],
-            complexTags: res.complexTags || [],
+            complexTags: res.complexTags?.map((elem: any) => elem?.id) || [],
           };
           setPlanStatus(planData?.status || null);
           setInitialData(mappedData);
