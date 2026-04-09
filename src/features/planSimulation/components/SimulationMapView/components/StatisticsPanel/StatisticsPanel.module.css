@@ -1,0 +1,15 @@
+.statisticsPanel {
+  right: 5%;
+  bottom: 3%;
+  position: absolute;
+  z-index: 2;
+  min-width: 15%;
+  width: 15%;
+  max-width: 30%;
+  background-color: #fff;
+  padding: 1rem;
+}
+
+.statisticsPanelBody {
+  padding: 1rem;
+}

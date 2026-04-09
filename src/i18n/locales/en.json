@@ -4,7 +4,7 @@
     "logIn": "Login",
     "Home": "Home",
     "Plan": "Plan",
-    "Assign": "Assignment",
+    "Assignment": "Assignment",
     "Reporting": "Reporting",
     "planReporting": "Plan Reporting",
     "performanceReporting": "Performance Reporting",
@@ -18,10 +18,25 @@
     "Management": "User Management",
     "Location": "Location Management",
     "Simulation": "Simulation",
-    "TagManagement": "Tag Management",
-    "MetaDataImport": "Metadata Import",
+    "Tag Management": "Tag Management",
+    "Metadata Import": "Metadata Import",
     "Resource Planning": "Resource Planning",
     "dataProcessingProgress": "Data Processing Progress",
+    "Campaign Management": "Campaign Management",
+    "Instance Configuration": "Instance Configuration",
+    "Group Configuration": "Group Configuration",
+    "switchInstance": "Switch Instance",
+    "Instance Management": "Management",
+    "Data Viewer": "Data Viewer",
+    "Instance": "Instance",
+    "Group": "Group",
+    "Group Management": "Group Management",
+    "Plan Reporting": "Plan Reporting",
+    "Performance Reporting": "Performance Reporting",
+    "Survey Reporting": "Survey Reporting",
+    "User Management": "User Management",
+    "Location Management": "Location Management",
+    "Simulations": "Simulations",
     "extracts": "Data Extracts",
     "AmdrImport": "AMDR Import",
     "amdrReporting": "AMDR Report"
@@ -50,6 +65,8 @@
   },
   "buttons": {
     "management": "User Management",
+    "instanceConfiguration": "Instance Management",
+    "groupConfiguration": "Group Management",
     "plans": "Plan Management",
     "create": "Create",
     "delete": "Delete",
@@ -66,7 +83,9 @@
   "managementPage": {
     "organization": "Organization",
     "user": "User",
-    "userImport": "User Import"
+    "userImport": "User Import",
+    "instanceConfiguration": "Instance Configuration",
+    "groupConfiguration": "Group Configuration"
   },
   "userPage": {
     "Username": "Username",
@@ -149,6 +168,7 @@
     "planActivationBody": "Are you sure you want to active plan with identifier",
     "planActivationTitle": "Activate plan",
     "planTitle": "Title",
+    "Title": "Action title",
     "status": "Status",
     "interventionType": "Intervention Type",
     "locationHierarchy": "Location Hierarchy",
@@ -226,7 +246,12 @@
       "tag": "Tag",
       "lookupEntityType": "Entity Type",
       "simulationDisplay": "Display Tag",
-      "aggregate": "Is an aggregate"
+      "aggregate": "Is an aggregate",
+      "instances": "Instances",
+      "role": "Role",
+      "instanceName": "Instance name",
+      "planStatus": "Plan Status",
+      "createdDatetime": "Created at"
     },
     "locationName": "Location Name",
     "locationType": "Location Type",
@@ -235,6 +260,33 @@
     "drugInventoryAdverseReporting": "Drug Inventory / Adverse Reporting",
     "populationCoverage": "Population coverage",
     "backFromColumnDrillDown": "Back"
+  },
+  "instancesPage": {
+    "search": "Search",
+    "title": "Instance",
+    "table": {
+      "instanceName": "Instance name",
+      "title": "Title",
+      "status": "Status",
+      "interventionType": "Intervention Type",
+      "createdDate": "Created Date",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "planTitle": "Plan title",
+      "planStatus": "Plan status",
+      "createdDatetime": "Created at",
+      "activate": "Activate"
+    }
+  },
+  "groupConfigurationPage": {
+    "title": "Group configuration",
+    "search": "Search group name",
+    "table": {
+      "name": "Group Name",
+      "type": "Team",
+      "yes": "Yes",
+      "no": "No"
+    }
   },
   "simulationPage": {
     "tag": "tag",
@@ -309,7 +361,12 @@
     "tagFilters": "Tag Filters",
     "analysis": "Perform analysis",
     "removeOrgGrants": "Remove Organization Access",
-    "removeUserGrants": "Remove User Access"
+    "removeUserGrants": "Remove User Access",
+    "instances": "Current Instances",
+    "datasetName": "Dataset Name",
+    "uploadDate": "Upload Date",
+    "uploadedBy": "Uploaded By",
+    "selected": ""
   },
   "label": {
     "layerOpacity": "Layer opacity"
@@ -330,13 +387,13 @@
     "uploadFile": "Upload File",
     "table": {
       "fileName": "Filename",
+      "datasetName": "Dataset Name",
       "uploadDate": "Upload Date",
       "status": "Status",
       "uploadedBy": "Uploaded By",
       "owner": "I am the owner",
       "owners": "Current Owners",
       "selected": "Selection"
-
     }
   },
   "amdrImport": {

@@ -1,0 +1,131 @@
+.stepperWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 23rem;
+  min-height: 18rem;
+  padding: 1rem;
+}
+
+.stepperHeader {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.stepperContainer {
+  width: 100%;
+  max-width: 600px;
+}
+
+.steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  margin-bottom: 1rem;
+}
+
+.stepWrapper {
+  display: flex;
+}
+
+.stepNumberAndLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 67px;
+  min-height: 63px;
+}
+
+.step {
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  color: #000;
+  font-weight: bold;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.activeStep {
+  background-color: #4e8ce9;
+  color: white;
+}
+
+.completedStep {
+  background-color: #4e8ce9;
+  color: white;
+  cursor: pointer;
+}
+
+.stepLabel {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.2;
+  display: block;
+}
+
+.spacerLine {
+  height: 2px;
+  width: 90%;
+  background-color: #e0e0e0;
+  margin-top: 1.5rem;
+  transition: background-color 0.3s;
+}
+
+.activeLine {
+  background-color: #4e8ce9;
+}
+
+.completedLine {
+  background-color: #4e8ce9;
+}
+
+.sectionContainer {
+  margin: 1rem 0;
+  min-height: 42.39px;
+}
+
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 400px;
+}
+
+.controlButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.nextButton {
+  background-color: #4e8ce9;
+  color: white;
+  transition: all 0.3s;
+}
+
+.cancelButton {
+  background-color: #e0e0e0;
+  color: #000;
+}
+
+.prevButton:disabled,
+.nextButton:disabled {
+  background-color: #e0e0e0;
+  cursor: not-allowed;
+}
+
+.nextButton:hover {
+  background-color: #3f7bd5;
+}

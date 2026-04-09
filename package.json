@@ -90,9 +90,11 @@
   },
   "devDependencies": {
     "@types/plotly.js": "^3.0.8",
+    "@types/lodash": "^4.17.15",
     "prettier": "2.8.4"
   },
   "resolutions": {
+    "babel-preset-react-app": "10.0.0",
     "caniuse-lite": "1.0.30001632"
   }
 }

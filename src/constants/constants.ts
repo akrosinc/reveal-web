@@ -31,7 +31,7 @@ export const USER_ROW_DEPTH_COLOR_3 = 'rgba(202,236,255,0.6)';
 //REGEX
 export const REGEX_NAME_VALIDATION = new RegExp('^[-\\a-zA-Z0-9][ a-zA-Z0-9_.-]*[^- _]$');
 export const REGEX_TITLE_VALIDATION = new RegExp('^[^-\\s][a-zA-Z0-9._\\s-]*$');
-export const REGEX_USERNAME_VALIDATION = new RegExp('^[a-z0-9]+([._]?[a-z0-9]+)*$');
+export const REGEX_USERNAME_VALIDATION = new RegExp('^[a-z]+([._]?[a-z]+)*$');
 export const REGEX_EMAIL_VALIDATION = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
 
 export const PAGINATION_DEFAULT_SIZE = 10;
@@ -52,7 +52,8 @@ export const USER_TABLE_COLUMNS = [
   { name: 'username', sortValue: 'username', accessor: 'username' },
   { name: 'firstname', sortValue: 'firstName', accessor: 'firstName' },
   { name: 'lastname', sortValue: 'lastName', accessor: 'lastName' },
-  { name: 'organization', sortValue: undefined, accessor: 'organizations', key: 'name' }
+  { name: 'role', sortValue: undefined, accessor: 'role' },
+  { name: 'instances', sortValue: undefined, accessor: 'instances' }
 ];
 export const BULK_TABLE_COLUMNS = [
   { name: 'fileName', sortValue: 'filename', accessor: 'filename' },
@@ -116,6 +117,83 @@ export const RESOURCE_PLANNING_HISTORY_TABLE_COLUMNS = [
   { name: 'Name', sortValue: 'name', accessor: 'name' },
   { name: 'Create Date', sortValue: 'created', accessor: 'created' },
   { name: 'Uploaded By', sortValue: 'createdBy', accessor: 'createdBy' }
+];
+
+export const INSTANCE_TABLE_COLUMNS = [
+  {
+    name: 'instanceName',
+    sortValue: 'instanceName',
+    accessor: 'instanceName'
+  },
+  {
+    name: 'interventionType',
+    sortValue: 'interventionType',
+    accessor: 'interventionType'
+  },
+  {
+    name: 'planTitle',
+    sortValue: 'planTitle',
+    accessor: 'planTitle'
+  },
+  {
+    name: 'planStatus',
+    sortValue: 'planStatus',
+    accessor: 'planStatus'
+  },
+  {
+    name: 'createdDatetime',
+    sortValue: 'createdDatetime',
+    accessor: 'createdDatetime'
+  },
+  {
+    name: 'startDate',
+    sortValue: 'startDate',
+    accessor: 'startDate'
+  },
+  {
+    name: 'endDate',
+    sortValue: 'endDate',
+    accessor: 'endDate'
+  }
+];
+
+export const PLAN_MODEL_1_COLUMNS = [
+  {
+    name: 'instanceName',
+    sortValue: 'instanceName',
+    accessor: 'instanceName'
+  },
+  {
+    name: 'interventionType',
+    sortValue: 'interventionType',
+    accessor: 'interventionType'
+  },
+  {
+    name: 'planTitle',
+    sortValue: 'planTitle',
+    accessor: 'planTitle'
+  },
+  {
+    name: 'planStatus',
+    sortValue: 'planStatus',
+    accessor: 'planStatus'
+  },
+  {
+    name: 'createdDatetime',
+    sortValue: 'createdDatetime',
+    accessor: 'createdDatetime'
+  },
+  {
+    name: 'startDate',
+    sortValue: 'startDate',
+    accessor: 'startDate'
+  },
+  {
+    name: 'endDate',
+    sortValue: 'endDate',
+    accessor: 'endDate'
+  },
+
 ];
 
 export const LOCATION_ASSIGNMENT_TAB = 'location-assignment';

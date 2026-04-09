@@ -78,12 +78,15 @@ const Dashboard = () => {
   }, [t, dispatch]);
 
   return (
-    <AuthorizedElement roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}>
+    <AuthorizedElement 
+    // roles={[PLAN_VIEW, USER_VIEW, 'manage-users']}
+    roles={[]}
+    >
       <>
         <Row className="mb-5 justify-content-center">
           {numbers.map((el, index) => (
             <Col md={3} xl={2} key={index}>
-              <div className="p-4 my-2 border border-1 rounded">
+              <div className="p-4 my-2 flex flex-direction-column justify-content-center align-items-center border border-1 rounded">
                 <h4>{el.title}</h4>
                 <h4>{el.count}</h4>
               </div>

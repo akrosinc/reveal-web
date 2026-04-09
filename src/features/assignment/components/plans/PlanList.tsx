@@ -1,16 +1,21 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { PageableModel } from '../../../../api/providers';
 import Paginator from '../../../../components/Pagination';
 import DefaultTable from '../../../../components/Table/DefaultTable';
-import { ASSIGNMENT_PAGE, PAGINATION_DEFAULT_SIZE, PLAN_TABLE_COLUMNS } from '../../../../constants';
-import { getPlanList } from '../../../plan/api';
-import { PlanModel } from '../../../plan/providers/types';
+import { ASSIGNMENT_PAGE, INSTANCE_TABLE_COLUMNS, PAGINATION_DEFAULT_SIZE, PLAN_ASSIGNMENT_INSTANCE_SELECTION, REDIRECT_TO_ASSIGNED_INSTANCE } from '../../../../constants';
+import { getInstances } from '../../../planSimulation/api';
+import { Instance, PaginatedResponse } from '../../../planSimulation/providers/types';
+import { useAppSelector } from '../../../../store/hooks';
+import { useAuthorization } from '../../../../hooks/useAuthorization';
 
 const PlanList = () => {
-  const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
+  const isAuthorized = useAuthorization([PLAN_ASSIGNMENT_INSTANCE_SELECTION])
+  const isAuthorizedForRedirectToAssignedInstance = useAuthorization([REDIRECT_TO_ASSIGNED_INSTANCE])
+  const ctx = useAppSelector(state => state.instanceContext)
+  // console.log(ctx?.instancePlan?.identifier, 'Selected instance')
+  const [planList, setPlanList] = useState<PaginatedResponse<Instance>>();
   const navigate = useNavigate();
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
@@ -25,13 +30,35 @@ const PlanList = () => {
     setCurrentSortField(sortValue);
   };
 
+  const sortedData = useMemo(() => {
+    if (!planList?.content) return [];
+    if (!currentSortField) return planList.content;
+
+    return [...planList.content].sort((a: any, b: any) => {
+      const aVal = a[currentSortField] || '';
+      const bVal = b[currentSortField] || '';
+
+      if (aVal === bVal) return 0;
+
+      const comparison = aVal > bVal ? 1 : -1;
+      return currentSortDirection ? comparison : -comparison;
+    });
+  }, [planList, currentSortField, currentSortDirection]);
+
   const loadData = useCallback(
     (size: number, page: number) => {
-      getPlanList(size, page, true, '', currentSortField, currentSortDirection)
-        .then(res => setPlanList(res))
+      getInstances(page, size)
+        .then(res => {
+
+          if (isAuthorizedForRedirectToAssignedInstance && ctx?.instancePlan?.identifier) {
+            navigate(ASSIGNMENT_PAGE + '/planId/' + ctx.instancePlan.identifier, { state: { hideBackButton: true } });
+          } else {
+            setPlanList(res);
+          }
+        })
         .catch(err => toast.error(err));
     },
-    [currentSortDirection, currentSortField]
+    [ctx?.instancePlan?.identifier, navigate]
   );
 
   useEffect(() => {
@@ -40,14 +67,15 @@ const PlanList = () => {
 
   return (
     <>
-      {planList !== undefined && planList.content.length ? (
+      {!isAuthorized && planList !== undefined && planList.content.length ? (
         <>
           <DefaultTable
-            columns={PLAN_TABLE_COLUMNS}
-            data={planList.content}
+            pageKey="instancesPage.table."
+            columns={INSTANCE_TABLE_COLUMNS}
+            data={sortedData}
             sortHandler={sortHandler}
             clickHandler={(id: string) => navigate(ASSIGNMENT_PAGE + '/planId/' + id)}
-            clickAccessor="identifier"
+            clickAccessor="planIdentifier"
           />
           <Paginator
             page={planList.pageable.pageNumber}

@@ -1,30 +1,45 @@
 import { useKeycloak } from '@react-keycloak/web';
+import { useAppSelector } from '../../store/hooks';
+import { STANDARD_USER, SUPER_ADMIN } from '../../constants/userRoles';
 
 interface Props {
   children: JSX.Element;
-  roles: string[];
+  roles?: string[];
+  /** Pass the nav item's own route so visibility is checked against it, not the current URL */
+  path?: string;
 }
 
-//Wrapper function to show or hide any element depending on user role - PrivateRoutes
-const AuthorizedElement = ({ roles, children }: Props) => {
+const AuthorizedElement = ({ roles = [], children }: Props) => {
   const { keycloak } = useKeycloak();
+  const ctx = useAppSelector(state => state.instanceContext);
+  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
+  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(STANDARD_USER);
+  const permissions = ctx?.role?.permissions || [];
+  console.log(ctx?.selectedInstance)
 
-  const isAutherized = (roles: string[], clientResource?: string) => {
-    if (keycloak && roles) {
-      if (roles.length === 0) {
-        return true;
-      } else {
-        return roles.some(r => {
-          const realm = keycloak.hasRealmRole(r);
-          const managementResource = keycloak.hasResourceRole(r, 'realm-management');
-          return realm || managementResource;
-        });
+  const isAuthorized = (roles: string[]) => {
+    if (!roles || roles.length === 0) return true;
+    return roles.some((r) => {
+      // Check Keycloak roles
+      const hasRealmRole = keycloak?.hasRealmRole(r);
+      const hasResourceRole = keycloak?.hasResourceRole(r, 'realm-management');
+
+      // Check backend permissions
+      const hasPermission = permissions.includes(r);
+      if(isSuperAdmin && ctx?.selectedInstance?.identifier == null){
+        console.log('Super Admin Access Granted');
+          return hasRealmRole || hasResourceRole
       }
-    }
-    return false;
+      if(isStandardUser || (isSuperAdmin && ctx?.selectedInstance)){
+        console.log('Standard User or Super Admin with Global Access Granted');
+        return hasPermission
+      }
+      // return hasRealmRole || hasResourceRole || hasPermission;
+    });
   };
 
-  return isAutherized(roles) ? children : null;
+  return isAuthorized(roles) ? children : null;
 };
 
 export default AuthorizedElement;
+

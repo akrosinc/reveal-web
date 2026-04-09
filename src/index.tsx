@@ -10,6 +10,7 @@ import { ReactKeycloakProvider } from '@react-keycloak/web';
 import keycloak from './keycloak';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { KeycloakInitOptions } from 'keycloak-js';
+import { PolygonProvider } from './contexts/PolygonContext';
 
 const initOptions: KeycloakInitOptions = {
   pkceMethod: 'S256',
@@ -21,7 +22,9 @@ ReactDOM.render(
     <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions}>
       <Provider store={store}>
         <BrowserRouter>
-          <App />
+          <PolygonProvider>
+            <App />
+          </PolygonProvider>
         </BrowserRouter>
       </Provider>
     </ReactKeycloakProvider>

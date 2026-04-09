@@ -8,6 +8,8 @@ import { deleteGeographicLevel, updateGeographicLevel } from '../../../api';
 import { GeographicLevel } from '../../../providers/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FieldValidationError } from '../../../../../api/providers';
+import AuthorizedElement from '../../../../../components/AuthorizedElement';
+import { GEOGRAPHIC_LEVEL_DELETE, GEOGRAPHIC_LEVEL_UPDATE } from '../../../../../constants';
 
 interface Props {
   closeHandler: () => void;
@@ -139,6 +141,7 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
             >
               Discard
             </Button>
+            <AuthorizedElement roles={[GEOGRAPHIC_LEVEL_UPDATE]}>
             <Button
               id="save-button"
               variant="primary"
@@ -147,12 +150,16 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
             >
               <FontAwesomeIcon className="my-0 mx-1" icon="save" />
             </Button>
+            </AuthorizedElement>
           </>
         ) : (
+           <AuthorizedElement roles={[GEOGRAPHIC_LEVEL_UPDATE]}>
           <Button id="edit-button" variant="primary" className="float-end ms-2 py-2" onClick={() => setEdit(true)}>
             <FontAwesomeIcon className="m-0 ms-1" icon="edit" />
           </Button>
+          </AuthorizedElement>
         )}
+          <AuthorizedElement roles={[GEOGRAPHIC_LEVEL_DELETE]}>
         <Button
           id="delete-button"
           variant="secondary"
@@ -161,6 +168,7 @@ const GeoLevelDetails = ({ closeHandler, data }: Props) => {
         >
           <FontAwesomeIcon className="my-0 mx-1" icon="trash" />
         </Button>
+        </AuthorizedElement>
       </div>
       {showConfirmDialog && (
         <ConfirmDialog

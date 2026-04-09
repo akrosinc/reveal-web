@@ -1,0 +1,114 @@
+.fileDrop {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+
+  border: 2px dashed #cccccc;
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  transition: border-color 0.3s, background-color 0.3s;
+
+  background-color: #f9f9f9;
+  display: flex;
+}
+
+.fileDropImage {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+}
+
+.fileNameWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: 1px solid #cccccc;
+  border-radius: 7px;
+  padding: 0.5rem;
+}
+
+.removeFileButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 4px;
+
+  width: 15px;
+  height: 15px;
+  margin-left: 1rem;
+}
+
+.removeFileIcon:hover {
+  background-color: #e8e8e8;
+}
+
+.removeFileIcon {
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  transition: background-color 0.3s ease;
+}
+
+.dragging {
+  border-color: #6ca6fd;
+  background-color: #e8f0ff;
+}
+
+/* Spinner animation */
+.spinner {
+  border: 4px solid #ccc;
+  border-top: 4px solid #6ca6fd;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+.label {
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.fileListLabel {
+  text-align: left;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.chooseFileButton {
+  background-color: #6ca6fd;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.chooseFileButton:hover {
+  background-color: #568ade;
+}
+
+/* Keyframes for the spinner */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

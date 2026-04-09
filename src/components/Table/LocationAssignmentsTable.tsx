@@ -112,7 +112,7 @@ const LocationAssignmentsTable = ({
                     <td {...cell.getCellProps()} style={{ minWidth: '250px' }}>
                       <Select
                         isDisabled={true}
-                        menuPortalTarget={document.body} 
+                        menuPortalTarget={document.body}
                         styles={{ menuPortal: base => ({ ...base, zIndex: 2, color: 'black' }) }}
                         id={rowData.identifier + '-select'}
                         menuPosition="fixed"
@@ -122,11 +122,11 @@ const LocationAssignmentsTable = ({
                         value={
                           rowData.teams !== undefined
                             ? rowData.teams.map((el: any) => {
-                                return {
-                                  value: el.identifier,
-                                  label: el.name
-                                };
-                              })
+                              return {
+                                value: el.identifier,
+                                label: el.name
+                              };
+                            })
                             : []
                         }
                       />

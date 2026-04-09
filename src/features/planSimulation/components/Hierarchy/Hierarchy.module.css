@@ -1,0 +1,78 @@
+.hierarchy {
+  margin-bottom: 10px;
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 5px 0;
+  padding: 3px;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.itemHeader:hover {
+  background-color: #f3f3f3;
+}
+
+.expandButton {
+  margin-left: 10px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.removeButton {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.expandButton:hover {
+  background-color: #ffffff;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.children {
+  margin-left: 15px;
+  border-left: 2px solid #cccccc63;
+  padding-left: 10px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+.search {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  padding: 5px 10px;
+  border: 1px solid #0000001a;
+  border-radius: 0.375rem;
+}
+
+.searchBarWrapper {
+  width: 22px;
+  height: 22px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 5px;
+  border: none;
+}

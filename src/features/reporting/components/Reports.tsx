@@ -6,13 +6,13 @@ import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
 import DefaultTable from '../../../components/Table/DefaultTable';
-import { PAGINATION_DEFAULT_SIZE, PLAN_TABLE_COLUMNS, REPORTING_PAGE } from '../../../constants';
-import { PlanModel } from '../../plan/providers/types';
+import { PAGINATION_DEFAULT_SIZE, PLAN_MODEL_1_COLUMNS, REPORTING_PAGE } from '../../../constants';
+import { PlanModel, PlanModel1 } from '../../plan/providers/types';
 import { getPlanReports, getReportTypes } from '../api';
 import { ReportType } from '../providers/types';
 
 const Reports = () => {
-  const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
+  const [planList, setPlanList] = useState<PageableModel<PlanModel1>>();
   const navigate = useNavigate();
   const { state, pathname } = useLocation();
   const [currentSortField, setCurrentSortField] = useState('');
@@ -65,6 +65,7 @@ const Reports = () => {
     setSelectedReportType(e.target.value);
     loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
+  console.log(planList, 'PLAN LIST')
 
   const setReportTypeNames = (reportName: string) => {
     switch (reportName) {
@@ -97,6 +98,7 @@ const Reports = () => {
     <>
       {!performanceDashboardChecker() && (
         <Row>
+
           <Col md={5} lg={3}>
             <Form className="mb-4">
               <Form.Label>{t('reportPage.reportType')}:</Form.Label>
@@ -114,7 +116,7 @@ const Reports = () => {
       {planList !== undefined && planList.content.length > 0 ? (
         <>
           <DefaultTable
-            columns={PLAN_TABLE_COLUMNS}
+            columns={PLAN_MODEL_1_COLUMNS}
             data={planList.content}
             sortHandler={sortHandler}
             clickHandler={(id: string) =>
@@ -122,7 +124,7 @@ const Reports = () => {
                 ? navigate(REPORTING_PAGE + `/performance-report/${id}`)
                 : navigate(REPORTING_PAGE + `/report/${id}/reportType/${selectedReportType}`)
             }
-            clickAccessor="identifier"
+            clickAccessor="planIdentifier"
           />
           <Paginator
             page={planList.pageable.pageNumber}

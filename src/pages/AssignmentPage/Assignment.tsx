@@ -16,7 +16,10 @@ const Assignment = () => {
         <Route
           path="/"
           element={
-            <AuthGuard roles={[ASSIGNMENT_VIEW]}>
+            <AuthGuard 
+            roles={[ASSIGNMENT_VIEW]}
+            // roles={[]}
+            >
               <PlanList />
             </AuthGuard>
           }
@@ -24,7 +27,10 @@ const Assignment = () => {
         <Route
           path="/planId/:planId"
           element={
-            <AuthGuard roles={[ASSIGNMENT_VIEW]}>
+            <AuthGuard 
+            roles={[ASSIGNMENT_VIEW]}
+            // roles={[]}
+            >
               <Assign />
             </AuthGuard>
           }

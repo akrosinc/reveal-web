@@ -131,6 +131,7 @@ const MetadataFormulaPanel = ({ showModal, closeHandler, combinedHierarchyList, 
                 {errors.hierarchyId && <Form.Label className="text-danger">{errors.hierarchyId.message}</Form.Label>}
               </Col>
             </Row>
+            <div className='mt-2'/>
             <Row>
               <Col>
                 <Form.Label>Tag Name</Form.Label>
@@ -153,6 +154,7 @@ const MetadataFormulaPanel = ({ showModal, closeHandler, combinedHierarchyList, 
                 {errors.tagName && <Form.Label className="text-danger">{errors.tagName.message}</Form.Label>}
               </Col>
             </Row>
+            <div className='mt-2'/>
             <Row>
               <Col>
                 <Form.Label>Formula</Form.Label>

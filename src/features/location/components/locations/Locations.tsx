@@ -152,9 +152,11 @@ const Locations = () => {
   const clearHandler = () => {
     setCurrentLocation(undefined);
     if (locationList && locationList.content.length) {
-      getLocationById(locationList.content[0].identifier).then(res => {
-        setCurrentLocation(res);
-      }).catch(err => toast.error(err));
+      getLocationById(locationList.content[0].identifier)
+        .then(res => {
+          setCurrentLocation(res);
+        })
+        .catch(err => toast.error(err));
     }
   };
 

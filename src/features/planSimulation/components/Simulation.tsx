@@ -1,21 +1,23 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Col, Container, Form, Modal, OverlayTrigger, Row, Spinner, Tooltip } from 'react-bootstrap';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Button, Col, Container, Form, Modal, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '../../../store/hooks';
+import { useAuthorization } from '../../../hooks/useAuthorization';
 import { toast } from 'react-toastify';
 import 'simplebar/dist/simplebar.min.css';
 import { ActionDialog } from '../../../components/Dialogs';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
-import { evaluate, isNumeric } from 'mathjs';
+import { electronMassDependencies, evaluate, isNumeric } from 'mathjs';
+import styles from './Simulation.module.css';
+
 import {
   getDataAssociatedEntityTags,
   getEntityList,
   getEventBasedEntityTags,
   getFullLocationsSSE,
-  getLocationList,
   getLocationsSSE,
   submitSimulationRequest,
   updateSimulationRequest
@@ -34,15 +36,12 @@ import {
   RevealFeature,
   SearchLocationProperties
 } from '../providers/types';
-import FormField from './FormField/FormField';
-import MultiFormField from './FormField/MultiFormField';
 import SimulationModal from './SimulationModal';
-
-import Select, { MultiValue, SingleValue } from 'react-select';
+import { MultiValue, SingleValue } from 'react-select';
+import Select from 'react-select';
 import PeopleDetailsModal from './PeopleDetailsModal';
-import { bbox, Feature, MultiPolygon, Point, Polygon } from '@turf/turf';
+import { bbox, Geometry, polygon } from '@turf/turf';
 import { LngLatBounds, Map as MapBoxMap } from 'mapbox-gl';
-
 import SimulationResultExpandingTable from '../../../components/Table/SimulationResultExpandingTable';
 import DownloadSimulationResultsModal from './modals/DownloadSimulationResultsModal';
 import UploadSimulationData from './modals/UploadSimulationData';
@@ -54,8 +53,47 @@ import SimulationMapView from './SimulationMapView/SimulationMapView';
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
 import { hex } from 'color-convert';
-import { REVEAL_SIMULATION_EDIT } from '../../../constants';
+import { REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_INSTANCE_SELECTION } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
+import { Drawer } from '../../location/components/drawer/Drawer';
+import Accordion from '../../location/components/accordion/Accordion';
+import { faUsers, faSitemap, faHouseUser, faDiceD20 } from '@fortawesome/free-solid-svg-icons';
+import { library } from '@fortawesome/fontawesome-svg-core';
+
+import Dashboard from '../components/Dashboard/Dashboard';
+
+import DrawerButton from '../../../components/DrawerButton/DrawerButton';
+
+import { CustomPopup } from '../../../components/CustomPopup/CustomPopup';
+import DatasetsAccordion from '../../location/components/DatasetsAccordion/DatasetsAccordion';
+
+import AddTargetAreaForm from './SimulationMapView/components/AddTargetAreaForm/AddTargetAreaForm';
+import AddDatasetForm from './SimulationMapView/components/AddDatasetForm/AddDatasetForm';
+
+import CampaignTotalsAccordion from './SimulationMapView/components/CampaignTotalsAccordion/CampaignTotalsAccordion';
+
+import { getDefaultHierarchyData, getHierarchy, getPlanInfo, getPlans } from './SimulationMapView/api/hierarchyAPI';
+import Hierarchy from './Hierarchy/Hierarchy';
+
+// CONTEXT
+import { usePolygonContext } from '../../../contexts/PolygonContext';
+import {
+  AddDatasetResponse,
+  addSearchRequest,
+  DataSetList,
+  deleteDataset,
+  filterDatasets,
+  getLocationPolygonsWithDatasets,
+  getSimulationData,
+  LocationData,
+  SimulationDatasetRequest
+} from './SimulationMapView/api/datasetsAPI';
+import { assignLocationsToPlan } from '../../assignment/api';
+import { getPlanTargetLevelName } from '../../../utils';
+import { auto } from '@popperjs/core';
+import { getInstances, getInstanceHierarchy } from '../api';
+
+library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
 interface SubmitValue {
   fieldIdentifier: string;
@@ -114,9 +152,25 @@ export interface Children {
   childrenList: string[];
 }
 
+export interface Polygondata {
+  polygonData: any;
+  childrenLoaded: boolean;
+}
+
+interface PolygonsState {
+  [key: string]: Polygondata;
+}
+
+// const extractPolygonsFromPolysWithData = (polygonsWithData?: PolygonsState) => {
+//   return polygonsWithData ? Object.values(polygonsWithData!).map((polygon: Polygondata) => polygon.polygonData) : [];
+// };
+
 const Simulation = () => {
   const { t } = useTranslation();
-  const [showModal, setShowModal] = useState(false);
+  const isAuthorizedForRedirectingToAPlan = useAuthorization([REDIRECT_TO_ASSIGNED_PLAN_SIMULATION])
+  const isAuthorized = useAuthorization([SIMULATION_INSTANCE_SELECTION])
+  const instanceContext = useAppSelector(state => state.instanceContext);
+  // const [showModal, setShowModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [combinedHierarchyList, setCombinedHierarchyList] = useState<LocationHierarchyModel[]>();
@@ -125,7 +179,7 @@ const Simulation = () => {
   const [selectedEntityConditionList, setSelectedEntityConditionList] = useState<EntityTag[]>([]);
   const divRef = useRef<HTMLDivElement>(null);
   const divHeight = useWindowResize(divRef.current);
-  const [mapFullScreen, setMapFullScreen] = useState(false);
+  const [mapFullScreen, setMapFullScreen] = useState(true);
   const [mapData, setMapData] = useState<PlanningLocationResponseTagged>();
   const [parentMapData, setParentMapData] = useState<PlanningParentLocationResponse>();
   const [mapDataLoad, setMapDataLoad] = useState<PlanningLocationResponse>({
@@ -137,8 +191,8 @@ const Simulation = () => {
     source: undefined
   });
   const [parentMapDataLoad, setParentMapDataLoad] = useState<PlanningParentLocationResponse>();
-  const [nodeList, setNodeList] = useState<string[]>([]);
-  const [completeGeographicList, setCompleteGeographicList] = useState<string[]>([]);
+  // const [nodeList, setNodeList] = useState<string[]>([]);
+  // const [completeGeographicList, setCompleteGeographicList] = useState<string[]>([]);
   const [locationList, setLocationList] = useState<any[]>([]);
   const [selectedHierarchy, setSelectedHierarchy] = useState<LocationHierarchyModel>();
   const [selectedLocation, setSelectedLocation] = useState<SingleValue<{ label: string; value: string }>>();
@@ -148,7 +202,7 @@ const Simulation = () => {
   const [entityTags, setEntityTags] = useState<EntityTag[]>([]);
   const [entityTagsOriginal, setEntityTagsOriginal] = useState<EntityTag[]>([]);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
-  const [highestLocations, setHighestLocations] = useState<Feature<Point | Polygon | MultiPolygon>[]>();
+  const [highestLocations, setHighestLocations] = useState<any>();
   const [summary, setSummary] = useState<any>({});
   const [selectedMapData, setSelectedMapData] = useState<any>();
   const [showCountResponseModal, setShowCountResponseModal] = useState(false);
@@ -192,14 +246,264 @@ const Simulation = () => {
   const [tooLargeOrSmall, setTooLargeOrSmall] = useState(0);
   const [omitLayers, setOmitLayers] = useState(false);
 
+  const [leftOpen, setLeftOpen] = useState(false);
+  const [rightOpen, setRightOpen] = useState(false);
+
+  const [showModal, setShowModal] = useState(false);
+
+  const [openCustomModal, setOpenCustomModal] = useState<number>();
+  // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  // const [geometry, setGeometry] = useState<Feature<Polygon | MultiPolygon | Point> | null>(null);
+  const [geometry, setGeometry] = useState<Geometry | null>();
+  const [currentLocationId, setCurrentLocationId] = useState<string>();
+  // const [polygons, setPolygons] = useState<any[]>([]);
+  const [polygonsWithData, setPolygonsWithData] = useState<any>();
+
+  const [selectedLocationChildren, setSelectedLocationChildren] = useState<any[]>([]);
+
+  const [datasetList, setDatasetList] = useState<DataSetList[]>([]);
+  const [includeGeometry, setIncludeGeometry] = useState<boolean>(true);
+
+  const [chartData, setChartData] = useState<Record<string, number[]>>({});
+  const [totals, setTotals] = useState<Record<string, number>>({});
+  const [labels, setLabels] = useState<string[]>([]);
+  const [nodeOrderListVisible, setNodeOrderListVisible] = useState(false);
+  const [showDatasetsAgainstParentLevel, setShowDatasetsAgainstParentLevel] = useState(false);
+  const [selectedParentLevel, setSelectedParentLevel] = useState<SingleValue<{ value: string; label: string }>>();
+  const [showingParentLevelsMenu, setShowingParentLevelsMenu] = useState(false);
+  const [numberOfStructures, setNumberOfStructures] = useState(0);
+  // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+  const { dispatch } = usePolygonContext();
+  const { state } = usePolygonContext();
+  const prevDatasetsLengthRef = useRef<number>(state.datasets.length);
+  const [plans, setPlans] = useState<any[]>();
+  const [instances, setInstances] = useState<any>(null);
+  const [selectedPlan, setSelectedPlan] = useState<any>();
+
+  const fetchSimulationAndData = async (selectedPlan: any) => {
+    const simulationIdentifier = await fetchPlanInfo(selectedPlan);
+
+    try {
+      const simulationData = await getSimulationData(simulationIdentifier);
+      dispatch({ type: 'SET_NEW_DATASETS', payload: simulationData.datasets });
+      dispatch({ type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
+      dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+    } catch (error) {
+      console.error('Failed to fetch simulation:', error);
+    }
+  };
+
+  const handleAddDataset = (datasetResponse: AddDatasetResponse) => {
+    const dataset = {
+      identifier: datasetResponse.datasetId,
+      name: datasetResponse.datasetName,
+      hexColor: datasetResponse.hexColor,
+      lineWidth: datasetResponse.lineWidth,
+      borderColor: datasetResponse.borderColor
+    };
+
+    dispatch({ type: 'ADD_DATASET', payload: dataset });
+
+    //! LOOP LOCATIONS WITH METADA AND ATTACH DATASET DATA TO LOADED POLYGONS
+    setPolygonsWithData((prev: any) => {
+      const updatedPolygons = { ...prev };
+
+      Object.entries(datasetResponse.locationWithMetadata).forEach(([locationId, metadata]) => {
+        if (updatedPolygons[locationId]) {
+          const existingMetadata = updatedPolygons[locationId].polygonData.properties.metadata || [];
+          updatedPolygons[locationId].polygonData.properties.metadata = Array.from(
+            new Set([...existingMetadata, metadata])
+          );
+        }
+      });
+      return updatedPolygons;
+    });
+  };
+
+  const fetchHierarchy = async (instanceId: string) => {
+    const hierarchyData = await getInstanceHierarchy(instanceId);
+    try {
+      // console.log("H-DATA", nodeOrder)
+      setHighestLocations(hierarchyData);
+      dispatch({ type: 'SET_HIERARCHY', payload: hierarchyData?.geoTree || [] });
+      // dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: { nodeOrder: nodeOrder || [] } });
+      dispatch({ type: "SET_NODE_ORDER", payload: hierarchyData?.nodeOrder || [] })
+    } catch (error) {
+      console.error('Failed to fetch hierarchy:', error);
+    }
+  };
+  // console.log("PID", state.planid)
+  const fetchPlanInfo = async (selectedPlan: any) => {
+    try {
+      const planInfo = selectedPlan;
+      console.log("PLAN INFO", planInfo)
+      dispatch({ type: 'SET_PLANID', payload: planInfo?.planIdentifier || planInfo?.identifier });
+      dispatch({ type: 'SET_PLAN_TARGET_TYPE', payload: planInfo.planTargetType });
+      return planInfo?.planIdentifier || planInfo?.identifier;
+    } catch (error) {
+      console.error('Failed to fetch plan info:', error);
+    }
+  };
+
+  const fetchDefaultHierarchyData = async () => {
+    const hierarchyData = await getDefaultHierarchyData();
+    try {
+      dispatch({ type: 'SET_DEFAULT_HIERARCHY_DATA', payload: hierarchyData });
+    } catch (error) {
+      console.error('Failed to fetch hierarchy data:', error);
+    }
+  };
+
+  useMemo(() => {
+    setDatasetList(state.datasets);
+  }, [state.datasets]);
+
+  //! UPDATE DATASETS LIST
+  const updateDatasetHandler = async (newDatasetList: string) => {
+    dispatch({ type: 'SET_DATASET', payload: newDatasetList });
+  };
+
+  const removeDatasetHandler = async (datasetId: string) => {
+    deleteDataset({
+      simulationId: state.simulationId,
+      datasetId
+    });
+    dispatch({ type: 'DELETE_DATASET', payload: datasetId });
+    //! remove dataset update metadata
+    setPolygonsWithData((prev: any) => {
+      const updatedPolygons = { ...prev };
+
+      Object.entries(updatedPolygons).forEach(([locationId, polygonData]: any) => {
+        const updatedMetadata = polygonData.polygonData.properties.metadata.filter(
+          (metadata: any) => metadata.datasetId !== datasetId
+        );
+        updatedPolygons[locationId].polygonData.properties.metadata = updatedMetadata;
+      });
+
+      return updatedPolygons;
+    });
+  };
+
+  // we are updating selectedLocationChildren whenever an assignment happens,
+  // because assigned flag on these locations is not updated (it is still the one we got on location fetch)
+  useEffect(() => {
+    setSelectedLocationChildren(prev =>
+      prev.map(obj => ({
+        ...obj,
+        properties: {
+          ...obj.properties,
+          assigned: state.assingedLocations[obj.identifier]
+        }
+      }))
+    );
+  }, [state.assingedLocations]);
+
+  useEffect(() => {
+    if (
+      currentLocationId &&
+      polygonsWithData &&
+      polygonsWithData[currentLocationId] &&
+      !showDatasetsAgainstParentLevel
+    ) {
+      const children = Object.values(polygonsWithData)
+        .map((polygon: any) => polygon.polygonData)
+        .filter((polygon: any) => polygon.properties.parentIdentifier === currentLocationId);
+
+      setSelectedLocationChildren(children);
+
+      // when locations loaded, we are setting their assigned flag values as default values in assignment map
+      // this way, state.assignedLocations is our single source of truth
+      const assignedMap = children.reduce(
+        (map, obj) => {
+          return {
+            ...map,
+            [obj.identifier]: map[obj.identifier] ?? obj.properties.assigned
+          };
+        },
+        { ...state.assingedLocations }
+      );
+      dispatch({ type: 'SET_ASSIGNED', payload: assignedMap });
+
+      const selectedLocation = polygonsWithData[currentLocationId]?.polygonData;
+
+      if (selectedLocation && !showDatasetsAgainstParentLevel) {
+        setGeometry(selectedLocation);
+        const populationData = transformPopulationData(selectedLocation?.properties?.population);
+        setNumberOfStructures(selectedLocation?.properties?.numberOfStructures);
+        if (populationData !== null) {
+          setChartData(populationData?.chartData);
+          setLabels(populationData?.labels);
+          setTotals(populationData?.totals);
+        }
+      }
+    }
+  }, [currentLocationId, polygonsWithData, showDatasetsAgainstParentLevel]);
+
+  useEffect(() => {
+    let populationData: any;
+    if (state.selected) {
+      populationData = state.selected.population
+        ? transformPopulationData(JSON.parse(state.selected.population))
+        : null;
+      setNumberOfStructures(state.selected?.numberOfStructures);
+      if (populationData !== null) {
+        setChartData(populationData.chartData);
+        setLabels(populationData?.labels);
+        setTotals(populationData?.totals);
+      }
+    } else if (!state.selected && currentLocationId) {
+      const selectedLocation = polygonsWithData[currentLocationId].polygonData;
+      const populationData = transformPopulationData(selectedLocation?.properties?.population);
+      setNumberOfStructures(selectedLocation?.properties?.numberOfStructures);
+      if (populationData !== null) {
+        setChartData(populationData.chartData);
+        setLabels(populationData?.labels);
+        setTotals(populationData?.totals);
+      }
+    }
+  }, [state.selected, showDatasetsAgainstParentLevel]);
+
+  useEffect(() => {
+    // if (Array.isArray(instances) && instances?.length === 0) {
+    if (isAuthorizedForRedirectingToAPlan && instanceContext?.selectedInstance?.identifier) {
+      // instanceContext
+      // alert("Empty..")
+      // console.log(instanceContext, 'IC')
+      fetchHierarchy(instanceContext?.selectedInstance?.identifier as any);
+      fetchSimulationAndData(instanceContext?.instancePlan as any);
+      // fetchDefaultHierarchyData();
+    }
+    if (selectedPlan) {
+      fetchHierarchy(selectedPlan.identifier as any);
+      fetchSimulationAndData(selectedPlan);
+      // fetchDefaultHierarchyData();
+    }
+  }, [selectedPlan, instances]);
+
+  useEffect(() => {
+    // getPlans().then(planInfo => {
+    //   setPlans(planInfo);
+    // });
+    if (!isAuthorized) return
+    getInstances(0, 1000).then(instances => {
+      setInstances(instances?.content);
+      // setInstances([])
+    });
+  }, [isAuthorized]);
+
+  // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
   useEffect(() => {
     Promise.all([
-      getLocationHierarchyList(50, 0, true),
+      // getLocationHierarchyList(50, 0, true),
       getEntityList(),
       getGeneratedLocationHierarchyList()
       // getComplexTagReponses()
     ])
-      .then(([locationHierarchyList, entityList, generatedHierarchyList]) => {
+      .then(([
+        // locationHierarchyList, 
+        entityList, generatedHierarchyList]) => {
         let generatedHierarchyItems = generatedHierarchyList?.map(generatedHierarchy => {
           return {
             identifier: generatedHierarchy.identifier,
@@ -209,17 +513,17 @@ const Simulation = () => {
           };
         });
 
-        let list = locationHierarchyList?.content.map(savedHierarchy => {
-          return {
-            identifier: savedHierarchy.identifier,
-            name: savedHierarchy.name,
-            nodeOrder: savedHierarchy.nodeOrder,
-            type: HierarchyType.SAVED
-          };
-        });
+        // let list = locationHierarchyList?.content.map(savedHierarchy => {
+        //   return {
+        //     identifier: savedHierarchy.identifier,
+        //     name: savedHierarchy.name,
+        //     nodeOrder: savedHierarchy.nodeOrder,
+        //     type: HierarchyType.SAVED
+        //   };
+        // });
 
-        let combinedList = list.concat(generatedHierarchyItems);
-        setCombinedHierarchyList(combinedList);
+        // let combinedList = list.concat(generatedHierarchyItems);
+        // setCombinedHierarchyList(combinedList);
 
         let entityObj = entityList.find(entity => entity.code === 'Location');
         setSelectedEntity(entityObj?.identifier);
@@ -1046,16 +1350,16 @@ const Simulation = () => {
           }
         });
 
-        if (mapData.parents) {
-          let highestLocations: any[] = Object.keys(mapData.parents)
-            .filter(
-              key =>
-                mapData.parents[key].properties !== null &&
-                mapData.parents[key].properties?.geographicLevelNodeNumber === min
-            )
-            .map(key => mapData.parents[key]);
-          setHighestLocations(highestLocations);
-        }
+        // if (mapData.parents) {
+        //   let highestLocations: any[] = Object.keys(mapData.parents)
+        //     .filter(
+        //       key =>
+        //         mapData.parents[key].properties !== null &&
+        //         mapData.parents[key].properties?.geographicLevelNodeNumber === min
+        //     )
+        //     .map(key => mapData.parents[key]);
+        //   // setHighestLocations(highestLocations);
+        // }
       }
     }
   }, [mapData, resultsLoaded, parentsLoaded, getLocationHierarchyFromLowestLocation, markedLocations]);
@@ -1082,31 +1386,124 @@ const Simulation = () => {
     }
   }, [selectedHierarchy]);
 
-  const loadLocationHandler = (locationId: string) => {
-    let feature = mapData?.features[locationId] || mapData?.parents[locationId];
-
-    if (feature && feature.geometry) {
-      setToLocation(JSON.parse(JSON.stringify(bbox(feature))));
+  const checkifChildrenLoaded = (polygonsWithData: any, selectedLocationId: any) => {
+    if (polygonsWithData?.[selectedLocationId]?.childrenLoaded === undefined) {
+      return true;
+    } else if (polygonsWithData?.[selectedLocationId]?.childrenLoaded === true) {
+      return false;
     } else {
+      return true;
     }
   };
 
-  const showDetailsClickHandler = (locationId: string) => {
-    let feature = mapData?.parents[locationId];
-    //create deep copy of bounds object for triggering bounds event every time
-    if (feature) {
-      let val: any = feature;
-      let valProps: SearchLocationProperties = {
-        bounds: feature.geometry ? (bbox(val.geometry) as any) : undefined,
-        identifier: val.identifier,
-        metadata: val.properties?.metadata,
-        name: val.properties?.name,
-        persons: []
+  // useEffect(() => {
+  //   fetchHierarchy();
+  //   fetchSimulationAndData();
+  // }, []);
+
+  //! LOADING POLYGONS ON DEMAND
+  const loadLocationHandler = async (locationId: string) => {
+    dispatch({ type: 'SET_DETAILS_POPUP_REF', payload: null });
+    dispatch({ type: 'CLEAR_SELECTION' });
+
+    setShowDatasetsAgainstParentLevel(false);
+    setSelectedParentLevel(null);
+    setNodeOrderListVisible(false);
+
+    setCurrentLocationId(locationId);
+
+    // If no datasets and children already loaded, skip fetching
+    if (state.datasets.length === 0 && polygonsWithData?.[locationId]?.childrenLoaded) {
+      handleNoDatasetCase(locationId);
+      return;
+    }
+
+    const includeGeometry = checkifChildrenLoaded(polygonsWithData, locationId);
+    const parentGeoLevel = polygonsWithData?.[locationId]?.polygonData?.properties?.geographicLevel || '';
+    const datasetsChanged = prevDatasetsLengthRef.current !== state.datasets.length;
+
+    if (datasetsChanged || includeGeometry) {
+      prevDatasetsLengthRef.current = state.datasets.length;
+
+      const configObj: LocationData = {
+        datasetsIds: datasetList.map(dataset => dataset.identifier),
+        includeGeometry,
+        parentLocationId: locationId,
+        simulationId: state.simulationId,
+        campaignManagementFeatures: false
       };
-      setSelectedRow(valProps);
-      setShowDetails(true);
+      // console.log(state?.nodeOrder, 'NODE_ORDR')
+      const targetLevelName = getPlanTargetLevelName(state.nodeOrder || [], state.planTargetType);
+      // If location clicked is level above structures, we need to load only its polygon
+      // and show a tip to load structures in the area by zooming in on the map
+      if (parentGeoLevel !== targetLevelName) {
+        const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
+        if (!polygonsWithDatasets || polygonsWithDatasets.length === 0) {
+          toast.error('Cannot get results. Please try again.');
+          return;
+        }
+        updatePolygonsData(polygonsWithDatasets, includeGeometry, locationId);
+      } else {
+        toast.info('Please zoom in to see structures data.');
+      }
     }
   };
+
+  const handleNoDatasetCase = (locationId: string) => {
+    setIncludeGeometry(false);
+
+    const selectedChildren = Object.values(polygonsWithData)
+      .map((polygon: any) => polygon.polygonData)
+      .filter(p => p.properties.parentIdentifier === locationId);
+
+    setSelectedLocationChildren(selectedChildren);
+
+    const selectedLocation = polygonsWithData?.[locationId]?.polygonData;
+    if (selectedLocation) {
+      setGeometry(selectedLocation);
+      setToLocation(JSON.parse(JSON.stringify(bbox(selectedLocation.geometry))));
+    }
+  };
+
+  const updatePolygonsData = (polygonsWithDatasets: any[], includeGeometry: boolean, locationId: string) => {
+    setPolygonsWithData((prev: any) => {
+      const updatedPolygons = { ...prev };
+
+      if (includeGeometry) {
+        polygonsWithDatasets.forEach(location => {
+          updatedPolygons[location.identifier] = {
+            polygonData: location,
+            childrenLoaded: location.identifier === locationId
+          };
+        });
+      } else {
+        polygonsWithDatasets.forEach(location => {
+          if (updatedPolygons[location.identifier]) {
+            updatedPolygons[location.identifier].polygonData.properties.metadata = location.properties.metadata;
+          }
+        });
+      }
+
+      return updatedPolygons;
+    });
+  };
+
+  // const showDetailsClickHandler = (locationId: string) => {
+  //   let feature = mapData?.parents[locationId];
+  //   //create deep copy of bounds object for triggering bounds event every time
+  //   if (feature) {
+  //     let val: any = feature;
+  //     let valProps: SearchLocationProperties = {
+  //       bounds: feature.geometry ? (bbox(val.geometry) as any) : undefined,
+  //       identifier: val.identifier,
+  //       metadata: val.properties?.metadata,
+  //       name: val.properties?.name,
+  //       persons: []
+  //     };
+  //     setSelectedRow(valProps);
+  //     setShowDetails(true);
+  //   }
+  // };
 
   const processChildren = useCallback(
     (mapDataClone: any) => {
@@ -1162,430 +1559,307 @@ const Simulation = () => {
     setShowResult(true);
   };
 
-  const conditionalRender = (el: EntityTag, index: number) => {
-    if (el.more && el.more.length) {
-      return (
-        <MultiFormField
-          entityTag={el}
-          register={register}
-          index={index}
-          errors={errors}
-          deleteHandler={(i: number, range: boolean) => {
-            if (range) {
-              el.more.splice(1);
-            } else {
-              unregister((el.tag + index + 'range') as any);
-              el.more.splice(i, 1);
-            }
-            setSelectedEntityConditionList([...selectedEntityConditionList]);
-          }}
-        />
-      );
-    }
-    return <FormField range={false} entityTag={el} register={register} index={index} errors={errors} />;
+  // const conditionalRender = (el: EntityTag, index: number) => {
+  //   if (el.more && el.more.length) {
+  //     return (
+  //       <MultiFormField
+  //         entityTag={el}
+  //         register={register}
+  //         index={index}
+  //         errors={errors}
+  //         deleteHandler={(i: number, range: boolean) => {
+  //           if (range) {
+  //             el.more.splice(1);
+  //           } else {
+  //             unregister((el.tag + index + 'range') as any);
+  //             el.more.splice(i, 1);
+  //           }
+  //           setSelectedEntityConditionList([...selectedEntityConditionList]);
+  //         }}
+  //       />
+  //     );
+  //   }
+  //   return <FormField range={false} entityTag={el} register={register} index={index} errors={errors} />;
+  // };
+
+  // const selectStyles = {
+  //   dropdownIndicator: (baseStyles: object) => ({
+  //     ...baseStyles,
+  //     scale: '0.8'
+  //   }),
+  //   clearIndicator: (baseStyles: object) => ({
+  //     ...baseStyles,
+  //     scale: '0.8'
+  //   })
+  // };
+
+  // const convertColor = (color: any) => {
+  //   if (!color) return;
+  //   let hexValue = color.toString();
+  //   let rgbArr = hex.rgb(hexValue);
+  //   let hsvArr = hex.hsv(hexValue);
+
+  //   let convertedColor = {
+  //     hex: '#009900',
+  //     rgb: { r: rgbArr[0], g: rgbArr[1], b: rgbArr[2] },
+  //     hsv: { h: hsvArr[0], s: hsvArr[1], v: hsvArr[2] }
+  //   };
+
+  //   return convertedColor as Color;
+  // };
+
+  const handleRemoveTargetArea = (id: string) => {
+    const assignedAreas = state.targetAreas?.flatMap((ta: any) => [...ta.ancestry, ta.identifier]) || [];
+    const targetArea = state.targetAreas?.find(ta => ta.identifier === id);
+    const toExcludeSet = new Set([...targetArea.ancestry, id]);
+    const filtered = assignedAreas.filter(item => !toExcludeSet.has(item));
+    assignLocationsToPlan(state.planid, filtered).then(async () => {
+      // update assignment map
+      dispatch({ type: 'SET_ASSIGNED', payload: { ...state.assingedLocations, [id]: false } });
+      // refetch target areas, so the map updates
+      const simulationData = await getSimulationData(state.planid);
+      dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+      dispatch({ type: 'CLEAR_SELECTION' });
+    });
   };
 
+  const campaignTotals = [
+    {
+      label: 'Target Areas',
+      total: state.targetAreas.length,
+      targetAreasList: state.targetAreas,
+      remove: handleRemoveTargetArea
+    },
+    {
+      label: 'Total Population',
+      total: Math.round(state.targetAreas?.reduce((a, b) => a + b?.properties?.population?.sum, 0)) || 0,
+      targetAreasList: state.targetAreas,
+      type: 'population'
+    }
+  ];
+
+  const handleDatasetsButtonClick = () => {
+    setNodeOrderListVisible(!nodeOrderListVisible);
+  };
+
+  const filterDatasetsErrorHandler = () => {
+    //toast("An error occured. Cannot load requested data.")
+    //TODO
+  };
+  const filterDatasetsOpenHandler = () => {
+    //TODO
+  };
+  const filterDatasetsCloseHandler = () => {
+    //TODO
+  };
+
+  const filterDatasetsMessageHandler = (message: any) => {
+    const res: any = JSON.parse(message.data);
+    setSelectedLocationChildren(prev => {
+      return [...prev, ...res];
+    });
+  };
+
+  const handleParentSelectionChange = async (option: SingleValue<{ value: string; label: string }>) => {
+    setSelectedParentLevel(option);
+    if (option != null && option.value !== '') {
+      const searchRequest: SimulationDatasetRequest = {
+        simulationId: state.simulationId,
+        parentAdminLevel: option.value
+      };
+      const searchId = await addSearchRequest(searchRequest);
+      setSelectedLocationChildren([]);
+      setShowDatasetsAgainstParentLevel(true);
+      filterDatasets(
+        searchId,
+        filterDatasetsMessageHandler,
+        filterDatasetsCloseHandler,
+        filterDatasetsOpenHandler,
+        filterDatasetsErrorHandler
+      );
+    }
+  };
+
+  // map zoom in for the structures lifts up the state, so we still have a single source of truth
+  const updateChildrenPolygons = (data: any) => {
+    setSelectedLocationChildren(prev => [...prev, ...data]);
+  };
+
+  const handlePlanSelectionChange = (option: SingleValue<{ value: string; label: string }>) => {
+    let found = instances?.find((plan: any) => plan.identifier === option?.value);
+    if (found) {
+      setSelectedPlan(found);
+    }
+  };
+  console.log(highestLocations)
   return (
     <>
       <Container fluid ref={divRef}>
-        <Row>
-          {!mapFullScreen && (
-            <Col xs={12} sm={12} md={4} style={{ position: 'relative' }}>
-              <Form>
-                <Form.Group className="my-3">
-                  <Row className="align-items-center">
-                    <Col md={5} lg={5}>
-                      <OverlayTrigger placement="top" overlay={<Tooltip id="meta-tooltip">Use Layers</Tooltip>}>
-                        <Form.Label>Omit Layers:</Form.Label>
-                      </OverlayTrigger>
-                    </Col>
-                    <Col>
-                      <Form.Check
-                        className="float-left"
-                        type="switch"
-                        id="custom-switch"
-                        label="Select to Omit Layers"
-                        defaultChecked={omitLayers}
-                        onChange={e => setOmitLayers(!omitLayers)}
-                      />
-                    </Col>
-                  </Row>
-                </Form.Group>
-                <Form.Group className="my-3">
-                  <Row className="align-items-center">
-                    <Col md={5} lg={5}>
-                      <Form.Label>{t('simulationPage.hierarchy')}:</Form.Label>
-                    </Col>
-                    <Col>
-                      <Form.Select
-                        onChange={e => {
-                          const selectedHierarchy = combinedHierarchyList?.find(el => el.identifier === e.target.value);
-                          if (selectedHierarchy) {
-                            setSelectedHierarchy(selectedHierarchy);
-                            setNodeList(selectedHierarchy.nodeOrder.filter(el => el !== 'structure'));
-                            setCompleteGeographicList(selectedHierarchy.nodeOrder);
-                          } else {
-                            setSelectedHierarchy(undefined);
-                            setNodeList([]);
-                            setSelectedLocation(null);
-                            setCompleteGeographicList([]);
-                          }
-                        }}
-                      >
-                        <option value={''}>{t('simulationPage.selectHierarchy')}...</option>
-                        {combinedHierarchyList?.map(el => (
-                          <option key={el.identifier} value={el.identifier}>
-                            {el.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Col>
-                  </Row>
-                </Form.Group>
-                <Container
-                  as={'div'}
-                  color={'grey'}
-                  style={{ border: '1px', borderColor: 'grey' }}
-                  className="rounded-1 border"
-                >
-                  <Row>
-                    <Col>
-                      <div className=" my-3 ">
-                        Filter locations by a Parent Location{' '}
-                        <span style={{ color: 'lightgray' }} className={'small'}>
-                          (Search results will be locations within this parent location)
-                        </span>
-                      </div>
-                      <Form.Group className="my-3">
-                        <Row className="align-items-center">
-                          <Col md={5} lg={5}>
-                            <OverlayTrigger
-                              placement="top"
-                              overlay={
-                                <Tooltip id="meta-tooltip">{t('simulationPage.selectParentToSearchWithin')}</Tooltip>
-                              }
-                            >
-                              <Form.Label>{t('simulationPage.geographicLevel')}:</Form.Label>
-                            </OverlayTrigger>
-                          </Col>
-                          <Col>
-                            <Form.Select
-                              onChange={e => {
-                                if (e.target.value && selectedHierarchy && selectedHierarchy.type) {
-                                  getLocationList(
-                                    selectedHierarchy.identifier,
-                                    selectedHierarchy.type,
-                                    e.target.value
-                                  ).then(res => {
-                                    setLocationList(res);
-                                  });
-                                } else {
-                                  setLocationList([]);
-                                }
-                                setSelectedLocation(null);
-                              }}
-                            >
-                              <option value={''}>
-                                {selectedHierarchy
-                                  ? t('simulationPage.selectGeographicLevel')
-                                  : t('simulationPage.selectHierarchy')}
-                                ...
-                              </option>
-                              {nodeList.map(el => (
-                                <option key={el} value={el}>
-                                  {el}
-                                </option>
-                              ))}
-                            </Form.Select>
-                          </Col>
-                        </Row>
-                      </Form.Group>
-                      <Form.Group className="my-3">
-                        <Row className="align-items-center">
-                          <Col md={5} lg={5}>
-                            <OverlayTrigger
-                              placement="top"
-                              overlay={
-                                <Tooltip id="meta-tooltip">
-                                  {t('simulationPage.selectParentLocationToSearchWithin')}
-                                </Tooltip>
-                              }
-                            >
-                              <Form.Label>{t('simulationPage.location')}:</Form.Label>
-                            </OverlayTrigger>
-                          </Col>
-                          <Col>
-                            <Select
-                              placeholder="Select Location..."
-                              className="custom-react-select-container "
-                              classNamePrefix="custom-react-select"
-                              id="team-assign-select"
-                              isClearable
-                              value={selectedLocation}
-                              options={locationList.reduce((prev, current) => {
-                                return [...prev, { label: current.name, value: current.identifier }];
-                              }, [])}
-                              onChange={newValue => setSelectedLocation(newValue)}
-                            />
-                          </Col>
-                        </Row>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                </Container>
-                <Form.Group className="my-3">
-                  <Row className="align-items-center">
-                    <Col md={5} lg={5}>
-                      <OverlayTrigger
-                        placement="top"
-                        overlay={<Tooltip id="meta-tooltip">{t('simulationPage.filterSearchByLevel')}</Tooltip>}
-                      >
-                        <Form.Label>{t('simulationPage.filterGeographicLevel')}:</Form.Label>
-                      </OverlayTrigger>
-                    </Col>
-                    <Col>
-                      <Select
-                        isMulti
-                        options={completeGeographicList
-                          .map((geo: any) => {
-                            return { value: geo, label: geo };
-                          })
-                          .filter((geo: any) => !levelsLoaded.current.includes(geo.label))}
-                        value={geoFilterList}
-                        noOptionsMessage={obj => {
-                          if (obj.inputValue === '') {
-                            return 'Enter at least 1 char to display the results...';
-                          } else {
-                            return 'No location found.';
-                          }
-                        }}
-                        placeholder={
-                          completeGeographicList.length > 0
-                            ? t('simulationPage.search') + '...'
-                            : t('simulationPage.selectHierarchyFirst')
-                        }
-                        onInputChange={e => {}}
-                        onChange={newValues => {
-                          setGeoFilterList(newValues);
-                          if (newValues) {
-                            setSelectedFilterGeographicLevelList(newValues.map(value => value.label));
-                          }
-                        }}
-                      />
-                    </Col>
-                  </Row>
-                </Form.Group>
-                <Form.Group className="my-3">
-                  <Row className="align-items-center">
-                    <Col md={5} lg={5}>
-                      <OverlayTrigger
-                        placement="top"
-                        overlay={
-                          <Tooltip id="meta-tooltip">{t('simulationPage.selectToLoadInactiveLocations')}</Tooltip>
-                        }
-                      >
-                        <Form.Label>{t('simulationPage.loadInactiveLocations')}:</Form.Label>
-                      </OverlayTrigger>
-                    </Col>
-                    <Col>
-                      <Form.Check
-                        className="float-left"
-                        type="switch"
-                        id="custom-switch"
-                        label="Select to Load Inactive Locations"
-                        defaultChecked={false}
-                        onChange={e => setLoadParentsToggle(e.target.checked)}
-                      />
-                    </Col>
-                  </Row>
-                </Form.Group>
-                <Form.Group className="my-3">
-                  {loadParentsToggle && (
-                    <Row className="align-items-center">
-                      <Col md={5} lg={5}>
-                        <OverlayTrigger
-                          placement="top"
-                          overlay={
-                            <Tooltip id="meta-tooltip">{t('simulationPage.filterInactiveLocationsByLevel')}</Tooltip>
-                          }
-                        >
-                          <Form.Label>{t('simulationPage.filterGeographicLevel')}:</Form.Label>
-                        </OverlayTrigger>
-                      </Col>
-                      <Col>
-                        <Select
-                          isMulti
-                          options={completeGeographicList.map((geo: any) => {
-                            return { value: geo, label: geo };
-                          })}
-                          value={inactiveGeoFilterList}
-                          noOptionsMessage={obj => {
-                            if (obj.inputValue === '') {
-                              return 'Enter at least 1 char to display the results...';
-                            } else {
-                              return 'No location found.';
-                            }
-                          }}
-                          placeholder={
-                            completeGeographicList.length > 0
-                              ? t('simulationPage.search') + '...'
-                              : t('simulationPage.selectHierarchyFirst')
-                          }
-                          onChange={newValues => {
-                            setInactiveGeoFilterList(newValues);
-                            if (newValues) {
-                              setSelectedFilterInactiveGeographicLevelList(newValues.map(value => value.label));
-                            }
-                          }}
-                        />
-                      </Col>
-                    </Row>
-                  )}
-                </Form.Group>
-                <Form.Group className="my-3">
-                  <Row>
-                    <Col xs={9}>
-                      <Form.Group>
-                        <Form.Label className="pe-3">{t('simulationPage.addQueryAttribute')} </Form.Label>
-                      </Form.Group>
-                    </Col>
-                    <Col xs={3}>
-                      <Row>
-                        <Col md={3}>
-                          <Button
-                            disabled={selectedEntity === undefined}
-                            className="rounded float-end"
-                            onClick={() => openModalHandler(true)}
-                          >
-                            <FontAwesomeIcon icon="plus" />
-                          </Button>
-                        </Col>
-                        <Col md={9}>
-                          <OverlayTrigger
-                            placement="top"
-                            overlay={
-                              resultsLoadingState === 'error' || parentsLoadingState === 'error' ? (
-                                <Tooltip>
-                                  {resultsLoadingState === 'error' && parentsLoadingState === 'error'
-                                    ? 'Error loading active and inactive locations'
-                                    : resultsLoadingState === 'error' && parentsLoadingState !== 'error'
-                                    ? 'Error loading active locations'
-                                    : 'Error loading inactive locations'}
-                                </Tooltip>
-                              ) : (
-                                <></>
-                              )
-                            }
-                          >
-                            <Button
-                              type={'submit'}
-                              disabled={
-                                selectedHierarchy === undefined ||
-                                resultsLoadingState === 'started' ||
-                                parentsLoadingState === 'started'
-                              }
-                              className="float-end"
-                              onClick={handleSubmit(submitHandlerCount)}
-                            >
-                              {(resultsLoadingState === 'notstarted' ||
-                                resultsLoadingState === 'complete' ||
-                                resultsLoadingState === 'error') &&
-                              (parentsLoadingState === 'notstarted' ||
-                                parentsLoadingState === 'complete' ||
-                                parentsLoadingState === 'error') ? (
-                                <>
-                                  {resultsLoadingState === 'error' || parentsLoadingState === 'error' ? (
-                                    <FontAwesomeIcon icon="exclamation-triangle" />
-                                  ) : (
-                                    <FontAwesomeIcon icon="search" />
-                                  )}
-                                  <span className={'p-2'}>{t('simulationPage.search')}</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Spinner animation="border" size="sm" role="status" />
-                                  <span className={'p-2'}>Loading</span>
-                                </>
-                              )}
-                            </Button>
-                            {/*)}*/}
-                          </OverlayTrigger>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                </Form.Group>
-                <div
-                  style={{ position: 'relative', maxHeight: divHeight > 900 ? '51vh' : '44vh' }}
-                  className="border rounded overflow-auto"
-                >
-                  {selectedEntityConditionList.map((el, index) => {
-                    return (
-                      <Row className="mx-2 my-3" key={index}>
-                        <Col md={9}>{conditionalRender(el, index)}</Col>
-                        <Col md={3} className="text-end align-self-end">
-                          {(el.valueType === 'integer' ||
-                            el.valueType === 'double' ||
-                            el.valueType === 'date' ||
-                            el.valueType === 'string') && (
-                            <span title={t('simulationPage.more')}>
-                              <Button
-                                className="m-1"
-                                onClick={() => {
-                                  if (el.more) {
-                                    el.more.push(el);
-                                  } else {
-                                    el.more = [el];
-                                  }
-                                  setSelectedEntityConditionList([...selectedEntityConditionList]);
-                                }}
-                              >
-                                <FontAwesomeIcon icon="plus" />
-                              </Button>
-                            </span>
-                          )}
-                          <span title={t('simulationPage.delete')}>
-                            <Button
-                              variant="secondary"
-                              onClick={() => {
-                                selectedEntityConditionList.splice(index, 1);
-                                setSelectedEntityConditionList([...selectedEntityConditionList]);
-                              }}
-                            >
-                              <FontAwesomeIcon icon="trash" />
-                            </Button>
-                          </span>
-                        </Col>
-                      </Row>
-                    );
+        <div style={{ display: 'flex', position: 'relative' }}>
+          <Drawer open={leftOpen} anchor="left" heading="Plan Simulation">
+            {isAuthorized && instances?.length > 0 && (
+              <Accordion title="Instances" open={selectedPlan == null}>
+                {/* <Select
+                  placeholder={'Select Plan'}
+                  className={styles.select_small}
+                  options={plans.map((plan: any) => {
+                    return {
+                      value: plan.identifier,
+                      label: plan.title
+                    };
                   })}
+                  onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
+                    handlePlanSelectionChange(selectedOption);
+                  }}
+                /> */}
+                <div style={{ height: 400 }}>
+                  <Select
+                    placeholder={'Select Instances'}
+                    className={styles.select_small}
+                    options={instances?.map((plan: any) => {
+                      return {
+                        value: plan.identifier,
+                        label: plan.instanceName
+                      };
+                    })}
+                    onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
+                      handlePlanSelectionChange(selectedOption);
+                    }}
+                  />
                 </div>
-              </Form>
-            </Col>
-          )}
-          <Col xs={12} sm={12} md={mapFullScreen ? 12 : 8} id="mapRow" className={mapFullScreen ? 'pt-4' : ''}>
-            <SimulationMapView
-              fullScreenHandler={() => {
-                setMapFullScreen(!mapFullScreen);
-              }}
-              fullScreen={mapFullScreen}
-              toLocation={toLocation}
-              entityTags={entityTags}
-              parentMapData={parentMapData}
-              setMapDataLoad={setMapDataLoad}
-              chunkedData={mapDataLoad}
-              resetMap={resetMap}
-              setResetMap={setResetMap}
-              stats={statsLayerMetadata}
-              resultsLoadingState={resultsLoadingState}
-              parentsLoadingState={parentsLoadingState}
-              map={map}
-              updateMarkedLocations={updateMarkedLocations}
-              parentChild={parentChild}
-              analysisLayerDetails={analysisLayerDetails}
-            />
-          </Col>
-        </Row>
+                {/* {plans.map(plan => (
+                  <>
+                    <br></br>
+                    <br></br>
+                  </>
+                ))} */}
+              </Accordion>
+            )}
+
+            {/* {highestLocations && showResult && ( */}
+            {highestLocations && (
+              <Accordion title="Hierarchy" open={resultsLoadingState === 'complete'}>
+                <Hierarchy clickHandler={loadLocationHandler} />
+                {/* <DrawerButton onClick={() => setOpenCustomModal(0)}>Add Operational Area</DrawerButton>
+                <CustomPopup isOpen={openCustomModal === 0} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
+                  <AddTargetAreaForm onClose={() => setOpenCustomModal(undefined)} />
+                </CustomPopup> */}
+              </Accordion>
+            )}
+            {/* {highestLocations && showResult && ( */}
+            <AuthorizedElement roles={[SIMULATION_DATASET_MENU]}>
+              {highestLocations ? (
+                <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
+                  {state.datasets?.length !== 0 && (
+                    <div className={styles.WrapperDasasetsButton}>
+                      <button className={styles.dasasetsButton} onClick={handleDatasetsButtonClick}>
+                        Display datasets by parent level
+                      </button>
+                      {nodeOrderListVisible && (
+                        <>
+                          <Select
+                            components={{
+                              IndicatorSeparator: () => null
+                            }}
+                            placeholder={'Select Parent Level'}
+                            className={styles.select}
+                            isClearable
+                            onMenuOpen={() => setShowingParentLevelsMenu(true)}
+                            onMenuClose={() => setShowingParentLevelsMenu(false)}
+                            options={state.defaultHierarchyData?.nodeOrder.map((node: string) => {
+                              return {
+                                value: node,
+                                label: node
+                              };
+                            })}
+                            value={selectedParentLevel}
+                            onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
+                              handleParentSelectionChange(selectedOption);
+                            }}
+                          />
+
+                          {showingParentLevelsMenu && (
+                            <>
+                              <br></br>
+                              <br></br>
+                              <br></br>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {state.datasets?.map(dataset => (
+                    <DatasetsAccordion
+                      key={dataset.identifier}
+                      dataset={dataset}
+                      updateDatasetHandler={updateDatasetHandler}
+                      removeDatasetHandler={removeDatasetHandler}
+                    />
+                  ))}
+
+                  <AuthorizedElement roles={[SIMULATION_ADD_DATASET]}>
+                    <DrawerButton onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>
+                      Add dataset
+                    </DrawerButton>
+                  </AuthorizedElement>
+                  <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
+                    <div className="p-6">
+                      <AddDatasetForm
+                        onClose={() => setOpenCustomModal(undefined)}
+                        onDatasetAdded={handleAddDataset}
+                        selectedLocationId={currentLocationId}
+                      />
+                    </div>
+                  </CustomPopup>
+                </Accordion>
+              ) : <></>}
+            </AuthorizedElement>
+          </Drawer>
+          <SimulationMapView
+            showDatasetsAgainstParentLevel={showDatasetsAgainstParentLevel}
+            selectedLoaction={geometry} // BBBOX
+            currentLocationChildren={selectedLocationChildren}
+            // polygons={extractPolygonsFromPolysWithData(polygonsWithData)} // LIST OF POLYGONS
+            loading={resultsLoadingState}
+            leftOpenHandler={() => setLeftOpen(!leftOpen)}
+            leftOpenState={leftOpen}
+            rightOpenState={rightOpen}
+            rightOpenHandler={() => setRightOpen(!rightOpen)}
+            fullScreenHandler={() => {
+              setMapFullScreen(!mapFullScreen);
+            }}
+            fullScreen={mapFullScreen}
+            toLocation={toLocation} // bbox
+            entityTags={entityTags}
+            parentMapData={parentMapData}
+            setMapDataLoad={setMapDataLoad}
+            chunkedData={mapDataLoad}
+            resetMap={resetMap}
+            setResetMap={setResetMap}
+            stats={statsLayerMetadata}
+            resultsLoadingState={resultsLoadingState}
+            parentsLoadingState={parentsLoadingState}
+            map={map}
+            updateMarkedLocations={updateMarkedLocations}
+            parentChild={parentChild}
+            analysisLayerDetails={analysisLayerDetails}
+            updateChildrenPolygons={updateChildrenPolygons}
+          />
+          <Drawer open={rightOpen} anchor="left">
+            {Object.keys(chartData).length > 0 && (
+              <Accordion title="Statistics" open>
+                <Dashboard chartLabels={labels} chartData={chartData} totals={totals} structures={numberOfStructures} />
+              </Accordion>
+            )}
+            <Accordion title="Campaign Totals" open>
+              {campaignTotals.map((item, index) => (
+                <CampaignTotalsAccordion key={index} campaignTotals={item} />
+              ))}
+            </Accordion>
+          </Drawer>
+        </div>
       </Container>
       <>
         <hr className="my-4" />
@@ -1611,7 +1885,10 @@ const Simulation = () => {
               </Button>
               {highestLocations && showResult && (
                 <>
-                  <AuthorizedElement roles={[REVEAL_SIMULATION_EDIT]}>
+                  <AuthorizedElement
+                    // roles={[REVEAL_SIMULATION_EDIT]}
+                    roles={[]}
+                  >
                     <Button
                       className="float-end my-3 ms-2"
                       variant="secondary"
@@ -1642,21 +1919,6 @@ const Simulation = () => {
                     onChange={e => setShowOnlyMarkedLocations(e.target.checked)}
                   />
                 </>
-              )}
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              {highestLocations && showResult && (
-                <SimulationResultExpandingTable
-                  clickHandler={loadLocationHandler}
-                  data={highestLocations}
-                  detailsClickHandler={showDetailsClickHandler}
-                  summaryClickHandler={summaryDetailsClickHandler}
-                  markedLocations={markedLocations}
-                  showOnlyMarkedLocations={showOnlyMarkedLocations}
-                  markedParents={markedParents}
-                />
               )}
             </Col>
           </Row>
@@ -1802,3 +2064,51 @@ const Simulation = () => {
   );
 };
 export default Simulation;
+
+const transformPopulationData = (population: any) => {
+  const mergedPyramids = mergeAgeGroups(population?.Pyramids) || [];
+  if (!mergedPyramids || mergedPyramids.length === 0) {
+    return null;
+  }
+  const ageGroups = mergedPyramids.map((group: any) => group.AgeGroup.replace('_', '-'));
+  const summaryData = mergedPyramids.map((group: any) => Math.round(group.TotalPop));
+  const maleData = mergedPyramids.map((group: any) => Math.round(group.MalePop));
+  const femaleData = mergedPyramids.map((group: any) => Math.round(group.FemalePop));
+
+  return {
+    labels: ageGroups,
+    chartData: {
+      summary: summaryData,
+      male: maleData,
+      female: femaleData
+    },
+    totals: {
+      summary: Math.round(population.sum),
+      male: Math.round(population.male),
+      female: Math.round(population.female)
+    }
+  };
+};
+
+const mergeAgeGroups = (pyramids: any[]) => {
+  if (!pyramids || pyramids.length === 0) return [];
+  const mergedGroups: any[] = [];
+
+  for (let i = 0; i < pyramids.length; i += 2) {
+    const first = pyramids[i];
+    const second = pyramids[i + 1] || null;
+
+    const mergedGroup = {
+      AgeGroup: second
+        ? `${first.AgeGroup.split('_')[0]}-${second.AgeGroup.split('_')[1]}`
+        : first.AgeGroup.replace('_', '-'),
+      MalePop: Math.round(first.MalePop + (second?.MalePop || 0)),
+      FemalePop: Math.round(first.FemalePop + (second?.FemalePop || 0)),
+      TotalPop: Math.round(first.TotalPop + (second?.TotalPop || 0))
+    };
+
+    mergedGroups.push(mergedGroup);
+  }
+
+  return mergedGroups;
+};

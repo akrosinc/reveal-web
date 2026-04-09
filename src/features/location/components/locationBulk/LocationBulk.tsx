@@ -6,11 +6,12 @@ import { LocationBulkModel, LocationBulkDetailsModel, LocationBulkStatus } from 
 import { ActionDialog } from '../../../../components/Dialogs';
 import UploadLocation from './upload';
 import Paginator from '../../../../components/Pagination';
-import { PAGINATION_DEFAULT_SIZE, BULK_TABLE_COLUMNS } from '../../../../constants';
+import { PAGINATION_DEFAULT_SIZE, BULK_TABLE_COLUMNS, LOCATION_BULK_IMPORT, LOCATION_VALIDATE_IMPORT } from '../../../../constants';
 import { getLocationBulkListById, getLocationBulkList } from '../../api';
 import { toast } from 'react-toastify';
 import LocationBulkDetails from './details';
 import DefaultTable from '../../../../components/Table/DefaultTable';
+import AuthorizedElement from '../../../../components/AuthorizedElement';
 
 const LocationBulk = () => {
   const [openUpload, setOpenUpload] = useState(false);
@@ -117,10 +118,12 @@ const LocationBulk = () => {
           </h2>
         </Col>
         <Col>
-
+        <AuthorizedElement roles={[LOCATION_BULK_IMPORT]}>
           <Button id="import-locations-button" className="float-end" onClick={() => setOpenUpload(true)}>
             {t('userImportPage.bulkImport')}
           </Button>
+          </AuthorizedElement>
+          <AuthorizedElement roles={[LOCATION_VALIDATE_IMPORT]}>
           <Button
             id="import-locations-button"
             className="float-end me-2"
@@ -131,9 +134,12 @@ const LocationBulk = () => {
           >
             {t('userImportPage.validateImport')}
           </Button>
+          </AuthorizedElement>
+          <AuthorizedElement roles={[LOCATION_VALIDATE_IMPORT]}>
           <Button id="import-locations-button" className="float-end mx-2" onClick={() => loadData(PAGINATION_DEFAULT_SIZE, 0)}>
             {t('userImportPage.refresh')}
           </Button>
+          </AuthorizedElement>
         </Col>
       </Row>
 

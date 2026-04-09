@@ -23,6 +23,8 @@ export const SIMULATION_PAGE = '/plans/simulation';
 
 export const RESOURCE_PLANNING_PAGE = '/plans/resource-planning';
 
+export const CampaignManage = '/plans/campaign-management';
+
 //REPORTING PAGES
 export const REPORTING_PAGE = '/reports';
 
@@ -35,5 +37,7 @@ export const AMDR_IMPORT = '/admin/amdr-import';
 export const AMDR_REPORT = '/amdr/report';
 
 export const DATA_PROCESSING_PROGRESS = '/admin/kafka-messaging';
+export const GROUP_MANAGEMENT = '/groupmanagement';
+export const INSTANCE_CONFIGURATION = '/instance-configuration';
 
 export const DATA_EXTRACTS = '/admin/data-extracts';

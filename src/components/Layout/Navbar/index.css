@@ -38,3 +38,28 @@
   -o-transition: 1000ms ease;
   transition: 1000ms ease;
 }
+
+/* Switch Instance nav button styling */
+.switch-instance-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.switch-instance-nav-btn:hover {
+  background-color: transparent !important;
+  color: #198754 !important;
+}
+
+/* Ensure consistent hover for all nav items in both modes */
+.navbar-light .navbar-nav .nav-link.switch-instance-nav-btn:hover {
+  color: #198754 !important;
+}
+
+body.dark-mode .switch-instance-nav-btn:hover {
+  color: #4caf50 !important;
+}

@@ -7,9 +7,51 @@ import { TeamAssignHierarchyRequest } from '../providers/types';
 
 export const getLocationHierarchyByPlanId = async (planId: string): Promise<PageableModel<LocationModel>> => {
   const data = await api
-    .get<PageableModel<LocationModel>>(PLAN + `/${planId}/locationHierarchy`)
-    .then(response => response.data);
+    // .get<any>(`instance/hierarchy`)
+    .get<any>(`groupmanagement/instance/locationassigments`)
+    .then(response => {
+      
+      const content = (response.data?.geoTree || []) as unknown as LocationModel[];
+      // console.log(content,'CH')
+      // const mapActive = (nodes: any[]) => {
+      //   nodes.forEach(node => {
+      //     if (node.properties && (node.properties.assigned || node.properties.active)) {
+      //       node.active = true;
+      //     }
+      //     if (node.children && node.children.length > 0) {
+      //       mapActive(node.children);
+      //     }
+      //   });
+      // };
+      // mapActive(content);
+
+      return {
+        content: content,
+        empty: content.length === 0,
+        first: true,
+        last: true,
+        number: 0,
+        numberOfElements: content.length,
+        pageable: {
+          offset: 0,
+          pageNumber: 0,
+          pageSize: content.length || 10,
+          paged: true,
+          sort: { empty: true, sorted: false, unsorted: true },
+          unpaged: false
+        },
+        size: content.length || 9999,
+        sort: { empty: true, sorted: false, unsorted: true },
+        totalElements: content.length,
+        totalPages: 1
+      } as PageableModel<LocationModel>;
+    });
   return data;
+  //old one
+  //   const data = await api
+  //   .get<PageableModel<LocationModel>>(PLAN + `/${planId}/locationHierarchy`)
+  //   .then(response => response.data);
+  // return data;
 };
 
 export const assignLocationsToPlan = async (planId: string, assignedLocations: string[]): Promise<any> => {
@@ -48,6 +90,7 @@ export const assignTeamsToMultiplePlanLocations = async (
 export const getAssignedLocationHierarcyCount = async (planId: string): Promise<{ count: number }> => {
   const data = await api
     .get<{ count: number }>(PLAN + `/${planId}/locationHierarchy?_summary=COUNT`)
+    // .get<{ count: number }>(`groupmanagement?_summary=count`)
     .then(response => response.data);
   return data;
 };
@@ -105,9 +148,16 @@ export const getLocationsAssignedToTeam = async (planId: string, teamId: string)
   return data;
 };
 
-export const saveLocationsAssignedToTeam = async (requestBody: {organizationIdentifier: string, locationIdentifiers: string[]}, planId: string): Promise<{ value: string; label: string }[]> => {
+export const saveLocationsAssignedToTeam = async (requestBody: { organizationIdentifier: string, locationIdentifiers: string[] }, planId: string): Promise<{ value: string; label: string }[]> => {
   const data = await api
     .post<{ value: string; label: string }[]>(`plan/assignLocationsToTeam/${planId}`, requestBody)
+    .then(response => response.data);
+  return data;
+};
+
+export const getLocationAssignments = async (): Promise<LocationModel[]> => {
+  const data = await api
+    .get<LocationModel[]>(`groupmanagement/instance/locationassignments`)
     .then(response => response.data);
   return data;
 };

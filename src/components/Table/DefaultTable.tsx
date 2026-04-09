@@ -12,6 +12,7 @@ interface Props {
   sortHandler?: (sortValue: string, sortDirection: boolean) => void;
   clickHandler?: (identifier: any) => void;
   clickAccessor?: string;
+  pageKey?: string;
 }
 
 const DATE_FORMATS = [
@@ -25,7 +26,14 @@ const DATE_FORMATS = [
   'LL'
 ];
 
-const DefaultTable = ({ columns, data, sortHandler, clickHandler, clickAccessor }: Props) => {
+const DefaultTable = ({
+  columns,
+  data,
+  sortHandler,
+  clickHandler,
+  clickAccessor,
+  pageKey = 'reportPage.table.'
+}: Props) => {
   const [sortDirection, setSortDirection] = useState(false);
   const [activeSortField, setActiveSortField] = useState('');
   const isDarkMode = useAppSelector(state => state.darkMode.value);
@@ -45,7 +53,7 @@ const DefaultTable = ({ columns, data, sortHandler, clickHandler, clickAccessor 
                 }
               }}
             >
-              {t('reportPage.table.' + el.name)}
+              {t(pageKey + el.name)}
               {activeSortField === el.name ? (
                 sortDirection ? (
                   <FontAwesomeIcon className="ms-2" icon="sort-up" />
@@ -91,7 +99,7 @@ const DefaultTable = ({ columns, data, sortHandler, clickHandler, clickAccessor 
                     if (moment(dataEl[el.accessor], DATE_FORMATS, true).isValid()) {
                       return <td key={index}>{formatDate(dataEl[el.accessor])}</td>;
                     }
-                    return <td key={index}>{dataEl[el.accessor]?.toString()}</td>;
+                    return <td key={index}>{dataEl[el.accessor]}</td>;
                   }
                 }
                 return null;

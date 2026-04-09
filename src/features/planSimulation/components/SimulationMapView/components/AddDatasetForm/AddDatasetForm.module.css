@@ -1,0 +1,25 @@
+.step {
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.previewWrapper {
+  width: 100%;
+}
+
+.select {
+  width: 100%;
+}
+
+.stepParagraph {
+  margin: 0.5rem 0;
+  letter-spacing: 0.5px;
+}
+
+.downloadTemplate {
+  color: rgb(62, 58, 252);
+  text-decoration: underline;
+}

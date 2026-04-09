@@ -61,7 +61,8 @@
   "managementPage": {
     "organization": "Organisation",
     "user": "Nutzer",
-    "userImport": "Benutzerimport"
+    "userImport": "Benutzerimport",
+    "instanceConfiuration": "Instanzkonfiguration"
   },
   "userPage": {
     "Username": "Nutzername",
@@ -115,7 +116,7 @@
       "low": "Low priority (de)"
     }
   },
-  "confirmDialog" :{
+  "confirmDialog": {
     "discardChanges": "Discard Changes"
   },
   "planPage": {
@@ -198,12 +199,25 @@
       "Intervention Type": "Intervention Type",
       "Location Hierarchy": "Location Hierarchy",
       "Start Date": "Start Date",
-      "End Date":"End Date"
+      "End Date": "End Date"
     },
     "locationName": "Location Name",
     "locationType": "Location Type",
     "identifier": "Identifier",
     "backFromColumnDrillDown": "Back"
+  },
+  "instancesPage": {
+    "search": "Suchen",
+    "title": "Instanz",
+    "table": {
+      "instanceName": "Instanzname",
+      "title": "Titel",
+      "status": "Status",
+      "interventionType": "Interventionstyp",
+      "createdDate": "Erstellungsdatum",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum"
+    }
   },
   "simulationPage": {
     "title": "Plan Simulation",

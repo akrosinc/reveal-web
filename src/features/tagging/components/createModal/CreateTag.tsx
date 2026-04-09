@@ -65,11 +65,12 @@ const CreateTag = ({ closeHandler }: Props) => {
               {fields.map((item, index: number) => (
                 <>
                   <Controller
+                  
                     rules={{ required: 'error' }}
                     control={control}
                     render={({ field: { onChange } }) => (
                       <>
-                        <Form.Group>
+                        <Form.Group className='mt-2'>
                           <Form.Control
                             {...register(`tags.${index}.name` as const, { required: 'error' })}
                             onChange={onChange}

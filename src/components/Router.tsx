@@ -12,7 +12,10 @@ import {
   RESOURCE_PLANNING_PAGE,
   SIMULATION_PAGE,
   TAG_MANAGEMENT,
-  DATA_EXTRACTS, AMDR_IMPORT
+  DATA_EXTRACTS, AMDR_IMPORT,
+  CampaignManage,
+  GROUP_MANAGEMENT,
+  INSTANCE_CONFIGURATION
 } from '../constants/';
 import Home from '../pages/HomePage';
 import Plan from '../pages/Plan';
@@ -32,6 +35,9 @@ import TagManagement2 from '../pages/TagManagement/TagManagement2';
 import DataExtracts from '../pages/DataExtracts/DataExtracts';
 import AmdrLandingPage from "../features/reporting/components/AmdrReport/AmdrLandingPage";
 import AmdrLandingPage2 from "../features/reporting/components/AmdrReport/AmdrLandingPage2";
+import Campaign from '../pages/Campaign';
+import InstanceConfiguration from '../features/instanceConfiguration';
+import GroupConfiguration from '../features/groupConfiguration';
 
 interface Props {
   instance?:string;
@@ -56,14 +62,21 @@ const Router = ({instance}:Props) => {
           <Route path={MANAGEMENT + '/*'} element={<Management />}>
             <Route path=":tab" element={<Management />} />
           </Route>
+          <Route path={INSTANCE_CONFIGURATION} element={<InstanceConfiguration />} />
+          <Route path={INSTANCE_CONFIGURATION + '/create'} element={<InstanceConfiguration />} />
+          <Route path={INSTANCE_CONFIGURATION + '/:id/edit'} element={<InstanceConfiguration />} />
+          <Route path={GROUP_MANAGEMENT} element={<GroupConfiguration />} />
+          <Route path={GROUP_MANAGEMENT + '/create'} element={<GroupConfiguration />} />
+          <Route path={GROUP_MANAGEMENT + '/:id/edit'} element={<GroupConfiguration />} />
           <Route path={LOCATION_PAGE + '/*'} element={<Location />}>
             <Route path=":tab" element={<Location />} />
           </Route>
           <Route path={ASSIGNMENT_PAGE + '/*'} element={<Assignment />} />
           <Route path={REPORTING_PAGE + '/*'} element={<Reporting />} />
           <Route path={SIMULATION_PAGE + '/*'} element={<PlanSimulation />} />
+          <Route path={CampaignManage + '/*'} element={<Campaign />} />
           <Route path={TAG_MANAGEMENT + '/*'} element={<TagManagement2 />} />
-          <Route path={DATA_PROCESSING_PROGRESS + '/*'} element={<DataProcessingProgress />} />
+          {/* <Route path={DATA_PROCESSING_PROGRESS + '/*'} element={<DataProcessingProgress />} /> */}
           <Route path={METADATA_IMPORT + '/*'} element={<MetaDataImport />}>
             <Route path=":tab" element={<MetaDataImport />} />
           </Route>
@@ -76,6 +89,7 @@ const Router = ({instance}:Props) => {
           <Route path={DATA_EXTRACTS + '/*'} element={<DataExtracts />}>
             <Route path=":tab" element={<DataExtracts />} />
           </Route>
+
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       );

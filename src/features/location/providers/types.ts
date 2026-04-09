@@ -9,6 +9,7 @@ export interface LocationHierarchyModel {
   name: string;
   nodeOrder: string[];
   type: string;
+  hierarchyStatus?:string;
 }
 
 export interface LocationModel {

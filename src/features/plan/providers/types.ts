@@ -87,3 +87,15 @@ export interface LocationHierarchy {
   identifier: string;
   name: string;
 }
+
+export interface PlanModel1 {
+  createdDatetime: string;
+  planIdentifier: string;
+  interventionType: string;
+  instanceName: string;
+  planTitle: string;
+  planStatus: string;
+  endDate: string;
+  startDate: string;
+  identifier: string;
+}

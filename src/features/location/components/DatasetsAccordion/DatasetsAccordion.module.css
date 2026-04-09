@@ -1,0 +1,43 @@
+.popupWrapper {
+  padding-top: 1rem;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+  width: fit-content;
+}
+
+.datasetInput {
+  width: 13.5rem;
+}
+
+.datasetInput:focus,
+input:focus {
+  outline: none;
+}
+
+.switchPanel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.rangeSwitchPicker {
+  margin-top: 1rem;
+  margin-left: 1rem;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
+.iconPen {
+  width: 14px;
+  height: 14px;
+}
+
+.datasetNameLabel {
+  margin-right: 1rem;
+}

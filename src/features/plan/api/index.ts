@@ -55,7 +55,7 @@ export const updatePlanStatus = async (id: string): Promise<any> => {
 export const updatePlanDetails = async (planDetails: PlanCreateModel, planId: string): Promise<any> => {
   const data = await api.put(`${PLAN}/${planId}`, planDetails).then(response => response.data);
   return data;
-}
+};
 
 export const createGoal = async (goal: Goal, planId: string): Promise<any> => {
   const data = await api.post(`${PLAN}/${planId}/goal`, goal).then(response => response.data);
@@ -85,9 +85,7 @@ export const updateAction = async (action: Action, planId: string, goalId: strin
 };
 
 export const deleteAction = async (actionId: string, planId: string, goalId: string): Promise<any> => {
-  const data = await api
-    .delete(`${PLAN}/${planId}/goal/${goalId}/action/${actionId}`)
-    .then(response => response.data);
+  const data = await api.delete(`${PLAN}/${planId}/goal/${goalId}/action/${actionId}`).then(response => response.data);
   return data;
 };
 
@@ -103,7 +101,12 @@ export const createCondition = async (
   return data;
 };
 
-export const deleteCondition = async (condition: ConditionModel, planId: string, goalId: string, actionId: string): Promise<any> => {
+export const deleteCondition = async (
+  condition: ConditionModel,
+  planId: string,
+  goalId: string,
+  actionId: string
+): Promise<any> => {
   const data = await api
     .delete(`${PLAN}/${planId}/goal/${goalId}/action/${actionId}/condition/${condition.identifier}`)
     .then(response => response.data);

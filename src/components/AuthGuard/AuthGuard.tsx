@@ -1,33 +1,67 @@
 import { useKeycloak } from '@react-keycloak/web';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAppSelector } from '../../store/hooks';
+import { STANDARD_USER, SUPER_ADMIN } from '../../constants/userRoles';
 
 interface Props {
   children: JSX.Element;
-  roles: string[];
+  roles?: string[];
 }
 
-//We will use auth guard to protect routes based on user role
-
-const AuthGuard = ({ children, roles }: Props) => {
-
+const AuthGuard = ({ children, roles = [] }: Props) => {
   const { keycloak } = useKeycloak();
+  const location = useLocation();
+  const ctx = useAppSelector(state => state.instanceContext);
+  const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
+  const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(STANDARD_USER);
+  const permissions = ctx?.role?.permissions || [];
 
-  const isAutherized = (realmRoles: string[]) => {
-    //If all provided roles match condition user has permissions
-    if (keycloak && realmRoles) {
-      let expectedRoles = realmRoles.filter(r => {
-        const realm = keycloak.hasRealmRole(r);
-        const managementResource = keycloak.hasResourceRole(r, 'realm-management');
-        return realm || managementResource;
-      });
-      if (expectedRoles.length === realmRoles.length) {
-        return true;
+  // const isAuthorized = (roles: string[]) => {
+  //   const pathname = location.pathname;
+
+  //   // Special case for Instance Configuration: only allowed for non-standard users
+  //   const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes('/standard_user');
+  //   if (isStandardUser && pathname === '/instance-configuration') return false;
+
+  //   // Home is public for authenticated users
+  //   if (pathname === '/') return true;
+
+  //   if (!roles || roles.length === 0) return true;
+
+  //   return roles.some((r) => {
+  //     // Check Keycloak roles
+  //     const hasRealmRole = keycloak?.hasRealmRole(r);
+  //     const hasResourceRole = keycloak?.hasResourceRole(r, 'realm-management');
+
+  //     // Check backend permissions from Redux
+  //     const hasPermission = permissions.includes(r);
+
+  //     return hasRealmRole || hasResourceRole || hasPermission;
+  //   });
+  // };
+  const isAuthorized = (roles: string[]) => {
+    if (!roles || roles.length === 0) return true;
+    return roles.some((r) => {
+      // Check Keycloak roles
+      const hasRealmRole = keycloak?.hasRealmRole(r);
+      const hasResourceRole = keycloak?.hasResourceRole(r, 'realm-management');
+
+      // Check backend permissions
+      const hasPermission = permissions.includes(r);
+      if (isSuperAdmin && ctx?.selectedInstance?.identifier == null) {
+        console.log('Super Admin Access Granted');
+        return hasRealmRole || hasResourceRole
       }
-    }
-    return false;
+      if (isStandardUser || (isSuperAdmin && ctx?.selectedInstance)) {
+        console.log('Standard User or Super Admin with Global Access Granted');
+        return hasPermission
+      }
+      // return hasRealmRole || hasResourceRole || hasPermission;
+    });
   };
 
-  return isAutherized(roles) ? children : <Navigate to="/" />;
+  return isAuthorized(roles) ? children : <Navigate to="/" />;
 };
 
 export default AuthGuard;
+

@@ -1,0 +1,75 @@
+.drawer {
+  color: rgb(7, 7, 7);
+  background-color: #f9f9f9;
+  border: 1px solid #0000001a;
+  transition: width 0.3s ease;
+  position: relative;
+  display: flex;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  flex-direction: column;
+  flex-shrink: 0;
+  height: 90vh;
+}
+
+.scroll {
+  overflow-y: scroll;
+}
+
+.left {
+  width: 0;
+}
+
+.right {
+  width: 0;
+}
+
+.open {
+  width: 309px;
+  height: 90vh;
+}
+
+.closed {
+  width: 0;
+}
+
+.heading {
+  flex-shrink: 0;
+  padding: 25px 20px;
+  font-size: 1.6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  border-bottom: 1px solid #0000001a;
+}
+
+.children {
+  flex-shrink: 0;
+  width: 309px;
+}
+
+.customScroll::-webkit-scrollbar {
+  width: 5px;
+  display: none;
+}
+
+.customScroll:hover::-webkit-scrollbar {
+  display: block;
+}
+
+.customScroll::-webkit-scrollbar-track {
+  background: #0000001a;
+  margin: 4px;
+}
+
+.customScroll::-webkit-scrollbar-thumb {
+  background-color: #949494;
+  border-radius: 10px;
+}
+
+.customScroll::-webkit-scrollbar-button {
+  display: none !important;
+}
+
+.customScroll::-webkit-scrollbar-thumb:hover {
+  background-color: #949494a1;
+}

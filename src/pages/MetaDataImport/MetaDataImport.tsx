@@ -23,7 +23,7 @@ const MetaDataImport = () => {
   }, [tab, navigate]);
 
   return (
-    <PageWrapper title={t('topNav.MetaDataImport')}>
+    <PageWrapper title={t('topNav.Metadata Import')}>
       <Tabs
         defaultActiveKey="create-template"
         id="test-tabs"

@@ -9,7 +9,7 @@ const TagManagement2 = () => {
   const { t } = useTranslation();
 
   return (
-    <PageWrapper title={t('topNav.TagManagement')}>
+    <PageWrapper title={t('topNav.Tag Management')}>
       <Tabs id="tag-tabs" className="mb-3" mountOnEnter={true} unmountOnExit={true}>
         <Tab eventKey="simpleTags" title={t('entityTags.simpleTags')}>
           <Tagging />

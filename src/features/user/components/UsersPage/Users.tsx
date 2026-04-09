@@ -7,11 +7,13 @@ import { DebounceInput } from 'react-debounce-input';
 import CreateUser from './create/CreateUser';
 import EditUser from './edit/EditUser';
 import { ActionDialog } from '../../../../components/Dialogs';
-import { PAGINATION_DEFAULT_SIZE, USER_TABLE_COLUMNS } from '../../../../constants';
+import { PAGINATION_DEFAULT_SIZE, USER_CREATE, USER_TABLE_COLUMNS, USER_UPDATE } from '../../../../constants';
 import { toast } from 'react-toastify';
 import { PageableModel } from '../../../../api/providers';
 import { useTranslation } from 'react-i18next';
 import DefaultTable from '../../../../components/Table/DefaultTable';
+import AuthorizedElement from '../../../../components/AuthorizedElement';
+import { useAuthorization } from '../../../../hooks/useAuthorization';
 
 const Users = () => {
   const [userList, setUserList] = useState<PageableModel<UserModel>>();
@@ -22,7 +24,7 @@ const Users = () => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const { t } = useTranslation();
-
+  const isAuthorizedUserEdit = useAuthorization([USER_UPDATE])
   const handleClose = () => {
     setShow(false);
     setShowEdit(false);
@@ -42,7 +44,7 @@ const Users = () => {
 
   const loadData = useCallback(
     (size: number, page: number, searchData?: string) => {
-      
+
       getUserList(size, page, searchData !== undefined ? searchData : '')
         .then(res => {
           setUserList(res);
@@ -66,6 +68,7 @@ const Users = () => {
   };
 
   const openUserById = (id: string) => {
+    if(!isAuthorizedUserEdit) return
     getUserById(id)
       .then(res => {
         setCurrentUser(res);
@@ -91,9 +94,11 @@ const Users = () => {
       </h2>
       <Row className="my-4">
         <Col md={8} className="mb-2">
-          <Button id="create-user-button" className="btn btn-primary float-end" onClick={() => handleShow()}>
-            {t('buttons.create')}
-          </Button>
+          <AuthorizedElement roles={[USER_CREATE]}>
+            <Button id="create-user-button" className="btn btn-primary float-end" onClick={() => handleShow()}>
+              {t('buttons.create')}
+            </Button>
+          </AuthorizedElement>
         </Col>
         <Col sm={12} md={4} className="order-md-first">
           <DebounceInput
@@ -111,7 +116,11 @@ const Users = () => {
         <>
           <DefaultTable
             columns={USER_TABLE_COLUMNS}
-            data={userList.content}
+            data={userList.content.map((user, index) => ({
+              ...user,
+              role: user?.securityGroups?.includes('/standard_user') ? 'User' : 'Admin',
+              instances: user.instances?.join(', ') || ''
+            }))}
             clickHandler={openUserById}
             sortHandler={sortHanlder}
             clickAccessor="identifier"
@@ -129,7 +138,10 @@ const Users = () => {
       {showEdit && currentUser && (
         <ActionDialog
           closeHandler={handleClose}
-          element={<EditUser handleClose={handleClose} user={currentUser} />}
+          element={<EditUser handleClose={handleClose}
+            user={currentUser}
+
+          />}
           title="User details"
         />
       )}

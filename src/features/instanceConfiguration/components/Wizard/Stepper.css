@@ -1,0 +1,36 @@
+.stepper-main-container {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+}
+
+.stepper-main-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+@media (max-width: 768px) {
+  .stepper-circle {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    font-size: 12px !important;
+  }
+
+  .stepper-step-label {
+    margin-left: 0.5rem !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stepper-circle {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+
+  .stepper-inner-container {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}

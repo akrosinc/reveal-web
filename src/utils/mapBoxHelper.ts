@@ -10,6 +10,7 @@ import {
   Properties
 } from '@turf/turf';
 import mapboxgl, {
+  AttributionControl,
   EventData,
   GeolocateControl,
   LngLatBoundsLike,
@@ -35,6 +36,7 @@ import {
   PlanningLocationResponseTagged,
   PlanningParentLocationResponse
 } from '../features/planSimulation/providers/types';
+import { Color } from 'react-color-palette';
 
 export interface LocationProperties {
   id: string;
@@ -81,7 +83,8 @@ export const initSimulationMap = (
     style: style,
     center: center,
     zoom: zoom,
-    doubleClickZoom: false
+    doubleClickZoom: false,
+    logoPosition: 'top-left'
   });
 
   mapboxInstance.addControl(
@@ -133,10 +136,6 @@ export const initSimulationMap = (
       }
     });
 
-    // mapboxInstance.on('mouseover', 'draw-layer', e => {
-    //   console.log(e);
-    // });
-
     let initParentData: PlanningParentLocationResponse = {
       features: [],
       type: 'FeatureCollection',
@@ -177,8 +176,16 @@ export const initMap = (
     style: style,
     center: center,
     zoom: zoom,
+    logoPosition: 'top-right',
+    attributionControl: false,
     doubleClickZoom: false
   });
+  mapboxInstance.addControl(
+    new AttributionControl({
+      compact: true
+    }),
+    'bottom-left'
+  );
   mapboxInstance.addControl(
     new GeolocateControl({
       positionOptions: {
@@ -198,6 +205,7 @@ export const initMap = (
   //initialize an empty top layer for all labels
   //this layer is used to prevent labels getting behind fill and border layers on loading of locations
   mapboxInstance.on('load', () => {
+    mapboxInstance.resize();
     mapboxInstance.addSource('label-source', {
       type: 'geojson',
       data: {
@@ -721,7 +729,7 @@ export const loadChildren = (map: Map, id: string, planId: string, opacity: numb
     });
 };
 
-export const createLocationLabel = (map: Map, data: any, center: Feature<Point, Properties>) => {
+export const createLocationLabel = (map: Map, data: any, center: Feature<Point, Properties>, color?: string) => {
   if (map.getSource(data.identifier + 'Label') === undefined) {
     map.addSource(data.identifier + 'Label', {
       type: 'geojson',
@@ -731,7 +739,8 @@ export const createLocationLabel = (map: Map, data: any, center: Feature<Point, 
 
     map.addLayer({
       id: data.identifier + 'Label',
-      minzoom: map.getZoom() - 1.0,
+      // minzoom: map.getZoom() - 1.0,
+      minzoom: map.getZoom() - 1.5,
       type: 'symbol',
       source: data.identifier + 'Label',
       layout: {
@@ -742,7 +751,7 @@ export const createLocationLabel = (map: Map, data: any, center: Feature<Point, 
         'text-anchor': 'bottom'
       },
       paint: {
-        'text-color': 'white'
+        'text-color': color ?? '#000000'
       }
     });
   }
