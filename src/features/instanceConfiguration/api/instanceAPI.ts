@@ -273,10 +273,10 @@ export interface DatasetResponse {
  * @param isPublic optional boolean filter
  * @returns PageableModel<DatasetResponse>
  */
-export const getInstanceDatasets = async (isPublic?: boolean): Promise<PageableModel<DatasetResponse>> => {
-  let url = `${META_IMPORT_DATASET}`;
+export const getInstanceDatasets = async (locationHierarchy: string, isPublic?: boolean): Promise<PageableModel<DatasetResponse>> => {
+  let url = `${META_IMPORT_DATASET}?hierarchyIdentifier=${locationHierarchy}`;
   if (isPublic !== undefined) {
-    url += `?isPublic=${isPublic}`;
+    url += `&isPublic=${isPublic}`;
   }
   const response = await api.get<PageableModel<DatasetResponse>>(url);
   return response.data;

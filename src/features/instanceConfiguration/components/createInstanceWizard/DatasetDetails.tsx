@@ -34,7 +34,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
       if (statusFilter === 'Public') isPublic = true;
       else if (statusFilter === 'Private') isPublic = false;
 
-      getInstanceDatasets(isPublic)
+      getInstanceDatasets(defaultValues.locationHierarchy, isPublic)
         .then((res: PageableModel<DatasetResponse>) => {
           const previouslySelectedTags = new Set(defaultValues?.datasets_tags || []);
 
@@ -52,12 +52,12 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
                 children: [],
                 instances: tag.instances
               } as any;
-              
+
               return tagResponse;
             });
 
-            const fileSelected = entityTagWithChildren && entityTagWithChildren.length > 0 && 
-                                entityTagWithChildren.every(tag => tag.selected);
+            const fileSelected = entityTagWithChildren && entityTagWithChildren.length > 0 &&
+              entityTagWithChildren.every(tag => tag.selected);
 
             let newFileImport: MetadataFileImportResponse = {
               selected: fileSelected || false,
@@ -97,10 +97,10 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
         // Search in uploadedBy (owner)
         const matchesOwner = (item.uploadedBy || '').toLowerCase().includes(s);
         // Search in tags
-        const matchingTags = (item.entityTagEvents || []).filter((tagEvent: any) => 
+        const matchingTags = (item.entityTagEvents || []).filter((tagEvent: any) =>
           (tagEvent.tag || '').toLowerCase().includes(s)
         );
-        
+
         // Include dataset if name, owner, or any tag matches
         if (matchesName || matchesOwner || matchingTags.length > 0) {
           return {
@@ -282,8 +282,8 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
       )}
 
       <div className="d-flex justify-content-between mt-4 border-top pt-4">
-        <Button 
-          variant="secondary" 
+        <Button
+          variant="secondary"
           onClick={() => {
             const datasetsTags = selectedMetadata.map((tag: any) => tag.identifier);
             onBack({ datasets_tags: datasetsTags });
@@ -333,7 +333,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
               locationHierarchy: defaultValues?.hierarchy || defaultValues?.locationHierarchy || '',
               areas: defaultValues?.areas || [],
               members: defaultValues?.members || [],
-              datasets_tags: datasetsTags ||[]
+              datasets_tags: datasetsTags || []
             };
             console.log('final payload--instance configuration', finalPayload)
             if (onNext) {
