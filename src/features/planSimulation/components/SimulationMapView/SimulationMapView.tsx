@@ -660,7 +660,7 @@ const SimulationMapView = ({
       const matchingLayers = layers?.filter(
         layer =>
           layer.id.startsWith(`ds-`) &&
-          (!layer.id.endsWith(selectedLoaction.properties.name) || showDatasetsAgainstParentLevel)
+          (!layer.id.endsWith(selectedLoaction?.properties?.name || '') || showDatasetsAgainstParentLevel)
       );
       matchingLayers?.forEach(layer => {
         if (map.current?.getLayer(layer.id)) {
@@ -670,6 +670,7 @@ const SimulationMapView = ({
 
       Object.entries(datasetsDataMap).forEach(([layerId, features]) => {
         console.log('selected loc: ', selectedLoaction);
+        if (!selectedLoaction) return
         const sourceId = `ds-${layerId}-${selectedLoaction.properties.name}`;
 
         if (!map.current?.getSource(sourceId)) {

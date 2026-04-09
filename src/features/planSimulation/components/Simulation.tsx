@@ -1766,7 +1766,7 @@ const Simulation = () => {
                             isClearable
                             onMenuOpen={() => setShowingParentLevelsMenu(true)}
                             onMenuClose={() => setShowingParentLevelsMenu(false)}
-                            options={state.defaultHierarchyData?.nodeOrder.map((node: string) => {
+                            options={state?.nodeOrder.map((node: string) => {
                               return {
                                 value: node,
                                 label: node
