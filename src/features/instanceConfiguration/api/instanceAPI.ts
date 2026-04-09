@@ -1,5 +1,5 @@
 import api from '../../../api/axios';
-import { INSTANCE, META_IMPORT_DATASET } from '../../../constants/urls';
+import { INSTANCE, META_IMPORT_DATASET, COMPLEX_TAG } from '../../../constants/urls';
 import { PageableModel } from '../../../api/providers';
 import { LOCATION_HIERARCHY } from '../../../constants/urls';
 import { LocationModel } from '../../location/providers/types';
@@ -14,6 +14,8 @@ export interface InstanceResponse {
   locationHierarchy: InstanceLocationHierarchy[];
   datasets?: any[];
   instanceName?: string;
+  datasets_tags?: string[];
+  complexTags?: number[];
 }
 
 export interface PlanResponse {
@@ -158,6 +160,7 @@ export interface CreateInstanceRequest {
   areas: string[];
   members: string[];
   datasets_tags: string[];
+  complexTags: number[];
 }
 
 /**
@@ -237,6 +240,7 @@ export interface UpdateInstanceRequest {
   areas: string[];
   members: string[];
   datasets_tags: string[];
+  complexTags: number[];
 }
 
 /**
@@ -288,5 +292,28 @@ export const getInstanceDatasets = async (locationHierarchy: string, isPublic?: 
  */
 export const activateInstance = async (identifier: string): Promise<any> => {
   const response = await api.post(`${INSTANCE}/${identifier}/plan/activate`);
+  return response.data;
+};
+
+export interface ComplexTagResponse {
+  id: number;
+  tagName: string;
+  formula: string;
+  isPublic: boolean;
+  owner: string;
+}
+
+/**
+ * Get list of complex tags for instances
+ * @param locationHierarchy
+ * @param isPublic optional boolean filter
+ * @returns PageableModel<ComplexTagResponse>
+ */
+export const getComplexTags = async (locationHierarchy: string, isPublic?: boolean): Promise<PageableModel<ComplexTagResponse>> => {
+  let url = `${COMPLEX_TAG}?hierarchyIdentifier=${locationHierarchy}`;
+  if (isPublic !== undefined) {
+    url += `&isPublic=${isPublic}`;
+  }
+  const response = await api.get<PageableModel<ComplexTagResponse>>(url);
   return response.data;
 };

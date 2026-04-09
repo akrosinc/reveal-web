@@ -12,7 +12,9 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../../store/hooks';
 import { MetadataFileImportResponse } from '../../../metaDataImport/type';
 import { PageableModel } from '../../../../api/providers';
-import { getInstanceDatasets, DatasetResponse, DatasetEntityTag } from '../../api/instanceAPI';
+import { getInstanceDatasets, DatasetResponse, DatasetEntityTag, getComplexTags, ComplexTagResponse } from '../../api/instanceAPI';
+import ComplexTagTable from './DatasetDetails/ComplexTagTable';
+import { Nav } from 'react-bootstrap';
 import { EntityTagResponse } from '../../../planSimulation/providers/types';
 import { toast } from 'react-toastify';
 
@@ -27,6 +29,9 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
   const [showRemoveAccess, setShowRemoveAccess] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [activeTab, setActiveTab] = useState<'simple' | 'complex'>('simple');
+  const [complexTagsList, setComplexTagsList] = useState<ComplexTagResponse[]>([]);
+  const [selectedComplexTags, setSelectedComplexTags] = useState<number[]>(defaultValues?.complexTags || []);
 
   const loadData = useCallback(
     () => {
@@ -81,9 +86,28 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
     [statusFilter, defaultValues?.datasets_tags]
   );
 
+  const loadComplexTags = useCallback(
+    () => {
+      let isPublic: boolean | undefined = undefined;
+      if (statusFilter === 'Public') isPublic = true;
+      else if (statusFilter === 'Private') isPublic = false;
+
+      getComplexTags(defaultValues.locationHierarchy, isPublic)
+        .then((res: PageableModel<ComplexTagResponse>) => {
+          setComplexTagsList(res.content);
+        })
+        .catch((err: any) => toast.error(err));
+    },
+    [statusFilter, defaultValues.locationHierarchy]
+  );
+
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (activeTab === 'simple') {
+      loadData();
+    } else {
+      loadComplexTags();
+    }
+  }, [loadData, loadComplexTags, activeTab]);
 
   // Frontend search filter
   const filteredMetadataList = useMemo(() => {
@@ -117,6 +141,17 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
       .filter(item => item !== null) as MetadataFileImportResponse[];
   }, [metadataImportList, searchTerm]);
 
+  const filteredComplexTagsList = useMemo(() => {
+    const s = searchTerm.toLowerCase();
+    if (!s) return complexTagsList;
+
+    return complexTagsList.filter(tag =>
+      (tag.tagName || '').toLowerCase().includes(s) ||
+      (tag.formula || '').toLowerCase().includes(s) ||
+      (tag.owner || '').toLowerCase().includes(s)
+    );
+  }, [complexTagsList, searchTerm]);
+
   const handleUpdateFromTable = useCallback((updatedFilteredList: MetadataFileImportResponse[]) => {
     setMetadataImportList(prev => {
       const copy = [...prev];
@@ -145,6 +180,16 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value);
     setSearchTerm('')
+  };
+
+  const handleComplexTagSelectionChange = (id: number, selected: boolean) => {
+    setSelectedComplexTags(prev => {
+      if (selected) {
+        return [...prev, id];
+      } else {
+        return prev.filter(tagId => tagId !== id);
+      }
+    });
   };
 
   // Track selection of only main tags
@@ -192,6 +237,27 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
             )}
           </Card.Header>
           <Card.Body style={isDarkMode ? { backgroundColor: '#282828' } : {}}>
+            <Row className="mb-3">
+              <Col>
+                <Nav variant="tabs" activeKey={activeTab} onSelect={(k: any) => {
+                  setActiveTab(k);
+                  setSearchTerm('')
+                  // setSelectedComplexTags([]);
+                  // setMetadataImportList(prev => prev.map(item => ({
+                  //   ...item,
+                  //   selected: false,
+                  //   entityTagEvents: item.entityTagEvents?.map((tag: any) => ({ ...tag, selected: false }))
+                  // })));
+                }}>
+                  <Nav.Item>
+                    <Nav.Link eventKey="simple">Simple Tags</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="complex">Complex Tags</Nav.Link>
+                  </Nav.Item>
+                </Nav>
+              </Col>
+            </Row>
             <Row className="mb-3 g-2">
               <Col md={4}>
                 <InputGroup>
@@ -217,27 +283,41 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
                 </Form.Select>
               </Col>
             </Row>
+
             <Row>
-              {filteredMetadataList.length ? (
-                <>
-                  <DatasetImportTable
-                    data={filteredMetadataList}
-                    clickHandler={el => setSelectedMetaImport(el)}
-                    sortHandler={sortHandler}
-                    setMetadataList={handleUpdateFromTable}
-                    searchTerm={searchTerm}
+              {activeTab === 'simple' ? (
+                filteredMetadataList.length ? (
+                  <>
+                    <DatasetImportTable
+                      data={filteredMetadataList}
+                      clickHandler={el => setSelectedMetaImport(el)}
+                      sortHandler={sortHandler}
+                      setMetadataList={handleUpdateFromTable}
+                      searchTerm={searchTerm}
+                      viewOnly={viewOnly}
+                    />
+                    <Paginator
+                      page={0}
+                      size={filteredMetadataList.length}
+                      totalElements={filteredMetadataList.length}
+                      totalPages={1}
+                      paginationHandler={paginationHandler}
+                    />
+                  </>
+                ) : (
+                  <div className="p-3 text-center w-100">No data found.</div>
+                )
+              ) : (
+                filteredComplexTagsList.length ? (
+                  <ComplexTagTable
+                    data={filteredComplexTagsList}
+                    selectedComplexTags={selectedComplexTags}
+                    onSelectionChange={handleComplexTagSelectionChange}
                     viewOnly={viewOnly}
                   />
-                  <Paginator
-                    page={0}
-                    size={filteredMetadataList.length}
-                    totalElements={filteredMetadataList.length}
-                    totalPages={1}
-                    paginationHandler={paginationHandler}
-                  />
-                </>
-              ) : (
-                <div className="p-3 text-center w-100">No data found.</div>
+                ) : (
+                  <div className="p-3 text-center w-100">No complex tags found.</div>
+                )
               )}
             </Row>
           </Card.Body>
@@ -286,7 +366,7 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
           variant="secondary"
           onClick={() => {
             const datasetsTags = selectedMetadata.map((tag: any) => tag.identifier);
-            onBack({ datasets_tags: datasetsTags });
+            onBack({ datasets_tags: datasetsTags, complexTags: selectedComplexTags });
           }}
         >
           Back
@@ -333,7 +413,8 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
               locationHierarchy: defaultValues?.hierarchy || defaultValues?.locationHierarchy || '',
               areas: defaultValues?.areas || [],
               members: defaultValues?.members || [],
-              datasets_tags: datasetsTags || []
+              datasets_tags: datasetsTags || [],
+              complexTags: selectedComplexTags || []
             };
             console.log('final payload--instance configuration', finalPayload)
             if (onNext) {

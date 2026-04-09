@@ -80,7 +80,8 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, i
             hierarchyLevelTarget: planData?.hierarchyLevelTarget || planData?.planTargetType || '',
             areas: getLeafNodeIds(res.areas) ?? [],
             members: res.members?.map(extractId) ?? [],
-            datasets_tags: (res as any).datasets_tags || res.datasets?.map((d: any) => typeof d === 'string' ? d : (d.tag || d.identifier)) || [],
+            datasets_tags: res.datasets_tags || res.datasets?.map((d: any) => typeof d === 'string' ? d : (d.tag || d.identifier)) || [],
+            complexTags: res.complexTags || [],
           };
           setPlanStatus(planData?.status || null);
           setInitialData(mappedData);
