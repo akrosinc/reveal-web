@@ -141,8 +141,8 @@ const TagAccessOrganization = ({ metadata, updatedMetadata, setUpdatedMetadata, 
         .then(async ([organizations, { count }, userModels]) => {
           let orgUserList: OrgUserList = {};
           userModels.content.forEach(user => {
-            if (user.organizations.length > 0) {
-              user.organizations.forEach((org: OrganizationModel) => {
+            if (user?.organizations && user?.organizations?.length > 0) {
+              user?.organizations?.forEach((org: OrganizationModel) => {
                 if (!orgUserList[org.identifier]) {
                   orgUserList[org.identifier] = [];
                 }

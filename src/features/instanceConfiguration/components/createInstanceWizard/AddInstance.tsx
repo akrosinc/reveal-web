@@ -6,10 +6,10 @@ import Select from 'react-select';
 import 'react-datepicker/dist/react-datepicker.css';
 import { WizardStepProps } from '../Wizard/Wizard';
 import { useAppSelector } from '../../../../store/hooks';
-import { getLocationHierarchyList, getGeographicLevelList } from '../../../location/api';
-import { getInterventionTypeList } from '../../../plan/api';
-import { toast } from 'react-toastify';
-import { set } from 'lodash';
+// import { getLocationHierarchyList, getGeographicLevelList } from '../../../location/api';
+// import { getInterventionTypeList } from '../../../plan/api';
+// import { toast } from 'react-toastify';
+// import { set } from 'lodash';
 
 /* -------------------- Types -------------------- */
 interface Options {

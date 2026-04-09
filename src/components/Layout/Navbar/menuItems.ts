@@ -13,11 +13,10 @@ import {
   RESOURCE_PLANNING_PAGE,
   DATA_PROCESSING_PROGRESS,
   REVEAL_SIMULATION,
-  DATA_EXTRACTS, AMDR_IMPORT, AMDR_REPORT
+  DATA_EXTRACTS, AMDR_IMPORT, AMDR_REPORT,
   CampaignManage,
   MENU_HOME_VIEW,
   REPORT_VIEW,
-  REVEAL_SIMULATION,
   ROLE_MANAGE_USER,
   LOCATION_VIEW,
   METADATA_IMPORT_VIEW,
@@ -29,6 +28,7 @@ import {
   GROUP_MANAGEMENT,
   TAG_MANAGEMENT_VIEW
 } from '../../../constants';
+
 
 
 import { InstanceContextModel } from '../../../features/reducers/instanceContext';

@@ -139,7 +139,8 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     });
     getOrganizationListSummary().then(res => {
       setOrganizations(
-        res.content.map(el => {
+        res.map(el => {
+
           return {
             value: el.identifier,
             label: el.name
@@ -253,7 +254,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
     try {
       const response = await getOrganizationListSummary();
 
-      const teamNames = response.content.map(org => ({
+      const teamNames = response.map(org => ({
         name: org.name,
         id: org.identifier
       }));
@@ -296,7 +297,7 @@ export default function UserModal({ fetchTeamsData }: UserModalProps) {
 
   useEffect(() => {
     getOrganizationListSummary().then(res => {
-      setteamOrganization(res.content);
+      setteamOrganization(res);
     });
   }, []);
 

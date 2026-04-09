@@ -38,7 +38,7 @@ const CreateOrganization = ({ show, handleClose }: Props) => {
 
   useEffect(() => {
     getOrganizationListSummary().then(res => {
-      setOrganizations(res.content);
+      setOrganizations(res );
     });
   }, []);
 

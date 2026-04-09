@@ -6,7 +6,6 @@ import { InstanceModel, setCurrentInstance } from '../../../features/reducers/in
 import { getUserInstanceList, selectInstance } from '../../../features/instance/api';
 import './SwitchInstanceModal.css';
 import { useKeycloak } from '@react-keycloak/web';
-import { set } from 'lodash';
 import { STANDARD_USER, SUPER_ADMIN } from '../../../constants/userRoles';
 import { useNavigate } from 'react-router-dom';
 import { HOME_PAGE, REVEAL_SIMULATION_USER, SIMULATION_PAGE } from '../../../constants';

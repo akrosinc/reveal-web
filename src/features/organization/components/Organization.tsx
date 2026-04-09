@@ -147,7 +147,7 @@ const Organization = () => {
         setSelectedOrganization(res);
         getOrganizationListSummary()
           .then(res => {
-            setOrganizationDropdown(res.content.filter(el => el.identifier !== id));
+            setOrganizationDropdown(res.filter(el => el.identifier !== id));
             setShowDetails(true);
           })
           .catch(_ => toast.error('An error has occured while loading organization.'));

@@ -83,7 +83,7 @@ const AssignModal = ({ locationData, closeHandler, selectedLocations }: Props) =
             })
       );
       setOrganizationList(
-        teamList.content.map(el => {
+        teamList?.map(el => {
           return {
             label: el.name,
             value: el.identifier
