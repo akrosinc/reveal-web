@@ -61,6 +61,7 @@ export interface AddDatasetResponse {
 export interface SimulationDatasetRequest {
   simulationId: string;
   parentAdminLevel: string;
+  year?: number;
 }
 
 export const getEntityTags = async () => {

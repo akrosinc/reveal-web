@@ -92,6 +92,7 @@ import { assignLocationsToPlan } from '../../assignment/api';
 import { getPlanTargetLevelName } from '../../../utils';
 import { auto } from '@popperjs/core';
 import { getInstances, getInstanceHierarchy } from '../api';
+import RangeInput from '../../../components/RangeInput/RangeInput';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -182,6 +183,8 @@ const Simulation = () => {
   const [mapFullScreen, setMapFullScreen] = useState(true);
   const [mapData, setMapData] = useState<PlanningLocationResponseTagged>();
   const [parentMapData, setParentMapData] = useState<PlanningParentLocationResponse>();
+  const currentYear = new Date().getFullYear()
+  const [year, setYear] = useState(currentYear)
   const [mapDataLoad, setMapDataLoad] = useState<PlanningLocationResponse>({
     features: [],
     parents: [],
@@ -1665,7 +1668,8 @@ const Simulation = () => {
     if (option != null && option.value !== '') {
       const searchRequest: SimulationDatasetRequest = {
         simulationId: state.simulationId,
-        parentAdminLevel: option.value
+        parentAdminLevel: option.value,
+        year: year
       };
       const searchId = await addSearchRequest(searchRequest);
       setSelectedLocationChildren([]);
@@ -1679,6 +1683,14 @@ const Simulation = () => {
       );
     }
   };
+
+  useEffect(() => {
+    if (selectedParentLevel) {
+      handleParentSelectionChange(selectedParentLevel);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [year]);
+
 
   // map zoom in for the structures lifts up the state, so we still have a single source of truth
   const updateChildrenPolygons = (data: any) => {
@@ -1776,8 +1788,25 @@ const Simulation = () => {
                             onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
                               handleParentSelectionChange(selectedOption);
                             }}
-                          />
+                            menuPortalTarget={document.body}
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                            }}
 
+                          />
+                          {/* <p>{year}</p> */}
+                          <RangeInput
+                            min={currentYear - 5}
+                            max={currentYear}
+                            step={1}
+                            value={year}
+                            label=""
+                            trackColor="#3b82f6"
+                            thumbColor="#3b82f6"
+                            onChange={(value: number) => {
+                              setYear(value);
+                            }}
+                          />
                           {showingParentLevelsMenu && (
                             <>
                               <br></br>
