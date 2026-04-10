@@ -10,9 +10,11 @@ interface Step {
 interface StepperProps {
   steps: Step[];
   currentStep: number; // 0-indexed
+  onStepClick?: (index: number) => void;
+  isEditMode?: boolean;
 }
 
-const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
+const Stepper: React.FC<StepperProps> = ({ steps, currentStep, onStepClick, isEditMode }) => {
   return (
     <div
       style={{ border: `1px solid white`, backgroundColor: '#E9ECEF', borderRadius: 1000 }}
@@ -54,19 +56,24 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
             circleColor = 'text-secondary'; // Grey text for inactive numbers
           }
 
+          const isClickable = index <= currentStep;
           return (
             <div
               key={index}
+              onClick={() => isClickable && onStepClick?.(index)}
               style={
-                (isCompleted || isActive) && index >= 1
-                  ? {
-                    borderLeft: '1px solid white',
-                    paddingLeft: 5,
-                    borderTopLeftRadius: 1000,
-                    borderBottomLeftRadius: 1000,
-                    paddingRight: index === 3 ? 8 : 0
-                  }
-                  : {}
+                {
+                  cursor: isClickable ? 'pointer' : 'default',
+                  ...((isCompleted || isActive) && index >= 1
+                    ? {
+                      borderLeft: '1px solid white',
+                      paddingLeft: 5,
+                      borderTopLeftRadius: 1000,
+                      borderBottomLeftRadius: 1000,
+                      paddingRight: index === 3 ? 8 : 0
+                    }
+                    : {})
+                }
               }
               className="d-flex align-items-center"
             >

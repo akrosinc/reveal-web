@@ -47,12 +47,26 @@ const Wizard: React.FC<WizardProps> = ({ steps, onComplete, onCancel, initialDat
     }
   };
 
+  const handleStepClick = (index: number) => {
+    // Allow jumping to any step if we're in edit mode (initialData exists)
+    // or if the step is already visited/completed (index < currentStep).
+    const isEditMode = initialData && Object.keys(initialData).length > 0;
+    if (isEditMode || index <= currentStep) {
+      setCurrentStep(index);
+    }
+  };
+
   const ActiveComponent = steps[currentStep].component;
 
   return (
     <div className="wizard-container">
       <Col md={9}>
-        <Stepper steps={steps.map(s => ({ label: s.label }))} currentStep={currentStep} />
+        <Stepper 
+          steps={steps.map(s => ({ label: s.label }))} 
+          currentStep={currentStep} 
+          onStepClick={handleStepClick}
+          isEditMode={!!(initialData && Object.keys(initialData).length > 0)}
+        />
       </Col>
 
       <div className="wizard-content mt-2">
