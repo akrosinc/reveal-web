@@ -107,6 +107,7 @@ export interface InstanceLocationHierarchy {
  * Get list of instances
  * @param size
  * @param page
+ * @param search
  * @param sortField
  * @param direction
  * @returns
@@ -114,12 +115,14 @@ export interface InstanceLocationHierarchy {
 export const getInstances = async (
   size?: number,
   page?: number,
+  search?: string,
   sortField?: string,
   direction?: boolean
 ): Promise<PageableModel<InstanceResponse>> => {
   const params = new URLSearchParams();
   if (size !== undefined) params.append('size', size.toString());
   if (page !== undefined) params.append('page', page.toString());
+  if (search !== undefined) params.append('search', search);
   if (sortField) {
     params.append('sort', `${sortField},${direction ? 'asc' : 'desc'}`);
   }
