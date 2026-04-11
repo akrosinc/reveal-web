@@ -122,7 +122,7 @@ export const getInstances = async (
   const params = new URLSearchParams();
   if (size !== undefined) params.append('size', size.toString());
   if (page !== undefined) params.append('page', page.toString());
-  if (search !== undefined) params.append('search', search);
+  if (search !== undefined) params.append('searchParam', search);
   if (sortField) {
     params.append('sort', `${sortField},${direction ? 'asc' : 'desc'}`);
   }

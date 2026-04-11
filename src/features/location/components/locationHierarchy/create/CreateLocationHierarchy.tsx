@@ -111,7 +111,7 @@ const CreateLocationHierarchy = ({ closeHandler, geographyLevelList, isBase, bas
           id="hierarchy-select"
           menuPosition="fixed"
           isMulti
-          options={geographyLevelList}
+          options={geographyLevelList?.filter(elem => !baseHierarchyName?.split(',')?.map(elem => elem?.toLowerCase())?.includes(elem.label?.toLowerCase()))}
           onChange={selectHandler}
         />
       </Form.Group>
