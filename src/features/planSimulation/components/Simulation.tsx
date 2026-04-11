@@ -249,7 +249,7 @@ const Simulation = () => {
   const [tooLargeOrSmall, setTooLargeOrSmall] = useState(0);
   const [omitLayers, setOmitLayers] = useState(false);
 
-  const [leftOpen, setLeftOpen] = useState(true);
+  const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
