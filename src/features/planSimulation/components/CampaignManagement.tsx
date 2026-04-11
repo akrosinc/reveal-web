@@ -109,7 +109,7 @@ const CampaignManagement = () => {
   const [mapFullScreen, setMapFullScreen] = useState(true);
   const [showResult, setShowResult] = useState(false);
   const [combinedHierarchyList, setCombinedHierarchyList] = useState<LocationHierarchyModel[]>();
-  const [leftOpen, setLeftOpen] = useState(false);
+  const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [highestLocations, setHighestLocations] = useState<any>();
