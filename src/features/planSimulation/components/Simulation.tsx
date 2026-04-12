@@ -1698,11 +1698,18 @@ const Simulation = () => {
 
   const handleParentSelectionChange = async (option: SingleValue<{ value: string; label: string }>, year: number) => {
     setSelectedParentLevel(option);
+    const dataSetYearFilter = state.datasets?.reduce((acc: Record<string, number>, dataset: any) => {
+      acc[dataset.identifier] = year;
+      return acc;
+    }, {}) || {};
+
+
     if (option != null && option.value !== '') {
       const searchRequest: SimulationDatasetRequest = {
         simulationId: state.simulationId,
         parentAdminLevel: option.value,
-        year: year
+        dataSetYearFilter: dataSetYearFilter
+
       };
       const searchId = await addSearchRequest(searchRequest);
       setSelectedLocationChildren([]);

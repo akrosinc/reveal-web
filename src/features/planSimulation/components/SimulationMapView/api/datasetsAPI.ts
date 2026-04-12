@@ -75,7 +75,7 @@ export interface AddDatasetResponse {
 export interface SimulationDatasetRequest {
   simulationId: string;
   parentAdminLevel?: string;
-  year: number;
+  dataSetYearFilter?: Record<string, number>;
 }
 
 export const getEntityTags = async () => {
@@ -89,7 +89,7 @@ export const getEntityTags = async () => {
 
 export const getSimulationData = async (simulationId: string) => {
   try {
-    const response = await api.get<SimulationDataResponse>(`/simulation/${simulationId}`);
+    const response = await api.get(`/simulation/${simulationId}`);
 
     return response.data;
   } catch (error) {
