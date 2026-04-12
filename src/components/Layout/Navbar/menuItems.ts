@@ -75,7 +75,7 @@ export const getMainMenu = (context: InstanceContextModel | null) => {
         ...(selectedInstance && role?.name === 'ADMIN'
           ? [
             {
-              pageTitle: 'Activate',
+              pageTitle: 'activate',
               route: `/instance-configuration/${selectedInstance.identifier}/edit?viewOnly=true`,
               roles: []
             }
@@ -130,6 +130,11 @@ export const getMainMenu = (context: InstanceContextModel | null) => {
         {
           pageTitle: 'Survey Reporting',
           route: REPORTING_PAGE + '/survey-data',
+          roles: [REPORT_VIEW]
+        },
+        {
+          pageTitle: 'amdrReporting',
+          route: REPORTING_PAGE + '/amdr-data',
           roles: [REPORT_VIEW]
         }
       ]

@@ -4,7 +4,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import AuthGuard from '../../components/AuthGuard';
 import { ErrorPage } from '../../components/pages';
 import PageWrapper from '../../components/PageWrapper';
-import { REPORT_VIEW } from '../../constants';
+import {AMDR_REPORT_VIEW, REPORT_VIEW} from '../../constants';
 import Reports from '../../features/reporting/components';
 import PerformanceDashboard from '../../features/reporting/components/PerformanceDashboard';
 import Report from '../../features/reporting/components/report';
@@ -34,7 +34,7 @@ const Reporting = () => {
         <Route
           path="/"
           element={
-            <AuthGuard 
+            <AuthGuard
             roles={[REPORT_VIEW]}
             // roles={[]}
             >
@@ -45,7 +45,7 @@ const Reporting = () => {
         <Route
           path="/report/:planId/reportType/:reportType"
           element={
-            <AuthGuard 
+            <AuthGuard
             roles={[REPORT_VIEW]}
             // roles={[]}
             >
@@ -56,7 +56,7 @@ const Reporting = () => {
         <Route
           path="/performance-reports"
           element={
-            <AuthGuard 
+            <AuthGuard
             roles={[REPORT_VIEW]}
             // roles={[]}
             >
@@ -67,7 +67,7 @@ const Reporting = () => {
         <Route
           path="/performance-report/:planId"
           element={
-            <AuthGuard 
+            <AuthGuard
             roles={[REPORT_VIEW]}
             // roles={[]}
             >
@@ -78,7 +78,7 @@ const Reporting = () => {
         <Route
           path="/survey-data"
           element={
-            <AuthGuard 
+            <AuthGuard
             roles={['view_survey_data',REPORT_VIEW]}
             // roles={[]}
             >
@@ -89,7 +89,7 @@ const Reporting = () => {
         <Route
             path="/amdr-data"
             element={
-              <AuthGuard roles={['view_amdr_report']}>
+              <AuthGuard roles={[AMDR_REPORT_VIEW]}>
                 <AmdrReport />
               </AuthGuard>
             }
@@ -97,7 +97,7 @@ const Reporting = () => {
         <Route
             path="/amdr-landing"
             element={
-              <AuthGuard roles={['view_amdr_report']}>
+              <AuthGuard roles={[AMDR_REPORT_VIEW]}>
                 <AmdrLandingPage2 />
               </AuthGuard>
             }

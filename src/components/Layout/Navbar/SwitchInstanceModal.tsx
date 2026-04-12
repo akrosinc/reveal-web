@@ -17,6 +17,7 @@ interface Props {
 
 const SwitchInstanceModal = ({ show, onClose }: Props) => {
   const { keycloak } = useKeycloak();
+
   const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
   const isStandardUser =((keycloak?.tokenParsed as any)?.groups || []).includes(STANDARD_USER);
   // console.log(((keycloak?.tokenParsed as any)?.groups || []))

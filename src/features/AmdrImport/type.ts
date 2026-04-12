@@ -34,4 +34,5 @@ export interface AmdrImportResultsResponse {
 export interface HeaderName {
   color: HslColor;
   name: string;
+  order: number;
 }

@@ -26,8 +26,8 @@ const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, 
 
   return (
     <div style={isDarkMode ? { backgroundColor: '#282828' } : { background: '#FFF' }} className="p-4">
-      <h4 className="mb-4 fw-bold">Assign Members</h4>
-      
+      <h4 className="mb-4 fw-bold">Assign Admin Members</h4>
+
       {error && (
         <Col md={8} className="mb-3">
           <Alert variant="danger">{error}</Alert>
@@ -36,9 +36,9 @@ const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, 
 
       <Col md={8}>
         <div className="mb-5">
-          <MembersSelection 
-            assignedMembers={assignedMembers} 
-            onAssignmentChange={setAssignedMembers} 
+          <MembersSelection
+            assignedMembers={assignedMembers}
+            onAssignmentChange={setAssignedMembers}
             viewOnly={viewOnly}
           />
         </div>

@@ -49,6 +49,7 @@ export const PLAN_ACTIVATE = 'plan_activate';
 
 //REPORTS
 export const REPORT_VIEW = 'report_view';
+export const AMDR_REPORT_VIEW = 'view_amdr_report';
 
 //ASSIGN
 export const ASSIGNMENT_VIEW = 'assignment_plan';

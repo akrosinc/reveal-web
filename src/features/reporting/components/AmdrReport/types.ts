@@ -221,7 +221,8 @@ export interface AmdrLandPageResponse {
 }
 export enum AmdrColumnType {
   DRUG = "DRUG",
-  HAPLOTYPE = "HAPLOTYPE"
+  HAPLOTYPE = "HAPLOTYPE",
+  GENE ="GENE"
 }
 
 export enum AmdrDataType {

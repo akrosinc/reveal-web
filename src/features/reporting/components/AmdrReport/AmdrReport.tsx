@@ -1,5 +1,5 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import React, {ChangeEvent, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
 import {Badge, Button, Col, Collapse, Container, Form, Modal, Row, Stack,} from 'react-bootstrap';
 import {useNavigate} from 'react-router-dom';
 import {Column} from 'react-table';
@@ -40,7 +40,7 @@ import {
   getLocationTree
 } from "./api";
 import {ChartData, ChartDataset, ChartOptions, ChartType} from "chart.js";
-import {Bar, Line, Pie, Chart} from "react-chartjs-2";
+import {Bar, Line, Pie} from "react-chartjs-2";
 
 
 import {Coords, RibbonData} from "./RibbonPlot";
@@ -251,7 +251,6 @@ const AmdrReport = () => {
         scales: {
           y: {
             min: 0,
-            max: 100,
           }
         },
 
@@ -346,13 +345,27 @@ const AmdrReport = () => {
     const loadColumns = async () => {
       try {
         const cols = await getAmdrColumns();
-        setHeaderButtons(cols);
+
+        const sortedCols: typeof cols = {} as any;
+
+        for (const columnType in cols) {
+          const headerMap = cols[columnType as AmdrColumnType];
+
+          sortedCols[columnType as AmdrColumnType] = Object.fromEntries(
+              Object.entries(headerMap).sort(([, a], [, b]) => {
+                return a.order - b.order;
+              })
+          );
+        }
+
+        setHeaderButtons(sortedCols);
       } catch (err) {
         console.error("Failed to load AMDR columns", err);
       }
     };
 
-    loadColumns();
+   loadColumns();
+
   }, []);
 
   useEffect(() => {
@@ -517,7 +530,6 @@ const AmdrReport = () => {
     scales: {
       y: {
         min: 0,
-        max: 100, // assuming percentage
       },
     },
   }
@@ -1127,7 +1139,13 @@ const AmdrReport = () => {
     setDateModes(dateModes === AmdrDateModes.MONTHLY ? AmdrDateModes.YEARLY : AmdrDateModes.MONTHLY);
   };
 
+  const getOrderedKeys = (columnType: AmdrColumnType) => {
+    const headers = headerButtons?.[columnType] ?? {};
 
+    return Object.entries(headers)
+    .sort(([, a], [, b]) => a.order - b.order)
+    .map(([key]) => key);
+  };
   useEffect(() => {
     if (!data?.length || !selectedHeaderButtons?.length) return;
 
@@ -1151,13 +1169,23 @@ const AmdrReport = () => {
       }
     }
 
-    // 3️⃣ Build newData using direct key access (much faster)
+    // 3️⃣ Apply ordering from headerButtons
+    const headersForType = headerButtons?.[dashboardView===AmdrColumnType.HAPLOTYPE?AmdrColumnType.GENE:dashboardView] ?? {};
+
+    allowedKeys.sort((a, b) => {
+      const orderA = headersForType[a]?.order ?? Infinity;
+      const orderB = headersForType[b]?.order ?? Infinity;
+      return orderA - orderB;
+    });
+
+    // 4️⃣ Build newData using ordered keys
     const newData = data.map(item => {
-      const newColumnMap: any = {};
+      const newColumnMap: Record<string, any> = {};
 
       for (let i = 0; i < allowedKeys.length; i++) {
         const key = allowedKeys[i];
         const value = item.columnDataMap[key];
+
         if (value !== undefined) {
           newColumnMap[key] = value;
         }
@@ -1165,14 +1193,60 @@ const AmdrReport = () => {
 
       return {
         ...item,
-        columnDataMap: newColumnMap,
+        columnDataMap: newColumnMap
       };
     });
 
+    // 5️⃣ Update state
     setFilterData(newData);
-    setCols(newData[0].columnDataMap);
+    setCols(newData[0]?.columnDataMap);
 
-  }, [data, selectedHeaderButtons]);
+  }, [data, selectedHeaderButtons, headerButtons, dashboardView]);
+  // useEffect(() => {
+  //   if (!data?.length || !selectedHeaderButtons?.length) return;
+  //
+  //   // 1️⃣ Precompute selected IDs
+  //   const selectedIds = new Set(
+  //       selectedHeaderButtons.map(btn => btn.id)
+  //   );
+  //
+  //   // 2️⃣ Compute allowed keys ONCE from first row
+  //   const firstRow = data[0];
+  //   const allowedKeys: string[] = [];
+  //
+  //   for (const key in firstRow.columnDataMap) {
+  //     const value = firstRow.columnDataMap[key];
+  //
+  //     if (
+  //         selectedIds.has(key) ||
+  //         (value?.amdrParent && selectedIds.has(value.amdrParent))
+  //     ) {
+  //       allowedKeys.push(key);
+  //     }
+  //   }
+  //
+  //   // 3️⃣ Build newData using direct key access (much faster)
+  //   const newData = data.map(item => {
+  //     const newColumnMap: any = {};
+  //
+  //     for (let i = 0; i < allowedKeys.length; i++) {
+  //       const key = allowedKeys[i];
+  //       const value = item.columnDataMap[key];
+  //       if (value !== undefined) {
+  //         newColumnMap[key] = value;
+  //       }
+  //     }
+  //
+  //     return {
+  //       ...item,
+  //       columnDataMap: newColumnMap
+  //     };
+  //   });
+  //
+  //   setFilterData(newData);
+  //   setCols(newData[0].columnDataMap);
+  //
+  // }, [data, selectedHeaderButtons,headerButtons,dashboardView]);
 
   // useEffect(() => {
   //
@@ -1926,7 +2000,6 @@ const AmdrReport = () => {
                        text: 'some y axis'
                      },
                      min: 0,
-                     max: 100,
                    }
                  },
                  maintainAspectRatio: false
@@ -1977,7 +2050,6 @@ const AmdrReport = () => {
                                   text: 'some y axis'
                                 },
                                 min: 0,
-                                max: 100,
                               }
                             },
                           }}
@@ -2020,7 +2092,6 @@ const AmdrReport = () => {
                                     text: 'some y axis'
                                   },
                                   min: 0,
-                                  max: 100, // assuming percentage
                                 },
                               }
                             }}
@@ -2046,7 +2117,6 @@ const AmdrReport = () => {
                               scales: {
                                 y: {
                                   min: 0,
-                                  max: 100, // assuming percentage
                                 },
                               }
                             }}
