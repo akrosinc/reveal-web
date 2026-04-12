@@ -313,7 +313,7 @@ const Simulation = () => {
       const updatedPolygons = { ...prev };
 
       Object.entries(datasetResponse.locationWithMetadata).forEach(([locationId, metadata]) => {
-        if (updatedPolygons  && updatedPolygons[locationId]) {
+        if (updatedPolygons[locationId]) {
           const existingMetadata = updatedPolygons[locationId].polygonData.properties.metadata || [];
           updatedPolygons[locationId].polygonData.properties.metadata = Array.from(
             new Set([...existingMetadata, metadata])
@@ -455,7 +455,7 @@ const Simulation = () => {
         setLabels(populationData?.labels);
         setTotals(populationData?.totals);
       }
-    } else if (polygonsWithData && !state.selected && currentLocationId) {
+    } else if (!state.selected && currentLocationId) {
       const selectedLocation = polygonsWithData[currentLocationId].polygonData;
       const populationData = transformPopulationData(selectedLocation?.properties?.population);
       setNumberOfStructures(selectedLocation?.properties?.numberOfStructures);
