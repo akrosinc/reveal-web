@@ -1428,12 +1428,18 @@ const Simulation = () => {
     if (datasetsChanged || includeGeometry) {
       prevDatasetsLengthRef.current = state.datasets.length;
 
+      const dataSetYearFilter = state.datasets?.reduce((acc: Record<string, number>, dataset: any) => {
+        acc[dataset.identifier] = year;
+        return acc;
+      }, {}) || {};
+
       const configObj: LocationData = {
         datasetsIds: datasetList.map(dataset => dataset.identifier),
         includeGeometry,
         parentLocationId: locationId,
         simulationId: state.simulationId,
-        campaignManagementFeatures: false
+        campaignManagementFeatures: false,
+        dataSetYearFilter
       };
       // console.log(state?.nodeOrder, 'NODE_ORDR')
       const targetLevelName = getPlanTargetLevelName(state.nodeOrder || [], state.planTargetType);
@@ -1663,7 +1669,7 @@ const Simulation = () => {
     });
   };
 
-  const handleParentSelectionChange = async (option: SingleValue<{ value: string; label: string }>) => {
+  const handleParentSelectionChange = async (option: SingleValue<{ value: string; label: string }>, year: number) => {
     setSelectedParentLevel(option);
     if (option != null && option.value !== '') {
       const searchRequest: SimulationDatasetRequest = {
@@ -1684,12 +1690,34 @@ const Simulation = () => {
     }
   };
 
-  useEffect(() => {
-    if (selectedParentLevel) {
-      handleParentSelectionChange(selectedParentLevel);
+  const handleParentYearChange = async (value: number) => {
+    setYear(value);
+
+    const dataSetYearFilter = state.datasets?.reduce((acc: Record<string, number>, dataset: any) => {
+      acc[dataset.identifier] = value;
+      return acc;
+    }, {}) || {};
+
+    if (selectedParentLevel && selectedParentLevel.value !== '') {
+      handleParentSelectionChange(selectedParentLevel, value);
+    } else {
+      if (currentLocationId) {
+        const includeGeometry = checkifChildrenLoaded(polygonsWithData, currentLocationId);
+        const configObj: LocationData = {
+          datasetsIds: state.datasets.map((dataset: any) => dataset.identifier),
+          includeGeometry: true,
+          parentLocationId: currentLocationId,
+          simulationId: state.simulationId,
+          campaignManagementFeatures: false,
+          dataSetYearFilter
+        };
+        const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
+        if (polygonsWithDatasets && polygonsWithDatasets.length > 0) {
+          updatePolygonsData(polygonsWithDatasets, includeGeometry, currentLocationId);
+        }
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [year]);
+  };
 
 
   // map zoom in for the structures lifts up the state, so we still have a single source of truth
@@ -1786,7 +1814,7 @@ const Simulation = () => {
                             })}
                             value={selectedParentLevel}
                             onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
-                              handleParentSelectionChange(selectedOption);
+                              handleParentSelectionChange(selectedOption, year);
                             }}
                             menuPortalTarget={document.body}
                             styles={{
@@ -1795,18 +1823,6 @@ const Simulation = () => {
 
                           />
                           {/* <p>{year}</p> */}
-                          <RangeInput
-                            min={currentYear - 5}
-                            max={currentYear}
-                            step={1}
-                            value={year}
-                            label=""
-                            trackColor="#3b82f6"
-                            thumbColor="#3b82f6"
-                            onChange={(value: number) => {
-                              setYear(value);
-                            }}
-                          />
                           {showingParentLevelsMenu && (
                             <>
                               <br></br>
@@ -1818,6 +1834,19 @@ const Simulation = () => {
                       )}
                     </div>
                   )}
+
+                  <div className={styles.yearRangeWrapper}>
+                    <RangeInput
+                      min={2024}
+                      max={2025}
+                      step={1}
+                      value={year}
+                      label=""
+                      trackColor="#3b82f6"
+                      thumbColor="#3b82f6"
+                      onChange={handleParentYearChange}
+                    />
+                  </div>
 
                   {state.datasets?.map(dataset => (
                     <DatasetsAccordion

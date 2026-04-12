@@ -28,11 +28,9 @@
   gap: 1rem;
 }
 
-.customSwitchForm {
-}
+.customSwitchForm {}
 
-.filterLoactionsWrapper__infoContainer {
-}
+.filterLoactionsWrapper__infoContainer {}
 
 .filterLoactionsWrapper__label {
   color: black;
@@ -45,8 +43,7 @@
   font-size: 0.8rem;
 }
 
-.loadInactiveWrapper {
-}
+.loadInactiveWrapper {}
 
 .parentLocationSelects {
   border: 1px solid #0000001a;
@@ -86,6 +83,7 @@
 .select {
   width: 100%;
 }
+
 .select_small {
   width: 80%;
 }
@@ -119,4 +117,8 @@
 
 .dasasetsButton:hover {
   background-color: #f0f0f0;
+}
+
+.yearRangeWrapper {
+  margin-top: 2rem;
 }

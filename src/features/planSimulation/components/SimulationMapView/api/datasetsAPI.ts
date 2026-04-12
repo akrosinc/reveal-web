@@ -45,6 +45,7 @@ export interface LocationData {
   parentLocationId: string;
   simulationId: string;
   campaignManagementFeatures: boolean;
+  dataSetYearFilter?: Record<string, number>;
 }
 
 export interface AddDatasetResponse {
@@ -60,8 +61,8 @@ export interface AddDatasetResponse {
 
 export interface SimulationDatasetRequest {
   simulationId: string;
-  parentAdminLevel: string;
-  year?: number;
+  parentAdminLevel?: string;
+  year: number;
 }
 
 export const getEntityTags = async () => {
