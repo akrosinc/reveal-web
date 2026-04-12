@@ -25,6 +25,19 @@ export interface DataSetList {
   };
 }
 
+export interface DataSetYearRange {
+  datasetId: string;
+  minYear: number;
+  maxYear: number;
+}
+
+export interface SimulationDataResponse {
+  identifier: string;
+  datasets: DataSetList[];
+  targetAreas: any[];
+  datSetYearRange?: DataSetYearRange[];
+}
+
 export interface DataSetDelete {
   simulationId: string;
   datasetId: string;
@@ -76,7 +89,7 @@ export const getEntityTags = async () => {
 
 export const getSimulationData = async (simulationId: string) => {
   try {
-    const response = await api.get(`/simulation/${simulationId}`);
+    const response = await api.get<SimulationDataResponse>(`/simulation/${simulationId}`);
 
     return response.data;
   } catch (error) {

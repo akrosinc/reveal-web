@@ -80,6 +80,7 @@ import { usePolygonContext } from '../../../contexts/PolygonContext';
 import {
   AddDatasetResponse,
   addSearchRequest,
+  DataSetYearRange,
   DataSetList,
   deleteDataset,
   filterDatasets,
@@ -162,6 +163,21 @@ interface PolygonsState {
   [key: string]: Polygondata;
 }
 
+const getCombinedDatasetYearRange = (ranges?: DataSetYearRange[]) => {
+  if (!ranges || ranges.length === 0) return null;
+
+  return ranges.reduce(
+    (combined, range) => ({
+      min: Math.min(combined.min, range.minYear),
+      max: Math.max(combined.max, range.maxYear)
+    }),
+    {
+      min: ranges[0].minYear,
+      max: ranges[0].maxYear
+    }
+  );
+};
+
 // const extractPolygonsFromPolysWithData = (polygonsWithData?: PolygonsState) => {
 //   return polygonsWithData ? Object.values(polygonsWithData!).map((polygon: Polygondata) => polygon.polygonData) : [];
 // };
@@ -185,6 +201,7 @@ const Simulation = () => {
   const [parentMapData, setParentMapData] = useState<PlanningParentLocationResponse>();
   const currentYear = new Date().getFullYear()
   const [year, setYear] = useState(currentYear)
+  const [parentYearRange, setParentYearRange] = useState({ min: currentYear, max: currentYear });
   const [mapDataLoad, setMapDataLoad] = useState<PlanningLocationResponse>({
     features: [],
     parents: [],
@@ -289,9 +306,19 @@ const Simulation = () => {
 
     try {
       const simulationData = await getSimulationData(simulationIdentifier);
+      const combinedYearRange = getCombinedDatasetYearRange(simulationData?.datSetYearRange);
+
       dispatch({ type: 'SET_NEW_DATASETS', payload: simulationData.datasets });
       dispatch({ type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
       dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+
+      if (combinedYearRange) {
+        setParentYearRange(combinedYearRange);
+        setYear(combinedYearRange.max);
+      } else {
+        setParentYearRange({ min: currentYear, max: currentYear });
+        setYear(currentYear);
+      }
     } catch (error) {
       console.error('Failed to fetch simulation:', error);
     }
@@ -1837,8 +1864,8 @@ const Simulation = () => {
 
                   <div className={styles.yearRangeWrapper}>
                     <RangeInput
-                      min={2024}
-                      max={2025}
+                      min={parentYearRange.min}
+                      max={parentYearRange.max}
                       step={1}
                       value={year}
                       label=""
