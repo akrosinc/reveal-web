@@ -226,7 +226,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
               {!disabled && (
                 <Dropdown
                   show={openDropdownId === node.identifier}
-                  onToggle={(isOpen) => onDropdownToggle(isOpen ? node.identifier : null)}
+                  onToggle={(isOpen) => !node?.active ? toast.error("Location is not active.") : onDropdownToggle(isOpen ? node.identifier : null)}
                   drop="end"
                 >
                   <Dropdown.Toggle as={CustomToggle}>
@@ -253,7 +253,7 @@ const TreeNode = React.memo<TreeNodeProps>(({
                     {/* <Dropdown.Item onClick={() => { onTeamClick?.(hasChildren ? (node as any)._leafIds : node.identifier, (node?.teams?.[0])); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2"> */}
                     <Dropdown.Item onClick={() => { onTeamClick?.(node.identifier, (node?.teams?.[0])); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
                       <FontAwesomeIcon icon={faShareSquare} className="text-primary" style={{ transform: 'scaleX(-1)' }} />
-                      <span>Change team</span>
+                      <span>Assign team</span>
                     </Dropdown.Item>
                     {node?.teams?.[0]?.identifier && (
                       <Dropdown.Item onClick={() => {
