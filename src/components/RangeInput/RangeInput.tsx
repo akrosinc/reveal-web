@@ -60,7 +60,7 @@ function RangeInput({
       </div>
       <div className={styles.valueContainer}>
         <span className={styles.value}>{min}</span>
-        <span className={styles.value}>{value}</span>
+        <span style={{ fontWeight: "bold", fontSize: 13.4, color: 'black' }} className={styles.value}>{value}</span>
         <span className={styles.value}>{max}</span>
       </div>
     </div>
