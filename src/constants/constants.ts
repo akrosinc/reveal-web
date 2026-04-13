@@ -288,11 +288,11 @@ export const KEY_INDICATOR_LEVELS: any[string] = {
   },
   [ReportType.SURVEY]: {
     DANGER: {
-      colorName: 'red',
+      colorName: 'green',
       min: 0,
       max: 1,
-      class: 'bg-danger',
-      color: COLOR_BOOTSTRAP_DANGER,
+      class: 'bg-success',
+      color: COLOR_BOOTSTRAP_SUCCESS,
       highest: false
     },
     GOOD: {
@@ -304,11 +304,11 @@ export const KEY_INDICATOR_LEVELS: any[string] = {
       highest: false
     },
     EXCELLENT: {
-      colorName: 'green',
+      colorName: 'red',
       min: 5,
       max: 100,
-      class: 'bg-success',
-      color: COLOR_BOOTSTRAP_SUCCESS,
+      class: 'bg-danger',
+      color: COLOR_BOOTSTRAP_DANGER,
       highest: true
     }
   },
