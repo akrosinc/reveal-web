@@ -311,6 +311,8 @@ const Simulation = () => {
       dispatch({ type: 'SET_NEW_DATASETS', payload: simulationData.datasets });
       dispatch({ type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
       dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+      setDatasetYearRange(simulationData.datSetYearRange);
+
 
       if (combinedYearRange) {
         setParentYearRange(combinedYearRange);
@@ -414,6 +416,10 @@ const Simulation = () => {
       return updatedPolygons;
     });
   };
+
+  // Keep track of year filter for each dataset
+  const [datasetYearRange, setDatasetYearRange] = useState<{ datasetId: string, maxYear: number, minYear: number }[]>([]);
+  const [datasetsCustomYearFilter, setDatasetsCustomYearFilter] = useState<{ [key: string]: number }>({});
 
   // we are updating selectedLocationChildren whenever an assignment happens,
   // because assigned flag on these locations is not updated (it is still the one we got on location fetch)
@@ -1699,7 +1705,7 @@ const Simulation = () => {
   const handleParentSelectionChange = async (option: SingleValue<{ value: string; label: string }>, year: number) => {
     setSelectedParentLevel(option);
     const dataSetYearFilter = state.datasets?.reduce((acc: Record<string, number>, dataset: any) => {
-      acc[dataset.identifier] = year;
+      acc[dataset.identifier] = datasetsCustomYearFilter[dataset.identifier] || year;
       return acc;
     }, {}) || {};
 
@@ -1726,14 +1732,21 @@ const Simulation = () => {
 
   const handleParentYearChange = async (value: number) => {
     setYear(value);
+  };
+
+  useEffect(() => {
+    updateDataOnParentYearChange();
+  }, [year, datasetsCustomYearFilter]);
+
+  const updateDataOnParentYearChange = async () => {
 
     const dataSetYearFilter = state.datasets?.reduce((acc: Record<string, number>, dataset: any) => {
-      acc[dataset.identifier] = value;
+      acc[dataset.identifier] = datasetsCustomYearFilter[dataset.identifier] || year;
       return acc;
     }, {}) || {};
 
     if (selectedParentLevel && selectedParentLevel.value !== '') {
-      handleParentSelectionChange(selectedParentLevel, value);
+      handleParentSelectionChange(selectedParentLevel, year);
     } else {
       if (currentLocationId) {
         const includeGeometry = checkifChildrenLoaded(polygonsWithData, currentLocationId);
@@ -1751,7 +1764,7 @@ const Simulation = () => {
         }
       }
     }
-  };
+  }
 
 
   // map zoom in for the structures lifts up the state, so we still have a single source of truth
@@ -1888,6 +1901,9 @@ const Simulation = () => {
                       dataset={dataset}
                       updateDatasetHandler={updateDatasetHandler}
                       removeDatasetHandler={removeDatasetHandler}
+                      datasetsCustomYearFilter={datasetsCustomYearFilter}
+                      setDatasetsCustomYearFilter={setDatasetsCustomYearFilter}
+                      datasetYearRange={datasetYearRange.find(d => d.datasetId === dataset.identifier)}
                     />
                   ))}
 
