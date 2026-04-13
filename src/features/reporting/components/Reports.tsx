@@ -41,8 +41,8 @@ const Reports = () => {
   }, [pathname]);
 
   useEffect(() => {
-    // if (isAuthorizedForRedirecting) {
-    if (true) {
+    if (isAuthorizedForRedirecting) {
+      // if (true) {
       performanceDashboardChecker()
         ? navigate(REPORTING_PAGE + `/performance-report/${instanceContext?.instancePlan?.identifier}`)
         : navigate(REPORTING_PAGE + `/report/${instanceContext?.instancePlan?.identifier}/reportType/${instanceContext?.instancePlan?.interventionType}`)
