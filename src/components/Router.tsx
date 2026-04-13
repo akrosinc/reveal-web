@@ -68,7 +68,7 @@ const Router = () => {
           <Route path={RESOURCE_PLANNING_PAGE + '/*'} element={<ResourcePlanning />}>
             <Route path=":tab" element={<ResourcePlanning />} />
           </Route>
-           
+
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       );

@@ -10,6 +10,8 @@ import { PlanModel } from '../../../plan/providers/types';
 import { getPerformanceDashboard, getPerformanceDashboardDataDetails } from '../../api';
 import { PerformanceDashboardModel } from '../../providers/types';
 import PerformanceDetailsModal from './PerformanceDetailsModal';
+import { useAuthorization } from '../../../../hooks/useAuthorization';
+import { REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT } from '../../../../constants';
 
 interface BreadcrumbPath {
   username: string;
@@ -25,7 +27,7 @@ const PerformanceDashboard = () => {
   const [plan, setPlan] = useState<PlanModel>();
   const [path, setPath] = useState<BreadcrumbPath[]>([]);
   const isDarkMode = useAppSelector(state => state.darkMode.value);
-
+  const isAuthorizedForRedirecting = useAuthorization([REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT])
   const loadData = useCallback(
     (currentPath?: BreadcrumbPath) => {
       if (planId) {
@@ -42,7 +44,7 @@ const PerformanceDashboard = () => {
           })
           .catch(err => {
             // if there is an error navigate to previouse page
-            navigate(-1);
+            !isAuthorizedForRedirecting && navigate(-1);
             toast.error(err);
           });
       }

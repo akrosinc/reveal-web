@@ -8,6 +8,7 @@ import MapViewDetail from './mapView/MapViewDetail';
 import ReportsTable from '../../../../components/Table/ReportsTable';
 import {
   KEY_INDICATOR_LEVELS,
+  REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
   REPORT_TABLE_PERCENTAGE_MEDIUM,
@@ -22,6 +23,7 @@ import { AdditionalReportInfo, FoundCoverage, ReportLocationProperties, ReportTy
 import ReportModal from './reportModal';
 import { useTranslation } from 'react-i18next';
 import Select, { SingleValue } from 'react-select';
+import { useAuthorization } from '../../../../hooks/useAuthorization';
 
 interface BreadcrumbModel {
   locationName: string;
@@ -66,6 +68,7 @@ const getReportDetails = (reportType: any) => {
 };
 
 const Report = () => {
+  const isAuthorizedForRedirecting = useAuthorization([REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT])
   const location = useLocation()
   const [cols, setCols] = useState<{ [x: string]: FoundCoverage }>({});
   const [data, setData] = useState<ReportLocationProperties[]>([]);
@@ -286,11 +289,11 @@ const Report = () => {
             })
             .catch(err => {
               toast.error(err);
-              goBackHandler();
+              !isAuthorizedForRedirecting && goBackHandler();
             });
         });
       } else {
-        goBackHandler();
+        !isAuthorizedForRedirecting && goBackHandler();
       }
     },
     [planId, reportType, goBackHandler, matchReportBandLevelByValue]
