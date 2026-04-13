@@ -33,6 +33,9 @@ function RangeInput({
   return (
     <div className={`${styles.rangeContainer} ${disabled ? styles.disabled : ''}`}>
       {label && <label className={styles.label}>{label}</label>}
+      <div className='d-flex align-items-center justify-content-center'>
+        <span style={{ fontWeight: "bold", fontSize: 13.4, color: 'black' }} className={styles.value}>{value}</span>
+      </div>
       <div className={styles.rangeWrapper}>
         <div className={styles.trackBackground} />
         <div
@@ -60,7 +63,6 @@ function RangeInput({
       </div>
       <div className={styles.valueContainer}>
         <span className={styles.value}>{min}</span>
-        <span style={{ fontWeight: "bold", fontSize: 13.4, color: 'black' }} className={styles.value}>{value}</span>
         <span className={styles.value}>{max}</span>
       </div>
     </div>
