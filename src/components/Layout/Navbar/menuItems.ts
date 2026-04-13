@@ -26,7 +26,7 @@ import {
   INSTANE_MANAGEMENT_VIEW,
   REVEAL_SIMULATION_USER,
   GROUP_MANAGEMENT,
-  TAG_MANAGEMENT_VIEW
+  TAG_MANAGEMENT_VIEW,  DATA_EXTRACT_VIEW
 } from '../../../constants';
 
 
@@ -164,6 +164,11 @@ export const getMainMenu = (context: InstanceContextModel | null) => {
           pageTitle: 'Metadata Import',
           route: METADATA_IMPORT,
           roles: [METADATA_IMPORT_VIEW]
+        },
+        {
+          pageTitle: 'Metadata Import',
+          route: DATA_EXTRACTS,
+          roles: [DATA_EXTRACT_VIEW]
         }
       ]
     }

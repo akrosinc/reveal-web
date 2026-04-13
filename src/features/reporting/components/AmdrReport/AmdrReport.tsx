@@ -92,7 +92,7 @@ const AmdrReport = () => {
   }>>();
   const clearButtonRef = useRef<any>(null);
   const [clickedColumn, setClickedColumn] = useState<string>();
-  const [dashboardView, setDashboardView] = useState<AmdrColumnType.DRUG | AmdrColumnType.HAPLOTYPE>(AmdrColumnType.HAPLOTYPE);
+  const [dashboardView, setDashboardView] = useState<AmdrColumnType.DRUG | AmdrColumnType.HAPLOTYPE>(AmdrColumnType.DRUG);
   const [graphData, setGraphData] = useState<ChartData<'line'>>()
 
   const [graphDataMap, setGraphDataMap] = useState<{ [key: string]: ChartData<'line'> }>()
@@ -109,7 +109,7 @@ const AmdrReport = () => {
   const [ribbonData, setRibbonData] = useState<RibbonData>();
   const [plotSelector, setPlotSelector] = useState<string>();
   const [plotSelectedOption, setPlotSelectedOption] = useState<OptionType | null>(null);
-  const [geographyOrDate, setGeographyOrDate] = useState<AmdrDataType>(AmdrDataType.DATE)
+  const [geographyOrDate, setGeographyOrDate] = useState<AmdrDataType>(AmdrDataType.GEOGRAPHY)
   const [dateModes, setDateModes] = useState<AmdrDateModes>(AmdrDateModes.MONTHLY)
 
   const [defaultDisplayColumn, setDefaultDisplayColumn] = useState('');
@@ -1006,7 +1006,7 @@ const AmdrReport = () => {
                 let distinctHslColorLighter = getDistinctHslColor(hslColorLighter);
                 let distinctHslColorDark = getDistinctHslColor(hslColorDark);
                 combinedChartDataObj[header.id] = {
-                  labels: ["mixed","mono","wild"],
+                  labels: ["Het","Hom","Wild/Sensitive"],
                   datasets: [
                     {
                       data: [
@@ -1078,7 +1078,7 @@ const AmdrReport = () => {
             let distinctHslColorDark = getDistinctHslColor(hslColorDark);
             let haploDatumElement:GeneStats = haploDatum[key];
             const combinedChartData: ChartData<'pie'> = {
-              labels: ["mixed","mono","wild"],
+              labels: ["Het","Hom","Wild/Sensitive"],
               datasets: [
                 {
                   data: [
@@ -1975,7 +1975,7 @@ const AmdrReport = () => {
                    title:{
                      display:true,
                      position: 'top',
-                     text: 'Some title'
+                     text: 'Percentage of drug resistance by geography'
                    },
                    legend: {
 
@@ -1990,14 +1990,14 @@ const AmdrReport = () => {
                  scales: {
                    x: {
                      title: {
-                       display: true,       // ✅ shows the title
-                       text: 'some x axis'
+                       display: false,       // ✅ shows the title
+                       text: 'Location'
                      },
                    },
                    y: {
                      title: {
                        display: true,       // ✅ shows the title
-                       text: 'some y axis'
+                       text: '% Resistant'
                      },
                      min: 0,
                    }
@@ -2026,7 +2026,7 @@ const AmdrReport = () => {
                               title:{
                                 display:true,
                                 position: 'top',
-                                text: 'Some title'
+                                text: 'Percentage Resistance by ' + (dateModes === AmdrDateModes.MONTHLY?"month":"year")
                               },
                               legend: {
                                 display: true,
@@ -2041,13 +2041,13 @@ const AmdrReport = () => {
                               x: {
                                 title: {
                                   display: true,       // ✅ shows the title
-                                  text: 'some x axis'
+                                  text: (dateModes === AmdrDateModes.MONTHLY?"Month":"Year")
                                 },
                               },
                               y: {
                                 title: {
                                   display: true,       // ✅ shows the title
-                                  text: 'some y axis'
+                                  text: '% Resistant'
                                 },
                                 min: 0,
                               }
@@ -2068,7 +2068,7 @@ const AmdrReport = () => {
                                 title:{
                                   display:true,
                                   position: 'top',
-                                  text: 'Some title'
+                                  text: 'Percentage Resistance by ' + (dateModes === AmdrDateModes.MONTHLY?"month":"year")
                                 },
                                 legend: {
                                   position: 'bottom' as const,
@@ -2083,13 +2083,13 @@ const AmdrReport = () => {
                                 x: {
                                   title: {
                                     display: true,       // ✅ shows the title
-                                    text: 'some x axis'
+                                    text: (dateModes === AmdrDateModes.MONTHLY?"Month":"Year")
                                   },
                                 },
                                 y: {
                                   title: {
                                     display: true,       // ✅ shows the title
-                                    text: 'some y axis'
+                                    text: '% Resistant'
                                   },
                                   min: 0,
                                 },
@@ -2108,13 +2108,19 @@ const AmdrReport = () => {
                                 title:{
                                   display:true,
                                   position: 'top',
-                                  text: 'Some title'
+                                  text: 'Percentage Resistance by ' + (dateModes === AmdrDateModes.MONTHLY?"month":"year") +" by location"
                                 },
                                 legend: {
                                   position: 'bottom' as const,
                                 },
                               },
                               scales: {
+                                x: {
+                                  title: {
+                                    display: true,       // ✅ shows the title
+                                    text: (dateModes === AmdrDateModes.MONTHLY?"Month":"Year")
+                                  },
+                                },
                                 y: {
                                   min: 0,
                                 },
@@ -2168,7 +2174,7 @@ const AmdrReport = () => {
         {combinedPieGraphData && Object.keys(combinedPieGraphData).map(key => (
             <div key={key} style={{width: 180}}>
               <div style={{marginBottom: 6, fontSize: 12, fontWeight: "bold"}}>
-                {key ?? "Untitled"}
+                {headerButtons?.[dashboardView===AmdrColumnType.DRUG?dashboardView:AmdrColumnType.GENE]?.[key]?.name}
               </div>
 
               <div style={{width: "100%", height: 180}}>
@@ -2300,9 +2306,9 @@ const AmdrReport = () => {
         }
         {showGrid && (
             <>
-              <Row className="mt-3 mb-2 align-items-center">
-                {getSearchBarRow()}
-              </Row>
+              {/*<Row className="mt-3 mb-2 align-items-center">*/}
+              {/*  {getSearchBarRow()}*/}
+              {/*</Row>*/}
               {getTable()}
             </>
         )}

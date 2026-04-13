@@ -130,3 +130,5 @@ export const REDIRECT_TO_ASSIGNED_INSTANCE = 'redirect_to_assigned_instance'
 
 export const REDIRECT_TO_ASSIGNED_CAMPAIGN = 'redirect_to_assigned_campaign'
 export const REDIRECT_TO_ASSIGNED_PLAN_SIMULATION = 'redirect_to_assigned_plan_simulation'
+
+export const DATA_EXTRACT_VIEW = 'data_extracts_view'

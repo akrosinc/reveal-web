@@ -38,6 +38,7 @@ import AmdrLandingPage2 from "../features/reporting/components/AmdrReport/AmdrLa
 import Campaign from '../pages/Campaign';
 import InstanceConfiguration from '../features/instanceConfiguration';
 import GroupConfiguration from '../features/groupConfiguration';
+import {SUPER_ADMIN} from "../constants/userRoles";
 
 interface Props {
   instance?:string;
@@ -50,7 +51,7 @@ const Router = ({instance}:Props) => {
     if (keycloak.authenticated) {
       return (
         <Routes>
-          {instance !== 'AMDR' ? <>
+          {instance !== 'AMDR'  ? <>
           <Route index element={<Home />} />
           <Route path={HOME_PAGE} element={<Home />} />
           </>:<>
