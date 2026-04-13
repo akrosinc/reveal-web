@@ -6,13 +6,16 @@ import { toast } from 'react-toastify';
 import { PageableModel } from '../../../api/providers';
 import Paginator from '../../../components/Pagination';
 import DefaultTable from '../../../components/Table/DefaultTable';
-import { PAGINATION_DEFAULT_SIZE, PLAN_MODEL_1_COLUMNS, REPORTING_PAGE } from '../../../constants';
+import { PAGINATION_DEFAULT_SIZE, PLAN_MODEL_1_COLUMNS, REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT, REPORTING_PAGE } from '../../../constants';
 import { PlanModel, PlanModel1 } from '../../plan/providers/types';
 import { getPlanReports, getReportTypes } from '../api';
 import { ReportType } from '../providers/types';
+import { useAuthorization } from '../../../hooks/useAuthorization';
+import { useAppSelector } from '../../../store/hooks';
 
 const Reports = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel1>>();
+  const isAuthorizedForRedirecting = useAuthorization([REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT])
   const navigate = useNavigate();
   const { state, pathname } = useLocation();
   const [currentSortField, setCurrentSortField] = useState('');
@@ -20,7 +23,8 @@ const Reports = () => {
   const [reportTypes, setReportTypes] = useState<string[]>();
   const [selectedReportType, setSelectedReportType] = useState<string>();
   const { t } = useTranslation();
-
+  const instanceContext = useAppSelector(state => state.instanceContext);
+  console.log(instanceContext)
   const loadData = useCallback(
     (size: number, page: number, reportType?: string, sortDirection?: boolean, sortField?: string) => {
       getPlanReports(size, page, false, reportType, '', sortField, sortDirection)
@@ -37,6 +41,13 @@ const Reports = () => {
   }, [pathname]);
 
   useEffect(() => {
+    // if (isAuthorizedForRedirecting) {
+    if (true) {
+      performanceDashboardChecker()
+        ? navigate(REPORTING_PAGE + `/performance-report/${instanceContext?.instancePlan?.identifier}`)
+        : navigate(REPORTING_PAGE + `/report/${instanceContext?.instancePlan?.identifier}/reportType/${instanceContext?.instancePlan?.interventionType}`)
+      return
+    }
     if (performanceDashboardChecker()) {
       setSelectedReportType(undefined);
       loadData(PAGINATION_DEFAULT_SIZE, 0);
@@ -65,7 +76,7 @@ const Reports = () => {
     setSelectedReportType(e.target.value);
     loadData(PAGINATION_DEFAULT_SIZE, 0, e.target.value);
   };
-  console.log(planList, 'PLAN LIST')
+  // console.log(planList, 'PLAN LIST')
 
   const setReportTypeNames = (reportName: string) => {
     switch (reportName) {
@@ -121,8 +132,8 @@ const Reports = () => {
             sortHandler={sortHandler}
             clickHandler={(id: string) =>
               performanceDashboardChecker()
-                ? navigate(REPORTING_PAGE + `/performance-report/${id}`)
-                : navigate(REPORTING_PAGE + `/report/${id}/reportType/${selectedReportType}`)
+                ? navigate(REPORTING_PAGE + `/performance-report/${id}`, { state: { showArrow: true } })
+                : navigate(REPORTING_PAGE + `/report/${id}/reportType/${selectedReportType}`, { state: { showArrow: true } })
             }
             clickAccessor="planIdentifier"
           />

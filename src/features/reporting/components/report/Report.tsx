@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Card, Col, Collapse, Container, Form, ProgressBar, Row, Table } from 'react-bootstrap';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Column } from 'react-table';
 import { toast } from 'react-toastify';
 import MapViewDetail from './mapView/MapViewDetail';
@@ -66,6 +66,7 @@ const getReportDetails = (reportType: any) => {
 };
 
 const Report = () => {
+  const location = useLocation()
   const [cols, setCols] = useState<{ [x: string]: FoundCoverage }>({});
   const [data, setData] = useState<ReportLocationProperties[]>([]);
   const [filterData, setFilterData] = useState<ReportLocationProperties[]>([]);
@@ -503,9 +504,9 @@ const Report = () => {
     <Container fluid className="my-4 px-2">
       <Row className="mt-3 align-items-center">
         <Col md={3}>
-          <Button id="back-button" onClick={goBackHandler} className="btn btn-primary mb-3 mb-md-0">
+          {location?.state?.showArrow ? <Button id="back-button" onClick={goBackHandler} className="btn btn-primary mb-3 mb-md-0">
             <FontAwesomeIcon icon="arrow-left" className="me-2" /> {t('reportPage.title')}
-          </Button>
+          </Button> : <div></div>}
         </Col>
         <Col md={6} className="text-center">
           <h2 className="m-0">
@@ -646,37 +647,37 @@ const Report = () => {
           </Row>
           {(reportType === ReportType.MDA_LITE_COVERAGE ||
             (reportType === ReportType.ONCHOCERCIASIS_SURVEY && reportLevel !== 'Structure')) && (
-            <Row className="justify-content-center">
-              <Col md={8} className="my-2 text-center">
-                <label className="me-2">Report type: </label>
-                {REPORT_TYPE.map(el => {
-                  if (
-                    (reportType === ReportType.MDA_LITE_COVERAGE &&
-                      !(el.value === 'POPULATION_DISTRIBUTION') &&
-                      selectedReportInfo?.value === 'SCH') ||
-                    reportType === ReportType.ONCHOCERCIASIS_SURVEY
-                  ) {
-                    return (
-                      <Form.Check
-                        key={el.value}
-                        defaultChecked={el.value === REPORT_TYPE[0].value}
-                        onChange={_ => {
-                          setSelectedMdaLiteReport(el);
-                          setSelectedReportInfo(selectedReportInfo);
-                          clearButtonRef.current.click();
-                        }}
-                        name="report-group"
-                        inline
-                        label={t('reportPage.' + el.name)}
-                        type="radio"
-                      />
-                    );
-                  }
-                  return undefined;
-                })}
-              </Col>
-            </Row>
-          )}
+              <Row className="justify-content-center">
+                <Col md={8} className="my-2 text-center">
+                  <label className="me-2">Report type: </label>
+                  {REPORT_TYPE.map(el => {
+                    if (
+                      (reportType === ReportType.MDA_LITE_COVERAGE &&
+                        !(el.value === 'POPULATION_DISTRIBUTION') &&
+                        selectedReportInfo?.value === 'SCH') ||
+                      reportType === ReportType.ONCHOCERCIASIS_SURVEY
+                    ) {
+                      return (
+                        <Form.Check
+                          key={el.value}
+                          defaultChecked={el.value === REPORT_TYPE[0].value}
+                          onChange={_ => {
+                            setSelectedMdaLiteReport(el);
+                            setSelectedReportInfo(selectedReportInfo);
+                            clearButtonRef.current.click();
+                          }}
+                          name="report-group"
+                          inline
+                          label={t('reportPage.' + el.name)}
+                          type="radio"
+                        />
+                      );
+                    }
+                    return undefined;
+                  })}
+                </Col>
+              </Row>
+            )}
           <div
             style={{
               maxHeight: showMap ? '50vh' : '90vh',
@@ -725,8 +726,8 @@ const Report = () => {
           style={{ maxHeight: showMap ? '80vh' : 'auto', overflowY: 'auto' }}
         >
           {reportType === ReportType.IRS_FULL_COVERAGE &&
-          filterData.length &&
-          filterData[0].geographicLevel === 'structure' ? (
+            filterData.length &&
+            filterData[0].geographicLevel === 'structure' ? (
             <Card className="text-start p-3">
               <p className="mb-0 mt-3">
                 <b>Spray coverage (Effectiveness)</b>

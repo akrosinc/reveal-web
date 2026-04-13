@@ -7,6 +7,8 @@ import { getAssignedDatasetList, AssignedDatasetModel, getAssignedComplexTagList
 import { toast } from 'react-toastify';
 import UploadModal from '../../metaDataImport/components/fileImport/uploadModal/UploadModal';
 import { Nav } from 'react-bootstrap';
+import AuthorizedElement from '../../../components/AuthorizedElement';
+import { GROUP_MANAGEMENT_ADD_DATASET } from '../../../constants';
 
 interface DatasetsSelectionProps {
     selectedDatasets?: string[];
@@ -103,12 +105,14 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
             {showHeader && (
                 <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold d-flex justify-content-between align-items-center`}>
                     Datasets
-                    <FontAwesomeIcon
-                        style={{ cursor: 'pointer' }}
-                        icon={faPlusCircle}
-                        className="text-primary cursor-pointer"
-                        onClick={() => setShowUploadModal(true)}
-                    />
+                    <AuthorizedElement roles={[GROUP_MANAGEMENT_ADD_DATASET]}>
+                        <FontAwesomeIcon
+                            style={{ cursor: 'pointer' }}
+                            icon={faPlusCircle}
+                            className="text-primary cursor-pointer"
+                            onClick={() => setShowUploadModal(true)}
+                        />
+                    </AuthorizedElement>
                 </Card.Header>
             )}
             <Card.Body style={{ height: 266, overflowY: 'auto' }} className="p-3">
