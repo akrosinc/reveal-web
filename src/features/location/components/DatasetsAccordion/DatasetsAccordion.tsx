@@ -25,11 +25,15 @@ function DatasetsAccordion({
   updateDatasetHandler,
   removeDatasetHandler
 }: DatasetsAccordionProps) {
+  const currentYear = new Date().getFullYear();
+  const datasetMinYear = dataset.minYear ?? currentYear;
+  const datasetMaxYear = dataset.maxYear ?? currentYear;
   const [range, setRange] = useState({ min: dataset.filter?.minValue, max: dataset.filter?.maxValue });
   const [currentRange, setCurrentRange] = useState({
     min: dataset.selectedRange?.minValue,
     max: dataset.selectedRange?.minValue
   });
+  const [datasetYear, setDatasetYear] = useState(datasetMaxYear);
 
   const [isOpen, setOpen] = useState(open);
   const [showModal, setShowModal] = useState(false);
@@ -142,6 +146,7 @@ function DatasetsAccordion({
     setIsVisible(dataset.hidden);
     setRange({ min: dataset.filter?.minValue, max: dataset.filter?.maxValue });
     setCurrentRange({ min: dataset.selectedRange?.minValue, max: dataset.selectedRange?.maxValue });
+    setDatasetYear(dataset.maxYear ?? currentYear);
   }, [dataset]);
 
   return (
@@ -275,6 +280,19 @@ function DatasetsAccordion({
               inactive={!checked}
               color={checked ? customColor : undefined}
               onChange={handleRangeChange}
+            />
+          </div>
+          <div className={DatasetStyles.yearRangeWrapper}>
+            <RangeInput
+              min={datasetMinYear}
+              max={datasetMaxYear}
+              step={1}
+              value={datasetYear}
+              label=""
+              trackColor="#3b82f6"
+              thumbColor="#3b82f6"
+              disabled={!checked}
+              onChange={setDatasetYear}
             />
           </div>
         </div>

@@ -15,6 +15,8 @@ export interface DataSetList {
   lineWidth: number;
   borderColor: string;
   hidden: boolean;
+  minYear?: number;
+  maxYear?: number;
   filter: {
     minValue: number;
     maxValue: number;
