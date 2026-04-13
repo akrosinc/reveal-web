@@ -9,6 +9,9 @@ import Select from 'react-select';
 import { downloadLocations, getEntityTagList } from '../../api';
 import { getImportableEntityTags } from '../../../planSimulation/api';
 import { EntityTag } from '../../../planSimulation/providers/types';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import moment from 'moment';
 
 export const TemplateCreation = () => {
   const [hierarchyList, setHierarchyList] = useState<PageableModel<LocationHierarchyModel>>();
@@ -17,6 +20,7 @@ export const TemplateCreation = () => {
   const [selectedGegraphichLevel, setSelectedGegraphichLevel] = useState<string>();
   const [entityTagList, setEntityTagList] = useState<EntityTag[]>();
   const [selectedEntityTags, setSelectedEntityTags] = useState<string[]>([]);
+  const [captureDate, setCaptureDate] = useState<Date | null>(new Date());
 
   useEffect(() => {
     getLocationHierarchyList(50, 0, true).then(res => setHierarchyList(res));
@@ -94,15 +98,35 @@ export const TemplateCreation = () => {
       </Row>
       <Row className="mt-4 align-items-center">
         <Col md={2}>
+          <Form.Label className="text-center">{t('simulationPage.captureDate')}:</Form.Label>
+        </Col>
+        <Col md={6}>
+          <DatePicker
+            selected={captureDate}
+            onChange={date => setCaptureDate(date)}
+            className="form-control"
+            dateFormat="yyyy-MM-dd"
+            placeholderText="Select date"
+          />
+        </Col>
+      </Row>
+      <Row className="mt-4 align-items-center">
+        <Col md={2}>
           <Form.Label className="text-center">{t('simulationPage.fileTemplate')}:</Form.Label>
         </Col>
         <Col md={6}>
           <Button
             onClick={() => {
               if (selectedHierarchy && selectedGegraphichLevel) {
-                toast.info('Download template starting now...');
-                downloadLocations(selectedHierarchy, selectedGegraphichLevel, selectedEntityTags)
+
+                downloadLocations(
+                  selectedHierarchy,
+                  selectedGegraphichLevel,
+                  selectedEntityTags,
+                  captureDate ? moment(captureDate).format('YYYY-MM-DD') : undefined
+                )
                   .then(res => {
+                    toast.info('Download template starting now...');
                     const link = document.createElement('a');
                     link.href = window.URL.createObjectURL(new Blob([res], { type: 'application/vnd.ms-excel' }));
 

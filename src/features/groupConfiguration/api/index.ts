@@ -157,7 +157,7 @@ export const getAssignedComplexTagList = async (): Promise<AssignedComplexTagMod
 
 export const assignLocationToGroup = async (requestBody: { organizationIdentifier: string; locationIdentifiers: string[] }): Promise<any> => {
   const data = await api
-    .post(`${GROUP_MANAGEMENT}/assignlocation`, requestBody)
+    .post(`${GROUP_MANAGEMENT}/assign/teams`, requestBody)
     .then(response => response.data);
   return data;
 };
@@ -182,4 +182,4 @@ export interface GroupStatsResponse {
 export const getGroupStats = async (): Promise<GroupStatsResponse> => {
   const response = await api.get<GroupStatsResponse>(`${GROUP_MANAGEMENT}/stats`);
   return response.data;
-};
+};

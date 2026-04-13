@@ -28,6 +28,12 @@ input:focus {
   margin-left: 1rem;
 }
 
+.yearRangeWrapper {
+  margin-top: 2rem;
+  margin-left: 1rem;
+
+}
+
 .icon {
   width: 20px;
   height: 20px;

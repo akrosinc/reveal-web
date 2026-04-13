@@ -33,6 +33,7 @@ export interface InstanceContextModel {
   instancePlan: {
     identifier: string;
     name: string;
+    interventionType: string;
   } | null;
   role: RoleModel | null;
   groups: GroupModel[];

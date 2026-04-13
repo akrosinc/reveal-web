@@ -31,7 +31,7 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
   const [currentSortField, setCurrentSortField] = useState('');
   const [currentSortDirection, setCurrentSortDirection] = useState(false);
   const isAuthorizedToEdit = useAuthorization([INSTANE_MANAGEMENT_EDIT])
-  const [selectedElem,setSelectedElem]=useState<any>();
+  const [selectedElem, setSelectedElem] = useState<any>();
   const editHandler = (identifier: string) => {
     if (!isAuthorizedToEdit) return
     if (onEdit) {
@@ -39,41 +39,41 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
     }
   };
 
-  const activateHandler = (action:boolean) => {
-    if(!selectedElem) return
-    if(!action){
+  const activateHandler = (action: boolean) => {
+    if (!selectedElem) return
+    if (!action) {
       setShowConfirmActivate(false);
       return
     }
-     toast.promise(activateInstance(selectedElem?.identifier), {
-          pending: 'Activating...',
-          success: {
-            render() {
-               toast.success("Instance activated successfully");
-          loadData(PAGINATION_DEFAULT_SIZE, instances?.pageable?.pageNumber ?? 0);
+    toast.promise(activateInstance(selectedElem?.identifier), {
+      pending: 'Activating...',
+      success: {
+        render() {
+          toast.success("Instance activated successfully");
+          loadData(PAGINATION_DEFAULT_SIZE, instances?.pageable?.pageNumber ?? 0, search, currentSortField, currentSortDirection);
           setShowConfirmActivate(false);
-              return 'Successfully activated instance!';
-            }
-            
-          },
-          error: {
-            render({ data: err }: { data: any }) {
-              //  setShowConfirmActivate(false);
-              return err?.message || err;
-            }
-           
-          }
-        });
+          return 'Successfully activated instance!';
+        }
+
+      },
+      error: {
+        render({ data: err }: { data: any }) {
+          //  setShowConfirmActivate(false);
+          return err?.message || err;
+        }
+
+      }
+    });
   };
 
   /**
    * Load instances from API
    */
   const loadData = useCallback(
-    (size: number, page: number, field?: string, direction?: boolean) => {
+    (size: number, page: number, searchData?: string, field?: string, direction?: boolean) => {
       setLoading(true);
 
-      getInstances(size, page, field, direction)
+      getInstances(size, page, searchData !== undefined ? searchData : search, field, direction)
         .then(res => {
           setInstances(res);
         })
@@ -83,7 +83,7 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
         })
         .finally(() => setLoading(false));
     },
-    []
+    [search]
   );
 
   /**
@@ -98,6 +98,7 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
    */
   const filterData = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
+    loadData(instances?.size ?? PAGINATION_DEFAULT_SIZE, 0, e.target.value, currentSortField, currentSortDirection);
   };
 
   /**
@@ -114,7 +115,7 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
       setCurrentSortField(field);
       setCurrentSortDirection(direction);
 
-      getInstances(instances.size, 0, field, direction)
+      getInstances(instances.size, 0, search, field, direction)
         .then(res => setInstances(res))
         .catch(err => toast.error(err));
     }
@@ -125,27 +126,13 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
    * Pagination
    */
   const paginationHandler = (size: number, page: number) => {
-    loadData(size, page, currentSortField, currentSortDirection);
+    loadData(size, page, search, currentSortField, currentSortDirection);
   };
-
-  /**
-   * Client-side search filtering
-   */
-  const filteredData = useMemo(() => {
-    if (!instances?.content) return [];
-
-    if (!search) return instances.content;
-
-    return instances.content.filter((item: any) =>
-      item.instanceName?.toLowerCase().includes(search.toLowerCase()) ||
-      item.planTitle?.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [instances, search]);
 
   /**
    * Table Data
    */
-  const tableData = filteredData.map((row: any) => ({
+  const tableData = (instances?.content ?? []).map((row: any) => ({
     ...row,
     startDate: row.startDate ? moment(row.startDate).format('DD/MM/YYYY') : '',
     endDate: row.endDate ? moment(row.endDate).format('DD/MM/YYYY') : '',
@@ -233,7 +220,7 @@ const Instances: React.FC<InstancesProps> = ({ onCreate, onEdit }) => {
           />
         </>
       ) : (
-        <p className="text-center text-muted">No instances found</p>
+        <p className="text-center text-muted">No record found</p>
       )}
     </>
   );

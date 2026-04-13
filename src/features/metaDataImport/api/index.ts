@@ -7,12 +7,18 @@ import { MetadataFileImportResponse } from '../type';
 export const downloadLocations = async (
   hierarchyIdentifier: string,
   geographicLevelName: string,
-  entityTags: string[]
+  entityTags: string[],
+  captureDate?: string
 ): Promise<BlobPart> => {
   const data = api
-    .get<BlobPart>(`location/download/${hierarchyIdentifier}/${geographicLevelName}?entityTags=${entityTags}`, {
-      responseType: 'arraybuffer'
-    })
+    .get<BlobPart>(
+      `location/download/${hierarchyIdentifier}/${geographicLevelName}?entityTags=${entityTags}${
+        captureDate ? `&captureDate=${captureDate}` : ''
+      }`,
+      {
+        responseType: 'arraybuffer'
+      }
+    )
     .then(res => res.data);
   return data;
 };

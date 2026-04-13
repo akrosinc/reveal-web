@@ -15,6 +15,8 @@ export interface DataSetList {
   lineWidth: number;
   borderColor: string;
   hidden: boolean;
+  minYear?: number;
+  maxYear?: number;
   filter: {
     minValue: number;
     maxValue: number;
@@ -23,6 +25,19 @@ export interface DataSetList {
     minValue: number;
     maxValue: number;
   };
+}
+
+export interface DataSetYearRange {
+  datasetId: string;
+  minYear: number;
+  maxYear: number;
+}
+
+export interface SimulationDataResponse {
+  identifier: string;
+  datasets: DataSetList[];
+  targetAreas: any[];
+  datSetYearRange?: DataSetYearRange[];
 }
 
 export interface DataSetDelete {
@@ -45,6 +60,7 @@ export interface LocationData {
   parentLocationId: string;
   simulationId: string;
   campaignManagementFeatures: boolean;
+  dataSetYearFilter?: Record<string, number>;
 }
 
 export interface AddDatasetResponse {
@@ -60,7 +76,8 @@ export interface AddDatasetResponse {
 
 export interface SimulationDatasetRequest {
   simulationId: string;
-  parentAdminLevel: string;
+  parentAdminLevel?: string;
+  dataSetYearFilter?: Record<string, number>;
 }
 
 export const getEntityTags = async () => {
