@@ -250,7 +250,8 @@ const TreeNode = React.memo<TreeNodeProps>(({
                     <div className={`p-2 small fw-bold border-bottom ${isDarkMode ? 'text-muted border-secondary' : 'text-secondary bg-light'}`}>
                       {hasChildren ? 'Area Actions' : 'Location Actions'}
                     </div>
-                    <Dropdown.Item onClick={() => { onTeamClick?.(hasChildren ? (node as any)._leafIds : node.identifier, (node?.teams?.[0])); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                    {/* <Dropdown.Item onClick={() => { onTeamClick?.(hasChildren ? (node as any)._leafIds : node.identifier, (node?.teams?.[0])); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2"> */}
+                    <Dropdown.Item onClick={() => { onTeamClick?.(node.identifier, (node?.teams?.[0])); onDropdownToggle(null); }} className="py-2 px-3 border-bottom d-flex align-items-center gap-2">
                       <FontAwesomeIcon icon={faShareSquare} className="text-primary" style={{ transform: 'scaleX(-1)' }} />
                       <span>Change team</span>
                     </Dropdown.Item>
