@@ -2000,6 +2000,7 @@ const AmdrReport = () => {
                        text: '% Resistant'
                      },
                      min: 0,
+                     max: 100
                    }
                  },
                  maintainAspectRatio: false
@@ -2050,6 +2051,7 @@ const AmdrReport = () => {
                                   text: '% Resistant'
                                 },
                                 min: 0,
+                                max: 100
                               }
                             },
                           }}
@@ -2092,6 +2094,7 @@ const AmdrReport = () => {
                                     text: '% Resistant'
                                   },
                                   min: 0,
+                                  max: 100
                                 },
                               }
                             }}
@@ -2123,6 +2126,7 @@ const AmdrReport = () => {
                                 },
                                 y: {
                                   min: 0,
+                                  max: 100
                                 },
                               }
                             }}
