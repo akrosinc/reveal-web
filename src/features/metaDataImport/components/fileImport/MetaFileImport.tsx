@@ -45,7 +45,7 @@ const MetaFileImport = () => {
           let newFileImport: MetadataFileImportResponse = {
             selected: fileImport.selected,
             entityTagEvents: entityTagWithChildren,
-            filename: fileImport.filename,
+            filename: fileImport?.datasetName || fileImport?.filename,
             status: fileImport.status,
             identifier: fileImport.identifier,
             uploadDatetime: fileImport.uploadDatetime,
@@ -147,17 +147,17 @@ const MetaFileImport = () => {
             <h2>Metadata Imports({metadataImportPaged?.content?.length})</h2>
           </Col>
           <Col>
-            <AuthorizedElement 
-            // roles={[METADATA_FILE_IMPORT]}
-            roles={[METADATA_FILE_IMPORT_UPLOAD_FILE]}
+            <AuthorizedElement
+              // roles={[METADATA_FILE_IMPORT]}
+              roles={[METADATA_FILE_IMPORT_UPLOAD_FILE]}
             >
               <Button onClick={() => setOpen(!open)} className={''} style={{ float: 'right' }}>
                 {t('metadataImport.uploadFile')}
               </Button>
             </AuthorizedElement>
-            <AuthorizedElement 
-            // roles={[METADATA_FILE_IMPORT]}
-            roles={[METADATA_FILE_IMPORT_GRANT_ACCESS]}
+            <AuthorizedElement
+              // roles={[METADATA_FILE_IMPORT]}
+              roles={[METADATA_FILE_IMPORT_GRANT_ACCESS]}
             >
               <Button
                 disabled={selectedMetadata.length === 0}
@@ -168,9 +168,9 @@ const MetaFileImport = () => {
                 Grant Access
               </Button>
             </AuthorizedElement>
-            <AuthorizedElement 
-            // roles={[METADATA_FILE_IMPORT]}
-            roles={[METADATA_FILE_IMPORT_REMOVE_ACCESS]}
+            <AuthorizedElement
+              // roles={[METADATA_FILE_IMPORT]}
+              roles={[METADATA_FILE_IMPORT_REMOVE_ACCESS]}
             >
               <Button
                 variant={'outline-primary'}
@@ -214,8 +214,8 @@ const MetaFileImport = () => {
             loadData(PAGINATION_DEFAULT_SIZE, 0);
             setOpen(false);
           }}
-          setTagsCreated={() => {}}
-          // setTagsCreated={setEntityTagsCreated}
+          setTagsCreated={() => { }}
+        // setTagsCreated={setEntityTagsCreated}
         />
       )}
       {selectedMetaImport && (
