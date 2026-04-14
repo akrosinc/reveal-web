@@ -182,19 +182,27 @@ const EditUser = ({ user, handleClose }: Props) => {
       });
       getUserDatasetTags(user.identifier).then(setUserDatasets);
       getUserRoles(user.identifier).then(res => {
+        let rolesData: any[] = [];
         if (res && Array.isArray(res)) {
-          const roles = res.flatMap(info => info.groupRoles || []);
-          const uniqueRoles: string[] = Array.from(new Set(roles));
-          setUserRoles(uniqueRoles.map(r => ({ identifier: r, name: r })));
+          rolesData = res.flatMap(info => info.groupRoles || []);
         } else if (res && (res as any).instanceInfos && Array.isArray((res as any).instanceInfos)) {
-          // Fallback to instanceInfos structure if that's what's actually returned
-          const roles = (res as any).instanceInfos.flatMap((info: any) => info.groupRoles || []);
-          // const uniqueRoles: string[] = Array.from(new Set(roles.map((r: any) => typeof r === 'string' ? r : r.name)));
-          const uniqueRoles: string[] = Array.from(new Set(
-            roles.flatMap((item: any) => item.roles)
-          ));
-          setUserRoles(uniqueRoles.map(r => ({ identifier: r, name: r })));
+          const groupRoles = (res as any).instanceInfos.flatMap((info: any) => info.groupRoles || []);
+          rolesData = groupRoles.flatMap((item: any) => item.roles || []);
         }
+
+        const normalizedRoles = rolesData.map(r => {
+          if (typeof r === 'string') {
+            return { identifier: r, name: r };
+          }
+          return {
+            identifier: r?.identifier || r?.name || '',
+            name: r?.name || r?.identifier || ''
+          };
+        }).filter(r => r.identifier);
+
+        // Deduplicate by identifier
+        const uniqueRoles = Array.from(new Map(normalizedRoles.map(r => [r.identifier, r])).values());
+        setUserRoles(uniqueRoles);
       }).catch(err => {
         console.error('Error fetching user roles:', err);
       });
@@ -490,7 +498,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                       justifyContent: "center",
                       padding: "11px 20px",
                       borderRadius: "999px",
-                      background: isSelected ? "#0D6EFD" : "#E2EDFe",
+                      background: "#E2EDFe",
                       cursor: edit ? "pointer" : "default",
                       fontWeight: 400,
                       fontStyle: "normal",
@@ -500,7 +508,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                       whiteSpace: "nowrap",
                       flexShrink: 0,
                       transition: "all 0.2s ease",
-                      color: isSelected ? "#FFFFFF" : "#0D6EFD"
+                      color: "#0D6EFD"
                     }}
                   >
                     {item.name}
