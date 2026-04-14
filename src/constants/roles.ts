@@ -13,7 +13,7 @@ export const ORGANIZATION_DELETE = 'organization_delete';
 //USER
 // export const USER_VIEW = 'user_view';
 export const USER_VIEW = 'user_management_user_view';
-export const USER_PASSWORD = 'user_password';
+export const USER_PASSWORD = 'user_management_set_user_password';
 export const USER_CREATE = 'user_management_user_create';
 export const USER_UPDATE = 'user_management_user_update';
 export const USER_DELETE = 'user_management_user_delete';
