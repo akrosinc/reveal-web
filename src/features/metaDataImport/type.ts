@@ -2,7 +2,8 @@ import { EntityTagResponse } from '../planSimulation/providers/types';
 
 export interface MetadataFileImportResponse {
   identifier: string;
-  filename: string;
+  filename?: string | null;
+  datasetName?: string | null;
   uploadDatetime: string;
   status: string;
   uploadedBy: string;

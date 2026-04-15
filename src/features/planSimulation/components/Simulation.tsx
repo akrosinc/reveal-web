@@ -80,6 +80,7 @@ import { usePolygonContext } from '../../../contexts/PolygonContext';
 import {
   AddDatasetResponse,
   addSearchRequest,
+  DataSetYearRange,
   DataSetList,
   deleteDataset,
   filterDatasets,
@@ -92,6 +93,7 @@ import { assignLocationsToPlan } from '../../assignment/api';
 import { getPlanTargetLevelName } from '../../../utils';
 import { auto } from '@popperjs/core';
 import { getInstances, getInstanceHierarchy } from '../api';
+import RangeInput from '../../../components/RangeInput/RangeInput';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -161,6 +163,21 @@ interface PolygonsState {
   [key: string]: Polygondata;
 }
 
+const getCombinedDatasetYearRange = (ranges?: DataSetYearRange[]) => {
+  if (!ranges || ranges.length === 0) return null;
+
+  return ranges.reduce(
+    (combined, range) => ({
+      min: Math.min(combined.min, range.minYear),
+      max: Math.max(combined.max, range.maxYear)
+    }),
+    {
+      min: ranges[0].minYear,
+      max: ranges[0].maxYear
+    }
+  );
+};
+
 // const extractPolygonsFromPolysWithData = (polygonsWithData?: PolygonsState) => {
 //   return polygonsWithData ? Object.values(polygonsWithData!).map((polygon: Polygondata) => polygon.polygonData) : [];
 // };
@@ -182,6 +199,9 @@ const Simulation = () => {
   const [mapFullScreen, setMapFullScreen] = useState(true);
   const [mapData, setMapData] = useState<PlanningLocationResponseTagged>();
   const [parentMapData, setParentMapData] = useState<PlanningParentLocationResponse>();
+  const currentYear = new Date().getFullYear()
+  const [year, setYear] = useState(currentYear)
+  const [parentYearRange, setParentYearRange] = useState({ min: currentYear, max: currentYear });
   const [mapDataLoad, setMapDataLoad] = useState<PlanningLocationResponse>({
     features: [],
     parents: [],
@@ -286,9 +306,21 @@ const Simulation = () => {
 
     try {
       const simulationData = await getSimulationData(simulationIdentifier);
+      const combinedYearRange = getCombinedDatasetYearRange(simulationData?.datSetYearRange);
+
       dispatch({ type: 'SET_NEW_DATASETS', payload: simulationData.datasets });
       dispatch({ type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
       dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
+      setDatasetYearRange(simulationData.datSetYearRange);
+
+
+      if (combinedYearRange) {
+        setParentYearRange(combinedYearRange);
+        setYear(combinedYearRange.max);
+      } else {
+        setParentYearRange({ min: currentYear, max: currentYear });
+        setYear(currentYear);
+      }
     } catch (error) {
       console.error('Failed to fetch simulation:', error);
     }
@@ -310,7 +342,7 @@ const Simulation = () => {
       const updatedPolygons = { ...prev };
 
       Object.entries(datasetResponse.locationWithMetadata).forEach(([locationId, metadata]) => {
-        if (updatedPolygons[locationId]) {
+        if (updatedPolygons && updatedPolygons[locationId]) {
           const existingMetadata = updatedPolygons[locationId].polygonData.properties.metadata || [];
           updatedPolygons[locationId].polygonData.properties.metadata = Array.from(
             new Set([...existingMetadata, metadata])
@@ -385,6 +417,10 @@ const Simulation = () => {
     });
   };
 
+  // Keep track of year filter for each dataset
+  const [datasetYearRange, setDatasetYearRange] = useState<{ datasetId: string, maxYear: number, minYear: number }[]>([]);
+  const [datasetsCustomYearFilter, setDatasetsCustomYearFilter] = useState<{ [key: string]: number }>({});
+
   // we are updating selectedLocationChildren whenever an assignment happens,
   // because assigned flag on these locations is not updated (it is still the one we got on location fetch)
   useEffect(() => {
@@ -452,7 +488,7 @@ const Simulation = () => {
         setLabels(populationData?.labels);
         setTotals(populationData?.totals);
       }
-    } else if (!state.selected && currentLocationId) {
+    } else if (polygonsWithData && !state.selected && currentLocationId) {
       const selectedLocation = polygonsWithData[currentLocationId].polygonData;
       const populationData = transformPopulationData(selectedLocation?.properties?.population);
       setNumberOfStructures(selectedLocation?.properties?.numberOfStructures);
@@ -1425,12 +1461,18 @@ const Simulation = () => {
     if (datasetsChanged || includeGeometry) {
       prevDatasetsLengthRef.current = state.datasets.length;
 
+      const dataSetYearFilter = state.datasets?.reduce((acc: Record<string, number>, dataset: any) => {
+        acc[dataset.identifier] = year;
+        return acc;
+      }, {}) || {};
+
       const configObj: LocationData = {
         datasetsIds: datasetList.map(dataset => dataset.identifier),
         includeGeometry,
         parentLocationId: locationId,
         simulationId: state.simulationId,
-        campaignManagementFeatures: false
+        campaignManagementFeatures: false,
+        dataSetYearFilter
       };
       // console.log(state?.nodeOrder, 'NODE_ORDR')
       const targetLevelName = getPlanTargetLevelName(state.nodeOrder || [], state.planTargetType);
@@ -1660,12 +1702,20 @@ const Simulation = () => {
     });
   };
 
-  const handleParentSelectionChange = async (option: SingleValue<{ value: string; label: string }>) => {
+  const handleParentSelectionChange = async (option: SingleValue<{ value: string; label: string }>, year: number) => {
     setSelectedParentLevel(option);
+    const dataSetYearFilter = state.datasets?.reduce((acc: Record<string, number>, dataset: any) => {
+      acc[dataset.identifier] = datasetsCustomYearFilter[dataset.identifier] || year;
+      return acc;
+    }, {}) || {};
+
+
     if (option != null && option.value !== '') {
       const searchRequest: SimulationDatasetRequest = {
         simulationId: state.simulationId,
-        parentAdminLevel: option.value
+        parentAdminLevel: option.value,
+        dataSetYearFilter: dataSetYearFilter
+
       };
       const searchId = await addSearchRequest(searchRequest);
       setSelectedLocationChildren([]);
@@ -1679,6 +1729,43 @@ const Simulation = () => {
       );
     }
   };
+
+  const handleParentYearChange = async (value: number) => {
+    setYear(value);
+  };
+
+  useEffect(() => {
+    updateDataOnParentYearChange();
+  }, [year, datasetsCustomYearFilter]);
+
+  const updateDataOnParentYearChange = async () => {
+
+    const dataSetYearFilter = state.datasets?.reduce((acc: Record<string, number>, dataset: any) => {
+      acc[dataset.identifier] = datasetsCustomYearFilter[dataset.identifier] || year;
+      return acc;
+    }, {}) || {};
+
+    if (selectedParentLevel && selectedParentLevel.value !== '') {
+      handleParentSelectionChange(selectedParentLevel, year);
+    } else {
+      if (currentLocationId) {
+        const includeGeometry = checkifChildrenLoaded(polygonsWithData, currentLocationId);
+        const configObj: LocationData = {
+          datasetsIds: state.datasets.map((dataset: any) => dataset.identifier),
+          includeGeometry: true,
+          parentLocationId: currentLocationId,
+          simulationId: state.simulationId,
+          campaignManagementFeatures: false,
+          dataSetYearFilter
+        };
+        const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
+        if (polygonsWithDatasets && polygonsWithDatasets.length > 0) {
+          updatePolygonsData(polygonsWithDatasets, includeGeometry, currentLocationId);
+        }
+      }
+    }
+  }
+
 
   // map zoom in for the structures lifts up the state, so we still have a single source of truth
   const updateChildrenPolygons = (data: any) => {
@@ -1774,10 +1861,15 @@ const Simulation = () => {
                             })}
                             value={selectedParentLevel}
                             onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
-                              handleParentSelectionChange(selectedOption);
+                              handleParentSelectionChange(selectedOption, year);
                             }}
-                          />
+                            menuPortalTarget={document.body}
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                            }}
 
+                          />
+                          {/* <p>{year}</p> */}
                           {showingParentLevelsMenu && (
                             <>
                               <br></br>
@@ -1790,12 +1882,28 @@ const Simulation = () => {
                     </div>
                   )}
 
+                  <div className={styles.yearRangeWrapper}>
+                    <RangeInput
+                      min={parentYearRange.min}
+                      max={parentYearRange.max}
+                      step={1}
+                      value={year}
+                      label=""
+                      trackColor="#3b82f6"
+                      thumbColor="#3b82f6"
+                      onChange={handleParentYearChange}
+                    />
+                  </div>
+
                   {state.datasets?.map(dataset => (
                     <DatasetsAccordion
                       key={dataset.identifier}
                       dataset={dataset}
                       updateDatasetHandler={updateDatasetHandler}
                       removeDatasetHandler={removeDatasetHandler}
+                      datasetsCustomYearFilter={datasetsCustomYearFilter}
+                      setDatasetsCustomYearFilter={setDatasetsCustomYearFilter}
+                      datasetYearRange={datasetYearRange.find(d => d.datasetId === dataset.identifier)}
                     />
                   ))}
 

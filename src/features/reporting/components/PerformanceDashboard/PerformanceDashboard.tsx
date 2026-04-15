@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Container, OverlayTrigger, Row, Table, Tooltip } from 'react-bootstrap';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import DetailsDialogService from '../../../../components/Dialogs/DetailsDialogService';
 import { useAppSelector } from '../../../../store/hooks';
@@ -10,6 +10,8 @@ import { PlanModel } from '../../../plan/providers/types';
 import { getPerformanceDashboard, getPerformanceDashboardDataDetails } from '../../api';
 import { PerformanceDashboardModel } from '../../providers/types';
 import PerformanceDetailsModal from './PerformanceDetailsModal';
+import { useAuthorization } from '../../../../hooks/useAuthorization';
+import { REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT } from '../../../../constants';
 
 interface BreadcrumbPath {
   username: string;
@@ -18,13 +20,14 @@ interface BreadcrumbPath {
 }
 
 const PerformanceDashboard = () => {
+  const location = useLocation()
   const { planId } = useParams();
   const [dashboardData, setDashboardData] = useState<PerformanceDashboardModel[]>([]);
   const navigate = useNavigate();
   const [plan, setPlan] = useState<PlanModel>();
   const [path, setPath] = useState<BreadcrumbPath[]>([]);
   const isDarkMode = useAppSelector(state => state.darkMode.value);
-
+  const isAuthorizedForRedirecting = useAuthorization([REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT])
   const loadData = useCallback(
     (currentPath?: BreadcrumbPath) => {
       if (planId) {
@@ -41,7 +44,7 @@ const PerformanceDashboard = () => {
           })
           .catch(err => {
             // if there is an error navigate to previouse page
-            navigate(-1);
+            !isAuthorizedForRedirecting && navigate(-1);
             toast.error(err);
           });
       }
@@ -70,9 +73,11 @@ const PerformanceDashboard = () => {
     <>
       <Row className="my-3 align-items-center">
         <Col md={3}>
-          <Button id="back-button" onClick={() => navigate(-1)} className="btn btn-primary mb-3 mb-md-0">
+          {location?.state?.showArrow ? <Button id="back-button" onClick={() => navigate(-1)} className="btn btn-primary mb-3 mb-md-0">
             <FontAwesomeIcon icon="arrow-left" className="me-2" /> Performance Reports
-          </Button>
+          </Button> : <h2 className="m-0">
+            Performance Reports
+          </h2>}
         </Col>
         <Col md={6} className="text-center">
           <h2 className="m-0">({plan?.name})</h2>

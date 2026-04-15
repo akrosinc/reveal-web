@@ -290,6 +290,7 @@
     }
   },
   "simulationPage": {
+    "captureDate": "Date",
     "tag": "tag",
     "isPublic": "Is public",
     "orgGrants": "Current Organizations",

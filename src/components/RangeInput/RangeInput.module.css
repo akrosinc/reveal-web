@@ -113,3 +113,8 @@
   color: #1f2937;
   margin-bottom: 0.5rem;
 }
+
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}

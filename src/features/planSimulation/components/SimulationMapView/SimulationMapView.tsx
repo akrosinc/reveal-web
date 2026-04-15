@@ -72,6 +72,7 @@ import { getPlanInfo } from './api/hierarchyAPI';
 import { findNodeById, getIdsByGeographicLevel } from './util';
 import { AssignToTeamsDialog } from '../AssignToTeamsDialog/AssignToTeamsDialog';
 import { useAuthorization } from '../../../../hooks/useAuthorization';
+import { useLocation } from 'react-router-dom';
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -110,7 +111,7 @@ const SimulationMapView = ({
   showDatasetsAgainstParentLevel = false
 }: SimulationMapViewProps) => {
   const [defColor] = useColor('hex', INITIAL_FILL_COLOR);
-
+  const location = useLocation()
   const mapContainer = useRef<any>();
   const [color, setColor] = useColor('hex', INITIAL_FILL_COLOR);
   const [initialLineColor] = useColor('hex', INITIAL_LINE_COLOR);
@@ -179,7 +180,7 @@ const SimulationMapView = ({
   const [assignToTeamPopup, setAssignToTeamPopup] = useState(false);
   const [locationForTeamAssignment, setLocationForTeamAssignment] = useState<any>();
 
-  const [toggleAssignedLayer, setToggleAssignedLayer] = useState(false);
+  const [toggleAssignedLayer, setToggleAssignedLayer] = useState(location.pathname.includes('campaign') ? true : false);
   // CONTEXT
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();

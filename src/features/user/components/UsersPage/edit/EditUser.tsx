@@ -182,19 +182,52 @@ const EditUser = ({ user, handleClose }: Props) => {
       });
       getUserDatasetTags(user.identifier).then(setUserDatasets);
       getUserRoles(user.identifier).then(res => {
-        if (res && Array.isArray(res)) {
-          const roles = res.flatMap(info => info.groupRoles || []);
-          const uniqueRoles: string[] = Array.from(new Set(roles));
-          setUserRoles(uniqueRoles.map(r => ({ identifier: r, name: r })));
-        } else if (res && (res as any).instanceInfos && Array.isArray((res as any).instanceInfos)) {
-          // Fallback to instanceInfos structure if that's what's actually returned
-          const roles = (res as any).instanceInfos.flatMap((info: any) => info.groupRoles || []);
-          // const uniqueRoles: string[] = Array.from(new Set(roles.map((r: any) => typeof r === 'string' ? r : r.name)));
-          const uniqueRoles: string[] = Array.from(new Set(
-            roles.flatMap((item: any) => item.roles)
-          ));
-          setUserRoles(uniqueRoles.map(r => ({ identifier: r, name: r })));
+        // let rolesData: any[] = [];
+        // if (res && Array.isArray(res)) {
+        //   rolesData = res.flatMap(info => info.groupRoles || []);
+        // } else if (res && (res as any).instanceInfos && Array.isArray((res as any).instanceInfos)) {
+        //   const groupRoles = (res as any).instanceInfos.flatMap((info: any) => info.groupRoles || []);
+        //   rolesData = groupRoles.flatMap((item: any) => item.roles || []);
+        // }
+
+        // const normalizedRoles = rolesData.map(r => {
+        //   if (typeof r === 'string') {
+        //     return { identifier: r, name: r };
+        //   }
+        //   return {
+        //     identifier: r?.identifier || r?.name || '',
+        //     name: r?.name || r?.identifier || ''
+        //   };
+        // }).filter(r => r.identifier);
+
+        // // Deduplicate by identifier
+        // const uniqueRoles = Array.from(new Map(normalizedRoles.map(r => [r.identifier, r])).values());
+        // setUserRoles(uniqueRoles);
+        let formatted: any[] = [];
+
+        if ((res as any)?.instanceInfos && Array.isArray((res as any).instanceInfos)) {
+          formatted = (res as any).instanceInfos.flatMap((info: any) =>
+            (info.groupRoles || []).map((gr: any) => {
+              console.log(gr, 'gr')
+              const group = gr.group;
+              const roles = gr.roles || [];
+
+              const roleNames = gr?.group?.type === 'TEAM' ? 'Team' : gr?.group?.type === 'GROUP' ? roles.map((r: any) => r.name).join(', ') : '';
+
+              return {
+                identifier: group?.identifier,
+                name: `${group?.name}${roleNames ? `(${roleNames})` : ''}`
+              };
+            })
+          );
         }
+
+        // ✅ Remove duplicates (by identifier + name combo)
+        const unique = Array.from(
+          new Map(formatted.map(item => [`${item.identifier}-${item.name}`, item])).values()
+        );
+
+        setUserRoles(unique);
       }).catch(err => {
         console.error('Error fetching user roles:', err);
       });
@@ -490,7 +523,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                       justifyContent: "center",
                       padding: "11px 20px",
                       borderRadius: "999px",
-                      background: isSelected ? "#0D6EFD" : "#E2EDFe",
+                      background: "#E2EDFe",
                       cursor: edit ? "pointer" : "default",
                       fontWeight: 400,
                       fontStyle: "normal",
@@ -500,7 +533,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                       whiteSpace: "nowrap",
                       flexShrink: 0,
                       transition: "all 0.2s ease",
-                      color: isSelected ? "#FFFFFF" : "#0D6EFD"
+                      color: "#0D6EFD"
                     }}
                   >
                     {item.name}
@@ -556,12 +589,10 @@ const EditUser = ({ user, handleClose }: Props) => {
             </Form.Group> */}
 
             <Row className="mb-4 g-3">
-              <Col md={4}>
+              {/* <Col md={4}>
                 <Form.Label>Areas</Form.Label>
                 <div style={{ position: 'relative' }} className={!edit ? 'opacity-75 pointer-events-none' : ''}>
-                  {/* {!edit && <div style={{
-                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, height: '100%', width: '100%', cursor: 'not-allowed',
-                  }}></div>} */}
+
                   <AreasSelection
                     isTeamMode={false}
                     selectedAreas={[]}
@@ -573,8 +604,8 @@ const EditUser = ({ user, handleClose }: Props) => {
                     userId={user.identifier}
                   />
                 </div>
-              </Col>
-              <Col md={4}>
+              </Col> */}
+              <Col md={6}>
                 <Form.Label>Roles</Form.Label>
                 <div style={{ position: 'relative' }} className={edit ? 'opacity-75' : ''}>
                   {/* {!edit && <div style={{
@@ -588,7 +619,7 @@ const EditUser = ({ user, handleClose }: Props) => {
                   />
                 </div>
               </Col>
-              <Col md={4}>
+              <Col md={6}>
                 <Form.Label>Datasets</Form.Label>
                 <div style={{ position: 'relative' }} className={!edit ? 'opacity-75 pointer-events-none' : ''}>
                   {/* {!edit && <div style={{

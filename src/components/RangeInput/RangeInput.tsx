@@ -10,6 +10,7 @@ interface RangeInputProps {
   trackColor?: string;
   thumbColor?: string;
   onChange: (value: number) => void;
+  disabled?: boolean;
 }
 
 function RangeInput({
@@ -20,7 +21,8 @@ function RangeInput({
   label,
   trackColor = '#3b82f6',
   thumbColor = '#3b82f6',
-  onChange
+  onChange,
+  disabled = false
 }: RangeInputProps) {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     onChange(Number(e.target.value));
@@ -29,8 +31,11 @@ function RangeInput({
   const percentage = ((value - min) / (max - min)) * 100;
 
   return (
-    <div className={styles.rangeContainer}>
+    <div className={`${styles.rangeContainer} ${disabled ? styles.disabled : ''}`}>
       {label && <label className={styles.label}>{label}</label>}
+      <div className='d-flex align-items-center justify-content-center'>
+        <span style={{ fontWeight: "bold", fontSize: 13.4, color: 'black' }} className={styles.value}>{value}</span>
+      </div>
       <div className={styles.rangeWrapper}>
         <div className={styles.trackBackground} />
         <div
@@ -47,6 +52,7 @@ function RangeInput({
           step={step}
           value={value}
           onChange={handleChange}
+          disabled={disabled}
           className={styles.range}
           style={
             {
@@ -57,7 +63,6 @@ function RangeInput({
       </div>
       <div className={styles.valueContainer}>
         <span className={styles.value}>{min}</span>
-        <span className={styles.value}>{value}</span>
         <span className={styles.value}>{max}</span>
       </div>
     </div>

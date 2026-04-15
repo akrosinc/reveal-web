@@ -13,7 +13,7 @@ export const ORGANIZATION_DELETE = 'organization_delete';
 //USER
 // export const USER_VIEW = 'user_view';
 export const USER_VIEW = 'user_management_user_view';
-export const USER_PASSWORD = 'user_password';
+export const USER_PASSWORD = 'user_management_set_user_password';
 export const USER_CREATE = 'user_management_user_create';
 export const USER_UPDATE = 'user_management_user_update';
 export const USER_DELETE = 'user_management_user_delete';
@@ -86,6 +86,7 @@ export const GROUP_MANAGEMENT_VIEW = 'group_management_view';
 export const GROUP_MANAGEMENT_CREATE = 'group_management_create';
 export const GROUP_MANAGEMENT_EDIT = 'group_management_edit';
 export const GROUP_MANAGEMENT_DELETE = 'group_management_delete';
+export const GROUP_MANAGEMENT_ADD_DATASET = 'group_management_add_dataset'
 //
 export const CAMPAIGN_MANAGEMENT = 'campaign_management_view';
 export const ASSIGNMENT_PLAN = 'assignment_plan';
@@ -132,3 +133,4 @@ export const REDIRECT_TO_ASSIGNED_CAMPAIGN = 'redirect_to_assigned_campaign'
 export const REDIRECT_TO_ASSIGNED_PLAN_SIMULATION = 'redirect_to_assigned_plan_simulation'
 
 export const DATA_EXTRACT_VIEW = 'data_extracts_view'
+export const REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT = "redirect_to_individual_instance_report"

@@ -1,5 +1,5 @@
-import { Route, Routes } from 'react-router-dom';
-import { Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
+
 import {
   ASSIGNMENT_PAGE,
   HOME_PAGE,
@@ -90,7 +90,6 @@ const Router = ({instance}:Props) => {
           <Route path={DATA_EXTRACTS + '/*'} element={<DataExtracts />}>
             <Route path=":tab" element={<DataExtracts />} />
           </Route>
-
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       );

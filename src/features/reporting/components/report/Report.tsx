@@ -1,24 +1,14 @@
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import React, {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
-import {
-  Button,
-  Card,
-  Col,
-  Collapse,
-  Container,
-  Form,
-  ProgressBar,
-  Row,
-  Table
-} from 'react-bootstrap';
-import {useNavigate, useParams} from 'react-router-dom';
-import {Column, Row as TableRow} from 'react-table';
-import {toast} from 'react-toastify';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { Button, Card, Col, Collapse, Container, Form, ProgressBar, Row, Table } from 'react-bootstrap';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Column } from 'react-table';
+import { toast } from 'react-toastify';
 import MapViewDetail from './mapView/MapViewDetail';
 import ReportsTable from '../../../../components/Table/ReportsTable';
-
 import {
   KEY_INDICATOR_LEVELS,
+  REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT,
   REPORT_TABLE_PERCENTAGE_HIGH,
   REPORT_TABLE_PERCENTAGE_LOW,
   REPORT_TABLE_PERCENTAGE_MEDIUM,
@@ -36,10 +26,11 @@ import {
   ReportType
 } from '../../providers/types';
 import ReportModal from './reportModal';
-import {useTranslation} from 'react-i18next';
-import Select, {SingleValue} from 'react-select';
+import { useTranslation } from 'react-i18next';
+import Select, { SingleValue } from 'react-select';
 import {Line} from "react-chartjs-2";
 import {Chart, ChartData, ChartOptions, LegendItem} from "chart.js";
+import { useAuthorization } from '../../../../hooks/useAuthorization';
 
 interface BreadcrumbModel {
   locationName: string;
@@ -88,6 +79,8 @@ const getReportDetails = (reportType: any) => {
 };
 
 const Report = () => {
+  const isAuthorizedForRedirecting = useAuthorization([REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT])
+  const location = useLocation()
   const [cols, setCols] = useState<{ [x: string]: FoundCoverage }>({});
   const [data, setData] = useState<ReportLocationProperties[]>([]);
   const [filterData, setFilterData] = useState<ReportLocationProperties[]>([]);
@@ -314,14 +307,14 @@ const Report = () => {
             })
             .catch(err => {
               toast.error(err);
-              goBackHandler();
+              !isAuthorizedForRedirecting && goBackHandler();
             });
-          });
-        } else {
-          goBackHandler();
-        }
-      },
-      [planId, reportType, goBackHandler, matchReportBandLevelByValue, parentLocationId, clickedColumn]
+        });
+      } else {
+        !isAuthorizedForRedirecting && goBackHandler();
+      }
+    },
+    [planId, reportType, goBackHandler, matchReportBandLevelByValue]
   );
 
   useEffect(() => {
@@ -650,35 +643,34 @@ const Report = () => {
 
 
   return (
-      <Container fluid className="my-4 px-2">
-        <Row className="mt-3 align-items-center">
-          <Col md={3}>
-            <Button id="back-button" onClick={goBackHandler}
-                    className="btn btn-primary mb-3 mb-md-0">
-              <FontAwesomeIcon icon="arrow-left" className="me-2"/> {t('reportPage.title')}
-            </Button>
-          </Col>
-          <Col md={6} className="text-center">
-            <h2 className="m-0">
-              {t('reportPage.subtitle')} ({plan?.title})
-            </h2>
-          </Col>
-        </Row>
-        <hr/>
-        <Row className={isDarkMode ? 'm-0 p-0 rounded bg-dark' : 'm-0 p-0 rounded bg-light'}>
-          <Col xs sm md={10} className="mt-auto">
-            <p>
-              <FontAwesomeIcon
-                  icon="align-left"
-                  className={path.length ? 'me-3 link-primary pe-none' : 'me-3 text-secondary pe-none'}
-              />
-              <span
-                  role="button"
-                  className={path.length ? 'me-1 link-primary' : 'me-1 text-secondary pe-none'}
-                  onClick={() => {
-                    clearButtonRef.current.click();
-                  }}
-              >
+    <Container fluid className="my-4 px-2">
+      <Row className="mt-3 align-items-center">
+        <Col md={3}>
+          {location?.state?.showArrow ? <Button id="back-button" onClick={goBackHandler} className="btn btn-primary mb-3 mb-md-0">
+            <FontAwesomeIcon icon="arrow-left" className="me-2" /> {t('reportPage.title')}
+          </Button> : <div></div>}
+        </Col>
+        <Col md={6} className="text-center">
+          <h2 className="m-0">
+            {t('reportPage.subtitle')} ({plan?.title})
+          </h2>
+        </Col>
+      </Row>
+      <hr />
+      <Row className={isDarkMode ? 'm-0 p-0 rounded bg-dark' : 'm-0 p-0 rounded bg-light'}>
+        <Col xs sm md={10} className="mt-auto">
+          <p>
+            <FontAwesomeIcon
+              icon="align-left"
+              className={path.length ? 'me-3 link-primary pe-none' : 'me-3 text-secondary pe-none'}
+            />
+            <span
+              role="button"
+              className={path.length ? 'me-1 link-primary' : 'me-1 text-secondary pe-none'}
+              onClick={() => {
+                clearButtonRef.current.click();
+              }}
+            >
               {plan?.title} /
             </span>
               {path.map((el, index) => {

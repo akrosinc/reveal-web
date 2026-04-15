@@ -17,19 +17,29 @@ interface DatasetsAccordionProps {
   dataset: DataSetList;
   updateDatasetHandler: (datasetId: string) => void;
   removeDatasetHandler: (datasetId: string) => void;
+  datasetsCustomYearFilter: { [key: string]: number };
+  setDatasetsCustomYearFilter: (datasetsCustomYearFilter: { [key: string]: number }) => void;
+  datasetYearRange: { datasetId: string, maxYear: number, minYear: number } | undefined;
 }
 
 function DatasetsAccordion({
   open = false,
   dataset,
   updateDatasetHandler,
-  removeDatasetHandler
+  removeDatasetHandler,
+  datasetsCustomYearFilter,
+  setDatasetsCustomYearFilter,
+  datasetYearRange
 }: DatasetsAccordionProps) {
+  const currentYear = new Date().getFullYear();
   const [range, setRange] = useState({ min: dataset.filter?.minValue, max: dataset.filter?.maxValue });
   const [currentRange, setCurrentRange] = useState({
     min: dataset.selectedRange?.minValue,
     max: dataset.selectedRange?.minValue
   });
+
+
+  const [datasetYear, setDatasetYear] = useState(datasetYearRange?.maxYear || currentYear);
 
   const [isOpen, setOpen] = useState(open);
   const [showModal, setShowModal] = useState(false);
@@ -127,6 +137,20 @@ function DatasetsAccordion({
     });
   };
 
+  useEffect(() => {
+    if (!checked) {
+      // Remove dataset from datasetsCustomYearFilter
+      const newDatasetsCustomYearFilter = { ...datasetsCustomYearFilter };
+      delete newDatasetsCustomYearFilter[dataset.identifier];
+      setDatasetsCustomYearFilter(newDatasetsCustomYearFilter);
+    } else {
+      setDatasetsCustomYearFilter({
+        ...datasetsCustomYearFilter,
+        [dataset.identifier]: datasetYear
+      });
+    }
+  }, [checked, datasetYear]);
+
   const handleDatasetSliderValue = (newOpacity: number) => {
     setOpacitySliderValue(newOpacity);
 
@@ -135,6 +159,14 @@ function DatasetsAccordion({
       payload: {
         [dataset.identifier]: newOpacity
       }
+    });
+  };
+
+  const handleDatasetYearChange = (newYear: number) => {
+    setDatasetYear(newYear);
+    setDatasetsCustomYearFilter({
+      ...datasetsCustomYearFilter,
+      [dataset.identifier]: newYear
     });
   };
 
@@ -275,6 +307,19 @@ function DatasetsAccordion({
               inactive={!checked}
               color={checked ? customColor : undefined}
               onChange={handleRangeChange}
+            />
+          </div>
+          <div className={DatasetStyles.yearRangeWrapper}>
+            <RangeInput
+              min={datasetYearRange?.minYear || currentYear}
+              max={datasetYearRange?.maxYear || currentYear}
+              step={1}
+              value={datasetYear}
+              label=""
+              trackColor="#3b82f6"
+              thumbColor="#3b82f6"
+              disabled={!checked}
+              onChange={handleDatasetYearChange}
             />
           </div>
         </div>
