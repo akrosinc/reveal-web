@@ -40,7 +40,8 @@
     "Simulations": "Simulations",
     "extracts": "Data Extracts",
     "AmdrImport": "AMDR Import",
-    "amdrReporting": "AMDR Report"
+    "amdrReporting": "AMDR Report",
+    "Data Extracts": "Data Extracts"
   },
   "publicPage": {
     "supportedBy": "supported by",

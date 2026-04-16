@@ -166,7 +166,7 @@ export const getMainMenu = (context: InstanceContextModel | null) => {
           roles: [METADATA_IMPORT_VIEW]
         },
         {
-          pageTitle: 'Metadata Import',
+          pageTitle: 'Data Extracts',
           route: DATA_EXTRACTS,
           roles: [DATA_EXTRACT_VIEW]
         }

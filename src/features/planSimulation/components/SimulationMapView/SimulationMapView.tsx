@@ -1009,7 +1009,7 @@ const SimulationMapView = ({
                   <div class="${styles.scoreInfo}">
                     <div class="${styles.scoreLabel}">${tag.type}</div>
                     <div class="${styles.scoreValue} ${styles.scoreValueMax}">
-                      ${Math.round(tag.value * 1000) / 1000}
+                      ${tag.value?(Math.round(tag.value * 1000) / 1000):"Not available"}
                     </div>
                   </div>
                 `;

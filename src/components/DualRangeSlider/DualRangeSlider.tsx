@@ -111,8 +111,8 @@ export const DualRangeSlider: React.FC<DualRangeSliderProps> = ({
 
       {/* Values */}
       <div className={styles.values}>
-        <span>{minValue.toFixed(2)}</span>
-        <span>{maxValue.toFixed(2)}</span>
+        <span>{minValue?.toFixed(2)}</span>
+        <span>{maxValue?.toFixed(2)}</span>
       </div>
     </div>
   );
