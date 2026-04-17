@@ -23,7 +23,8 @@ type PolygonActions =
   | { type: 'SET_LOCATIONS_TEAMS_MAP'; payload: any }
   | { type: 'SET_PLAN_TARGET_TYPE'; payload: string }
   | { type: "SET_NODE_ORDER", payload: any }
-  | { type: 'CLEAR_SELECTION' };
+  | { type: 'CLEAR_SELECTION' }
+  | { type: "TOGGLE_ALL_DATASET_VISIBILITY"; payload: boolean };
 
 // interface Team {
 //   id: string;
@@ -223,6 +224,14 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
       return { ...state, locationsTeamsMap: action.payload };
     case 'SET_PLAN_TARGET_TYPE':
       return { ...state, planTargetType: action.payload };
+    case 'TOGGLE_ALL_DATASET_VISIBILITY':
+      return {
+        ...state,
+        datasets: state.datasets.map((dataset: any) => ({
+          ...dataset,
+          hidden: action.payload
+        }))
+      };
     default:
       return state;
   }

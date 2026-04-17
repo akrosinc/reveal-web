@@ -447,6 +447,11 @@ const Simulation = () => {
 
   };
 
+  const toggleAllDatasetsVisibilityHandler = () => {
+    const allHidden = state.datasets.every((d: any) => d.hidden);
+    dispatch({ type: 'TOGGLE_ALL_DATASET_VISIBILITY', payload: !allHidden });
+  };
+
   // Keep track of year filter for each dataset
   const [datasetYearRange, setDatasetYearRange] = useState<{ datasetId: string, maxYear: number, minYear: number }[]>([]);
   const [datasetsCustomYearFilter, setDatasetsCustomYearFilter] = useState<{ [key: string]: number }>({});
@@ -1925,7 +1930,7 @@ const Simulation = () => {
                     />
                   </div>
 
-                  {state.datasets?.map(dataset => (
+                  {state.datasets?.map((dataset: any) => (
                     <DatasetsAccordion
                       key={dataset.identifier}
                       dataset={dataset}
@@ -1940,6 +1945,11 @@ const Simulation = () => {
                   <AuthorizedElement roles={[SIMULATION_ADD_DATASET]}>
                     <DrawerButton onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>
                       Add dataset
+                    </DrawerButton>
+                  </AuthorizedElement>
+                  <AuthorizedElement roles={[]}>
+                    <DrawerButton disabled={state.datasets?.length === 0} onClick={toggleAllDatasetsVisibilityHandler} >
+                      {state.datasets.every((d: any) => d.hidden) ? 'Show all datasets' : 'Hide all datasets'}
                     </DrawerButton>
                   </AuthorizedElement>
                   <AuthorizedElement roles={[SIMULATION_DELETE_ALL_DATASET]}>
