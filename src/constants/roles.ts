@@ -100,6 +100,7 @@ export const PLAN_ASSIGNMENT_SUMMARY = 'plan_assignment_summary';
 export const SIMULATION_ADD_DATASET = 'simulation_add_dataset';
 export const SIMULATION_DELETE_ALL_DATASET = 'simulation_delete_all_dataset';
 export const SIMULATION_DATASET_MENU = 'simulation_dataset_menu';
+export const SIMULATION_HIDE_ALL_DATASET = 'simulation_hide_all_dataset';
 
 export const CAMPAIGN_MANAGEMENT_ADD_TO_CAMPAIGN = 'campaign_management_add_to_campaign';
 export const CAMPAIGN_MANAGEMENT_REMOVE_FROM_CAMPAIGN = 'campaign_management_remove_from_campaign';

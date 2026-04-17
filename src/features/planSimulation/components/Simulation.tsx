@@ -53,7 +53,7 @@ import SimulationMapView from './SimulationMapView/SimulationMapView';
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
 import { hex } from 'color-convert';
-import { REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_DELETE_ALL_DATASET, SIMULATION_INSTANCE_SELECTION } from '../../../constants';
+import { REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_DELETE_ALL_DATASET, SIMULATION_HIDE_ALL_DATASET, SIMULATION_INSTANCE_SELECTION } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import { Drawer } from '../../location/components/drawer/Drawer';
 import Accordion from '../../location/components/accordion/Accordion';
@@ -1947,7 +1947,7 @@ const Simulation = () => {
                       Add dataset
                     </DrawerButton>
                   </AuthorizedElement>
-                  <AuthorizedElement roles={[]}>
+                  <AuthorizedElement roles={[SIMULATION_HIDE_ALL_DATASET]}>
                     <DrawerButton disabled={state.datasets?.length === 0} onClick={toggleAllDatasetsVisibilityHandler} >
                       {state.datasets.every((d: any) => d.hidden) ? 'Show all datasets' : 'Hide all datasets'}
                     </DrawerButton>
