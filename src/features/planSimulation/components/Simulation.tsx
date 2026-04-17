@@ -53,7 +53,7 @@ import SimulationMapView from './SimulationMapView/SimulationMapView';
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
 import { hex } from 'color-convert';
-import { REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_INSTANCE_SELECTION } from '../../../constants';
+import { REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_DELETE_ALL_DATASET, SIMULATION_INSTANCE_SELECTION } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import { Drawer } from '../../location/components/drawer/Drawer';
 import Accordion from '../../location/components/accordion/Accordion';
@@ -399,22 +399,52 @@ const Simulation = () => {
   const removeDatasetHandler = async (datasetId: string) => {
     deleteDataset({
       simulationId: state.simulationId,
-      datasetId
-    });
-    dispatch({ type: 'DELETE_DATASET', payload: datasetId });
-    //! remove dataset update metadata
-    setPolygonsWithData((prev: any) => {
-      const updatedPolygons = { ...prev };
+      datasetId: [datasetId]
+    }).then(() => {
+      dispatch({ type: 'DELETE_DATASET', payload: datasetId });
+      //! remove dataset update metadata
+      setPolygonsWithData((prev: any) => {
+        const updatedPolygons = { ...prev };
 
-      Object.entries(updatedPolygons).forEach(([locationId, polygonData]: any) => {
-        const updatedMetadata = polygonData.polygonData.properties.metadata.filter(
-          (metadata: any) => metadata.datasetId !== datasetId
-        );
-        updatedPolygons[locationId].polygonData.properties.metadata = updatedMetadata;
+        Object.entries(updatedPolygons).forEach(([locationId, polygonData]: any) => {
+          const updatedMetadata = polygonData.polygonData.properties.metadata.filter(
+            (metadata: any) => metadata.datasetId !== datasetId
+          );
+          updatedPolygons[locationId].polygonData.properties.metadata = updatedMetadata;
+        });
+
+        return updatedPolygons;
       });
+    }).catch(e => toast.error("Error deleting dataset."));
 
-      return updatedPolygons;
-    });
+  };
+
+  const removeAllDatasetsHandler = async () => {
+    const datasetIds = state.datasets.map((d: any) => d.identifier);
+    if (datasetIds.length === 0) return;
+
+    deleteDataset({
+      simulationId: state.simulationId,
+      datasetId: datasetIds
+    }).then(() => {
+      dispatch({ type: 'SET_NEW_DATASETS', payload: [] });
+      //! remove dataset update metadata
+      setPolygonsWithData((prev: any) => {
+        const updatedPolygons = { ...prev };
+
+        Object.entries(updatedPolygons).forEach(([locationId, polygonData]: any) => {
+          const updatedMetadata = polygonData.polygonData.properties.metadata.filter(
+            (metadata: any) => !metadata.datasetId
+          );
+          updatedPolygons[locationId].polygonData.properties.metadata = updatedMetadata;
+        });
+
+        return updatedPolygons;
+      });
+      setDatasetYearRange([]);
+      setDatasetsCustomYearFilter({});
+    }).catch(e => toast.error("Error deleting all datasets."));
+
   };
 
   // Keep track of year filter for each dataset
@@ -1910,6 +1940,12 @@ const Simulation = () => {
                   <AuthorizedElement roles={[SIMULATION_ADD_DATASET]}>
                     <DrawerButton onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>
                       Add dataset
+                    </DrawerButton>
+                  </AuthorizedElement>
+                  <AuthorizedElement roles={[SIMULATION_DELETE_ALL_DATASET]}>
+                    {/* <AuthorizedElement roles={[]}> */}
+                    <DrawerButton disabled={state.datasets?.length === 0} onClick={removeAllDatasetsHandler} >
+                      Delete all dataset
                     </DrawerButton>
                   </AuthorizedElement>
                   <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
