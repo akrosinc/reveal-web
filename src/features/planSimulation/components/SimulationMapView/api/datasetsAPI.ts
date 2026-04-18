@@ -6,6 +6,7 @@ export interface DataSet {
   hexColor: string;
   lineWidth: number;
   parentLocationId: string;
+  saveToSimulation: boolean;
 }
 
 export interface DataSetList {
@@ -25,6 +26,7 @@ export interface DataSetList {
     minValue: number;
     maxValue: number;
   };
+  isUserDataset:boolean;
 }
 
 export interface DataSetYearRange {
@@ -61,6 +63,7 @@ export interface LocationData {
   simulationId: string;
   campaignManagementFeatures: boolean;
   dataSetYearFilter?: Record<string, number>;
+  userDatasetIds: string[];
 }
 
 export interface AddDatasetResponse {
@@ -72,12 +75,14 @@ export interface AddDatasetResponse {
   lineWidth: number;
   tagId: string;
   locationWithMetadata: any;
+  isUserDataset: boolean;
 }
 
 export interface SimulationDatasetRequest {
   simulationId: string;
   parentAdminLevel?: string;
   dataSetYearFilter?: Record<string, number>;
+  userDatasetIds: string[],
 }
 
 export const getEntityTags = async () => {

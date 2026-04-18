@@ -21,12 +21,15 @@ function AddDatasetForm({
   const [datasetColor, setDatasetColor] = useColor('hex', '#000000');
   const [borderValue, setBorderValue] = useState(1);
   const [entityTags, setEntityTags] = useState<any[]>([]);
+  const [saveToSimulation, setSaveToSimulation] = useState(false);
+
   const [formValue, setFormValue] = useState<DataSet>({
     simulationId: state.simulationId,
     tagId: '',
     hexColor: datasetColor.hex,
     lineWidth: borderValue,
-    parentLocationId: selectedLocationId || state.admin0LocationId
+    parentLocationId: selectedLocationId || state.admin0LocationId,
+    saveToSimulation: false
   });
   const [isLoading, setIsLoading] = useState(true);
   const [validation, setValidation] = useState(false);
@@ -59,13 +62,24 @@ function AddDatasetForm({
     setFormValue((prevValue: any) => ({
       ...prevValue,
       hexColor: datasetColor.hex,
-      lineWidth: borderValue
+      lineWidth: borderValue,
+      addToSimulation: saveToSimulation
     }));
-  }, [datasetColor, borderValue]);
+  }, [datasetColor, borderValue, saveToSimulation]);
 
   const handleFinish = async () => {
     try {
       const newDataset = await setDataset(formValue);
+
+      if(!saveToSimulation){
+        newDataset["isUserDataset"] = true;
+        const selectedTag = entityTags.find(
+            (tag: any) => tag.identifier === newDataset["tagId"]
+        );
+        newDataset["datasetName"] = selectedTag.tag;
+      }
+
+
       onDatasetAdded(newDataset);
       onClose();
     } catch (error) {
@@ -142,6 +156,18 @@ function AddDatasetForm({
             hideHSV={true}
             hideRGB={true}
           />
+
+          <div className={styles.checkboxWrapper}>
+            <label className={styles.checkboxLabel}>
+              <input
+                  type="checkbox"
+                  checked={saveToSimulation}
+                  onChange={(e) => setSaveToSimulation(e.target.checked)}
+              />
+              Save to Simulation
+            </label>
+          </div>
+
         </div>
       </section>
     </CustomStepper>

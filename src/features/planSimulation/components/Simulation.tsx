@@ -332,7 +332,8 @@ const Simulation = () => {
       name: datasetResponse.datasetName,
       hexColor: datasetResponse.hexColor,
       lineWidth: datasetResponse.lineWidth,
-      borderColor: datasetResponse.borderColor
+      borderColor: datasetResponse.borderColor,
+      isUserDataset: datasetResponse.isUserDataset
     };
 
     dispatch({ type: 'ADD_DATASET', payload: dataset });
@@ -397,10 +398,8 @@ const Simulation = () => {
   };
 
   const removeDatasetHandler = async (datasetId: string) => {
-    deleteDataset({
-      simulationId: state.simulationId,
-      datasetId: [datasetId]
-    }).then(() => {
+
+    const deletedDatasetFunction = () => {
       dispatch({ type: 'DELETE_DATASET', payload: datasetId });
       //! remove dataset update metadata
       setPolygonsWithData((prev: any) => {
@@ -408,15 +407,26 @@ const Simulation = () => {
 
         Object.entries(updatedPolygons).forEach(([locationId, polygonData]: any) => {
           const updatedMetadata = polygonData.polygonData.properties.metadata.filter(
-            (metadata: any) => metadata.datasetId !== datasetId
+              (metadata: any) => metadata.datasetId !== datasetId
           );
           updatedPolygons[locationId].polygonData.properties.metadata = updatedMetadata;
         });
 
         return updatedPolygons;
       });
-    }).catch(e => toast.error("Error deleting dataset."));
+    }
 
+    const dataset = state.datasets.find((d: any) => d.identifier === datasetId);
+
+    if(dataset.isUserDataset){
+      deletedDatasetFunction();
+    }
+    else {
+      deleteDataset({
+        simulationId: state.simulationId,
+        datasetId: [datasetId]
+      }).then(deletedDatasetFunction).catch(e => toast.error("Error deleting dataset."));
+    }
   };
 
   const removeAllDatasetsHandler = async () => {
@@ -1502,12 +1512,13 @@ const Simulation = () => {
       }, {}) || {};
 
       const configObj: LocationData = {
-        datasetsIds: datasetList.map(dataset => dataset.identifier),
+        datasetsIds: datasetList.filter(dataset => !dataset.isUserDataset).map(dataset => dataset.identifier),
         includeGeometry,
         parentLocationId: locationId,
         simulationId: state.simulationId,
         campaignManagementFeatures: false,
-        dataSetYearFilter
+        dataSetYearFilter,
+        userDatasetIds: datasetList.filter(dataset => dataset.isUserDataset).map(dataset => dataset.identifier),
       };
       // console.log(state?.nodeOrder, 'NODE_ORDR')
       const targetLevelName = getPlanTargetLevelName(state.nodeOrder || [], state.planTargetType);
@@ -1749,8 +1760,8 @@ const Simulation = () => {
       const searchRequest: SimulationDatasetRequest = {
         simulationId: state.simulationId,
         parentAdminLevel: option.value,
-        dataSetYearFilter: dataSetYearFilter
-
+        dataSetYearFilter: dataSetYearFilter,
+        userDatasetIds:  datasetList.filter(dataset => dataset.isUserDataset).map(dataset => dataset.identifier)
       };
       const searchId = await addSearchRequest(searchRequest);
       setSelectedLocationChildren([]);
@@ -1786,12 +1797,13 @@ const Simulation = () => {
       if (currentLocationId) {
         const includeGeometry = checkifChildrenLoaded(polygonsWithData, currentLocationId);
         const configObj: LocationData = {
-          datasetsIds: state.datasets.map((dataset: any) => dataset.identifier),
+          datasetsIds: state.datasets.filter(dataset => dataset.isUserDataset == undefined || !dataset.isUserDataset).map((dataset: any) => dataset.identifier),
           includeGeometry: true,
           parentLocationId: currentLocationId,
           simulationId: state.simulationId,
           campaignManagementFeatures: false,
-          dataSetYearFilter
+          dataSetYearFilter,
+          userDatasetIds: state.datasets.filter(dataset => dataset.isUserDataset).map(dataset => dataset.identifier)
         };
         const polygonsWithDatasets = await getLocationPolygonsWithDatasets(configObj);
         if (polygonsWithDatasets && polygonsWithDatasets.length > 0) {
