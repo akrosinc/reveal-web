@@ -281,7 +281,7 @@ export interface DatasetResponse {
  * @returns PageableModel<DatasetResponse>
  */
 export const getInstanceDatasets = async (locationHierarchy: string, isPublic?: boolean): Promise<PageableModel<DatasetResponse>> => {
-  let url = `${META_IMPORT_DATASET}?hierarchyIdentifier=${locationHierarchy}`;
+  let url = `${META_IMPORT_DATASET}?hierarchyIdentifier=${locationHierarchy}&size=100`;
   if (isPublic !== undefined) {
     url += `&isPublic=${isPublic}`;
   }
