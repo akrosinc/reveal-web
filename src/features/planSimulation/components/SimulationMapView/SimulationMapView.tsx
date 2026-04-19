@@ -180,7 +180,7 @@ const SimulationMapView = ({
   const [assignToTeamPopup, setAssignToTeamPopup] = useState(false);
   const [locationForTeamAssignment, setLocationForTeamAssignment] = useState<any>();
 
-  const [toggleAssignedLayer, setToggleAssignedLayer] = useState(location.pathname.includes('campaign') ? true : false);
+  const [toggleAssignedLayer, setToggleAssignedLayer] = useState(true);
   // CONTEXT
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
