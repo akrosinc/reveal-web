@@ -15,7 +15,7 @@ import { usePolygonContext } from '../../../../contexts/PolygonContext';
 interface DatasetsAccordionProps {
   open?: boolean;
   dataset: DataSetList;
-  updateDatasetHandler: (datasetId: string) => void;
+  updateDatasetHandler: (datasetId: any, isUserDataset: boolean) => void;
   removeDatasetHandler: (datasetId: string) => void;
   datasetsCustomYearFilter: { [key: string]: number };
   setDatasetsCustomYearFilter: (datasetsCustomYearFilter: { [key: string]: number }) => void;
@@ -85,6 +85,14 @@ function DatasetsAccordion({
 
   const handleDatasetUpdate = async () => {
     try {
+
+      if(dataset.isUserDataset){
+        updateDatasetHandler([{...dataset,...{  hexColor: customColor.hex,
+          lineWidth: borderValue,
+          borderColor: borderColor.hex }}] , true);
+        return;
+      }
+
       const UpdatedSimulation = await updateDataset({
         simulationId: state.simulationId,
         datasetId: dataset.identifier,
@@ -93,7 +101,7 @@ function DatasetsAccordion({
         lineWidth: borderValue,
         borderColor: borderColor.hex
       });
-      updateDatasetHandler(UpdatedSimulation.datasets);
+      updateDatasetHandler(UpdatedSimulation.datasets,false);
     } catch (error) {
       console.error('Failed to update dataset:', error);
     }

@@ -393,8 +393,28 @@ const Simulation = () => {
   }, [state.datasets]);
 
   //! UPDATE DATASETS LIST
-  const updateDatasetHandler = async (newDatasetList: string) => {
-    dispatch({ type: 'SET_DATASET', payload: newDatasetList });
+  const updateDatasetHandler = async (newDatasetList: any, isUserDataset:boolean) => {
+
+    const computedDatasetList = [...newDatasetList];
+
+    if(isUserDataset){
+      state.datasets.forEach((dataset: any) => {
+        if(dataset.isUserDataset  && dataset.identifier == newDatasetList[0].identifier ){
+          computedDatasetList.push(newDatasetList[0]);
+        }
+        else{
+          computedDatasetList.push(dataset);
+        }
+      })
+    }
+    else {
+      state.datasets.forEach((dataset: any) => {
+        if(dataset.isUserDataset){
+          computedDatasetList.push(dataset);
+        }
+      })
+    }
+    dispatch({ type: 'SET_DATASET', payload: computedDatasetList });
   };
 
   const removeDatasetHandler = async (datasetId: string) => {
