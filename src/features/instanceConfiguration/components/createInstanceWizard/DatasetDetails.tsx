@@ -18,6 +18,8 @@ import { Nav } from 'react-bootstrap';
 import { EntityTagResponse } from '../../../planSimulation/providers/types';
 import { toast } from 'react-toastify';
 
+const DEFAULT_PAGE_SIZE = 10;
+
 const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValues, viewOnly }) => {
   const { t } = useTranslation();
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
@@ -34,6 +36,8 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
   const [selectedComplexTags, setSelectedComplexTags] = useState<number[]>(defaultValues?.complexTags || []);
   // Persistent storage for selected tag identifiers across reloads/filters
   const selectedTagIdsRef = React.useRef<Set<string>>(new Set(defaultValues?.datasets_tags || []));
+  const [datasetsPagination, setDatasetsPagination] = useState<PageableModel<DatasetResponse>>();
+  const [complexTagsPagination, setComplexTagsPagination] = useState<PageableModel<ComplexTagResponse>>();
 
   useEffect(() => {
     // Sync ref with current metadataImportList selections
@@ -51,13 +55,14 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
     selectedTagIdsRef.current = nextIds;
   }, [metadataImportList]);
   const loadData = useCallback(
-    () => {
+    (size: number = DEFAULT_PAGE_SIZE, page: number = 0, search?: string) => {
       let isPublic: boolean | undefined = undefined;
       if (statusFilter === 'Public') isPublic = true;
       else if (statusFilter === 'Private') isPublic = false;
 
-      getInstanceDatasets(defaultValues.locationHierarchy, isPublic)
+      getInstanceDatasets(defaultValues.locationHierarchy, isPublic, size, page, search !== undefined ? search : searchTerm)
         .then((res: PageableModel<DatasetResponse>) => {
+          setDatasetsPagination(res);
           const previouslySelectedTags = selectedTagIdsRef.current;
 
           let transformedMetadataList: MetadataFileImportResponse[] = res.content.map((dataset: DatasetResponse) => {
@@ -100,83 +105,36 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
         })
         .catch((err: any) => toast.error(err));
     },
-    [statusFilter, defaultValues?.datasets_tags]
+    [statusFilter, defaultValues?.datasets_tags, defaultValues.locationHierarchy, searchTerm]
   );
 
   const loadComplexTags = useCallback(
-    () => {
+    (size: number = DEFAULT_PAGE_SIZE, page: number = 0, search?: string) => {
       let isPublic: boolean | undefined = undefined;
       if (statusFilter === 'Public') isPublic = true;
       else if (statusFilter === 'Private') isPublic = false;
 
-      getComplexTags(defaultValues.locationHierarchy, isPublic)
+      getComplexTags(defaultValues.locationHierarchy, isPublic, size, page, search !== undefined ? search : searchTerm)
         .then((res: PageableModel<ComplexTagResponse>) => {
+          setComplexTagsPagination(res);
           setComplexTagsList(res.content);
         })
         .catch((err: any) => toast.error(err));
     },
-    [statusFilter, defaultValues.locationHierarchy]
+    [statusFilter, defaultValues.locationHierarchy, searchTerm]
   );
 
-  const [lastSimpleFilter, setLastSimpleFilter] = useState<string | null>(null);
-  const [lastComplexFilter, setLastComplexFilter] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (activeTab === 'simple') {
-      if (statusFilter !== lastSimpleFilter || metadataImportList.length === 0) {
-        loadData();
-        setLastSimpleFilter(statusFilter);
-      }
+      loadData(DEFAULT_PAGE_SIZE, 0, '');
     } else {
-      if (statusFilter !== lastComplexFilter || complexTagsList.length === 0) {
-        loadComplexTags();
-        setLastComplexFilter(statusFilter);
-      }
+      loadComplexTags(DEFAULT_PAGE_SIZE, 0, '');
     }
-  }, [activeTab, statusFilter, loadData, loadComplexTags, metadataImportList.length, complexTagsList.length, lastSimpleFilter, lastComplexFilter]);
+  }, [activeTab, statusFilter]);
 
-  // Frontend search filter
-  const filteredMetadataList = useMemo(() => {
-    const s = searchTerm.toLowerCase();
-    if (!s) return metadataImportList;
 
-    return metadataImportList
-      .map(item => {
-        // Search in dataset name
-        const matchesName = (item.filename || '').toLowerCase().includes(s);
-        // Search in uploadedBy (owner)
-        const matchesOwner = (item.uploadedBy || '').toLowerCase().includes(s);
-        // Search in tags
-        const matchingTags = (item.entityTagEvents || []).filter((tagEvent: any) =>
-          (tagEvent.tag || '').toLowerCase().includes(s)
-        );
-
-        // Include dataset if name, owner, or any tag matches
-        if (matchesName || matchesOwner || matchingTags.length > 0) {
-          return {
-            ...item,
-            // If any tags match, we can optionally filter the displayed tags
-            // But if the name matched, we should probably show all tags.
-            // Let's only filter tags if the name/owner DID NOT match, or if it's more specific?
-            // Actually, showing ONLY matching tags when searching for tags is much more useful.
-            entityTagEvents: matchingTags.length > 0 ? matchingTags : item.entityTagEvents
-          };
-        }
-        return null;
-      })
-      .filter(item => item !== null) as MetadataFileImportResponse[];
-  }, [metadataImportList, searchTerm]);
-
-  const filteredComplexTagsList = useMemo(() => {
-    const s = searchTerm.toLowerCase();
-    if (!s) return complexTagsList;
-
-    return complexTagsList.filter(tag =>
-      (tag.tagName || '').toLowerCase().includes(s) ||
-      (tag.formula || '').toLowerCase().includes(s) ||
-      (tag.owner || '').toLowerCase().includes(s)
-    );
-  }, [complexTagsList, searchTerm]);
 
   const handleUpdateFromTable = useCallback((updatedFilteredList: MetadataFileImportResponse[]) => {
     setMetadataImportList(prev => {
@@ -192,7 +150,11 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
   }, []);
 
   const paginationHandler = (size: number, page: number) => {
-    // Frontend pagination logic could go here if needed
+    if (activeTab === 'simple') {
+      loadData(size, page);
+    } else {
+      loadComplexTags(size, page);
+    }
   };
 
   const sortHandler = (field: string, direction: boolean) => {
@@ -200,12 +162,24 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    const val = e.target.value;
+    setSearchTerm(val);
+    if (activeTab === 'simple') {
+      loadData(DEFAULT_PAGE_SIZE, 0, val);
+    } else {
+      loadComplexTags(DEFAULT_PAGE_SIZE, 0, val);
+    }
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setStatusFilter(e.target.value);
-    setSearchTerm('')
+    const val = e.target.value;
+    setStatusFilter(val);
+    setSearchTerm('');
+    if (activeTab === 'simple') {
+      loadData(DEFAULT_PAGE_SIZE, 0, '');
+    } else {
+      loadComplexTags(DEFAULT_PAGE_SIZE, 0, '');
+    }
   };
 
   const handleComplexTagSelectionChange = (id: number, selected: boolean) => {
@@ -306,35 +280,48 @@ const DatasetDetails: React.FC<WizardStepProps> = ({ onBack, onNext, defaultValu
 
             <Row>
               {activeTab === 'simple' ? (
-                filteredMetadataList.length ? (
+                metadataImportList.length ? (
                   <>
                     <DatasetImportTable
-                      data={filteredMetadataList}
+                      data={metadataImportList}
                       clickHandler={el => setSelectedMetaImport(el)}
                       sortHandler={sortHandler}
                       setMetadataList={handleUpdateFromTable}
                       searchTerm={searchTerm}
                       viewOnly={viewOnly}
                     />
-                    <Paginator
-                      page={0}
-                      size={filteredMetadataList.length}
-                      totalElements={filteredMetadataList.length}
-                      totalPages={1}
-                      paginationHandler={paginationHandler}
-                    />
+                    {datasetsPagination && (
+                      <Paginator
+                        page={datasetsPagination.pageable.pageNumber}
+                        size={datasetsPagination.size}
+                        totalElements={datasetsPagination.totalElements}
+                        totalPages={datasetsPagination.totalPages}
+                        paginationHandler={paginationHandler}
+                      />
+                    )}
                   </>
                 ) : (
                   <div className="p-3 text-center w-100">No data found.</div>
                 )
               ) : (
-                filteredComplexTagsList.length ? (
-                  <ComplexTagTable
-                    data={filteredComplexTagsList}
-                    selectedComplexTags={selectedComplexTags}
-                    onSelectionChange={handleComplexTagSelectionChange}
-                    viewOnly={viewOnly}
-                  />
+                complexTagsList.length ? (
+                  <>
+                    <ComplexTagTable
+                      data={complexTagsList}
+                      selectedComplexTags={selectedComplexTags}
+                      onSelectionChange={handleComplexTagSelectionChange}
+                      viewOnly={viewOnly}
+                    />
+                    {complexTagsPagination && (
+                      <Paginator
+                        page={complexTagsPagination.pageable.pageNumber}
+                        size={complexTagsPagination.size}
+                        totalElements={complexTagsPagination.totalElements}
+                        totalPages={complexTagsPagination.totalPages}
+                        paginationHandler={paginationHandler}
+                      />
+                    )}
+                  </>
                 ) : (
                   <div className="p-3 text-center w-100">No complex tags found.</div>
                 )

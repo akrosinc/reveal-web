@@ -25,7 +25,7 @@
 }
 
 .open {
-  width: 309px;
+  width: 330px;
   height: 90vh;
 }
 
@@ -44,7 +44,7 @@
 
 .children {
   flex-shrink: 0;
-  width: 309px;
+  width: 320px;
 }
 
 .customScroll::-webkit-scrollbar {
