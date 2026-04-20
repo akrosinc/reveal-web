@@ -13,6 +13,7 @@ const UploadModal = ({ closeHandler, setTagsCreated }: Props) => {
   const [selectedFile, setSelectedFile] = useState<File>();
   const [datasetName, setDatasetName] = useState('');
   const [isError, setIsError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const submitHandler = () => {
     if (selectedFile && datasetName) {
@@ -36,6 +37,13 @@ const UploadModal = ({ closeHandler, setTagsCreated }: Props) => {
             setSelectedFile(undefined);
             setIsError(true);
             toast.error(err);
+            const message =
+                err ||
+                err?.response?.data ||
+                err?.response?.data?.message ||
+                err?.message ||
+                "Upload failed";
+            setError(message)
           });
       } else {
         setSelectedFile(undefined);
@@ -49,7 +57,7 @@ const UploadModal = ({ closeHandler, setTagsCreated }: Props) => {
   return (
     <Modal show centered>
       <Modal.Header>
-        <Modal.Title>Upload Meta Data</Modal.Title>
+        <Modal.Title>Upload Meta Data t</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form.Group className="mb-3">
@@ -81,9 +89,14 @@ const UploadModal = ({ closeHandler, setTagsCreated }: Props) => {
           />
         </Form.Group>
         {isError && (
+            <>
           <Form.Label className="text-danger mt-2">
             Please provide a valid XLSX file and dataset name.
           </Form.Label>
+              {error &&  <Form.Label className="text-danger mt-2">
+                {error}
+              </Form.Label>}
+            </>
         )}
       </Modal.Body>
       <Modal.Footer>
