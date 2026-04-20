@@ -71,10 +71,10 @@ function AddDatasetForm({
     try {
       const newDataset = await setDataset(formValue);
 
-      if(!saveToSimulation){
+      if (!saveToSimulation) {
         newDataset["isUserDataset"] = true;
         const selectedTag = entityTags.find(
-            (tag: any) => tag.identifier === newDataset["tagId"]
+          (tag: any) => tag.identifier === newDataset["tagId"]
         );
         newDataset["datasetName"] = selectedTag.tag;
       }
@@ -134,6 +134,16 @@ function AddDatasetForm({
             }}
           />
         )}
+        <div className={styles.checkboxWrapper}>
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              checked={saveToSimulation}
+              onChange={(e) => setSaveToSimulation(e.target.checked)}
+            />
+            Save to Simulation
+          </label>
+        </div>
       </section>
       <section className={styles.step}>
         <div className={styles.previewWrapper}>
@@ -157,16 +167,7 @@ function AddDatasetForm({
             hideRGB={true}
           />
 
-          <div className={styles.checkboxWrapper}>
-            <label className={styles.checkboxLabel}>
-              <input
-                  type="checkbox"
-                  checked={saveToSimulation}
-                  onChange={(e) => setSaveToSimulation(e.target.checked)}
-              />
-              Save to Simulation
-            </label>
-          </div>
+
 
         </div>
       </section>
