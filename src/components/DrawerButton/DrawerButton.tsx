@@ -6,15 +6,17 @@ interface DrawerButtonProps {
   onClick: (ref: any) => void;
   children: string;
   disabled?: boolean;
+  style?: React.CSSProperties;
 }
 
-function DrawerButton({ onClick, children, disabled = false }: DrawerButtonProps) {
+function DrawerButton({ onClick, children, disabled = false, style = {} }: DrawerButtonProps) {
   const buttonRef = useRef(null);
 
   return (
     <button
       ref={buttonRef}
       disabled={disabled}
+      style={style}
       className={classNames(styles.button, {
         [styles.__disabled]: disabled
       })}

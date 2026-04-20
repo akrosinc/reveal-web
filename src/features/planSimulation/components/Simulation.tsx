@@ -393,23 +393,23 @@ const Simulation = () => {
   }, [state.datasets]);
 
   //! UPDATE DATASETS LIST
-  const updateDatasetHandler = async (newDatasetList: any, isUserDataset:boolean) => {
+  const updateDatasetHandler = async (newDatasetList: any, isUserDataset: boolean) => {
 
     const computedDatasetList = [...newDatasetList];
 
-    if(isUserDataset){
+    if (isUserDataset) {
       state.datasets.forEach((dataset: any) => {
-        if(dataset.isUserDataset  && dataset.identifier == newDatasetList[0].identifier ){
+        if (dataset.isUserDataset && dataset.identifier == newDatasetList[0].identifier) {
           computedDatasetList.push(newDatasetList[0]);
         }
-        else{
+        else {
           computedDatasetList.push(dataset);
         }
       })
     }
     else {
       state.datasets.forEach((dataset: any) => {
-        if(dataset.isUserDataset){
+        if (dataset.isUserDataset) {
           computedDatasetList.push(dataset);
         }
       })
@@ -427,7 +427,7 @@ const Simulation = () => {
 
         Object.entries(updatedPolygons).forEach(([locationId, polygonData]: any) => {
           const updatedMetadata = polygonData.polygonData.properties.metadata.filter(
-              (metadata: any) => metadata.datasetId !== datasetId
+            (metadata: any) => metadata.datasetId !== datasetId
           );
           updatedPolygons[locationId].polygonData.properties.metadata = updatedMetadata;
         });
@@ -438,7 +438,7 @@ const Simulation = () => {
 
     const dataset = state.datasets.find((d: any) => d.identifier === datasetId);
 
-    if(dataset.isUserDataset){
+    if (dataset.isUserDataset) {
       deletedDatasetFunction();
     }
     else {
@@ -1781,7 +1781,7 @@ const Simulation = () => {
         simulationId: state.simulationId,
         parentAdminLevel: option.value,
         dataSetYearFilter: dataSetYearFilter,
-        userDatasetIds:  datasetList.filter(dataset => dataset.isUserDataset).map(dataset => dataset.identifier)
+        userDatasetIds: datasetList.filter(dataset => dataset.isUserDataset).map(dataset => dataset.identifier)
       };
       const searchId = await addSearchRequest(searchRequest);
       setSelectedLocationChildren([]);
@@ -1902,105 +1902,116 @@ const Simulation = () => {
             )}
             {/* {highestLocations && showResult && ( */}
             <AuthorizedElement roles={[SIMULATION_DATASET_MENU]}>
-              {highestLocations ? (
-                <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
-                  {state.datasets?.length !== 0 && (
-                    <div className={styles.WrapperDasasetsButton}>
-                      <button className={styles.dasasetsButton} onClick={handleDatasetsButtonClick}>
-                        Display datasets by parent level
-                      </button>
-                      {nodeOrderListVisible && (
-                        <>
-                          <Select
-                            components={{
-                              IndicatorSeparator: () => null
-                            }}
-                            placeholder={'Select Parent Level'}
-                            className={styles.select}
-                            isClearable
-                            onMenuOpen={() => setShowingParentLevelsMenu(true)}
-                            onMenuClose={() => setShowingParentLevelsMenu(false)}
-                            options={state?.nodeOrder.map((node: string) => {
-                              return {
-                                value: node,
-                                label: node
-                              };
-                            })}
-                            value={selectedParentLevel}
-                            onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
-                              handleParentSelectionChange(selectedOption, year);
-                            }}
-                            menuPortalTarget={document.body}
-                            styles={{
-                              menuPortal: (base) => ({ ...base, zIndex: 9999 })
-                            }}
+              <div style={{ width: '100%' }}>
+                {highestLocations ? (
+                  <Accordion title="Datasets" open={resultsLoadingState === 'complete'}>
+                    {state.datasets?.length !== 0 && (
+                      <div className={styles.WrapperDasasetsButton}>
+                        <button className={styles.dasasetsButton} onClick={handleDatasetsButtonClick}>
+                          Display datasets by parent level
+                        </button>
+                        {nodeOrderListVisible && (
+                          <>
+                            <Select
+                              components={{
+                                IndicatorSeparator: () => null
+                              }}
+                              placeholder={'Select Parent Level'}
+                              className={styles.select}
+                              isClearable
+                              onMenuOpen={() => setShowingParentLevelsMenu(true)}
+                              onMenuClose={() => setShowingParentLevelsMenu(false)}
+                              options={state?.nodeOrder.map((node: string) => {
+                                return {
+                                  value: node,
+                                  label: node
+                                };
+                              })}
+                              value={selectedParentLevel}
+                              onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
+                                handleParentSelectionChange(selectedOption, year);
+                              }}
+                              menuPortalTarget={document.body}
+                              styles={{
+                                menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                              }}
 
-                          />
-                          {/* <p>{year}</p> */}
-                          {showingParentLevelsMenu && (
-                            <>
-                              <br></br>
-                              <br></br>
-                              <br></br>
-                            </>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
+                            />
+                            {/* <p>{year}</p> */}
+                            {showingParentLevelsMenu && (
+                              <>
+                                <br></br>
+                                <br></br>
+                                <br></br>
+                              </>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
 
-                  <div className={styles.yearRangeWrapper}>
-                    <RangeInput
-                      min={parentYearRange.min}
-                      max={parentYearRange.max}
-                      step={1}
-                      value={year}
-                      label=""
-                      trackColor="#3b82f6"
-                      thumbColor="#3b82f6"
-                      onChange={handleParentYearChange}
-                    />
-                  </div>
-
-                  {state.datasets?.map((dataset: any) => (
-                    <DatasetsAccordion
-                      key={dataset.identifier}
-                      dataset={dataset}
-                      updateDatasetHandler={updateDatasetHandler}
-                      removeDatasetHandler={removeDatasetHandler}
-                      datasetsCustomYearFilter={datasetsCustomYearFilter}
-                      setDatasetsCustomYearFilter={setDatasetsCustomYearFilter}
-                      datasetYearRange={datasetYearRange.find(d => d.datasetId === dataset.identifier)}
-                    />
-                  ))}
-
-                  <AuthorizedElement roles={[SIMULATION_ADD_DATASET]}>
-                    <DrawerButton onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>
-                      Add dataset
-                    </DrawerButton>
-                  </AuthorizedElement>
-                  <AuthorizedElement roles={[SIMULATION_HIDE_ALL_DATASET]}>
-                    <DrawerButton disabled={state.datasets?.length === 0} onClick={toggleAllDatasetsVisibilityHandler} >
-                      {state.datasets.every((d: any) => d.hidden) ? 'Show all datasets' : 'Hide all datasets'}
-                    </DrawerButton>
-                  </AuthorizedElement>
-                  <AuthorizedElement roles={[SIMULATION_DELETE_ALL_DATASET]}>
-                    {/* <AuthorizedElement roles={[]}> */}
-                    <DrawerButton disabled={state.datasets?.length === 0} onClick={removeAllDatasetsHandler} >
-                      Delete all dataset
-                    </DrawerButton>
-                  </AuthorizedElement>
-                  <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
-                    <div className="p-6">
-                      <AddDatasetForm
-                        onClose={() => setOpenCustomModal(undefined)}
-                        onDatasetAdded={handleAddDataset}
-                        selectedLocationId={currentLocationId}
+                    <div className={styles.yearRangeWrapper}>
+                      <RangeInput
+                        min={parentYearRange.min}
+                        max={parentYearRange.max}
+                        step={1}
+                        value={year}
+                        label=""
+                        trackColor="#3b82f6"
+                        thumbColor="#3b82f6"
+                        onChange={handleParentYearChange}
                       />
                     </div>
-                  </CustomPopup>
-                </Accordion>
-              ) : <></>}
+
+                    {state.datasets?.map((dataset: any) => (
+                      <DatasetsAccordion
+                        key={dataset.identifier}
+                        dataset={dataset}
+                        updateDatasetHandler={updateDatasetHandler}
+                        removeDatasetHandler={removeDatasetHandler}
+                        datasetsCustomYearFilter={datasetsCustomYearFilter}
+                        setDatasetsCustomYearFilter={setDatasetsCustomYearFilter}
+                        datasetYearRange={datasetYearRange.find(d => d.datasetId === dataset.identifier)}
+                      />
+                    ))}
+
+                    {/* <AuthorizedElement roles={[SIMULATION_ADD_DATASET]}>
+                    <DrawerButton style={{ fontSize: 10.9, color: '#000' }} onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>
+                      Add dataset
+                    </DrawerButton>
+                  </AuthorizedElement> */}
+
+                    <div className="d-flex mb-2 mt-3 gap-2">
+                      <AuthorizedElement roles={[SIMULATION_ADD_DATASET]}>
+                        <DrawerButton style={{ fontSize: 10.9, color: '#000' }} onClick={() => setOpenCustomModal(1)} disabled={showDatasetsAgainstParentLevel}>
+                          Add dataset
+                        </DrawerButton>
+                      </AuthorizedElement>
+                      <AuthorizedElement roles={[SIMULATION_HIDE_ALL_DATASET]}>
+                        <DrawerButton style={{ fontSize: 10.9, whiteSpace: 'nowrap', color: '#000' }} disabled={state.datasets?.length === 0} onClick={toggleAllDatasetsVisibilityHandler} >
+                          {state.datasets.every((d: any) => d.hidden) ? 'Show all datasets' : 'Hide all datasets'}
+                        </DrawerButton>
+                      </AuthorizedElement>
+
+
+                    </div>
+                    <AuthorizedElement roles={[SIMULATION_DELETE_ALL_DATASET]}>
+                      <DrawerButton style={{ fontSize: 10.9, whiteSpace: 'nowrap', color: '#000' }} disabled={state.datasets?.length === 0} onClick={removeAllDatasetsHandler} >
+                        Delete all datasets
+                      </DrawerButton>
+                    </AuthorizedElement>
+                    <CustomPopup isOpen={openCustomModal === 1} onClose={() => setOpenCustomModal(undefined)} hasBackdrop>
+                      <div className="p-6">
+                        <AddDatasetForm
+                          onClose={() => setOpenCustomModal(undefined)}
+                          onDatasetAdded={handleAddDataset}
+                          selectedLocationId={currentLocationId}
+                        />
+                      </div>
+                    </CustomPopup>
+                  </Accordion>
+                ) : <></>}
+              </div>
             </AuthorizedElement>
           </Drawer>
           <SimulationMapView
