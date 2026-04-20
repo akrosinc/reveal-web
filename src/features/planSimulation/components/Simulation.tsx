@@ -6,7 +6,7 @@ import { useAppSelector } from '../../../store/hooks';
 import { useAuthorization } from '../../../hooks/useAuthorization';
 import { toast } from 'react-toastify';
 import 'simplebar/dist/simplebar.min.css';
-import { ActionDialog } from '../../../components/Dialogs';
+import { ActionDialog, ConfirmDialog } from '../../../components/Dialogs';
 import { useWindowResize } from '../../../hooks/useWindowResize';
 import { getGeneratedLocationHierarchyList, getLocationHierarchyList } from '../../location/api';
 import { LocationHierarchyModel } from '../../location/providers/types';
@@ -184,6 +184,7 @@ const getCombinedDatasetYearRange = (ranges?: DataSetYearRange[]) => {
 
 const Simulation = () => {
   const { t } = useTranslation();
+  const [showConfirm, setShowConfirm] = useState(false);
   const isAuthorizedForRedirectingToAPlan = useAuthorization([REDIRECT_TO_ASSIGNED_PLAN_SIMULATION])
   const isAuthorized = useAuthorization([SIMULATION_INSTANCE_SELECTION])
   const instanceContext = useAppSelector(state => state.instanceContext);
@@ -378,7 +379,38 @@ const Simulation = () => {
       console.error('Failed to fetch plan info:', error);
     }
   };
+  const deleteHandler = (action: boolean) => {
+    if (action) {
+      const datasetIds = state.datasets.map((d: any) => d.identifier);
+      if (datasetIds.length === 0) return;
 
+      deleteDataset({
+        simulationId: state.simulationId,
+        datasetId: datasetIds
+      }).then(() => {
+        dispatch({ type: 'SET_NEW_DATASETS', payload: [] });
+        //! remove dataset update metadata
+        setPolygonsWithData((prev: any) => {
+          const updatedPolygons = { ...prev };
+
+          Object.entries(updatedPolygons).forEach(([locationId, polygonData]: any) => {
+            const updatedMetadata = polygonData.polygonData.properties.metadata.filter(
+              (metadata: any) => !metadata.datasetId
+            );
+            updatedPolygons[locationId].polygonData.properties.metadata = updatedMetadata;
+          });
+
+          return updatedPolygons;
+        });
+        setDatasetYearRange([]);
+        setDatasetsCustomYearFilter({});
+        setShowConfirm(false);
+      }).catch(e => toast.error("Error deleting all datasets."));
+
+    } else {
+      setShowConfirm(false);
+    }
+  };
   const fetchDefaultHierarchyData = async () => {
     const hierarchyData = await getDefaultHierarchyData();
     try {
@@ -1996,7 +2028,10 @@ const Simulation = () => {
 
                     </div>
                     <AuthorizedElement roles={[SIMULATION_DELETE_ALL_DATASET]}>
-                      <DrawerButton style={{ fontSize: 10.9, whiteSpace: 'nowrap', color: '#000' }} disabled={state.datasets?.length === 0} onClick={removeAllDatasetsHandler} >
+                      <DrawerButton style={{ fontSize: 10.9, whiteSpace: 'nowrap', color: '#000' }} disabled={state.datasets?.length === 0}
+                        // onClick={removeAllDatasetsHandler}
+                        onClick={() => setShowConfirm(true)}
+                      >
                         Delete all datasets
                       </DrawerButton>
                     </AuthorizedElement>
@@ -2255,6 +2290,17 @@ const Simulation = () => {
           closeHandler={() => {
             setShowAnalysisPanel(false);
           }}
+        />
+      )}
+      {showConfirm && (
+        <ConfirmDialog
+          closeHandler={deleteHandler}
+          message={
+            'Are you sure you want to permanently delete all datesets?'
+          }
+          title="Delete all datasets"
+          backdrop
+          isDarkMode={false}
         />
       )}
     </>
