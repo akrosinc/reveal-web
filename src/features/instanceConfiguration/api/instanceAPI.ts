@@ -280,12 +280,21 @@ export interface DatasetResponse {
  * @param isPublic optional boolean filter
  * @returns PageableModel<DatasetResponse>
  */
-export const getInstanceDatasets = async (locationHierarchy: string, isPublic?: boolean): Promise<PageableModel<DatasetResponse>> => {
-  let url = `${META_IMPORT_DATASET}?hierarchyIdentifier=${locationHierarchy}`;
-  if (isPublic !== undefined) {
-    url += `&isPublic=${isPublic}`;
-  }
-  const response = await api.get<PageableModel<DatasetResponse>>(url);
+export const getInstanceDatasets = async (
+  locationHierarchy: string,
+  isPublic?: boolean,
+  size?: number,
+  page?: number,
+  search?: string
+): Promise<PageableModel<DatasetResponse>> => {
+  const params = new URLSearchParams();
+  params.append('hierarchyIdentifier', locationHierarchy);
+  if (isPublic !== undefined) params.append('isPublic', isPublic.toString());
+  if (size !== undefined) params.append('size', size.toString());
+  if (page !== undefined) params.append('page', page.toString());
+  if (search !== undefined && search !== '') params.append('searchParam', search);
+
+  const response = await api.get<PageableModel<DatasetResponse>>(`${META_IMPORT_DATASET}?${params.toString()}`);
   return response.data;
 };
 /**
@@ -312,11 +321,20 @@ export interface ComplexTagResponse {
  * @param isPublic optional boolean filter
  * @returns PageableModel<ComplexTagResponse>
  */
-export const getComplexTags = async (locationHierarchy: string, isPublic?: boolean): Promise<PageableModel<ComplexTagResponse>> => {
-  let url = `${COMPLEX_TAG}?hierarchyIdentifier=${locationHierarchy}`;
-  if (isPublic !== undefined) {
-    url += `&isPublic=${isPublic}`;
-  }
-  const response = await api.get<PageableModel<ComplexTagResponse>>(url);
+export const getComplexTags = async (
+  locationHierarchy: string,
+  isPublic?: boolean,
+  size?: number,
+  page?: number,
+  search?: string
+): Promise<PageableModel<ComplexTagResponse>> => {
+  const params = new URLSearchParams();
+  params.append('hierarchyIdentifier', locationHierarchy);
+  if (isPublic !== undefined) params.append('isPublic', isPublic.toString());
+  if (size !== undefined) params.append('size', size.toString());
+  if (page !== undefined) params.append('page', page.toString());
+  if (search !== undefined && search !== '') params.append('searchParam', search);
+
+  const response = await api.get<PageableModel<ComplexTagResponse>>(`${COMPLEX_TAG}?${params.toString()}`);
   return response.data;
 };
