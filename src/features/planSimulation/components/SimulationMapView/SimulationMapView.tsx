@@ -1023,16 +1023,16 @@ const SimulationMapView = ({
                   ? !assignedLocationsRef.current?.[clickedFeature.properties?.id]
                   : !clickedFeature.properties?.assigned;
                 if (condition && isAuthorizedAddToCampaign && getAllIdentifiers(state?.polygons).includes(clickedFeature?.properties?.id)) {
-                  button.textContent = 'Add to campaign';
+                  button.textContent = 'Add location to campaign';
                   button.className = styles.addToCampaignButton;
                 } else {
                   console.log("TEAM LIST", teamsList)
                   if ((teamsList ?? []).length > 0 && isAuthorizedAssignToTeam && getAllIdentifiers(state?.polygons).includes(clickedFeature?.properties?.id)) {
-                    assignToATeamButton.textContent = 'Assign to a team';
+                    assignToATeamButton.textContent = 'Assign to team / Unassign team';
                     assignToATeamButton.className = styles.addToCampaignButton;
                   }
                   if (isAuthorizedRemoveFromCampaign && getAllIdentifiers(state?.polygons).includes(clickedFeature?.properties?.id)) {
-                    button.textContent = 'Remove from campaign';
+                    button.textContent = 'Remove location from campaign';
                     button.className = styles.RemoveFromCampaignButton;
                   }
                 }

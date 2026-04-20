@@ -327,7 +327,7 @@ const CampaignManagement = () => {
         setTotals(populationData.totals);
       }
     } else if (!state.selected && currentLocationId) {
-      const selectedLocation = polygonsWithData[currentLocationId].polygonData;
+      const selectedLocation = polygonsWithData[currentLocationId]?.polygonData;
       const populationData = transformPopulationData(selectedLocation?.properties?.population);
       if (populationData !== null) {
         setChartData(populationData.chartData);
@@ -625,6 +625,7 @@ const CampaignManagement = () => {
 
     if (includeGeometry) {
       const configObj: LocationData = {
+
         datasetsIds: [],
         includeGeometry,
         parentLocationId: locationId,
