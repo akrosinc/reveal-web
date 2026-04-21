@@ -230,6 +230,7 @@ const SimulationMapView = ({
     // alert("CLICKED")
     // ancestry contains a list of all ids of levels above this polygon
     const ancestry = JSON.parse(clickedFeature.properties?.ancestry);
+    const ancestrySet = new Set([...ancestry]);
     // find polygon as object from hierarchy, as it contains a list of its children
     const currentLoc = findNodeById(state.polygons, clickedFeature.properties?.id);
 
@@ -239,10 +240,14 @@ const SimulationMapView = ({
     // as target areas lowest possible level for operational area, we just need their id and their ancestry (children are just structures)
     const assignedAreas = targetAreasRef.current?.flatMap(ta => [...ta.ancestry, ta.identifier]) || [];
 
+    const assignedAreaSet = new Set([...assignedAreas]);
+
+    const assignedAreasArray = Array.from(assignedAreaSet);
+
     const allLocationsIdsToBeAssigned = new Set([
       ...results,
       ...ancestry,
-      ...assignedAreas,
+      ...assignedAreasArray,
       clickedFeature.properties?.id
     ]);
     const identifiersToSendArray = Array.from(allLocationsIdsToBeAssigned);
@@ -268,8 +273,13 @@ const SimulationMapView = ({
         });
       } else {
         // if remove, find the ids bound to the clicked property - its ancestry and children and its own id and remove from assignedAreas
-        const toExcludeSet = new Set([...results, ...ancestry, clickedFeature.properties?.id]);
-        const filtered = assignedAreas.filter(item => !toExcludeSet.has(item));
+        const toExcludeSet = new Set([...results, clickedFeature.properties?.id]);
+        let filtered =  assignedAreasArray.filter(item => !toExcludeSet.has(item));
+        const filteredExcludingAncestry = filtered.filter(item => !ancestrySet.has(item));
+        if (filteredExcludingAncestry.length === 0){
+          // remove all items if the only remaining items are the parent ancestry
+          filtered = [];
+        }
         assignLocationsToPlan(planId, filtered).then(async () => {
           // update assignment map
           dispatch({
