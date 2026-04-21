@@ -586,7 +586,7 @@ const Simulation = () => {
         setTotals(populationData?.totals);
       }
     } else if (polygonsWithData && !state.selected && currentLocationId) {
-      const selectedLocation = polygonsWithData[currentLocationId].polygonData;
+      const selectedLocation = polygonsWithData[currentLocationId]?.polygonData;
       const populationData = transformPopulationData(selectedLocation?.properties?.population);
       setNumberOfStructures(selectedLocation?.properties?.numberOfStructures);
       if (populationData !== null) {
@@ -635,7 +635,7 @@ const Simulation = () => {
       // getComplexTagReponses()
     ])
       .then(([
-        // locationHierarchyList, 
+        // locationHierarchyList,
         entityList, generatedHierarchyList]) => {
         let generatedHierarchyItems = generatedHierarchyList?.map(generatedHierarchy => {
           return {
