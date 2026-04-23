@@ -33,6 +33,7 @@ export interface DataSetYearRange {
   datasetId: string;
   minYear: number;
   maxYear: number;
+  years?: number[];
 }
 
 export interface SimulationDataResponse {

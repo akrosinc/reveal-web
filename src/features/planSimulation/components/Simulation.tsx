@@ -93,7 +93,7 @@ import { assignLocationsToPlan } from '../../assignment/api';
 import { getPlanTargetLevelName } from '../../../utils';
 import { auto } from '@popperjs/core';
 import { getInstances, getInstanceHierarchy } from '../api';
-import RangeInput from '../../../components/RangeInput/RangeInput';
+import RangeInput, { RangeInputv2 } from '../../../components/RangeInput/RangeInput';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -176,6 +176,21 @@ const getCombinedDatasetYearRange = (ranges?: DataSetYearRange[]) => {
       max: ranges[0].maxYear
     }
   );
+};
+
+const getCombinedDatasetYears = (ranges?: DataSetYearRange[]) => {
+  if (!ranges || ranges.length === 0) return [];
+  const yearsSet = new Set<number>();
+  ranges.forEach(range => {
+    if (range.years && range.years.length > 0) {
+      range.years.forEach(y => yearsSet.add(y));
+    } else {
+      for (let y = range.minYear; y <= range.maxYear; y++) {
+        yearsSet.add(y);
+      }
+    }
+  });
+  return Array.from(yearsSet).sort((a, b) => a - b);
 };
 
 // const extractPolygonsFromPolysWithData = (polygonsWithData?: PolygonsState) => {
@@ -515,7 +530,7 @@ const Simulation = () => {
   };
 
   // Keep track of year filter for each dataset
-  const [datasetYearRange, setDatasetYearRange] = useState<{ datasetId: string, maxYear: number, minYear: number }[]>([]);
+  const [datasetYearRange, setDatasetYearRange] = useState<{ datasetId: string, maxYear: number, minYear: number, years?: number[] }[]>([]);
   const [datasetsCustomYearFilter, setDatasetsCustomYearFilter] = useState<{ [key: string]: number }>({});
 
   // we are updating selectedLocationChildren whenever an assignment happens,
@@ -596,7 +611,7 @@ const Simulation = () => {
       }
     }
   }, [state.selected, showDatasetsAgainstParentLevel]);
-
+  console.log(selectedPlan, "SELECTED TPLAN")
   useEffect(() => {
     // if (Array.isArray(instances) && instances?.length === 0) {
     if (isAuthorizedForRedirectingToAPlan && instanceContext?.selectedInstance?.identifier) {
@@ -1983,7 +1998,7 @@ const Simulation = () => {
                     )}
 
                     <div className={styles.yearRangeWrapper}>
-                      <RangeInput
+                      <RangeInputv2
                         min={parentYearRange.min}
                         max={parentYearRange.max}
                         step={1}
@@ -1992,6 +2007,7 @@ const Simulation = () => {
                         trackColor="#3b82f6"
                         thumbColor="#3b82f6"
                         onChange={handleParentYearChange}
+                        allYears={getCombinedDatasetYears(datasetYearRange)}
                       />
                     </div>
 
