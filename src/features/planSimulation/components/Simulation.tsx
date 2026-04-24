@@ -344,10 +344,8 @@ const Simulation = () => {
 
 
       if (combinedYearRange) {
-        setParentYearRange(combinedYearRange);
         setYear(combinedYearRange.max);
       } else {
-        setParentYearRange({ min: currentYear, max: currentYear });
         setYear(currentYear);
       }
     } catch (error) {
@@ -381,10 +379,6 @@ const Simulation = () => {
 
     if (range) {
       setDatasetYearRange(prev => [...(prev || []), range!]);
-      const combinedYearRange = getCombinedDatasetYearRange([...(datasetYearRange || []), range!]);
-      if (combinedYearRange) {
-        setParentYearRange(combinedYearRange);
-      }
     }
 
     //! LOOP LOCATIONS WITH METADA AND ATTACH DATASET DATA TO LOADED POLYGONS
@@ -530,6 +524,7 @@ const Simulation = () => {
 
         return updatedPolygons;
       });
+      setDatasetYearRange(prev => prev.filter(d => d.datasetId !== datasetId));
     }
 
     const dataset = state.datasets.find((d: any) => d.identifier === datasetId);
@@ -581,6 +576,18 @@ const Simulation = () => {
   // Keep track of year filter for each dataset
   const [datasetYearRange, setDatasetYearRange] = useState<{ datasetId: string, maxYear: number, minYear: number, years?: number[] }[]>([]);
   const [datasetsCustomYearFilter, setDatasetsCustomYearFilter] = useState<{ [key: string]: number }>({});
+
+  useEffect(() => {
+    const combinedYearRange = getCombinedDatasetYearRange(datasetYearRange);
+    if (combinedYearRange) {
+      setParentYearRange(combinedYearRange);
+      if (year < combinedYearRange.min) setYear(combinedYearRange.min);
+      if (year > combinedYearRange.max) setYear(combinedYearRange.max);
+    } else {
+      setParentYearRange({ min: currentYear, max: currentYear });
+      setYear(currentYear);
+    }
+  }, [datasetYearRange]);
 
   // we are updating selectedLocationChildren whenever an assignment happens,
   // because assigned flag on these locations is not updated (it is still the one we got on location fetch)
