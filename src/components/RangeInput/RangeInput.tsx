@@ -12,7 +12,7 @@ interface RangeInputProps {
   onChange: (value: number) => void;
   disabled?: boolean;
 }
-interface RangeInputv2Props extends RangeInputProps {
+interface YearSliderProps extends RangeInputProps {
   allYears: number[];
 }
 
@@ -71,7 +71,7 @@ function RangeInput({
     </div>
   );
 }
-export function RangeInputv2({
+export function YearSlider({
   min,
   max,
   step = 1,
@@ -82,7 +82,7 @@ export function RangeInputv2({
   onChange,
   disabled = false,
   allYears = []
-}: RangeInputv2Props) {
+}: YearSliderProps) {
   const hasYears = allYears && allYears.length > 0;
   
   const currentIndex = hasYears ? allYears.indexOf(value) : -1;

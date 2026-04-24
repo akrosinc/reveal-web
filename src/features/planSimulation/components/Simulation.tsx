@@ -93,7 +93,7 @@ import { assignLocationsToPlan } from '../../assignment/api';
 import { getPlanTargetLevelName } from '../../../utils';
 import { auto } from '@popperjs/core';
 import { getInstances, getInstanceHierarchy } from '../api';
-import RangeInput, { RangeInputv2 } from '../../../components/RangeInput/RangeInput';
+import RangeInput, { YearSlider } from '../../../components/RangeInput/RangeInput';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -166,16 +166,13 @@ interface PolygonsState {
 const getCombinedDatasetYearRange = (ranges?: DataSetYearRange[]) => {
   if (!ranges || ranges.length === 0) return null;
 
-  return ranges.reduce(
-    (combined, range) => ({
-      min: Math.min(combined.min, range.minYear),
-      max: Math.max(combined.max, range.maxYear)
-    }),
-    {
-      min: ranges[0].minYear,
-      max: ranges[0].maxYear
-    }
-  );
+  const allYears = getCombinedDatasetYears(ranges);
+  if (allYears.length === 0) return null;
+
+  return {
+    min: allYears[0],
+    max: allYears[allYears.length - 1]
+  };
 };
 
 const getCombinedDatasetYears = (ranges?: DataSetYearRange[]) => {
@@ -2050,7 +2047,7 @@ const Simulation = () => {
                     )}
 
                     <div className={styles.yearRangeWrapper}>
-                      <RangeInputv2
+                      <YearSlider
                         min={parentYearRange.min}
                         max={parentYearRange.max}
                         step={1}
