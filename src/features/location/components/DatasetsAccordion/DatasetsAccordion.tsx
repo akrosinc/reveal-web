@@ -52,6 +52,12 @@ function DatasetsAccordion({
 
   const [datasetYear, setDatasetYear] = useState(datasetYearRange?.maxYear || currentYear);
 
+  useEffect(() => {
+    if (datasetYearRange?.maxYear && datasetYear === currentYear) {
+      setDatasetYear(datasetYearRange.maxYear);
+    }
+  }, [datasetYearRange]);
+
   const [isOpen, setOpen] = useState(open);
   const [showModal, setShowModal] = useState(false);
 

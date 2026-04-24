@@ -322,12 +322,28 @@ const Simulation = () => {
 
     try {
       const simulationData = await getSimulationData(simulationIdentifier);
-      const combinedYearRange = getCombinedDatasetYearRange(simulationData?.datSetYearRange);
+      const combinedYearRange = getCombinedDatasetYearRange(simulationData?.datSetYearRange || simulationData?.dataSetYearRange);
 
-      dispatch({ type: 'SET_NEW_DATASETS', payload: simulationData.datasets });
+      const datasetsWithYearRange = simulationData.datasets.map((dataset: any) => {
+        let range = (simulationData.datSetYearRange || simulationData.dataSetYearRange)?.find((d: any) => d.datasetId === dataset.identifier);
+        if (!range && (dataset.minYear || dataset.maxYear)) {
+          range = {
+            datasetId: dataset.identifier,
+            minYear: dataset.minYear || dataset.maxYear,
+            maxYear: dataset.maxYear || dataset.minYear,
+            years: dataset.years
+          };
+        }
+        return {
+          ...dataset,
+          datasetYearRange: range
+        };
+      });
+
+      dispatch({ type: 'SET_NEW_DATASETS', payload: datasetsWithYearRange });
       dispatch({ type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
       dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
-      setDatasetYearRange(simulationData.datSetYearRange);
+      setDatasetYearRange(simulationData.datSetYearRange || simulationData.dataSetYearRange || []);
 
 
       if (combinedYearRange) {
@@ -343,16 +359,36 @@ const Simulation = () => {
   };
 
   const handleAddDataset = (datasetResponse: AddDatasetResponse) => {
+    let range = datasetResponse.datasetYearRange || datasetResponse.datSetYearRange || datasetResponse.dataSetYearRange;
+
+    if (!range && (datasetResponse.minYear || datasetResponse.maxYear)) {
+      range = {
+        datasetId: datasetResponse.datasetId,
+        minYear: datasetResponse.minYear || datasetResponse.maxYear!,
+        maxYear: datasetResponse.maxYear || datasetResponse.minYear!,
+        years: datasetResponse.years
+      };
+    }
+
     const dataset = {
       identifier: datasetResponse.datasetId,
       name: datasetResponse.datasetName,
       hexColor: datasetResponse.hexColor,
       lineWidth: datasetResponse.lineWidth,
       borderColor: datasetResponse.borderColor,
-      isUserDataset: datasetResponse.isUserDataset
+      isUserDataset: datasetResponse.isUserDataset,
+      datasetYearRange: range
     };
 
     dispatch({ type: 'ADD_DATASET', payload: dataset });
+
+    if (range) {
+      setDatasetYearRange(prev => [...(prev || []), range!]);
+      const combinedYearRange = getCombinedDatasetYearRange([...(datasetYearRange || []), range!]);
+      if (combinedYearRange) {
+        setParentYearRange(combinedYearRange);
+      }
+    }
 
     //! LOOP LOCATIONS WITH METADA AND ATTACH DATASET DATA TO LOADED POLYGONS
     setPolygonsWithData((prev: any) => {
@@ -461,7 +497,23 @@ const Simulation = () => {
         }
       })
     }
-    dispatch({ type: 'SET_DATASET', payload: computedDatasetList });
+    const datasetsWithYearRange = computedDatasetList.map((dataset: any) => {
+      let range = datasetYearRange.find((d: any) => d.datasetId === (dataset.identifier || dataset.datasetId));
+      if (!range && (dataset.minYear || dataset.maxYear)) {
+        range = {
+          datasetId: dataset.identifier || dataset.datasetId,
+          minYear: dataset.minYear || dataset.maxYear,
+          maxYear: dataset.maxYear || dataset.minYear,
+          years: dataset.years
+        };
+      }
+      return {
+        ...dataset,
+        datasetYearRange: range
+      };
+    });
+
+    dispatch({ type: 'SET_DATASET', payload: datasetsWithYearRange });
   };
 
   const removeDatasetHandler = async (datasetId: string) => {
@@ -2019,7 +2071,7 @@ const Simulation = () => {
                         removeDatasetHandler={removeDatasetHandler}
                         datasetsCustomYearFilter={datasetsCustomYearFilter}
                         setDatasetsCustomYearFilter={setDatasetsCustomYearFilter}
-                        datasetYearRange={datasetYearRange.find(d => d.datasetId === dataset.identifier)}
+                        datasetYearRange={dataset?.datasetYearRange}
                       />
                     ))}
 

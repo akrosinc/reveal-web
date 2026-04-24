@@ -77,6 +77,12 @@ export interface AddDatasetResponse {
   tagId: string;
   locationWithMetadata: any;
   isUserDataset: boolean;
+  datasetYearRange?: DataSetYearRange;
+  datSetYearRange?: DataSetYearRange;
+  dataSetYearRange?: DataSetYearRange;
+  minYear?: number;
+  maxYear?: number;
+  years?: number[];
 }
 
 export interface SimulationDatasetRequest {
