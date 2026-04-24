@@ -73,6 +73,7 @@ import { findNodeById, getIdsByGeographicLevel } from './util';
 import { AssignToTeamsDialog } from '../AssignToTeamsDialog/AssignToTeamsDialog';
 import { useAuthorization } from '../../../../hooks/useAuthorization';
 import { useLocation } from 'react-router-dom';
+import {mapboxCrossFillLayer} from "../../../../utils/mapboxCrossFillLayer";
 
 library.add(faCaretRight, faCaretLeft);
 
@@ -1203,6 +1204,15 @@ const SimulationMapView = ({
             visibility: 'visible'
           }
         });
+
+        // mapboxCrossFillLayer(map.current, {
+        //   polygonSourceId: "target-areas-source",
+        //   polygonLayerId: "target-areas-layer",
+        //
+        //   filterFn: (f) => f.properties?.status === "ACTIVE",
+        //
+        //   spacing: 300
+        // });
       }
 
       const taLabelFeatures = state.targetAreas?.map(child => {
@@ -2112,8 +2122,9 @@ const SimulationMapView = ({
       {multiselectState.length > 0 && <TargetsSelectedList />}
       {/* MAP LEGEND */}
       <MapLegend
+          targetAreas={ state.targetAreas }
         handleClickedSwitchOnMap={setToggleAssignedLayer}
-        teamsList={teamsList}
+        teamsList={[(state.targetAreas ?? []).reduce((s, a) => s + (a.numberOfTeams ?? 0), 0)]}
         assigned={toggleAssignedLayer}
       />
       <div style={{ position: 'absolute', zIndex: 2, width: 'fit-content' }} className="mx-0 px-0">
