@@ -37,6 +37,7 @@ import {
   PlanningParentLocationResponse
 } from '../features/planSimulation/providers/types';
 import { Color } from 'react-color-palette';
+import {config} from "../config/config";
 
 export interface LocationProperties {
   id: string;
@@ -67,7 +68,7 @@ let timer: NodeJS.Timeout;
 let popup: Popup;
 
 //add access token to mapbox
-mapboxgl.accessToken = process.env.REACT_APP_GISIDA_MAPBOX_TOKEN ?? '';
+mapboxgl.accessToken = config.MAPBOX_TOKEN ?? '';
 
 //init mapbox instance
 export const initSimulationMap = (
