@@ -12,8 +12,9 @@ import {
 } from '../providers/types';
 import { SurveyDataRequest } from '../components/SurveyDashboard/SurveyDashboard';
 import { BesdFailedIntegrationRetry } from '../components/types';
+import {config} from "../../../config/config";
 
-const prodAPI = process.env.REACT_APP_API_URL === process.env.REACT_APP_DASHBOARD_API_URL ? api : dashBoardApi;
+const prodAPI = config.API_BASE_URL === config.DASHBOARD_API_URL ? api : dashBoardApi;
 
 export const getReportTypes = async (): Promise<string[]> => {
   const data = await prodAPI.get<string[]>(REPORTS + '/reportTypes').then(response => response.data);

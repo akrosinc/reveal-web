@@ -1,8 +1,9 @@
 import axios from 'axios';
+import {config} from "../config/config";
 
 // Create axios instance
 const dashBoardApi = axios.create({
-  baseURL: process.env.REACT_APP_DASHBOARD_API_URL,
+  baseURL: config.DASHBOARD_API_URL,
   headers: {
     'Content-type': 'application/json'
   }

@@ -9,9 +9,10 @@ import {
   FeatureSetResponse, HslColorMap
 } from "../types";
 import {HeaderName, LocationNode, LocationNodeDetails} from "../../../../AmdrImport/type";
+import {config} from "../../../../../config/config";
 // import {AmdrColumnType, HeaderName, LocationNode} from "../../../../AmdrImport/type";
 
-const prodAPI = process.env.REACT_APP_API_URL === process.env.REACT_APP_DASHBOARD_API_URL ? api : dashBoardApi;
+const prodAPI = config.API_BASE_URL === config.DASHBOARD_API_URL ? api : dashBoardApi;
 
 export const getLocationTree = async (): Promise<LocationNodeDetails> => {
   const data = dashBoardApi

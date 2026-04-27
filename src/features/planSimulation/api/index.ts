@@ -16,6 +16,7 @@ import { SimulationCountResponse, SimulationRequestData } from '../components/Si
 import { SaveHierarchyRequest, SaveHierarchyResponse } from '../components/modals/SaveHierarchyModal';
 
 import { ComplexTagRequest, TagToDelete } from '../../tagging/components/ComplexTagging';
+import {config} from "../../../config/config";
 
 export const getEntityList = async (): Promise<LookupEntityType[]> => {
   const data = await api.get<LookupEntityType[]>(`entityTag/entityType`).then(res => res.data);
@@ -108,7 +109,7 @@ export const getLocationsSSE = (
   resultsErrorHandler: (e: any) => any
 ) => {
   const events = new EventSource(
-    process.env.REACT_APP_API_URL + '/entityTag/filter-sse?simulationRequestId=' + requestData.simulationRequestId
+    config.API_BASE_URL + '/entityTag/filter-sse?simulationRequestId=' + requestData.simulationRequestId
   );
   events.addEventListener('message', messageHandler);
   events.addEventListener('open', _ => {
@@ -138,7 +139,7 @@ export const getFullLocationsSSE = (
   resultsErrorHandler: (e: any) => any
 ) => {
   const events = new EventSource(
-    process.env.REACT_APP_API_URL +
+    config.API_BASE_URL +
     '/entityTag/inactive-locations?simulationRequestId=' +
     requestData.simulationRequestId
   );

@@ -1,4 +1,5 @@
 import api from '../../../../../api/axios';
+import {config} from "../../../../../config/config";
 
 export interface DataSet {
   simulationId: string;
@@ -162,7 +163,7 @@ export const filterDatasets = async (
 ) => {
   try {
     const events = new EventSource(
-      `${process.env.REACT_APP_API_URL}/simulation/datasets/filter-sse?searchId=${searchId}`
+      `${config.API_BASE_URL}/simulation/datasets/filter-sse?searchId=${searchId}`
     );
     events.addEventListener('message', messageHandler);
     events.addEventListener('open', _ => {

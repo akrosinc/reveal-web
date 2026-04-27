@@ -6,6 +6,7 @@ import { Feature, MultiPolygon, Point, Polygon, Properties } from '@turf/turf';
 import { getFullHierarchyJSON } from '../../api';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import {config} from "../../../../config/config";
 
 interface Props {
   inputData: PlanningLocationResponseTagged | undefined;
@@ -54,7 +55,7 @@ const DownloadSimulationResultsModal = ({ inputData, closeHandler, hierarchyIden
         if (downloadFullHierarchy && hierarchyIdentifier) {
           if (link && link.current) {
             link.current.href =
-              process.env.REACT_APP_API_URL +
+              config.API_BASE_URL +
               '/entityTag/fullHierarchyCSV?hierarchyIdentifier=' +
               hierarchyIdentifier +
               '&fileName=' +
