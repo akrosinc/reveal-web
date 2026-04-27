@@ -107,6 +107,9 @@ export const TemplateCreation = () => {
             className="form-control"
             dateFormat="yyyy-MM-dd"
             placeholderText="Select date"
+            showYearDropdown
+            scrollableYearDropdown        // makes it scrollable
+            yearDropdownItemNumber={15}
           />
         </Col>
       </Row>
