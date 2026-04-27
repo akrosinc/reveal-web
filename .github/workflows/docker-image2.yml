@@ -2,7 +2,7 @@ name: Reveal Web test, build and deploy
 
 on:
   push:
-    branches: [ merge-2026 ]
+    branches: [ merge-2026, nginx-build ]
 
 jobs:
 

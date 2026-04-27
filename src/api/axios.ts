@@ -1,9 +1,10 @@
 import axios from 'axios';
 import keycloak from '../keycloak';
+import {config} from "../config/config";
 
 // Create axios instance
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL: config.API_BASE_URL,
   headers: {
     'Content-type': 'application/json'
   }
