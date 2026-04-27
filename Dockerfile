@@ -5,7 +5,7 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 COPY . .
-RUN npm run build
+RUN CI=false NODE_OPTIONS="--max-old-space-size=4096" GENERATE_SOURCEMAP=true npm run build
 
 FROM nginx:stable
 
