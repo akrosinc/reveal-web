@@ -2,7 +2,7 @@ FROM node:16.13.0-alpine AS build
 
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install
+RUN  --mount=type=cache,target=/root/.npm npm install
 
 COPY . .
 RUN CI=false NODE_OPTIONS="--max-old-space-size=4096" GENERATE_SOURCEMAP=true npm run build

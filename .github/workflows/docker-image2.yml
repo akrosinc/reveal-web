@@ -53,3 +53,5 @@ jobs:
           context: .
           push: true
           tags: akrosinc/reveal-web:v3.1.${{ github.run_number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
