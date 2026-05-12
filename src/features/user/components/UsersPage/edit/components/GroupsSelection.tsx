@@ -86,7 +86,7 @@ const GroupsSelection: React.FC<GroupsSelectionProps> = ({
                         });
 
                         if (itemsToRender.length === 0) {
-                            return <div className="text-muted text-center p-3">No roles found</div>;
+                            return <div className="text-muted text-center p-3">No groups found</div>;
                         }
 
                         return itemsToRender.map(group => {
