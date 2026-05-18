@@ -93,7 +93,7 @@ import { assignLocationsToPlan } from '../../assignment/api';
 import { getPlanTargetLevelName } from '../../../utils';
 import { auto } from '@popperjs/core';
 import { getInstances, getInstanceHierarchy } from '../api';
-import RangeInput from '../../../components/RangeInput/RangeInput';
+import RangeInput, { YearSlider } from '../../../components/RangeInput/RangeInput';
 
 library.add(faUsers, faSitemap, faHouseUser, faDiceD20);
 
@@ -166,16 +166,28 @@ interface PolygonsState {
 const getCombinedDatasetYearRange = (ranges?: DataSetYearRange[]) => {
   if (!ranges || ranges.length === 0) return null;
 
-  return ranges.reduce(
-    (combined, range) => ({
-      min: Math.min(combined.min, range.minYear),
-      max: Math.max(combined.max, range.maxYear)
-    }),
-    {
-      min: ranges[0].minYear,
-      max: ranges[0].maxYear
+  const allYears = getCombinedDatasetYears(ranges);
+  if (allYears.length === 0) return null;
+
+  return {
+    min: allYears[0],
+    max: allYears[allYears.length - 1]
+  };
+};
+
+const getCombinedDatasetYears = (ranges?: DataSetYearRange[]) => {
+  if (!ranges || ranges.length === 0) return [];
+  const yearsSet = new Set<number>();
+  ranges.forEach(range => {
+    if (range.years && range.years.length > 0) {
+      range.years.forEach(y => yearsSet.add(y));
+    } else {
+      for (let y = range.minYear; y <= range.maxYear; y++) {
+        yearsSet.add(y);
+      }
     }
-  );
+  });
+  return Array.from(yearsSet).sort((a, b) => a - b);
 };
 
 // const extractPolygonsFromPolysWithData = (polygonsWithData?: PolygonsState) => {
@@ -307,19 +319,33 @@ const Simulation = () => {
 
     try {
       const simulationData = await getSimulationData(simulationIdentifier);
-      const combinedYearRange = getCombinedDatasetYearRange(simulationData?.datSetYearRange);
+      const combinedYearRange = getCombinedDatasetYearRange(simulationData?.datSetYearRange || simulationData?.dataSetYearRange);
 
-      dispatch({ type: 'SET_NEW_DATASETS', payload: simulationData.datasets });
+      const datasetsWithYearRange = simulationData.datasets.map((dataset: any) => {
+        let range = (simulationData.datSetYearRange || simulationData.dataSetYearRange)?.find((d: any) => d.datasetId === dataset.identifier);
+        if (!range && (dataset.minYear || dataset.maxYear)) {
+          range = {
+            datasetId: dataset.identifier,
+            minYear: dataset.minYear || dataset.maxYear,
+            maxYear: dataset.maxYear || dataset.minYear,
+            years: dataset.years
+          };
+        }
+        return {
+          ...dataset,
+          datasetYearRange: range
+        };
+      });
+
+      dispatch({ type: 'SET_NEW_DATASETS', payload: datasetsWithYearRange });
       dispatch({ type: 'SET_SIMULATION_ID', payload: simulationData.identifier });
       dispatch({ type: 'SET_TARGET_AREAS', payload: simulationData.targetAreas });
-      setDatasetYearRange(simulationData.datSetYearRange);
+      setDatasetYearRange(simulationData.datSetYearRange || simulationData.dataSetYearRange || []);
 
 
       if (combinedYearRange) {
-        setParentYearRange(combinedYearRange);
         setYear(combinedYearRange.max);
       } else {
-        setParentYearRange({ min: currentYear, max: currentYear });
         setYear(currentYear);
       }
     } catch (error) {
@@ -328,16 +354,32 @@ const Simulation = () => {
   };
 
   const handleAddDataset = (datasetResponse: AddDatasetResponse) => {
+    let range = datasetResponse.datasetYearRange || datasetResponse.datSetYearRange || datasetResponse.dataSetYearRange;
+
+    if (!range && (datasetResponse.minYear || datasetResponse.maxYear)) {
+      range = {
+        datasetId: datasetResponse.datasetId,
+        minYear: datasetResponse.minYear || datasetResponse.maxYear!,
+        maxYear: datasetResponse.maxYear || datasetResponse.minYear!,
+        years: datasetResponse.years
+      };
+    }
+
     const dataset = {
       identifier: datasetResponse.datasetId,
       name: datasetResponse.datasetName,
       hexColor: datasetResponse.hexColor,
       lineWidth: datasetResponse.lineWidth,
       borderColor: datasetResponse.borderColor,
-      isUserDataset: datasetResponse.isUserDataset
+      isUserDataset: datasetResponse.isUserDataset,
+      datasetYearRange: range
     };
 
     dispatch({ type: 'ADD_DATASET', payload: dataset });
+
+    if (range) {
+      setDatasetYearRange(prev => [...(prev || []), range!]);
+    }
 
     //! LOOP LOCATIONS WITH METADA AND ATTACH DATASET DATA TO LOADED POLYGONS
     setPolygonsWithData((prev: any) => {
@@ -446,7 +488,23 @@ const Simulation = () => {
         }
       })
     }
-    dispatch({ type: 'SET_DATASET', payload: computedDatasetList });
+    const datasetsWithYearRange = computedDatasetList.map((dataset: any) => {
+      let range = datasetYearRange.find((d: any) => d.datasetId === (dataset.identifier || dataset.datasetId));
+      if (!range && (dataset.minYear || dataset.maxYear)) {
+        range = {
+          datasetId: dataset.identifier || dataset.datasetId,
+          minYear: dataset.minYear || dataset.maxYear,
+          maxYear: dataset.maxYear || dataset.minYear,
+          years: dataset.years
+        };
+      }
+      return {
+        ...dataset,
+        datasetYearRange: range
+      };
+    });
+
+    dispatch({ type: 'SET_DATASET', payload: datasetsWithYearRange });
   };
 
   const removeDatasetHandler = async (datasetId: string) => {
@@ -466,6 +524,7 @@ const Simulation = () => {
 
         return updatedPolygons;
       });
+      setDatasetYearRange(prev => prev.filter(d => d.datasetId !== datasetId));
     }
 
     const dataset = state.datasets.find((d: any) => d.identifier === datasetId);
@@ -515,8 +574,20 @@ const Simulation = () => {
   };
 
   // Keep track of year filter for each dataset
-  const [datasetYearRange, setDatasetYearRange] = useState<{ datasetId: string, maxYear: number, minYear: number }[]>([]);
+  const [datasetYearRange, setDatasetYearRange] = useState<{ datasetId: string, maxYear: number, minYear: number, years?: number[] }[]>([]);
   const [datasetsCustomYearFilter, setDatasetsCustomYearFilter] = useState<{ [key: string]: number }>({});
+
+  useEffect(() => {
+    const combinedYearRange = getCombinedDatasetYearRange(datasetYearRange);
+    if (combinedYearRange) {
+      setParentYearRange(combinedYearRange);
+      if (year < combinedYearRange.min) setYear(combinedYearRange.min);
+      if (year > combinedYearRange.max) setYear(combinedYearRange.max);
+    } else {
+      setParentYearRange({ min: currentYear, max: currentYear });
+      setYear(currentYear);
+    }
+  }, [datasetYearRange]);
 
   // we are updating selectedLocationChildren whenever an assignment happens,
   // because assigned flag on these locations is not updated (it is still the one we got on location fetch)
@@ -596,7 +667,7 @@ const Simulation = () => {
       }
     }
   }, [state.selected, showDatasetsAgainstParentLevel]);
-
+  console.log(selectedPlan, "SELECTED TPLAN")
   useEffect(() => {
     // if (Array.isArray(instances) && instances?.length === 0) {
     if (isAuthorizedForRedirectingToAPlan && instanceContext?.selectedInstance?.identifier) {
@@ -1983,7 +2054,7 @@ const Simulation = () => {
                     )}
 
                     <div className={styles.yearRangeWrapper}>
-                      <RangeInput
+                      <YearSlider
                         min={parentYearRange.min}
                         max={parentYearRange.max}
                         step={1}
@@ -1992,6 +2063,7 @@ const Simulation = () => {
                         trackColor="#3b82f6"
                         thumbColor="#3b82f6"
                         onChange={handleParentYearChange}
+                        allYears={getCombinedDatasetYears(datasetYearRange)}
                       />
                     </div>
 
@@ -2003,7 +2075,7 @@ const Simulation = () => {
                         removeDatasetHandler={removeDatasetHandler}
                         datasetsCustomYearFilter={datasetsCustomYearFilter}
                         setDatasetsCustomYearFilter={setDatasetsCustomYearFilter}
-                        datasetYearRange={datasetYearRange.find(d => d.datasetId === dataset.identifier)}
+                        datasetYearRange={dataset?.datasetYearRange}
                       />
                     ))}
 

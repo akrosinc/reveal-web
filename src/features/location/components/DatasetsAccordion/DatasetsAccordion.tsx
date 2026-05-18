@@ -5,7 +5,7 @@ import { CustomPopup } from '../../../../components/CustomPopup/CustomPopup';
 import { DualRangeSlider } from '../../../../components/DualRangeSlider/DualRangeSlider';
 import { Switch } from '../../../../components/Switch/Switch';
 import SwitchButton from '../../../../components/SwitchButton/SwitchButton';
-import RangeInput from '../../../../components/RangeInput/RangeInput';
+import RangeInput, { YearSlider } from '../../../../components/RangeInput/RangeInput';
 import ItemMenu from './ItemMenu';
 
 import styles from '../accordion/Accordion.module.css';
@@ -19,8 +19,22 @@ interface DatasetsAccordionProps {
   removeDatasetHandler: (datasetId: string) => void;
   datasetsCustomYearFilter: { [key: string]: number };
   setDatasetsCustomYearFilter: (datasetsCustomYearFilter: { [key: string]: number }) => void;
-  datasetYearRange: { datasetId: string, maxYear: number, minYear: number } | undefined;
+  datasetYearRange: { datasetId: string, maxYear: number, minYear: number, years?: number[] } | undefined;
 }
+
+const getDatasetYears = (range: { minYear: number, maxYear: number, years?: number[] } | undefined, currentYear: number) => {
+  const years = range?.years && range.years.length > 0
+    ? [...range.years].sort((a, b) => a - b)
+    : null;
+
+  if (years) return years;
+
+  const min = range?.minYear || currentYear;
+  const max = range?.maxYear || currentYear;
+  const arr = [];
+  for (let i = min; i <= max; i++) arr.push(i);
+  return arr;
+};
 
 function DatasetsAccordion({
   open = false,
@@ -40,6 +54,12 @@ function DatasetsAccordion({
 
 
   const [datasetYear, setDatasetYear] = useState(datasetYearRange?.maxYear || currentYear);
+
+  useEffect(() => {
+    if (datasetYearRange?.maxYear && datasetYear === currentYear) {
+      setDatasetYear(datasetYearRange.maxYear);
+    }
+  }, [datasetYearRange]);
 
   const [isOpen, setOpen] = useState(open);
   const [showModal, setShowModal] = useState(false);
@@ -318,7 +338,7 @@ function DatasetsAccordion({
             />
           </div>
           <div className={DatasetStyles.yearRangeWrapper}>
-            <RangeInput
+            <YearSlider
               min={datasetYearRange?.minYear || currentYear}
               max={datasetYearRange?.maxYear || currentYear}
               step={1}
@@ -328,6 +348,7 @@ function DatasetsAccordion({
               thumbColor="#3b82f6"
               disabled={!checked}
               onChange={handleDatasetYearChange}
+              allYears={getDatasetYears(datasetYearRange, currentYear)}
             />
           </div>
         </div>

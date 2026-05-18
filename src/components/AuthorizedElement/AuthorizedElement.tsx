@@ -15,7 +15,7 @@ const AuthorizedElement = ({ roles = [], children }: Props) => {
   const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
   const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(STANDARD_USER);
   const permissions = ctx?.role?.permissions || [];
-  console.log(ctx?.selectedInstance)
+  // console.log(ctx?.selectedInstance)
 
   const isAuthorized = (roles: string[]) => {
     if (!roles || roles.length === 0) return true;
@@ -27,11 +27,11 @@ const AuthorizedElement = ({ roles = [], children }: Props) => {
       // Check backend permissions
       const hasPermission = permissions.includes(r);
       if(isSuperAdmin && ctx?.selectedInstance?.identifier == null){
-        console.log('Super Admin Access Granted');
+        // console.log('Super Admin Access Granted');
           return hasRealmRole || hasResourceRole
       }
       if(isStandardUser || (isSuperAdmin && ctx?.selectedInstance)){
-        console.log('Standard User or Super Admin with Global Access Granted');
+        // console.log('Standard User or Super Admin with Global Access Granted');
         return hasPermission
       }
       // return hasRealmRole || hasResourceRole || hasPermission;

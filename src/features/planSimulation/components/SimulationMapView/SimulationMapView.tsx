@@ -184,12 +184,10 @@ const SimulationMapView = ({
   // CONTEXT
   const { dispatch } = usePolygonContext();
   const { state } = usePolygonContext();
-  console.log(getAllIdentifiers(state.polygons || []), 'state.polygons')
   const selectedState = state.selected;
   const multiselectState = state.multiselect;
   const locationsObject = state.polygons?.[0];
   const planId = state.planid;
-  console.log(planId, 'planid')
   useMemo(() => {
     setSingleSelected(selectedState?.id ?? null);
     setMultiSelected(multiselectState as any[]);
@@ -272,15 +270,39 @@ const SimulationMapView = ({
           dispatch({ type: 'CLEAR_SELECTION' });
         });
       } else {
-        // if remove, find the ids bound to the clicked property - its ancestry and children and its own id and remove from assignedAreas
-        const toExcludeSet = new Set([...results, clickedFeature.properties?.id]);
-        let filtered =  assignedAreasArray.filter(item => !toExcludeSet.has(item));
-        const filteredExcludingAncestry = filtered.filter(item => !ancestrySet.has(item));
-        if (filteredExcludingAncestry.length === 0){
-          // remove all items if the only remaining items are the parent ancestry
-          filtered = [];
-        }
-        assignLocationsToPlan(planId, filtered).then(async () => {
+
+        // Collect IDs to potentially remove (clicked location + its children)
+        const clickedLocationAndChildren = [
+          clickedFeature.properties?.id,
+          ...results  // children ids
+        ];
+
+        // Get ancestry from OTHER assigned locations (excluding the one being removed)
+        const otherAssignedLocations = targetAreasRef.current?.filter(
+            ta => ta.identifier !== clickedFeature.properties?.id
+        ) || [];
+
+        // Collect all ancestors used by those OTHER locations
+        const ancestryFromOtherLocations = new Set(
+            otherAssignedLocations.flatMap(ta => ta.ancestry)
+        );
+
+        // From clicked location's ancestors, find which ones are ONLY used by this location
+        const uniqueAncestryToRemove = ancestry.filter(
+            (id: string) => !ancestryFromOtherLocations.has(id)
+        );
+
+        // Combine everything that needs to be removed
+        const allIdsToRemove = new Set([
+          ...clickedLocationAndChildren,
+          ...uniqueAncestryToRemove
+        ]);
+
+        // Filter out the IDs we want to remove from assignedAreas
+        const remainingAssignedAreas = assignedAreas.filter(item => !allIdsToRemove.has(item));
+
+
+        assignLocationsToPlan(planId, remainingAssignedAreas).then(async () => {
           // update assignment map
           dispatch({
             type: 'SET_ASSIGNED',
@@ -298,7 +320,7 @@ const SimulationMapView = ({
 
   const handleTeamAssignment = async (location: any) => {
     setLocationForTeamAssignment(location);
-    console.log('location', location);
+    // console.log('location', location);
 
     setAssignToTeamPopup(true);
   };
@@ -680,7 +702,7 @@ const SimulationMapView = ({
       });
 
       Object.entries(datasetsDataMap).forEach(([layerId, features]) => {
-        console.log('selected loc: ', selectedLoaction);
+        // console.log('selected loc: ', selectedLoaction);
         if (!selectedLoaction) return
         const sourceId = `ds-${layerId}-${selectedLoaction.properties.name}`;
 
@@ -1036,7 +1058,7 @@ const SimulationMapView = ({
                   button.textContent = 'Add location to campaign';
                   button.className = styles.addToCampaignButton;
                 } else {
-                  console.log("TEAM LIST", teamsList)
+                  // console.log("TEAM LIST", teamsList)
                   if ((teamsList ?? []).length > 0 && isAuthorizedAssignToTeam && getAllIdentifiers(state?.polygons).includes(clickedFeature?.properties?.id)) {
                     assignToATeamButton.textContent = 'Assign to team / Unassign team';
                     assignToATeamButton.className = styles.addToCampaignButton;
