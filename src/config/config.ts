@@ -3,6 +3,7 @@ type AppConfig = {
   KEYCLOAK_URL: string | undefined;
   DASHBOARD_API_URL: string | undefined;
   MAPBOX_TOKEN: string | undefined;
+  REACT_APP_INSTANCE: string | undefined;
 };
 
 declare global {
@@ -24,4 +25,7 @@ export const config: AppConfig = {
   MAPBOX_TOKEN:
       window.APP_CONFIG?.MAPBOX_TOKEN ||
       process.env.REACT_APP_GISIDA_MAPBOX_TOKEN,
+  REACT_APP_INSTANCE:
+      window.APP_CONFIG?.REACT_APP_INSTANCE ||
+      process.env.REACT_APP_INSTANCE,
 };
