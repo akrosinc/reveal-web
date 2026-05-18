@@ -41,6 +41,7 @@ import api from '../api/axios';
 import { usePath } from '../hooks/usePath';
 import dashBoardApi from '../api/dashboard-axios';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+import {config} from "../config/config";
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
 library.add(
@@ -114,7 +115,7 @@ function App() {
           <Container fluid>
             <main>
               <NavbarComponent />
-              <Router instance={process.env.REACT_APP_INSTANCE}/>
+              <Router instance={config.REACT_APP_INSTANCE}/>
             </main>
             <Container fluid className="footer-row-container">
               <Footer />
