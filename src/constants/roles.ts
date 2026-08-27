@@ -136,3 +136,5 @@ export const REDIRECT_TO_ASSIGNED_PLAN_SIMULATION = 'redirect_to_assigned_plan_s
 
 export const DATA_EXTRACT_VIEW = 'data_extracts_view'
 export const REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT = "redirect_to_individual_instance_report"
+
+export const AMDR_IMPORT_EXECUTE = 'amdr_import_execute';

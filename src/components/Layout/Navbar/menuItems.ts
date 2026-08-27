@@ -26,7 +26,7 @@ import {
   INSTANE_MANAGEMENT_VIEW,
   REVEAL_SIMULATION_USER,
   GROUP_MANAGEMENT,
-  TAG_MANAGEMENT_VIEW,  DATA_EXTRACT_VIEW
+  TAG_MANAGEMENT_VIEW, DATA_EXTRACT_VIEW, AMDR_IMPORT_EXECUTE
 } from '../../../constants';
 
 
@@ -169,7 +169,12 @@ export const getMainMenu = (context: InstanceContextModel | null) => {
           pageTitle: 'Data Extracts',
           route: DATA_EXTRACTS,
           roles: [DATA_EXTRACT_VIEW]
-        }
+        },
+        {
+          pageTitle: 'AmdrImport',
+          route: AMDR_IMPORT,
+          roles: [AMDR_IMPORT_EXECUTE]
+        },
       ]
     }
   ];
