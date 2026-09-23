@@ -54,7 +54,7 @@ import SimulationMapView from './SimulationMapView/SimulationMapView';
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
 import { hex } from 'color-convert';
-import { ADD_RASTER, REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_DELETE_ALL_DATASET, SIMULATION_HIDE_ALL_DATASET, SIMULATION_INSTANCE_SELECTION } from '../../../constants';
+import { ADD_RASTER, REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_DELETE_ALL_DATASET, SIMULATION_HIDE_ALL_DATASET, SIMULATION_INSTANCE_SELECTION, VIEW_RASTER_LISTING } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import { Drawer } from '../../location/components/drawer/Drawer';
 import Accordion from '../../location/components/accordion/Accordion';
@@ -2122,19 +2122,25 @@ const Simulation = () => {
                 ) : <></>}
               </div>
             </AuthorizedElement>
-            {(highestLocations || selectedPlan || instanceContext?.selectedInstance) && (
-              <div className="d-flex px-3 mt-3 mb-2">
-                {/* <AuthorizedElement roles={[ADD_RASTER]}> */}
-                  <DrawerButton
-                    style={{ fontSize: 10.9, color: '#000' }}
-                    onClick={() => setShowAddRastersModal(true)}
-                    disabled={showDatasetsAgainstParentLevel}
-                  >
-                    Add Raster
-                  </DrawerButton>
-                {/* </AuthorizedElement> */}
+            {/* <AuthorizedElement roles={[VIEW_RASTER_LISTING]}> */}
+              <div style={{ width: '100%' }}>
+                {(highestLocations || selectedPlan || instanceContext?.selectedInstance) ? (
+                  <Accordion title="Rasters Listing" open={resultsLoadingState === 'complete'}>
+                    <div className="d-flex mb-2 mt-3 gap-2">
+                      {/* <AuthorizedElement roles={[ADD_RASTER]}> */}
+                        <DrawerButton
+                          style={{ fontSize: 10.9, color: '#000' }}
+                          onClick={() => setShowAddRastersModal(true)}
+                          disabled={showDatasetsAgainstParentLevel}
+                        >
+                          Add Raster
+                        </DrawerButton>
+                      {/* </AuthorizedElement> */}
+                    </div>
+                  </Accordion>
+                ) : <></>}
               </div>
-            )}
+            {/* </AuthorizedElement> */}
           </Drawer>
           <SimulationMapView
             showDatasetsAgainstParentLevel={showDatasetsAgainstParentLevel}
