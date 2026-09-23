@@ -91,7 +91,7 @@ import {
   SimulationDatasetRequest
 } from './SimulationMapView/api/datasetsAPI';
 import { assignLocationsToPlan } from '../../assignment/api';
-import { getPlanTargetLevelName } from '../../../utils';
+import { addRasterToMap, getPlanTargetLevelName } from '../../../utils';
 import { auto } from '@popperjs/core';
 import { getInstances, getInstanceHierarchy } from '../api';
 import RangeInput, { YearSlider } from '../../../components/RangeInput/RangeInput';
@@ -2124,7 +2124,7 @@ const Simulation = () => {
             </AuthorizedElement>
             {(highestLocations || selectedPlan || instanceContext?.selectedInstance) && (
               <div className="d-flex px-3 mt-3 mb-2">
-                <AuthorizedElement roles={[ADD_RASTER]}>
+                {/* <AuthorizedElement roles={[ADD_RASTER]}> */}
                   <DrawerButton
                     style={{ fontSize: 10.9, color: '#000' }}
                     onClick={() => setShowAddRastersModal(true)}
@@ -2132,7 +2132,7 @@ const Simulation = () => {
                   >
                     Add Raster
                   </DrawerButton>
-                </AuthorizedElement>
+                {/* </AuthorizedElement> */}
               </div>
             )}
           </Drawer>
@@ -2395,6 +2395,14 @@ const Simulation = () => {
           show={showAddRastersModal}
           closeHandler={() => setShowAddRastersModal(false)}
           instance={selectedPlan || instanceContext?.selectedInstance}
+          onRasterAdded={rasterData => {
+            if (map && map.current && rasterData?.raster?.value) {
+              addRasterToMap(map.current, rasterData.raster.value, {
+                opacity: 0.75,
+                color: rasterData.color?.color
+              });
+            }
+          }}
         />
       )}
     </>
