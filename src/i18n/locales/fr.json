@@ -295,6 +295,7 @@
     "fileName": "Nom de fichier",
     "cancel": "Annuler",
     "download": "Télécharger",
+    "addRasters": "Ajouter des rasters",
     "enterNameForJson": "Entrez un nom pour le fichier JSON ou geojson",
     "uploadLocationData": "Télécharger les données de localisation",
     "fileType": "Type de fichier",

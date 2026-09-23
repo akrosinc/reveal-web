@@ -228,7 +228,8 @@
     "entity": "Entidade",
     "hierarchy": "Hierarquia",
     "location": "Localização",
-    "geographicLevel": "Nível Geográfico"
+    "geographicLevel": "Nível Geográfico",
+    "addRasters": "Adicionar Rasters"
   },
   "label": {
     "layerOpacity": "Opacidade da camada"

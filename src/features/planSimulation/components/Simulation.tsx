@@ -48,12 +48,13 @@ import UploadSimulationData from './modals/UploadSimulationData';
 import SearchResultCountModal from './modals/SearchResultCountModal';
 import TableSummaryModal from './Summary/TableSummaryModal';
 import SaveHierarchyModal from './modals/SaveHierarchyModal';
+import AddRastersModal from './modals/AddRastersModal';
 import SimulationMapView from './SimulationMapView/SimulationMapView';
 
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
 import { hex } from 'color-convert';
-import { REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_DELETE_ALL_DATASET, SIMULATION_HIDE_ALL_DATASET, SIMULATION_INSTANCE_SELECTION } from '../../../constants';
+import { ADD_RASTER, REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_DELETE_ALL_DATASET, SIMULATION_HIDE_ALL_DATASET, SIMULATION_INSTANCE_SELECTION } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import { Drawer } from '../../location/components/drawer/Drawer';
 import Accordion from '../../location/components/accordion/Accordion';
@@ -283,6 +284,7 @@ const Simulation = () => {
   const [rightOpen, setRightOpen] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
+  const [showAddRastersModal, setShowAddRastersModal] = useState(false);
 
   const [openCustomModal, setOpenCustomModal] = useState<number>();
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -2120,6 +2122,19 @@ const Simulation = () => {
                 ) : <></>}
               </div>
             </AuthorizedElement>
+            {(highestLocations || selectedPlan || instanceContext?.selectedInstance) && (
+              <div className="d-flex px-3 mt-3 mb-2">
+                <AuthorizedElement roles={[ADD_RASTER]}>
+                  <DrawerButton
+                    style={{ fontSize: 10.9, color: '#000' }}
+                    onClick={() => setShowAddRastersModal(true)}
+                    disabled={showDatasetsAgainstParentLevel}
+                  >
+                    Add Raster
+                  </DrawerButton>
+                </AuthorizedElement>
+              </div>
+            )}
           </Drawer>
           <SimulationMapView
             showDatasetsAgainstParentLevel={showDatasetsAgainstParentLevel}
@@ -2373,6 +2388,13 @@ const Simulation = () => {
           title="Delete all datasets"
           backdrop
           isDarkMode={false}
+        />
+      )}
+      {showAddRastersModal && (
+        <AddRastersModal
+          show={showAddRastersModal}
+          closeHandler={() => setShowAddRastersModal(false)}
+          instance={selectedPlan || instanceContext?.selectedInstance}
         />
       )}
     </>
