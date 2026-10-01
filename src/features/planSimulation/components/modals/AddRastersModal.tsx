@@ -1,114 +1,159 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, FormGroup, FormLabel, Modal } from 'react-bootstrap';
+import { Button, Form, FormGroup, FormLabel, Modal, Spinner } from 'react-bootstrap';
 import Select, { SingleValue } from 'react-select';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../../store/hooks';
 import { toast } from 'react-toastify';
+import {
+  getRasterTileUrl,
+  COLOR_OPTIONS,
+  ColorOption,
+  RasterMapLayer,
+  RasterExtent
+} from '../../../../utils/rasterHelper';
+import { getRasterMapLayers } from '../../api';
 
 interface Props {
   show: boolean;
   closeHandler: () => void;
   instance?: any;
-  onRasterAdded?: (rasterData: any) => void;
+  onRasterAdded?: (rasterData: {
+    raster: RasterOption;
+    color?: ColorOption | null;
+    opacity?: number;
+  }) => void;
 }
 
-interface RasterOption {
+export interface RasterOption {
   value: string;
+  rasterId: string;
   label: string;
   description?: string;
+  sourceLayer?: string;
+  fieldName?: string;
+  rawLayer?: RasterMapLayer;
+  extent?: RasterExtent;
+  type?: string;
 }
 
-interface ColorOption {
-  value: string;
-  label: string;
-  color: string;
-  gradient?: string;
-}
-
-const RASTER_OPTIONS: RasterOption[] = [
-  { value: 'population_density', label: 'Population Density (WorldPop)', description: 'High-resolution population distribution map' },
-  { value: 'building_footprints', label: 'Building Footprints / Density', description: 'Structures and settlement intensity' },
-  { value: 'elevation_dem', label: 'Digital Elevation Model (DEM)', description: 'Terrain elevation and topography' },
-  { value: 'ndvi_vegetation', label: 'Vegetation Index (NDVI)', description: 'Normalized difference vegetation index' },
-  { value: 'malaria_incidence', label: 'Malaria Incidence Risk', description: 'Epidemiological risk surface' },
-  { value: 'precipitation', label: 'Annual Precipitation', description: 'Rainfall distribution and climate data' },
-  { value: 'travel_time_access', label: 'Travel Time to Health Facilities', description: 'Physical accessibility modeling' }
-];
-
-const COLOR_OPTIONS: ColorOption[] = [
+export const FALLBACK_RASTER_OPTIONS: RasterOption[] = [
   {
-    value: 'viridis',
-    label: 'Viridis (Blue-Green-Yellow)',
-    color: '#440154',
-    gradient: 'linear-gradient(90deg, #440154, #31688e, #35b779, #fde725)'
+    value: 'landcover_mvt',
+    rasterId: 'landcover',
+    label: 'Landcover Classification (MVT)',
+    description: 'Vector-raster classification tiles from /tiles/landcover/{z}/{x}/{y}.mvt',
+    sourceLayer: 'landcover',
+    fieldName: 'class'
   },
   {
-    value: 'magma',
-    label: 'Magma (Black-Purple-Orange-Yellow)',
-    color: '#000004',
-    gradient: 'linear-gradient(90deg, #000004, #51127c, #b73779, #fb8761, #fcfdbf)'
+    value: 'population_density',
+    rasterId: 'population_density',
+    label: 'Population Density (WorldPop MVT)',
+    description: 'High-resolution population density from /tiles/population_density/{z}/{x}/{y}.mvt',
+    sourceLayer: 'landcover',
+    fieldName: 'class'
   },
   {
-    value: 'plasma',
-    label: 'Plasma (Purple-Red-Yellow)',
-    color: '#0d0887',
-    gradient: 'linear-gradient(90deg, #0d0887, #6a00a8, #b12a90, #e16462, #fca636, #f0f921)'
+    value: 'building_footprints',
+    rasterId: 'building_footprints',
+    label: 'Building Footprints / Density (MVT)',
+    description: 'Structures and settlement intensity from /tiles/building_footprints/{z}/{x}/{y}.mvt',
+    sourceLayer: 'landcover',
+    fieldName: 'class'
   },
   {
-    value: 'inferno',
-    label: 'Inferno (Black-Red-Yellow)',
-    color: '#000004',
-    gradient: 'linear-gradient(90deg, #000004, #57106e, #bb3754, #f98e09, #fcffa4)'
+    value: 'elevation_dem',
+    rasterId: 'elevation_dem',
+    label: 'Digital Elevation Model (DEM MVT)',
+    description: 'Terrain elevation and topography from /tiles/elevation_dem/{z}/{x}/{y}.mvt',
+    sourceLayer: 'landcover',
+    fieldName: 'class'
   },
   {
-    value: 'turbo',
-    label: 'Turbo (Rainbow)',
-    color: '#30123b',
-    gradient: 'linear-gradient(90deg, #30123b, #4686fb, #1ae4b6, #a2fc3c, #fbb41a, #e4460a, #7a0403)'
+    value: 'ndvi_vegetation',
+    rasterId: 'ndvi_vegetation',
+    label: 'Vegetation Index (NDVI MVT)',
+    description: 'Normalized difference vegetation index from /tiles/ndvi_vegetation/{z}/{x}/{y}.mvt',
+    sourceLayer: 'landcover',
+    fieldName: 'class'
   },
   {
-    value: 'blues',
-    label: 'Blues (Light to Dark Blue)',
-    color: '#08519c',
-    gradient: 'linear-gradient(90deg, #f7fbff, #6baed6, #08519c)'
+    value: 'malaria_incidence',
+    rasterId: 'malaria_incidence',
+    label: 'Malaria Risk Surface (MVT)',
+    description: 'Epidemiological risk surface from /tiles/malaria_incidence/{z}/{x}/{y}.mvt',
+    sourceLayer: 'landcover',
+    fieldName: 'class'
   },
   {
-    value: 'greens',
-    label: 'Greens (Light to Dark Green)',
-    color: '#006d2c',
-    gradient: 'linear-gradient(90deg, #f7fcf5, #74c476, #006d2c)'
+    value: 'precipitation',
+    rasterId: 'precipitation',
+    label: 'Annual Precipitation (MVT)',
+    description: 'Rainfall distribution and climate data from /tiles/precipitation/{z}/{x}/{y}.mvt',
+    sourceLayer: 'landcover',
+    fieldName: 'class'
   },
   {
-    value: 'reds',
-    label: 'Reds (Light to Dark Red)',
-    color: '#a50f15',
-    gradient: 'linear-gradient(90deg, #fff5f0, #fb6a4a, #a50f15)'
-  },
-  {
-    value: 'yl_or_rd',
-    label: 'Yellow-Orange-Red',
-    color: '#bd0026',
-    gradient: 'linear-gradient(90deg, #ffffb2, #fecc5c, #fd8d3c, #f03b20, #bd0026)'
-  },
-  {
-    value: 'spectral',
-    label: 'Spectral (Multi-hue)',
-    color: '#9e0142',
-    gradient: 'linear-gradient(90deg, #9e0142, #d53e4f, #fee08b, #e6f598, #66c2a5, #5e4fa2)'
+    value: 'travel_time_access',
+    rasterId: 'travel_time_access',
+    label: 'Travel Time to Health Facilities (MVT)',
+    description: 'Physical accessibility modeling from /tiles/travel_time_access/{z}/{x}/{y}.mvt',
+    sourceLayer: 'landcover',
+    fieldName: 'class'
   }
 ];
+
+export { COLOR_OPTIONS };
 
 const AddRastersModal = ({ show, closeHandler, instance, onRasterAdded }: Props) => {
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
+  const [rasterOptions, setRasterOptions] = useState<RasterOption[]>([]);
+  const [isLoadingRasters, setIsLoadingRasters] = useState<boolean>(false);
   const [selectedRaster, setSelectedRaster] = useState<SingleValue<RasterOption>>(null);
-  const [selectedColor, setSelectedColor] = useState<SingleValue<ColorOption>>(null);
+  const [selectedColor, setSelectedColor] = useState<SingleValue<ColorOption>>(COLOR_OPTIONS[0]);
+  const [opacity, setOpacity] = useState<number>(75);
 
   useEffect(() => {
-    if (!show) {
+    if (show) {
+      setIsLoadingRasters(true);
+      getRasterMapLayers()
+        .then((layers: RasterMapLayer[]) => {
+          if (layers && Array.isArray(layers) && layers.length > 0) {
+            const mappedOptions: RasterOption[] = layers.map((layer: RasterMapLayer) => {
+              const layerId = layer.layerIdentifier || layer.id;
+              const extentStr = layer.extent
+                ? ` [${layer.extent.minX.toFixed(2)}, ${layer.extent.minY.toFixed(2)}, ${layer.extent.maxX.toFixed(2)}, ${layer.extent.maxY.toFixed(2)}]`
+                : '';
+              return {
+                value: layerId,
+                rasterId: layerId,
+                label: layer.name || layer.layerIdentifier || layer.id,
+                description: `Type: ${layer.type || 'RASTER'}${extentStr ? ` | Extent:${extentStr}` : ''}`,
+                sourceLayer: layer.layerIdentifier || 'landcover',
+                fieldName: 'class',
+                rawLayer: layer,
+                extent: layer.extent,
+                type: layer.type
+              };
+            });
+            setRasterOptions(mappedOptions);
+          } else {
+            setRasterOptions(FALLBACK_RASTER_OPTIONS);
+          }
+        })
+        .catch(err => {
+          console.error('[AddRastersModal] Failed to fetch raster map layers from endpoint:', err);
+          setRasterOptions(FALLBACK_RASTER_OPTIONS);
+        })
+        .finally(() => {
+          setIsLoadingRasters(false);
+        });
+    } else {
       setSelectedRaster(null);
-      setSelectedColor(null);
+      setSelectedColor(COLOR_OPTIONS[0]);
+      setOpacity(75);
     }
   }, [show]);
 
@@ -170,31 +215,32 @@ const AddRastersModal = ({ show, closeHandler, instance, onRasterAdded }: Props)
   };
 
   const formatColorOptionLabel = (option: ColorOption) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
       <span
         style={{
-          width: '36px',
+          width: '70px',
           height: '18px',
           borderRadius: '4px',
           background: option.gradient || option.color,
-          border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
+          border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'}`,
           flexShrink: 0
         }}
       />
-      <span>{option.label}</span>
+      <span style={{ fontSize: '13px' }}>{option.label}</span>
     </div>
   );
 
   const handleApply = () => {
     if (!selectedRaster) {
-      toast.warn('Please select a raster.');
+      toast.warn('Please select a raster dataset.');
       return;
     }
 
     if (onRasterAdded) {
       onRasterAdded({
         raster: selectedRaster,
-        color: selectedColor
+        color: selectedColor,
+        opacity: opacity / 100
       });
     }
 
@@ -213,7 +259,7 @@ const AddRastersModal = ({ show, closeHandler, instance, onRasterAdded }: Props)
       contentClassName={isDarkMode ? 'bg-dark text-white' : 'bg-white text-dark'}
     >
       <Modal.Header closeButton closeVariant={isDarkMode ? 'white' : undefined}>
-        <Modal.Title>{t('simulationPage.addRasters', 'Add Raster')}</Modal.Title>
+        <Modal.Title>{t('simulationPage.addRasters', 'Add Raster Layer')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
@@ -227,47 +273,120 @@ const AddRastersModal = ({ show, closeHandler, instance, onRasterAdded }: Props)
 
           {/* Raster Selection Dropdown */}
           <FormGroup className="mb-3">
-            <FormLabel className={isDarkMode ? 'text-white' : 'text-dark'}>
-              {t('simulationPage.selectRaster', 'Select Raster')}
+            <FormLabel className={isDarkMode ? 'text-white' : 'text-dark'} style={{ fontWeight: 600 }}>
+              {t('simulationPage.selectRaster', 'Select Raster Dataset (from raster/map-layers)')}
             </FormLabel>
-            <Select<RasterOption>
-              placeholder={t('simulationPage.chooseRaster', 'Choose a raster dataset...')}
-              value={selectedRaster}
-              onChange={option => {
-                setSelectedRaster(option);
-                if (!option) {
-                  setSelectedColor(null);
-                }
-              }}
-              options={RASTER_OPTIONS}
-              isClearable
-              styles={customSelectStyles}
-              menuPortalTarget={document.body}
-            />
-            {selectedRaster?.description && (
-              <Form.Text className={isDarkMode ? 'text-light' : 'text-muted'}>
-                {selectedRaster.description}
-              </Form.Text>
-            )}
-          </FormGroup>
-
-          {/* Color Selection Dropdown (Displayed once raster is selected) */}
-          {selectedRaster && (
-            <FormGroup className="mb-3">
-              <FormLabel className={isDarkMode ? 'text-white' : 'text-dark'}>
-                {t('simulationPage.selectColor', 'Choose Color / Color Palette')}
-              </FormLabel>
-              <Select<ColorOption>
-                placeholder={t('simulationPage.chooseColor', 'Select a color palette...')}
-                value={selectedColor}
-                onChange={option => setSelectedColor(option)}
-                options={COLOR_OPTIONS}
-                formatOptionLabel={formatColorOptionLabel}
+            {isLoadingRasters ? (
+              <div className="d-flex align-items-center gap-2 p-2">
+                <Spinner animation="border" size="sm" variant="primary" />
+                <span className="text-muted small">Loading raster map layers...</span>
+              </div>
+            ) : (
+              <Select<RasterOption>
+                placeholder={t('simulationPage.chooseRaster', 'Choose a raster dataset...')}
+                value={selectedRaster}
+                onChange={option => {
+                  setSelectedRaster(option);
+                  if (option && !selectedColor) {
+                    setSelectedColor(COLOR_OPTIONS[0]);
+                  }
+                }}
+                options={rasterOptions}
                 isClearable
                 styles={customSelectStyles}
                 menuPortalTarget={document.body}
               />
-            </FormGroup>
+            )}
+            {selectedRaster && (
+              <div className="mt-2">
+                <small className={isDarkMode ? 'text-light' : 'text-muted'}>
+                  {selectedRaster.description}
+                </small>
+                {selectedRaster.rawLayer?.extent && (
+                  <div className="mt-1" style={{ fontSize: '11px', opacity: 0.85 }}>
+                    <strong>Extent: </strong>
+                    <span>
+                      minX: {selectedRaster.rawLayer.extent.minX}, minY: {selectedRaster.rawLayer.extent.minY}, maxX:{' '}
+                      {selectedRaster.rawLayer.extent.maxX}, maxY: {selectedRaster.rawLayer.extent.maxY}
+                    </span>
+                  </div>
+                )}
+                <div
+                  className={`p-2 mt-2 rounded font-monospace ${
+                    isDarkMode ? 'bg-black bg-opacity-25 text-info' : 'bg-light text-primary'
+                  }`}
+                  style={{ fontSize: '11px', wordBreak: 'break-all' }}
+                >
+                  <strong>MVT Tile Endpoint: </strong>
+                  <code>{getRasterTileUrl(selectedRaster.rasterId)}</code>
+                </div>
+              </div>
+            )}
+          </FormGroup>
+
+          {/* Color Selection Dropdown */}
+          {selectedRaster && (
+            <>
+              <FormGroup className="mb-3">
+                <FormLabel className={isDarkMode ? 'text-white' : 'text-dark'} style={{ fontWeight: 600 }}>
+                  {t('simulationPage.selectColor', 'Choose Color Ramp / Palette (from raster presets)')}
+                </FormLabel>
+                <Select<ColorOption>
+                  placeholder={t('simulationPage.chooseColor', 'Select a color palette...')}
+                  value={selectedColor}
+                  onChange={option => setSelectedColor(option)}
+                  options={COLOR_OPTIONS}
+                  formatOptionLabel={formatColorOptionLabel}
+                  isClearable
+                  styles={customSelectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </FormGroup>
+
+              {/* Live Color Ramp Preview */}
+              {selectedColor && (
+                <div className="mb-3">
+                  <div className="d-flex justify-content-between align-items-center mb-1">
+                    <small className={isDarkMode ? 'text-light' : 'text-muted'}>
+                      <strong>Color Ramp Preview:</strong> {selectedColor.label}
+                    </small>
+                  </div>
+                  <div
+                    style={{
+                      height: '24px',
+                      borderRadius: '6px',
+                      background: selectedColor.gradient,
+                      border: `1px solid ${isDarkMode ? '#555' : '#ccc'}`,
+                      boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                    }}
+                  />
+                  {selectedColor.colors && (
+                    <div className="d-flex justify-content-between mt-1" style={{ fontSize: '10px', opacity: 0.7 }}>
+                      <span>Min (Low Value)</span>
+                      <span>Max (High Value)</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Opacity Slider */}
+              <FormGroup className="mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <FormLabel className={`mb-0 ${isDarkMode ? 'text-white' : 'text-dark'}`} style={{ fontWeight: 600 }}>
+                    {t('simulationPage.opacity', 'Layer Opacity')}
+                  </FormLabel>
+                  <span className={`badge ${isDarkMode ? 'bg-secondary' : 'bg-light text-dark border'}`}>
+                    {opacity}%
+                  </span>
+                </div>
+                <Form.Range
+                  min={0}
+                  max={100}
+                  value={opacity}
+                  onChange={e => setOpacity(Number(e.target.value))}
+                />
+              </FormGroup>
+            </>
           )}
         </Form>
       </Modal.Body>

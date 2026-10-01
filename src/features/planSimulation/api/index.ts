@@ -10,6 +10,7 @@ import {
   PaginatedResponse,
   PersonMeta,
   PlanningLocationResponse,
+  RasterMapLayer,
   TagResponse
 } from '../providers/types';
 import { SimulationCountResponse, SimulationRequestData } from '../components/Simulation';
@@ -205,8 +206,9 @@ export const getInstanceHierarchy = async (instanceId: string): Promise<GeoConfi
   const data = await api.get<any>(`instance/hierarchy?instanceIdentifier=${instanceId}`).then(res => res.data);
   return data;
 };
-// export const getNodeOrder = async (instanceId: string): Promise<any> => {
-//   const data = await api.get<any>(`instance/hierarchy?instanceIdentifier=${instanceId}`).then(res => res.data);
-//   return data?.nodeOrder || [];
-// };
+
+export const getRasterMapLayers = async (): Promise<RasterMapLayer[]> => {
+  const data = await api.get<RasterMapLayer[]>('raster/map-layers').then(res => res.data);
+  return data;
+};
 

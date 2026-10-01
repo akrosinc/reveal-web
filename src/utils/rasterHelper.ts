@@ -1,10 +1,14 @@
 import { Map as MapBoxMap } from 'mapbox-gl';
-import { toast } from 'react-toastify';
+import { config } from '../config/config';
 
 export interface RasterLayerConfig {
   id: string;
+  rasterId?: string;
   name: string;
+  type?: 'vector' | 'raster';
   tiles: string[];
+  sourceLayer?: string;
+  fieldName?: string;
   tileSize?: number;
   opacity?: number;
   color?: string;
@@ -14,79 +18,293 @@ export interface RasterLayerConfig {
   scheme?: 'xyz' | 'tms';
 }
 
+export interface RasterExtent {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
+
+export interface RasterMapLayer {
+  id: string;
+  name: string;
+  layerIdentifier: string;
+  type: string;
+  extent?: RasterExtent;
+}
+
+export interface ColorOption {
+  value: string;
+  label: string;
+  color: string;
+  colors: string[];
+  gradient: string;
+}
+
 /**
- * Catalog of presentation/demo raster tile layers
+ * Color ramp presets from raster.html
+ */
+export const RASTER_COLOR_PRESETS: Record<string, string[]> = {
+  'YlOrRd (population / density)': [
+    '#ffffcc',
+    '#ffeda0',
+    '#fed976',
+    '#feb24c',
+    '#fd8d3c',
+    '#fc4e2a',
+    '#e31a1c',
+    '#bd0026',
+    '#800026'
+  ],
+  'Viridis (perceptual, general purpose)': [
+    '#440154',
+    '#472d7b',
+    '#3b528b',
+    '#2c728e',
+    '#21918c',
+    '#28ae80',
+    '#5ec962',
+    '#addc30',
+    '#fde725'
+  ],
+  'Plasma (perceptual, high contrast)': [
+    '#0d0887',
+    '#5302a3',
+    '#8b0aa5',
+    '#b83289',
+    '#db5c68',
+    '#f48849',
+    '#febd2a',
+    '#f0f921'
+  ],
+  'Magma (perceptual, dark background)': [
+    '#000004',
+    '#2c115f',
+    '#721f81',
+    '#b73779',
+    '#f1605d',
+    '#feaf77',
+    '#fcfdbf'
+  ],
+  'Blues (sequential)': [
+    '#f7fbff',
+    '#deebf7',
+    '#c6dbef',
+    '#9ecae1',
+    '#6baed6',
+    '#4292c6',
+    '#2171b5',
+    '#08519c',
+    '#08306b'
+  ],
+  'Greens (vegetation / land cover)': [
+    '#f7fcf5',
+    '#e5f5e0',
+    '#c7e9c0',
+    '#a1d99b',
+    '#74c476',
+    '#41ab5d',
+    '#238b45',
+    '#006d2c',
+    '#00441b'
+  ],
+  'Purples (sequential)': [
+    '#fcfbfd',
+    '#efedf5',
+    '#dadaeb',
+    '#bcbddc',
+    '#9e9ac8',
+    '#807dba',
+    '#6a51a3',
+    '#54278f',
+    '#3f007d'
+  ],
+  'Oranges (sequential)': [
+    '#fff5eb',
+    '#fee6ce',
+    '#fdd0a2',
+    '#fdae6b',
+    '#fd8d3c',
+    '#f16913',
+    '#d94801',
+    '#a63603',
+    '#7f2704'
+  ],
+  'YlGnBu (population / terrain)': [
+    '#ffffd9',
+    '#edf8b1',
+    '#c7e9b4',
+    '#7fcdbb',
+    '#41b6c4',
+    '#1d91c0',
+    '#225ea8',
+    '#253494',
+    '#081d58'
+  ],
+  'Turbo (rainbow, high dynamic range)': [
+    '#30123b',
+    '#4662d7',
+    '#36aaf9',
+    '#1ae4b6',
+    '#72fe5e',
+    '#c8ef34',
+    '#faba39',
+    '#f56918',
+    '#c92903',
+    '#7a0402'
+  ]
+};
+
+export const COLOR_OPTIONS: ColorOption[] = Object.entries(RASTER_COLOR_PRESETS).map(([name, colors]) => ({
+  value: name,
+  label: name,
+  color: colors[Math.floor(colors.length / 2)] || colors[0],
+  colors: colors,
+  gradient: `linear-gradient(to right, ${colors.join(', ')})`
+}));
+
+/**
+ * Builds a Mapbox GL interpolation expression for vector tiles from an array of color stops.
+ */
+export const buildColorExpression = (
+  fieldName: string = 'class',
+  colors: string[],
+  min: number = 0,
+  max: number = 100
+): any => {
+  if (!colors || colors.length === 0) return '#3b82f6';
+  if (colors.length === 1) return colors[0];
+
+  const interpArgs: (number | string)[] = [];
+  const steps = Math.min(colors.length, 9);
+  for (let i = 0; i < steps; i++) {
+    const t = steps === 1 ? 0 : i / (steps - 1);
+    const value = Math.round((min + t * (max - min)) * 100) / 100;
+    interpArgs.push(value, colors[i]);
+  }
+
+  return [
+    'case',
+    ['has', fieldName],
+    [
+      'interpolate',
+      ['linear'],
+      ['coalesce', ['to-number', ['get', fieldName]], min],
+      ...interpArgs
+    ],
+    colors[0] || '#cccccc'
+  ];
+};
+
+/**
+ * Generates the backend tile endpoint URL using the format:
+ * @GetMapping("/tiles/{rasterId}/{z}/{x}/{y}.mvt")
+ */
+export const getRasterTileUrl = (rasterId: string): string => {
+  const baseUrl = config.API_BASE_URL || 'http://localhost:8080';
+  const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+  return `${cleanBaseUrl}/tiles/${rasterId}/{z}/{x}/{y}.mvt`;
+};
+
+/**
+ * Catalog of presentation/demo raster tile layers using @GetMapping("/tiles/{rasterId}/{z}/{x}/{y}.mvt")
  */
 export const DUMMY_RASTER_CATALOG: Record<string, RasterLayerConfig> = {
+  landcover_mvt: {
+    id: 'raster-landcover',
+    rasterId: 'landcover',
+    name: 'Landcover Classification (MVT)',
+    type: 'vector',
+    sourceLayer: 'landcover',
+    fieldName: 'class',
+    tiles: [getRasterTileUrl('landcover')],
+    tileSize: 256,
+    opacity: 0.75,
+    attribution: 'Reveal Backend / Landcover MVT'
+  },
   population_density: {
     id: 'raster-population-density',
-    name: 'Population Density (WorldPop)',
-    tiles: [
-      'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-    ],
+    rasterId: 'population_density',
+    name: 'Population Density (WorldPop MVT)',
+    type: 'vector',
+    sourceLayer: 'landcover',
+    fieldName: 'class',
+    tiles: [getRasterTileUrl('population_density'), 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
     tileSize: 256,
     opacity: 0.7,
-    attribution: '© OpenStreetMap contributors, WorldPop'
+    attribution: 'WorldPop / MVT Tiles'
   },
   building_footprints: {
     id: 'raster-building-footprints',
-    name: 'Building Footprints / Density',
-    tiles: [
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-    ],
+    rasterId: 'building_footprints',
+    name: 'Building Footprints / Settlement Density',
+    type: 'vector',
+    sourceLayer: 'landcover',
+    fieldName: 'class',
+    tiles: [getRasterTileUrl('building_footprints'), 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
     tileSize: 256,
     opacity: 0.75,
-    attribution: 'Esri, Maxar, Earthstar Geographics'
+    attribution: 'Esri / Maxar / MVT'
   },
   elevation_dem: {
     id: 'raster-elevation-dem',
-    name: 'Digital Elevation Model (DEM)',
-    tiles: [
-      'https://tile.opentopomap.org/{z}/{x}/{y}.png'
-    ],
+    rasterId: 'elevation_dem',
+    name: 'Digital Elevation Model (DEM MVT)',
+    type: 'vector',
+    sourceLayer: 'landcover',
+    fieldName: 'class',
+    tiles: [getRasterTileUrl('elevation_dem'), 'https://tile.opentopomap.org/{z}/{x}/{y}.png'],
     tileSize: 256,
     opacity: 0.65,
-    attribution: '© OpenTopoMap contributors'
+    attribution: 'OpenTopoMap / DEM MVT'
   },
   ndvi_vegetation: {
     id: 'raster-ndvi-vegetation',
-    name: 'Vegetation Index (NDVI)',
-    tiles: [
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}'
-    ],
+    rasterId: 'ndvi_vegetation',
+    name: 'Vegetation Index (NDVI MVT)',
+    type: 'vector',
+    sourceLayer: 'landcover',
+    fieldName: 'class',
+    tiles: [getRasterTileUrl('ndvi_vegetation'), 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}'],
     tileSize: 256,
     opacity: 0.7,
-    attribution: 'Esri, USGS, NOAA'
+    attribution: 'USGS / NOAA / MVT'
   },
   malaria_incidence: {
     id: 'raster-malaria-incidence',
-    name: 'Malaria Risk Surface',
-    tiles: [
-      'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
-    ],
+    rasterId: 'malaria_incidence',
+    name: 'Malaria Risk Surface (MVT)',
+    type: 'vector',
+    sourceLayer: 'landcover',
+    fieldName: 'class',
+    tiles: [getRasterTileUrl('malaria_incidence'), 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'],
     tileSize: 256,
     opacity: 0.7,
-    attribution: '© CARTO, Malaria Atlas Project'
+    attribution: 'CARTO / MAP / MVT'
   },
   precipitation: {
     id: 'raster-precipitation',
-    name: 'Annual Precipitation',
-    tiles: [
-      'https://tile.opentopomap.org/{z}/{x}/{y}.png'
-    ],
+    rasterId: 'precipitation',
+    name: 'Annual Precipitation (MVT)',
+    type: 'vector',
+    sourceLayer: 'landcover',
+    fieldName: 'class',
+    tiles: [getRasterTileUrl('precipitation'), 'https://tile.opentopomap.org/{z}/{x}/{y}.png'],
     tileSize: 256,
     opacity: 0.6,
-    attribution: 'CHIRPS, Climate Hazards Center'
+    attribution: 'CHIRPS / MVT'
   },
   travel_time_access: {
     id: 'raster-travel-time',
-    name: 'Travel Time to Health Facilities',
-    tiles: [
-      'https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png'
-    ],
+    rasterId: 'travel_time_access',
+    name: 'Travel Time to Health Facilities (MVT)',
+    type: 'vector',
+    sourceLayer: 'landcover',
+    fieldName: 'class',
+    tiles: [getRasterTileUrl('travel_time_access'), 'https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png'],
     tileSize: 256,
     opacity: 0.7,
-    attribution: '© CARTO, AccessMod'
+    attribution: 'AccessMod / MVT'
   }
 };
 
@@ -99,7 +317,6 @@ export const findBeforeLayerId = (map: MapBoxMap): string | undefined => {
   const style = map.getStyle();
   if (!style || !style.layers) return undefined;
 
-  // Prefer placing below fill/border/label layers
   const targetLayers = [
     'fill-layer',
     'children-layer',
@@ -122,21 +339,28 @@ export const findBeforeLayerId = (map: MapBoxMap): string | undefined => {
 };
 
 /**
- * Adds a raster tile layer onto the Mapbox map instance.
+ * Adds a raster or vector-raster tile layer onto the Mapbox map instance.
+ * Supports the tile format: /tiles/{rasterId}/{z}/{x}/{y}.mvt
  *
  * @param map Mapbox map instance
  * @param rasterKeyOrConfig Raster catalog key (e.g. 'population_density') or custom RasterLayerConfig
  * @param options Optional overrides for opacity, color, and beforeLayerId
  * @returns boolean true if successfully added, false otherwise
  */
+export interface AddRasterOptions {
+  opacity?: number;
+  color?: string;
+  colors?: string[];
+  colorExpression?: any;
+  beforeLayerId?: string;
+  sourceLayer?: string;
+  fieldName?: string;
+}
+
 export const addRasterToMap = (
   map: MapBoxMap | any,
   rasterKeyOrConfig: string | RasterLayerConfig,
-  options?: {
-    opacity?: number;
-    color?: string;
-    beforeLayerId?: string;
-  }
+  options?: AddRasterOptions
 ): boolean => {
   if (!map) {
     console.warn('[RasterHelper] Map instance not ready.');
@@ -147,8 +371,9 @@ export const addRasterToMap = (
     typeof rasterKeyOrConfig === 'string'
       ? DUMMY_RASTER_CATALOG[rasterKeyOrConfig] || {
           id: `raster-${rasterKeyOrConfig}`,
+          rasterId: rasterKeyOrConfig,
           name: rasterKeyOrConfig,
-          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tiles: [getRasterTileUrl(rasterKeyOrConfig)],
           tileSize: 256,
           opacity: 0.7
         }
@@ -156,7 +381,7 @@ export const addRasterToMap = (
 
   const sourceId = `source-${config.id}`;
   const layerId = `layer-${config.id}`;
-  const opacity = options?.opacity !== undefined ? options.opacity : config.opacity ?? 0.7;
+  const opacity = options?.opacity !== undefined ? options.opacity : config.opacity ?? 0.75;
 
   try {
     // Clean up existing layer and source if already present
@@ -167,33 +392,68 @@ export const addRasterToMap = (
       map.removeSource(sourceId);
     }
 
-    // Add raster source
-    map.addSource(sourceId, {
-      type: 'raster',
-      tiles: config.tiles,
-      tileSize: config.tileSize || 256,
-      attribution: config.attribution,
-      scheme: config.scheme || 'xyz'
-    });
-
+    const isMvt = config.tiles.some(t => t.endsWith('.mvt')) || config.type === 'vector';
     const beforeId = options?.beforeLayerId || findBeforeLayerId(map);
+    const resolvedFieldName = options?.fieldName || config.fieldName || 'class';
+    const resolvedSourceLayer = options?.sourceLayer || config.sourceLayer || 'landcover';
 
-    // Add raster layer
-    map.addLayer(
-      {
-        id: layerId,
-        type: 'raster',
-        source: sourceId,
+    const colorExpression =
+      options?.colorExpression ||
+      (options?.colors && options.colors.length > 0
+        ? buildColorExpression(resolvedFieldName, options.colors)
+        : options?.color || config.color || '#3b82f6');
+
+    if (isMvt) {
+      // Add vector tile source for .mvt
+      map.addSource(sourceId, {
+        type: 'vector',
+        tiles: config.tiles,
         minzoom: config.minzoom || 0,
-        maxzoom: config.maxzoom || 22,
-        paint: {
-          'raster-opacity': opacity,
-          'raster-resampling': 'linear',
-          'raster-fade-duration': 300
-        }
-      },
-      beforeId
-    );
+        maxzoom: config.maxzoom || 14
+      });
+
+      // Add fill layer for vector raster data
+      map.addLayer(
+        {
+          id: layerId,
+          type: 'fill',
+          source: sourceId,
+          'source-layer': resolvedSourceLayer,
+          paint: {
+            'fill-color': colorExpression,
+            'fill-opacity': opacity,
+            'fill-outline-color': 'transparent'
+          }
+        },
+        beforeId
+      );
+    } else {
+      // Add standard raster source
+      map.addSource(sourceId, {
+        type: 'raster',
+        tiles: config.tiles,
+        tileSize: config.tileSize || 256,
+        attribution: config.attribution,
+        scheme: config.scheme || 'xyz'
+      });
+
+      // Add raster layer
+      map.addLayer(
+        {
+          id: layerId,
+          type: 'raster',
+          source: sourceId,
+          minzoom: config.minzoom || 0,
+          maxzoom: config.maxzoom || 22,
+          paint: {
+            'raster-opacity': opacity,
+            'raster-resampling': 'linear',
+            'raster-fade-duration': 300
+          }
+        },
+        beforeId
+      );
+    }
 
     return true;
   } catch (err) {
@@ -232,7 +492,12 @@ export const setRasterOpacity = (map: MapBoxMap | any, rasterId: string, opacity
   if (!map) return;
   const layerId = rasterId.startsWith('layer-') ? rasterId : `layer-${rasterId}`;
   if (map.getLayer(layerId)) {
-    map.setPaintProperty(layerId, 'raster-opacity', Math.max(0, Math.min(1, opacity)));
+    const layer = map.getLayer(layerId);
+    if (layer.type === 'fill') {
+      map.setPaintProperty(layerId, 'fill-opacity', Math.max(0, Math.min(1, opacity)));
+    } else {
+      map.setPaintProperty(layerId, 'raster-opacity', Math.max(0, Math.min(1, opacity)));
+    }
   }
 };
 

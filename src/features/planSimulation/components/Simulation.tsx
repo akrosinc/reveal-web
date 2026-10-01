@@ -91,7 +91,7 @@ import {
   SimulationDatasetRequest
 } from './SimulationMapView/api/datasetsAPI';
 import { assignLocationsToPlan } from '../../assignment/api';
-import { addRasterToMap, getPlanTargetLevelName } from '../../../utils';
+import { addRasterToMap, getPlanTargetLevelName, RasterLayerConfig, getRasterTileUrl } from '../../../utils';
 import { auto } from '@popperjs/core';
 import { getInstances, getInstanceHierarchy } from '../api';
 import RangeInput, { YearSlider } from '../../../components/RangeInput/RangeInput';
@@ -2402,11 +2402,45 @@ const Simulation = () => {
           closeHandler={() => setShowAddRastersModal(false)}
           instance={selectedPlan || instanceContext?.selectedInstance}
           onRasterAdded={rasterData => {
-            if (map && map.current && rasterData?.raster?.value) {
-              addRasterToMap(map.current, rasterData.raster.value, {
-                opacity: 0.75,
-                color: rasterData.color?.color
+            if (map && map.current && rasterData?.raster) {
+              const raster = rasterData.raster;
+              const rasterId = raster.rasterId || raster.value;
+              const isRasterType = raster.rawLayer?.type?.toLowerCase() === 'raster' || raster.type?.toLowerCase() === 'raster';
+              const rasterConfig: RasterLayerConfig = {
+                id: `raster-${rasterId}`,
+                rasterId: rasterId,
+                name: raster.label,
+                type: isRasterType ? 'raster' : 'vector',
+                sourceLayer: raster.sourceLayer || rasterId || 'landcover',
+                fieldName: raster.fieldName || 'class',
+                tiles: [getRasterTileUrl(rasterId)],
+                opacity: rasterData.opacity ?? 0.75
+              };
+
+              addRasterToMap(map.current, rasterConfig, {
+                opacity: rasterData.opacity ?? 0.75,
+                color: rasterData.color?.color,
+                colors: rasterData.color?.colors,
+                sourceLayer: rasterConfig.sourceLayer,
+                fieldName: rasterConfig.fieldName
               });
+
+              if (raster.extent && map.current.fitBounds) {
+                const { minX, minY, maxX, maxY } = raster.extent;
+                if (minX !== 0 || minY !== 0 || maxX !== 0 || maxY !== 0) {
+                  try {
+                    map.current.fitBounds(
+                      [
+                        [minX, minY],
+                        [maxX, maxY]
+                      ],
+                      { padding: 40, maxZoom: 14 }
+                    );
+                  } catch (e) {
+                    console.warn('Could not fit bounds to raster extent', e);
+                  }
+                }
+              }
             }
           }}
         />
