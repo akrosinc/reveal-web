@@ -12,15 +12,23 @@ import {
   RasterExtent
 } from '../../../../utils/rasterHelper';
 import { getRasterMapLayers } from '../../api';
+import { usePolygonContext } from '../../../../contexts/PolygonContext';
+import { addRasterSimulationDataset } from '../../api/rasterDatasetService';
+import {
+  RasterSimulationDatasetRequest,
+  RasterSimulationDatasetResponse
+} from '../../providers/rasterDatasetTypes';
 
 interface Props {
   show: boolean;
   closeHandler: () => void;
   instance?: any;
+  selectedLocationId?: string;
   onRasterAdded?: (rasterData: {
     raster: RasterOption;
     color?: ColorOption | null;
     opacity?: number;
+    apiResponse?: RasterSimulationDatasetResponse;
   }) => void;
 }
 
@@ -105,12 +113,14 @@ export const FALLBACK_RASTER_OPTIONS: RasterOption[] = [
 
 export { COLOR_OPTIONS };
 
-const AddRastersModal = ({ show, closeHandler, instance, onRasterAdded }: Props) => {
+const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onRasterAdded }: Props) => {
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
+  const { state: polygonState } = usePolygonContext();
 
   const [rasterOptions, setRasterOptions] = useState<RasterOption[]>([]);
   const [isLoadingRasters, setIsLoadingRasters] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [selectedRaster, setSelectedRaster] = useState<SingleValue<RasterOption>>(null);
   const [selectedColor, setSelectedColor] = useState<SingleValue<ColorOption>>(COLOR_OPTIONS[0]);
   const [opacity, setOpacity] = useState<number>(75);
@@ -154,6 +164,7 @@ const AddRastersModal = ({ show, closeHandler, instance, onRasterAdded }: Props)
       setSelectedRaster(null);
       setSelectedColor(COLOR_OPTIONS[0]);
       setOpacity(75);
+      setIsSubmitting(false);
     }
   }, [show]);
 
@@ -230,22 +241,56 @@ const AddRastersModal = ({ show, closeHandler, instance, onRasterAdded }: Props)
     </div>
   );
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (!selectedRaster) {
       toast.warn('Please select a raster dataset.');
       return;
     }
 
-    if (onRasterAdded) {
-      onRasterAdded({
-        raster: selectedRaster,
-        color: selectedColor,
-        opacity: opacity / 100
-      });
-    }
+    const rasterTagId = selectedRaster.rasterId || selectedRaster.value || selectedRaster.rawLayer?.id || '';
+    const hexColor = selectedColor?.color || '#3b82f6';
+    const simId = polygonState?.simulationId || instance?.identifier || instance?.id || instance?.simulationId || '';
+    const locId = selectedLocationId || polygonState?.admin0LocationId || instance?.locationId || instance?.admin0LocationId || '';
 
-    toast.success(`Raster "${selectedRaster.label}" added successfully.`);
-    closeHandler();
+    const payload: RasterSimulationDatasetRequest = {
+      simulationId: simId,
+      tagId: rasterTagId,
+      hexColor: hexColor,
+      lineWidth: 0,
+      borderColor: '#000000',
+      parentLocationId: locId,
+      parentAdminLevel: instance?.adminLevel || '',
+      dataSetYearFilter: {},
+      addToSimulation: true,
+      userDatasetIds: [rasterTagId],
+      datasetType: 'RASTER'
+    };
+
+    try {
+      setIsSubmitting(true);
+      const apiResponse = await addRasterSimulationDataset(payload);
+
+      if (onRasterAdded) {
+        onRasterAdded({
+          raster: selectedRaster,
+          color: selectedColor,
+          opacity: opacity / 100,
+          apiResponse
+        });
+      }
+
+      toast.success(`Raster dataset "${selectedRaster.label}" added successfully.`);
+      closeHandler();
+    } catch (error: any) {
+      console.error('[AddRastersModal] Failed to add raster dataset:', error);
+      const errorMsg =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to submit raster dataset to simulation.';
+      toast.error(errorMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -391,15 +436,22 @@ const AddRastersModal = ({ show, closeHandler, instance, onRasterAdded }: Props)
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant={isDarkMode ? 'outline-light' : 'secondary'} onClick={closeHandler}>
+        <Button variant={isDarkMode ? 'outline-light' : 'secondary'} onClick={closeHandler} disabled={isSubmitting}>
           {t('simulationPage.cancel', 'Cancel')}
         </Button>
         <Button
           variant="primary"
           onClick={handleApply}
-          disabled={!selectedRaster}
+          disabled={!selectedRaster || isSubmitting}
         >
-          {t('simulationPage.addRaster', 'Add Raster')}
+          {isSubmitting ? (
+            <>
+              <Spinner animation="border" size="sm" className="me-2" />
+              {t('simulationPage.adding', 'Adding...')}
+            </>
+          ) : (
+            t('simulationPage.addRaster', 'Add Raster')
+          )}
         </Button>
       </Modal.Footer>
     </Modal>

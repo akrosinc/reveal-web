@@ -2401,6 +2401,7 @@ const Simulation = () => {
           show={showAddRastersModal}
           closeHandler={() => setShowAddRastersModal(false)}
           instance={selectedPlan || instanceContext?.selectedInstance}
+          selectedLocationId={currentLocationId}
           onRasterAdded={rasterData => {
             if (map && map.current && rasterData?.raster) {
               const raster = rasterData.raster;
