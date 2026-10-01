@@ -98,10 +98,14 @@ export const PLAN_TEAM_ASSIGNMENT = 'plan_team_assignment';
 export const PLAN_ASSIGNMENT_SUMMARY = 'plan_assignment_summary';
 
 export const SIMULATION_ADD_DATASET = 'simulation_add_dataset';
-export const ADD_RASTER = 'add_raster';
+export const RASTER_ADD_DATASET = 'raster_add_dataset';
+export const RASTER_DELETE_DATASET = 'raster_delete_dataset';
+export const RASTER_UPDATE_DATASET = 'raster_update_dataset';
+export const RASTER_VIEW_DATASET = 'raster_view_dataset';
+export const ADD_RASTER = 'raster_add_dataset';
+export const VIEW_RASTER_LISTING = 'raster_view_dataset';
 export const SIMULATION_DELETE_ALL_DATASET = 'simulation_delete_all_dataset';
 export const SIMULATION_DATASET_MENU = 'simulation_dataset_menu';
-export const VIEW_RASTER_LISTING = 'view-raster-listing';
 export const SIMULATION_HIDE_ALL_DATASET = 'simulation_hide_all_dataset';
 
 export const CAMPAIGN_MANAGEMENT_ADD_TO_CAMPAIGN = 'campaign_management_add_to_campaign';
