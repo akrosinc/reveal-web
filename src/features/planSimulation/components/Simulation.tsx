@@ -49,6 +49,7 @@ import SearchResultCountModal from './modals/SearchResultCountModal';
 import TableSummaryModal from './Summary/TableSummaryModal';
 import SaveHierarchyModal from './modals/SaveHierarchyModal';
 import AddRastersModal from './modals/AddRastersModal';
+import EditRasterColorModal from './modals/EditRasterColorModal';
 import SimulationMapView from './SimulationMapView/SimulationMapView';
 
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
@@ -89,7 +90,8 @@ import {
   getLocationPolygonsWithDatasets,
   getSimulationData,
   LocationData,
-  SimulationDatasetRequest
+  SimulationDatasetRequest,
+  updateDataset
 } from './SimulationMapView/api/datasetsAPI';
 import { assignLocationsToPlan } from '../../assignment/api';
 import { addRasterToMap, getPlanTargetLevelName, RasterLayerConfig, getRasterTileUrl, normalizeExtent } from '../../../utils';
@@ -286,6 +288,8 @@ const Simulation = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [showAddRastersModal, setShowAddRastersModal] = useState(false);
+  const [showEditRasterColorModal, setShowEditRasterColorModal] = useState(false);
+  const [selectedRasterForEdit, setSelectedRasterForEdit] = useState<RasterDatasetItem | null>(null);
 
   const [openCustomModal, setOpenCustomModal] = useState<number>();
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -345,6 +349,100 @@ const Simulation = () => {
       }
     });
   }, [rasterDatasets]);
+
+  const handleRasterColorChange = async (rasterItem: RasterDatasetItem, newColor: string) => {
+    // 1. Resolve simulation identifier (same resolution used for adding rasters)
+    let localPlanId = instanceContext?.instancePlan?.identifier;
+    if (!localPlanId) {
+      try {
+        const raw = localStorage.getItem('currentInstanceContext');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          localPlanId = parsed?.instancePlan?.identifier;
+        }
+      } catch (e) {
+        console.error('Error reading currentInstanceContext from localStorage:', e);
+      }
+    }
+
+    const simulationIdentifier =
+      state?.simulationId ||
+      (selectedPlan as any)?.simulationIdentifier ||
+      (selectedPlan as any)?.simulationId ||
+      (instanceContext?.selectedInstance as any)?.simulationIdentifier ||
+      (instanceContext?.selectedInstance as any)?.simulationId ||
+      localPlanId ||
+      (selectedPlan as any)?.planIdentifier ||
+      (selectedPlan as any)?.identifier ||
+      (selectedPlan as any)?.id ||
+      (instanceContext?.selectedInstance as any)?.identifier ||
+      (instanceContext?.selectedInstance as any)?.id ||
+      localStorage.getItem('simulationId') ||
+      '';
+
+    const datasetId = rasterItem.identifier || rasterItem.datasetIdentifier || '';
+
+    if (!simulationIdentifier || !datasetId) {
+      const errMsg = 'Simulation ID or Dataset ID missing. Cannot update raster dataset.';
+      toast.error(errMsg);
+      throw new Error(errMsg);
+    }
+
+    try {
+      // 2. Call updateDataset API
+      const result = await updateDataset({
+        simulationId: simulationIdentifier,
+        datasetId: datasetId,
+        name: rasterItem.name || rasterItem.datasetIdentifier || datasetId,
+        hexColor: newColor,
+        lineWidth: 0,
+        borderColor: '#000000',
+        datasetType: 'RASTER'
+      });
+
+      // 3. On successful API response, update local state
+      setRasterDatasets(prev =>
+        prev.map(item =>
+          item.identifier === rasterItem.identifier ||
+          (item.datasetIdentifier && item.datasetIdentifier === rasterItem.datasetIdentifier)
+            ? { ...item, colorRamp: newColor }
+            : item
+        )
+      );
+
+      // 4. Update Mapbox layer paint property for immediate visual change on map
+      if (map && map.current) {
+        const rasterId = rasterItem.datasetIdentifier || rasterItem.identifier;
+        const layerId = `layer-raster-${rasterItem.identifier || rasterId}`;
+        const fallbackLayerId = `layer-raster-${rasterId}`;
+        if (map.current.getLayer(layerId)) {
+          try {
+            map.current.setPaintProperty(layerId, 'fill-color', newColor);
+          } catch (e) {
+            console.warn('Could not update paint property on layer', layerId, e);
+          }
+        } else if (map.current.getLayer(fallbackLayerId)) {
+          try {
+            map.current.setPaintProperty(fallbackLayerId, 'fill-color', newColor);
+          } catch (e) {
+            console.warn('Could not update paint property on layer', fallbackLayerId, e);
+          }
+        }
+      }
+
+      toast.success('Raster dataset color updated successfully.');
+      return result;
+    } catch (error: any) {
+      console.error('Failed to update raster dataset color via API:', error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to update raster dataset color.';
+      toast.error(errorMessage);
+      throw error;
+    }
+  };
 
   const fetchSimulationAndData = async (selectedPlan: any) => {
     const simulationIdentifier = await fetchPlanInfo(selectedPlan);
@@ -2208,6 +2306,13 @@ const Simulation = () => {
                         rasterDatasets.map((r: RasterDatasetItem, idx: number) => {
                           const rasterTileId = r.datasetIdentifier || r.identifier || `raster-${idx}`;
                           const parsedExtent = normalizeExtent(r.extent);
+                          const currentColor =
+                            r.colorRamp && r.colorRamp.startsWith('#') && (r.colorRamp.length === 7 || r.colorRamp.length === 4)
+                              ? (r.colorRamp.length === 4
+                                  ? `#${r.colorRamp[1]}${r.colorRamp[1]}${r.colorRamp[2]}${r.colorRamp[2]}${r.colorRamp[3]}${r.colorRamp[3]}`
+                                  : r.colorRamp)
+                              : '#fd8d3c';
+
                           return (
                             <div
                               key={r.identifier || rasterTileId}
@@ -2215,51 +2320,70 @@ const Simulation = () => {
                               style={{ fontSize: '12px' }}
                             >
                               <div className="d-flex align-items-center justify-content-between">
-                                <div className="d-flex align-items-center gap-2">
+                                <div
+                                  className="d-flex align-items-center gap-2"
+                                  style={{ cursor: 'pointer', flex: 1, minWidth: 0 }}
+                                  title="Click to change raster color"
+                                  onClick={() => {
+                                    setSelectedRasterForEdit(r);
+                                    setShowEditRasterColorModal(true);
+                                  }}
+                                >
                                   <span
                                     style={{
-                                      width: '12px',
-                                      height: '12px',
+                                      width: '15px',
+                                      height: '15px',
                                       borderRadius: '3px',
-                                      backgroundColor: r.colorRamp || '#fd8d3c',
+                                      backgroundColor: currentColor,
                                       display: 'inline-block',
-                                      border: '1px solid rgba(0,0,0,0.2)',
-                                      flexShrink: 0
+                                      border: '1px solid rgba(0,0,0,0.3)',
+                                      flexShrink: 0,
+                                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
                                     }}
                                   />
                                   <strong
                                     className="text-truncate"
-                                    style={{ maxWidth: '140px' }}
+                                    style={{ maxWidth: '130px' }}
                                     title={r.name || r.datasetIdentifier || rasterTileId}
                                   >
                                     {r.name || r.datasetIdentifier || rasterTileId}
                                   </strong>
                                 </div>
-                                {parsedExtent && map.current && (
+                                <div className="d-flex align-items-center gap-1 ms-1">
                                   <button
-                                    className="btn btn-sm btn-outline-primary py-0 px-2"
+                                    className="btn btn-sm btn-outline-secondary py-0 px-2"
                                     style={{ fontSize: '10px', whiteSpace: 'nowrap' }}
-                                    title="Zoom to Extent"
+                                    title="Edit Color"
                                     onClick={() => {
-                                      if (parsedExtent && map.current?.fitBounds) {
-                                        const { minX, minY, maxX, maxY } = parsedExtent;
-                                        map.current.fitBounds(
-                                          [
-                                            [minX, minY],
-                                            [maxX, maxY]
-                                          ],
-                                          { padding: 40, maxZoom: 14, duration: 1000 }
-                                        );
-                                      }
+                                      setSelectedRasterForEdit(r);
+                                      setShowEditRasterColorModal(true);
                                     }}
                                   >
-                                    Zoom
+                                    Color
                                   </button>
-                                )}
+                                  {parsedExtent && map.current && (
+                                    <button
+                                      className="btn btn-sm btn-outline-primary py-0 px-2"
+                                      style={{ fontSize: '10px', whiteSpace: 'nowrap' }}
+                                      title="Zoom to Extent"
+                                      onClick={() => {
+                                        if (parsedExtent && map.current?.fitBounds) {
+                                          const { minX, minY, maxX, maxY } = parsedExtent;
+                                          map.current.fitBounds(
+                                            [
+                                              [minX, minY],
+                                              [maxX, maxY]
+                                            ],
+                                            { padding: 40, maxZoom: 14, duration: 1000 }
+                                          );
+                                        }
+                                      }}
+                                    >
+                                      Zoom
+                                    </button>
+                                  )}
+                                </div>
                               </div>
-                              {/* <div className="text-muted font-monospace" style={{ fontSize: '9.5px', wordBreak: 'break-all' }}>
-                                /raster/tiles/{rasterTileId}/{'{z}'}/{'{x}'}/{'{y}'}.mvt
-                              </div> */}
                             </div>
                           );
                         })
@@ -2632,6 +2756,17 @@ const Simulation = () => {
               }
             }
           }}
+        />
+      )}
+      {showEditRasterColorModal && selectedRasterForEdit && (
+        <EditRasterColorModal
+          show={showEditRasterColorModal}
+          closeHandler={() => {
+            setShowEditRasterColorModal(false);
+            setSelectedRasterForEdit(null);
+          }}
+          rasterItem={selectedRasterForEdit}
+          onUpdateColor={handleRasterColorChange}
         />
       )}
     </>

@@ -72,6 +72,7 @@ export interface DataSetUpdate {
   hexColor: string;
   lineWidth: number;
   borderColor: string;
+  datasetType?: string;
 }
 
 export interface LocationData {
@@ -144,7 +145,8 @@ export const updateDataset = async (data: DataSetUpdate) => {
     const response = await api.put(`/simulation/dataset`, data);
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Failed to update dataset in API:', error);
+    throw error;
   }
 };
 
