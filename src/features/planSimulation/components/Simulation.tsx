@@ -324,6 +324,13 @@ const Simulation = () => {
   const [selectedPlan, setSelectedPlan] = useState<any>();
 
   const [rasterDatasets, setRasterDatasets] = useState<RasterDatasetItem[]>([]);
+  const [clickedRasterValue, setClickedRasterValue] = useState<{
+    layerName?: string;
+    datasetIdentifier?: string;
+    value?: any;
+    coordinates?: { lng: number; lat: number };
+    properties?: Record<string, any>;
+  } | null>(null);
 
   useEffect(() => {
     if (!map.current || !rasterDatasets || rasterDatasets.length === 0) return;
@@ -350,6 +357,64 @@ const Simulation = () => {
         });
       }
     });
+  }, [rasterDatasets]);
+
+  useEffect(() => {
+    if (!map.current) return;
+    const mapInstance = map.current;
+
+    const handleMapClick = (e: any) => {
+      if (!mapInstance || !mapInstance.getStyle()) return;
+
+      const activeRasterLayers = (rasterDatasets || [])
+        .filter(r => !r.hidden)
+        .map(r => `layer-raster-${r.identifier || r.datasetIdentifier}`)
+        .filter(layerId => {
+          try {
+            return !!mapInstance.getLayer(layerId);
+          } catch {
+            return false;
+          }
+        });
+
+      if (activeRasterLayers.length === 0) return;
+
+      try {
+        const features = mapInstance.queryRenderedFeatures(e.point, { layers: activeRasterLayers });
+        if (features && features.length > 0) {
+          const topFeature = features[0];
+          const matchedLayerId = topFeature.layer?.id || '';
+          const matchedRaster = rasterDatasets.find(
+            r => `layer-raster-${r.identifier || r.datasetIdentifier}` === matchedLayerId
+          );
+
+          const props = topFeature.properties || {};
+          const primaryVal =
+            props.class ??
+            props.value ??
+            props.val ??
+            props.dn ??
+            props.density ??
+            props.gridcode ??
+            (Object.keys(props).length > 0 ? Object.values(props)[0] : 'N/A');
+
+          setClickedRasterValue({
+            layerName: matchedRaster?.name || matchedRaster?.datasetIdentifier || matchedLayerId,
+            datasetIdentifier: matchedRaster?.datasetIdentifier,
+            value: primaryVal,
+            coordinates: { lng: e.lngLat.lng, lat: e.lngLat.lat },
+            properties: props
+          });
+        }
+      } catch (err) {
+        console.warn('Error querying raster features on map click:', err);
+      }
+    };
+
+    mapInstance.on('click', handleMapClick);
+    return () => {
+      mapInstance.off('click', handleMapClick);
+    };
   }, [rasterDatasets]);
 
   const isMatchingRaster = (a: RasterDatasetItem, target: RasterDatasetItem): boolean => {
@@ -2638,6 +2703,49 @@ const Simulation = () => {
               {campaignTotals.map((item, index) => (
                 <CampaignTotalsAccordion key={index} campaignTotals={item} />
               ))}
+            </Accordion>
+            <Accordion title="Raster Value" open={true}>
+              {clickedRasterValue ? (
+                <div className="p-2" style={{ fontSize: '12px' }}>
+                  {clickedRasterValue.layerName && (
+                    <div className="mb-1 d-flex justify-content-between">
+                      <span className="text-muted">Layer:</span>
+                      <strong className="text-truncate" style={{ maxWidth: '140px' }} title={clickedRasterValue.layerName}>
+                        {clickedRasterValue.layerName}
+                      </strong>
+                    </div>
+                  )}
+                  {clickedRasterValue.value !== undefined && (
+                    <div className="mb-1 d-flex justify-content-between align-items-center">
+                      <span className="text-muted">Value:</span>
+                      <span className="badge bg-primary fs-6 py-1 px-2">{String(clickedRasterValue.value)}</span>
+                    </div>
+                  )}
+                  {clickedRasterValue.coordinates && (
+                    <div className="mb-1 text-muted" style={{ fontSize: '11px' }}>
+                      <span>Lng/Lat:</span>{' '}
+                      [{clickedRasterValue.coordinates.lng.toFixed(4)}, {clickedRasterValue.coordinates.lat.toFixed(4)}]
+                    </div>
+                  )}
+                  {clickedRasterValue.properties && Object.keys(clickedRasterValue.properties).length > 0 && (
+                    <div className="mt-2 border-top pt-1">
+                      <div className="text-muted mb-1" style={{ fontSize: '11px' }}>Properties:</div>
+                      <div className="p-1 bg-light rounded border text-dark" style={{ maxHeight: '130px', overflowY: 'auto', fontSize: '11px' }}>
+                        {Object.entries(clickedRasterValue.properties).map(([k, v]) => (
+                          <div key={k} className="d-flex justify-content-between border-bottom py-1">
+                            <span className="text-secondary">{k}:</span>
+                            <span className="fw-semibold">{String(v)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-2 text-muted" style={{ fontSize: '12px' }}>
+                  Click on any raster pixel/feature on the map to inspect its value.
+                </div>
+              )}
             </Accordion>
           </Drawer>
         </div>
