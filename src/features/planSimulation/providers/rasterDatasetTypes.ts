@@ -1,6 +1,6 @@
 export interface RasterSimulationDatasetRequest {
   simulationId: string;
-  tagId: string;
+  dataSetId: string;
   hexColor: string;
   lineWidth: number;
   borderColor: string;
@@ -8,8 +8,9 @@ export interface RasterSimulationDatasetRequest {
   parentAdminLevel?: string;
   dataSetYearFilter?: Record<string, number>;
   addToSimulation?: boolean;
-  userDatasetIds?: string[];
   datasetType?: string; // 'RASTER'
+  tagId?: string;
+  userDatasetIds?: string[];
 }
 
 export interface RasterLocationMetadataItem {

@@ -91,7 +91,7 @@ import {
   SimulationDatasetRequest
 } from './SimulationMapView/api/datasetsAPI';
 import { assignLocationsToPlan } from '../../assignment/api';
-import { addRasterToMap, getPlanTargetLevelName, RasterLayerConfig, getRasterTileUrl } from '../../../utils';
+import { addRasterToMap, getPlanTargetLevelName, RasterLayerConfig, getRasterTileUrl, normalizeExtent } from '../../../utils';
 import { auto } from '@popperjs/core';
 import { getInstances, getInstanceHierarchy } from '../api';
 import RangeInput, { YearSlider } from '../../../components/RangeInput/RangeInput';
@@ -2426,8 +2426,13 @@ const Simulation = () => {
                 fieldName: rasterConfig.fieldName
               });
 
-              if (raster.extent && map.current.fitBounds) {
-                const { minX, minY, maxX, maxY } = raster.extent;
+              const targetExtent =
+                raster.extent ||
+                normalizeExtent((raster.rawLayer as any)?.extent) ||
+                normalizeExtent((rasterData?.apiResponse as any)?.extent);
+
+              if (targetExtent && map.current && typeof map.current.fitBounds === 'function') {
+                const { minX, minY, maxX, maxY } = targetExtent;
                 if (minX !== 0 || minY !== 0 || maxX !== 0 || maxY !== 0) {
                   try {
                     map.current.fitBounds(
@@ -2435,7 +2440,7 @@ const Simulation = () => {
                         [minX, minY],
                         [maxX, maxY]
                       ],
-                      { padding: 40, maxZoom: 14 }
+                      { padding: 40, maxZoom: 14, duration: 1000 }
                     );
                   } catch (e) {
                     console.warn('Could not fit bounds to raster extent', e);

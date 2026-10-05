@@ -25,6 +25,52 @@ export interface RasterExtent {
   maxY: number;
 }
 
+/**
+ * Normalizes an extent from various formats (array, object with minX/minY or west/south/etc.)
+ */
+export const normalizeExtent = (extent: any): RasterExtent | null => {
+  if (!extent) return null;
+
+  // If array format: [minX, minY, maxX, maxY] or [west, south, east, north]
+  if (Array.isArray(extent)) {
+    if (extent.length === 4) {
+      const [minX, minY, maxX, maxY] = extent.map(Number);
+      if (!isNaN(minX) && !isNaN(minY) && !isNaN(maxX) && !isNaN(maxY)) {
+        return { minX, minY, maxX, maxY };
+      }
+    }
+    // If array of coordinate pairs: [[minX, minY], [maxX, maxY]]
+    if (extent.length === 2 && Array.isArray(extent[0]) && Array.isArray(extent[1])) {
+      const [minX, minY] = extent[0].map(Number);
+      const [maxX, maxY] = extent[1].map(Number);
+      if (!isNaN(minX) && !isNaN(minY) && !isNaN(maxX) && !isNaN(maxY)) {
+        return { minX, minY, maxX, maxY };
+      }
+    }
+  }
+
+  // If object format
+  if (typeof extent === 'object') {
+    const minX = Number(
+      extent.minX ?? extent.min_x ?? extent.xmin ?? extent.minLng ?? extent.minLon ?? extent.west ?? extent.left
+    );
+    const minY = Number(
+      extent.minY ?? extent.min_y ?? extent.ymin ?? extent.minLat ?? extent.south ?? extent.bottom
+    );
+    const maxX = Number(
+      extent.maxX ?? extent.max_x ?? extent.xmax ?? extent.maxLng ?? extent.maxLon ?? extent.east ?? extent.right
+    );
+    const maxY = Number(
+      extent.maxY ?? extent.max_y ?? extent.ymax ?? extent.maxLat ?? extent.north ?? extent.top
+    );
+    if (!isNaN(minX) && !isNaN(minY) && !isNaN(maxX) && !isNaN(maxY)) {
+      return { minX, minY, maxX, maxY };
+    }
+  }
+
+  return null;
+};
+
 export interface RasterMapLayer {
   id: string;
   name: string;

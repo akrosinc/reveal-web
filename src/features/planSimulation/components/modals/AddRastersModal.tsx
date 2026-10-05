@@ -9,7 +9,8 @@ import {
   COLOR_OPTIONS,
   ColorOption,
   RasterMapLayer,
-  RasterExtent
+  RasterExtent,
+  normalizeExtent
 } from '../../../../utils/rasterHelper';
 import { getRasterMapLayers } from '../../api';
 import { usePolygonContext } from '../../../../contexts/PolygonContext';
@@ -133,8 +134,9 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
           if (layers && Array.isArray(layers) && layers.length > 0) {
             const mappedOptions: RasterOption[] = layers.map((layer: RasterMapLayer) => {
               const layerId = layer.layerIdentifier || layer.id;
-              const extentStr = layer.extent
-                ? ` [${layer.extent.minX.toFixed(2)}, ${layer.extent.minY.toFixed(2)}, ${layer.extent.maxX.toFixed(2)}, ${layer.extent.maxY.toFixed(2)}]`
+              const parsedExtent = normalizeExtent(layer.extent);
+              const extentStr = parsedExtent
+                ? ` [${parsedExtent.minX.toFixed(2)}, ${parsedExtent.minY.toFixed(2)}, ${parsedExtent.maxX.toFixed(2)}, ${parsedExtent.maxY.toFixed(2)}]`
                 : '';
               return {
                 value: layerId,
@@ -144,7 +146,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
                 sourceLayer: layer.layerIdentifier || 'landcover',
                 fieldName: 'class',
                 rawLayer: layer,
-                extent: layer.extent,
+                extent: parsedExtent || undefined,
                 type: layer.type
               };
             });
@@ -254,7 +256,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
 
     const payload: RasterSimulationDatasetRequest = {
       simulationId: simId,
-      tagId: rasterTagId,
+      dataSetId: rasterTagId,
       hexColor: hexColor,
       lineWidth: 0,
       borderColor: '#000000',
@@ -262,7 +264,6 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
       parentAdminLevel: instance?.adminLevel || '',
       dataSetYearFilter: {},
       addToSimulation: true,
-      userDatasetIds: [rasterTagId],
       datasetType: 'RASTER'
     };
 
@@ -347,12 +348,12 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
                 <small className={isDarkMode ? 'text-light' : 'text-muted'}>
                   {selectedRaster.description}
                 </small>
-                {selectedRaster.rawLayer?.extent && (
+                {selectedRaster.extent && (
                   <div className="mt-1" style={{ fontSize: '11px', opacity: 0.85 }}>
                     <strong>Extent: </strong>
                     <span>
-                      minX: {selectedRaster.rawLayer.extent.minX}, minY: {selectedRaster.rawLayer.extent.minY}, maxX:{' '}
-                      {selectedRaster.rawLayer.extent.maxX}, maxY: {selectedRaster.rawLayer.extent.maxY}
+                      minX: {selectedRaster.extent.minX}, minY: {selectedRaster.extent.minY}, maxX:{' '}
+                      {selectedRaster.extent.maxX}, maxY: {selectedRaster.extent.maxY}
                     </span>
                   </div>
                 )}
