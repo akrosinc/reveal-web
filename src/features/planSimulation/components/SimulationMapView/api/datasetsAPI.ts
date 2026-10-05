@@ -62,7 +62,12 @@ export interface SimulationDataResponse {
 
 export interface DataSetDelete {
   simulationId: string;
-  datasetId: string[];
+  datasetId: string | string[];
+  name?: string;
+  hexColor?: string;
+  lineWidth?: number;
+  borderColor?: string;
+  datasetType?: string;
 }
 
 export interface DataSetUpdate {
@@ -152,13 +157,13 @@ export const updateDataset = async (data: DataSetUpdate) => {
 
 //! DELETE
 export const deleteDataset = async (data: DataSetDelete) => {
-  return api.delete('/simulation/dataset', { data })
-  // try {
-  //   const response = await api.delete(`/simulation/dataset`, { data });
-  //   return response.data;
-  // } catch (error) {
-  //   console.error(error);
-  // }
+  try {
+    const response = await api.delete('/simulation/dataset', { data });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to delete dataset in API:', error);
+    throw error;
+  }
 };
 
 export const getLocationPolygonsWithDatasets = async (data: LocationData) => {

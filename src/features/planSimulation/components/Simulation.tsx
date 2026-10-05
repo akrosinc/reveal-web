@@ -54,12 +54,12 @@ import SimulationMapView from './SimulationMapView/SimulationMapView';
 
 import SimulationAnalysisPanel from './modals/SimulationAnalysisPanel';
 import { Color } from 'react-color-palette';
-import { hex } from 'color-convert';
-import { ADD_RASTER, REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_DELETE_ALL_DATASET, SIMULATION_HIDE_ALL_DATASET, SIMULATION_INSTANCE_SELECTION, VIEW_RASTER_LISTING } from '../../../constants';
+import { ADD_RASTER, RASTER_DELETE_DATASET, RASTER_TOGGLE_VISIBILITY, RASTER_UPDATE_DATASET, REDIRECT_TO_ASSIGNED_PLAN_SIMULATION, REVEAL_SIMULATION_EDIT, SIMULATION_ADD_DATASET, SIMULATION_DATASET_MENU, SIMULATION_DELETE_ALL_DATASET, SIMULATION_HIDE_ALL_DATASET, SIMULATION_INSTANCE_SELECTION, VIEW_RASTER_LISTING } from '../../../constants';
 import AuthorizedElement from '../../../components/AuthorizedElement';
 import { Drawer } from '../../location/components/drawer/Drawer';
 import Accordion from '../../location/components/accordion/Accordion';
-import { faUsers, faSitemap, faHouseUser, faDiceD20 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUsers, faSitemap, faHouseUser, faDiceD20, faEye, faEyeSlash, faTrash, faPalette } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
 
 import Dashboard from '../components/Dashboard/Dashboard';
@@ -290,6 +290,8 @@ const Simulation = () => {
   const [showAddRastersModal, setShowAddRastersModal] = useState(false);
   const [showEditRasterColorModal, setShowEditRasterColorModal] = useState(false);
   const [selectedRasterForEdit, setSelectedRasterForEdit] = useState<RasterDatasetItem | null>(null);
+  const [showDeleteRasterConfirm, setShowDeleteRasterConfirm] = useState(false);
+  const [rasterToDelete, setRasterToDelete] = useState<RasterDatasetItem | null>(null);
 
   const [openCustomModal, setOpenCustomModal] = useState<number>();
   // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -350,6 +352,21 @@ const Simulation = () => {
     });
   }, [rasterDatasets]);
 
+  const isMatchingRaster = (a: RasterDatasetItem, target: RasterDatasetItem): boolean => {
+    if (!a || !target) return false;
+    if (a === target) return true;
+    if (a.identifier && target.identifier) {
+      return a.identifier === target.identifier;
+    }
+    if (a.datasetIdentifier && target.datasetIdentifier) {
+      return a.datasetIdentifier === target.datasetIdentifier;
+    }
+    if (a.name && target.name) {
+      return a.name === target.name;
+    }
+    return false;
+  };
+
   const handleRasterColorChange = async (rasterItem: RasterDatasetItem, newColor: string) => {
     // 1. Resolve simulation identifier (same resolution used for adding rasters)
     let localPlanId = instanceContext?.instancePlan?.identifier;
@@ -402,11 +419,8 @@ const Simulation = () => {
 
       // 3. On successful API response, update local state
       setRasterDatasets(prev =>
-        prev.map(item =>
-          item.identifier === rasterItem.identifier ||
-          (item.datasetIdentifier && item.datasetIdentifier === rasterItem.datasetIdentifier)
-            ? { ...item, colorRamp: newColor }
-            : item
+        (prev || []).map(item =>
+          isMatchingRaster(item, rasterItem) ? { ...item, colorRamp: newColor } : item
         )
       );
 
@@ -444,6 +458,119 @@ const Simulation = () => {
     }
   };
 
+  const handleToggleRasterVisibility = (rasterItem: RasterDatasetItem) => {
+    const isHidden = !rasterItem.hidden;
+    setRasterDatasets(prev =>
+      (prev || []).map(item =>
+        isMatchingRaster(item, rasterItem) ? { ...item, hidden: isHidden } : item
+      )
+    );
+
+    if (map && map.current) {
+      const rasterId = rasterItem.datasetIdentifier || rasterItem.identifier;
+      const layerId = `layer-raster-${rasterItem.identifier || rasterId}`;
+      const fallbackLayerId = `layer-raster-${rasterId}`;
+      const targetVisibility = isHidden ? 'none' : 'visible';
+      if (map.current.getLayer(layerId)) {
+        map.current.setLayoutProperty(layerId, 'visibility', targetVisibility);
+      } else if (map.current.getLayer(fallbackLayerId)) {
+        map.current.setLayoutProperty(fallbackLayerId, 'visibility', targetVisibility);
+      }
+    }
+  };
+
+  const handleDeleteRaster = async (rasterItem: RasterDatasetItem) => {
+    let localPlanId = instanceContext?.instancePlan?.identifier;
+    if (!localPlanId) {
+      try {
+        const raw = localStorage.getItem('currentInstanceContext');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          localPlanId = parsed?.instancePlan?.identifier;
+        }
+      } catch (e) {
+        console.error('Error reading currentInstanceContext from localStorage:', e);
+      }
+    }
+
+    const simulationIdentifier =
+      state?.simulationId ||
+      (selectedPlan as any)?.simulationIdentifier ||
+      (selectedPlan as any)?.simulationId ||
+      (instanceContext?.selectedInstance as any)?.simulationIdentifier ||
+      (instanceContext?.selectedInstance as any)?.simulationId ||
+      localPlanId ||
+      (selectedPlan as any)?.planIdentifier ||
+      (selectedPlan as any)?.identifier ||
+      (selectedPlan as any)?.id ||
+      (instanceContext?.selectedInstance as any)?.identifier ||
+      (instanceContext?.selectedInstance as any)?.id ||
+      localStorage.getItem('simulationId') ||
+      '';
+
+    const datasetId = rasterItem.identifier || rasterItem.datasetIdentifier || '';
+
+    if (!simulationIdentifier || !datasetId) {
+      const errMsg = 'Simulation ID or Dataset ID missing. Cannot delete raster dataset.';
+      toast.error(errMsg);
+      setShowDeleteRasterConfirm(false);
+      setRasterToDelete(null);
+      return;
+    }
+
+    try {
+      // Delete raster dataset via DELETE /simulation/dataset using same payload as update
+      await deleteDataset({
+        simulationId: simulationIdentifier,
+        datasetId: [datasetId],
+        name: rasterItem.name || rasterItem.datasetIdentifier || datasetId,
+        hexColor: rasterItem.colorRamp || '#fd8d3c',
+        lineWidth: 0,
+        borderColor: '#000000',
+        datasetType: 'RASTER'
+      });
+
+      // Remove dataset from local state
+      setRasterDatasets(prev =>
+        (prev || []).filter(item => !isMatchingRaster(item, rasterItem))
+      );
+
+      // Remove layer & source from Mapbox map instance
+      if (map && map.current) {
+        const rasterId = rasterItem.datasetIdentifier || rasterItem.identifier;
+        const layerId = `layer-raster-${rasterItem.identifier || rasterId}`;
+        const sourceId = `source-raster-${rasterItem.identifier || rasterId}`;
+        const fallbackLayerId = `layer-raster-${rasterId}`;
+        const fallbackSourceId = `source-raster-${rasterId}`;
+
+        if (map.current.getLayer(layerId)) {
+          map.current.removeLayer(layerId);
+        } else if (map.current.getLayer(fallbackLayerId)) {
+          map.current.removeLayer(fallbackLayerId);
+        }
+
+        if (map.current.getSource(sourceId)) {
+          map.current.removeSource(sourceId);
+        } else if (map.current.getSource(fallbackSourceId)) {
+          map.current.removeSource(fallbackSourceId);
+        }
+      }
+
+      toast.success('Raster dataset deleted successfully.');
+    } catch (error: any) {
+      console.error('Failed to delete raster dataset via API:', error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to delete raster dataset.';
+      toast.error(errorMessage);
+    } finally {
+      setShowDeleteRasterConfirm(false);
+      setRasterToDelete(null);
+    }
+  };
+
   const fetchSimulationAndData = async (selectedPlan: any) => {
     const simulationIdentifier = await fetchPlanInfo(selectedPlan);
 
@@ -451,7 +578,16 @@ const Simulation = () => {
       const simulationData = await getSimulationData(simulationIdentifier);
       const combinedYearRange = getCombinedDatasetYearRange(simulationData?.datSetYearRange || simulationData?.dataSetYearRange);
 
-      const datasetsWithYearRange = (simulationData.datasets || []).map((dataset: any) => {
+      const rawDatasets = simulationData.datasets || [];
+      const regularDatasets = rawDatasets.filter(
+        (d: any) =>
+          d.datasetType !== 'RASTER' &&
+          d.dataSetType !== 'RASTER' &&
+          d.dataset_type !== 'RASTER' &&
+          d.type !== 'RASTER'
+      );
+
+      const datasetsWithYearRange = regularDatasets.map((dataset: any) => {
         let range = (simulationData.datSetYearRange || simulationData.dataSetYearRange)?.find((d: any) => d.datasetId === dataset.identifier);
         if (!range && (dataset.minYear || dataset.maxYear)) {
           range = {
@@ -467,7 +603,33 @@ const Simulation = () => {
         };
       });
 
-      const rasters: RasterDatasetItem[] = simulationData.rasterDatasets || [];
+      const rawRasters: any[] = [
+        ...(simulationData.rasterDatasets || []),
+        ...rawDatasets.filter(
+          (d: any) =>
+            d.datasetType === 'RASTER' ||
+            d.dataSetType === 'RASTER' ||
+            d.dataset_type === 'RASTER' ||
+            d.type === 'RASTER'
+        )
+      ];
+      const rastersMap = new Map<string, RasterDatasetItem>();
+      rawRasters.forEach((d: any) => {
+        const id = d.identifier || d.id || d.tagId || d.datasetId;
+        const dsId = d.datasetIdentifier || d.mapLayer?.layerIdentifier || d.datasetId || id;
+        if (id && !rastersMap.has(id)) {
+          rastersMap.set(id, {
+            identifier: id,
+            datasetIdentifier: dsId,
+            name: d.name || d.mapLayer?.name || d.datasetName || d.label || id,
+            colorRamp: d.colorRamp || d.hexColor || '#fd8d3c',
+            extent: d.extent || d.mapLayer?.extent,
+            opacity: d.opacity ?? 0.75,
+            hidden: d.hidden ?? false
+          });
+        }
+      });
+      const rasters: RasterDatasetItem[] = Array.from(rastersMap.values());
       setRasterDatasets(rasters);
 
       if (map && map.current && rasters.length > 0) {
@@ -2300,7 +2462,7 @@ const Simulation = () => {
             {/* <AuthorizedElement roles={[VIEW_RASTER_LISTING]}> */}
               <div style={{ width: '100%' }}>
                 {(highestLocations || selectedPlan || instanceContext?.selectedInstance) ? (
-                  <Accordion title="Rasters Listing" open={resultsLoadingState === 'complete'}>
+                  <Accordion title="Rasters Listing" open={true}>
                     <div className="d-flex flex-column gap-2 mb-2 mt-3">
                       {rasterDatasets && rasterDatasets.length > 0 ? (
                         rasterDatasets.map((r: RasterDatasetItem, idx: number) => {
@@ -2317,7 +2479,7 @@ const Simulation = () => {
                             <div
                               key={r.identifier || rasterTileId}
                               className="p-2 rounded border bg-light text-dark d-flex flex-column gap-1"
-                              style={{ fontSize: '12px' }}
+                              style={{ fontSize: '12px', opacity: r.hidden ? 0.6 : 1 }}
                             >
                               <div className="d-flex align-items-center justify-content-between">
                                 <div
@@ -2343,25 +2505,39 @@ const Simulation = () => {
                                   />
                                   <strong
                                     className="text-truncate"
-                                    style={{ maxWidth: '130px' }}
+                                    style={{ maxWidth: '105px' }}
                                     title={r.name || r.datasetIdentifier || rasterTileId}
                                   >
                                     {r.name || r.datasetIdentifier || rasterTileId}
                                   </strong>
                                 </div>
                                 <div className="d-flex align-items-center gap-1 ms-1">
+                                  {/* <AuthorizedElement roles={[RASTER_TOGGLE_VISIBILITY]}> */}
+                                  <button
+                                    className={`btn btn-sm ${r.hidden ? 'btn-outline-secondary' : 'btn-outline-dark'} py-0 px-2`}
+                                    style={{ fontSize: '11px', lineHeight: 1 }}
+                                    title={r.hidden ? 'Show on Map' : 'Hide from Map'}
+                                    onClick={() => handleToggleRasterVisibility(r)}
+                                  >
+                                    <FontAwesomeIcon icon={r.hidden ? faEyeSlash : faEye} />
+                                  </button>
+                                  {/* </AuthorizedElement> */}
+
+                                  {/* <AuthorizedElement roles={[RASTER_UPDATE_DATASET]}> */}
                                   <button
                                     className="btn btn-sm btn-outline-secondary py-0 px-2"
-                                    style={{ fontSize: '10px', whiteSpace: 'nowrap' }}
+                                    style={{ fontSize: '11px', lineHeight: 1 }}
                                     title="Edit Color"
                                     onClick={() => {
                                       setSelectedRasterForEdit(r);
                                       setShowEditRasterColorModal(true);
                                     }}
                                   >
-                                    Color
+                                    <FontAwesomeIcon icon={faPalette} />
                                   </button>
-                                  {parsedExtent && map.current && (
+                                  {/* </AuthorizedElement> */}
+
+                                  {/* {parsedExtent && map.current && (
                                     <button
                                       className="btn btn-sm btn-outline-primary py-0 px-2"
                                       style={{ fontSize: '10px', whiteSpace: 'nowrap' }}
@@ -2381,7 +2557,21 @@ const Simulation = () => {
                                     >
                                       Zoom
                                     </button>
-                                  )}
+                                  )} */}
+
+                                  {/* <AuthorizedElement roles={[RASTER_DELETE_DATASET]}> */}
+                                  <button
+                                    className="btn btn-sm btn-outline-danger py-0 px-2"
+                                    style={{ fontSize: '11px', lineHeight: 1 }}
+                                    title="Delete Raster Dataset"
+                                    onClick={() => {
+                                      setRasterToDelete(r);
+                                      setShowDeleteRasterConfirm(true);
+                                    }}
+                                  >
+                                    <FontAwesomeIcon icon={faTrash} />
+                                  </button>
+                                  {/* </AuthorizedElement> */}
                                 </div>
                               </div>
                             </div>
@@ -2670,36 +2860,46 @@ const Simulation = () => {
           selectedLocationId={currentLocationId}
           onRasterAdded={rasterData => {
             if (rasterData?.raster) {
+              const raster = rasterData.raster;
+              const apiData = rasterData.apiResponse?.data || rasterData.apiResponse || {};
               const datasetIdentifier =
                 raster.rasterId ||
                 raster.value ||
-                rasterData.apiResponse?.datasetName ||
-                rasterData.apiResponse?.tagId ||
-                rasterData.apiResponse?.datasetId;
+                apiData.dataSetId ||
+                apiData.datasetId ||
+                apiData.tagId ||
+                apiData.datasetName ||
+                '';
               const simulationItemIdentifier =
-                rasterData.apiResponse?.tagId ||
-                rasterData.apiResponse?.datasetId ||
+                apiData.identifier ||
+                apiData.id ||
+                apiData.tagId ||
+                apiData.datasetId ||
+                apiData.dataSetId ||
                 datasetIdentifier;
               const hexColor =
-                rasterData.apiResponse?.hexColor ||
-                rasterData.apiResponse?.colorRamp ||
+                apiData.hexColor ||
+                apiData.colorRamp ||
                 rasterData.color?.color ||
                 '#fd8d3c';
+              const rasterName =
+                apiData.datasetName ||
+                apiData.name ||
+                raster.label ||
+                datasetIdentifier;
 
               const newRasterItem: RasterDatasetItem = {
                 identifier: simulationItemIdentifier,
                 datasetIdentifier: datasetIdentifier,
-                name: rasterData.apiResponse?.datasetName || raster.label,
+                name: rasterName,
                 colorRamp: hexColor,
-                extent: raster.extent || raster.rawLayer?.extent
+                extent: raster.extent || raster.rawLayer?.extent || normalizeExtent(apiData.extent),
+                opacity: rasterData.opacity ?? 0.75,
+                hidden: false
               };
 
               setRasterDatasets(prev => {
-                const filtered = prev.filter(
-                  item =>
-                    item.identifier !== simulationItemIdentifier &&
-                    item.datasetIdentifier !== datasetIdentifier
-                );
+                const filtered = (prev || []).filter(item => !isMatchingRaster(item, newRasterItem));
                 return [...filtered, newRasterItem];
               });
 
@@ -2715,7 +2915,7 @@ const Simulation = () => {
                 const rasterConfig: RasterLayerConfig = {
                   id: `raster-${simulationItemIdentifier}`,
                   rasterId: datasetIdentifier,
-                  name: raster.label,
+                  name: rasterName,
                   type: isRasterType ? 'raster' : 'vector',
                   sourceLayer: sourceLayer,
                   fieldName: raster.fieldName || 'class',
@@ -2735,7 +2935,7 @@ const Simulation = () => {
                 const targetExtent =
                   raster.extent ||
                   normalizeExtent((raster.rawLayer as any)?.extent) ||
-                  normalizeExtent((rasterData?.apiResponse as any)?.extent);
+                  normalizeExtent(apiData.extent);
 
                 if (targetExtent && map.current && typeof map.current.fitBounds === 'function') {
                   const { minX, minY, maxX, maxY } = targetExtent;
@@ -2767,6 +2967,22 @@ const Simulation = () => {
           }}
           rasterItem={selectedRasterForEdit}
           onUpdateColor={handleRasterColorChange}
+        />
+      )}
+      {showDeleteRasterConfirm && rasterToDelete && (
+        <ConfirmDialog
+          title="Delete Raster Dataset"
+          message={`Are you sure you want to permanently delete "${rasterToDelete.name || rasterToDelete.datasetIdentifier || rasterToDelete.identifier}"?`}
+          closeHandler={(confirmed: boolean) => {
+            if (confirmed) {
+              handleDeleteRaster(rasterToDelete);
+            } else {
+              setShowDeleteRasterConfirm(false);
+              setRasterToDelete(null);
+            }
+          }}
+          backdrop
+          isDarkMode={false}
         />
       )}
     </>

@@ -163,7 +163,7 @@ export const EditRasterColorModal = ({
           </div>
 
           {/* Color Preset Palette */}
-          <FormGroup className="mb-3">
+          {/* <FormGroup className="mb-3">
             <FormLabel className={isDarkMode ? 'text-white' : 'text-dark'} style={{ fontWeight: 600 }}>
               {t('simulationPage.selectColorPalette', 'Choose Color Ramp / Palette')}
             </FormLabel>
@@ -181,7 +181,7 @@ export const EditRasterColorModal = ({
               styles={customSelectStyles}
               menuPortalTarget={document.body}
             />
-          </FormGroup>
+          </FormGroup> */}
 
           {/* Custom Hex / Color Picker Swatch */}
           <FormGroup className="mb-3">
@@ -239,7 +239,7 @@ export const EditRasterColorModal = ({
           </FormGroup>
 
           {/* Live Preview */}
-          {selectedColorOption && (
+          {/* {selectedColorOption && (
             <div className="mb-2">
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <small className={isDarkMode ? 'text-light' : 'text-muted'}>
@@ -256,7 +256,7 @@ export const EditRasterColorModal = ({
                 }}
               />
             </div>
-          )}
+          )} */}
         </Form>
       </Modal.Body>
       <Modal.Footer>
