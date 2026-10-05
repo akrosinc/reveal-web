@@ -37,9 +37,25 @@ export interface DataSetYearRange {
   years?: number[];
 }
 
+export interface RasterDatasetItem {
+  identifier: string;
+  datasetIdentifier?: string;
+  name: string;
+  colorRamp?: string;
+  extent?: {
+    minX: number;
+    minY: number;
+    maxX: number;
+    maxY: number;
+  };
+  opacity?: number;
+  hidden?: boolean;
+}
+
 export interface SimulationDataResponse {
   identifier: string;
   datasets: DataSetList[];
+  rasterDatasets?: RasterDatasetItem[];
   targetAreas: any[];
   datSetYearRange?: DataSetYearRange[];
 }

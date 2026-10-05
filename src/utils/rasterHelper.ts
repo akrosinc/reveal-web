@@ -216,9 +216,10 @@ export const buildColorExpression = (
   fieldName: string = 'class',
   colors: string[],
   min: number = 0,
-  max: number = 100
+  max: number = 100,
+  fallbackColor?: string
 ): any => {
-  if (!colors || colors.length === 0) return '#3b82f6';
+  if (!colors || colors.length === 0) return fallbackColor || '#3b82f6';
   if (colors.length === 1) return colors[0];
 
   const interpArgs: (number | string)[] = [];
@@ -238,18 +239,18 @@ export const buildColorExpression = (
       ['coalesce', ['to-number', ['get', fieldName]], min],
       ...interpArgs
     ],
-    colors[0] || '#cccccc'
+    fallbackColor || colors[0] || '#3b82f6'
   ];
 };
 
 /**
  * Generates the backend tile endpoint URL using the format:
- * @GetMapping("/tiles/{rasterId}/{z}/{x}/{y}.mvt")
+ * @GetMapping("/raster/tiles/{rasterId}/{z}/{x}/{y}.mvt")
  */
 export const getRasterTileUrl = (rasterId: string): string => {
   const baseUrl = config.API_BASE_URL || 'http://localhost:8080';
   const cleanBaseUrl = baseUrl.replace(/\/$/, '');
-  return `${cleanBaseUrl}/tiles/${rasterId}/{z}/{x}/{y}.mvt`;
+  return `${cleanBaseUrl}/raster/tiles/${rasterId}/{z}/{x}/{y}.mvt`;
 };
 
 /**
@@ -443,11 +444,12 @@ export const addRasterToMap = (
     const resolvedFieldName = options?.fieldName || config.fieldName || 'class';
     const resolvedSourceLayer = options?.sourceLayer || config.sourceLayer || 'landcover';
 
+    const resolvedColor = options?.color || config.color || '#3b82f6';
     const colorExpression =
       options?.colorExpression ||
       (options?.colors && options.colors.length > 0
-        ? buildColorExpression(resolvedFieldName, options.colors)
-        : options?.color || config.color || '#3b82f6');
+        ? buildColorExpression(resolvedFieldName, options.colors, 0, 100, resolvedColor)
+        : resolvedColor);
 
     if (isMvt) {
       // Add vector tile source for .mvt

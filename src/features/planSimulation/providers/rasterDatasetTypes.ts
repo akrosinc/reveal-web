@@ -1,5 +1,6 @@
 export interface RasterSimulationDatasetRequest {
   simulationId: string;
+  simulationIdentifier?: string;
   dataSetId: string;
   hexColor: string;
   lineWidth: number;

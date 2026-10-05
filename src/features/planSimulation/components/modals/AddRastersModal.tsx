@@ -50,7 +50,7 @@ export const FALLBACK_RASTER_OPTIONS: RasterOption[] = [
     value: 'landcover_mvt',
     rasterId: 'landcover',
     label: 'Landcover Classification (MVT)',
-    description: 'Vector-raster classification tiles from /tiles/landcover/{z}/{x}/{y}.mvt',
+    description: 'Vector-raster classification tiles from /raster/tiles/landcover/{z}/{x}/{y}.mvt',
     sourceLayer: 'landcover',
     fieldName: 'class'
   },
@@ -58,7 +58,7 @@ export const FALLBACK_RASTER_OPTIONS: RasterOption[] = [
     value: 'population_density',
     rasterId: 'population_density',
     label: 'Population Density (WorldPop MVT)',
-    description: 'High-resolution population density from /tiles/population_density/{z}/{x}/{y}.mvt',
+    description: 'High-resolution population density from /raster/tiles/population_density/{z}/{x}/{y}.mvt',
     sourceLayer: 'landcover',
     fieldName: 'class'
   },
@@ -66,7 +66,7 @@ export const FALLBACK_RASTER_OPTIONS: RasterOption[] = [
     value: 'building_footprints',
     rasterId: 'building_footprints',
     label: 'Building Footprints / Density (MVT)',
-    description: 'Structures and settlement intensity from /tiles/building_footprints/{z}/{x}/{y}.mvt',
+    description: 'Structures and settlement intensity from /raster/tiles/building_footprints/{z}/{x}/{y}.mvt',
     sourceLayer: 'landcover',
     fieldName: 'class'
   },
@@ -74,7 +74,7 @@ export const FALLBACK_RASTER_OPTIONS: RasterOption[] = [
     value: 'elevation_dem',
     rasterId: 'elevation_dem',
     label: 'Digital Elevation Model (DEM MVT)',
-    description: 'Terrain elevation and topography from /tiles/elevation_dem/{z}/{x}/{y}.mvt',
+    description: 'Terrain elevation and topography from /raster/tiles/elevation_dem/{z}/{x}/{y}.mvt',
     sourceLayer: 'landcover',
     fieldName: 'class'
   },
@@ -82,7 +82,7 @@ export const FALLBACK_RASTER_OPTIONS: RasterOption[] = [
     value: 'ndvi_vegetation',
     rasterId: 'ndvi_vegetation',
     label: 'Vegetation Index (NDVI MVT)',
-    description: 'Normalized difference vegetation index from /tiles/ndvi_vegetation/{z}/{x}/{y}.mvt',
+    description: 'Normalized difference vegetation index from /raster/tiles/ndvi_vegetation/{z}/{x}/{y}.mvt',
     sourceLayer: 'landcover',
     fieldName: 'class'
   },
@@ -90,7 +90,7 @@ export const FALLBACK_RASTER_OPTIONS: RasterOption[] = [
     value: 'malaria_incidence',
     rasterId: 'malaria_incidence',
     label: 'Malaria Risk Surface (MVT)',
-    description: 'Epidemiological risk surface from /tiles/malaria_incidence/{z}/{x}/{y}.mvt',
+    description: 'Epidemiological risk surface from /raster/tiles/malaria_incidence/{z}/{x}/{y}.mvt',
     sourceLayer: 'landcover',
     fieldName: 'class'
   },
@@ -98,7 +98,7 @@ export const FALLBACK_RASTER_OPTIONS: RasterOption[] = [
     value: 'precipitation',
     rasterId: 'precipitation',
     label: 'Annual Precipitation (MVT)',
-    description: 'Rainfall distribution and climate data from /tiles/precipitation/{z}/{x}/{y}.mvt',
+    description: 'Rainfall distribution and climate data from /raster/tiles/precipitation/{z}/{x}/{y}.mvt',
     sourceLayer: 'landcover',
     fieldName: 'class'
   },
@@ -106,7 +106,7 @@ export const FALLBACK_RASTER_OPTIONS: RasterOption[] = [
     value: 'travel_time_access',
     rasterId: 'travel_time_access',
     label: 'Travel Time to Health Facilities (MVT)',
-    description: 'Physical accessibility modeling from /tiles/travel_time_access/{z}/{x}/{y}.mvt',
+    description: 'Physical accessibility modeling from /raster/tiles/travel_time_access/{z}/{x}/{y}.mvt',
     sourceLayer: 'landcover',
     fieldName: 'class'
   }
@@ -117,6 +117,7 @@ export { COLOR_OPTIONS };
 const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onRasterAdded }: Props) => {
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
+  const instanceContext = useAppSelector(state => state.instanceContext);
   const { state: polygonState } = usePolygonContext();
 
   const [rasterOptions, setRasterOptions] = useState<RasterOption[]>([]);
@@ -143,7 +144,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
                 rasterId: layerId,
                 label: layer.name || layer.layerIdentifier || layer.id,
                 description: `Type: ${layer.type || 'RASTER'}${extentStr ? ` | Extent:${extentStr}` : ''}`,
-                sourceLayer: layer.layerIdentifier || 'landcover',
+                sourceLayer: layer.layerIdentifier || layer.id || layerId || 'landcover',
                 fieldName: 'class',
                 rawLayer: layer,
                 extent: parsedExtent || undefined,
@@ -249,13 +250,36 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
       return;
     }
 
+    let localPlanId = instanceContext?.instancePlan?.identifier;
+    if (!localPlanId) {
+      try {
+        const raw = localStorage.getItem('currentInstanceContext');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          localPlanId = parsed?.instancePlan?.identifier;
+        }
+      } catch (e) {
+        console.error('Error reading currentInstanceContext from localStorage:', e);
+      }
+    }
+
     const rasterTagId = selectedRaster.rasterId || selectedRaster.value || selectedRaster.rawLayer?.id || '';
     const hexColor = selectedColor?.color || '#3b82f6';
-    const simId = polygonState?.simulationId || instance?.identifier || instance?.id || instance?.simulationId || '';
+    const simulationIdentifier =
+      polygonState?.simulationId ||
+      instance?.simulationIdentifier ||
+      instance?.simulationId ||
+      localPlanId ||
+      polygonState?.planid ||
+      instance?.planIdentifier ||
+      instance?.identifier ||
+      instance?.id ||
+      '';
     const locId = selectedLocationId || polygonState?.admin0LocationId || instance?.locationId || instance?.admin0LocationId || '';
 
     const payload: RasterSimulationDatasetRequest = {
-      simulationId: simId,
+      simulationId: simulationIdentifier,
+      simulationIdentifier: simulationIdentifier,
       dataSetId: rasterTagId,
       hexColor: hexColor,
       lineWidth: 0,
