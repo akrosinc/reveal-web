@@ -367,16 +367,25 @@ const Simulation = () => {
     const handleMapClick = (e: any) => {
       if (!mapInstance || !mapInstance.getStyle()) return;
 
-      const activeRasterLayers = (rasterDatasets || [])
+      const layerIds: string[] = [];
+      (rasterDatasets || [])
         .filter(r => !r.hidden)
-        .map(r => `layer-raster-${r.identifier || r.datasetIdentifier}`)
-        .filter(layerId => {
-          try {
-            return !!mapInstance.getLayer(layerId);
-          } catch {
-            return false;
+        .forEach(r => {
+          if (r.identifier) {
+            layerIds.push(`layer-raster-${r.identifier}`);
+          }
+          if (r.datasetIdentifier) {
+            layerIds.push(`layer-raster-${r.datasetIdentifier}`);
           }
         });
+
+      const activeRasterLayers = Array.from(new Set(layerIds)).filter(layerId => {
+        try {
+          return !!mapInstance.getLayer(layerId);
+        } catch {
+          return false;
+        }
+      });
 
       if (activeRasterLayers.length === 0) return;
 
@@ -386,7 +395,10 @@ const Simulation = () => {
           const topFeature = features[0];
           const matchedLayerId = topFeature.layer?.id || '';
           const matchedRaster = rasterDatasets.find(
-            r => `layer-raster-${r.identifier || r.datasetIdentifier}` === matchedLayerId
+            r =>
+              `layer-raster-${r.identifier}` === matchedLayerId ||
+              `layer-raster-${r.datasetIdentifier}` === matchedLayerId ||
+              `layer-raster-${r.identifier || r.datasetIdentifier}` === matchedLayerId
           );
 
           const props = topFeature.properties || {};
@@ -406,6 +418,7 @@ const Simulation = () => {
             coordinates: { lng: e.lngLat.lng, lat: e.lngLat.lat },
             properties: props
           });
+          setRightOpen(true);
         }
       } catch (err) {
         console.warn('Error querying raster features on map click:', err);
