@@ -68,6 +68,7 @@ import DrawerButton from '../../../components/DrawerButton/DrawerButton';
 
 import { CustomPopup } from '../../../components/CustomPopup/CustomPopup';
 import DatasetsAccordion from '../../location/components/DatasetsAccordion/DatasetsAccordion';
+import ItemMenu from '../../location/components/DatasetsAccordion/ItemMenu';
 
 import AddTargetAreaForm from './SimulationMapView/components/AddTargetAreaForm/AddTargetAreaForm';
 import AddDatasetForm from './SimulationMapView/components/AddDatasetForm/AddDatasetForm';
@@ -2543,102 +2544,39 @@ const Simulation = () => {
                           return (
                             <div
                               key={r.identifier || rasterTileId}
-                              className="p-2 rounded border bg-light text-dark d-flex flex-column gap-1"
-                              style={{ fontSize: '12px', opacity: r.hidden ? 0.6 : 1 }}
+                              className="p-2 rounded border bg-light text-dark d-flex align-items-center justify-content-between position-relative"
+                              style={{ fontSize: '12px', opacity: r.hidden ? 0.6 : 1, minHeight: '38px' }}
                             >
-                              <div className="d-flex align-items-center justify-content-between">
-                                <div
-                                  className="d-flex align-items-center gap-2"
-                                  style={{ cursor: 'pointer', flex: 1, minWidth: 0 }}
-                                  title="Click to change raster color"
-                                  onClick={() => {
-                                    setSelectedRasterForEdit(r);
-                                    setShowEditRasterColorModal(true);
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      width: '15px',
-                                      height: '15px',
-                                      borderRadius: '3px',
-                                      backgroundColor: currentColor,
-                                      display: 'inline-block',
-                                      border: '1px solid rgba(0,0,0,0.3)',
-                                      flexShrink: 0,
-                                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
-                                    }}
-                                  />
-                                  <strong
-                                    className="text-truncate"
-                                    style={{ maxWidth: '105px' }}
-                                    title={r.name || r.datasetIdentifier || rasterTileId}
-                                  >
-                                    {r.name || r.datasetIdentifier || rasterTileId}
-                                  </strong>
-                                </div>
-                                <div className="d-flex align-items-center gap-1 ms-1">
-                                  {/* <AuthorizedElement roles={[RASTER_TOGGLE_VISIBILITY]}> */}
-                                  <button
-                                    className={`btn btn-sm ${r.hidden ? 'btn-outline-secondary' : 'btn-outline-dark'} py-0 px-2`}
-                                    style={{ fontSize: '11px', lineHeight: 1 }}
-                                    title={r.hidden ? 'Show on Map' : 'Hide from Map'}
-                                    onClick={() => handleToggleRasterVisibility(r)}
-                                  >
-                                    <FontAwesomeIcon icon={r.hidden ? faEyeSlash : faEye} />
-                                  </button>
-                                  {/* </AuthorizedElement> */}
-
-                                  {/* <AuthorizedElement roles={[RASTER_UPDATE_DATASET]}> */}
-                                  <button
-                                    className="btn btn-sm btn-outline-secondary py-0 px-2"
-                                    style={{ fontSize: '11px', lineHeight: 1 }}
-                                    title="Edit Color"
-                                    onClick={() => {
-                                      setSelectedRasterForEdit(r);
-                                      setShowEditRasterColorModal(true);
-                                    }}
-                                  >
-                                    <FontAwesomeIcon icon={faPalette} />
-                                  </button>
-                                  {/* </AuthorizedElement> */}
-
-                                  {/* {parsedExtent && map.current && (
-                                    <button
-                                      className="btn btn-sm btn-outline-primary py-0 px-2"
-                                      style={{ fontSize: '10px', whiteSpace: 'nowrap' }}
-                                      title="Zoom to Extent"
-                                      onClick={() => {
-                                        if (parsedExtent && map.current?.fitBounds) {
-                                          const { minX, minY, maxX, maxY } = parsedExtent;
-                                          map.current.fitBounds(
-                                            [
-                                              [minX, minY],
-                                              [maxX, maxY]
-                                            ],
-                                            { padding: 40, maxZoom: 14, duration: 1000 }
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      Zoom
-                                    </button>
-                                  )} */}
-
-                                  {/* <AuthorizedElement roles={[RASTER_DELETE_DATASET]}> */}
-                                  <button
-                                    className="btn btn-sm btn-outline-danger py-0 px-2"
-                                    style={{ fontSize: '11px', lineHeight: 1 }}
-                                    title="Delete Raster Dataset"
-                                    onClick={() => {
-                                      setRasterToDelete(r);
-                                      setShowDeleteRasterConfirm(true);
-                                    }}
-                                  >
-                                    <FontAwesomeIcon icon={faTrash} />
-                                  </button>
-                                  {/* </AuthorizedElement> */}
-                                </div>
-                              </div>
+                              <strong
+                                className="text-truncate"
+                                style={{ maxWidth: '140px' }}
+                                title={r.name || r.datasetIdentifier || rasterTileId}
+                              >
+                                {r.name || r.datasetIdentifier || rasterTileId}
+                              </strong>
+                              <ItemMenu
+                                direction="left"
+                                className={styles.rasterItemMenu}
+                                isVisible={!r.hidden}
+                                onToggleVisibility={() => handleToggleRasterVisibility(r)}
+                                onEdit={() => {
+                                  setSelectedRasterForEdit(r);
+                                  setShowEditRasterColorModal(true);
+                                }}
+                                onDelete={() => {
+                                  setRasterToDelete(r);
+                                  setShowDeleteRasterConfirm(true);
+                                }}
+                              />
+                              <div
+                                className={styles.rasterColorBox}
+                                style={{ backgroundColor: currentColor }}
+                                title="Click to change raster color"
+                                onClick={() => {
+                                  setSelectedRasterForEdit(r);
+                                  setShowEditRasterColorModal(true);
+                                }}
+                              />
                             </div>
                           );
                         })
