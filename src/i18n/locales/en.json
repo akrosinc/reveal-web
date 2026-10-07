@@ -389,6 +389,7 @@
   "metadataImport": {
     "templateCreation": "Template Creation",
     "fileImport": "File Import",
+    "datasets": "Datasets",
     "uploadFile": "Upload File",
     "table": {
       "fileName": "Filename",

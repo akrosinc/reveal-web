@@ -320,6 +320,7 @@
   "metadataImport": {
     "templateCreation": "Création de modèles",
     "fileImport": "Importation de fichiers",
+    "datasets": "Ensembles de données",
     "uploadFile": "Téléverser un fichier"
   },
   "locationHierarchyPage": {

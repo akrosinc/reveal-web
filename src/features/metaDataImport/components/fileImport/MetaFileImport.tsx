@@ -144,7 +144,7 @@ const MetaFileImport = () => {
       <div className=" my-4">
         <Row>
           <Col>
-            <h2>Metadata Imports({metadataImportPaged?.content?.length})</h2>
+            <h2>{t('metadataImport.datasets', 'Datasets')} ({metadataImportPaged?.content?.length || 0})</h2>
           </Col>
           <Col>
             <AuthorizedElement
