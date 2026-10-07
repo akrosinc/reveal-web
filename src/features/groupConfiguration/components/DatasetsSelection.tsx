@@ -130,31 +130,43 @@ const DatasetsSelection: React.FC<DatasetsSelectionProps> = ({
                         <Spinner animation="border" size="sm" variant="primary" />
                     </div>
                 ) : activeTab === 'simple' ? (
-                    datasets.map(dataset => (
-                        <Form.Check
-                            key={dataset.identifier}
-                            type="checkbox"
-                            id={`dataset-${dataset.identifier}`}
-                            label={<span style={{ color: effectiveTextColor }}>{dataset.name}</span>}
-                            className="mb-2"
-                            checked={selectedDatasets.includes(dataset.identifier)}
-                            onChange={() => handleToggle(dataset.identifier)}
-                            disabled={disabled}
-                        />
-                    ))
+                    datasets.length === 0 ? (
+                        <div className="text-center p-3 text-muted" style={{ color: effectiveTextColor }}>
+                            No Simple Tags found
+                        </div>
+                    ) : (
+                        datasets.map(dataset => (
+                            <Form.Check
+                                key={dataset.identifier}
+                                type="checkbox"
+                                id={`dataset-${dataset.identifier}`}
+                                label={<span style={{ color: effectiveTextColor }}>{dataset.name}</span>}
+                                className="mb-2"
+                                checked={selectedDatasets.includes(dataset.identifier)}
+                                onChange={() => handleToggle(dataset.identifier)}
+                                disabled={disabled}
+                            />
+                        ))
+                    )
                 ) : (
-                    complexTags.map(tag => (
-                        <Form.Check
-                            key={tag.id}
-                            type="checkbox"
-                            id={`complex-tag-${tag.id}`}
-                            label={<span style={{ color: effectiveTextColor }}>{tag.tagName}</span>}
-                            className="mb-2"
-                            checked={selectedComplexTags.includes(tag.id)}
-                            onChange={() => handleComplexToggle(tag.id)}
-                            disabled={disabled}
-                        />
-                    ))
+                    complexTags.length === 0 ? (
+                        <div className="text-center p-3 text-muted" style={{ color: effectiveTextColor }}>
+                            No Complex Tags found
+                        </div>
+                    ) : (
+                        complexTags.map(tag => (
+                            <Form.Check
+                                key={tag.id}
+                                type="checkbox"
+                                id={`complex-tag-${tag.id}`}
+                                label={<span style={{ color: effectiveTextColor }}>{tag.tagName}</span>}
+                                className="mb-2"
+                                checked={selectedComplexTags.includes(tag.id)}
+                                onChange={() => handleComplexToggle(tag.id)}
+                                disabled={disabled}
+                            />
+                        ))
+                    )
                 )}
             </Card.Body>
             {showUploadModal && (
