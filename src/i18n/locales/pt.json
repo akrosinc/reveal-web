@@ -229,7 +229,8 @@
     "hierarchy": "Hierarquia",
     "location": "Localização",
     "geographicLevel": "Nível Geográfico",
-    "addRasters": "Adicionar Rasters"
+    "addRasters": "Adicionar Rasters",
+    "noPopulationAvailable": "Nenhuma população disponível"
   },
   "label": {
     "layerOpacity": "Opacidade da camada"

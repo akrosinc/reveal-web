@@ -226,7 +226,8 @@
     "hierarchy": "Hierarchy",
     "location": "Location",
     "geographicLevel": "Geographic Level",
-    "addRasters": "Raster hinzufügen"
+    "addRasters": "Raster hinzufügen",
+    "noPopulationAvailable": "Keine Bevölkerung verfügbar"
   },
   "darkMode": {
     "on": "Turn on dark mode (de)",

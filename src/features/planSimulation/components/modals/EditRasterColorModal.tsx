@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Form, FormGroup, FormLabel, Modal, Spinner } from 'react-bootstrap';
 import Select from 'react-select';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +26,28 @@ export const EditRasterColorModal = ({
   const [customHexColor, setCustomHexColor] = useState<string>('#fd8d3c');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const availableColorOptions = useMemo(() => {
+    if (customHexColor) {
+      const isPreset = COLOR_OPTIONS.some(
+        opt =>
+          opt.color.toLowerCase() === customHexColor.toLowerCase() ||
+          opt.value.toLowerCase() === customHexColor.toLowerCase() ||
+          opt.colors.some(c => c.toLowerCase() === customHexColor.toLowerCase())
+      );
+      if (!isPreset) {
+        const customOpt: ColorOption = {
+          value: `custom-${customHexColor}`,
+          label: `Custom (${customHexColor})`,
+          color: customHexColor,
+          colors: [customHexColor],
+          gradient: customHexColor
+        };
+        return [customOpt, ...COLOR_OPTIONS];
+      }
+    }
+    return COLOR_OPTIONS;
+  }, [customHexColor]);
+
   useEffect(() => {
     if (show && rasterItem) {
       const initialColor = rasterItem.colorRamp || '#fd8d3c';
@@ -35,9 +57,18 @@ export const EditRasterColorModal = ({
       const matched = COLOR_OPTIONS.find(
         opt =>
           opt.color.toLowerCase() === initialColor.toLowerCase() ||
+          opt.value.toLowerCase() === initialColor.toLowerCase() ||
           opt.colors.some(c => c.toLowerCase() === initialColor.toLowerCase())
       );
-      setSelectedColorOption(matched || COLOR_OPTIONS[0]);
+      setSelectedColorOption(
+        matched || {
+          value: `custom-${initialColor}`,
+          label: `Custom (${initialColor})`,
+          color: initialColor,
+          colors: [initialColor],
+          gradient: initialColor
+        }
+      );
       setIsSubmitting(false);
     }
   }, [show, rasterItem]);
@@ -56,8 +87,12 @@ export const EditRasterColorModal = ({
     menu: (base: any) => ({
       ...base,
       backgroundColor: isDarkMode ? '#212529' : '#ffffff',
-      zIndex: 9999,
+      zIndex: 99999,
       border: `1px solid ${isDarkMode ? '#495057' : '#ced4da'}`
+    }),
+    menuPortal: (base: any) => ({
+      ...base,
+      zIndex: 99999
     }),
     option: (base: any, state: any) => ({
       ...base,
@@ -162,10 +197,10 @@ export const EditRasterColorModal = ({
             </div>
           </div>
 
-          {/* Color Preset Palette */}
-          {/* <FormGroup className="mb-3">
+          {/* Color Selection Dropdown (from raster presets) */}
+          <FormGroup className="mb-3">
             <FormLabel className={isDarkMode ? 'text-white' : 'text-dark'} style={{ fontWeight: 600 }}>
-              {t('simulationPage.selectColorPalette', 'Choose Color Ramp / Palette')}
+              {t('simulationPage.selectColor', 'Choose Color Ramp / Palette (from raster presets)')}
             </FormLabel>
             <Select<ColorOption>
               placeholder={t('simulationPage.chooseColor', 'Select a color palette...')}
@@ -176,12 +211,39 @@ export const EditRasterColorModal = ({
                   setCustomHexColor(option.color);
                 }
               }}
-              options={COLOR_OPTIONS}
+              options={availableColorOptions}
               formatOptionLabel={formatColorOptionLabel}
+              isClearable
               styles={customSelectStyles}
               menuPortalTarget={document.body}
             />
-          </FormGroup> */}
+          </FormGroup>
+
+          {/* Live Color Ramp Preview */}
+          {selectedColorOption && (
+            <div className="mb-3">
+              <div className="d-flex justify-content-between align-items-center mb-1">
+                <small className={isDarkMode ? 'text-light' : 'text-muted'}>
+                  <strong>Color Ramp Preview:</strong> {selectedColorOption.label}
+                </small>
+              </div>
+              <div
+                style={{
+                  height: '24px',
+                  borderRadius: '6px',
+                  background: selectedColorOption.gradient || selectedColorOption.color || customHexColor,
+                  border: `1px solid ${isDarkMode ? '#555' : '#ccc'}`,
+                  boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                }}
+              />
+              {selectedColorOption.colors && (
+                <div className="d-flex justify-content-between mt-1" style={{ fontSize: '10px', opacity: 0.7 }}>
+                  <span>Min (Low Value)</span>
+                  <span>Max (High Value)</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Custom Hex / Color Picker Swatch */}
           <FormGroup className="mb-3">
@@ -193,14 +255,23 @@ export const EditRasterColorModal = ({
                 type="color"
                 value={customHexColor.startsWith('#') && customHexColor.length === 7 ? customHexColor : '#fd8d3c'}
                 onChange={e => {
-                  setCustomHexColor(e.target.value);
-                  setSelectedColorOption({
-                    value: 'custom',
-                    label: `Custom (${e.target.value})`,
-                    color: e.target.value,
-                    colors: [e.target.value],
-                    gradient: e.target.value
-                  });
+                  const val = e.target.value;
+                  setCustomHexColor(val);
+                  const matched = COLOR_OPTIONS.find(
+                    opt =>
+                      opt.color.toLowerCase() === val.toLowerCase() ||
+                      opt.value.toLowerCase() === val.toLowerCase() ||
+                      opt.colors.some(c => c.toLowerCase() === val.toLowerCase())
+                  );
+                  setSelectedColorOption(
+                    matched || {
+                      value: `custom-${val}`,
+                      label: `Custom (${val})`,
+                      color: val,
+                      colors: [val],
+                      gradient: val
+                    }
+                  );
                 }}
                 style={{
                   width: '45px',
@@ -216,15 +287,24 @@ export const EditRasterColorModal = ({
                 type="text"
                 value={customHexColor}
                 onChange={e => {
-                  setCustomHexColor(e.target.value);
-                  if (e.target.value.startsWith('#') && e.target.value.length === 7) {
-                    setSelectedColorOption({
-                      value: 'custom',
-                      label: `Custom (${e.target.value})`,
-                      color: e.target.value,
-                      colors: [e.target.value],
-                      gradient: e.target.value
-                    });
+                  const val = e.target.value;
+                  setCustomHexColor(val);
+                  if (val.startsWith('#') && val.length === 7) {
+                    const matched = COLOR_OPTIONS.find(
+                      opt =>
+                        opt.color.toLowerCase() === val.toLowerCase() ||
+                        opt.value.toLowerCase() === val.toLowerCase() ||
+                        opt.colors.some(c => c.toLowerCase() === val.toLowerCase())
+                    );
+                    setSelectedColorOption(
+                      matched || {
+                        value: `custom-${val}`,
+                        label: `Custom (${val})`,
+                        color: val,
+                        colors: [val],
+                        gradient: val
+                      }
+                    );
                   }
                 }}
                 placeholder="#fd8d3c"
@@ -237,26 +317,6 @@ export const EditRasterColorModal = ({
               />
             </div>
           </FormGroup>
-
-          {/* Live Preview */}
-          {/* {selectedColorOption && (
-            <div className="mb-2">
-              <div className="d-flex justify-content-between align-items-center mb-1">
-                <small className={isDarkMode ? 'text-light' : 'text-muted'}>
-                  <strong>Preview:</strong> {selectedColorOption.label}
-                </small>
-              </div>
-              <div
-                style={{
-                  height: '24px',
-                  borderRadius: '6px',
-                  background: selectedColorOption.gradient || selectedColorOption.color || customHexColor,
-                  border: `1px solid ${isDarkMode ? '#555' : '#ccc'}`,
-                  boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
-                }}
-              />
-            </div>
-          )} */}
         </Form>
       </Modal.Body>
       <Modal.Footer>

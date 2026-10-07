@@ -95,7 +95,15 @@ import {
   updateDataset
 } from './SimulationMapView/api/datasetsAPI';
 import { assignLocationsToPlan } from '../../assignment/api';
-import { addRasterToMap, getPlanTargetLevelName, RasterLayerConfig, getRasterTileUrl, normalizeExtent } from '../../../utils';
+import {
+  addRasterToMap,
+  getPlanTargetLevelName,
+  RasterLayerConfig,
+  getRasterTileUrl,
+  normalizeExtent,
+  COLOR_OPTIONS,
+  buildColorExpression
+} from '../../../utils';
 import { auto } from '@popperjs/core';
 import { getInstances, getInstanceHierarchy } from '../api';
 import RangeInput, { YearSlider } from '../../../components/RangeInput/RangeInput';
@@ -329,6 +337,7 @@ const Simulation = () => {
     layerName?: string;
     datasetIdentifier?: string;
     value?: any;
+    hasPopulation?: boolean;
     coordinates?: { lng: number; lat: number };
     properties?: Record<string, any>;
   } | null>(null);
@@ -338,6 +347,13 @@ const Simulation = () => {
     rasterDatasets.forEach((r: RasterDatasetItem) => {
       const rasterId = r.datasetIdentifier || r.identifier;
       if (rasterId && !r.hidden) {
+        const matchedPreset = COLOR_OPTIONS.find(
+          c =>
+            c.color.toLowerCase() === (r.colorRamp || '').toLowerCase() ||
+            c.value.toLowerCase() === (r.colorRamp || '').toLowerCase() ||
+            c.colors.some(col => col.toLowerCase() === (r.colorRamp || '').toLowerCase())
+        );
+
         const rasterConfig: RasterLayerConfig = {
           id: `raster-${r.identifier || rasterId}`,
           rasterId: rasterId,
@@ -347,12 +363,14 @@ const Simulation = () => {
           fieldName: 'class',
           tiles: [getRasterTileUrl(rasterId)],
           opacity: r.opacity ?? 0.75,
-          color: r.colorRamp || '#fd8d3c'
+          color: r.colorRamp || '#fd8d3c',
+          colors: matchedPreset ? matchedPreset.colors : undefined
         };
 
         addRasterToMap(map.current, rasterConfig, {
           opacity: r.opacity ?? 0.75,
           color: r.colorRamp || '#fd8d3c',
+          colors: matchedPreset ? matchedPreset.colors : undefined,
           sourceLayer: rasterConfig.sourceLayer,
           fieldName: rasterConfig.fieldName
         });
@@ -402,23 +420,54 @@ const Simulation = () => {
           );
 
           const props = topFeature.properties || {};
-          const primaryVal =
+          const rawVal =
+            props.population ??
+            props.pop ??
+            props.count ??
             props.class ??
             props.value ??
             props.val ??
             props.dn ??
             props.density ??
             props.gridcode ??
-            (Object.keys(props).length > 0 ? Object.values(props)[0] : 'N/A');
+            (Object.keys(props).length > 0 ? Object.values(props)[0] : null);
+
+          const isNumeric = rawVal !== null && rawVal !== undefined && rawVal !== '' && !isNaN(Number(rawVal));
+          const numVal = isNumeric ? Number(rawVal) : null;
+          const hasPopulation =
+            rawVal !== null &&
+            rawVal !== undefined &&
+            rawVal !== '' &&
+            rawVal !== 'N/A' &&
+            rawVal !== 'null' &&
+            rawVal !== 'None' &&
+            rawVal !== -9999 &&
+            rawVal !== -99999 &&
+            (isNumeric ? numVal! > 0 : true);
 
           setClickedRasterValue({
             layerName: matchedRaster?.name || matchedRaster?.datasetIdentifier || matchedLayerId,
             datasetIdentifier: matchedRaster?.datasetIdentifier,
-            value: primaryVal,
+            value: hasPopulation ? (isNumeric ? (Number.isInteger(numVal) ? numVal : Number(numVal!.toFixed(2))) : rawVal) : null,
+            hasPopulation: hasPopulation,
             coordinates: { lng: e.lngLat.lng, lat: e.lngLat.lat },
             properties: props
           });
           setRightOpen(true);
+        } else {
+          // If clicked on an area with active raster layers but no raster feature / pixel at point
+          const activeRaster = (rasterDatasets || []).find(r => !r.hidden);
+          if (activeRaster) {
+            setClickedRasterValue({
+              layerName: activeRaster.name || activeRaster.datasetIdentifier || 'Raster Layer',
+              datasetIdentifier: activeRaster.datasetIdentifier,
+              value: null,
+              hasPopulation: false,
+              coordinates: { lng: e.lngLat.lng, lat: e.lngLat.lat },
+              properties: {}
+            });
+            setRightOpen(true);
+          }
         }
       } catch (err) {
         console.warn('Error querying raster features on map click:', err);
@@ -508,15 +557,24 @@ const Simulation = () => {
         const rasterId = rasterItem.datasetIdentifier || rasterItem.identifier;
         const layerId = `layer-raster-${rasterItem.identifier || rasterId}`;
         const fallbackLayerId = `layer-raster-${rasterId}`;
+        const matchedPreset = COLOR_OPTIONS.find(
+          c =>
+            c.color.toLowerCase() === newColor.toLowerCase() ||
+            c.value.toLowerCase() === newColor.toLowerCase() ||
+            c.colors.some(col => col.toLowerCase() === newColor.toLowerCase())
+        );
+        const colorExpr = matchedPreset
+          ? buildColorExpression('class', matchedPreset.colors, 0, 100, newColor)
+          : newColor;
         if (map.current.getLayer(layerId)) {
           try {
-            map.current.setPaintProperty(layerId, 'fill-color', newColor);
+            map.current.setPaintProperty(layerId, 'fill-color', colorExpr);
           } catch (e) {
             console.warn('Could not update paint property on layer', layerId, e);
           }
         } else if (map.current.getLayer(fallbackLayerId)) {
           try {
-            map.current.setPaintProperty(fallbackLayerId, 'fill-color', newColor);
+            map.current.setPaintProperty(fallbackLayerId, 'fill-color', colorExpr);
           } catch (e) {
             console.warn('Could not update paint property on layer', fallbackLayerId, e);
           }
@@ -2666,12 +2724,16 @@ const Simulation = () => {
                       </strong>
                     </div>
                   )}
-                  {clickedRasterValue.value !== undefined && (
-                    <div className="mb-1 d-flex justify-content-between align-items-center">
-                      <span className="text-muted">Value:</span>
+                  <div className="mb-1 d-flex justify-content-between align-items-center">
+                    <span className="text-muted">Population / Value:</span>
+                    {clickedRasterValue.hasPopulation && clickedRasterValue.value !== null && clickedRasterValue.value !== undefined ? (
                       <span className="badge bg-primary fs-6 py-1 px-2">{String(clickedRasterValue.value)}</span>
-                    </div>
-                  )}
+                    ) : (
+                      <span className="badge bg-secondary py-1 px-2 text-wrap" style={{ fontSize: '11px', fontWeight: 500 }}>
+                        {t('simulationPage.noPopulationAvailable', 'No population available')}
+                      </span>
+                    )}
+                  </div>
                   {clickedRasterValue.coordinates && (
                     <div className="mb-1 text-muted" style={{ fontSize: '11px' }}>
                       <span>Lng/Lat:</span>{' '}
