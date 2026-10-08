@@ -2730,7 +2730,7 @@ const Simulation = () => {
                     </div>
                   )}
                   <div className="mb-1 d-flex justify-content-between align-items-center">
-                    <span className="text-muted">Population / Value:</span>
+                    <span className="text-muted">Population Value:</span>
                     {clickedRasterValue.hasPopulation && clickedRasterValue.value !== null && clickedRasterValue.value !== undefined ? (
                       <span className="badge bg-primary fs-6 py-1 px-2">{String(clickedRasterValue.value)}</span>
                     ) : (
@@ -2743,19 +2743,6 @@ const Simulation = () => {
                     <div className="mb-1 text-muted" style={{ fontSize: '11px' }}>
                       <span>Lng/Lat:</span>{' '}
                       [{clickedRasterValue.coordinates.lng.toFixed(4)}, {clickedRasterValue.coordinates.lat.toFixed(4)}]
-                    </div>
-                  )}
-                  {clickedRasterValue.properties && Object.keys(clickedRasterValue.properties).length > 0 && (
-                    <div className="mt-2 border-top pt-1">
-                      <div className="text-muted mb-1" style={{ fontSize: '11px' }}>Properties:</div>
-                      <div className="p-1 bg-light rounded border text-dark" style={{ maxHeight: '130px', overflowY: 'auto', fontSize: '11px' }}>
-                        {Object.entries(clickedRasterValue.properties).map(([k, v]) => (
-                          <div key={k} className="d-flex justify-content-between border-bottom py-1">
-                            <span className="text-secondary">{k}:</span>
-                            <span className="fw-semibold">{String(v)}</span>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </div>
