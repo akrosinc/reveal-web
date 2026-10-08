@@ -1,0 +1,19 @@
+.node {
+  composes: buttonReset from '../../styles/deck.module.css';
+  padding: 4px 0;
+  font-size: 12px;
+  color: var(--body-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node:hover {
+  color: var(--ink);
+}
+
+.selected,
+.selected:hover {
+  font-weight: 700;
+  color: var(--teal);
+}

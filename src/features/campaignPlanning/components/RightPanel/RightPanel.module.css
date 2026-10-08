@@ -1,0 +1,187 @@
+.panel {
+  composes: surface scroll from '../../styles/deck.module.css';
+  position: absolute;
+  top: 70px;
+  right: 14px;
+  z-index: 2;
+  width: 284px;
+  /* Stops above the map tool buttons */
+  max-height: calc(100% - 140px);
+  border-radius: 16px;
+}
+
+/* Collapsed (design state 4): narrower, header only */
+.collapsed {
+  width: 230px;
+}
+
+.strip {
+  composes: collapseStrip from '../../styles/deck.module.css';
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 15px 12px 0 17px;
+}
+
+.name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.collapseButton {
+  composes: iconButton from '../../styles/deck.module.css';
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+}
+
+.type {
+  margin-bottom: 9px;
+  padding: 0 17px;
+  font-size: 11.5px;
+  color: #8a9088;
+  text-transform: capitalize;
+}
+
+.clickable {
+  composes: buttonReset from '../../styles/deck.module.css';
+}
+
+.field {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 17px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+}
+
+.fieldLabel {
+  color: #828880;
+}
+
+.fieldValue {
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.clickable:hover .fieldLabel {
+  color: var(--teal);
+}
+
+.tabEnd {
+  padding-bottom: 15px;
+}
+
+.fieldDivider {
+  border-bottom: 1px solid var(--line);
+}
+
+.pills {
+  display: flex;
+  gap: 6px;
+  padding: 11px 17px;
+  border-top: 1px solid var(--line);
+}
+
+.pill {
+  padding: 5px 12px;
+  border: 1px solid #dfded8;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #7d847b;
+  cursor: pointer;
+}
+
+.pillActive {
+  border-color: var(--teal);
+  background: var(--teal);
+  color: #fff;
+  box-shadow: 0 5px 10px rgba(8, 127, 149, 0.25);
+}
+
+.sub {
+  padding: 13px 17px 7px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.statusRow {
+  composes: buttonReset from '../../styles/deck.module.css';
+  padding: 7px 17px;
+}
+
+.statusTop {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+}
+
+.statusLabel {
+  color: #777f77;
+}
+
+.statusRow:hover .statusLabel {
+  color: var(--teal);
+}
+
+.statusValue {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.track {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e4e1;
+}
+
+.fillComplete,
+.fillIncomplete {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.fillComplete {
+  background: #218541;
+}
+
+.fillIncomplete {
+  background: #ba3329;
+}
+
+.segRow {
+  display: flex;
+  gap: 5px;
+  padding: 8px 17px 4px;
+}
+
+.seg {
+  padding: 4px 9px;
+  border: 1px solid #dfded8;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #7d847b;
+}
+
+.segActive {
+  border-color: var(--teal);
+  background: var(--teal);
+  color: #fff;
+}

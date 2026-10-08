@@ -25,6 +25,8 @@ export const RESOURCE_PLANNING_PAGE = '/plans/resource-planning';
 
 export const CampaignManage = '/plans/campaign-management';
 
+export const CAMPAIGN_PLANNING_PAGE = '/plans/campaign-planning';
+
 //REPORTING PAGES
 export const REPORTING_PAGE = '/reports';
 

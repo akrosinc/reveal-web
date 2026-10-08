@@ -1,0 +1,11 @@
+/* mapbox-gl.css forces position: relative on the container, so fill the deck by size */
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Logo and attribution: just left of the map tool buttons row (3 x 38px + gaps + 18px offset) */
+.map :global(.mapboxgl-ctrl-bottom-right) {
+  right: 156px;
+  bottom: 8px;
+}

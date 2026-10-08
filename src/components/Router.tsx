@@ -14,6 +14,7 @@ import {
   TAG_MANAGEMENT,
   DATA_EXTRACTS, AMDR_IMPORT,
   CampaignManage,
+  CAMPAIGN_PLANNING_PAGE,
   GROUP_MANAGEMENT,
   INSTANCE_CONFIGURATION
 } from '../constants/';
@@ -36,6 +37,7 @@ import DataExtracts from '../pages/DataExtracts/DataExtracts';
 import AmdrLandingPage from "../features/reporting/components/AmdrReport/AmdrLandingPage";
 import AmdrLandingPage2 from "../features/reporting/components/AmdrReport/AmdrLandingPage2";
 import Campaign from '../pages/Campaign';
+import CampaignPlanning from '../pages/CampaignPlanning';
 import InstanceConfiguration from '../features/instanceConfiguration';
 import GroupConfiguration from '../features/groupConfiguration';
 import {SUPER_ADMIN} from "../constants/userRoles";
@@ -76,6 +78,7 @@ const Router = ({instance}:Props) => {
           <Route path={REPORTING_PAGE + '/*'} element={<Reporting />} />
           <Route path={SIMULATION_PAGE + '/*'} element={<PlanSimulation />} />
           <Route path={CampaignManage + '/*'} element={<Campaign />} />
+          <Route path={CAMPAIGN_PLANNING_PAGE + '/*'} element={<CampaignPlanning />} />
           <Route path={TAG_MANAGEMENT + '/*'} element={<TagManagement2 />} />
           {/* <Route path={DATA_PROCESSING_PROGRESS + '/*'} element={<DataProcessingProgress />} /> */}
           <Route path={METADATA_IMPORT + '/*'} element={<MetaDataImport />}>

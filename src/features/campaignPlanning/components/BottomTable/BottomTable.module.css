@@ -1,0 +1,141 @@
+/* Collapsed bar (design state 1) — lines up with the right card (284px + gaps) */
+.bar {
+  composes: surface buttonReset from '../../styles/deck.module.css';
+  position: absolute;
+  right: 332px;
+  bottom: 14px;
+  left: 14px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: auto;
+  padding: 11px 17px;
+  border-radius: 14px;
+}
+
+/* Right card collapsed to 230px (design state 4) */
+.narrow {
+  right: 278px;
+}
+
+.barLabel {
+  font-size: 11.5px;
+  color: var(--muted-ink);
+}
+
+.bar:hover .barLabel {
+  color: var(--teal);
+}
+
+.handle {
+  display: block;
+  width: 32px;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(20, 24, 20, 0.15);
+}
+
+/* Sheet pulled up (design state 2) */
+.sheet {
+  composes: surface from '../../styles/deck.module.css';
+  position: absolute;
+  right: 332px;
+  bottom: 14px;
+  left: 14px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  height: 260px;
+  border-radius: 16px;
+}
+
+.sheet.narrow {
+  right: 278px;
+}
+
+.handleRow {
+  composes: buttonReset from '../../styles/deck.module.css';
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 10px 0 6px;
+}
+
+.title {
+  flex-shrink: 0;
+  padding: 0 18px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.scroll {
+  composes: scroll from '../../styles/deck.module.css';
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+/* Overrides the global td/th padding and cursor rules in App.css */
+.table th,
+.table td {
+  padding: 7px 10px !important;
+  text-align: left;
+}
+
+.table th {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  border-top: 1px solid var(--line);
+  font-weight: 700;
+  color: #8b9187;
+  cursor: default;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-left: 18px !important;
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-right: 18px !important;
+}
+
+.table td {
+  color: var(--body-ink);
+}
+
+.table tbody tr {
+  cursor: pointer;
+}
+
+.table tbody tr:hover td {
+  background: rgba(20, 24, 20, 0.04);
+  color: var(--ink);
+}
+
+.empty {
+  padding: 7px 18px;
+  font-size: 12px;
+  color: var(--label-ink);
+}
+
+.fade {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  height: 34px;
+  background: linear-gradient(rgba(255, 252, 247, 0), rgba(255, 252, 247, 0.95));
+  pointer-events: none;
+}

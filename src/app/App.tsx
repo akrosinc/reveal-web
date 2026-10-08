@@ -42,6 +42,8 @@ import { usePath } from '../hooks/usePath';
 import dashBoardApi from '../api/dashboard-axios';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import {config} from "../config/config";
+import { useLocation } from 'react-router-dom';
+import { CAMPAIGN_PLANNING_PAGE } from '../constants';
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
 library.add(
@@ -71,6 +73,11 @@ library.add(
 function App() {
   const { keycloak, initialized } = useKeycloak();
   const dispatch = useAppDispatch();
+  // Campaign Planning is a standalone full-screen module with its own top bar, so it skips the app shell
+  // (only when logged in: the public page needs the Navbar's Login button)
+  const { pathname } = useLocation();
+  const isStandaloneModule = !!keycloak.authenticated && pathname.startsWith(CAMPAIGN_PLANNING_PAGE);
+  const router = <Router instance={config.REACT_APP_INSTANCE} />;
 
   // custom hook to listen and change document title on page navigation
   usePath();
@@ -111,17 +118,21 @@ function App() {
   return (
     <ErrorHandler>
       <>
-        <SimpleBar style={{ height: '100vh' }}>
-          <Container fluid>
-            <main>
-              <NavbarComponent />
-              <Router instance={config.REACT_APP_INSTANCE}/>
-            </main>
-            <Container fluid className="footer-row-container">
-              <Footer />
+        {isStandaloneModule ? (
+          router
+        ) : (
+          <SimpleBar style={{ height: '100vh' }}>
+            <Container fluid>
+              <main>
+                <NavbarComponent />
+                {router}
+              </main>
+              <Container fluid className="footer-row-container">
+                <Footer />
+              </Container>
             </Container>
-          </Container>
-        </SimpleBar>
+          </SimpleBar>
+        )}
         <ToastContainer position={toast.POSITION.BOTTOM_RIGHT} />
         <Loader />
       </>

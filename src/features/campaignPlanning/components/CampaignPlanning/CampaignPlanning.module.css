@@ -1,0 +1,13 @@
+.deck {
+  composes: font from '../../styles/deck.module.css';
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  background: #e6e7e1;
+}
+
+.notice {
+  composes: panel from '../LeftPanel/LeftPanel.module.css';
+  font-size: 12px;
+  color: #5c6259;
+}

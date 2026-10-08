@@ -1,0 +1,120 @@
+.panel {
+  composes: surface from '../../styles/deck.module.css';
+  position: absolute;
+  top: 70px;
+  left: 14px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: 216px;
+  max-height: calc(100% - 84px - var(--table-space, 0px));
+  padding: 15px;
+  border-radius: 16px;
+}
+
+/* Collapsed state (design state 3): the card is replaced by this toggle */
+.toggle {
+  composes: surface from '../../styles/deck.module.css';
+  position: absolute;
+  top: 70px;
+  left: 14px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 13px;
+  cursor: pointer;
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.toggleDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--teal);
+}
+
+.searchRow {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+  margin-bottom: 11px;
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 11px;
+  border: 1px solid #dbd9d2;
+  border-radius: 9px;
+  background: #f1ede5;
+  font: inherit;
+  font-size: 12px;
+  color: #737a72;
+  outline: none;
+}
+
+.search::placeholder {
+  color: var(--muted-ink);
+  opacity: 1;
+}
+
+.search:focus {
+  border-color: var(--teal);
+}
+
+.collapseButton {
+  composes: iconButton from '../../styles/deck.module.css';
+  width: 32px;
+  border: 1px solid #dbd9d2;
+  border-radius: 9px;
+  background: #f1ede5;
+}
+
+.body {
+  composes: scroll from '../../styles/deck.module.css';
+  min-height: 0;
+}
+
+/* Section heading with the divider above it */
+.label {
+  composes: buttonReset from '../../styles/deck.module.css';
+  margin: 12px 0 5px;
+  padding: 11px 0 0;
+  border-top: 1px solid var(--line);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--label-ink);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 0;
+  font-size: 12px;
+  color: var(--body-ink);
+}
+
+.swatch {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.empty {
+  composes: item;
+  color: var(--label-ink);
+}
