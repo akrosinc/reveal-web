@@ -212,6 +212,9 @@ const Simulation = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const isAuthorizedForRedirectingToAPlan = useAuthorization([REDIRECT_TO_ASSIGNED_PLAN_SIMULATION])
   const isAuthorized = useAuthorization([SIMULATION_INSTANCE_SELECTION])
+  const canUpdateRaster = useAuthorization([RASTER_UPDATE_DATASET]);
+  const canToggleRasterVisibility = useAuthorization([RASTER_TOGGLE_VISIBILITY]);
+  const canDeleteRaster = useAuthorization([RASTER_DELETE_DATASET]);
   const instanceContext = useAppSelector(state => state.instanceContext);
   // const [showModal, setShowModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -2596,7 +2599,7 @@ const Simulation = () => {
                 ) : <></>}
               </div>
             </AuthorizedElement>
-            {/* <AuthorizedElement roles={[VIEW_RASTER_LISTING]}> */}
+            <AuthorizedElement roles={[VIEW_RASTER_LISTING]}>
               <div style={{ width: '100%' }}>
                 {(highestLocations || selectedPlan || instanceContext?.selectedInstance) ? (
                   <Accordion title="Rasters Listing" open={true}>
@@ -2629,25 +2632,27 @@ const Simulation = () => {
                                 direction="left"
                                 className={styles.rasterItemMenu}
                                 isVisible={!r.hidden}
-                                onToggleVisibility={() => handleToggleRasterVisibility(r)}
-                                onEdit={() => {
+                                onToggleVisibility={canToggleRasterVisibility ? () => handleToggleRasterVisibility(r) : undefined}
+                                onEdit={canUpdateRaster ? () => {
                                   setSelectedRasterForEdit(r);
                                   setShowEditRasterColorModal(true);
-                                }}
-                                onDelete={() => {
+                                } : undefined}
+                                onDelete={canDeleteRaster ? () => {
                                   setRasterToDelete(r);
                                   setShowDeleteRasterConfirm(true);
-                                }}
+                                } : undefined}
                               />
-                              <div
-                                className={styles.rasterColorBox}
-                                style={{ backgroundColor: currentColor }}
-                                title="Click to change raster color"
-                                onClick={() => {
-                                  setSelectedRasterForEdit(r);
-                                  setShowEditRasterColorModal(true);
-                                }}
-                              />
+                              <AuthorizedElement roles={[RASTER_UPDATE_DATASET]}>
+                                <div
+                                  className={styles.rasterColorBox}
+                                  style={{ backgroundColor: currentColor }}
+                                  title="Click to change raster color"
+                                  onClick={() => {
+                                    setSelectedRasterForEdit(r);
+                                    setShowEditRasterColorModal(true);
+                                  }}
+                                />
+                              </AuthorizedElement>
                             </div>
                           );
                         })
@@ -2656,7 +2661,7 @@ const Simulation = () => {
                       )}
 
                       <div className="d-flex mt-2 gap-2">
-                        {/* <AuthorizedElement roles={[ADD_RASTER]}> */}
+                        <AuthorizedElement roles={[ADD_RASTER]}>
                           <DrawerButton
                             style={{ fontSize: 10.9, color: '#000' }}
                             onClick={() => setShowAddRastersModal(true)}
@@ -2664,13 +2669,13 @@ const Simulation = () => {
                           >
                             Add Raster
                           </DrawerButton>
-                        {/* </AuthorizedElement> */}
+                        </AuthorizedElement>
                       </div>
                     </div>
                   </Accordion>
                 ) : <></>}
               </div>
-            {/* </AuthorizedElement> */}
+            </AuthorizedElement>
           </Drawer>
           <SimulationMapView
             showDatasetsAgainstParentLevel={showDatasetsAgainstParentLevel}
