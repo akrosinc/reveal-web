@@ -32,6 +32,7 @@ export interface SimulationMapViewProps {
   selectedLoaction?: any;
   showDatasetsAgainstParentLevel?: boolean;
   updateChildrenPolygons: (data: any) => void;
+  rasterDatasets?: any[];
 }
 
 export interface LineWidth {

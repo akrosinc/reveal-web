@@ -125,7 +125,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [selectedRaster, setSelectedRaster] = useState<SingleValue<RasterOption>>(null);
   const [selectedColor, setSelectedColor] = useState<SingleValue<ColorOption>>(COLOR_OPTIONS[0]);
-  const [opacity, setOpacity] = useState<number>(75);
+  const [opacity, setOpacity] = useState<number>(100);
 
   useEffect(() => {
     if (show) {
@@ -166,7 +166,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
     } else {
       setSelectedRaster(null);
       setSelectedColor(COLOR_OPTIONS[0]);
-      setOpacity(75);
+      setOpacity(100);
       setIsSubmitting(false);
     }
   }, [show]);

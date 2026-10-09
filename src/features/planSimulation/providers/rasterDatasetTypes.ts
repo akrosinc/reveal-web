@@ -40,4 +40,5 @@ export interface RasterSimulationDatasetResponse {
   datasetType?: string;
   colorRamp?: string;
   dataSetType?: string;
+  opacity?: number;
 }

@@ -428,7 +428,7 @@ export const addRasterToMap = (
 
   const sourceId = `source-${config.id}`;
   const layerId = `layer-${config.id}`;
-  const opacity = options?.opacity !== undefined ? options.opacity : config.opacity ?? 0.75;
+  const opacity = options?.opacity !== undefined ? options.opacity : config.opacity ?? 1;
 
   try {
     // Clean up existing layer and source if already present

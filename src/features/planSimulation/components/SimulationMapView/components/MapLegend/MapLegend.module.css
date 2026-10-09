@@ -81,3 +81,16 @@
   align-items: center;
   list-style: none;
 }
+
+.legendSectionHeader {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #dee2e6;
+  list-style: none;
+}
+

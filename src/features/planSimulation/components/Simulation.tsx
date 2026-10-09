@@ -365,13 +365,13 @@ const Simulation = () => {
           sourceLayer: r.datasetIdentifier || rasterId || 'landcover',
           fieldName: 'class',
           tiles: [getRasterTileUrl(rasterId)],
-          opacity: r.opacity ?? 0.75,
+          opacity: r.opacity ?? 1,
           color: r.colorRamp || '#fd8d3c',
           colors: matchedPreset ? matchedPreset.colors : undefined
         };
 
         addRasterToMap(map.current, rasterConfig, {
-          opacity: r.opacity ?? 0.75,
+          opacity: r.opacity ?? 1,
           color: r.colorRamp || '#fd8d3c',
           colors: matchedPreset ? matchedPreset.colors : undefined,
           sourceLayer: rasterConfig.sourceLayer,
@@ -379,6 +379,7 @@ const Simulation = () => {
         });
       }
     });
+    dispatch({ type: 'SET_RASTER_DATASETS', payload: rasterDatasets });
   }, [rasterDatasets]);
 
   useEffect(() => {
@@ -498,7 +499,12 @@ const Simulation = () => {
     return false;
   };
 
-  const handleRasterColorChange = async (rasterItem: RasterDatasetItem, newColor: string) => {
+  const handleRasterColorChange = async (
+    rasterItem: RasterDatasetItem,
+    newColor: string,
+    newOpacity?: number,
+    newName?: string
+  ) => {
     // 1. Resolve simulation identifier (same resolution used for adding rasters)
     let localPlanId = instanceContext?.instancePlan?.identifier;
     if (!localPlanId) {
@@ -537,11 +543,14 @@ const Simulation = () => {
     }
 
     try {
-      // 2. Call updateDataset API
+      const finalOpacity = newOpacity !== undefined ? newOpacity : (rasterItem.opacity ?? 1);
+      const finalName = (newName && newName.trim()) || rasterItem.name || rasterItem.datasetIdentifier || datasetId;
+
+      // 2. Call updateDataset API (backend only receives name, color, etc., not opacity)
       const result = await updateDataset({
         simulationId: simulationIdentifier,
         datasetId: datasetId,
-        name: rasterItem.name || rasterItem.datasetIdentifier || datasetId,
+        name: finalName,
         hexColor: newColor,
         lineWidth: 0,
         borderColor: '#000000',
@@ -551,7 +560,9 @@ const Simulation = () => {
       // 3. On successful API response, update local state
       setRasterDatasets(prev =>
         (prev || []).map(item =>
-          isMatchingRaster(item, rasterItem) ? { ...item, colorRamp: newColor } : item
+          isMatchingRaster(item, rasterItem)
+            ? { ...item, name: finalName, colorRamp: newColor, opacity: finalOpacity }
+            : item
         )
       );
 
@@ -569,30 +580,37 @@ const Simulation = () => {
         const colorExpr = matchedPreset
           ? buildColorExpression('class', matchedPreset.colors, 0, 100, newColor)
           : newColor;
-        if (map.current.getLayer(layerId)) {
+
+        const targetLayerId = map.current.getLayer(layerId)
+          ? layerId
+          : map.current.getLayer(fallbackLayerId)
+          ? fallbackLayerId
+          : null;
+
+        if (targetLayerId) {
           try {
-            map.current.setPaintProperty(layerId, 'fill-color', colorExpr);
+            const layer = map.current.getLayer(targetLayerId);
+            if (layer.type === 'fill') {
+              map.current.setPaintProperty(targetLayerId, 'fill-color', colorExpr);
+              map.current.setPaintProperty(targetLayerId, 'fill-opacity', finalOpacity);
+            } else {
+              map.current.setPaintProperty(targetLayerId, 'raster-opacity', finalOpacity);
+            }
           } catch (e) {
-            console.warn('Could not update paint property on layer', layerId, e);
-          }
-        } else if (map.current.getLayer(fallbackLayerId)) {
-          try {
-            map.current.setPaintProperty(fallbackLayerId, 'fill-color', colorExpr);
-          } catch (e) {
-            console.warn('Could not update paint property on layer', fallbackLayerId, e);
+            console.warn('Could not update paint properties on layer', targetLayerId, e);
           }
         }
       }
 
-      toast.success('Raster dataset color updated successfully.');
+      toast.success('Raster dataset updated successfully.');
       return result;
     } catch (error: any) {
-      console.error('Failed to update raster dataset color via API:', error);
+      console.error('Failed to update raster dataset via API:', error);
       const errorMessage =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
-        'Failed to update raster dataset color.';
+        'Failed to update raster dataset.';
       toast.error(errorMessage);
       throw error;
     }
@@ -764,7 +782,7 @@ const Simulation = () => {
             name: d.name || d.mapLayer?.name || d.datasetName || d.label || id,
             colorRamp: d.colorRamp || d.hexColor || '#fd8d3c',
             extent: d.extent || d.mapLayer?.extent,
-            opacity: d.opacity ?? 0.75,
+            opacity: d.opacity ?? 1,
             hidden: d.hidden ?? false
           });
         }
@@ -2706,6 +2724,7 @@ const Simulation = () => {
             parentChild={parentChild}
             analysisLayerDetails={analysisLayerDetails}
             updateChildrenPolygons={updateChildrenPolygons}
+            rasterDatasets={rasterDatasets}
           />
           <Drawer open={rightOpen} anchor="left">
             {Object.keys(chartData).length > 0 && (
@@ -3007,7 +3026,7 @@ const Simulation = () => {
                 name: rasterName,
                 colorRamp: hexColor,
                 extent: raster.extent || raster.rawLayer?.extent || normalizeExtent(apiData.extent),
-                opacity: rasterData.opacity ?? 0.75,
+                opacity: rasterData.opacity ?? 1,
                 hidden: false
               };
 
@@ -3033,12 +3052,12 @@ const Simulation = () => {
                   sourceLayer: sourceLayer,
                   fieldName: raster.fieldName || 'class',
                   tiles: [getRasterTileUrl(datasetIdentifier)],
-                  opacity: rasterData.opacity ?? 0.75,
+                  opacity: rasterData.opacity ?? 1,
                   color: hexColor
                 };
 
                 addRasterToMap(map.current, rasterConfig, {
-                  opacity: rasterData.opacity ?? 0.75,
+                  opacity: rasterData.opacity ?? 1,
                   color: hexColor,
                   colors: rasterData.color?.colors,
                   sourceLayer: sourceLayer,

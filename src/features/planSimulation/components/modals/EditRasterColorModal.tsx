@@ -10,7 +10,12 @@ interface Props {
   show: boolean;
   closeHandler: () => void;
   rasterItem: RasterDatasetItem | null;
-  onUpdateColor: (rasterItem: RasterDatasetItem, newColor: string) => Promise<void> | void;
+  onUpdateColor: (
+    rasterItem: RasterDatasetItem,
+    newColor: string,
+    newOpacity?: number,
+    newName?: string
+  ) => Promise<void> | void;
 }
 
 export const EditRasterColorModal = ({
@@ -22,8 +27,10 @@ export const EditRasterColorModal = ({
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
 
+  const [name, setName] = useState<string>('');
   const [selectedColorOption, setSelectedColorOption] = useState<ColorOption | null>(null);
   const [customHexColor, setCustomHexColor] = useState<string>('#fd8d3c');
+  const [opacity, setOpacity] = useState<number>(100);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availableColorOptions = useMemo(() => {
@@ -50,8 +57,17 @@ export const EditRasterColorModal = ({
 
   useEffect(() => {
     if (show && rasterItem) {
+      setName(rasterItem.name || rasterItem.datasetIdentifier || rasterItem.identifier || '');
       const initialColor = rasterItem.colorRamp || '#fd8d3c';
       setCustomHexColor(initialColor);
+
+      const initialOpacity =
+        rasterItem.opacity !== undefined
+          ? rasterItem.opacity <= 1
+            ? Math.round(rasterItem.opacity * 100)
+            : Math.round(rasterItem.opacity)
+          : 100;
+      setOpacity(initialOpacity);
 
       // Find matching preset if applicable
       const matched = COLOR_OPTIONS.find(
@@ -145,18 +161,16 @@ export const EditRasterColorModal = ({
     const finalHex = selectedColorOption?.color || customHexColor || '#fd8d3c';
     setIsSubmitting(true);
     try {
-      await onUpdateColor(rasterItem, finalHex);
+      await onUpdateColor(rasterItem, finalHex, opacity / 100, name);
       closeHandler();
     } catch (err) {
-      console.error('[EditRasterColorModal] Failed to update raster color:', err);
+      console.error('[EditRasterColorModal] Failed to update raster:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   if (!rasterItem) return null;
-
-  const rasterDisplayName = rasterItem.name || rasterItem.datasetIdentifier || rasterItem.identifier;
 
   return (
     <Modal
@@ -168,34 +182,33 @@ export const EditRasterColorModal = ({
     >
       <Modal.Header closeButton closeVariant={isDarkMode ? 'white' : undefined}>
         <Modal.Title style={{ fontSize: '16px', fontWeight: 600 }}>
-          {t('simulationPage.editRasterColor', 'Edit Raster Color')}
+          {t('simulationPage.editRaster', 'Edit Raster')}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form onSubmit={e => { e.preventDefault(); handleApply(); }}>
-          <div className="mb-3 p-2 rounded border bg-light text-dark" style={{ fontSize: '12.5px' }}>
-            <div className="d-flex align-items-center gap-2">
-              <span
-                style={{
-                  width: '14px',
-                  height: '14px',
-                  borderRadius: '3px',
-                  backgroundColor: selectedColorOption?.color || customHexColor,
-                  display: 'inline-block',
-                  border: '1px solid rgba(0,0,0,0.25)',
-                  flexShrink: 0
-                }}
-              />
-              <div>
-                <strong>{rasterDisplayName}</strong>
-                {rasterItem.datasetIdentifier && (
-                  <div className="text-muted" style={{ fontSize: '11px' }}>
-                    ID: {rasterItem.datasetIdentifier}
-                  </div>
-                )}
+          {/* Raster Name Field */}
+          <FormGroup className="mb-3">
+            <FormLabel className={isDarkMode ? 'text-white' : 'text-dark'} style={{ fontWeight: 600 }}>
+              {t('simulationPage.rasterName', 'Raster Name')}
+            </FormLabel>
+            <Form.Control
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder={t('simulationPage.rasterNamePlaceholder', 'Enter raster name')}
+              style={{
+                backgroundColor: isDarkMode ? '#212529' : '#ffffff',
+                color: isDarkMode ? '#ffffff' : '#000000',
+                borderColor: isDarkMode ? '#495057' : '#ced4da'
+              }}
+            />
+            {rasterItem.datasetIdentifier && (
+              <div className="text-muted mt-1" style={{ fontSize: '11px' }}>
+                ID: {rasterItem.datasetIdentifier}
               </div>
-            </div>
-          </div>
+            )}
+          </FormGroup>
 
           {/* Color Selection Dropdown (from raster presets) */}
           <FormGroup className="mb-3">
@@ -316,6 +329,24 @@ export const EditRasterColorModal = ({
                 }}
               />
             </div>
+          </FormGroup>
+
+          {/* Opacity Slider */}
+          <FormGroup className="mb-3">
+            <div className="d-flex justify-content-between align-items-center mb-1">
+              <FormLabel className={`mb-0 ${isDarkMode ? 'text-white' : 'text-dark'}`} style={{ fontWeight: 600 }}>
+                {t('simulationPage.opacity', 'Layer Opacity')}
+              </FormLabel>
+              <span className={`badge ${isDarkMode ? 'bg-secondary' : 'bg-light text-dark border'}`}>
+                {opacity}%
+              </span>
+            </div>
+            <Form.Range
+              min={0}
+              max={100}
+              value={opacity}
+              onChange={e => setOpacity(Number(e.target.value))}
+            />
           </FormGroup>
         </Form>
       </Modal.Body>
