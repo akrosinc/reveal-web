@@ -264,7 +264,10 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
     }
 
     const rasterTagId = selectedRaster.rasterId || selectedRaster.value || selectedRaster.rawLayer?.id || '';
-    const hexColor = selectedColor?.color || '#3b82f6';
+    const hexColor =
+      selectedColor?.colors && selectedColor.colors.length > 1
+        ? selectedColor.colors.join(',')
+        : selectedColor?.color || '#3b82f6';
     const simulationIdentifier =
       polygonState?.simulationId ||
       instance?.simulationIdentifier ||
@@ -344,7 +347,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
           {/* Raster Selection Dropdown */}
           <FormGroup className="mb-3">
             <FormLabel className={isDarkMode ? 'text-white' : 'text-dark'} style={{ fontWeight: 600 }}>
-              {t('simulationPage.selectRaster', 'Select Raster Dataset (from raster/map-layers)')}
+              {t('simulationPage.selectRaster', 'Select Raster Dataset')}
             </FormLabel>
             {isLoadingRasters ? (
               <div className="d-flex align-items-center gap-2 p-2">
@@ -367,7 +370,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
                 menuPortalTarget={document.body}
               />
             )}
-            {selectedRaster && (
+            {/* {selectedRaster && (
               <div className="mt-2">
                 <small className={isDarkMode ? 'text-light' : 'text-muted'}>
                   {selectedRaster.description}
@@ -391,7 +394,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
                   <code>{getRasterTileUrl(selectedRaster.rasterId)}</code>
                 </div>
               </div>
-            )}
+            )} */}
           </FormGroup>
 
           {/* Color Selection Dropdown */}
@@ -399,7 +402,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
             <>
               <FormGroup className="mb-3">
                 <FormLabel className={isDarkMode ? 'text-white' : 'text-dark'} style={{ fontWeight: 600 }}>
-                  {t('simulationPage.selectColor', 'Choose Color Ramp / Palette (from raster presets)')}
+                  {t('simulationPage.selectColor', 'Choose Color Ramp / Palette')}
                 </FormLabel>
                 <Select<ColorOption>
                   placeholder={t('simulationPage.chooseColor', 'Select a color palette...')}

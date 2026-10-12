@@ -3,7 +3,7 @@ import { Button, Form, FormGroup, FormLabel, Modal, Spinner } from 'react-bootst
 import Select from 'react-select';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../../store/hooks';
-import { COLOR_OPTIONS, ColorOption } from '../../../../utils/rasterHelper';
+import { COLOR_OPTIONS, ColorOption, parseColorOrGradient } from '../../../../utils/rasterHelper';
 import { RasterDatasetItem } from '../SimulationMapView/api/datasetsAPI';
 
 interface Props {
@@ -43,7 +43,7 @@ export const EditRasterColorModal = ({
       );
       if (!isPreset) {
         const customOpt: ColorOption = {
-          value: `custom-${customHexColor}`,
+          value: customHexColor,
           label: `Custom (${customHexColor})`,
           color: customHexColor,
           colors: [customHexColor],
@@ -70,20 +70,29 @@ export const EditRasterColorModal = ({
       setOpacity(initialOpacity);
 
       // Find matching preset if applicable
+      const parsed = parseColorOrGradient(initialColor);
       const matched = COLOR_OPTIONS.find(
         opt =>
-          opt.color.toLowerCase() === initialColor.toLowerCase() ||
           opt.value.toLowerCase() === initialColor.toLowerCase() ||
+          opt.label.toLowerCase() === initialColor.toLowerCase() ||
+          opt.color.toLowerCase() === initialColor.toLowerCase() ||
+          (parsed.isGradient && opt.colors.join(',').toLowerCase() === parsed.colors.join(',').toLowerCase()) ||
           opt.colors.some(c => c.toLowerCase() === initialColor.toLowerCase())
       );
       setSelectedColorOption(
-        matched || {
-          value: `custom-${initialColor}`,
+        matched || (parsed.isGradient ? {
+          value: initialColor,
+          label: `Gradient (${parsed.colors.length} stops)`,
+          color: parsed.primaryColor,
+          colors: parsed.colors,
+          gradient: `linear-gradient(to right, ${parsed.colors.join(', ')})`
+        } : {
+          value: initialColor,
           label: `Custom (${initialColor})`,
           color: initialColor,
           colors: [initialColor],
           gradient: initialColor
-        }
+        })
       );
       setIsSubmitting(false);
     }
@@ -158,10 +167,13 @@ export const EditRasterColorModal = ({
 
   const handleApply = async () => {
     if (!rasterItem) return;
-    const finalHex = selectedColorOption?.color || customHexColor || '#fd8d3c';
+    const finalColorToSave =
+      selectedColorOption?.colors && selectedColorOption.colors.length > 1
+        ? selectedColorOption.colors.join(',')
+        : selectedColorOption?.color || customHexColor || '#fd8d3c';
     setIsSubmitting(true);
     try {
-      await onUpdateColor(rasterItem, finalHex, opacity / 100, name);
+      await onUpdateColor(rasterItem, finalColorToSave, opacity / 100, name);
       closeHandler();
     } catch (err) {
       console.error('[EditRasterColorModal] Failed to update raster:', err);
@@ -213,7 +225,7 @@ export const EditRasterColorModal = ({
           {/* Color Selection Dropdown (from raster presets) */}
           <FormGroup className="mb-3">
             <FormLabel className={isDarkMode ? 'text-white' : 'text-dark'} style={{ fontWeight: 600 }}>
-              {t('simulationPage.selectColor', 'Choose Color Ramp / Palette (from raster presets)')}
+              {t('simulationPage.selectColor', 'Choose Color Ramp / Palette')}
             </FormLabel>
             <Select<ColorOption>
               placeholder={t('simulationPage.chooseColor', 'Select a color palette...')}

@@ -102,7 +102,8 @@ import {
   getRasterTileUrl,
   normalizeExtent,
   COLOR_OPTIONS,
-  buildColorExpression
+  buildColorExpression,
+  parseColorOrGradient
 } from '../../../utils';
 import { auto } from '@popperjs/core';
 import { getInstances, getInstanceHierarchy } from '../api';
@@ -350,12 +351,8 @@ const Simulation = () => {
     rasterDatasets.forEach((r: RasterDatasetItem) => {
       const rasterId = r.datasetIdentifier || r.identifier;
       if (rasterId && !r.hidden) {
-        const matchedPreset = COLOR_OPTIONS.find(
-          c =>
-            c.color.toLowerCase() === (r.colorRamp || '').toLowerCase() ||
-            c.value.toLowerCase() === (r.colorRamp || '').toLowerCase() ||
-            c.colors.some(col => col.toLowerCase() === (r.colorRamp || '').toLowerCase())
-        );
+        const parsed = parseColorOrGradient(r.colorRamp);
+        const resolvedColors = parsed.isGradient ? parsed.colors : undefined;
 
         const rasterConfig: RasterLayerConfig = {
           id: `raster-${r.identifier || rasterId}`,
@@ -366,14 +363,14 @@ const Simulation = () => {
           fieldName: 'class',
           tiles: [getRasterTileUrl(rasterId)],
           opacity: r.opacity ?? 1,
-          color: r.colorRamp || '#fd8d3c',
-          colors: matchedPreset ? matchedPreset.colors : undefined
+          color: parsed.primaryColor,
+          colors: resolvedColors
         };
 
         addRasterToMap(map.current, rasterConfig, {
           opacity: r.opacity ?? 1,
-          color: r.colorRamp || '#fd8d3c',
-          colors: matchedPreset ? matchedPreset.colors : undefined,
+          color: parsed.primaryColor,
+          colors: resolvedColors,
           sourceLayer: rasterConfig.sourceLayer,
           fieldName: rasterConfig.fieldName
         });
@@ -571,15 +568,10 @@ const Simulation = () => {
         const rasterId = rasterItem.datasetIdentifier || rasterItem.identifier;
         const layerId = `layer-raster-${rasterItem.identifier || rasterId}`;
         const fallbackLayerId = `layer-raster-${rasterId}`;
-        const matchedPreset = COLOR_OPTIONS.find(
-          c =>
-            c.color.toLowerCase() === newColor.toLowerCase() ||
-            c.value.toLowerCase() === newColor.toLowerCase() ||
-            c.colors.some(col => col.toLowerCase() === newColor.toLowerCase())
-        );
-        const colorExpr = matchedPreset
-          ? buildColorExpression('class', matchedPreset.colors, 0, 100, newColor)
-          : newColor;
+        const parsed = parseColorOrGradient(newColor);
+        const colorExpr = parsed.isGradient
+          ? buildColorExpression('class', parsed.colors, 0, 100, parsed.primaryColor)
+          : parsed.primaryColor;
 
         const targetLayerId = map.current.getLayer(layerId)
           ? layerId
@@ -794,6 +786,7 @@ const Simulation = () => {
         rasters.forEach((r: RasterDatasetItem) => {
           const rasterId = r.datasetIdentifier || r.identifier;
           if (rasterId) {
+            const parsed = parseColorOrGradient(r.colorRamp);
             const rasterConfig: RasterLayerConfig = {
               id: `raster-${r.identifier || rasterId}`,
               rasterId: rasterId,
@@ -803,12 +796,14 @@ const Simulation = () => {
               fieldName: 'class',
               tiles: [getRasterTileUrl(rasterId)],
               opacity: r.opacity ?? 0.75,
-              color: r.colorRamp || '#fd8d3c'
+              color: parsed.primaryColor,
+              colors: parsed.isGradient ? parsed.colors : undefined
             };
 
             addRasterToMap(map.current, rasterConfig, {
               opacity: r.opacity ?? 0.75,
-              color: r.colorRamp || '#fd8d3c',
+              color: parsed.primaryColor,
+              colors: parsed.isGradient ? parsed.colors : undefined,
               sourceLayer: rasterConfig.sourceLayer,
               fieldName: rasterConfig.fieldName
             });
@@ -2626,12 +2621,10 @@ const Simulation = () => {
                         rasterDatasets.map((r: RasterDatasetItem, idx: number) => {
                           const rasterTileId = r.datasetIdentifier || r.identifier || `raster-${idx}`;
                           const parsedExtent = normalizeExtent(r.extent);
-                          const currentColor =
-                            r.colorRamp && r.colorRamp.startsWith('#') && (r.colorRamp.length === 7 || r.colorRamp.length === 4)
-                              ? (r.colorRamp.length === 4
-                                  ? `#${r.colorRamp[1]}${r.colorRamp[1]}${r.colorRamp[2]}${r.colorRamp[2]}${r.colorRamp[3]}${r.colorRamp[3]}`
-                                  : r.colorRamp)
-                              : '#fd8d3c';
+                          const parsed = parseColorOrGradient(r.colorRamp);
+                          const swatchStyle = parsed.isGradient
+                            ? { background: `linear-gradient(to right, ${parsed.colors.join(', ')})` }
+                            : { backgroundColor: parsed.primaryColor };
 
                           return (
                             <div
@@ -2663,8 +2656,8 @@ const Simulation = () => {
                               <AuthorizedElement roles={[RASTER_UPDATE_DATASET]}>
                                 <div
                                   className={styles.rasterColorBox}
-                                  style={{ backgroundColor: currentColor }}
-                                  title="Click to change raster color"
+                                  style={swatchStyle}
+                                  title={parsed.isGradient ? "Color gradient (Click to edit)" : "Click to change raster color"}
                                   onClick={() => {
                                     setSelectedRasterForEdit(r);
                                     setShowEditRasterColorModal(true);
@@ -3009,11 +3002,18 @@ const Simulation = () => {
                 apiData.datasetId ||
                 apiData.dataSetId ||
                 datasetIdentifier;
-              const hexColor =
+              const colorToUse =
+                rasterData.color?.value ||
                 apiData.hexColor ||
                 apiData.colorRamp ||
-                rasterData.color?.color ||
+                (rasterData.color?.colors && rasterData.color.colors.length > 1
+                  ? rasterData.color.colors.join(',')
+                  : rasterData.color?.color) ||
                 '#fd8d3c';
+
+              const parsed = parseColorOrGradient(colorToUse);
+              const resolvedColors = parsed.isGradient ? parsed.colors : undefined;
+
               const rasterName =
                 apiData.datasetName ||
                 apiData.name ||
@@ -3024,7 +3024,7 @@ const Simulation = () => {
                 identifier: simulationItemIdentifier,
                 datasetIdentifier: datasetIdentifier,
                 name: rasterName,
-                colorRamp: hexColor,
+                colorRamp: colorToUse,
                 extent: raster.extent || raster.rawLayer?.extent || normalizeExtent(apiData.extent),
                 opacity: rasterData.opacity ?? 1,
                 hidden: false
@@ -3053,13 +3053,14 @@ const Simulation = () => {
                   fieldName: raster.fieldName || 'class',
                   tiles: [getRasterTileUrl(datasetIdentifier)],
                   opacity: rasterData.opacity ?? 1,
-                  color: hexColor
+                  color: parsed.primaryColor,
+                  colors: resolvedColors
                 };
 
                 addRasterToMap(map.current, rasterConfig, {
                   opacity: rasterData.opacity ?? 1,
-                  color: hexColor,
-                  colors: rasterData.color?.colors,
+                  color: parsed.primaryColor,
+                  colors: resolvedColors,
                   sourceLayer: sourceLayer,
                   fieldName: rasterConfig.fieldName
                 });

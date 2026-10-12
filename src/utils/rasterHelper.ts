@@ -12,6 +12,7 @@ export interface RasterLayerConfig {
   tileSize?: number;
   opacity?: number;
   color?: string;
+  colors?: string[];
   minzoom?: number;
   maxzoom?: number;
   attribution?: string;
@@ -202,7 +203,7 @@ export const RASTER_COLOR_PRESETS: Record<string, string[]> = {
 };
 
 export const COLOR_OPTIONS: ColorOption[] = Object.entries(RASTER_COLOR_PRESETS).map(([name, colors]) => ({
-  value: name,
+  value: colors.join(','),
   label: name,
   color: colors[Math.floor(colors.length / 2)] || colors[0],
   colors: colors,
@@ -210,7 +211,80 @@ export const COLOR_OPTIONS: ColorOption[] = Object.entries(RASTER_COLOR_PRESETS)
 }));
 
 /**
+ * Parses a saved color string which can be a single hex, comma-separated gradient stops,
+ * or a preset name. Returns whether it is a gradient, along with parsed colors.
+ */
+export const parseColorOrGradient = (
+  colorStr?: string
+): { colors: string[]; isGradient: boolean; primaryColor: string } => {
+  if (!colorStr) {
+    return { colors: ['#3b82f6'], isGradient: false, primaryColor: '#3b82f6' };
+  }
+
+  // Comma-separated multiple hex colors
+  if (colorStr.includes(',')) {
+    const list = colorStr
+      .split(',')
+      .map(c => c.trim())
+      .filter(Boolean);
+    if (list.length > 1) {
+      return {
+        colors: list,
+        isGradient: true,
+        primaryColor: list[Math.floor(list.length / 2)] || list[0]
+      };
+    }
+    if (list.length === 1) {
+      return {
+        colors: list,
+        isGradient: false,
+        primaryColor: list[0]
+      };
+    }
+  }
+
+  // Match against preset names or preset middle colors
+  const matchedPreset = COLOR_OPTIONS.find(
+    c =>
+      c.value.toLowerCase() === colorStr.toLowerCase() ||
+      c.label.toLowerCase() === colorStr.toLowerCase() ||
+      c.color.toLowerCase() === colorStr.toLowerCase()
+  );
+  if (matchedPreset && matchedPreset.colors && matchedPreset.colors.length > 1) {
+    return {
+      colors: matchedPreset.colors,
+      isGradient: true,
+      primaryColor: matchedPreset.color
+    };
+  }
+
+  // Single solid color
+  return {
+    colors: [colorStr],
+    isGradient: false,
+    primaryColor: colorStr
+  };
+};
+
+/**
+ * Known properties in raster vector tiles (MVT) representing cell / pixel values.
+ */
+export const RASTER_VALUE_PROPERTIES = [
+  'class',
+  'population',
+  'pop',
+  'count',
+  'density',
+  'value',
+  'val',
+  'dn',
+  'gridcode'
+];
+
+/**
  * Builds a Mapbox GL interpolation expression for vector tiles from an array of color stops.
+ * Dynamically resolves any present raster value property (class, population, value, dn, etc.)
+ * and smoothly scales the gradient across the layer features.
  */
 export const buildColorExpression = (
   fieldName: string = 'class',
@@ -222,24 +296,106 @@ export const buildColorExpression = (
   if (!colors || colors.length === 0) return fallbackColor || '#3b82f6';
   if (colors.length === 1) return colors[0];
 
-  const interpArgs: (number | string)[] = [];
-  const steps = Math.min(colors.length, 9);
-  for (let i = 0; i < steps; i++) {
-    const t = steps === 1 ? 0 : i / (steps - 1);
-    const value = Math.round((min + t * (max - min)) * 100) / 100;
-    interpArgs.push(value, colors[i]);
+  const n = colors.length;
+  const defaultFallback = fallbackColor || colors[Math.floor(n / 2)] || colors[0] || '#3b82f6';
+
+  // Candidate properties in priority order
+  const propertyCandidates = [
+    fieldName,
+    ...RASTER_VALUE_PROPERTIES
+  ].filter((p, idx, arr) => Boolean(p) && arr.indexOf(p) === idx);
+
+  // Mapbox GL condition to check if any of the candidate properties exist
+  const hasCondition: any = [
+    'any',
+    ...propertyCandidates.map(p => ['has', p])
+  ];
+
+  // Mapbox GL expression to coalesce and convert the first available property to a number
+  const numValue: any = [
+    'to-number',
+    [
+      'coalesce',
+      ...propertyCandidates.map(p => ['get', p]),
+      0
+    ],
+    0
+  ];
+
+  // Helper to generate strictly ascending stop values (Mapbox GL requirement)
+  const createAscendingStops = (minVal: number, maxVal: number, count: number): number[] => {
+    const result: number[] = [];
+    if (count <= 1) return [minVal];
+    for (let i = 0; i < count; i++) {
+      const val = minVal + (i / (count - 1)) * (maxVal - minVal);
+      const rounded = Math.round(val * 1000) / 1000;
+      if (i > 0 && rounded <= result[i - 1]) {
+        result.push(result[i - 1] + 0.001);
+      } else {
+        result.push(rounded);
+      }
+    }
+    return result;
+  };
+
+  // If custom min and max are specified, use them directly
+  if (min !== 0 || max !== 100) {
+    const customVals = createAscendingStops(min, max, n);
+    const customStops: (number | string)[] = [];
+    for (let i = 0; i < n; i++) {
+      customStops.push(customVals[i], colors[i]);
+    }
+    return [
+      'case',
+      ['!', hasCondition],
+      defaultFallback,
+      [
+        'interpolate',
+        ['linear'],
+        numValue,
+        ...customStops
+      ]
+    ];
+  }
+
+  // 1. Scale for 0 <= value <= 1 (NDVI, probabilities, normalized surfaces)
+  const floatVals = createAscendingStops(0, 1, n);
+  const floatStops: (number | string)[] = [];
+  for (let i = 0; i < n; i++) {
+    floatStops.push(floatVals[i], colors[i]);
+  }
+
+  // 2. Scale for 1 <= value <= 10 (discrete classification classes)
+  const classVals = createAscendingStops(1, 10, n);
+  const classStops: (number | string)[] = [];
+  for (let i = 0; i < n; i++) {
+    classStops.push(classVals[i], colors[i]);
+  }
+
+  // 3. General scale for population / counts / density (0 to 500+)
+  const basePopStops = [0, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
+  const generalStops: (number | string)[] = [];
+  const genVals: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const t = n === 1 ? 0 : i / (n - 1);
+    const idx = Math.min(Math.floor(t * (basePopStops.length - 1)), basePopStops.length - 1);
+    let val = basePopStops[idx];
+    if (i > 0 && val <= genVals[i - 1]) {
+      val = genVals[i - 1] + 5;
+    }
+    genVals.push(val);
+    generalStops.push(val, colors[i]);
   }
 
   return [
     'case',
-    ['has', fieldName],
-    [
-      'interpolate',
-      ['linear'],
-      ['coalesce', ['to-number', ['get', fieldName]], min],
-      ...interpArgs
-    ],
-    fallbackColor || colors[0] || '#3b82f6'
+    ['!', hasCondition],
+    defaultFallback,
+    ['<=', numValue, 1],
+    ['interpolate', ['linear'], numValue, ...floatStops],
+    ['<=', numValue, 10],
+    ['interpolate', ['linear'], numValue, ...classStops],
+    ['interpolate', ['linear'], numValue, ...generalStops]
   ];
 };
 
@@ -445,11 +601,28 @@ export const addRasterToMap = (
     const resolvedSourceLayer = options?.sourceLayer || config.sourceLayer || 'landcover';
 
     const resolvedColor = options?.color || config.color || '#3b82f6';
+    const parsed = parseColorOrGradient(
+      options?.colors && options.colors.length > 0
+        ? options.colors.join(',')
+        : config.colors && config.colors.length > 0
+        ? config.colors.join(',')
+        : resolvedColor
+    );
+
+    const resolvedColors =
+      options?.colors && options.colors.length > 0
+        ? options.colors
+        : config.colors && config.colors.length > 0
+        ? config.colors
+        : parsed.isGradient
+        ? parsed.colors
+        : undefined;
+
     const colorExpression =
       options?.colorExpression ||
-      (options?.colors && options.colors.length > 0
-        ? buildColorExpression(resolvedFieldName, options.colors, 0, 100, resolvedColor)
-        : resolvedColor);
+      (resolvedColors && resolvedColors.length > 1
+        ? buildColorExpression(resolvedFieldName, resolvedColors, 0, 100, parsed.primaryColor)
+        : parsed.primaryColor);
 
     if (isMvt) {
       // Add vector tile source for .mvt
