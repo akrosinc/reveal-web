@@ -347,17 +347,43 @@ export interface InstanceUserResponse {
 }
 
 /**
- * Get users list for instances by role (calls /api/v1/instance/user/list?role=ADMIN)
+ * Get users list for instances by role (calls /api/v1/instance/user/list?role=ADMIN&instanceIdentifier=...)
  * @param role string, defaults to 'ADMIN'
+ * @param instanceIdentifier optional instance identifier
  * @returns Promise<InstanceUserResponse[]>
  */
 export const getInstanceAdminUserList = async (
-  role: string = 'ADMIN'
+  role: string = 'ADMIN',
+  instanceIdentifier?: string
 ): Promise<InstanceUserResponse[]> => {
+  const params = new URLSearchParams();
+  if (role) {
+    params.append('role', role);
+  }
+
+  let targetInstanceId = instanceIdentifier;
+  if (!targetInstanceId) {
+    try {
+      const rawCurrentInstance = localStorage.getItem('currentInstanceContext');
+      if (rawCurrentInstance) {
+        const parsed = JSON.parse(rawCurrentInstance);
+        targetInstanceId = parsed?.selectedInstance?.identifier || parsed?.identifier;
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
+  }
+
+  if (targetInstanceId) {
+    params.append('instanceIdentifier', targetInstanceId);
+  }
+
   const endpoint = config.API_BASE_URL?.includes('/api/v1')
     ? 'instance/user/list'
     : '/api/v1/instance/user/list';
-  const response = await api.get<any>(`${endpoint}?role=${role}`);
+  const queryString = params.toString();
+  const url = queryString ? `${endpoint}?${queryString}` : endpoint;
+  const response = await api.get<any>(url);
 
   if (Array.isArray(response.data)) {
     return response.data;

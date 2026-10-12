@@ -21,8 +21,8 @@ api.interceptors.request.use(function (config) {
     config?.url?.includes('instance/roles/list')
     || config?.url?.includes('instance/context')
     || config?.url?.includes('entityTag/instance-hierarchy')
-    || config?.url?.includes('instance/assigned/complextags/list');
-    // || config?.url?.includes('/instance/user');
+    || config?.url?.includes('instance/assigned/complextags/list')
+    || config?.url?.includes('instance/user');
   // console.log(config.url)
   // console.log(requiresInstance)
   if (requiresInstance) {

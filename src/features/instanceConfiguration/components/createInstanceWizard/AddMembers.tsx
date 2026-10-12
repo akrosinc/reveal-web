@@ -40,6 +40,7 @@ const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, 
             assignedMembers={assignedMembers}
             onAssignmentChange={setAssignedMembers}
             viewOnly={viewOnly}
+            instanceIdentifier={defaultValues?.instanceIdentifier || defaultValues?.planId || defaultValues?.identifier}
           />
         </div>
       </Col>
