@@ -18,11 +18,6 @@ export interface InstanceHierarchy {
   geoTree: HierarchyNode[];
 }
 
-export interface InstanceDataset {
-  identifier: string;
-  name: string;
-}
-
 export interface TeamMember {
   identifier: string;
   username: string;
@@ -35,4 +30,57 @@ export interface Team {
   name: string;
   active: boolean;
   members: TeamMember[];
+}
+
+export interface LocationMetadata {
+  value: number;
+  type: string;
+  fieldType: string;
+  datasetId: string;
+}
+
+export interface LocationFeature {
+  identifier: string;
+  type: 'Feature';
+  geometry: GeoJSON.Geometry;
+  properties: HierarchyNodeProperties & {
+    id: string;
+    metadata: LocationMetadata[];
+  };
+  ancestry: string[];
+}
+
+// One dataset = one tag (e.g. "asthma-min"), so it gives one value per location
+export interface SimulationDataset {
+  identifier: string;
+  name: string;
+  hexColor?: string;
+  borderColor?: string;
+  lineWidth?: number;
+  isUserDataset?: boolean;
+}
+
+// The plan's simulation holds the dataset ids that location-data expects
+// Raster layer attached to the simulation (added on the Simulation page, from raster/map-layers)
+export interface RasterDataset {
+  identifier: string;
+  name: string;
+  colorRamp?: string;
+  opacity?: number;
+  hidden?: boolean;
+}
+
+export interface PlanSimulation {
+  identifier: string;
+  datasets: SimulationDataset[];
+  rasterDatasets?: RasterDataset[];
+}
+
+export interface LocationDataRequest {
+  simulationId: string;
+  datasetsIds: string[];
+  userDatasetIds: string[];
+  includeGeometry: boolean;
+  parentLocationId: string;
+  campaignManagementFeatures: boolean;
 }

@@ -78,8 +78,10 @@
   padding-bottom: 20px;
 }
 
+/* Every dataset value is a column, so long rows scroll sideways instead of wrapping */
 .table {
   width: 100%;
+  white-space: nowrap;
   border-collapse: collapse;
   font-size: 12px;
 }
@@ -121,6 +123,14 @@
 .table tbody tr:hover td {
   background: rgba(20, 24, 20, 0.04);
   color: var(--ink);
+}
+
+.cellLoading {
+  composes: shimmer from '../../styles/deck.module.css';
+  display: inline-block;
+  width: 48px;
+  height: 9px;
+  vertical-align: middle;
 }
 
 .empty {

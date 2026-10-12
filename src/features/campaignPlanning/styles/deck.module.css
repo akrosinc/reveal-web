@@ -75,6 +75,28 @@
   color: var(--teal);
 }
 
+/* Loading placeholder (skeleton lines, table cells) */
+.shimmer {
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(20, 24, 20, 0.06) 25%,
+    rgba(20, 24, 20, 0.12) 50%,
+    rgba(20, 24, 20, 0.06) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
 /*
  * Floating card: near-opaque warm white, readable over any basemap.
  * Kept last so its background wins over buttonReset when a button composes both (e.g. the table bar).

@@ -6,6 +6,29 @@
   background: #e6e7e1;
 }
 
+.mapLoading {
+  composes: surface from '../../styles/deck.module.css';
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted-ink);
+  transform: translateX(-50%);
+}
+
+.mapLoading :global(.spinner-border) {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+  color: var(--teal);
+}
+
 .notice {
   composes: panel from '../LeftPanel/LeftPanel.module.css';
   font-size: 12px;

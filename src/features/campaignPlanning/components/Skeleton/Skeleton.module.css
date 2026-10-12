@@ -1,0 +1,12 @@
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 5px 0;
+}
+
+.line {
+  composes: shimmer from '../../styles/deck.module.css';
+  display: block;
+  height: 9px;
+}

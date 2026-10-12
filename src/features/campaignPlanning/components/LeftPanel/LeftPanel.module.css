@@ -83,6 +83,14 @@
 .body {
   composes: scroll from '../../styles/deck.module.css';
   min-height: 0;
+  overflow-x: hidden;
+}
+
+/* Vertical scroll only: long names are cut with "…" (HierarchyTree .name) instead of scrolling sideways */
+.tree {
+  composes: scroll from '../../styles/deck.module.css';
+  max-height: min(260px, 38vh);
+  overflow-x: hidden;
 }
 
 /* Section heading with the divider above it */
@@ -112,6 +120,11 @@
   width: 8px;
   height: 8px;
   border-radius: 2px;
+}
+
+/* Rasters are colour gradients, not one colour */
+.rasterSwatch {
+  background: linear-gradient(135deg, #d6ead3, #4f9d69 55%, #1f4e3d);
 }
 
 .empty {

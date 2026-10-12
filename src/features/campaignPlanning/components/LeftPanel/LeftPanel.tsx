@@ -2,21 +2,36 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronLeft } from 'react-icons/bs';
 import { DATASET_COLORS } from '../../constants';
-import { HierarchyNode, InstanceDataset, Team } from '../../providers/types';
+import { HierarchyNode, RasterDataset, SimulationDataset, Team } from '../../providers/types';
 import { filterHierarchy } from '../../utils/hierarchyTree';
 import HierarchyTree from '../HierarchyTree';
+import Skeleton from '../Skeleton';
 import PanelSection from './PanelSection';
 import styles from './LeftPanel.module.css';
 
 interface Props {
   hierarchy: HierarchyNode[];
-  datasets: InstanceDataset[];
+  datasets: SimulationDataset[];
+  rasterDatasets: RasterDataset[];
   teams: Team[];
+  isHierarchyLoading: boolean;
+  isDatasetsLoading: boolean;
+  isTeamsLoading: boolean;
   selectedId?: string;
   onSelect: (node: HierarchyNode) => void;
 }
 
-const LeftPanel = ({ hierarchy, datasets, teams, selectedId, onSelect }: Props) => {
+const LeftPanel = ({
+  hierarchy,
+  datasets,
+  rasterDatasets,
+  teams,
+  isHierarchyLoading,
+  isDatasetsLoading,
+  isTeamsLoading,
+  selectedId,
+  onSelect
+}: Props) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -60,21 +75,30 @@ const LeftPanel = ({ hierarchy, datasets, teams, selectedId, onSelect }: Props) 
           </button>
         </div>
         <div className={styles.body}>
-          <HierarchyTree
-            nodes={filteredHierarchy}
-            selectedId={selectedId}
-            expandAll={!!searchTerm.trim()}
-            onSelect={onSelect}
-          />
-          {!filteredHierarchy.length && <div className={styles.empty}>{t('campaignPlanning.noLocations')}</div>}
+          {/* Fixed-height scroll area so opening the tree doesn't push Datasets and Teams down */}
+          <div className={styles.tree}>
+            <HierarchyTree
+              nodes={filteredHierarchy}
+              selectedId={selectedId}
+              expandAll={!!searchTerm.trim()}
+              onSelect={onSelect}
+            />
+            {isHierarchyLoading ? (
+              <Skeleton widths={['45%', '60%', '52%', '68%']} />
+            ) : (
+              !filteredHierarchy.length && <div className={styles.empty}>{t('campaignPlanning.noLocations')}</div>
+            )}
+          </div>
 
           <PanelSection title={t('campaignPlanning.datasets')}>
-            {datasets.length ? (
+            {isDatasetsLoading ? (
+              <Skeleton widths={['58%', '44%']} />
+            ) : datasets.length ? (
               datasets.map((dataset, index) => (
                 <div key={dataset.identifier} className={styles.item}>
                   <span
                     className={styles.swatch}
-                    style={{ background: DATASET_COLORS[index % DATASET_COLORS.length] }}
+                    style={{ background: dataset.hexColor || DATASET_COLORS[index % DATASET_COLORS.length] }}
                   />
                   {dataset.name}
                 </div>
@@ -84,8 +108,25 @@ const LeftPanel = ({ hierarchy, datasets, teams, selectedId, onSelect }: Props) 
             )}
           </PanelSection>
 
+          <PanelSection title={t('campaignPlanning.rasterDatasets')}>
+            {isDatasetsLoading ? (
+              <Skeleton widths={['50%']} />
+            ) : rasterDatasets.length ? (
+              rasterDatasets.map(raster => (
+                <div key={raster.identifier} className={styles.item}>
+                  <span className={`${styles.swatch} ${styles.rasterSwatch}`} />
+                  {raster.name}
+                </div>
+              ))
+            ) : (
+              <div className={styles.empty}>{t('campaignPlanning.noRasterDatasets')}</div>
+            )}
+          </PanelSection>
+
           <PanelSection title={t('campaignPlanning.teams')}>
-            {teams.length ? (
+            {isTeamsLoading ? (
+              <Skeleton widths={['72%']} />
+            ) : teams.length ? (
               teams.map(team => (
                 <div key={team.identifier} className={styles.item}>
                   {t('campaignPlanning.teamMembers', { name: team.name, count: team.members?.length ?? 0 })}

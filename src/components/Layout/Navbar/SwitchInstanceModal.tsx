@@ -13,9 +13,11 @@ import { HOME_PAGE, REVEAL_SIMULATION_USER, SIMULATION_PAGE } from '../../../con
 interface Props {
   show: boolean;
   onClose: () => void;
+  // Page to open after switching; by default Home (admin) or Simulation
+  redirectTo?: string;
 }
 
-const SwitchInstanceModal = ({ show, onClose }: Props) => {
+const SwitchInstanceModal = ({ show, onClose, redirectTo }: Props) => {
   const { keycloak } = useKeycloak();
 
   const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
@@ -69,7 +71,7 @@ const SwitchInstanceModal = ({ show, onClose }: Props) => {
         const res = await selectInstance(selectedId as string);
         dispatch(setCurrentInstance(res));
         toast.success(`Switched to ${res.selectedInstance.name}`);
-        navigate(res.role.name ==="ADMIN" ? HOME_PAGE : SIMULATION_PAGE);
+        navigate(redirectTo ?? (res.role.name ==="ADMIN" ? HOME_PAGE : SIMULATION_PAGE));
         onClose();
       } catch (e) {
         console.log(e)
@@ -84,7 +86,7 @@ const SwitchInstanceModal = ({ show, onClose }: Props) => {
         const superAdminData = JSON.parse(superAdminDataRaw);
         dispatch(setCurrentInstance(superAdminData));
         // toast.success(`Switched back to Global`);
-         navigate(HOME_PAGE)
+         navigate(redirectTo ?? HOME_PAGE)
         onClose();
         return;
       }
