@@ -203,11 +203,11 @@ export const EditRasterColorModal = ({
                 borderColor: isDarkMode ? '#495057' : '#ced4da'
               }}
             />
-            {rasterItem.datasetIdentifier && (
+            {/* {rasterItem.datasetIdentifier && (
               <div className="text-muted mt-1" style={{ fontSize: '11px' }}>
                 ID: {rasterItem.datasetIdentifier}
               </div>
-            )}
+            )} */}
           </FormGroup>
 
           {/* Color Selection Dropdown (from raster presets) */}

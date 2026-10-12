@@ -2758,12 +2758,12 @@ const Simulation = () => {
                       </span>
                     )}
                   </div>
-                  {clickedRasterValue.coordinates && (
+                  {/* {clickedRasterValue.coordinates && (
                     <div className="mb-1 text-muted" style={{ fontSize: '11px' }}>
                       <span>Lng/Lat:</span>{' '}
                       [{clickedRasterValue.coordinates.lng.toFixed(4)}, {clickedRasterValue.coordinates.lat.toFixed(4)}]
                     </div>
-                  )}
+                  )} */}
                 </div>
               ) : (
                 <div className="p-2 text-muted" style={{ fontSize: '12px' }}>
