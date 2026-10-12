@@ -4,7 +4,7 @@ import style from './MapLegend.module.css';
 import SwitchButton from '../../../../../../components/SwitchButton/SwitchButton';
 import Accordion from '../../../../../location/components/accordion/Accordion';
 import LayerIcon from '../../../../../../assets/svgs/layers-icon.svg';
-import { COLOR_OPTIONS } from '../../../../../../utils/rasterHelper';
+import { COLOR_OPTIONS, parseColorOrGradient } from '../../../../../../utils/rasterHelper';
 import { useAuthorization } from '../../../../../../hooks/useAuthorization';
 import { VIEW_RASTER_LISTING } from '../../../../../../constants/roles';
 
@@ -89,25 +89,17 @@ function MapLegend({
                 <>
                   <li className={style.legendSectionHeader}>Rasters</li>
                   {rasterDatasets.map((raster: RasterItem) => {
-                    const matchedPreset = COLOR_OPTIONS.find(
-                      c =>
-                        c.color.toLowerCase() === (raster.colorRamp || '').toLowerCase() ||
-                        c.value.toLowerCase() === (raster.colorRamp || '').toLowerCase() ||
-                        c.colors.some(col => col.toLowerCase() === (raster.colorRamp || '').toLowerCase())
-                    );
-                    const currentColor =
-                      raster.colorRamp && raster.colorRamp.startsWith('#') && (raster.colorRamp.length === 7 || raster.colorRamp.length === 4)
-                        ? (raster.colorRamp.length === 4
-                            ? `#${raster.colorRamp[1]}${raster.colorRamp[1]}${raster.colorRamp[2]}${raster.colorRamp[2]}${raster.colorRamp[3]}${raster.colorRamp[3]}`
-                            : raster.colorRamp)
-                        : matchedPreset?.color || '#fd8d3c';
+                    const parsed = parseColorOrGradient(raster.colorRamp);
+                    const swatchBackground = parsed.isGradient
+                      ? `linear-gradient(to right, ${parsed.colors.join(', ')})`
+                      : parsed.primaryColor;
 
                     return (
                       <li className={style.legendItem} key={raster.identifier || raster.datasetIdentifier}>
                         <div
                           className={style.colorBox}
                           style={{
-                            backgroundColor: currentColor,
+                            background: swatchBackground,
                             border: '1px solid rgba(0,0,0,0.2)',
                             minWidth: '1rem',
                             flexShrink: 0

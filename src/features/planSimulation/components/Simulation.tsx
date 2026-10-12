@@ -352,7 +352,7 @@ const Simulation = () => {
       const rasterId = r.datasetIdentifier || r.identifier;
       if (rasterId && !r.hidden) {
         const parsed = parseColorOrGradient(r.colorRamp);
-        const resolvedColors = parsed.isGradient ? parsed.colors : undefined;
+        const resolvedColors = parsed.colors;
 
         const rasterConfig: RasterLayerConfig = {
           id: `raster-${r.identifier || rasterId}`,
@@ -566,18 +566,31 @@ const Simulation = () => {
       // 4. Update Mapbox layer paint property for immediate visual change on map
       if (map && map.current) {
         const rasterId = rasterItem.datasetIdentifier || rasterItem.identifier;
-        const layerId = `layer-raster-${rasterItem.identifier || rasterId}`;
-        const fallbackLayerId = `layer-raster-${rasterId}`;
+        const candidateLayerIds = [
+          `layer-raster-${rasterItem.identifier}`,
+          `layer-raster-${rasterItem.datasetIdentifier}`,
+          `layer-raster-${rasterId}`,
+          `layer-${rasterItem.identifier}`,
+          `layer-${rasterItem.datasetIdentifier}`,
+          `raster-${rasterItem.identifier}`,
+          `raster-${rasterId}`
+        ];
+        let targetLayerId = candidateLayerIds.find(id => id && map.current.getLayer(id)) || null;
+        if (!targetLayerId) {
+          const allLayers = map.current.getStyle()?.layers || [];
+          const matchedLayer = allLayers.find(l =>
+            (rasterItem.identifier && l.id.includes(rasterItem.identifier)) ||
+            (rasterId && l.id.includes(rasterId))
+          );
+          if (matchedLayer) {
+            targetLayerId = matchedLayer.id;
+          }
+        }
+
         const parsed = parseColorOrGradient(newColor);
         const colorExpr = parsed.isGradient
           ? buildColorExpression('class', parsed.colors, 0, 100, parsed.primaryColor)
           : parsed.primaryColor;
-
-        const targetLayerId = map.current.getLayer(layerId)
-          ? layerId
-          : map.current.getLayer(fallbackLayerId)
-          ? fallbackLayerId
-          : null;
 
         if (targetLayerId) {
           try {
@@ -591,6 +604,26 @@ const Simulation = () => {
           } catch (e) {
             console.warn('Could not update paint properties on layer', targetLayerId, e);
           }
+        } else {
+          const rasterConfig: RasterLayerConfig = {
+            id: `raster-${rasterItem.identifier || rasterId}`,
+            rasterId: rasterId,
+            name: finalName,
+            type: 'vector',
+            sourceLayer: rasterItem.datasetIdentifier || rasterId || 'landcover',
+            fieldName: 'class',
+            tiles: [getRasterTileUrl(rasterId)],
+            opacity: finalOpacity,
+            color: parsed.primaryColor,
+            colors: parsed.colors
+          };
+          addRasterToMap(map.current, rasterConfig, {
+            opacity: finalOpacity,
+            color: parsed.primaryColor,
+            colors: parsed.colors,
+            sourceLayer: rasterConfig.sourceLayer,
+            fieldName: rasterConfig.fieldName
+          });
         }
       }
 
@@ -797,13 +830,13 @@ const Simulation = () => {
               tiles: [getRasterTileUrl(rasterId)],
               opacity: r.opacity ?? 0.75,
               color: parsed.primaryColor,
-              colors: parsed.isGradient ? parsed.colors : undefined
+              colors: parsed.colors
             };
 
             addRasterToMap(map.current, rasterConfig, {
               opacity: r.opacity ?? 0.75,
               color: parsed.primaryColor,
-              colors: parsed.isGradient ? parsed.colors : undefined,
+              colors: parsed.colors,
               sourceLayer: rasterConfig.sourceLayer,
               fieldName: rasterConfig.fieldName
             });

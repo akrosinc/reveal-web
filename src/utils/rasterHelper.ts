@@ -1,5 +1,6 @@
 import { Map as MapBoxMap } from 'mapbox-gl';
 import { config } from '../config/config';
+import { hex, hsv } from 'color-convert';
 
 export interface RasterLayerConfig {
   id: string;
@@ -211,14 +212,85 @@ export const COLOR_OPTIONS: ColorOption[] = Object.entries(RASTER_COLOR_PRESETS)
 }));
 
 /**
+ * Converts a hex or rgb color string to rgba with the specified alpha opacity.
+ */
+export const hexToRgba = (color: string, alpha: number): string => {
+  if (!color) return `rgba(59, 130, 246, ${alpha})`;
+  const trimmed = color.trim();
+  if (trimmed.startsWith('rgba(')) {
+    return trimmed.replace(/,\s*[\d.]+\)$/, `, ${alpha})`);
+  }
+  if (trimmed.startsWith('rgb(')) {
+    return trimmed.replace('rgb(', 'rgba(').replace(/\)$/, `, ${alpha})`);
+  }
+  let cleanHex = trimmed.replace('#', '');
+  if (cleanHex.length === 3) {
+    cleanHex = cleanHex.split('').map(c => c + c).join('');
+  }
+  if (cleanHex.length !== 6) {
+    return trimmed;
+  }
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+/**
+ * Generates a gradient color ramp based on a single color,
+ * replicating exactly how datasets create gradient colors across ranges
+ * using HSV saturation scaling (from clean light pastel/tint up to full saturation).
+ */
+export const generateDatasetGradient = (color: string, stopsCount: number = 6): string[] => {
+  if (!color) return ['#ffffff', '#3b82f6'];
+  const cleanHex = color.replace(/^#/, '').trim();
+  if (!/^[0-9A-Fa-f]{3,8}$/.test(cleanHex)) {
+    return [color];
+  }
+  const fullHex =
+    cleanHex.length === 3
+      ? cleanHex.split('').map(c => c + c).join('')
+      : cleanHex.substring(0, 6);
+
+  try {
+    const [h, s, v] = hex.hsv(fullHex);
+    const stops: string[] = [];
+    for (let i = 0; i < stopsCount; i++) {
+      const percentage = i / (stopsCount - 1); // 0 to 1
+      // Exact dataset logic: scale saturation with percentage
+      const currentSat = Math.round(s * percentage);
+      // Brightness adjustment: when saturation is low, ensure brightness is high so it's a clean pastel/tint
+      const currentVal = Math.round(Math.min(100, v + (100 - v) * (1 - percentage) * 0.7));
+      const hexVal = hsv.hex([h, currentSat, currentVal]);
+      stops.push('#' + hexVal);
+    }
+    // Guarantee that the final stop is exactly the input color
+    stops[stops.length - 1] = '#' + fullHex.toLowerCase();
+    return stops;
+  } catch {
+    return [color];
+  }
+};
+
+/**
+ * Backward-compatible alias for generateDatasetGradient.
+ */
+export const generateOpacityGradient = generateDatasetGradient;
+
+/**
  * Parses a saved color string which can be a single hex, comma-separated gradient stops,
- * or a preset name. Returns whether it is a gradient, along with parsed colors.
+ * or a preset name. If a simple color is provided, creates a dataset gradient ramp based on that color.
  */
 export const parseColorOrGradient = (
   colorStr?: string
 ): { colors: string[]; isGradient: boolean; primaryColor: string } => {
   if (!colorStr) {
-    return { colors: ['#3b82f6'], isGradient: false, primaryColor: '#3b82f6' };
+    const defaultColor = '#3b82f6';
+    return {
+      colors: generateDatasetGradient(defaultColor),
+      isGradient: true,
+      primaryColor: defaultColor
+    };
   }
 
   // Comma-separated multiple hex colors
@@ -236,8 +308,8 @@ export const parseColorOrGradient = (
     }
     if (list.length === 1) {
       return {
-        colors: list,
-        isGradient: false,
+        colors: generateDatasetGradient(list[0]),
+        isGradient: true,
         primaryColor: list[0]
       };
     }
@@ -258,10 +330,11 @@ export const parseColorOrGradient = (
     };
   }
 
-  // Single solid color
+  // Simple/single color: create dataset gradient based on this color
+  const datasetGradient = generateDatasetGradient(colorStr);
   return {
-    colors: [colorStr],
-    isGradient: false,
+    colors: datasetGradient,
+    isGradient: true,
     primaryColor: colorStr
   };
 };
@@ -293,23 +366,19 @@ export const buildColorExpression = (
   max: number = 100,
   fallbackColor?: string
 ): any => {
-  if (!colors || colors.length === 0) return fallbackColor || '#3b82f6';
-  if (colors.length === 1) return colors[0];
+  if (!colors || colors.length === 0) {
+    colors = generateDatasetGradient(fallbackColor || '#3b82f6');
+  } else if (colors.length === 1) {
+    colors = generateDatasetGradient(colors[0]);
+  }
 
   const n = colors.length;
-  const defaultFallback = fallbackColor || colors[Math.floor(n / 2)] || colors[0] || '#3b82f6';
 
   // Candidate properties in priority order
   const propertyCandidates = [
     fieldName,
     ...RASTER_VALUE_PROPERTIES
   ].filter((p, idx, arr) => Boolean(p) && arr.indexOf(p) === idx);
-
-  // Mapbox GL condition to check if any of the candidate properties exist
-  const hasCondition: any = [
-    'any',
-    ...propertyCandidates.map(p => ['has', p])
-  ];
 
   // Mapbox GL expression to coalesce and convert the first available property to a number
   const numValue: any = [
@@ -338,64 +407,35 @@ export const buildColorExpression = (
     return result;
   };
 
-  // If custom min and max are specified, use them directly
+  let stopValues: number[];
   if (min !== 0 || max !== 100) {
-    const customVals = createAscendingStops(min, max, n);
-    const customStops: (number | string)[] = [];
+    stopValues = createAscendingStops(min, max, n);
+  } else {
+    // Ramp that scales smoothly across small values (0..1) as well as larger values (1..100+)
+    const baseStops = [0, 1, 3, 7, 15, 35, 75, 150, 300, 600, 1200];
+    stopValues = [];
     for (let i = 0; i < n; i++) {
-      customStops.push(customVals[i], colors[i]);
+      const t = n === 1 ? 0 : i / (n - 1);
+      const idx = Math.min(Math.floor(t * (baseStops.length - 1)), baseStops.length - 1);
+      let val = baseStops[idx];
+      if (i > 0 && val <= stopValues[i - 1]) {
+        val = stopValues[i - 1] + 1;
+      }
+      stopValues.push(val);
     }
-    return [
-      'case',
-      ['!', hasCondition],
-      defaultFallback,
-      [
-        'interpolate',
-        ['linear'],
-        numValue,
-        ...customStops
-      ]
-    ];
   }
 
-  // 1. Scale for 0 <= value <= 1 (NDVI, probabilities, normalized surfaces)
-  const floatVals = createAscendingStops(0, 1, n);
-  const floatStops: (number | string)[] = [];
+  const interpPairs: (number | string)[] = [];
   for (let i = 0; i < n; i++) {
-    floatStops.push(floatVals[i], colors[i]);
+    interpPairs.push(stopValues[i], colors[i]);
   }
 
-  // 2. Scale for 1 <= value <= 10 (discrete classification classes)
-  const classVals = createAscendingStops(1, 10, n);
-  const classStops: (number | string)[] = [];
-  for (let i = 0; i < n; i++) {
-    classStops.push(classVals[i], colors[i]);
-  }
-
-  // 3. General scale for population / counts / density (0 to 500+)
-  const basePopStops = [0, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
-  const generalStops: (number | string)[] = [];
-  const genVals: number[] = [];
-  for (let i = 0; i < n; i++) {
-    const t = n === 1 ? 0 : i / (n - 1);
-    const idx = Math.min(Math.floor(t * (basePopStops.length - 1)), basePopStops.length - 1);
-    let val = basePopStops[idx];
-    if (i > 0 && val <= genVals[i - 1]) {
-      val = genVals[i - 1] + 5;
-    }
-    genVals.push(val);
-    generalStops.push(val, colors[i]);
-  }
-
+  // Pure root-level interpolate expression required by Mapbox GL
   return [
-    'case',
-    ['!', hasCondition],
-    defaultFallback,
-    ['<=', numValue, 1],
-    ['interpolate', ['linear'], numValue, ...floatStops],
-    ['<=', numValue, 10],
-    ['interpolate', ['linear'], numValue, ...classStops],
-    ['interpolate', ['linear'], numValue, ...generalStops]
+    'interpolate',
+    ['linear'],
+    numValue,
+    ...interpPairs
   ];
 };
 

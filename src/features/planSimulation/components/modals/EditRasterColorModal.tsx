@@ -3,7 +3,7 @@ import { Button, Form, FormGroup, FormLabel, Modal, Spinner } from 'react-bootst
 import Select from 'react-select';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../../store/hooks';
-import { COLOR_OPTIONS, ColorOption, parseColorOrGradient } from '../../../../utils/rasterHelper';
+import { COLOR_OPTIONS, ColorOption, parseColorOrGradient, generateDatasetGradient } from '../../../../utils/rasterHelper';
 import { RasterDatasetItem } from '../SimulationMapView/api/datasetsAPI';
 
 interface Props {
@@ -42,12 +42,13 @@ export const EditRasterColorModal = ({
           opt.colors.some(c => c.toLowerCase() === customHexColor.toLowerCase())
       );
       if (!isPreset) {
+        const datasetStops = generateDatasetGradient(customHexColor);
         const customOpt: ColorOption = {
           value: customHexColor,
-          label: `Custom (${customHexColor})`,
+          label: `Custom Ramp (${customHexColor})`,
           color: customHexColor,
-          colors: [customHexColor],
-          gradient: customHexColor
+          colors: datasetStops,
+          gradient: `linear-gradient(to right, ${datasetStops.join(', ')})`
         };
         return [customOpt, ...COLOR_OPTIONS];
       }
@@ -59,7 +60,8 @@ export const EditRasterColorModal = ({
     if (show && rasterItem) {
       setName(rasterItem.name || rasterItem.datasetIdentifier || rasterItem.identifier || '');
       const initialColor = rasterItem.colorRamp || '#fd8d3c';
-      setCustomHexColor(initialColor);
+      const parsed = parseColorOrGradient(initialColor);
+      setCustomHexColor(parsed.primaryColor || initialColor);
 
       const initialOpacity =
         rasterItem.opacity !== undefined
@@ -70,7 +72,6 @@ export const EditRasterColorModal = ({
       setOpacity(initialOpacity);
 
       // Find matching preset if applicable
-      const parsed = parseColorOrGradient(initialColor);
       const matched = COLOR_OPTIONS.find(
         opt =>
           opt.value.toLowerCase() === initialColor.toLowerCase() ||
@@ -79,20 +80,15 @@ export const EditRasterColorModal = ({
           (parsed.isGradient && opt.colors.join(',').toLowerCase() === parsed.colors.join(',').toLowerCase()) ||
           opt.colors.some(c => c.toLowerCase() === initialColor.toLowerCase())
       );
+      const datasetStops = generateDatasetGradient(parsed.primaryColor || initialColor);
       setSelectedColorOption(
-        matched || (parsed.isGradient ? {
+        matched || {
           value: initialColor,
-          label: `Gradient (${parsed.colors.length} stops)`,
+          label: `Gradient Ramp (${parsed.primaryColor})`,
           color: parsed.primaryColor,
-          colors: parsed.colors,
-          gradient: `linear-gradient(to right, ${parsed.colors.join(', ')})`
-        } : {
-          value: initialColor,
-          label: `Custom (${initialColor})`,
-          color: initialColor,
-          colors: [initialColor],
-          gradient: initialColor
-        })
+          colors: parsed.colors && parsed.colors.length > 1 ? parsed.colors : datasetStops,
+          gradient: `linear-gradient(to right, ${(parsed.colors && parsed.colors.length > 1 ? parsed.colors : datasetStops).join(', ')})`
+        }
       );
       setIsSubmitting(false);
     }
@@ -167,10 +163,14 @@ export const EditRasterColorModal = ({
 
   const handleApply = async () => {
     if (!rasterItem) return;
-    const finalColorToSave =
-      selectedColorOption?.colors && selectedColorOption.colors.length > 1
-        ? selectedColorOption.colors.join(',')
-        : selectedColorOption?.color || customHexColor || '#fd8d3c';
+    const isPresetMultiColor =
+      selectedColorOption &&
+      COLOR_OPTIONS.some(
+        opt => opt.value === selectedColorOption.value && opt.colors && opt.colors.length > 1
+      );
+    const finalColorToSave = isPresetMultiColor
+      ? selectedColorOption.colors.join(',')
+      : selectedColorOption?.color || customHexColor || '#fd8d3c';
     setIsSubmitting(true);
     try {
       await onUpdateColor(rasterItem, finalColorToSave, opacity / 100, name);
@@ -246,27 +246,30 @@ export const EditRasterColorModal = ({
 
           {/* Live Color Ramp Preview */}
           {selectedColorOption && (
-            <div className="mb-3">
-              <div className="d-flex justify-content-between align-items-center mb-1">
+            <div
+              className="mb-3 p-3 rounded"
+              style={{
+                backgroundColor: isDarkMode ? '#1a1d20' : '#f8f9fa',
+                border: `1px solid ${isDarkMode ? '#343a40' : '#e9ecef'}`
+              }}
+            >
+              <div className="d-flex justify-content-between align-items-center mb-2">
                 <small className={isDarkMode ? 'text-light' : 'text-muted'}>
-                  <strong>Color Ramp Preview:</strong> {selectedColorOption.label}
+                  <strong>{t('simulationPage.colorRampPreview', 'Color Ramp Preview')}:</strong>{' '}
+                  {selectedColorOption.label}
                 </small>
               </div>
               <div
                 style={{
-                  height: '24px',
+                  height: '28px',
                   borderRadius: '6px',
-                  background: selectedColorOption.gradient || selectedColorOption.color || customHexColor,
                   border: `1px solid ${isDarkMode ? '#555' : '#ccc'}`,
-                  boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                  background:
+                    selectedColorOption.gradient ||
+                    `linear-gradient(to right, ${(selectedColorOption.colors || generateDatasetGradient(selectedColorOption.color || customHexColor)).join(', ')})`,
+                  boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)'
                 }}
               />
-              {selectedColorOption.colors && (
-                <div className="d-flex justify-content-between mt-1" style={{ fontSize: '10px', opacity: 0.7 }}>
-                  <span>Min (Low Value)</span>
-                  <span>Max (High Value)</span>
-                </div>
-              )}
             </div>
           )}
 
@@ -278,7 +281,13 @@ export const EditRasterColorModal = ({
             <div className="d-flex align-items-center gap-3">
               <input
                 type="color"
-                value={customHexColor.startsWith('#') && customHexColor.length === 7 ? customHexColor : '#fd8d3c'}
+                value={
+                  customHexColor.startsWith('#') && customHexColor.length === 7
+                    ? customHexColor
+                    : selectedColorOption?.color && selectedColorOption.color.startsWith('#') && selectedColorOption.color.length === 7
+                    ? selectedColorOption.color
+                    : '#fd8d3c'
+                }
                 onChange={e => {
                   const val = e.target.value;
                   setCustomHexColor(val);
@@ -288,13 +297,14 @@ export const EditRasterColorModal = ({
                       opt.value.toLowerCase() === val.toLowerCase() ||
                       opt.colors.some(c => c.toLowerCase() === val.toLowerCase())
                   );
+                  const datasetStops = generateDatasetGradient(val);
                   setSelectedColorOption(
                     matched || {
-                      value: `custom-${val}`,
-                      label: `Custom (${val})`,
+                      value: val,
+                      label: `Custom Ramp (${val})`,
                       color: val,
-                      colors: [val],
-                      gradient: val
+                      colors: datasetStops,
+                      gradient: `linear-gradient(to right, ${datasetStops.join(', ')})`
                     }
                   );
                 }}
@@ -314,20 +324,21 @@ export const EditRasterColorModal = ({
                 onChange={e => {
                   const val = e.target.value;
                   setCustomHexColor(val);
-                  if (val.startsWith('#') && val.length === 7) {
+                  if (val.startsWith('#') && (val.length === 7 || val.length === 4)) {
                     const matched = COLOR_OPTIONS.find(
                       opt =>
                         opt.color.toLowerCase() === val.toLowerCase() ||
                         opt.value.toLowerCase() === val.toLowerCase() ||
                         opt.colors.some(c => c.toLowerCase() === val.toLowerCase())
                     );
+                    const datasetStops = generateDatasetGradient(val);
                     setSelectedColorOption(
                       matched || {
-                        value: `custom-${val}`,
-                        label: `Custom (${val})`,
+                        value: val,
+                        label: `Custom Ramp (${val})`,
                         color: val,
-                        colors: [val],
-                        gradient: val
+                        colors: datasetStops,
+                        gradient: `linear-gradient(to right, ${datasetStops.join(', ')})`
                       }
                     );
                   }
