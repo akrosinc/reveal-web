@@ -108,18 +108,30 @@
   padding: 4px;
   border: 0;
   border-radius: 12px;
+  /* The app navbar's .dropdown-menu.show adds a background image with !important; not wanted here */
+  background-image: none !important;
   box-shadow: 0 10px 26px rgba(104, 105, 99, 0.14);
   font-size: 12px;
 }
 
-.menuItem {
+/*
+ * The app navbar (components/Layout/Navbar/index.css) makes every .dropdown-item green on hover/active with
+ * !important. These menus follow the Command Deck colours instead, so they override it here only.
+ */
+.menu .menuItem {
   border-radius: 8px;
-  padding: 6px 10px;
-  color: var(--body-ink);
+  padding: 6px 10px !important;
+  color: var(--body-ink) !important;
 }
 
-.menuItem:global(.active),
-.menuItem:active {
-  background: var(--teal-tint);
-  color: var(--teal);
+.menu .menuItem:hover,
+.menu .menuItem:focus {
+  background-color: rgba(20, 24, 20, 0.06) !important;
+  color: var(--ink) !important;
+}
+
+.menu .menuItem:global(.active),
+.menu .menuItem:active {
+  background-color: var(--teal-tint) !important;
+  color: var(--teal) !important;
 }
