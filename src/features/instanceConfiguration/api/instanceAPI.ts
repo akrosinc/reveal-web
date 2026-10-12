@@ -3,6 +3,7 @@ import { INSTANCE, META_IMPORT_DATASET, COMPLEX_TAG } from '../../../constants/u
 import { PageableModel } from '../../../api/providers';
 import { LOCATION_HIERARCHY } from '../../../constants/urls';
 import { LocationModel } from '../../location/providers/types';
+import { config } from '../../../config/config';
 
 export interface InstanceResponse {
   identifier: string;
@@ -338,3 +339,36 @@ export const getComplexTags = async (
   const response = await api.get<PageableModel<ComplexTagResponse>>(`${COMPLEX_TAG}?${params.toString()}`);
   return response.data;
 };
+
+export interface InstanceUserResponse {
+  identifier: string;
+  name: string;
+  role: string;
+}
+
+/**
+ * Get users list for instances by role (calls /api/v1/instance/user/list?role=ADMIN)
+ * @param role string, defaults to 'ADMIN'
+ * @returns Promise<InstanceUserResponse[]>
+ */
+export const getInstanceAdminUserList = async (
+  role: string = 'ADMIN'
+): Promise<InstanceUserResponse[]> => {
+  const endpoint = config.API_BASE_URL?.includes('/api/v1')
+    ? 'instance/user/list'
+    : '/api/v1/instance/user/list';
+  const response = await api.get<any>(`${endpoint}?role=${role}`);
+
+  if (Array.isArray(response.data)) {
+    return response.data;
+  }
+  if (Array.isArray(response.data?.content)) {
+    return response.data.content;
+  }
+  if (Array.isArray(response.data?.data)) {
+    return response.data.data;
+  }
+  return [];
+};
+
+export const getInstanceUserList = getInstanceAdminUserList;

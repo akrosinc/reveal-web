@@ -12,7 +12,8 @@ import {
   faAngleDoubleUp
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../../store/hooks';
-import { getUserList, getUserList1 } from '../../../planSimulation/components/User/api/userAPI';
+import { getInstanceAdminUserList } from '../../api/instanceAPI';
+import type { InstanceUserResponse } from '../../api/instanceAPI';
 
 interface Member {
   id: string;
@@ -35,13 +36,18 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, view
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const fetchedUsers = await getUserList1();
-        const ids = fetchedUsers?.map(elem => elem?.identifier)
-        const idsOfUsers = Array.from(new Set(ids));
-        setUsers(idsOfUsers?.map(elem => fetchedUsers?.find(i => i?.identifier === elem))?.map((elem: any) => ({
-          id: elem.identifier,
-          name: (elem.firstName + ' ' + elem.lastName || '').trim()
-        })));
+        const fetchedUsers = await getInstanceAdminUserList('ADMIN');
+        const ids = fetchedUsers?.map(elem => elem.identifier);
+        const uniqueIds = Array.from(new Set(ids));
+        setUsers(
+          uniqueIds
+            ?.map(id => fetchedUsers?.find(i => i.identifier === id))
+            ?.filter((elem): elem is InstanceUserResponse => Boolean(elem))
+            ?.map(elem => ({
+              id: elem.identifier,
+              name: elem.name || ''
+            })) || []
+        );
       } catch (err) {
         console.log(err);
       }
