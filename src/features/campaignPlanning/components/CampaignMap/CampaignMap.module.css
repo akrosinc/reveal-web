@@ -4,8 +4,7 @@
   height: 100%;
 }
 
-/* Logo and attribution: just left of the map tool buttons row (3 x 38px + gaps + 18px offset) */
-.map :global(.mapboxgl-ctrl-bottom-right) {
-  right: 156px;
-  bottom: 8px;
+/* Mapbox logo hidden (lead's request); the attribution control is not added at all */
+.map :global(.mapboxgl-ctrl-logo) {
+  display: none;
 }

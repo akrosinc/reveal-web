@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronLeft } from 'react-icons/bs';
 import { DATASET_COLORS } from '../../constants';
-import { HierarchyNode, RasterDataset, SimulationDataset, Team } from '../../providers/types';
+import { HierarchyNode, RasterDataset, SimulationDataset, Team, ValueRange } from '../../providers/types';
 import { filterHierarchy } from '../../utils/hierarchyTree';
+import DatasetFilter from '../DatasetFilter';
 import HierarchyTree from '../HierarchyTree';
 import Skeleton from '../Skeleton';
 import PanelSection from './PanelSection';
@@ -13,6 +14,10 @@ interface Props {
   hierarchy: HierarchyNode[];
   datasets: SimulationDataset[];
   rasterDatasets: RasterDataset[];
+  valueBounds: Record<string, ValueRange>;
+  datasetFilters: Record<string, ValueRange | undefined>;
+  onDatasetFilterToggle: (datasetId: string) => void;
+  onDatasetFilterChange: (datasetId: string, range: ValueRange) => void;
   teams: Team[];
   isHierarchyLoading: boolean;
   isDatasetsLoading: boolean;
@@ -25,6 +30,10 @@ const LeftPanel = ({
   hierarchy,
   datasets,
   rasterDatasets,
+  valueBounds,
+  datasetFilters,
+  onDatasetFilterToggle,
+  onDatasetFilterChange,
   teams,
   isHierarchyLoading,
   isDatasetsLoading,
@@ -95,13 +104,16 @@ const LeftPanel = ({
               <Skeleton widths={['58%', '44%']} />
             ) : datasets.length ? (
               datasets.map((dataset, index) => (
-                <div key={dataset.identifier} className={styles.item}>
-                  <span
-                    className={styles.swatch}
-                    style={{ background: dataset.hexColor || DATASET_COLORS[index % DATASET_COLORS.length] }}
-                  />
-                  {dataset.name}
-                </div>
+                <DatasetFilter
+                  key={dataset.identifier}
+                  dataset={dataset}
+                  color={dataset.hexColor || DATASET_COLORS[index % DATASET_COLORS.length]}
+                  bounds={valueBounds[dataset.identifier]}
+                  isOn={dataset.identifier in datasetFilters}
+                  range={datasetFilters[dataset.identifier]}
+                  onToggle={() => onDatasetFilterToggle(dataset.identifier)}
+                  onChange={range => onDatasetFilterChange(dataset.identifier, range)}
+                />
               ))
             ) : (
               <div className={styles.empty}>{t('campaignPlanning.noDatasets')}</div>

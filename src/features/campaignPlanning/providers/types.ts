@@ -60,6 +60,12 @@ export interface SimulationDataset {
   isUserDataset?: boolean;
 }
 
+// Value range of a dataset (lowest/highest value, or the part kept by a filter)
+export interface ValueRange {
+  min: number;
+  max: number;
+}
+
 // The plan's simulation holds the dataset ids that location-data expects
 // Raster layer attached to the simulation (added on the Simulation page, from raster/map-layers)
 export interface RasterDataset {
@@ -70,10 +76,21 @@ export interface RasterDataset {
   hidden?: boolean;
 }
 
+// Area assigned to the campaign (plan target area), as Campaign Management draws it
+export interface TargetArea {
+  identifier: string;
+  geometry: GeoJSON.Geometry;
+  properties: {
+    name: string;
+    numberOfTeams?: number;
+  };
+}
+
 export interface PlanSimulation {
   identifier: string;
   datasets: SimulationDataset[];
   rasterDatasets?: RasterDataset[];
+  targetAreas?: TargetArea[];
 }
 
 export interface LocationDataRequest {

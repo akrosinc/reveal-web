@@ -1,0 +1,160 @@
+/* Legend pill: bottom row, just left of the map tool buttons (3 x 38px + gaps + 18px offset) */
+.toggle {
+  composes: surface from '../../styles/deck.module.css';
+  position: absolute;
+  right: 156px;
+  bottom: 18px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 12px;
+  color: #5c6259;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.toggle:hover {
+  color: var(--teal);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.toggleActive,
+.toggleActive:hover {
+  border-color: var(--teal);
+  background: var(--teal-tint);
+  color: var(--teal);
+}
+
+.chevron,
+.chevronOpen {
+  font-size: 10px;
+  transition: transform 0.15s;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* Opens above the pill, over the panels like the basemap picker */
+.card {
+  composes: surface scroll from '../../styles/deck.module.css';
+  position: absolute;
+  right: 156px;
+  bottom: 64px;
+  z-index: 4;
+  width: 220px;
+  max-height: min(340px, calc(100vh - 150px));
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+
+.title {
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* "Toggle assigned" row, like Campaign Management's legend */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+  color: var(--body-ink);
+}
+
+.toggleRow label {
+  margin: 0;
+  cursor: pointer;
+}
+
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 28px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(20, 24, 20, 0.18);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.switch[aria-checked='true'] {
+  background: var(--teal);
+}
+
+.switch:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s;
+}
+
+.switch[aria-checked='true'] .knob {
+  transform: translateX(12px);
+}
+
+.sectionTitle {
+  margin-top: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--label-ink);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 12px;
+  color: var(--body-ink);
+  overflow-wrap: anywhere;
+}
+
+.colorBox {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+/* Rasters are colour gradients, not one colour (same swatch as the left panel) */
+.rasterBox {
+  background: linear-gradient(135deg, #d6ead3, #4f9d69 55%, #1f4e3d);
+}
+
+.empty {
+  padding: 4px 0;
+  font-size: 12px;
+  color: var(--muted-ink);
+}
