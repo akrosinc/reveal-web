@@ -59,12 +59,12 @@
   background: #f1ede5;
   font: inherit;
   font-size: 12px;
-  color: #737a72;
+  color: var(--ink);
   outline: none;
 }
 
 .search::placeholder {
-  color: var(--muted-ink);
+  color: #828880;
   opacity: 1;
 }
 
@@ -83,6 +83,9 @@
 .body {
   composes: scroll from '../../styles/deck.module.css';
   min-height: 0;
+  /* 8px of the card padding moved inside, so the tree's selected row (pulled 8px left) isn't clipped by this scroll area */
+  margin-left: -8px;
+  padding-left: 8px;
   overflow-x: hidden;
 }
 
@@ -90,20 +93,57 @@
 .tree {
   composes: scroll from '../../styles/deck.module.css';
   max-height: min(260px, 38vh);
+  /* Rows keep 8px (accent bar + padding) before the name; pulled into the card padding so names line up with the rest */
+  margin-left: -8px;
   overflow-x: hidden;
 }
 
 /* Section heading with the divider above it */
-.label {
-  composes: buttonReset from '../../styles/deck.module.css';
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin: 12px 0 5px;
   padding: 11px 0 0;
   border-top: 1px solid var(--line);
+}
+
+.label {
+  composes: buttonReset from '../../styles/deck.module.css';
+  flex: 1;
+  padding: 0;
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--label-ink);
+  color: #828880;
+}
+
+/* Round "+" at the right of a section heading (lead's pick: design variant 2) */
+.addButton {
+  composes: buttonReset from '../../styles/deck.module.css';
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  /* The scroll area clips at its edge, so keep the icon (and its focus ring) inside it */
+  margin-right: 3px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 16px;
+  color: var(--muted-ink);
+  transition: color 0.15s;
+}
+
+.addButton:hover {
+  color: var(--teal);
+}
+
+.addButton:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
 }
 
 .item {
@@ -112,7 +152,7 @@
   gap: 7px;
   padding: 3px 0;
   font-size: 12px;
-  color: var(--body-ink);
+  color: var(--ink);
 }
 
 .swatch {
@@ -129,5 +169,5 @@
 
 .empty {
   composes: item;
-  color: var(--label-ink);
+  color: #828880;
 }

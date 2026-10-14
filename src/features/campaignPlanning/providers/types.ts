@@ -58,6 +58,18 @@ export interface SimulationDataset {
   borderColor?: string;
   lineWidth?: number;
   isUserDataset?: boolean;
+  // Fill opacity in % from the Edit dataset popup; kept on this page only, like Simulation's opacity slider
+  opacity?: number;
+}
+
+// Body of PUT simulation/dataset (Simulation's Edit dataset popup / rename)
+export interface DatasetUpdateRequest {
+  simulationId: string;
+  datasetId: string;
+  name: string;
+  hexColor: string;
+  lineWidth: number;
+  borderColor: string;
 }
 
 // Value range of a dataset (lowest/highest value, or the part kept by a filter)

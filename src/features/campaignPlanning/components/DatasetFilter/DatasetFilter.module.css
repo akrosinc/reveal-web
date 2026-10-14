@@ -1,12 +1,60 @@
-/* Dataset row: swatch, name and a chevron that opens the filter */
-.row {
-  composes: buttonReset from '../../styles/deck.module.css';
+/* Dataset row: colour (opens the colour panel), name + chevron (opens the filter), pencil (rename) over the row */
+.rowWrapper {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 3px 0;
+}
+
+.swatchButton {
+  composes: buttonReset from '../../styles/deck.module.css';
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: auto;
+  padding: 0;
+}
+
+.swatchButton:hover .swatch {
+  box-shadow: 0 0 0 2px var(--teal-tint), 0 0 0 3px var(--teal);
+}
+
+.swatchButton:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+/* Rename field in place of the name, like Simulation's */
+.nameInput {
+  flex: 1;
+  min-width: 0;
+  margin: 1px 5px 1px 0;
+  padding: 2px 6px;
+  border: 1px solid var(--teal);
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
   font-size: 12px;
-  color: var(--body-ink);
+  color: var(--ink);
+  outline: none;
+}
+
+.row {
+  composes: buttonReset from '../../styles/deck.module.css';
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  /* Right padding puts the chevron in the same column as the hierarchy tree's chevrons */
+  padding: 3px 5px 3px 0;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+/* Room for the edit button so a long name is cut before it */
+.editable .name {
+  margin-right: 20px;
 }
 
 .row:hover .chevron {
@@ -14,6 +62,40 @@
 }
 
 .row:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
+}
+
+.editButton {
+  composes: buttonReset from '../../styles/deck.module.css';
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  transform: translateY(-50%);
+  border-radius: 5px;
+  font-size: 11px;
+  color: var(--muted-ink);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+/* Shown on hover / keyboard focus */
+.rowWrapper:hover .editButton,
+.editButton:focus-visible {
+  opacity: 1;
+}
+
+.editButton:hover {
+  background: var(--teal-tint);
+  color: var(--teal);
+}
+
+.editButton:focus-visible {
   outline: 2px solid var(--teal);
   outline-offset: 1px;
 }
@@ -57,50 +139,12 @@
   justify-content: space-between;
   margin-bottom: 6px;
   font-size: 11.5px;
-  color: var(--body-ink);
+  color: var(--ink);
 }
 
 .switchRow label {
   margin: 0;
   cursor: pointer;
-}
-
-.switch {
-  position: relative;
-  flex-shrink: 0;
-  width: 28px;
-  height: 16px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(20, 24, 20, 0.18);
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.switch[aria-checked='true'] {
-  background: var(--range-color);
-}
-
-.switch:focus-visible {
-  outline: 2px solid var(--teal);
-  outline-offset: 2px;
-}
-
-.knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  transition: transform 0.15s;
-}
-
-.switch[aria-checked='true'] .knob {
-  transform: translateX(12px);
 }
 
 /* Two native range inputs on one track; only their thumbs take the pointer */
@@ -201,10 +245,10 @@
   display: flex;
   justify-content: space-between;
   font-size: 10.5px;
-  color: var(--muted-ink);
+  color: #828880;
 }
 
 .hint {
   font-size: 11px;
-  color: var(--label-ink);
+  color: #828880;
 }

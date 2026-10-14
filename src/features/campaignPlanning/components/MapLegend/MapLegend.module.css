@@ -84,44 +84,6 @@
   cursor: pointer;
 }
 
-.switch {
-  position: relative;
-  flex-shrink: 0;
-  width: 28px;
-  height: 16px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(20, 24, 20, 0.18);
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.switch[aria-checked='true'] {
-  background: var(--teal);
-}
-
-.switch:focus-visible {
-  outline: 2px solid var(--teal);
-  outline-offset: 2px;
-}
-
-.knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  transition: transform 0.15s;
-}
-
-.switch[aria-checked='true'] .knob {
-  transform: translateX(12px);
-}
-
 .sectionTitle {
   margin-top: 8px;
   font-size: 10px;

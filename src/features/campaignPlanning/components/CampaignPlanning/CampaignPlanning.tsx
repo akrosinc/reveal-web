@@ -3,10 +3,25 @@ import { Spinner } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { useAppSelector } from '../../../../store/hooks';
-import { getInstanceHierarchy, getInstanceTeams, getLocationData, getPlanSimulation } from '../../api';
+import {
+  getInstanceHierarchy,
+  getInstanceTeams,
+  getLocationData,
+  getPlanSimulation,
+  updateSimulationDataset
+} from '../../api';
 import { MAP_STYLE_LIGHT } from '../../constants';
-import { HierarchyNode, LocationFeature, PlanSimulation, Team, ValueRange } from '../../providers/types';
+import {
+  HierarchyNode,
+  LocationFeature,
+  PlanSimulation,
+  SimulationDataset,
+  Team,
+  ValueRange
+} from '../../providers/types';
+import { getValueBounds } from '../../utils/datasets';
 import { findPath } from '../../utils/hierarchyTree';
+import AddDatasetDialog from '../AddDatasetDialog';
 import BottomTable from '../BottomTable';
 import CampaignMap from '../CampaignMap';
 import LeftPanel from '../LeftPanel';
@@ -38,6 +53,7 @@ const CampaignPlanning = () => {
   const [isDetailsCollapsed, setIsDetailsCollapsed] = useState(false);
   const [isTableOpen, setIsTableOpen] = useState(false);
   const [mapStyle, setMapStyle] = useState(MAP_STYLE_LIGHT);
+  const [isAddDatasetOpen, setIsAddDatasetOpen] = useState(false);
   const selectedPath = useMemo(
     () => (selectedNode ? findPath(hierarchy, selectedNode.identifier) : []),
     [hierarchy, selectedNode]
@@ -48,36 +64,96 @@ const CampaignPlanning = () => {
     if (!node) return [];
     return node.children?.length ? node.children : [node];
   }, [selectedPath]);
-  const setIsLoading = (key: keyof typeof loading, value: boolean) =>
-    setLoading(current => ({ ...current, [key]: value }));
+  const setIsLoading = useCallback(
+    (key: keyof typeof loading, value: boolean) => setLoading(current => ({ ...current, [key]: value })),
+    []
+  );
   const tableSpace = selectedNode ? TABLE_SPACE[isTableOpen ? 'sheet' : 'bar'] : TABLE_SPACE.none;
 
+  // Each request below ignores its response once the instance / plan / area has changed (isCurrent), so a slow answer
+  // for the previous one can't overwrite the new data; the previous data is cleared right away instead of shown.
   useEffect(() => {
-    // An area from the previous instance's hierarchy doesn't belong to a newly switched one
+    // The previous instance's areas, teams and selected area don't belong to a newly switched one
     setSelectedNode(undefined);
+    setHierarchy([]);
+    setTeams([]);
     if (!instanceId) return;
+    let isCurrent = true;
     setIsLoading('hierarchy', true);
     getInstanceHierarchy(instanceId)
-      .then(res => setHierarchy(res.geoTree ?? []))
-      .catch(err => toast.error(err))
-      .finally(() => setIsLoading('hierarchy', false));
+      .then(res => isCurrent && setHierarchy(res.geoTree ?? []))
+      .catch(err => isCurrent && toast.error(err))
+      .finally(() => isCurrent && setIsLoading('hierarchy', false));
     setIsLoading('teams', true);
     getInstanceTeams(instanceId)
-      .then(setTeams)
-      .catch(err => toast.error(err))
-      .finally(() => setIsLoading('teams', false));
-  }, [instanceId]);
+      .then(res => isCurrent && setTeams(res))
+      .catch(err => isCurrent && toast.error(err))
+      .finally(() => isCurrent && setIsLoading('teams', false));
+    return () => {
+      isCurrent = false;
+    };
+  }, [instanceId, setIsLoading]);
 
   useEffect(() => {
+    setSimulation(undefined);
     if (!planId) return;
+    let isCurrent = true;
     setIsLoading('simulation', true);
     getPlanSimulation(planId)
-      .then(setSimulation)
-      .catch(err => toast.error(err))
-      .finally(() => setIsLoading('simulation', false));
-  }, [planId]);
+      .then(res => isCurrent && setSimulation(res))
+      .catch(err => isCurrent && toast.error(err))
+      .finally(() => isCurrent && setIsLoading('simulation', false));
+    return () => {
+      isCurrent = false;
+    };
+  }, [planId, setIsLoading]);
 
   const datasets = useMemo(() => simulation?.datasets ?? [], [simulation]);
+  const simulationId = simulation?.identifier;
+  // An added dataset joins the list, so the areas reload with its values too
+  const addDataset = useCallback(
+    (dataset: SimulationDataset) =>
+      setSimulation(current => current && { ...current, datasets: [...current.datasets, dataset] }),
+    []
+  );
+  // Rename / colour panel changes. Saved to the simulation like on Simulation (PUT simulation/dataset); a user dataset
+  // (added without "Save to Simulation") only changes on this page. Opacity isn't part of the request, as on Simulation.
+  const saveDataset = useCallback(
+    (edited: SimulationDataset) => {
+      const replace = () =>
+        setSimulation(
+          current =>
+            current && {
+              ...current,
+              datasets: current.datasets.map(dataset => (dataset.identifier === edited.identifier ? edited : dataset))
+            }
+        );
+      if (edited.isUserDataset || !simulationId) {
+        replace();
+        return;
+      }
+      updateSimulationDataset({
+        simulationId,
+        datasetId: edited.identifier,
+        name: edited.name,
+        hexColor: edited.hexColor ?? '',
+        lineWidth: edited.lineWidth ?? 1,
+        borderColor: edited.borderColor ?? '#000000'
+      })
+        .then(replace)
+        .catch(err => toast.error(err));
+    },
+    [simulationId]
+  );
+  // location-data only needs the dataset ids, so editing a dataset's name or colours doesn't reload the areas
+  const datasetIdsKey = useMemo(
+    () =>
+      JSON.stringify({
+        datasetsIds: datasets.filter(dataset => !dataset.isUserDataset).map(dataset => dataset.identifier),
+        userDatasetIds: datasets.filter(dataset => dataset.isUserDataset).map(dataset => dataset.identifier)
+      }),
+    [datasets]
+  );
   const rasterDatasets = useMemo(() => simulation?.rasterDatasets ?? [], [simulation]);
   const targetAreas = useMemo(() => simulation?.targetAreas ?? [], [simulation]);
   // Campaign Management's "Toggle assigned": shows or hides the assigned areas layer (on by default there too)
@@ -89,26 +165,11 @@ const CampaignPlanning = () => {
   }, [locations, selectedNode]);
 
   // Lowest/highest value of each dataset among the areas on the map: the dataset filter's slider limits
-  const valueBounds = useMemo(() => {
-    const bounds: Record<string, ValueRange> = {};
-    mapLocations.forEach(location =>
-      location.properties.metadata?.forEach(({ datasetId, value }) => {
-        if (typeof value !== 'number') return;
-        const current = bounds[datasetId];
-        bounds[datasetId] = current
-          ? { min: Math.min(current.min, value), max: Math.max(current.max, value) }
-          : { min: value, max: value };
-      })
-    );
-    return bounds;
-  }, [mapLocations]);
+  const valueBounds = useMemo(() => getValueBounds(mapLocations), [mapLocations]);
 
-  // Dataset filters that are switched on (Simulation's Filter switch); no range yet = the full range
+  // Dataset filters that are switched on (Simulation's Filter switch); no range yet = the full range.
+  // New areas have new values, so the location-data effect below resets the ranges when it loads other areas.
   const [datasetFilters, setDatasetFilters] = useState<Record<string, ValueRange | undefined>>({});
-  // New areas have new values, so filters that are on start again from the full range (as on Simulation)
-  useEffect(() => {
-    setDatasetFilters(current => Object.fromEntries(Object.keys(current).map(id => [id, undefined])));
-  }, [mapLocations]);
   const toggleDatasetFilter = useCallback(
     (datasetId: string) =>
       setDatasetFilters(current => {
@@ -133,14 +194,15 @@ const CampaignPlanning = () => {
   // Children of the selected area with their geometry and the attached datasets' values, for the map and the table
   useEffect(() => {
     setLocations([]);
-    if (!selectedNode || !simulation) return;
+    // Filters that are on start again from the full range of the new areas (as on Simulation)
+    setDatasetFilters(current => Object.fromEntries(Object.keys(current).map(id => [id, undefined])));
+    if (!selectedNode || !simulationId) return;
     // Ignore a slower response for an area that is no longer selected
     let isCurrent = true;
     setIsLoading('locations', true);
     getLocationData({
-      simulationId: simulation.identifier,
-      datasetsIds: datasets.filter(dataset => !dataset.isUserDataset).map(dataset => dataset.identifier),
-      userDatasetIds: datasets.filter(dataset => dataset.isUserDataset).map(dataset => dataset.identifier),
+      simulationId,
+      ...JSON.parse(datasetIdsKey),
       includeGeometry: true,
       parentLocationId: selectedNode.identifier,
       campaignManagementFeatures: false
@@ -152,7 +214,12 @@ const CampaignPlanning = () => {
       isCurrent = false;
       setIsLoading('locations', false);
     };
-  }, [selectedNode, simulation, datasets]);
+  }, [selectedNode, simulationId, datasetIdsKey, setIsLoading]);
+
+  // Stable handlers, so the memoised panels don't re-render when unrelated state changes
+  const openAddDataset = useCallback(() => setIsAddDatasetOpen(true), []);
+  const closeAddDataset = useCallback(() => setIsAddDatasetOpen(false), []);
+  const toggleTable = useCallback(() => setIsTableOpen(open => !open), []);
 
   return (
     <div className={styles.deck} style={{ '--table-space': tableSpace } as CSSProperties}>
@@ -180,6 +247,9 @@ const CampaignPlanning = () => {
           datasetFilters={datasetFilters}
           onDatasetFilterToggle={toggleDatasetFilter}
           onDatasetFilterChange={changeDatasetFilter}
+          simulationId={simulationId}
+          onAddDataset={openAddDataset}
+          onDatasetSave={saveDataset}
           teams={teams}
           isHierarchyLoading={loading.hierarchy}
           isDatasetsLoading={loading.simulation}
@@ -200,7 +270,7 @@ const CampaignPlanning = () => {
             isLoading={loading.locations}
             isOpen={isTableOpen}
             isNarrow={isDetailsCollapsed}
-            onToggle={() => setIsTableOpen(open => !open)}
+            onToggle={toggleTable}
             onSelect={setSelectedNode}
           />
         </>
@@ -212,6 +282,15 @@ const CampaignPlanning = () => {
         onShowAssignedChange={setShowAssigned}
       />
       <MapTools mapStyle={mapStyle} onMapStyleChange={setMapStyle} />
+      {isAddDatasetOpen && simulationId && (
+        <AddDatasetDialog
+          simulationId={simulationId}
+          parentLocationId={selectedNode?.identifier ?? hierarchy[0]?.identifier}
+          datasets={datasets}
+          onClose={closeAddDataset}
+          onAdded={addDataset}
+        />
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronRight } from 'react-icons/bs';
 import { HierarchyNode } from '../../providers/types';
@@ -95,4 +95,5 @@ const HierarchyTree = ({ nodes, selectedId, expandAll, onSelect }: Props) => {
   return <div ref={treeRef}>{renderNodes(nodes)}</div>;
 };
 
-export default HierarchyTree;
+// Memoised: the left panel re-renders on every filter change, the tree only when its own props change
+export default memo(HierarchyTree);

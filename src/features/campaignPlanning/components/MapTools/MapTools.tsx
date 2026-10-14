@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsGeoAlt, BsLayers, BsVectorPen } from 'react-icons/bs';
 import { BASEMAPS } from '../../constants';
@@ -74,4 +74,4 @@ const MapTools = ({ mapStyle, onMapStyleChange }: Props) => {
   );
 };
 
-export default MapTools;
+export default memo(MapTools);

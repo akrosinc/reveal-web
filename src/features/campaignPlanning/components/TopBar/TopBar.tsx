@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, memo, useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { BsArrowLeftRight, BsPerson } from 'react-icons/bs';
@@ -127,4 +127,4 @@ const TopBar = ({ path }: Props) => {
   );
 };
 
-export default TopBar;
+export default memo(TopBar);

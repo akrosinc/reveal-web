@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronUp, BsListUl } from 'react-icons/bs';
-import { ASSIGNED_AREA_COLOR, DATASET_COLORS, TEAMS_ASSIGNED_AREA_COLOR } from '../../constants';
+import { ASSIGNED_AREA_COLOR, TEAMS_ASSIGNED_AREA_COLOR } from '../../constants';
 import { RasterDataset, SimulationDataset } from '../../providers/types';
+import { getDatasetColor } from '../../utils/datasets';
+import Switch from '../Switch';
 import styles from './MapLegend.module.css';
 
 interface Props {
@@ -25,16 +27,7 @@ const MapLegend = ({ datasets, rasterDatasets, showAssigned, onShowAssignedChang
           <div className={styles.title}>{t('campaignPlanning.legend')}</div>
           <div className={styles.toggleRow}>
             <label htmlFor="campaign-planning-toggle-assigned">{t('campaignPlanning.toggleAssigned')}</label>
-            <button
-              type="button"
-              role="switch"
-              id="campaign-planning-toggle-assigned"
-              className={styles.switch}
-              aria-checked={showAssigned}
-              onClick={() => onShowAssignedChange(!showAssigned)}
-            >
-              <span className={styles.knob} />
-            </button>
+            <Switch id="campaign-planning-toggle-assigned" checked={showAssigned} onChange={onShowAssignedChange} />
           </div>
           <div className={styles.item}>
             <span className={styles.colorBox} style={{ background: ASSIGNED_AREA_COLOR }} />
@@ -48,10 +41,7 @@ const MapLegend = ({ datasets, rasterDatasets, showAssigned, onShowAssignedChang
           {datasets.length ? (
             datasets.map((dataset, index) => (
               <div key={dataset.identifier} className={styles.item}>
-                <span
-                  className={styles.colorBox}
-                  style={{ background: dataset.hexColor || DATASET_COLORS[index % DATASET_COLORS.length] }}
-                />
+                <span className={styles.colorBox} style={{ background: getDatasetColor(dataset, index) }} />
                 {dataset.name}
               </div>
             ))
@@ -87,4 +77,4 @@ const MapLegend = ({ datasets, rasterDatasets, showAssigned, onShowAssignedChang
   );
 };
 
-export default MapLegend;
+export default memo(MapLegend);

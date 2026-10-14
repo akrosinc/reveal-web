@@ -1,14 +1,9 @@
 import mapboxgl, { GeoJSONSource, LngLatBounds, Map } from 'mapbox-gl';
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { config } from '../../../../config/config';
-import {
-  ASSIGNED_AREA_COLOR,
-  DATASET_COLORS,
-  MAP_DEFAULT_CENTER,
-  MAP_DEFAULT_ZOOM,
-  TEAMS_ASSIGNED_AREA_COLOR
-} from '../../constants';
+import { ASSIGNED_AREA_COLOR, MAP_DEFAULT_CENTER, MAP_DEFAULT_ZOOM, TEAMS_ASSIGNED_AREA_COLOR } from '../../constants';
 import { LocationFeature, SimulationDataset, TargetArea, ValueRange } from '../../providers/types';
+import { getDatasetColor } from '../../utils/datasets';
 import styles from './CampaignMap.module.css';
 
 mapboxgl.accessToken = config.MAPBOX_TOKEN ?? '';
@@ -94,7 +89,7 @@ const getFillColor = (color: string, datasetId: string, range?: ValueRange): any
     : color;
 
 // Same rules as the Simulation page's dataset layers (SimulationMapView), so both pages look alike for the same data:
-// fill in the dataset colour, opacity from 0 at value 0 to 1 at the highest value among the shown areas,
+// fill in the dataset colour, opacity from 0 at value 0 to 1 (or the Edit dataset opacity) at the highest value among the shown areas,
 // outline in the dataset's border colour (black by default) and line width
 const setDatasetLayers = (
   map: Map,
@@ -118,12 +113,9 @@ const setDatasetLayers = (
         source: LOCATIONS_SOURCE,
         filter: ['has', id],
         paint: {
-          'fill-color': getFillColor(
-            dataset.hexColor || DATASET_COLORS[index % DATASET_COLORS.length],
-            id,
-            filters[id]
-          ),
-          'fill-opacity': maxValue > 0 ? ['interpolate', ['linear'], ['get', id], 0, 0, maxValue, 1] : 0
+          'fill-color': getFillColor(getDatasetColor(dataset, index), id, filters[id]),
+          'fill-opacity':
+            maxValue > 0 ? ['interpolate', ['linear'], ['get', id], 0, 0, maxValue, (dataset.opacity ?? 100) / 100] : 0
         }
       },
       `${LOCATIONS_SOURCE}-line`
@@ -207,19 +199,26 @@ const CampaignMap = ({ mapStyle, locations, datasets, filters, targetAreas, show
     appliedStyle.current = mapStyle;
   }, [mapStyle]);
 
+  // Added / renamed / recoloured datasets: rebuild only the dataset layers (the area shapes stay as they are).
+  // Declared before the locations effect so a render that changes both uses the new datasets there too.
+  useEffect(() => {
+    datasetsRef.current = datasets;
+    if (map.current) setDatasetLayers(map.current, datasets, locationsData.current, filtersRef.current);
+  }, [datasets]);
+
+  // New areas: upload their shapes and values once, then rebuild the dataset layers (their max values changed)
   useEffect(() => {
     locationsData.current = toFeatureCollection(locations);
     const source = map.current?.getSource(LOCATIONS_SOURCE) as GeoJSONSource | undefined;
     source?.setData(locationsData.current);
-    datasetsRef.current = datasets;
-    if (map.current) setDatasetLayers(map.current, datasets, locationsData.current, filtersRef.current);
+    if (map.current) setDatasetLayers(map.current, datasetsRef.current, locationsData.current, filtersRef.current);
     // Zoom only when a different set of locations arrives, not when the same ones reload with new dataset values
     const key = locations.map(location => location.identifier).join();
     if (map.current && locationsData.current.features.length && key !== fittedKey.current) {
       map.current.fitBounds(getBounds(locationsData.current), { padding: 60, maxZoom: 12 });
       fittedKey.current = key;
     }
-  }, [locations, datasets]);
+  }, [locations]);
 
   useEffect(() => {
     targetAreasData.current = toTargetAreasCollection(targetAreas);
@@ -237,11 +236,7 @@ const CampaignMap = ({ mapStyle, locations, datasets, filters, targetAreas, show
       map.current.setPaintProperty(
         layerId,
         'fill-color',
-        getFillColor(
-          dataset.hexColor || DATASET_COLORS[index % DATASET_COLORS.length],
-          dataset.identifier,
-          filters[dataset.identifier]
-        )
+        getFillColor(getDatasetColor(dataset, index), dataset.identifier, filters[dataset.identifier])
       );
     });
   }, [filters]);
@@ -249,4 +244,5 @@ const CampaignMap = ({ mapStyle, locations, datasets, filters, targetAreas, show
   return <div ref={mapContainer} className={styles.map} />;
 };
 
-export default CampaignMap;
+// Memoised: the map only needs to update when its own props change
+export default memo(CampaignMap);

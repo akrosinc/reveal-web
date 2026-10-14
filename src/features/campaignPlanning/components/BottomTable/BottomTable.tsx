@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HierarchyNode, LocationFeature, SimulationDataset } from '../../providers/types';
 import styles from './BottomTable.module.css';
@@ -103,4 +103,4 @@ const BottomTable = ({ rows, locations, datasets, isLoading, isOpen, isNarrow, o
   );
 };
 
-export default BottomTable;
+export default memo(BottomTable);

@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BsChevronLeft } from 'react-icons/bs';
-import { DATASET_COLORS } from '../../constants';
+import { BsChevronLeft, BsPlusCircle } from 'react-icons/bs';
+import AuthorizedElement from '../../../../components/AuthorizedElement';
+import { SIMULATION_ADD_DATASET } from '../../../../constants';
 import { HierarchyNode, RasterDataset, SimulationDataset, Team, ValueRange } from '../../providers/types';
+import { getDatasetColor } from '../../utils/datasets';
 import { filterHierarchy } from '../../utils/hierarchyTree';
 import DatasetFilter from '../DatasetFilter';
 import HierarchyTree from '../HierarchyTree';
@@ -18,6 +20,10 @@ interface Props {
   datasetFilters: Record<string, ValueRange | undefined>;
   onDatasetFilterToggle: (datasetId: string) => void;
   onDatasetFilterChange: (datasetId: string, range: ValueRange) => void;
+  // The plan's simulation, which datasets are added to and saved in; no simulation = no add / edit
+  simulationId?: string;
+  onAddDataset: () => void;
+  onDatasetSave: (dataset: SimulationDataset) => void;
   teams: Team[];
   isHierarchyLoading: boolean;
   isDatasetsLoading: boolean;
@@ -34,6 +40,9 @@ const LeftPanel = ({
   datasetFilters,
   onDatasetFilterToggle,
   onDatasetFilterChange,
+  simulationId,
+  onAddDataset,
+  onDatasetSave,
   teams,
   isHierarchyLoading,
   isDatasetsLoading,
@@ -63,7 +72,8 @@ const LeftPanel = ({
         </button>
       )}
       {/* Kept mounted while collapsed so search and expanded nodes survive */}
-      <div className={styles.panel} hidden={isCollapsed}>
+      {/* data-popup-edge: the dataset colour panel opens just right of this card */}
+      <div className={styles.panel} hidden={isCollapsed} data-popup-edge>
         <div className={styles.searchRow}>
           <input
             id="campaign-planning-search-input"
@@ -99,7 +109,25 @@ const LeftPanel = ({
             )}
           </div>
 
-          <PanelSection title={t('campaignPlanning.datasets')}>
+          <PanelSection
+            title={t('campaignPlanning.datasets')}
+            action={
+              simulationId && (
+                <AuthorizedElement roles={[SIMULATION_ADD_DATASET]}>
+                  <button
+                    type="button"
+                    id="campaign-planning-add-dataset-button"
+                    className={styles.addButton}
+                    title={t('campaignPlanning.addDataset')}
+                    aria-label={t('campaignPlanning.addDataset')}
+                    onClick={onAddDataset}
+                  >
+                    <BsPlusCircle />
+                  </button>
+                </AuthorizedElement>
+              )
+            }
+          >
             {isDatasetsLoading ? (
               <Skeleton widths={['58%', '44%']} />
             ) : datasets.length ? (
@@ -107,12 +135,14 @@ const LeftPanel = ({
                 <DatasetFilter
                   key={dataset.identifier}
                   dataset={dataset}
-                  color={dataset.hexColor || DATASET_COLORS[index % DATASET_COLORS.length]}
+                  color={getDatasetColor(dataset, index)}
                   bounds={valueBounds[dataset.identifier]}
                   isOn={dataset.identifier in datasetFilters}
                   range={datasetFilters[dataset.identifier]}
-                  onToggle={() => onDatasetFilterToggle(dataset.identifier)}
-                  onChange={range => onDatasetFilterChange(dataset.identifier, range)}
+                  onToggle={onDatasetFilterToggle}
+                  onChange={onDatasetFilterChange}
+                  canEdit={!!simulationId}
+                  onSave={onDatasetSave}
                 />
               ))
             ) : (
@@ -154,4 +184,4 @@ const LeftPanel = ({
   );
 };
 
-export default LeftPanel;
+export default memo(LeftPanel);

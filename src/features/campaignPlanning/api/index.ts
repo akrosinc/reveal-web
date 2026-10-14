@@ -1,5 +1,12 @@
 import api from '../../../api/axios';
-import { InstanceHierarchy, LocationDataRequest, LocationFeature, PlanSimulation, Team } from '../providers/types';
+import {
+  DatasetUpdateRequest,
+  InstanceHierarchy,
+  LocationDataRequest,
+  LocationFeature,
+  PlanSimulation,
+  Team
+} from '../providers/types';
 
 export const getInstanceHierarchy = async (instanceId: string): Promise<InstanceHierarchy> => {
   const data = await api
@@ -26,5 +33,11 @@ export const getLocationData = async (request: LocationDataRequest): Promise<Loc
   const data = await api
     .post<LocationFeature[]>('simulation/dataset/location-data', request)
     .then(response => response.data);
+  return data;
+};
+
+// Saves a dataset's name, colours and line width to the simulation (same call as Simulation's Edit dataset popup)
+export const updateSimulationDataset = async (request: DatasetUpdateRequest): Promise<PlanSimulation> => {
+  const data = await api.put<PlanSimulation>('simulation/dataset', request).then(response => response.data);
   return data;
 };

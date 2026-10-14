@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Color, ColorPicker, useColor } from 'react-color-palette';
+import { Color, useColor } from 'react-color-palette';
 import { CustomPopup } from '../../../../components/CustomPopup/CustomPopup';
 import { DualRangeSlider } from '../../../../components/DualRangeSlider/DualRangeSlider';
-import { Switch } from '../../../../components/Switch/Switch';
 import SwitchButton from '../../../../components/SwitchButton/SwitchButton';
-import RangeInput, { YearSlider } from '../../../../components/RangeInput/RangeInput';
+import { YearSlider } from '../../../../components/RangeInput/RangeInput';
 import ItemMenu from './ItemMenu';
+import DatasetStyleEditor from './DatasetStyleEditor';
 
 import styles from '../accordion/Accordion.module.css';
 import DatasetStyles from './DatasetsAccordion.module.css';
@@ -245,57 +245,16 @@ function DatasetsAccordion({
           referenceElement={colorPickerRef.current}
           hasBackdrop={false}
         >
-          <div className={DatasetStyles.popupWrapper}>
-            <Switch
-              leftOption="Polygon"
-              rightOption="Border"
-              leftContent={
-                <div className={DatasetStyles.switchPanel}>
-                  <RangeInput
-                    min={0}
-                    max={100}
-                    value={opacitySliderValue}
-                    onChange={handleDatasetSliderValue}
-                    label="Opacity"
-                    trackColor={customColor.hex}
-                    thumbColor={customColor.hex}
-                  />
-                  <ColorPicker
-                    width={210}
-                    height={228}
-                    color={customColor}
-                    onChange={setCustomColor}
-                    hideHEX={true}
-                    hideHSV={true}
-                    hideRGB={true}
-                  />
-                </div>
-              }
-              rightContent={
-                <div className={DatasetStyles.switchPanel}>
-                  <RangeInput
-                    min={0}
-                    max={5}
-                    value={borderValue}
-                    step={1}
-                    onChange={setBorderValue}
-                    label="Line Width"
-                    trackColor={borderColor.hex}
-                    thumbColor={borderColor.hex}
-                  />
-                  <ColorPicker
-                    width={210}
-                    height={228}
-                    color={borderColor}
-                    onChange={setBorderColor}
-                    hideHEX={true}
-                    hideHSV={true}
-                    hideRGB={true}
-                  />
-                </div>
-              }
-            />
-          </div>
+          <DatasetStyleEditor
+            color={customColor}
+            onColorChange={setCustomColor}
+            opacity={opacitySliderValue}
+            onOpacityChange={handleDatasetSliderValue}
+            borderColor={borderColor}
+            onBorderColorChange={setBorderColor}
+            lineWidth={borderValue}
+            onLineWidthChange={setBorderValue}
+          />
         </CustomPopup>
 
         {edit ? (

@@ -11,11 +11,16 @@ import { usePolygonContext } from '../../../../../../contexts/PolygonContext';
 function AddDatasetForm({
   onClose,
   onDatasetAdded,
-  selectedLocationId
+  selectedLocationId,
+  simulationId,
+  existingDatasetNames
 }: {
   onClose: () => void;
   onDatasetAdded: (dataset: AddDatasetResponse) => void;
   selectedLocationId?: string;
+  // Pages outside Simulation (e.g. Campaign Planning) pass these instead of using the PolygonContext state
+  simulationId?: string;
+  existingDatasetNames?: string[];
 }) {
   const { state } = usePolygonContext();
   const [datasetColor, setDatasetColor] = useColor('hex', '#000000');
@@ -24,7 +29,7 @@ function AddDatasetForm({
   const [saveToSimulation, setSaveToSimulation] = useState(false);
 
   const [formValue, setFormValue] = useState<DataSet>({
-    simulationId: state.simulationId,
+    simulationId: simulationId ?? state.simulationId,
     tagId: '',
     hexColor: datasetColor.hex,
     lineWidth: borderValue,
@@ -43,8 +48,9 @@ function AddDatasetForm({
       try {
         const res = await getEntityTags();
 
+        const datasetNames = existingDatasetNames ?? state.datasets.map((stateTag: any) => stateTag.name);
         const filteredEntityTags = res.entityTagResponses.filter(
-          (resTag: any) => !state.datasets.some((stateTag: any) => stateTag.name === resTag.tag)
+          (resTag: any) => !datasetNames.includes(resTag.tag)
         );
 
         setEntityTags(filteredEntityTags);

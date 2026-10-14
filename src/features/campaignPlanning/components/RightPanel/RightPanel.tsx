@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronUp } from 'react-icons/bs';
 import { POPULATION, SiteGroup } from '../../placeholderData';
@@ -97,4 +97,4 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed }: Pr
   );
 };
 
-export default RightPanel;
+export default memo(RightPanel);
