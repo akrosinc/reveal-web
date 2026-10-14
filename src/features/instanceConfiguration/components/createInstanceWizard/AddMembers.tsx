@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Col, Button, Alert } from 'react-bootstrap';
 import MembersSelection from './MembersSelection';
 import { WizardStepProps } from '../Wizard/Wizard';
@@ -6,14 +6,30 @@ import { useAppSelector } from '../../../../store/hooks';
 
 const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, viewOnly }) => {
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
-  const [assignedMembers, setAssignedMembers] = useState<string[]>(defaultValues?.members || []);
+  const instanceIdentifier = defaultValues?.instanceIdentifier || defaultValues?.planId || defaultValues?.identifier;
+  const savedAdmins: string[] | undefined = defaultValues?.adminMembers;
+  const members: string[] = useMemo(() => defaultValues?.members || [], [defaultValues]);
+  const [assignedMembers, setAssignedMembers] = useState<string[]>(
+    savedAdmins ?? (instanceIdentifier ? [] : members)
+  );
+  const [otherMembers, setOtherMembers] = useState<string[]>(
+    savedAdmins ? members.filter(id => !savedAdmins.includes(id)) : []
+  );
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (defaultValues?.members?.length) {
-      setAssignedMembers(defaultValues.members);
-    }
-  }, [defaultValues]);
+  const handleAdminsLoaded = useCallback(
+    (adminIds: string[]) => {
+      if (savedAdmins) return;
+      setAssignedMembers(adminIds);
+      setOtherMembers(members.filter(id => !adminIds.includes(id)));
+    },
+    [savedAdmins, members]
+  );
+
+  const getStepData = () => ({
+    members: [...assignedMembers, ...otherMembers.filter(id => !assignedMembers.includes(id))],
+    adminMembers: assignedMembers
+  });
 
   const handleNext = () => {
     if (assignedMembers.length === 0) {
@@ -21,7 +37,7 @@ const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, 
       return;
     }
     setError(null);
-    onNext && onNext({ members: assignedMembers });
+    onNext && onNext(getStepData());
   };
 
   return (
@@ -40,7 +56,8 @@ const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, 
             assignedMembers={assignedMembers}
             onAssignmentChange={setAssignedMembers}
             viewOnly={viewOnly}
-            instanceIdentifier={defaultValues?.instanceIdentifier || defaultValues?.planId || defaultValues?.identifier}
+            instanceIdentifier={instanceIdentifier}
+            onAdminsLoaded={handleAdminsLoaded}
           />
         </div>
       </Col>
@@ -51,7 +68,7 @@ const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, 
           <Button
             variant="secondary"
             className="px-4 py-2"
-            onClick={() => onBack && onBack({ members: assignedMembers })}
+            onClick={() => onBack && onBack(getStepData())}
             style={{ backgroundColor: '#6c757d', border: 'none' }}
           >
             Back

@@ -26,9 +26,10 @@ interface Props {
   onAssignmentChange: (ids: string[]) => void;
   viewOnly?: boolean;
   instanceIdentifier?: string;
+  onAdminsLoaded?: (ids: string[]) => void;
 }
 
-const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, viewOnly, instanceIdentifier }: Props) => {
+const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, viewOnly, instanceIdentifier, onAdminsLoaded }: Props) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<Member[]>([]);
   const [leftSelected, setLeftSelected] = useState<string[]>([]);
@@ -43,10 +44,12 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, view
             console.error('Failed to fetch global users:', err);
             return [];
           }),
-          getInstanceAdminUserList('ADMIN', instanceIdentifier).catch(err => {
-            console.error('Failed to fetch instance admin users:', err);
-            return [];
-          })
+          instanceIdentifier
+            ? getInstanceAdminUserList('ADMIN', instanceIdentifier).catch(err => {
+                console.error('Failed to fetch instance admin users:', err);
+                return undefined;
+              })
+            : Promise.resolve(undefined)
         ]);
 
         const combined: Member[] = [];
@@ -77,12 +80,15 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, view
         });
 
         setUsers(combined);
+        if (instanceUsers) {
+          onAdminsLoaded?.(instanceUsers.map((elem: any) => elem?.identifier || elem?.id).filter(Boolean));
+        }
       } catch (err) {
         console.log(err);
       }
     };
     fetchUsers();
-  }, [instanceIdentifier]);
+  }, [instanceIdentifier, onAdminsLoaded]);
 
   // Optimized lookups using Set
   const assignedSet = useMemo(() => new Set(assignedMembers), [assignedMembers]);
