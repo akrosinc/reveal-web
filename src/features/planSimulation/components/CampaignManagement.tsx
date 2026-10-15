@@ -730,17 +730,19 @@ const CampaignManagement = () => {
   };
 
   const fetchTeamsData = async () => {
-    if (isAuthorizedForRedirectingToACampaign && instanceContext?.selectedInstance?.identifier) {
-      getOrganizatonsWithMembers(instanceContext?.selectedInstance?.identifier as any).then((data: any) => {
-        setTeamsList(data);
-      });
-      return
-    }
-    let found = instances?.find((plan: any) => plan.identifier === selectedPlan?.identifier);
+    const instanceId =
+      isAuthorizedForRedirectingToACampaign && instanceContext?.selectedInstance?.identifier
+        ? instanceContext.selectedInstance.identifier
+        : instances?.find((plan: any) => plan.identifier === selectedPlan?.identifier)?.identifier;
 
-    getOrganizatonsWithMembers(found?.identifier as any).then((data: any) => {
-      setTeamsList(data);
-    });
+    if (!instanceId) {
+      setTeamsList([]);
+      return;
+    }
+
+    getOrganizatonsWithMembers(instanceId)
+      .then((data: any) => setTeamsList(data))
+      .catch(err => toast.error(err));
   };
 
   const campaignTotals = {

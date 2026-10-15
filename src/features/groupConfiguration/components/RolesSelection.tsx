@@ -68,6 +68,10 @@ const RolesSelection: React.FC<RolesSelectionProps> = ({
                     <div className="text-center p-3">
                         <Spinner animation="border" size="sm" variant="primary" />
                     </div>
+                ) : roles.length === 0 ? (
+                    <div className="text-center p-3 text-muted" style={{ color: effectiveTextColor }}>
+                        No Roles found
+                    </div>
                 ) : (
                     roles.map(role => (
                         <Form.Check

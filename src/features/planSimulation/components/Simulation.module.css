@@ -122,3 +122,23 @@
 .yearRangeWrapper {
   margin-top: 2rem;
 }
+
+.rasterColorBox {
+  min-width: 20px;
+  min-height: 20px;
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  border-radius: 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.rasterItemMenu {
+  right: 34px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 5;
+}
+
+

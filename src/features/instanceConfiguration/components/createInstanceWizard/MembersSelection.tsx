@@ -12,7 +12,9 @@ import {
   faAngleDoubleUp
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../../store/hooks';
-import { getUserList, getUserList1 } from '../../../planSimulation/components/User/api/userAPI';
+import { getInstanceAdminUserList } from '../../api/instanceAPI';
+import type { InstanceUserResponse } from '../../api/instanceAPI';
+import { getUserList1 } from '../../../planSimulation/components/User/api/userAPI';
 
 interface Member {
   id: string;
@@ -23,9 +25,11 @@ interface Props {
   assignedMembers: string[];
   onAssignmentChange: (ids: string[]) => void;
   viewOnly?: boolean;
+  instanceIdentifier?: string;
+  onAdminsLoaded?: (ids: string[]) => void;
 }
 
-const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, viewOnly }: Props) => {
+const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, viewOnly, instanceIdentifier, onAdminsLoaded }: Props) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<Member[]>([]);
   const [leftSelected, setLeftSelected] = useState<string[]>([]);
@@ -35,19 +39,56 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, view
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const fetchedUsers = await getUserList1();
-        const ids = fetchedUsers?.map(elem => elem?.identifier)
-        const idsOfUsers = Array.from(new Set(ids));
-        setUsers(idsOfUsers?.map(elem => fetchedUsers?.find(i => i?.identifier === elem))?.map((elem: any) => ({
-          id: elem.identifier,
-          name: (elem.firstName + ' ' + elem.lastName || '').trim()
-        })));
+        const [globalUsers, instanceUsers] = await Promise.all([
+          getUserList1().catch(err => {
+            console.error('Failed to fetch global users:', err);
+            return [];
+          }),
+          instanceIdentifier
+            ? getInstanceAdminUserList('ADMIN', instanceIdentifier).catch(err => {
+                console.error('Failed to fetch instance admin users:', err);
+                return undefined;
+              })
+            : Promise.resolve(undefined)
+        ]);
+
+        const combined: Member[] = [];
+        const seenIds = new Set<string>();
+
+        // Add instance users
+        instanceUsers?.forEach((elem: any) => {
+          const id = elem?.identifier || elem?.id;
+          if (id && !seenIds.has(id)) {
+            seenIds.add(id);
+            combined.push({
+              id,
+              name: (elem.name || ((elem.firstName || '') + ' ' + (elem.lastName || ''))).trim() || elem.username || id
+            });
+          }
+        });
+
+        // Add global users
+        globalUsers?.forEach((elem: any) => {
+          const id = elem?.identifier || elem?.id;
+          if (id && !seenIds.has(id)) {
+            seenIds.add(id);
+            combined.push({
+              id,
+              name: (((elem.firstName || '') + ' ' + (elem.lastName || '')).trim()) || elem.name || elem.username || id
+            });
+          }
+        });
+
+        setUsers(combined);
+        if (instanceUsers) {
+          onAdminsLoaded?.(instanceUsers.map((elem: any) => elem?.identifier || elem?.id).filter(Boolean));
+        }
       } catch (err) {
         console.log(err);
       }
     };
     fetchUsers();
-  }, []);
+  }, [instanceIdentifier, onAdminsLoaded]);
 
   // Optimized lookups using Set
   const assignedSet = useMemo(() => new Set(assignedMembers), [assignedMembers]);

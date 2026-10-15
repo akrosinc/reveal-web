@@ -3,6 +3,7 @@ import { INSTANCE, META_IMPORT_DATASET, COMPLEX_TAG } from '../../../constants/u
 import { PageableModel } from '../../../api/providers';
 import { LOCATION_HIERARCHY } from '../../../constants/urls';
 import { LocationModel } from '../../location/providers/types';
+import { config } from '../../../config/config';
 
 export interface InstanceResponse {
   identifier: string;
@@ -338,3 +339,62 @@ export const getComplexTags = async (
   const response = await api.get<PageableModel<ComplexTagResponse>>(`${COMPLEX_TAG}?${params.toString()}`);
   return response.data;
 };
+
+export interface InstanceUserResponse {
+  identifier: string;
+  name: string;
+  role: string;
+}
+
+/**
+ * Get users list for instances by role (calls /api/v1/instance/user/list?role=ADMIN&instanceIdentifier=...)
+ * @param role string, defaults to 'ADMIN'
+ * @param instanceIdentifier optional instance identifier
+ * @returns Promise<InstanceUserResponse[]>
+ */
+export const getInstanceAdminUserList = async (
+  role: string = 'ADMIN',
+  instanceIdentifier?: string
+): Promise<InstanceUserResponse[]> => {
+  const params = new URLSearchParams();
+  if (role) {
+    params.append('role', role);
+  }
+
+  let targetInstanceId = instanceIdentifier;
+  if (!targetInstanceId) {
+    try {
+      const rawCurrentInstance = localStorage.getItem('currentInstanceContext');
+      if (rawCurrentInstance) {
+        const parsed = JSON.parse(rawCurrentInstance);
+        targetInstanceId = parsed?.selectedInstance?.identifier || parsed?.identifier;
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
+  }
+
+  if (targetInstanceId) {
+    params.append('instanceIdentifier', targetInstanceId);
+  }
+
+  const endpoint = config.API_BASE_URL?.includes('/api/v1')
+    ? 'instance/user/list'
+    : '/api/v1/instance/user/list';
+  const queryString = params.toString();
+  const url = queryString ? `${endpoint}?${queryString}` : endpoint;
+  const response = await api.get<any>(url);
+
+  if (Array.isArray(response.data)) {
+    return response.data;
+  }
+  if (Array.isArray(response.data?.content)) {
+    return response.data.content;
+  }
+  if (Array.isArray(response.data?.data)) {
+    return response.data.data;
+  }
+  return [];
+};
+
+export const getInstanceUserList = getInstanceAdminUserList;

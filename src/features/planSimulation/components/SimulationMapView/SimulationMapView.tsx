@@ -108,7 +108,8 @@ const SimulationMapView = ({
   parentChild,
   analysisLayerDetails,
   selectedLoaction,
-  showDatasetsAgainstParentLevel = false
+  showDatasetsAgainstParentLevel = false,
+  rasterDatasets
 }: SimulationMapViewProps) => {
   const [defColor] = useColor('hex', INITIAL_FILL_COLOR);
   const location = useLocation()
@@ -2115,6 +2116,7 @@ const SimulationMapView = ({
         handleClickedSwitchOnMap={setToggleAssignedLayer}
         teamsList={teamsList}
         assigned={toggleAssignedLayer}
+        rasterDatasets={rasterDatasets}
       />
       <div style={{ position: 'absolute', zIndex: 2, width: 'fit-content' }} className="mx-0 px-0">
         <div style={{ float: 'left', position: 'relative' }} className="sidebar-adjust "></div>

@@ -295,6 +295,8 @@
     "fileName": "Nom de fichier",
     "cancel": "Annuler",
     "download": "Télécharger",
+    "addRasters": "Ajouter des rasters",
+    "noPopulationAvailable": "Aucune population disponible",
     "enterNameForJson": "Entrez un nom pour le fichier JSON ou geojson",
     "uploadLocationData": "Télécharger les données de localisation",
     "fileType": "Type de fichier",
@@ -318,6 +320,7 @@
   "metadataImport": {
     "templateCreation": "Création de modèles",
     "fileImport": "Importation de fichiers",
+    "datasets": "Ensembles de données",
     "uploadFile": "Téléverser un fichier"
   },
   "locationHierarchyPage": {

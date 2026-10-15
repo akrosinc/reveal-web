@@ -12,6 +12,7 @@
   gap: 2px;
   overflow: hidden;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
 }
 
 .menuContainer.left {
@@ -29,12 +30,14 @@
 
 .kebabIcon {
   min-width: 12px;
+  width: 12px;
   height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: #64748b;
+  flex-shrink: 0;
 }
 
 .menuContainer:hover .kebabIcon {
@@ -46,12 +49,18 @@
   gap: 8px;
   align-items: center;
   opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none;
   transform: translateX(-10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .menuContainer:hover .menuItems {
   opacity: 1;
+  width: auto;
+  overflow: visible;
+  pointer-events: auto;
   transform: translateX(0);
 }
 

@@ -225,7 +225,9 @@
     "entity": "Entity",
     "hierarchy": "Hierarchy",
     "location": "Location",
-    "geographicLevel": "Geographic Level"
+    "geographicLevel": "Geographic Level",
+    "addRasters": "Raster hinzufügen",
+    "noPopulationAvailable": "Keine Bevölkerung verfügbar"
   },
   "darkMode": {
     "on": "Turn on dark mode (de)",

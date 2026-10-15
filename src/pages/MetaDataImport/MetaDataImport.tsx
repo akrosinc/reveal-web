@@ -17,7 +17,9 @@ const MetaDataImport = () => {
   useEffect(() => {
     if (tab === undefined) {
       navigate(METADATA_IMPORT + '/create-template');
-    } else if (tab !== 'create-template' && tab !== 'file-import') {
+    } else if (tab === 'file-import') {
+      navigate(METADATA_IMPORT + '/datasets', { replace: true });
+    } else if (tab !== 'create-template' && tab !== 'datasets') {
       navigate('/error');
     }
   }, [tab, navigate]);
@@ -25,6 +27,7 @@ const MetaDataImport = () => {
   return (
     <PageWrapper title={t('topNav.Metadata Import')}>
       <Tabs
+        activeKey={tab === 'file-import' ? 'datasets' : (tab || 'create-template')}
         defaultActiveKey="create-template"
         id="test-tabs"
         className="mb-3"
@@ -39,7 +42,7 @@ const MetaDataImport = () => {
             <TemplateCreation />
           </AuthGuard>
         </Tab>
-        <Tab eventKey="file-import" title={t('metadataImport.fileImport')}>
+        <Tab eventKey="datasets" title={t('metadataImport.datasets', 'Datasets')}>
           <AuthGuard roles={[]}>
             <MetaFileImport />
           </AuthGuard>

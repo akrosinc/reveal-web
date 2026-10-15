@@ -9,6 +9,21 @@ export enum HierarchyType {
   SAVED = 'saved'
 }
 
+export interface RasterExtent {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
+
+export interface RasterMapLayer {
+  id: string;
+  name: string;
+  layerIdentifier: string;
+  type: string;
+  extent?: RasterExtent;
+}
+
 export interface TagResponse {
   entityTagResponses: EntityTag[];
   complexTagDtos: ComplexTagResponse[];

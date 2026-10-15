@@ -37,16 +37,37 @@ export interface DataSetYearRange {
   years?: number[];
 }
 
+export interface RasterDatasetItem {
+  identifier: string;
+  datasetIdentifier?: string;
+  name: string;
+  colorRamp?: string;
+  extent?: {
+    minX: number;
+    minY: number;
+    maxX: number;
+    maxY: number;
+  };
+  opacity?: number;
+  hidden?: boolean;
+}
+
 export interface SimulationDataResponse {
   identifier: string;
   datasets: DataSetList[];
+  rasterDatasets?: RasterDatasetItem[];
   targetAreas: any[];
   datSetYearRange?: DataSetYearRange[];
 }
 
 export interface DataSetDelete {
   simulationId: string;
-  datasetId: string[];
+  datasetId: string | string[];
+  name?: string;
+  hexColor?: string;
+  lineWidth?: number;
+  borderColor?: string;
+  datasetType?: string;
 }
 
 export interface DataSetUpdate {
@@ -56,6 +77,7 @@ export interface DataSetUpdate {
   hexColor: string;
   lineWidth: number;
   borderColor: string;
+  datasetType?: string;
 }
 
 export interface LocationData {
@@ -128,19 +150,20 @@ export const updateDataset = async (data: DataSetUpdate) => {
     const response = await api.put(`/simulation/dataset`, data);
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Failed to update dataset in API:', error);
+    throw error;
   }
 };
 
 //! DELETE
 export const deleteDataset = async (data: DataSetDelete) => {
-  return api.delete('/simulation/dataset', { data })
-  // try {
-  //   const response = await api.delete(`/simulation/dataset`, { data });
-  //   return response.data;
-  // } catch (error) {
-  //   console.error(error);
-  // }
+  try {
+    const response = await api.delete('/simulation/dataset', { data });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to delete dataset in API:', error);
+    throw error;
+  }
 };
 
 export const getLocationPolygonsWithDatasets = async (data: LocationData) => {

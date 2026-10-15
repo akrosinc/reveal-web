@@ -24,7 +24,8 @@ type PolygonActions =
   | { type: 'SET_PLAN_TARGET_TYPE'; payload: string }
   | { type: "SET_NODE_ORDER", payload: any }
   | { type: 'CLEAR_SELECTION' }
-  | { type: "TOGGLE_ALL_DATASET_VISIBILITY"; payload: boolean };
+  | { type: "TOGGLE_ALL_DATASET_VISIBILITY"; payload: boolean }
+  | { type: 'SET_RASTER_DATASETS'; payload: any[] };
 
 // interface Team {
 //   id: string;
@@ -47,6 +48,7 @@ interface InitialStateInterface {
   planid: string;
   polygons: any[];
   datasets: any[];
+  rasterDatasets: any[];
   selected: any | null;
   multiselect: any[];
   admin0LocationId: string;
@@ -66,6 +68,7 @@ const initialState: InitialStateInterface = {
   planid: '',
   polygons: [],
   datasets: [],
+  rasterDatasets: [],
   selected: null,
   multiselect: [],
   admin0LocationId: '',
@@ -231,6 +234,11 @@ function polygonReducer(state: InitialStateInterface, action: PolygonActions): I
           ...dataset,
           hidden: action.payload
         }))
+      };
+    case 'SET_RASTER_DATASETS':
+      return {
+        ...state,
+        rasterDatasets: action.payload || []
       };
     default:
       return state;

@@ -12,6 +12,7 @@ interface ItemMenuProps {
   onToggleVisibility?: any;
   onEdit?: () => void;
   onDelete?: () => void;
+  className?: string;
 }
 
 export function ItemMenu({
@@ -19,10 +20,11 @@ export function ItemMenu({
   direction = 'right',
   onToggleVisibility,
   onEdit,
-  onDelete
+  onDelete,
+  className
 }: ItemMenuProps) {
   return (
-    <ExpandableMenu direction={direction}>
+    <ExpandableMenu direction={direction} className={className}>
       <MenuButton onClick={onEdit} title="Edit">
         <img className={styles.iconPen} src={Pen} alt="Edit" />
       </MenuButton>

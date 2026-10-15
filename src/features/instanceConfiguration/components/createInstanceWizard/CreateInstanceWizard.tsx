@@ -65,6 +65,7 @@ const CreateInstanceWizard: React.FC<CreateInstanceWizardProps> = ({ onCancel, i
             : extractId(res.locationHierarchy);
 
           const mappedData = {
+            instanceIdentifier: res.identifier,
             planId: res.identifier,
             name: planData?.name || '',
             title: planData?.title || '',

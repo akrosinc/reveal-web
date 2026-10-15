@@ -348,6 +348,8 @@
     "fileName": "File Name",
     "cancel": "Cancel",
     "download": "Download",
+    "addRasters": "Add Rasters",
+    "noPopulationAvailable": "No population available",
     "enterNameForJson": "Enter a name for the JSON or geojson file",
     "uploadLocationData": "Upload Location Data",
     "fileType": "File type",
@@ -387,6 +389,7 @@
   "metadataImport": {
     "templateCreation": "Template Creation",
     "fileImport": "File Import",
+    "datasets": "Datasets",
     "uploadFile": "Upload File",
     "table": {
       "fileName": "Filename",
