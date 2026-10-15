@@ -76,6 +76,7 @@ export interface DatasetUpdateRequest {
   hexColor: string;
   lineWidth: number;
   borderColor: string;
+  datasetType?: 'RASTER';
 }
 
 // Value range of a dataset (lowest/highest value, or the part kept by a filter)
@@ -88,6 +89,7 @@ export interface ValueRange {
 // Raster layer attached to the simulation (added on the Simulation page, from raster/map-layers)
 export interface RasterDataset {
   identifier: string;
+  datasetIdentifier?: string;
   name: string;
   colorRamp?: string;
   opacity?: number;

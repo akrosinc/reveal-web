@@ -1,8 +1,15 @@
 import mapboxgl, { GeoJSONSource, LngLatBounds, Map } from 'mapbox-gl';
 import { memo, useEffect, useRef } from 'react';
 import { config } from '../../../../config/config';
+import {
+  addRasterToMap,
+  getRasterTileUrl,
+  parseColorOrGradient,
+  removeRasterFromMap,
+  toggleRasterVisibility
+} from '../../../../utils/rasterHelper';
 import { ASSIGNED_AREA_COLOR, MAP_DEFAULT_CENTER, MAP_DEFAULT_ZOOM, TEAMS_ASSIGNED_AREA_COLOR } from '../../constants';
-import { LocationFeature, SimulationDataset, TargetArea, ValueRange } from '../../providers/types';
+import { LocationFeature, RasterDataset, SimulationDataset, TargetArea, ValueRange } from '../../providers/types';
 import { getDatasetColor } from '../../utils/datasets';
 import styles from './CampaignMap.module.css';
 
@@ -13,6 +20,7 @@ const LOCATIONS_SOURCE = 'campaign-locations';
 const LOCATIONS_OUTLINE = 'rgba(0, 0, 0, 1)';
 const DATASET_LAYER_PREFIX = `${LOCATIONS_SOURCE}-dataset-`;
 const TARGET_AREAS_SOURCE = 'campaign-target-areas';
+const RASTER_PREFIX = 'campaign-raster-';
 
 interface Props {
   mapStyle: string;
@@ -24,7 +32,43 @@ interface Props {
   targetAreas: TargetArea[];
   showAssigned: boolean;
   hiddenDatasetIds: string[];
+  rasterDatasets: RasterDataset[];
+  hiddenRasterIds: string[];
 }
+
+const setRasterLayers = (map: Map, rasters: RasterDataset[], hiddenRasterIds: string[]) => {
+  if (!map.getSource(LOCATIONS_SOURCE)) return;
+  map
+    .getStyle()
+    .layers?.filter(layer => layer.id.startsWith(`layer-${RASTER_PREFIX}`))
+    .forEach(layer => removeRasterFromMap(map, layer.id));
+  const beforeLayerId = map
+    .getStyle()
+    .layers?.find(layer => layer.id.startsWith(LOCATIONS_SOURCE) || layer.id.startsWith(TARGET_AREAS_SOURCE))?.id;
+  rasters.forEach(raster => {
+    const rasterId = raster.datasetIdentifier || raster.identifier;
+    const id = `${RASTER_PREFIX}${raster.identifier}`;
+    const { primaryColor, colors } = parseColorOrGradient(raster.colorRamp);
+    const opacity = raster.opacity ?? 1;
+    addRasterToMap(
+      map,
+      {
+        id,
+        rasterId,
+        name: raster.name,
+        type: 'vector',
+        tiles: [getRasterTileUrl(rasterId)],
+        sourceLayer: rasterId,
+        fieldName: 'class',
+        opacity,
+        color: primaryColor,
+        colors
+      },
+      { opacity, color: primaryColor, colors, beforeLayerId, sourceLayer: rasterId, fieldName: 'class' }
+    );
+    toggleRasterVisibility(map, id, !hiddenRasterIds.includes(raster.identifier));
+  });
+};
 
 const toTargetAreasCollection = (targetAreas: TargetArea[]): GeoJSON.FeatureCollection => ({
   type: 'FeatureCollection',
@@ -177,7 +221,9 @@ const CampaignMap = ({
   filters,
   targetAreas,
   showAssigned,
-  hiddenDatasetIds
+  hiddenDatasetIds,
+  rasterDatasets,
+  hiddenRasterIds
 }: Props) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<Map>();
@@ -189,6 +235,8 @@ const CampaignMap = ({
   const targetAreasData = useRef<GeoJSON.FeatureCollection>(toTargetAreasCollection(targetAreas));
   const showAssignedRef = useRef(showAssigned);
   const hiddenDatasetIdsRef = useRef(hiddenDatasetIds);
+  const rasterDatasetsRef = useRef(rasterDatasets);
+  const hiddenRasterIdsRef = useRef(hiddenRasterIds);
 
   useEffect(() => {
     map.current = new Map({
@@ -209,6 +257,7 @@ const CampaignMap = ({
         hiddenDatasetIdsRef.current
       );
       setTargetAreasLayer(map.current, targetAreasData.current, showAssignedRef.current);
+      setRasterLayers(map.current, rasterDatasetsRef.current, hiddenRasterIdsRef.current);
     });
     return () => map.current?.remove();
   }, []);
@@ -280,6 +329,23 @@ const CampaignMap = ({
       );
     });
   }, [hiddenDatasetIds]);
+
+  useEffect(() => {
+    rasterDatasetsRef.current = rasterDatasets;
+    if (map.current) setRasterLayers(map.current, rasterDatasets, hiddenRasterIdsRef.current);
+  }, [rasterDatasets]);
+
+  useEffect(() => {
+    hiddenRasterIdsRef.current = hiddenRasterIds;
+    rasterDatasetsRef.current.forEach(raster => {
+      if (map.current)
+        toggleRasterVisibility(
+          map.current,
+          `${RASTER_PREFIX}${raster.identifier}`,
+          !hiddenRasterIds.includes(raster.identifier)
+        );
+    });
+  }, [hiddenRasterIds]);
 
   return <div ref={mapContainer} className={styles.map} />;
 };
