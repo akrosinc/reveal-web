@@ -1,7 +1,7 @@
 import { memo, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsEye, BsEyeSlash, BsPencil, BsTrash } from 'react-icons/bs';
-import { RASTER_DELETE_DATASET, RASTER_TOGGLE_VISIBILITY, RASTER_UPDATE_DATASET } from '../../../../constants';
+import { CAMPAIGN_PLANNING_DELETE_RASTER, CAMPAIGN_PLANNING_UPDATE_RASTER } from '../../../../constants';
 import { useAuthorization } from '../../../../hooks/useAuthorization';
 import EditRasterColorModal from '../../../planSimulation/components/modals/EditRasterColorModal';
 import { HIDDEN_DATASET_COLOR } from '../../constants';
@@ -21,9 +21,8 @@ interface Props {
 
 const RasterDatasetRow = ({ raster, canEdit, isHidden, onVisibilityToggle, onSave, onDelete }: Props) => {
   const { t } = useTranslation();
-  const canUpdate = useAuthorization([RASTER_UPDATE_DATASET]) && canEdit;
-  const canDelete = useAuthorization([RASTER_DELETE_DATASET]) && canEdit;
-  const canToggleVisibility = useAuthorization([RASTER_TOGGLE_VISIBILITY]);
+  const canUpdate = useAuthorization([CAMPAIGN_PLANNING_UPDATE_RASTER]) && canEdit;
+  const canDelete = useAuthorization([CAMPAIGN_PLANNING_DELETE_RASTER]) && canEdit;
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [newName, setNewName] = useState<string>();
@@ -107,19 +106,17 @@ const RasterDatasetRow = ({ raster, canEdit, isHidden, onVisibilityToggle, onSav
           )}
         </div>
         <div className={styles.actions}>
-          {canToggleVisibility && (
-            <button
-              type="button"
-              id={`campaign-planning-raster-visibility-${raster.identifier}`}
-              className={styles.actionButton}
-              title={visibilityLabel}
-              aria-label={visibilityLabel}
-              aria-pressed={isHidden}
-              onClick={() => onVisibilityToggle(raster.identifier)}
-            >
-              {isHidden ? <BsEyeSlash /> : <BsEye />}
-            </button>
-          )}
+          <button
+            type="button"
+            id={`campaign-planning-raster-visibility-${raster.identifier}`}
+            className={styles.actionButton}
+            title={visibilityLabel}
+            aria-label={visibilityLabel}
+            aria-pressed={isHidden}
+            onClick={() => onVisibilityToggle(raster.identifier)}
+          >
+            {isHidden ? <BsEyeSlash /> : <BsEye />}
+          </button>
           {canDelete && (
             <button
               ref={deleteButtonRef}

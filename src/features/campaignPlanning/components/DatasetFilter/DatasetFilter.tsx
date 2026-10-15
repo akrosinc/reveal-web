@@ -1,7 +1,7 @@
 import { CSSProperties, memo, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronRight, BsEye, BsEyeSlash, BsPencil, BsTrash } from 'react-icons/bs';
-import { SIMULATION_DATASET_MENU } from '../../../../constants';
+import { CAMPAIGN_PLANNING_DELETE_DATASET, CAMPAIGN_PLANNING_UPDATE_DATASET } from '../../../../constants';
 import { useAuthorization } from '../../../../hooks/useAuthorization';
 import { HIDDEN_DATASET_COLOR } from '../../constants';
 import { SimulationDataset, ValueRange } from '../../providers/types';
@@ -49,7 +49,8 @@ const DatasetFilter = ({
   onDelete
 }: Props) => {
   const { t } = useTranslation();
-  const isEditable = useAuthorization([SIMULATION_DATASET_MENU]) && canEdit;
+  const isEditable = useAuthorization([CAMPAIGN_PLANNING_UPDATE_DATASET]) && canEdit;
+  const canDelete = useAuthorization([CAMPAIGN_PLANNING_DELETE_DATASET]) && canEdit;
   const [isOpen, setIsOpen] = useState(false);
   const [isColorOpen, setIsColorOpen] = useState(false);
   const [newName, setNewName] = useState<string>();
@@ -163,7 +164,7 @@ const DatasetFilter = ({
           >
             {isHidden ? <BsEyeSlash /> : <BsEye />}
           </button>
-          {isEditable && (
+          {canDelete && (
             <button
               ref={deleteButtonRef}
               type="button"

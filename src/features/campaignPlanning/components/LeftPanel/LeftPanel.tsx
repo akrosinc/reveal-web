@@ -2,7 +2,11 @@ import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronLeft, BsPlusCircle } from 'react-icons/bs';
 import AuthorizedElement from '../../../../components/AuthorizedElement';
-import { ADD_RASTER, SIMULATION_ADD_DATASET, VIEW_RASTER_LISTING } from '../../../../constants';
+import {
+  CAMPAIGN_PLANNING_ADD_DATASET,
+  CAMPAIGN_PLANNING_ADD_RASTER,
+  CAMPAIGN_PLANNING_VIEW_RASTER
+} from '../../../../constants';
 import { HierarchyNode, RasterDataset, SimulationDataset, Team, ValueRange } from '../../providers/types';
 import { getDatasetColor } from '../../utils/datasets';
 import { filterHierarchy } from '../../utils/hierarchyTree';
@@ -130,7 +134,7 @@ const LeftPanel = ({
             title={t('campaignPlanning.datasets')}
             action={
               simulationId && (
-                <AuthorizedElement roles={[SIMULATION_ADD_DATASET]}>
+                <AuthorizedElement roles={[CAMPAIGN_PLANNING_ADD_DATASET]}>
                   <button
                     type="button"
                     id="campaign-planning-add-dataset-button"
@@ -170,12 +174,12 @@ const LeftPanel = ({
             )}
           </PanelSection>
 
-          <AuthorizedElement roles={[VIEW_RASTER_LISTING]}>
+          <AuthorizedElement roles={[CAMPAIGN_PLANNING_VIEW_RASTER]}>
             <PanelSection
               title={t('campaignPlanning.rasterDatasets')}
               action={
                 simulationId && (
-                  <AuthorizedElement roles={[ADD_RASTER]}>
+                  <AuthorizedElement roles={[CAMPAIGN_PLANNING_ADD_RASTER]}>
                     <button
                       type="button"
                       id="campaign-planning-add-raster-button"

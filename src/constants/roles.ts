@@ -143,3 +143,16 @@ export const DATA_EXTRACT_VIEW = 'data_extracts_view'
 export const REDIRECT_TO_INDIVIDUAL_INSTANCE_REPORT = "redirect_to_individual_instance_report"
 
 export const AMDR_IMPORT_EXECUTE = 'amdr_import_execute';
+
+export const CAMPAIGN_PLANNING_VIEW = 'campaign_planning_view';
+export const CAMPAIGN_PLANNING_INSTANCE_SELECTION = 'campaign_planning_instance_selection';
+export const CAMPAIGN_PLANNING_ADD_DATASET = 'campaign_planning_add_dataset';
+export const CAMPAIGN_PLANNING_UPDATE_DATASET = 'campaign_planning_update_dataset';
+export const CAMPAIGN_PLANNING_DELETE_DATASET = 'campaign_planning_delete_dataset';
+export const CAMPAIGN_PLANNING_VIEW_RASTER = 'campaign_planning_view_raster';
+export const CAMPAIGN_PLANNING_ADD_RASTER = 'campaign_planning_add_raster';
+export const CAMPAIGN_PLANNING_UPDATE_RASTER = 'campaign_planning_update_raster';
+export const CAMPAIGN_PLANNING_DELETE_RASTER = 'campaign_planning_delete_raster';
+export const CAMPAIGN_PLANNING_ADD_TO_CAMPAIGN = 'campaign_planning_add_to_campaign';
+export const CAMPAIGN_PLANNING_ASSIGN_TO_TEAM = 'campaign_planning_assign_to_team';
+export const CAMPAIGN_PLANNING_REMOVE_FROM_CAMPAIGN = 'campaign_planning_remove_from_campaign';

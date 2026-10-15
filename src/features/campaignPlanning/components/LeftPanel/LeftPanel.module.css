@@ -120,6 +120,36 @@
   color: #828880;
 }
 
+.headerActions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+}
+
+.sectionChevron {
+  composes: iconButton from '../../styles/deck.module.css';
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+
+.sectionChevron svg {
+  transition: transform 0.15s;
+}
+
+.sectionChevronOpen {
+  transform: rotate(90deg);
+}
+
+.actionSlot {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  min-width: 25px;
+}
+
 /* Round "+" at the right of a section heading (lead's pick: design variant 2) */
 .addButton {
   composes: buttonReset from '../../styles/deck.module.css';

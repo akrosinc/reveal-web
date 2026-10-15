@@ -102,6 +102,13 @@
   text-overflow: ellipsis;
 }
 
+.instanceLabel {
+  padding: 3px 8px;
+  font-size: 12px;
+  color: var(--muted-ink);
+  white-space: nowrap;
+}
+
 .menu {
   min-width: 120px;
   margin-top: 6px !important;

@@ -2,7 +2,7 @@ import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronUp, BsListUl } from 'react-icons/bs';
 import AuthorizedElement from '../../../../components/AuthorizedElement';
-import { VIEW_RASTER_LISTING } from '../../../../constants';
+import { CAMPAIGN_PLANNING_VIEW_RASTER } from '../../../../constants';
 import { ASSIGNED_AREA_COLOR, TEAMS_ASSIGNED_AREA_COLOR } from '../../constants';
 import { RasterDataset, SimulationDataset } from '../../providers/types';
 import { getDatasetColor } from '../../utils/datasets';
@@ -51,7 +51,7 @@ const MapLegend = ({ datasets, rasterDatasets, showAssigned, onShowAssignedChang
           ) : (
             <div className={styles.empty}>{t('campaignPlanning.noDatasets')}</div>
           )}
-          <AuthorizedElement roles={[VIEW_RASTER_LISTING]}>
+          <AuthorizedElement roles={[CAMPAIGN_PLANNING_VIEW_RASTER]}>
             <>
               <div className={styles.sectionTitle}>{t('campaignPlanning.rasters')}</div>
               {rasterDatasets.length ? (

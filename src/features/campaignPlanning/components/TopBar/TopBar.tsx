@@ -6,8 +6,9 @@ import { Link } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
 import 'flag-icons/css/flag-icons.css';
 import SwitchInstanceModal from '../../../../components/Layout/Navbar/SwitchInstanceModal';
-import { CAMPAIGN_PLANNING_PAGE, HOME_PAGE } from '../../../../constants';
+import { CAMPAIGN_PLANNING_INSTANCE_SELECTION, CAMPAIGN_PLANNING_PAGE, HOME_PAGE } from '../../../../constants';
 import { SUPER_ADMIN } from '../../../../constants/userRoles';
+import { useAuthorization } from '../../../../hooks/useAuthorization';
 import i18n, { LOCALES } from '../../../../i18n';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { setToBrowser } from '../../../../utils';
@@ -26,6 +27,7 @@ const TopBar = ({ path }: Props) => {
   const dispatch = useAppDispatch();
   const selectedInstance = useAppSelector(state => state.instanceContext.selectedInstance);
   const [showSwitchModal, setShowSwitchModal] = useState(false);
+  const canSwitchInstance = useAuthorization([CAMPAIGN_PLANNING_INSTANCE_SELECTION]);
   const isSuperAdmin = ((keycloak.tokenParsed as any)?.groups || []).includes(SUPER_ADMIN);
   const username = (keycloak.tokenParsed as any)?.preferred_username;
   const currentLocale = LOCALES.find(locale => locale.name === i18n.language) ?? LOCALES[0];
@@ -67,16 +69,20 @@ const TopBar = ({ path }: Props) => {
       </nav>
 
       <div className={styles.account}>
-        <button
-          type="button"
-          id="campaign-planning-switch-instance-button"
-          className={styles.accountButton}
-          title={t('topNav.switchInstance')}
-          onClick={() => setShowSwitchModal(true)}
-        >
-          <BsArrowLeftRight />
-          <span className={styles.instanceName}>{instanceName}</span>
-        </button>
+        {canSwitchInstance ? (
+          <button
+            type="button"
+            id="campaign-planning-switch-instance-button"
+            className={styles.accountButton}
+            title={t('topNav.switchInstance')}
+            onClick={() => setShowSwitchModal(true)}
+          >
+            <BsArrowLeftRight />
+            <span className={styles.instanceName}>{instanceName}</span>
+          </button>
+        ) : (
+          <span className={`${styles.instanceName} ${styles.instanceLabel}`}>{instanceName}</span>
+        )}
 
         {username && (
           <Dropdown align="end">
