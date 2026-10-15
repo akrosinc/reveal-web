@@ -1,10 +1,12 @@
-import { CSSProperties, memo, useRef, useState } from 'react';
+import { CSSProperties, memo, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BsChevronRight, BsPencil } from 'react-icons/bs';
+import { BsChevronRight, BsEye, BsEyeSlash, BsPencil, BsTrash } from 'react-icons/bs';
 import { SIMULATION_DATASET_MENU } from '../../../../constants';
 import { useAuthorization } from '../../../../hooks/useAuthorization';
+import { HIDDEN_DATASET_COLOR } from '../../constants';
 import { SimulationDataset, ValueRange } from '../../providers/types';
 import DatasetColorPopup, { DatasetColorPopupHandle } from '../DatasetColorPopup/DatasetColorPopup';
+import DeleteDatasetConfirm from '../DeleteDatasetConfirm';
 import Switch from '../Switch';
 import styles from './DatasetFilter.module.css';
 
@@ -21,6 +23,9 @@ interface Props {
   // Rename (pencil) and colour panel (colour click), like Simulation; only when the plan has a simulation to save to
   canEdit: boolean;
   onSave: (dataset: SimulationDataset) => void;
+  isHidden: boolean;
+  onVisibilityToggle: (datasetId: string) => void;
+  onDelete: (dataset: SimulationDataset) => Promise<void>;
 }
 
 // Two decimals, as on Simulation's slider (e.g. 99.00)
@@ -29,18 +34,38 @@ const formatValue = (value: number) => value.toFixed(2);
 // Dataset row like the Simulation page's: opens a Filter switch and a min/max value slider.
 // While the filter is on, areas whose value falls outside the range are left unshaded on the map.
 // As on Simulation, the pencil renames the dataset and clicking its colour opens the colour panel.
-const DatasetFilter = ({ dataset, color, bounds, isOn, range, onToggle, onChange, canEdit, onSave }: Props) => {
+const DatasetFilter = ({
+  dataset,
+  color,
+  bounds,
+  isOn,
+  range,
+  onToggle,
+  onChange,
+  canEdit,
+  onSave,
+  isHidden,
+  onVisibilityToggle,
+  onDelete
+}: Props) => {
   const { t } = useTranslation();
   const isEditable = useAuthorization([SIMULATION_DATASET_MENU]) && canEdit;
   const [isOpen, setIsOpen] = useState(false);
   const [isColorOpen, setIsColorOpen] = useState(false);
   const [newName, setNewName] = useState<string>();
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const closeDelete = useCallback(() => setIsDeleteOpen(false), []);
   // Escape leaves the name field without saving; Enter / clicking elsewhere saves
   const isRenameCancelled = useRef(false);
   const rowRef = useRef<HTMLDivElement>(null);
   const colorButtonRef = useRef<HTMLButtonElement>(null);
   const colorPopupRef = useRef<DatasetColorPopupHandle>(null);
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
   const isRenaming = newName !== undefined;
+  const swatchColor = isHidden ? HIDDEN_DATASET_COLOR : color;
+  const visibilityLabel = t(isHidden ? 'campaignPlanning.showLayer' : 'campaignPlanning.hideLayer', {
+    name: dataset.name
+  });
 
   const startRename = () => {
     isRenameCancelled.current = false;
@@ -62,7 +87,12 @@ const DatasetFilter = ({ dataset, color, bounds, isOn, range, onToggle, onChange
 
   return (
     <div>
-      <div ref={rowRef} className={isEditable ? `${styles.rowWrapper} ${styles.editable}` : styles.rowWrapper}>
+      <div
+        ref={rowRef}
+        className={[styles.rowWrapper, isEditable && styles.editable, isHidden && styles.hiddenLayer]
+          .filter(Boolean)
+          .join(' ')}
+      >
         {isEditable ? (
           <button
             ref={colorButtonRef}
@@ -75,46 +105,89 @@ const DatasetFilter = ({ dataset, color, bounds, isOn, range, onToggle, onChange
             // Clicking the colour again closes the panel (and saves), like on Simulation
             onClick={() => (isColorOpen ? colorPopupRef.current?.close() : setIsColorOpen(true))}
           >
-            <span className={styles.swatch} style={{ background: color }} />
+            <span className={styles.swatch} style={{ background: swatchColor }} />
           </button>
         ) : (
-          <span className={styles.swatch} style={{ background: color }} />
+          <span className={styles.swatch} style={{ background: swatchColor }} />
         )}
-        {isRenaming ? (
-          <input
-            id={`campaign-planning-dataset-name-${dataset.identifier}`}
-            className={styles.nameInput}
-            aria-label={t('campaignPlanning.datasetName')}
-            value={newName}
-            autoFocus
-            onChange={e => setNewName(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Escape') isRenameCancelled.current = true;
-              if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur();
-            }}
-            onBlur={finishRename}
-          />
-        ) : (
-          <button type="button" className={styles.row} aria-expanded={isOpen} onClick={() => setIsOpen(open => !open)}>
-            <span className={styles.name} title={dataset.name}>
-              {dataset.name}
-            </span>
-            <BsChevronRight className={isOpen ? `${styles.chevron} ${styles.open}` : styles.chevron} />
-          </button>
-        )}
-        {isEditable && !isRenaming && (
+        <div className={styles.nameArea}>
+          {isRenaming ? (
+            <input
+              id={`campaign-planning-dataset-name-${dataset.identifier}`}
+              className={styles.nameInput}
+              aria-label={t('campaignPlanning.datasetName')}
+              value={newName}
+              autoFocus
+              onChange={e => setNewName(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Escape') isRenameCancelled.current = true;
+                if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur();
+              }}
+              onBlur={finishRename}
+            />
+          ) : (
+            <button
+              type="button"
+              className={styles.row}
+              aria-expanded={isOpen}
+              onClick={() => setIsOpen(open => !open)}
+            >
+              <span className={styles.name} title={dataset.name}>
+                {dataset.name}
+              </span>
+              <BsChevronRight className={isOpen ? `${styles.chevron} ${styles.open}` : styles.chevron} />
+            </button>
+          )}
+          {isEditable && !isRenaming && (
+            <button
+              type="button"
+              id={`campaign-planning-rename-dataset-${dataset.identifier}`}
+              className={styles.editButton}
+              title={t('campaignPlanning.renameDataset', { name: dataset.name })}
+              aria-label={t('campaignPlanning.renameDataset', { name: dataset.name })}
+              onClick={startRename}
+            >
+              <BsPencil />
+            </button>
+          )}
+        </div>
+        <div className={styles.actions}>
           <button
             type="button"
-            id={`campaign-planning-rename-dataset-${dataset.identifier}`}
-            className={styles.editButton}
-            title={t('campaignPlanning.renameDataset', { name: dataset.name })}
-            aria-label={t('campaignPlanning.renameDataset', { name: dataset.name })}
-            onClick={startRename}
+            id={`campaign-planning-dataset-visibility-${dataset.identifier}`}
+            className={styles.actionButton}
+            title={visibilityLabel}
+            aria-label={visibilityLabel}
+            aria-pressed={isHidden}
+            onClick={() => onVisibilityToggle(dataset.identifier)}
           >
-            <BsPencil />
+            {isHidden ? <BsEyeSlash /> : <BsEye />}
           </button>
-        )}
+          {isEditable && (
+            <button
+              ref={deleteButtonRef}
+              type="button"
+              id={`campaign-planning-delete-dataset-${dataset.identifier}`}
+              className={isDeleteOpen ? `${styles.actionButton} ${styles.deleteActive}` : styles.actionButton}
+              title={t('campaignPlanning.deleteDatasetLabel', { name: dataset.name })}
+              aria-label={t('campaignPlanning.deleteDatasetLabel', { name: dataset.name })}
+              aria-expanded={isDeleteOpen}
+              onClick={() => setIsDeleteOpen(open => !open)}
+            >
+              <BsTrash />
+            </button>
+          )}
+        </div>
       </div>
+      {isDeleteOpen && (
+        <DeleteDatasetConfirm
+          dataset={dataset}
+          anchor={rowRef.current}
+          trigger={deleteButtonRef.current}
+          onClose={closeDelete}
+          onDelete={onDelete}
+        />
+      )}
       {isColorOpen && (
         <DatasetColorPopup
           ref={colorPopupRef}

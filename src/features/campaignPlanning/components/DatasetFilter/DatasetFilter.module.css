@@ -52,9 +52,60 @@
   color: var(--ink);
 }
 
+.nameArea {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}
+
 /* Room for the edit button so a long name is cut before it */
-.editable .name {
+.editable:hover .name,
+.editable:focus-within .name {
   margin-right: 20px;
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 1px;
+  margin-left: -4px;
+}
+
+.actionButton {
+  composes: buttonReset from '../../styles/deck.module.css';
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 5px;
+  font-size: 12px;
+  color: var(--muted-ink);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.actionButton:hover {
+  background: var(--teal-tint);
+  color: var(--teal);
+}
+
+.actionButton:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
+}
+
+.deleteActive,
+.deleteActive:hover {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+.hiddenLayer .name {
+  color: var(--label-ink);
 }
 
 .row:hover .chevron {

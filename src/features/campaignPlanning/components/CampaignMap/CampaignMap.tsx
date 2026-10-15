@@ -23,6 +23,7 @@ interface Props {
   // Areas assigned to the campaign (simulation target areas) and whether "Toggle assigned" shows them
   targetAreas: TargetArea[];
   showAssigned: boolean;
+  hiddenDatasetIds: string[];
 }
 
 const toTargetAreasCollection = (targetAreas: TargetArea[]): GeoJSON.FeatureCollection => ({
@@ -95,7 +96,8 @@ const setDatasetLayers = (
   map: Map,
   datasets: SimulationDataset[],
   data: GeoJSON.FeatureCollection,
-  filters: Record<string, ValueRange>
+  filters: Record<string, ValueRange>,
+  hiddenDatasetIds: string[]
 ) => {
   if (!map.getSource(LOCATIONS_SOURCE)) return;
   map
@@ -106,12 +108,14 @@ const setDatasetLayers = (
     const id = dataset.identifier;
     const values = data.features.map(feature => feature.properties?.[id]).filter(value => typeof value === 'number');
     const maxValue = values.length ? Math.max(...values) : 0;
+    const visibility = hiddenDatasetIds.includes(id) ? 'none' : 'visible';
     map.addLayer(
       {
         id: `${DATASET_LAYER_PREFIX}${id}`,
         type: 'fill',
         source: LOCATIONS_SOURCE,
         filter: ['has', id],
+        layout: { visibility },
         paint: {
           'fill-color': getFillColor(getDatasetColor(dataset, index), id, filters[id]),
           'fill-opacity':
@@ -126,6 +130,7 @@ const setDatasetLayers = (
         type: 'line',
         source: LOCATIONS_SOURCE,
         filter: ['has', id],
+        layout: { visibility },
         paint: { 'line-color': dataset.borderColor || 'black', 'line-width': dataset.lineWidth ?? 1 }
       },
       `${LOCATIONS_SOURCE}-line`
@@ -165,7 +170,15 @@ const getBounds = (data: GeoJSON.FeatureCollection) => {
 };
 
 // No Mapbox logo / attribution (i) button: the lead asked to hide them (logo hidden in CSS)
-const CampaignMap = ({ mapStyle, locations, datasets, filters, targetAreas, showAssigned }: Props) => {
+const CampaignMap = ({
+  mapStyle,
+  locations,
+  datasets,
+  filters,
+  targetAreas,
+  showAssigned,
+  hiddenDatasetIds
+}: Props) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<Map>();
   const appliedStyle = useRef(mapStyle);
@@ -175,6 +188,7 @@ const CampaignMap = ({ mapStyle, locations, datasets, filters, targetAreas, show
   const filtersRef = useRef(filters);
   const targetAreasData = useRef<GeoJSON.FeatureCollection>(toTargetAreasCollection(targetAreas));
   const showAssignedRef = useRef(showAssigned);
+  const hiddenDatasetIdsRef = useRef(hiddenDatasetIds);
 
   useEffect(() => {
     map.current = new Map({
@@ -187,7 +201,13 @@ const CampaignMap = ({ mapStyle, locations, datasets, filters, targetAreas, show
     map.current.on('style.load', () => {
       if (!map.current) return;
       addLocationLayers(map.current, locationsData.current);
-      setDatasetLayers(map.current, datasetsRef.current, locationsData.current, filtersRef.current);
+      setDatasetLayers(
+        map.current,
+        datasetsRef.current,
+        locationsData.current,
+        filtersRef.current,
+        hiddenDatasetIdsRef.current
+      );
       setTargetAreasLayer(map.current, targetAreasData.current, showAssignedRef.current);
     });
     return () => map.current?.remove();
@@ -203,7 +223,8 @@ const CampaignMap = ({ mapStyle, locations, datasets, filters, targetAreas, show
   // Declared before the locations effect so a render that changes both uses the new datasets there too.
   useEffect(() => {
     datasetsRef.current = datasets;
-    if (map.current) setDatasetLayers(map.current, datasets, locationsData.current, filtersRef.current);
+    if (map.current)
+      setDatasetLayers(map.current, datasets, locationsData.current, filtersRef.current, hiddenDatasetIdsRef.current);
   }, [datasets]);
 
   // New areas: upload their shapes and values once, then rebuild the dataset layers (their max values changed)
@@ -211,7 +232,14 @@ const CampaignMap = ({ mapStyle, locations, datasets, filters, targetAreas, show
     locationsData.current = toFeatureCollection(locations);
     const source = map.current?.getSource(LOCATIONS_SOURCE) as GeoJSONSource | undefined;
     source?.setData(locationsData.current);
-    if (map.current) setDatasetLayers(map.current, datasetsRef.current, locationsData.current, filtersRef.current);
+    if (map.current)
+      setDatasetLayers(
+        map.current,
+        datasetsRef.current,
+        locationsData.current,
+        filtersRef.current,
+        hiddenDatasetIdsRef.current
+      );
     // Zoom only when a different set of locations arrives, not when the same ones reload with new dataset values
     const key = locations.map(location => location.identifier).join();
     if (map.current && locationsData.current.features.length && key !== fittedKey.current) {
@@ -240,6 +268,18 @@ const CampaignMap = ({ mapStyle, locations, datasets, filters, targetAreas, show
       );
     });
   }, [filters]);
+
+  useEffect(() => {
+    hiddenDatasetIdsRef.current = hiddenDatasetIds;
+    datasetsRef.current.forEach(dataset => {
+      const visibility = hiddenDatasetIds.includes(dataset.identifier) ? 'none' : 'visible';
+      [`${DATASET_LAYER_PREFIX}${dataset.identifier}`, `${DATASET_LAYER_PREFIX}${dataset.identifier}-outline`].forEach(
+        layerId => {
+          if (map.current?.getLayer(layerId)) map.current.setLayoutProperty(layerId, 'visibility', visibility);
+        }
+      );
+    });
+  }, [hiddenDatasetIds]);
 
   return <div ref={mapContainer} className={styles.map} />;
 };

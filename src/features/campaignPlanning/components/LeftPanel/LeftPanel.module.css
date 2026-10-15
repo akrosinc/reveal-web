@@ -155,18 +155,6 @@
   color: var(--ink);
 }
 
-.swatch {
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-}
-
-/* Rasters are colour gradients, not one colour */
-.rasterSwatch {
-  background: linear-gradient(135deg, #d6ead3, #4f9d69 55%, #1f4e3d);
-}
-
 .empty {
   composes: item;
   color: #828880;

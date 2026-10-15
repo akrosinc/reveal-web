@@ -9,6 +9,7 @@ import { filterHierarchy } from '../../utils/hierarchyTree';
 import DatasetFilter from '../DatasetFilter';
 import HierarchyTree from '../HierarchyTree';
 import Skeleton from '../Skeleton';
+import RasterDatasetRow from '../RasterDatasetRow';
 import PanelSection from './PanelSection';
 import styles from './LeftPanel.module.css';
 
@@ -24,6 +25,10 @@ interface Props {
   simulationId?: string;
   onAddDataset: () => void;
   onDatasetSave: (dataset: SimulationDataset) => void;
+  hiddenDatasetIds: string[];
+  onDatasetVisibilityToggle: (datasetId: string) => void;
+  onDatasetDelete: (dataset: SimulationDataset) => Promise<void>;
+  onRasterDatasetDelete: (raster: RasterDataset) => Promise<void>;
   teams: Team[];
   isHierarchyLoading: boolean;
   isDatasetsLoading: boolean;
@@ -43,6 +48,10 @@ const LeftPanel = ({
   simulationId,
   onAddDataset,
   onDatasetSave,
+  hiddenDatasetIds,
+  onDatasetVisibilityToggle,
+  onDatasetDelete,
+  onRasterDatasetDelete,
   teams,
   isHierarchyLoading,
   isDatasetsLoading,
@@ -143,6 +152,9 @@ const LeftPanel = ({
                   onChange={onDatasetFilterChange}
                   canEdit={!!simulationId}
                   onSave={onDatasetSave}
+                  isHidden={hiddenDatasetIds.includes(dataset.identifier)}
+                  onVisibilityToggle={onDatasetVisibilityToggle}
+                  onDelete={onDatasetDelete}
                 />
               ))
             ) : (
@@ -155,10 +167,12 @@ const LeftPanel = ({
               <Skeleton widths={['50%']} />
             ) : rasterDatasets.length ? (
               rasterDatasets.map(raster => (
-                <div key={raster.identifier} className={styles.item}>
-                  <span className={`${styles.swatch} ${styles.rasterSwatch}`} />
-                  {raster.name}
-                </div>
+                <RasterDatasetRow
+                  key={raster.identifier}
+                  raster={raster}
+                  canEdit={!!simulationId}
+                  onDelete={onRasterDatasetDelete}
+                />
               ))
             ) : (
               <div className={styles.empty}>{t('campaignPlanning.noRasterDatasets')}</div>

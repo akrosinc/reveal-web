@@ -1,0 +1,55 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 20px;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.swatch {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #d6ead3, #4f9d69 55%, #1f4e3d);
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actionButton {
+  composes: buttonReset from '../../styles/deck.module.css';
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 5px;
+  font-size: 12px;
+  color: var(--muted-ink);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.actionButton:hover {
+  background: var(--teal-tint);
+  color: var(--teal);
+}
+
+.actionButton:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
+}
+
+.deleteActive,
+.deleteActive:hover {
+  background: var(--danger-tint);
+  color: var(--danger);
+}

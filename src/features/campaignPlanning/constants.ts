@@ -15,3 +15,5 @@ export const DATASET_COLORS = ['#DF9D2B', '#D65335', '#0B8194', '#1F7A3D', '#B23
 // Campaign Management legend colours: areas assigned to the campaign, and those that already have teams
 export const ASSIGNED_AREA_COLOR = 'rgba(255, 0, 74, 0.7)';
 export const TEAMS_ASSIGNED_AREA_COLOR = 'rgba(128, 128, 128, 0.7)';
+
+export const HIDDEN_DATASET_COLOR = '#c4c8c2';

@@ -63,6 +63,12 @@ export interface SimulationDataset {
 }
 
 // Body of PUT simulation/dataset (Simulation's Edit dataset popup / rename)
+export interface DatasetDeleteRequest {
+  simulationId: string;
+  datasetId: string[];
+  datasetType?: 'RASTER';
+}
+
 export interface DatasetUpdateRequest {
   simulationId: string;
   datasetId: string;

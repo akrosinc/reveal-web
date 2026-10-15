@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { useAppSelector } from '../../../../store/hooks';
 import {
+  deleteSimulationDataset,
   getInstanceHierarchy,
   getInstanceTeams,
   getLocationData,
@@ -15,6 +16,7 @@ import {
   HierarchyNode,
   LocationFeature,
   PlanSimulation,
+  RasterDataset,
   SimulationDataset,
   Team,
   ValueRange
@@ -158,6 +160,14 @@ const CampaignPlanning = () => {
   const targetAreas = useMemo(() => simulation?.targetAreas ?? [], [simulation]);
   // Campaign Management's "Toggle assigned": shows or hides the assigned areas layer (on by default there too)
   const [showAssigned, setShowAssigned] = useState(true);
+  const [hiddenDatasetIds, setHiddenDatasetIds] = useState<string[]>([]);
+  const toggleDatasetVisibility = useCallback(
+    (datasetId: string) =>
+      setHiddenDatasetIds(current =>
+        current.includes(datasetId) ? current.filter(id => id !== datasetId) : [...current, datasetId]
+      ),
+    []
+  );
   // location-data also returns the clicked area itself; the map shows only its children unless it has none
   const mapLocations = useMemo(() => {
     const children = locations.filter(location => location.identifier !== selectedNode?.identifier);
@@ -189,6 +199,44 @@ const CampaignPlanning = () => {
     () =>
       Object.fromEntries(Object.entries(datasetFilters).filter((entry): entry is [string, ValueRange] => !!entry[1])),
     [datasetFilters]
+  );
+
+  const deleteDataset = useCallback(
+    async (dataset: SimulationDataset) => {
+      if (!dataset.isUserDataset && simulationId) {
+        await deleteSimulationDataset({ simulationId, datasetId: [dataset.identifier] }).catch(err => {
+          toast.error(err);
+          throw err;
+        });
+      }
+      const datasetId = dataset.identifier;
+      setSimulation(
+        current => current && { ...current, datasets: current.datasets.filter(item => item.identifier !== datasetId) }
+      );
+      setHiddenDatasetIds(current => current.filter(id => id !== datasetId));
+      setDatasetFilters(current => Object.fromEntries(Object.entries(current).filter(([id]) => id !== datasetId)));
+    },
+    [simulationId]
+  );
+
+  const deleteRasterDataset = useCallback(
+    async (raster: RasterDataset) => {
+      if (!simulationId) return;
+      await deleteSimulationDataset({ simulationId, datasetId: [raster.identifier], datasetType: 'RASTER' }).catch(
+        err => {
+          toast.error(err);
+          throw err;
+        }
+      );
+      setSimulation(
+        current =>
+          current && {
+            ...current,
+            rasterDatasets: current.rasterDatasets?.filter(item => item.identifier !== raster.identifier)
+          }
+      );
+    },
+    [simulationId]
   );
 
   // Children of the selected area with their geometry and the attached datasets' values, for the map and the table
@@ -230,6 +278,7 @@ const CampaignPlanning = () => {
         filters={mapFilters}
         targetAreas={targetAreas}
         showAssigned={showAssigned}
+        hiddenDatasetIds={hiddenDatasetIds}
       />
       <TopBar path={selectedPath} />
       {loading.locations && (
@@ -250,6 +299,10 @@ const CampaignPlanning = () => {
           simulationId={simulationId}
           onAddDataset={openAddDataset}
           onDatasetSave={saveDataset}
+          hiddenDatasetIds={hiddenDatasetIds}
+          onDatasetVisibilityToggle={toggleDatasetVisibility}
+          onDatasetDelete={deleteDataset}
+          onRasterDatasetDelete={deleteRasterDataset}
           teams={teams}
           isHierarchyLoading={loading.hierarchy}
           isDatasetsLoading={loading.simulation}

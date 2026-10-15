@@ -1,0 +1,91 @@
+.card {
+  composes: font from '../../styles/deck.module.css';
+  position: fixed;
+  z-index: 50;
+  width: 240px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(20, 24, 20, 0.12);
+}
+
+.card::before {
+  position: absolute;
+  top: calc(var(--arrow-top, 22px) - 6px);
+  left: -6px;
+  width: 10px;
+  height: 10px;
+  border-bottom: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  background: #fff;
+  transform: rotate(45deg);
+  content: '';
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.icon {
+  color: var(--danger);
+}
+
+.message {
+  margin: 6px 0 12px;
+  font-size: 12px;
+  color: var(--body-ink);
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cancel,
+.delete {
+  flex: 1;
+  padding: 5px 0;
+  border: 0;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.cancel {
+  background: rgba(20, 24, 20, 0.06);
+  color: var(--ink);
+}
+
+.cancel:hover {
+  background: rgba(20, 24, 20, 0.1);
+}
+
+.delete {
+  background: var(--danger);
+  color: #fff;
+}
+
+.delete:hover {
+  background: #d93d42;
+}
+
+.cancel:focus-visible,
+.delete:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.cancel:disabled,
+.delete:disabled {
+  cursor: default;
+  opacity: 0.6;
+}

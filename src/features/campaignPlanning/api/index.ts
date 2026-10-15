@@ -1,5 +1,6 @@
 import api from '../../../api/axios';
 import {
+  DatasetDeleteRequest,
   DatasetUpdateRequest,
   InstanceHierarchy,
   LocationDataRequest,
@@ -40,4 +41,8 @@ export const getLocationData = async (request: LocationDataRequest): Promise<Loc
 export const updateSimulationDataset = async (request: DatasetUpdateRequest): Promise<PlanSimulation> => {
   const data = await api.put<PlanSimulation>('simulation/dataset', request).then(response => response.data);
   return data;
+};
+
+export const deleteSimulationDataset = async (request: DatasetDeleteRequest): Promise<void> => {
+  await api.delete('simulation/dataset', { data: request });
 };
