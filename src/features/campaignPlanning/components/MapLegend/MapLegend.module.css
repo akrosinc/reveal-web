@@ -110,11 +110,6 @@
   border-radius: 4px;
 }
 
-/* Rasters are colour gradients, not one colour (same swatch as the left panel) */
-.rasterBox {
-  background: linear-gradient(135deg, #d6ead3, #4f9d69 55%, #1f4e3d);
-}
-
 .empty {
   padding: 4px 0;
   font-size: 12px;

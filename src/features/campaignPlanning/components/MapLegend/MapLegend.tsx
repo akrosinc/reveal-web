@@ -1,9 +1,12 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronUp, BsListUl } from 'react-icons/bs';
+import AuthorizedElement from '../../../../components/AuthorizedElement';
+import { VIEW_RASTER_LISTING } from '../../../../constants';
 import { ASSIGNED_AREA_COLOR, TEAMS_ASSIGNED_AREA_COLOR } from '../../constants';
 import { RasterDataset, SimulationDataset } from '../../providers/types';
 import { getDatasetColor } from '../../utils/datasets';
+import { getRasterBackground } from '../../utils/rasters';
 import Switch from '../Switch';
 import styles from './MapLegend.module.css';
 
@@ -48,17 +51,21 @@ const MapLegend = ({ datasets, rasterDatasets, showAssigned, onShowAssignedChang
           ) : (
             <div className={styles.empty}>{t('campaignPlanning.noDatasets')}</div>
           )}
-          <div className={styles.sectionTitle}>{t('campaignPlanning.rasters')}</div>
-          {rasterDatasets.length ? (
-            rasterDatasets.map(raster => (
-              <div key={raster.identifier} className={styles.item}>
-                <span className={`${styles.colorBox} ${styles.rasterBox}`} />
-                {raster.name}
-              </div>
-            ))
-          ) : (
-            <div className={styles.empty}>{t('campaignPlanning.noRasterDatasets')}</div>
-          )}
+          <AuthorizedElement roles={[VIEW_RASTER_LISTING]}>
+            <>
+              <div className={styles.sectionTitle}>{t('campaignPlanning.rasters')}</div>
+              {rasterDatasets.length ? (
+                rasterDatasets.map(raster => (
+                  <div key={raster.identifier} className={styles.item}>
+                    <span className={styles.colorBox} style={{ background: getRasterBackground(raster.colorRamp) }} />
+                    {raster.name}
+                  </div>
+                ))
+              ) : (
+                <div className={styles.empty}>{t('campaignPlanning.noRasterDatasets')}</div>
+              )}
+            </>
+          </AuthorizedElement>
         </div>
       )}
       <button

@@ -2,7 +2,7 @@ import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronLeft, BsPlusCircle } from 'react-icons/bs';
 import AuthorizedElement from '../../../../components/AuthorizedElement';
-import { SIMULATION_ADD_DATASET } from '../../../../constants';
+import { ADD_RASTER, SIMULATION_ADD_DATASET, VIEW_RASTER_LISTING } from '../../../../constants';
 import { HierarchyNode, RasterDataset, SimulationDataset, Team, ValueRange } from '../../providers/types';
 import { getDatasetColor } from '../../utils/datasets';
 import { filterHierarchy } from '../../utils/hierarchyTree';
@@ -28,6 +28,10 @@ interface Props {
   hiddenDatasetIds: string[];
   onDatasetVisibilityToggle: (datasetId: string) => void;
   onDatasetDelete: (dataset: SimulationDataset) => Promise<void>;
+  onAddRaster: () => void;
+  hiddenRasterIds: string[];
+  onRasterVisibilityToggle: (rasterId: string) => void;
+  onRasterDatasetSave: (raster: RasterDataset, colorRamp: string, opacity?: number, name?: string) => Promise<void>;
   onRasterDatasetDelete: (raster: RasterDataset) => Promise<void>;
   teams: Team[];
   isHierarchyLoading: boolean;
@@ -51,6 +55,10 @@ const LeftPanel = ({
   hiddenDatasetIds,
   onDatasetVisibilityToggle,
   onDatasetDelete,
+  onAddRaster,
+  hiddenRasterIds,
+  onRasterVisibilityToggle,
+  onRasterDatasetSave,
   onRasterDatasetDelete,
   teams,
   isHierarchyLoading,
@@ -162,22 +170,45 @@ const LeftPanel = ({
             )}
           </PanelSection>
 
-          <PanelSection title={t('campaignPlanning.rasterDatasets')}>
-            {isDatasetsLoading ? (
-              <Skeleton widths={['50%']} />
-            ) : rasterDatasets.length ? (
-              rasterDatasets.map(raster => (
-                <RasterDatasetRow
-                  key={raster.identifier}
-                  raster={raster}
-                  canEdit={!!simulationId}
-                  onDelete={onRasterDatasetDelete}
-                />
-              ))
-            ) : (
-              <div className={styles.empty}>{t('campaignPlanning.noRasterDatasets')}</div>
-            )}
-          </PanelSection>
+          <AuthorizedElement roles={[VIEW_RASTER_LISTING]}>
+            <PanelSection
+              title={t('campaignPlanning.rasterDatasets')}
+              action={
+                simulationId && (
+                  <AuthorizedElement roles={[ADD_RASTER]}>
+                    <button
+                      type="button"
+                      id="campaign-planning-add-raster-button"
+                      className={styles.addButton}
+                      title={t('campaignPlanning.addRaster')}
+                      aria-label={t('campaignPlanning.addRaster')}
+                      onClick={onAddRaster}
+                    >
+                      <BsPlusCircle />
+                    </button>
+                  </AuthorizedElement>
+                )
+              }
+            >
+              {isDatasetsLoading ? (
+                <Skeleton widths={['50%']} />
+              ) : rasterDatasets.length ? (
+                rasterDatasets.map(raster => (
+                  <RasterDatasetRow
+                    key={raster.identifier}
+                    raster={raster}
+                    canEdit={!!simulationId}
+                    isHidden={hiddenRasterIds.includes(raster.identifier)}
+                    onVisibilityToggle={onRasterVisibilityToggle}
+                    onSave={onRasterDatasetSave}
+                    onDelete={onRasterDatasetDelete}
+                  />
+                ))
+              ) : (
+                <div className={styles.empty}>{t('campaignPlanning.noRasterDatasets')}</div>
+              )}
+            </PanelSection>
+          </AuthorizedElement>
 
           <PanelSection title={t('campaignPlanning.teams')}>
             {isTeamsLoading ? (

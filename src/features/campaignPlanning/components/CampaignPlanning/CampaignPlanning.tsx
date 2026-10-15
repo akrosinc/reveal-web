@@ -23,7 +23,9 @@ import {
 } from '../../providers/types';
 import { getValueBounds } from '../../utils/datasets';
 import { findPath } from '../../utils/hierarchyTree';
+import { splitRasterDatasets } from '../../utils/rasters';
 import AddDatasetDialog from '../AddDatasetDialog';
+import AddRasterDialog from '../AddRasterDialog';
 import BottomTable from '../BottomTable';
 import CampaignMap from '../CampaignMap';
 import LeftPanel from '../LeftPanel';
@@ -56,6 +58,7 @@ const CampaignPlanning = () => {
   const [isTableOpen, setIsTableOpen] = useState(false);
   const [mapStyle, setMapStyle] = useState(MAP_STYLE_LIGHT);
   const [isAddDatasetOpen, setIsAddDatasetOpen] = useState(false);
+  const [isAddRasterOpen, setIsAddRasterOpen] = useState(false);
   const selectedPath = useMemo(
     () => (selectedNode ? findPath(hierarchy, selectedNode.identifier) : []),
     [hierarchy, selectedNode]
@@ -102,7 +105,7 @@ const CampaignPlanning = () => {
     let isCurrent = true;
     setIsLoading('simulation', true);
     getPlanSimulation(planId)
-      .then(res => isCurrent && setSimulation(res))
+      .then(res => isCurrent && setSimulation(splitRasterDatasets(res)))
       .catch(err => isCurrent && toast.error(err))
       .finally(() => isCurrent && setIsLoading('simulation', false));
     return () => {
@@ -165,6 +168,14 @@ const CampaignPlanning = () => {
     (datasetId: string) =>
       setHiddenDatasetIds(current =>
         current.includes(datasetId) ? current.filter(id => id !== datasetId) : [...current, datasetId]
+      ),
+    []
+  );
+  const [hiddenRasterIds, setHiddenRasterIds] = useState<string[]>([]);
+  const toggleRasterVisibility = useCallback(
+    (rasterId: string) =>
+      setHiddenRasterIds(current =>
+        current.includes(rasterId) ? current.filter(id => id !== rasterId) : [...current, rasterId]
       ),
     []
   );
@@ -235,9 +246,50 @@ const CampaignPlanning = () => {
             rasterDatasets: current.rasterDatasets?.filter(item => item.identifier !== raster.identifier)
           }
       );
+      setHiddenRasterIds(current => current.filter(id => id !== raster.identifier));
     },
     [simulationId]
   );
+
+  const saveRasterDataset = useCallback(
+    async (raster: RasterDataset, colorRamp: string, opacity?: number, name?: string) => {
+      if (!simulationId) return;
+      const finalName = name?.trim() || raster.name;
+      await updateSimulationDataset({
+        simulationId,
+        datasetId: raster.identifier,
+        name: finalName,
+        hexColor: colorRamp,
+        lineWidth: 0,
+        borderColor: '#000000',
+        datasetType: 'RASTER'
+      }).catch(err => {
+        toast.error(err);
+        throw err;
+      });
+      setSimulation(
+        current =>
+          current && {
+            ...current,
+            rasterDatasets: current.rasterDatasets?.map(item =>
+              item.identifier === raster.identifier
+                ? { ...item, name: finalName, colorRamp, opacity: opacity ?? item.opacity }
+                : item
+            )
+          }
+      );
+    },
+    [simulationId]
+  );
+
+  const reloadRasterDatasets = useCallback(() => {
+    if (!planId) return;
+    getPlanSimulation(planId)
+      .then(res =>
+        setSimulation(current => current && { ...current, rasterDatasets: splitRasterDatasets(res).rasterDatasets })
+      )
+      .catch(err => toast.error(err));
+  }, [planId]);
 
   // Children of the selected area with their geometry and the attached datasets' values, for the map and the table
   useEffect(() => {
@@ -267,6 +319,8 @@ const CampaignPlanning = () => {
   // Stable handlers, so the memoised panels don't re-render when unrelated state changes
   const openAddDataset = useCallback(() => setIsAddDatasetOpen(true), []);
   const closeAddDataset = useCallback(() => setIsAddDatasetOpen(false), []);
+  const openAddRaster = useCallback(() => setIsAddRasterOpen(true), []);
+  const closeAddRaster = useCallback(() => setIsAddRasterOpen(false), []);
   const toggleTable = useCallback(() => setIsTableOpen(open => !open), []);
 
   return (
@@ -279,6 +333,8 @@ const CampaignPlanning = () => {
         targetAreas={targetAreas}
         showAssigned={showAssigned}
         hiddenDatasetIds={hiddenDatasetIds}
+        rasterDatasets={rasterDatasets}
+        hiddenRasterIds={hiddenRasterIds}
       />
       <TopBar path={selectedPath} />
       {loading.locations && (
@@ -302,6 +358,10 @@ const CampaignPlanning = () => {
           hiddenDatasetIds={hiddenDatasetIds}
           onDatasetVisibilityToggle={toggleDatasetVisibility}
           onDatasetDelete={deleteDataset}
+          onAddRaster={openAddRaster}
+          hiddenRasterIds={hiddenRasterIds}
+          onRasterVisibilityToggle={toggleRasterVisibility}
+          onRasterDatasetSave={saveRasterDataset}
           onRasterDatasetDelete={deleteRasterDataset}
           teams={teams}
           isHierarchyLoading={loading.hierarchy}
@@ -342,6 +402,14 @@ const CampaignPlanning = () => {
           datasets={datasets}
           onClose={closeAddDataset}
           onAdded={addDataset}
+        />
+      )}
+      {isAddRasterOpen && simulationId && (
+        <AddRasterDialog
+          simulationId={simulationId}
+          parentLocationId={selectedNode?.identifier ?? hierarchy[0]?.identifier}
+          onClose={closeAddRaster}
+          onAdded={reloadRasterDatasets}
         />
       )}
     </div>
