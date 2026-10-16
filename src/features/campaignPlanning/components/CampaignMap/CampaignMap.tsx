@@ -1,5 +1,6 @@
-import mapboxgl, { GeoJSONSource, LngLatBounds, Map } from 'mapbox-gl';
-import { memo, useEffect, useRef } from 'react';
+import mapboxgl, { GeoJSONSource, LngLatBounds, Map, Popup } from 'mapbox-gl';
+import { memo, ReactNode, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { config } from '../../../../config/config';
 import {
   addRasterToMap,
@@ -43,6 +44,9 @@ interface Props {
   hiddenRasterIds: string[];
   sites: Site[];
   onLoad: (map: Map) => void;
+  onAreaClick: (locationId: string, lngLat: [number, number]) => void;
+  popup?: { lngLat: [number, number]; content: ReactNode };
+  onPopupClose: () => void;
 }
 
 const setRasterLayers = (map: Map, rasters: RasterDataset[], hiddenRasterIds: string[]) => {
@@ -171,6 +175,7 @@ const toFeatureCollection = (locations: LocationFeature[]): GeoJSON.FeatureColle
       id: location.identifier,
       geometry: location.geometry,
       properties: {
+        identifier: location.identifier,
         name: location.properties.name,
         ...Object.fromEntries(location.properties.metadata?.map(item => [item.datasetId, item.value]) ?? [])
       }
@@ -244,6 +249,12 @@ const addLocationLayers = (map: Map, data: GeoJSON.FeatureCollection) => {
   if (map.getSource(LOCATIONS_SOURCE)) return;
   map.addSource(LOCATIONS_SOURCE, { type: 'geojson', data });
   map.addLayer({
+    id: `${LOCATIONS_SOURCE}-hit`,
+    type: 'fill',
+    source: LOCATIONS_SOURCE,
+    paint: { 'fill-color': '#000000', 'fill-opacity': 0 }
+  });
+  map.addLayer({
     id: `${LOCATIONS_SOURCE}-line`,
     type: 'line',
     source: LOCATIONS_SOURCE,
@@ -282,7 +293,10 @@ const CampaignMap = ({
   rasterDatasets,
   hiddenRasterIds,
   sites,
-  onLoad
+  onLoad,
+  onAreaClick,
+  popup,
+  onPopupClose
 }: Props) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<Map>();
@@ -298,6 +312,12 @@ const CampaignMap = ({
   const hiddenRasterIdsRef = useRef(hiddenRasterIds);
   const sitesData = useRef<GeoJSON.FeatureCollection>(toSitesCollection(sites));
   const onLoadRef = useRef(onLoad);
+  const onAreaClickRef = useRef(onAreaClick);
+  const onPopupCloseRef = useRef(onPopupClose);
+  const popupContainer = useRef(document.createElement('div'));
+  const mapPopup = useRef<Popup>();
+  onAreaClickRef.current = onAreaClick;
+  onPopupCloseRef.current = onPopupClose;
 
   useEffect(() => {
     map.current = new Map({
@@ -322,6 +342,30 @@ const CampaignMap = ({
       setSitesLayers(map.current, sitesData.current);
     });
     onLoadRef.current(map.current);
+    const hitLayer = `${LOCATIONS_SOURCE}-hit`;
+    map.current.on('click', hitLayer, event => {
+      const identifier = event.features?.[0]?.properties?.identifier;
+      if (identifier) onAreaClickRef.current(identifier, [event.lngLat.lng, event.lngLat.lat]);
+    });
+    map.current.on('click', event => {
+      if (!map.current?.getLayer(hitLayer)) return;
+      if (!map.current.queryRenderedFeatures(event.point, { layers: [hitLayer] }).length) onPopupCloseRef.current();
+    });
+    map.current.on('mouseenter', hitLayer, () => {
+      if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+    });
+    map.current.on('mouseleave', hitLayer, () => {
+      if (map.current) map.current.getCanvas().style.cursor = '';
+    });
+    mapPopup.current = new Popup({
+      closeButton: false,
+      closeOnClick: false,
+      maxWidth: '300px',
+      offset: 8,
+      className: styles.popup
+    })
+      .setDOMContent(popupContainer.current)
+      .on('close', () => onPopupCloseRef.current());
     return () => map.current?.remove();
   }, []);
 
@@ -418,7 +462,23 @@ const CampaignMap = ({
     else current.once('idle', () => setSitesLayers(current, sitesData.current));
   }, [sites]);
 
-  return <div ref={mapContainer} className={styles.map} />;
+  const popupLngLat = popup?.lngLat;
+  useEffect(() => {
+    if (!map.current || !mapPopup.current) return;
+    if (!popupLngLat) {
+      if (mapPopup.current.isOpen()) mapPopup.current.remove();
+      return;
+    }
+    mapPopup.current.setLngLat(popupLngLat);
+    if (!mapPopup.current.isOpen()) mapPopup.current.addTo(map.current);
+  }, [popupLngLat]);
+
+  return (
+    <>
+      <div ref={mapContainer} className={styles.map} />
+      {popup && createPortal(popup.content, popupContainer.current)}
+    </>
+  );
 };
 
 // Memoised: the map only needs to update when its own props change

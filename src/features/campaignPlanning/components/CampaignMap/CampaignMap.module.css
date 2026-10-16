@@ -8,3 +8,30 @@
 .map :global(.mapboxgl-ctrl-logo) {
   display: none;
 }
+
+.popup :global(.mapboxgl-popup-content) {
+  padding: 0;
+  border-radius: 14px;
+  background: none;
+  box-shadow: none;
+}
+
+.popup:global(.mapboxgl-popup-anchor-top) :global(.mapboxgl-popup-tip),
+.popup:global(.mapboxgl-popup-anchor-top-left) :global(.mapboxgl-popup-tip),
+.popup:global(.mapboxgl-popup-anchor-top-right) :global(.mapboxgl-popup-tip) {
+  border-bottom-color: #fff;
+}
+
+.popup:global(.mapboxgl-popup-anchor-bottom) :global(.mapboxgl-popup-tip),
+.popup:global(.mapboxgl-popup-anchor-bottom-left) :global(.mapboxgl-popup-tip),
+.popup:global(.mapboxgl-popup-anchor-bottom-right) :global(.mapboxgl-popup-tip) {
+  border-top-color: #fff;
+}
+
+.popup:global(.mapboxgl-popup-anchor-left) :global(.mapboxgl-popup-tip) {
+  border-right-color: #fff;
+}
+
+.popup:global(.mapboxgl-popup-anchor-right) :global(.mapboxgl-popup-tip) {
+  border-left-color: #fff;
+}

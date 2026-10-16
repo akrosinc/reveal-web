@@ -53,6 +53,8 @@ export interface LocationFeature {
   properties: HierarchyNodeProperties & {
     id: string;
     metadata: LocationMetadata[];
+    assigned?: boolean;
+    population?: { sum?: number } | string;
   };
   ancestry: string[];
 }
@@ -106,6 +108,7 @@ export interface RasterDataset {
 // Area assigned to the campaign (plan target area), as Campaign Management draws it
 export interface TargetArea {
   identifier: string;
+  ancestry?: string[];
   geometry: GeoJSON.Geometry;
   properties: {
     name: string;

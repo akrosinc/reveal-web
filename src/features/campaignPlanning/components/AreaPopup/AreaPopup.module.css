@@ -1,0 +1,164 @@
+.card {
+  composes: font from '../../styles/deck.module.css';
+  width: 260px;
+  padding: 14px 16px 16px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(20, 24, 20, 0.18);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.pin {
+  flex-shrink: 0;
+  margin-top: 3px;
+  font-size: 15px;
+  color: var(--teal);
+}
+
+.titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.level {
+  font-size: 11.5px;
+  color: #8a9088;
+  text-transform: capitalize;
+}
+
+.close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(20, 24, 20, 0.06);
+  font-size: 15px;
+  color: #5c6259;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: rgba(20, 24, 20, 0.1);
+  color: var(--ink);
+}
+
+.population {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--teal-tint);
+}
+
+.label {
+  font-size: 11px;
+  color: var(--muted-ink);
+}
+
+.populationValue {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+}
+
+.swatch {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.rowLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #828880;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowValue {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.actions:empty {
+  display: none;
+}
+
+.primary,
+.danger {
+  padding: 7px 0;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.primary {
+  background: var(--teal);
+}
+
+.primary:hover {
+  background: #066b7e;
+}
+
+.danger {
+  background: var(--danger);
+}
+
+.danger:hover {
+  background: #d93d42;
+}
+
+.primary:disabled,
+.danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.close:focus-visible,
+.primary:focus-visible,
+.danger:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
