@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { useAppSelector } from '../../../../store/hooks';
 import {
+  assignLocationsToPlan,
   deleteSimulationDataset,
   getInstanceHierarchy,
   getInstanceTeams,
@@ -21,17 +22,20 @@ import {
   Team,
   ValueRange
 } from '../../providers/types';
+import { getIdsAfterRemove, getIdsToAdd } from '../../utils/campaign';
 import { getValueBounds } from '../../utils/datasets';
 import { findPath } from '../../utils/hierarchyTree';
 import { splitRasterDatasets } from '../../utils/rasters';
 import AddDatasetDialog from '../AddDatasetDialog';
 import AddRasterDialog from '../AddRasterDialog';
+import AreaPopup from '../AreaPopup';
 import BottomTable from '../BottomTable';
 import CampaignMap from '../CampaignMap';
 import LeftPanel from '../LeftPanel';
 import MapLegend from '../MapLegend';
 import MapTools from '../MapTools';
 import RightPanel from '../RightPanel';
+import TeamAssignDialog from '../TeamAssignDialog';
 import TopBar from '../TopBar';
 import styles from './CampaignPlanning.module.css';
 
@@ -185,6 +189,61 @@ const CampaignPlanning = () => {
     return children.length ? children : locations;
   }, [locations, selectedNode]);
 
+  const [openArea, setOpenArea] = useState<{ id: string; lngLat: [number, number] }>();
+  const [assignedOverrides, setAssignedOverrides] = useState<Record<string, boolean>>({});
+  const [isCampaignSaving, setIsCampaignSaving] = useState(false);
+  const [isTeamDialogOpen, setIsTeamDialogOpen] = useState(false);
+  const openLocation = useMemo(
+    () => (openArea ? mapLocations.find(location => location.identifier === openArea.id) : undefined),
+    [openArea, mapLocations]
+  );
+  const isOpenLocationAssigned = openLocation
+    ? assignedOverrides[openLocation.identifier] ?? !!openLocation.properties.assigned
+    : false;
+  const openAreaPopup = useCallback((id: string, lngLat: [number, number]) => setOpenArea({ id, lngLat }), []);
+  const closeAreaPopup = useCallback(() => setOpenArea(undefined), []);
+
+  useEffect(() => {
+    setOpenArea(undefined);
+    setIsTeamDialogOpen(false);
+  }, [selectedNode]);
+
+  const reloadTargetAreas = useCallback(() => {
+    if (!planId) return;
+    getPlanSimulation(planId)
+      .then(res => setSimulation(current => current && { ...current, targetAreas: res.targetAreas }))
+      .catch(err => toast.error(err));
+  }, [planId]);
+
+  const toggleCampaign = () => {
+    if (!planId || !openLocation) return;
+    const id = openLocation.identifier;
+    const ancestry = openLocation.ancestry ?? [];
+    const ids = isOpenLocationAssigned
+      ? getIdsAfterRemove(hierarchy, id, ancestry, targetAreas)
+      : getIdsToAdd(hierarchy, id, ancestry, targetAreas);
+    const changedIds = isOpenLocationAssigned
+      ? getIdsToAdd(hierarchy, id, ancestry, targetAreas).filter(item => !ids.includes(item))
+      : ids;
+    setIsCampaignSaving(true);
+    assignLocationsToPlan(planId, ids)
+      .then(() => {
+        setAssignedOverrides(current => ({
+          ...current,
+          ...Object.fromEntries(changedIds.map(item => [item, !isOpenLocationAssigned]))
+        }));
+        toast.success(
+          t(isOpenLocationAssigned ? 'campaignPlanning.removedFromCampaign' : 'campaignPlanning.addedToCampaign', {
+            name: openLocation.properties.name
+          })
+        );
+        setOpenArea(undefined);
+        reloadTargetAreas();
+      })
+      .catch(err => toast.error(err))
+      .finally(() => setIsCampaignSaving(false));
+  };
+
   // Lowest/highest value of each dataset among the areas on the map: the dataset filter's slider limits
   const valueBounds = useMemo(() => getValueBounds(mapLocations), [mapLocations]);
 
@@ -335,6 +394,27 @@ const CampaignPlanning = () => {
         hiddenDatasetIds={hiddenDatasetIds}
         rasterDatasets={rasterDatasets}
         hiddenRasterIds={hiddenRasterIds}
+        onAreaClick={openAreaPopup}
+        onPopupClose={closeAreaPopup}
+        popup={
+          openArea && openLocation
+            ? {
+                lngLat: openArea.lngLat,
+                content: (
+                  <AreaPopup
+                    location={openLocation}
+                    datasets={datasets}
+                    isAssigned={isOpenLocationAssigned}
+                    hasTeams={!!teams.length}
+                    isSaving={isCampaignSaving}
+                    onCampaignToggle={toggleCampaign}
+                    onAssignTeam={() => setIsTeamDialogOpen(true)}
+                    onClose={closeAreaPopup}
+                  />
+                )
+              }
+            : undefined
+        }
       />
       <TopBar path={selectedPath} />
       {loading.locations && (
@@ -402,6 +482,16 @@ const CampaignPlanning = () => {
           datasets={datasets}
           onClose={closeAddDataset}
           onAdded={addDataset}
+        />
+      )}
+      {isTeamDialogOpen && planId && openLocation && (
+        <TeamAssignDialog
+          planId={planId}
+          locationId={openLocation.identifier}
+          locationName={openLocation.properties.name}
+          teams={teams}
+          onDone={reloadTargetAreas}
+          onClose={() => setIsTeamDialogOpen(false)}
         />
       )}
       {isAddRasterOpen && simulationId && (
