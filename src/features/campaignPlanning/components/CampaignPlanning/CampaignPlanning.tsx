@@ -1,3 +1,4 @@
+import { Map } from 'mapbox-gl';
 import { CSSProperties, useCallback, useEffect, useMemo, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +19,8 @@ import {
   PlanSimulation,
   RasterDataset,
   SimulationDataset,
+  Site,
+  SiteGeometry,
   Team,
   ValueRange
 } from '../../providers/types';
@@ -32,6 +35,7 @@ import LeftPanel from '../LeftPanel';
 import MapLegend from '../MapLegend';
 import MapTools from '../MapTools';
 import RightPanel from '../RightPanel';
+import SiteWizard from '../SiteWizard';
 import TopBar from '../TopBar';
 import styles from './CampaignPlanning.module.css';
 
@@ -185,6 +189,35 @@ const CampaignPlanning = () => {
     return children.length ? children : locations;
   }, [locations, selectedNode]);
 
+  const [map, setMap] = useState<Map>();
+  const [sitesByArea, setSitesByArea] = useState<Record<string, Site[]>>({});
+  const [siteWizardGeometry, setSiteWizardGeometry] = useState<SiteGeometry>();
+  const selectedId = selectedNode?.identifier;
+  const areaSites = useMemo(() => (selectedId ? sitesByArea[selectedId] ?? [] : []), [sitesByArea, selectedId]);
+  const catchment = useMemo(
+    () => locations.find(location => location.identifier === selectedId)?.geometry,
+    [locations, selectedId]
+  );
+  const snapGeometries = useMemo(
+    () => [
+      ...locations.filter(location => location.geometry).map(location => location.geometry),
+      ...areaSites.flatMap(site => (site.boundary ? [site.boundary] : []))
+    ],
+    [locations, areaSites]
+  );
+  const saveSite = useCallback(
+    (site: Site) => {
+      if (!selectedId) return;
+      setSitesByArea(current => ({ ...current, [selectedId]: [...(current[selectedId] ?? []), site] }));
+      setSiteWizardGeometry(undefined);
+      toast.success(t('campaignPlanning.siteAdded', { name: site.name }));
+    },
+    [selectedId, t]
+  );
+  const closeSiteWizard = useCallback(() => setSiteWizardGeometry(undefined), []);
+
+  useEffect(() => setSiteWizardGeometry(undefined), [selectedId]);
+
   // Lowest/highest value of each dataset among the areas on the map: the dataset filter's slider limits
   const valueBounds = useMemo(() => getValueBounds(mapLocations), [mapLocations]);
 
@@ -335,6 +368,8 @@ const CampaignPlanning = () => {
         hiddenDatasetIds={hiddenDatasetIds}
         rasterDatasets={rasterDatasets}
         hiddenRasterIds={hiddenRasterIds}
+        sites={areaSites}
+        onLoad={setMap}
       />
       <TopBar path={selectedPath} />
       {loading.locations && (
@@ -375,7 +410,13 @@ const CampaignPlanning = () => {
       )}
       {selectedNode && (
         <>
-          <RightPanel node={selectedNode} isCollapsed={isDetailsCollapsed} onCollapsedChange={setIsDetailsCollapsed} />
+          <RightPanel
+            node={selectedNode}
+            isCollapsed={isDetailsCollapsed}
+            onCollapsedChange={setIsDetailsCollapsed}
+            sites={areaSites}
+            onAddSite={setSiteWizardGeometry}
+          />
           <BottomTable
             rows={tableRows}
             locations={locations}
@@ -387,6 +428,18 @@ const CampaignPlanning = () => {
             onSelect={setSelectedNode}
           />
         </>
+      )}
+      {selectedNode && map && siteWizardGeometry && (
+        <SiteWizard
+          key={siteWizardGeometry}
+          map={map}
+          geometry={siteWizardGeometry}
+          areaName={selectedNode.properties.name}
+          catchment={catchment}
+          snapGeometries={snapGeometries}
+          onSave={saveSite}
+          onClose={closeSiteWizard}
+        />
       )}
       <MapLegend
         datasets={datasets}

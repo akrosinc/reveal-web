@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { SiteGroup } from '../../placeholderData';
+import { SiteGroup } from '../../utils/sites';
 import DeckModal from '../DeckModal';
 import modal from '../DeckModal/DeckModal.module.css';
 

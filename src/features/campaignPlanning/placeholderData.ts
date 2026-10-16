@@ -1,48 +1,8 @@
 // Design placeholders: values from the Command Deck mockup, shown until the backend APIs exist
-
-export interface SiteGroup {
-  label: string;
-  mapped: number;
-  target: number;
-  types: { label: string; count: string }[];
-  sites: { name: string; type: string; isMapped: boolean }[];
-}
-
 export const POPULATION = { moh: '5,890', user: '4,000' };
 
-export const ZONES = 5;
-export const SCHOOLS = 4;
-
-export const SITE_GROUPS: SiteGroup[] = [
-  {
-    label: 'Outreach, static, H2R',
-    mapped: 18,
-    target: 18,
-    types: [
-      { label: 'Outreach sites (editable)', count: '—' },
-      { label: 'Static sites (editable)', count: '—' },
-      { label: 'H2R sites (editable)', count: '—' }
-    ],
-    sites: []
-  },
-  {
-    label: 'Mobile, school HPV',
-    mapped: 19,
-    target: 22,
-    types: [
-      { label: 'Mobile sites (editable)', count: '12' },
-      { label: 'School-based HPV sites (editable)', count: '10' }
-    ],
-    sites: [
-      { name: 'Mobile unit 1', type: 'Mobile', isMapped: true },
-      { name: 'Mobile unit 2', type: 'Mobile', isMapped: true },
-      { name: 'Mobile unit 3', type: 'Mobile', isMapped: false },
-      { name: 'Roma Primary', type: 'School HPV', isMapped: true },
-      { name: 'Kaya Secondary', type: 'School HPV', isMapped: true },
-      { name: 'Bongo Primary', type: 'School HPV', isMapped: false }
-    ]
-  }
-];
+export const ZONES = 0;
+export const SCHOOLS = 0;
 
 export const ACTIVITIES = [
   { label: 'S1 — Planning and management', count: 2 },

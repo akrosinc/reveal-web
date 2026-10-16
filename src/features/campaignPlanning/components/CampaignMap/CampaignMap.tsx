@@ -8,8 +8,14 @@ import {
   removeRasterFromMap,
   toggleRasterVisibility
 } from '../../../../utils/rasterHelper';
-import { ASSIGNED_AREA_COLOR, MAP_DEFAULT_CENTER, MAP_DEFAULT_ZOOM, TEAMS_ASSIGNED_AREA_COLOR } from '../../constants';
-import { LocationFeature, RasterDataset, SimulationDataset, TargetArea, ValueRange } from '../../providers/types';
+import {
+  ASSIGNED_AREA_COLOR,
+  MAP_DEFAULT_CENTER,
+  MAP_DEFAULT_ZOOM,
+  SITE_COLOR,
+  TEAMS_ASSIGNED_AREA_COLOR
+} from '../../constants';
+import { LocationFeature, RasterDataset, SimulationDataset, Site, TargetArea, ValueRange } from '../../providers/types';
 import { getDatasetColor } from '../../utils/datasets';
 import styles from './CampaignMap.module.css';
 
@@ -21,6 +27,7 @@ const LOCATIONS_OUTLINE = 'rgba(0, 0, 0, 1)';
 const DATASET_LAYER_PREFIX = `${LOCATIONS_SOURCE}-dataset-`;
 const TARGET_AREAS_SOURCE = 'campaign-target-areas';
 const RASTER_PREFIX = 'campaign-raster-';
+const SITES_SOURCE = 'campaign-sites';
 
 interface Props {
   mapStyle: string;
@@ -34,6 +41,8 @@ interface Props {
   hiddenDatasetIds: string[];
   rasterDatasets: RasterDataset[];
   hiddenRasterIds: string[];
+  sites: Site[];
+  onLoad: (map: Map) => void;
 }
 
 const setRasterLayers = (map: Map, rasters: RasterDataset[], hiddenRasterIds: string[]) => {
@@ -67,6 +76,54 @@ const setRasterLayers = (map: Map, rasters: RasterDataset[], hiddenRasterIds: st
       { opacity, color: primaryColor, colors, beforeLayerId, sourceLayer: rasterId, fieldName: 'class' }
     );
     toggleRasterVisibility(map, id, !hiddenRasterIds.includes(raster.identifier));
+  });
+};
+
+const toSitesCollection = (sites: Site[]): GeoJSON.FeatureCollection => ({
+  type: 'FeatureCollection',
+  features: sites.flatMap(site => [
+    ...(site.boundary
+      ? [{ type: 'Feature' as const, geometry: site.boundary, properties: { name: site.name, kind: 'boundary' } }]
+      : []),
+    { type: 'Feature' as const, geometry: site.location, properties: { name: site.name, kind: 'location' } }
+  ])
+});
+
+const setSitesLayers = (map: Map, data: GeoJSON.FeatureCollection) => {
+  const source = map.getSource(SITES_SOURCE) as GeoJSONSource | undefined;
+  if (source) {
+    source.setData(data);
+    return;
+  }
+  map.addSource(SITES_SOURCE, { type: 'geojson', data });
+  map.addLayer({
+    id: `${SITES_SOURCE}-fill`,
+    type: 'fill',
+    source: SITES_SOURCE,
+    filter: ['==', ['get', 'kind'], 'boundary'],
+    paint: { 'fill-color': SITE_COLOR, 'fill-opacity': 0.15 }
+  });
+  map.addLayer({
+    id: `${SITES_SOURCE}-line`,
+    type: 'line',
+    source: SITES_SOURCE,
+    filter: ['==', ['get', 'kind'], 'boundary'],
+    paint: { 'line-color': SITE_COLOR, 'line-width': 2 }
+  });
+  map.addLayer({
+    id: `${SITES_SOURCE}-point`,
+    type: 'circle',
+    source: SITES_SOURCE,
+    filter: ['==', ['get', 'kind'], 'location'],
+    paint: { 'circle-radius': 6, 'circle-color': SITE_COLOR, 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
+  });
+  map.addLayer({
+    id: `${SITES_SOURCE}-label`,
+    type: 'symbol',
+    source: SITES_SOURCE,
+    filter: ['==', ['get', 'kind'], 'location'],
+    layout: { 'text-field': ['get', 'name'], 'text-size': 11, 'text-offset': [0, 1.2], 'text-anchor': 'top' },
+    paint: { 'text-color': SITE_COLOR, 'text-halo-color': '#ffffff', 'text-halo-width': 1 }
   });
 };
 
@@ -223,7 +280,9 @@ const CampaignMap = ({
   showAssigned,
   hiddenDatasetIds,
   rasterDatasets,
-  hiddenRasterIds
+  hiddenRasterIds,
+  sites,
+  onLoad
 }: Props) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<Map>();
@@ -237,6 +296,8 @@ const CampaignMap = ({
   const hiddenDatasetIdsRef = useRef(hiddenDatasetIds);
   const rasterDatasetsRef = useRef(rasterDatasets);
   const hiddenRasterIdsRef = useRef(hiddenRasterIds);
+  const sitesData = useRef<GeoJSON.FeatureCollection>(toSitesCollection(sites));
+  const onLoadRef = useRef(onLoad);
 
   useEffect(() => {
     map.current = new Map({
@@ -258,7 +319,9 @@ const CampaignMap = ({
       );
       setTargetAreasLayer(map.current, targetAreasData.current, showAssignedRef.current);
       setRasterLayers(map.current, rasterDatasetsRef.current, hiddenRasterIdsRef.current);
+      setSitesLayers(map.current, sitesData.current);
     });
+    onLoadRef.current(map.current);
     return () => map.current?.remove();
   }, []);
 
@@ -346,6 +409,14 @@ const CampaignMap = ({
         );
     });
   }, [hiddenRasterIds]);
+
+  useEffect(() => {
+    sitesData.current = toSitesCollection(sites);
+    const current = map.current;
+    if (!current) return;
+    if (current.isStyleLoaded()) setSitesLayers(current, sitesData.current);
+    else current.once('idle', () => setSitesLayers(current, sitesData.current));
+  }, [sites]);
 
   return <div ref={mapContainer} className={styles.map} />;
 };
