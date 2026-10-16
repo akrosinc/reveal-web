@@ -2,10 +2,13 @@ import { CSSProperties, useCallback, useEffect, useMemo, useState } from 'react'
 import { Spinner } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
+import { CAMPAIGN_PLANNING_INSTANCE_SELECTION } from '../../../../constants';
+import { useAuthorization } from '../../../../hooks/useAuthorization';
 import { useAppSelector } from '../../../../store/hooks';
 import {
   deleteSimulationDataset,
   getInstanceHierarchy,
+  getInstances,
   getInstanceTeams,
   getLocationData,
   getPlanSimulation,
@@ -14,6 +17,7 @@ import {
 import { MAP_STYLE_LIGHT } from '../../constants';
 import {
   HierarchyNode,
+  InstanceListItem,
   LocationFeature,
   PlanSimulation,
   RasterDataset,
@@ -40,8 +44,13 @@ const TABLE_SPACE = { none: '0px', bar: '55px', sheet: '274px' };
 
 const CampaignPlanning = () => {
   const { t } = useTranslation();
-  const instanceId = useAppSelector(state => state.instanceContext.selectedInstance?.identifier);
-  const planId = useAppSelector(state => state.instanceContext.instancePlan?.identifier);
+  const contextInstanceId = useAppSelector(state => state.instanceContext.selectedInstance?.identifier);
+  const contextPlanId = useAppSelector(state => state.instanceContext.instancePlan?.identifier);
+  const canSelectInstance = useAuthorization([CAMPAIGN_PLANNING_INSTANCE_SELECTION]);
+  const [instances, setInstances] = useState<InstanceListItem[]>([]);
+  const [viewedInstance, setViewedInstance] = useState<InstanceListItem>();
+  const instanceId = viewedInstance ? viewedInstance.identifier : contextInstanceId;
+  const planId = viewedInstance ? viewedInstance.planIdentifier : contextPlanId;
   const [hierarchy, setHierarchy] = useState<HierarchyNode[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedNode, setSelectedNode] = useState<HierarchyNode>();
@@ -74,6 +83,25 @@ const CampaignPlanning = () => {
     []
   );
   const tableSpace = selectedNode ? TABLE_SPACE[isTableOpen ? 'sheet' : 'bar'] : TABLE_SPACE.none;
+
+  useEffect(() => setViewedInstance(undefined), [contextInstanceId]);
+
+  useEffect(() => {
+    setInstances([]);
+    if (!canSelectInstance) return;
+    let isCurrent = true;
+    getInstances()
+      .then(res => isCurrent && setInstances(res.content ?? []))
+      .catch(err => isCurrent && toast.error(err));
+    return () => {
+      isCurrent = false;
+    };
+  }, [canSelectInstance]);
+
+  const selectInstance = useCallback(
+    (id: string) => setViewedInstance(instances.find(instance => instance.identifier === id)),
+    [instances]
+  );
 
   // Each request below ignores its response once the instance / plan / area has changed (isCurrent), so a slow answer
   // for the previous one can't overwrite the new data; the previous data is cleared right away instead of shown.
@@ -170,6 +198,10 @@ const CampaignPlanning = () => {
         current.includes(datasetId) ? current.filter(id => id !== datasetId) : [...current, datasetId]
       ),
     []
+  );
+  const setAllDatasetsHidden = useCallback(
+    (isHidden: boolean) => setHiddenDatasetIds(isHidden ? datasets.map(dataset => dataset.identifier) : []),
+    [datasets]
   );
   const [hiddenRasterIds, setHiddenRasterIds] = useState<string[]>([]);
   const toggleRasterVisibility = useCallback(
@@ -343,8 +375,11 @@ const CampaignPlanning = () => {
           {t('campaignPlanning.loadingLocations')}
         </div>
       )}
-      {instanceId ? (
+      {instanceId || instances.length ? (
         <LeftPanel
+          instances={instances}
+          instanceId={instanceId}
+          onInstanceSelect={selectInstance}
           hierarchy={hierarchy}
           datasets={datasets}
           rasterDatasets={rasterDatasets}
@@ -357,6 +392,7 @@ const CampaignPlanning = () => {
           onDatasetSave={saveDataset}
           hiddenDatasetIds={hiddenDatasetIds}
           onDatasetVisibilityToggle={toggleDatasetVisibility}
+          onAllDatasetsVisibilityChange={setAllDatasetsHidden}
           onDatasetDelete={deleteDataset}
           onAddRaster={openAddRaster}
           hiddenRasterIds={hiddenRasterIds}

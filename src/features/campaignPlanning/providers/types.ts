@@ -18,6 +18,13 @@ export interface InstanceHierarchy {
   geoTree: HierarchyNode[];
 }
 
+export interface InstanceListItem {
+  identifier: string;
+  instanceName: string;
+  planIdentifier?: string;
+  planTitle?: string;
+}
+
 export interface TeamMember {
   identifier: string;
   username: string;

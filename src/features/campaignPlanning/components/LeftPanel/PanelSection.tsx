@@ -7,10 +7,11 @@ interface Props {
   title: string;
   // Button at the right of the heading (e.g. the Datasets "+")
   action?: ReactNode;
+  tools?: ReactNode;
   children: ReactNode;
 }
 
-const PanelSection = ({ title, action, children }: Props) => {
+const PanelSection = ({ title, action, tools, children }: Props) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
   const toggle = () => setIsOpen(open => !open);
@@ -22,6 +23,7 @@ const PanelSection = ({ title, action, children }: Props) => {
           {title}
         </button>
         <div className={styles.headerActions}>
+          {tools}
           <button
             type="button"
             className={styles.sectionChevron}

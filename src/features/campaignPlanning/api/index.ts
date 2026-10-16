@@ -1,13 +1,22 @@
 import api from '../../../api/axios';
+import { PageableModel } from '../../../api/providers';
 import {
   DatasetDeleteRequest,
   DatasetUpdateRequest,
   InstanceHierarchy,
+  InstanceListItem,
   LocationDataRequest,
   LocationFeature,
   PlanSimulation,
   Team
 } from '../providers/types';
+
+export const getInstances = async (): Promise<PageableModel<InstanceListItem>> => {
+  const data = await api
+    .get<PageableModel<InstanceListItem>>('instance?page=0&size=1000')
+    .then(response => response.data);
+  return data;
+};
 
 export const getInstanceHierarchy = async (instanceId: string): Promise<InstanceHierarchy> => {
   const data = await api

@@ -41,7 +41,7 @@ import { MultiValue, SingleValue } from 'react-select';
 import Select from 'react-select';
 import PeopleDetailsModal from './PeopleDetailsModal';
 import { bbox, Geometry, polygon } from '@turf/turf';
-import { LngLatBounds, Map as MapBoxMap } from 'mapbox-gl';
+import { GeoJSONSource, LngLatBounds, Map as MapBoxMap } from 'mapbox-gl';
 import SimulationResultExpandingTable from '../../../components/Table/SimulationResultExpandingTable';
 import DownloadSimulationResultsModal from './modals/DownloadSimulationResultsModal';
 import UploadSimulationData from './modals/UploadSimulationData';
@@ -2467,9 +2467,45 @@ const Simulation = () => {
     setSelectedLocationChildren(prev => [...prev, ...data]);
   };
 
+  const clearInstanceData = () => {
+    if (map.current) {
+      try {
+        const style = map.current.getStyle();
+        style.layers
+          ?.filter(layer => layer.id.startsWith('layer-raster-'))
+          .forEach(layer => map.current?.removeLayer(layer.id));
+        Object.keys(style.sources)
+          .filter(id => id.startsWith('source-raster-'))
+          .forEach(id => map.current?.removeSource(id));
+        Object.entries(style.sources).forEach(([id, source]) => {
+          if (source.type === 'geojson' && !id.startsWith('mapbox-gl-draw')) {
+            (map.current?.getSource(id) as GeoJSONSource).setData({ type: 'FeatureCollection', features: [] });
+          }
+        });
+      } catch (error) {
+        console.error('Failed to clear the map:', error);
+      }
+    }
+    dispatch({ type: 'SET_DETAILS_POPUP_REF', payload: null });
+    dispatch({ type: 'CLEAR_SELECTION' });
+    setPolygonsWithData(undefined);
+    setSelectedLocationChildren([]);
+    setGeometry(null);
+    setCurrentLocationId(undefined);
+    setToLocation(undefined);
+    setRasterDatasets([]);
+    setClickedRasterValue(null);
+    setChartData({});
+    setTotals({});
+    setLabels([]);
+  };
+
   const handlePlanSelectionChange = (option: SingleValue<{ value: string; label: string }>) => {
     let found = instances?.find((plan: any) => plan.identifier === option?.value);
     if (found) {
+      if (found.identifier !== selectedPlan?.identifier) {
+        clearInstanceData();
+      }
       setSelectedPlan(found);
     }
   };
@@ -2494,21 +2530,23 @@ const Simulation = () => {
                     handlePlanSelectionChange(selectedOption);
                   }}
                 /> */}
-                <div style={{ height: 400 }}>
-                  <Select
-                    placeholder={'Select Instances'}
-                    className={styles.select_small}
-                    options={instances?.map((plan: any) => {
-                      return {
-                        value: plan.identifier,
-                        label: plan.instanceName
-                      };
-                    })}
-                    onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
-                      handlePlanSelectionChange(selectedOption);
-                    }}
-                  />
-                </div>
+                <Select
+                  placeholder={'Select Instances'}
+                  className={styles.select_small}
+                  options={instances?.map((plan: any) => {
+                    return {
+                      value: plan.identifier,
+                      label: plan.instanceName
+                    };
+                  })}
+                  onChange={(selectedOption: SingleValue<{ value: string; label: string }>) => {
+                    handlePlanSelectionChange(selectedOption);
+                  }}
+                  menuPortalTarget={document.body}
+                  styles={{
+                    menuPortal: base => ({ ...base, zIndex: 9999 })
+                  }}
+                />
                 {/* {plans.map(plan => (
                   <>
                     <br></br>

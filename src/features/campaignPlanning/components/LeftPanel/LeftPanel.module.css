@@ -10,6 +10,7 @@
   max-height: calc(100% - 84px - var(--table-space, 0px));
   padding: 15px;
   border-radius: 16px;
+  overflow: visible;
 }
 
 /* Collapsed state (design state 3): the card is replaced by this toggle */
@@ -48,6 +49,127 @@
   flex-shrink: 0;
   gap: 6px;
   margin-bottom: 11px;
+}
+
+.instance {
+  flex-shrink: 0;
+  margin-bottom: 11px;
+}
+
+.instanceToggle {
+  composes: buttonReset from '../../styles/deck.module.css';
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 11px;
+  border: 1px solid #dbd9d2;
+  border-radius: 9px;
+  background: #f1ede5;
+  font-size: 12px;
+  text-align: left;
+  color: var(--ink);
+}
+
+.instanceToggle::after {
+  display: none !important;
+}
+
+.instanceToggle:hover,
+.instanceToggle:focus-visible,
+.instanceToggle[aria-expanded='true'] {
+  border-color: var(--teal);
+  outline: none;
+}
+
+.instanceName,
+.instancePlaceholder {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.instancePlaceholder {
+  color: #828880;
+}
+
+.instanceChevron {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--muted-ink);
+  transition: transform 0.15s;
+}
+
+.instanceToggle[aria-expanded='true'] .instanceChevron {
+  transform: rotate(180deg);
+}
+
+.instanceMenu {
+  composes: scroll from '../../styles/deck.module.css';
+  width: 216px;
+  max-height: 260px;
+  margin-top: 6px !important;
+  padding: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+  background-image: none !important;
+  box-shadow: 0 10px 26px rgba(88, 90, 82, 0.14);
+  font-size: 12px !important;
+}
+
+.instanceMenu .instanceItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  padding: 5px 9px !important;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ink) !important;
+}
+
+.instanceMenu .instanceItem:hover,
+.instanceMenu .instanceItem:focus {
+  background-color: rgba(20, 24, 20, 0.05) !important;
+  color: var(--ink) !important;
+}
+
+.instanceMenu .instanceItem:global(.active),
+.instanceMenu .instanceItem:active {
+  background-color: var(--teal-tint) !important;
+  color: var(--ink) !important;
+}
+
+.instanceText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.instanceItemName,
+.instancePlan {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.instanceItemName {
+  font-weight: 500;
+}
+
+.instancePlan {
+  font-size: 10px;
+  color: #828880;
+}
+
+.instanceCheck {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--teal);
 }
 
 .search {
@@ -133,6 +255,14 @@
   height: 20px;
   border-radius: 6px;
   font-size: 10px;
+}
+
+.sectionTool {
+  composes: iconButton from '../../styles/deck.module.css';
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 12px;
 }
 
 .sectionChevron svg {
