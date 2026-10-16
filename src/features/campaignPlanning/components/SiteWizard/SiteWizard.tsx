@@ -5,6 +5,7 @@ import { BsArrowCounterclockwise, BsCheckLg, BsX } from 'react-icons/bs';
 import { SITE_COLOR, SITE_SNAP_TOLERANCE_PX, SITE_TYPES } from '../../constants';
 import { Site, SiteGeometry } from '../../providers/types';
 import {
+  getSegmentOutsidePoints,
   getSnapSegments,
   isPointInside,
   isPolygonInside,
@@ -23,6 +24,8 @@ const STEPS: Record<SiteGeometry, Step[]> = {
 };
 
 const DRAFT_SOURCE = 'campaign-site-draft';
+
+const EDGE_TOLERANCE_PX = 2;
 
 const EMPTY_DRAFT: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] };
 
@@ -62,11 +65,32 @@ const drawDraft = (map: Map, data: GeoJSON.FeatureCollection) => {
       paint: { 'line-color': SITE_COLOR, 'line-width': 2, 'line-dasharray': [2, 2] }
     });
     map.addLayer({
+      id: `${DRAFT_SOURCE}-outside`,
+      type: 'line',
+      source: DRAFT_SOURCE,
+      filter: ['==', ['get', 'kind'], 'outside'],
+      paint: { 'line-color': '#e5484d', 'line-width': 2, 'line-dasharray': [2, 2] }
+    });
+    map.addLayer({
+      id: `${DRAFT_SOURCE}-closing`,
+      type: 'line',
+      source: DRAFT_SOURCE,
+      filter: ['==', ['get', 'kind'], 'closing'],
+      paint: { 'line-color': SITE_COLOR, 'line-width': 1.5, 'line-opacity': 0.45, 'line-dasharray': [2, 2] }
+    });
+    map.addLayer({
       id: `${DRAFT_SOURCE}-vertex`,
       type: 'circle',
       source: DRAFT_SOURCE,
       filter: ['==', ['get', 'kind'], 'vertex'],
       paint: { 'circle-radius': 4, 'circle-color': '#fff', 'circle-stroke-color': SITE_COLOR, 'circle-stroke-width': 2 }
+    });
+    map.addLayer({
+      id: `${DRAFT_SOURCE}-first`,
+      type: 'circle',
+      source: DRAFT_SOURCE,
+      filter: ['==', ['get', 'kind'], 'first'],
+      paint: { 'circle-radius': 6, 'circle-color': SITE_COLOR, 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
     });
     map.addLayer({
       id: `${DRAFT_SOURCE}-snap`,
@@ -126,6 +150,15 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
   const [location, setLocation] = useState<Position>();
   const [error, setError] = useState('');
   const segments = useMemo(() => getSnapSegments(snapGeometries), [snapGeometries]);
+  const catchmentSegments = useMemo(() => (catchment ? getSnapSegments([catchment]) : []), [catchment]);
+  const isLineInside = useCallback(
+    (from: Position, to: Position) =>
+      !!catchment &&
+      getSegmentOutsidePoints(from, to, catchment).every(
+        point => !!snapPosition(map, point, catchmentSegments, EDGE_TOLERANCE_PX)
+      ),
+    [map, catchment, catchmentSegments]
+  );
   const draft = useRef<GeoJSON.FeatureCollection>(EMPTY_DRAFT);
   const stepIndex = steps.indexOf(step);
   const isLastStep = stepIndex === steps.length - 1;
@@ -135,15 +168,24 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
     (step === 'location' && !!location);
 
   const render = useCallback(
-    (cursor?: Position, snapped?: Position) => {
+    (cursor?: Position, snapped?: Position, isOutside?: boolean) => {
       const features: GeoJSON.Feature[] = [];
       if (isClosed) features.push(feature(toPolygon(vertices), 'boundary'));
       else if (vertices.length > 1) features.push(feature({ type: 'LineString', coordinates: vertices }, 'path'));
       if (!isClosed && step === 'boundary' && cursor && vertices.length) {
-        features.push(feature({ type: 'LineString', coordinates: [vertices[vertices.length - 1], cursor] }, 'preview'));
+        features.push(
+          feature(
+            { type: 'LineString', coordinates: [vertices[vertices.length - 1], cursor] },
+            isOutside ? 'outside' : 'preview'
+          )
+        );
+        if (vertices.length > 1)
+          features.push(feature({ type: 'LineString', coordinates: [cursor, vertices[0]] }, 'closing'));
       }
       if (step === 'boundary')
-        vertices.forEach(vertex => features.push(feature({ type: 'Point', coordinates: vertex }, 'vertex')));
+        vertices.forEach((vertex, index) =>
+          features.push(feature({ type: 'Point', coordinates: vertex }, index || isClosed ? 'vertex' : 'first'))
+        );
       if (snapped) features.push(feature({ type: 'Point', coordinates: snapped }, 'snap'));
       if (location) features.push(feature({ type: 'Point', coordinates: location }, 'location'));
       draft.current = { type: 'FeatureCollection', features };
@@ -151,6 +193,21 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
     },
     [map, step, vertices, isClosed, location]
   );
+
+  const canFinish = step === 'boundary' && !isClosed && vertices.length > 2;
+
+  const finish = useCallback(() => {
+    if (!catchment) return;
+    if (isSelfIntersecting(vertices)) setError(t('campaignPlanning.siteBoundaryCrosses'));
+    else if (!isLineInside(vertices[vertices.length - 1], vertices[0]))
+      setError(t('campaignPlanning.siteLineOutside', { name: areaName }));
+    else if (!isPolygonInside(vertices, catchment))
+      setError(t('campaignPlanning.siteBoundaryOutside', { name: areaName }));
+    else {
+      setIsClosed(true);
+      setError('');
+    }
+  }, [vertices, catchment, isLineInside, areaName, t]);
 
   useEffect(() => {
     const redraw = () => drawDraft(map, draft.current);
@@ -179,8 +236,9 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
     };
 
     const move = (event: MapMouseEvent) => {
-      const { position, snapped } = getTarget(event);
-      render(position, snapped);
+      const { position, snapped, closes } = getTarget(event);
+      const last = vertices[vertices.length - 1];
+      render(position, snapped, step === 'boundary' && !isClosed && !closes && !!last && !isLineInside(last, position));
     };
 
     const click = (event: MapMouseEvent) => {
@@ -201,13 +259,13 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
       }
       if (isClosed) return;
       if (closes) {
-        if (isSelfIntersecting(vertices)) setError(t('campaignPlanning.siteBoundaryCrosses'));
-        else if (!isPolygonInside(vertices, catchment))
-          setError(t('campaignPlanning.siteBoundaryOutside', { name: areaName }));
-        else {
-          setIsClosed(true);
-          setError('');
-        }
+        finish();
+        return;
+      }
+      const last = vertices[vertices.length - 1];
+      if (last && map.project(last).dist(event.point) <= SITE_SNAP_TOLERANCE_PX) return;
+      if (last && !isLineInside(last, position)) {
+        setError(t('campaignPlanning.siteLineOutside', { name: areaName }));
         return;
       }
       if (!snapped && !isPointInside(position, catchment)) {
@@ -218,15 +276,31 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
       setError('');
     };
 
+    const doubleClick = (event: MapMouseEvent) => {
+      event.preventDefault();
+      if (step === 'boundary' && !isClosed && vertices.length > 2) finish();
+    };
+
+    const keyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter' || step !== 'boundary' || isClosed || vertices.length < 3) return;
+      if (event.target instanceof Element && event.target.closest('button, input, select, textarea')) return;
+      event.preventDefault();
+      finish();
+    };
+
     map.on('mousemove', move);
     map.on('click', click);
+    map.on('dblclick', doubleClick);
+    document.addEventListener('keydown', keyDown);
     return () => {
       map.off('mousemove', move);
       map.off('click', click);
+      map.off('dblclick', doubleClick);
+      document.removeEventListener('keydown', keyDown);
       canvas.style.cursor = '';
       map.doubleClickZoom.enable();
     };
-  }, [map, render, step, vertices, isClosed, catchment, segments, geometry, areaName, t]);
+  }, [map, render, finish, isLineInside, step, vertices, isClosed, catchment, segments, geometry, areaName, t]);
 
   const undo = () => {
     if (isClosed) setIsClosed(false);
@@ -345,6 +419,15 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
           {step === 'boundary' && (
             <div className={styles.tools}>
               <span>{t('campaignPlanning.siteCorners', { count: vertices.length })}</span>
+              <button
+                type="button"
+                id="campaign-planning-site-finish"
+                className={styles.tool}
+                disabled={!canFinish}
+                onClick={finish}
+              >
+                <BsCheckLg /> {t('campaignPlanning.finishShape')}
+              </button>
               <button
                 type="button"
                 id="campaign-planning-site-undo"

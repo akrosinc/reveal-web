@@ -1,4 +1,14 @@
-import { area, booleanPointInPolygon, difference, kinks, MultiPolygon, Polygon, polygon } from '@turf/turf';
+import {
+  area,
+  booleanPointInPolygon,
+  difference,
+  kinks,
+  lineIntersect,
+  lineString,
+  MultiPolygon,
+  Polygon,
+  polygon
+} from '@turf/turf';
 import { Map } from 'mapbox-gl';
 import { SITE_GEOMETRIES, SITE_SNAP_TOLERANCE_PX, SITE_TYPES } from '../constants';
 import { Site } from '../providers/types';
@@ -106,6 +116,24 @@ export const snapPosition = (
 export const isPointInside = (position: Position, geometry: GeoJSON.Geometry) =>
   (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') &&
   booleanPointInPolygon(position, geometry as Polygon | MultiPolygon);
+
+export const getSegmentOutsidePoints = (from: Position, to: Position, geometry: GeoJSON.Geometry): Position[] => {
+  if (geometry.type !== 'Polygon' && geometry.type !== 'MultiPolygon') return [from, to];
+  const dx = to[0] - from[0];
+  const dy = to[1] - from[1];
+  const length = dx * dx + dy * dy;
+  if (!length) return [];
+  const crossings = lineIntersect(lineString([from, to]), geometry as Polygon | MultiPolygon).features.map(point => {
+    const [x, y] = point.geometry.coordinates;
+    return ((x - from[0]) * dx + (y - from[1]) * dy) / length;
+  });
+  const stops = [0, ...crossings, 1].sort((a, b) => a - b);
+  return stops.slice(1).flatMap((end, index) => {
+    const t = (stops[index] + end) / 2;
+    const middle: Position = [from[0] + t * dx, from[1] + t * dy];
+    return booleanPointInPolygon(middle, geometry as Polygon | MultiPolygon) ? [] : [middle];
+  });
+};
 
 export const toPolygon = (ring: Position[]): GeoJSON.Polygon => ({
   type: 'Polygon',

@@ -11,10 +11,11 @@ interface Props {
   zonesSchools: ZonesSchoolsCounts;
   onEditZonesSchools: () => void;
   onOpenGroup: (group: SiteGroup) => void;
+  canAddSites: boolean;
   onAddSite: (geometry: SiteGeometry) => void;
 }
 
-const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, onAddSite }: Props) => {
+const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, canAddSites, onAddSite }: Props) => {
   const { t } = useTranslation();
 
   return (
@@ -55,9 +56,14 @@ const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, o
             type="button"
             id={`campaign-planning-add-${group.geometry}-site-button`}
             className={styles.editButton}
-            title={t('campaignPlanning.addSiteTo', { name: group.label })}
+            title={
+              canAddSites
+                ? t('campaignPlanning.addSiteTo', { name: group.label })
+                : t('campaignPlanning.sitesLowestLevelOnly')
+            }
             aria-label={t('campaignPlanning.addSiteTo', { name: group.label })}
-            onClick={() => onAddSite(group.geometry)}
+            aria-disabled={!canAddSites}
+            onClick={() => canAddSites && onAddSite(group.geometry)}
           >
             <BsPencil />
           </button>

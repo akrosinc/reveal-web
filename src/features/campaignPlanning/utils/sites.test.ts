@@ -1,5 +1,6 @@
 import { Site } from '../providers/types';
 import {
+  getSegmentOutsidePoints,
   getSiteGroups,
   getSnapSegments,
   isPointInside,
@@ -108,5 +109,27 @@ describe('inside checks', () => {
 
   it('closes the ring', () => {
     expect(toPolygon(inner).coordinates[0]).toHaveLength(4);
+  });
+
+  it('finds the part of a line that leaves the area', () => {
+    const notch: GeoJSON.Polygon = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [0, 0],
+          [10, 0],
+          [10, 10],
+          [6, 10],
+          [6, 4],
+          [4, 4],
+          [4, 10],
+          [0, 10],
+          [0, 0]
+        ]
+      ]
+    };
+    expect(getSegmentOutsidePoints([1, 1], [9, 1], notch)).toEqual([]);
+    expect(getSegmentOutsidePoints([0, 0], [10, 0], notch)).toEqual([]);
+    expect(getSegmentOutsidePoints([2, 8], [8, 8], notch)).toEqual([[5, 8]]);
   });
 });

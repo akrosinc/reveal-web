@@ -99,6 +99,7 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
               zonesSchools={zonesSchools}
               onEditZonesSchools={() => setIsZonesSchoolsOpen(true)}
               onOpenGroup={setOpenSiteGroup}
+              canAddSites={!node.children?.length}
               onAddSite={onAddSite}
             />
           )}

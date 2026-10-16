@@ -156,6 +156,13 @@
   margin-top: 6px;
 }
 
+.siteRow .editButton[aria-disabled='true'] {
+  background: none;
+  color: var(--muted-ink);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .statusTop {
   display: flex;
   justify-content: space-between;
