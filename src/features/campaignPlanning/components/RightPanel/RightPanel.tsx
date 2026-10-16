@@ -1,14 +1,16 @@
-import { memo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronUp } from 'react-icons/bs';
-import { POPULATION, SiteGroup } from '../../placeholderData';
-import { HierarchyNode } from '../../providers/types';
+import { POPULATION, SCHOOLS, ZONES } from '../../placeholderData';
+import { HierarchyNode, Site, SiteGeometry } from '../../providers/types';
+import { getSiteGroups, SiteGroup } from '../../utils/sites';
 import ActivityTab from './ActivityTab';
 import DemographicsTab from './DemographicsTab';
 import Field from './Field';
 import PopulationModal from './PopulationModal';
 import SiteGroupModal from './SiteGroupModal';
 import SitesTab from './SitesTab';
+import ZonesSchoolsModal, { ZonesSchoolsCounts } from './ZonesSchoolsModal';
 import styles from './RightPanel.module.css';
 
 type Tab = 'sites' | 'activity' | 'demographics';
@@ -19,13 +21,21 @@ interface Props {
   node: HierarchyNode;
   isCollapsed: boolean;
   onCollapsedChange: (isCollapsed: boolean) => void;
+  sites: Site[];
+  onAddSite: (geometry: SiteGeometry) => void;
 }
 
-const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed }: Props) => {
+const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, sites, onAddSite }: Props) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('sites');
   const [isPopulationOpen, setIsPopulationOpen] = useState(false);
   const [openSiteGroup, setOpenSiteGroup] = useState<SiteGroup>();
+  const [isZonesSchoolsOpen, setIsZonesSchoolsOpen] = useState(false);
+  const [zonesSchoolsByArea, setZonesSchoolsByArea] = useState<Record<string, ZonesSchoolsCounts>>({});
+  const zonesSchools = zonesSchoolsByArea[node.identifier] ?? { zones: ZONES, schools: SCHOOLS };
+  const saveZonesSchools = (counts: ZonesSchoolsCounts) =>
+    setZonesSchoolsByArea(current => ({ ...current, [node.identifier]: counts }));
+  const siteGroups = useMemo(() => getSiteGroups(sites), [sites]);
   const { name, geographicLevel } = node.properties;
 
   return (
@@ -83,13 +93,29 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed }: Pr
               </button>
             ))}
           </div>
-          {activeTab === 'sites' && <SitesTab onOpenGroup={setOpenSiteGroup} />}
+          {activeTab === 'sites' && (
+            <SitesTab
+              siteGroups={siteGroups}
+              zonesSchools={zonesSchools}
+              onEditZonesSchools={() => setIsZonesSchoolsOpen(true)}
+              onOpenGroup={setOpenSiteGroup}
+              onAddSite={onAddSite}
+            />
+          )}
           {activeTab === 'activity' && <ActivityTab />}
           {activeTab === 'demographics' && <DemographicsTab />}
         </>
       )}
 
       {isPopulationOpen && <PopulationModal name={name} onClose={() => setIsPopulationOpen(false)} />}
+      {isZonesSchoolsOpen && (
+        <ZonesSchoolsModal
+          name={name}
+          counts={zonesSchools}
+          onSave={saveZonesSchools}
+          onClose={() => setIsZonesSchoolsOpen(false)}
+        />
+      )}
       {openSiteGroup && (
         <SiteGroupModal group={openSiteGroup} name={name} onClose={() => setOpenSiteGroup(undefined)} />
       )}

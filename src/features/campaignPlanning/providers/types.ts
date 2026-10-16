@@ -128,3 +128,21 @@ export interface LocationDataRequest {
   parentLocationId: string;
   campaignManagementFeatures: boolean;
 }
+
+export type SiteGeometry = 'polygon' | 'point';
+
+export interface SiteType {
+  id: string;
+  name: string;
+  label: string;
+  geometry: SiteGeometry;
+}
+
+export interface Site {
+  identifier: string;
+  name: string;
+  typeId: string;
+  geometry: SiteGeometry;
+  location: GeoJSON.Point;
+  boundary?: GeoJSON.Polygon;
+}

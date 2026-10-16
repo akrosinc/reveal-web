@@ -117,9 +117,43 @@
   font-weight: 700;
 }
 
+.subRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  padding-bottom: 4px;
+}
+
+.editButton {
+  composes: iconButton from '../../styles/deck.module.css';
+  width: 22px;
+  height: 22px;
+  margin-right: -4px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
 .statusRow {
   composes: buttonReset from '../../styles/deck.module.css';
   padding: 7px 17px;
+}
+
+.siteRow {
+  display: flex;
+  align-items: flex-start;
+  padding-right: 17px;
+}
+
+.siteRow .statusRow {
+  flex: 1;
+  min-width: 0;
+  padding-right: 8px;
+}
+
+.siteRow .editButton {
+  margin-top: 6px;
 }
 
 .statusTop {

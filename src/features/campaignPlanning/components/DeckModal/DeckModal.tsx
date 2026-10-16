@@ -7,12 +7,18 @@ interface Props {
   subtitle: string;
   onClose: () => void;
   children: ReactNode;
+  className?: string;
 }
 
-const DeckModal = ({ title, subtitle, onClose, children }: Props) =>
+const DeckModal = ({ title, subtitle, onClose, children, className }: Props) =>
   createPortal(
     <div className={styles.overlay}>
-      <div className={styles.card} role="dialog" aria-modal="true" aria-label={title}>
+      <div
+        className={className ? `${styles.card} ${className}` : styles.card}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
         <button
           type="button"
           id="deck-modal-close-button"
