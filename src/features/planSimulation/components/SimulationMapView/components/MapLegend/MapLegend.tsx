@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import { usePolygonContext } from '../../../../../../contexts/PolygonContext';
 import style from './MapLegend.module.css';
 import SwitchButton from '../../../../../../components/SwitchButton/SwitchButton';
 import Accordion from '../../../../../location/components/accordion/Accordion';
 import LayerIcon from '../../../../../../assets/svgs/layers-icon.svg';
 import { COLOR_OPTIONS, parseColorOrGradient } from '../../../../../../utils/rasterHelper';
+import { formatRasterClassRange, getRasterClasses } from '../../../../../../utils/rasterClasses';
 import { useAuthorization } from '../../../../../../hooks/useAuthorization';
 import { VIEW_RASTER_LISTING } from '../../../../../../constants/roles';
 
@@ -93,9 +94,11 @@ function MapLegend({
                     const swatchBackground = parsed.isGradient
                       ? `linear-gradient(to right, ${parsed.colors.join(', ')})`
                       : parsed.primaryColor;
+                    const classes = getRasterClasses(raster.datasetIdentifier || raster.identifier);
 
                     return (
-                      <li className={style.legendItem} key={raster.identifier || raster.datasetIdentifier}>
+                      <Fragment key={raster.identifier || raster.datasetIdentifier}>
+                      <li className={style.legendItem}>
                         <div
                           className={style.colorBox}
                           style={{
@@ -109,6 +112,17 @@ function MapLegend({
                           {raster.name || raster.datasetIdentifier}
                         </span>
                       </li>
+                      {classes?.map(item => (
+                        <li
+                          className={style.legendItem}
+                          key={`${item.from}-${item.to}`}
+                          style={{ marginTop: '4px', paddingLeft: '1.75rem', fontSize: '12px' }}
+                        >
+                          <div className={style.colorBox} style={{ background: item.color, flexShrink: 0 }} />
+                          {formatRasterClassRange(item)}
+                        </li>
+                      ))}
+                      </Fragment>
                     );
                   })}
                 </>

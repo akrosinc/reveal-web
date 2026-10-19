@@ -103,6 +103,11 @@
   overflow-wrap: anywhere;
 }
 
+.classItem {
+  padding: 2px 0 2px 24px;
+  font-size: 11px;
+}
+
 .colorBox {
   flex-shrink: 0;
   width: 14px;

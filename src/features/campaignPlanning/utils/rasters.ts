@@ -1,4 +1,5 @@
-import { parseColorOrGradient } from '../../../utils/rasterHelper';
+import { syncRasterClasses } from '../../../utils/rasterClasses';
+import { normalizeExtent, parseColorOrGradient } from '../../../utils/rasterHelper';
 import { PlanSimulation, RasterDataset } from '../providers/types';
 
 const DEFAULT_RASTER_COLOR = '#fd8d3c';
@@ -14,7 +15,9 @@ export const toRasterDataset = (raw: any): RasterDataset => {
     name: raw.name || raw.mapLayer?.name || raw.datasetName || raw.label || identifier,
     colorRamp: raw.colorRamp || raw.hexColor || DEFAULT_RASTER_COLOR,
     opacity: raw.opacity ?? 1,
-    hidden: raw.hidden ?? false
+    hidden: raw.hidden ?? false,
+    extent: normalizeExtent(raw.extent ?? raw.mapLayer?.extent) ?? undefined,
+    metadata: raw.metadata
   };
 };
 
@@ -23,7 +26,10 @@ export const splitRasterDatasets = (simulation: PlanSimulation): PlanSimulation 
   const rasters = new Map<string, RasterDataset>();
   [...(simulation.rasterDatasets ?? []), ...datasets.filter(isRaster)].forEach(raw => {
     const raster = toRasterDataset(raw);
-    if (raster.identifier && !rasters.has(raster.identifier)) rasters.set(raster.identifier, raster);
+    if (raster.identifier && !rasters.has(raster.identifier)) {
+      syncRasterClasses(raster.datasetIdentifier || raster.identifier, raster.metadata);
+      rasters.set(raster.identifier, raster);
+    }
   });
   return {
     ...simulation,

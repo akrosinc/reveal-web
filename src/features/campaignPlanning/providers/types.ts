@@ -1,3 +1,5 @@
+import { RasterExtent } from '../../../utils/rasterHelper';
+
 export interface HierarchyNodeProperties {
   name: string;
   geographicLevel: string;
@@ -86,6 +88,7 @@ export interface DatasetUpdateRequest {
   lineWidth: number;
   borderColor: string;
   datasetType?: 'RASTER';
+  metadata?: Record<string, unknown>;
 }
 
 // Value range of a dataset (lowest/highest value, or the part kept by a filter)
@@ -103,6 +106,8 @@ export interface RasterDataset {
   colorRamp?: string;
   opacity?: number;
   hidden?: boolean;
+  extent?: RasterExtent;
+  metadata?: Record<string, unknown>;
 }
 
 // Area assigned to the campaign (plan target area), as Campaign Management draws it

@@ -12,6 +12,7 @@ export interface RasterSimulationDatasetRequest {
   datasetType?: string; // 'RASTER'
   tagId?: string;
   userDatasetIds?: string[];
+  metadata?: Record<string, unknown>;
 }
 
 export interface RasterLocationMetadataItem {
@@ -41,4 +42,5 @@ export interface RasterSimulationDatasetResponse {
   colorRamp?: string;
   dataSetType?: string;
   opacity?: number;
+  metadata?: Record<string, unknown>;
 }

@@ -15,7 +15,13 @@ interface Props {
   canEdit: boolean;
   isHidden: boolean;
   onVisibilityToggle: (rasterId: string) => void;
-  onSave: (raster: RasterDataset, colorRamp: string, opacity?: number, name?: string) => Promise<void>;
+  onSave: (
+    raster: RasterDataset,
+    colorRamp: string,
+    opacity?: number,
+    name?: string,
+    metadata?: Record<string, unknown>
+  ) => Promise<void>;
   onDelete: (raster: RasterDataset) => Promise<void>;
 }
 
@@ -25,8 +31,6 @@ const RasterDatasetRow = ({ raster, canEdit, isHidden, onVisibilityToggle, onSav
   const canDelete = useAuthorization([CAMPAIGN_PLANNING_DELETE_RASTER]) && canEdit;
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [newName, setNewName] = useState<string>();
-  const isRenameCancelled = useRef(false);
   const closeEdit = useCallback(() => setIsEditOpen(false), []);
   const closeDelete = useCallback(() => setIsDeleteOpen(false), []);
   const rowRef = useRef<HTMLDivElement>(null);
@@ -40,20 +44,6 @@ const RasterDatasetRow = ({ raster, canEdit, isHidden, onVisibilityToggle, onSav
       style={{ background: isHidden ? HIDDEN_DATASET_COLOR : getRasterBackground(raster.colorRamp) }}
     />
   );
-
-  const isRenaming = newName !== undefined;
-
-  const startRename = () => {
-    isRenameCancelled.current = false;
-    setNewName(raster.name);
-  };
-
-  const finishRename = () => {
-    const name = newName?.trim();
-    setNewName(undefined);
-    if (!isRenameCancelled.current && name && name !== raster.name)
-      onSave(raster, raster.colorRamp ?? '', raster.opacity, name).catch(() => undefined);
-  };
 
   return (
     <>
@@ -73,33 +63,17 @@ const RasterDatasetRow = ({ raster, canEdit, isHidden, onVisibilityToggle, onSav
           swatch
         )}
         <div className={styles.nameArea}>
-          {isRenaming ? (
-            <input
-              id={`campaign-planning-raster-name-${raster.identifier}`}
-              className={styles.nameInput}
-              aria-label={t('campaignPlanning.rasterName')}
-              value={newName}
-              autoFocus
-              onChange={e => setNewName(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Escape') isRenameCancelled.current = true;
-                if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur();
-              }}
-              onBlur={finishRename}
-            />
-          ) : (
-            <span className={styles.name} title={raster.name}>
-              {raster.name}
-            </span>
-          )}
-          {canUpdate && !isRenaming && (
+          <span className={styles.name} title={raster.name}>
+            {raster.name}
+          </span>
+          {canUpdate && (
             <button
               type="button"
-              id={`campaign-planning-rename-raster-${raster.identifier}`}
+              id={`campaign-planning-edit-raster-${raster.identifier}`}
               className={styles.editButton}
-              title={t('campaignPlanning.renameDataset', { name: raster.name })}
-              aria-label={t('campaignPlanning.renameDataset', { name: raster.name })}
-              onClick={startRename}
+              title={t('campaignPlanning.editRasterLabel', { name: raster.name })}
+              aria-label={t('campaignPlanning.editRasterLabel', { name: raster.name })}
+              onClick={() => setIsEditOpen(true)}
             >
               <BsPencil />
             </button>

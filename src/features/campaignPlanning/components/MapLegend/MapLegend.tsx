@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { BsChevronUp, BsListUl } from 'react-icons/bs';
 import AuthorizedElement from '../../../../components/AuthorizedElement';
 import { CAMPAIGN_PLANNING_VIEW_RASTER } from '../../../../constants';
+import { formatRasterClassRange, getRasterClasses } from '../../../../utils/rasterClasses';
 import { ASSIGNED_AREA_COLOR, TEAMS_ASSIGNED_AREA_COLOR } from '../../constants';
 import { RasterDataset, SimulationDataset } from '../../providers/types';
 import { getDatasetColor } from '../../utils/datasets';
@@ -56,9 +57,17 @@ const MapLegend = ({ datasets, rasterDatasets, showAssigned, onShowAssignedChang
               <div className={styles.sectionTitle}>{t('campaignPlanning.rasters')}</div>
               {rasterDatasets.length ? (
                 rasterDatasets.map(raster => (
-                  <div key={raster.identifier} className={styles.item}>
-                    <span className={styles.colorBox} style={{ background: getRasterBackground(raster.colorRamp) }} />
-                    {raster.name}
+                  <div key={raster.identifier}>
+                    <div className={styles.item}>
+                      <span className={styles.colorBox} style={{ background: getRasterBackground(raster.colorRamp) }} />
+                      {raster.name}
+                    </div>
+                    {getRasterClasses(raster.datasetIdentifier || raster.identifier)?.map(item => (
+                      <div key={`${item.from}-${item.to}`} className={`${styles.item} ${styles.classItem}`}>
+                        <span className={styles.colorBox} style={{ background: item.color }} />
+                        {formatRasterClassRange(item)}
+                      </div>
+                    ))}
                   </div>
                 ))
               ) : (

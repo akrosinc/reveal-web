@@ -19,6 +19,16 @@ import {
   RasterSimulationDatasetRequest,
   RasterSimulationDatasetResponse
 } from '../../providers/rasterDatasetTypes';
+import {
+  RasterColorClass,
+  getDefaultRasterClasses,
+  getRasterClassesError,
+  recolorRasterClasses,
+  setRasterClasses,
+  withRasterClasses
+} from '../../../../utils/rasterClasses';
+import RasterClassesEditor from './RasterClassesEditor';
+import useRasterValueRange from './useRasterValueRange';
 
 interface Props {
   show: boolean;
@@ -126,6 +136,30 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
   const [selectedRaster, setSelectedRaster] = useState<SingleValue<RasterOption>>(null);
   const [selectedColor, setSelectedColor] = useState<SingleValue<ColorOption>>(COLOR_OPTIONS[0]);
   const [opacity, setOpacity] = useState<number>(100);
+  const [useClasses, setUseClasses] = useState<boolean>(false);
+  const [classes, setClasses] = useState<RasterColorClass[]>([]);
+  const { range: valueRange, isLoading: isLoadingRange } = useRasterValueRange(
+    selectedRaster?.rasterId,
+    selectedRaster?.extent
+  );
+
+  const paletteColors = selectedColor?.colors?.length ? selectedColor.colors : COLOR_OPTIONS[0].colors;
+  const sortedClasses = [...classes].sort((a, b) => a.from - b.from);
+  const hasClassesError = useClasses && Boolean(getRasterClassesError(classes));
+
+  const handleColorChange = (option: SingleValue<ColorOption>) => {
+    setSelectedColor(option);
+    if (useClasses && option?.colors?.length) {
+      setClasses(prev => recolorRasterClasses(prev, option.colors));
+    }
+  };
+
+  const handleUseClassesChange = (enabled: boolean) => {
+    setUseClasses(enabled);
+    if (enabled && !classes.length) {
+      setClasses(getDefaultRasterClasses(paletteColors, valueRange));
+    }
+  };
 
   useEffect(() => {
     if (show) {
@@ -167,6 +201,8 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
       setSelectedRaster(null);
       setSelectedColor(COLOR_OPTIONS[0]);
       setOpacity(100);
+      setUseClasses(false);
+      setClasses([]);
       setIsSubmitting(false);
     }
   }, [show]);
@@ -264,10 +300,11 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
     }
 
     const rasterTagId = selectedRaster.rasterId || selectedRaster.value || selectedRaster.rawLayer?.id || '';
-    const hexColor =
-      selectedColor?.colors && selectedColor.colors.length > 1
-        ? selectedColor.colors.join(',')
-        : selectedColor?.color || '#3b82f6';
+    const hexColor = useClasses
+      ? sortedClasses.map(item => item.color).join(',')
+      : selectedColor?.colors && selectedColor.colors.length > 1
+      ? selectedColor.colors.join(',')
+      : selectedColor?.color || '#3b82f6';
     const simulationIdentifier =
       polygonState?.simulationId ||
       instance?.simulationIdentifier ||
@@ -291,17 +328,19 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
       parentAdminLevel: instance?.adminLevel || '',
       dataSetYearFilter: {},
       addToSimulation: true,
-      datasetType: 'RASTER'
+      datasetType: 'RASTER',
+      ...(useClasses && { metadata: withRasterClasses(undefined, sortedClasses) })
     };
 
     try {
       setIsSubmitting(true);
       const apiResponse = await addRasterSimulationDataset(payload);
+      setRasterClasses(rasterTagId, useClasses ? sortedClasses : undefined);
 
       if (onRasterAdded) {
         onRasterAdded({
           raster: selectedRaster,
-          color: selectedColor,
+          color: useClasses && selectedColor ? { ...selectedColor, value: hexColor, colors: hexColor.split(',') } : selectedColor,
           opacity: opacity / 100,
           apiResponse
         });
@@ -326,6 +365,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
       size="lg"
       show={show}
       centered
+      scrollable
       backdrop="static"
       keyboard={false}
       onHide={closeHandler}
@@ -407,7 +447,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
                 <Select<ColorOption>
                   placeholder={t('simulationPage.chooseColor', 'Select a color palette...')}
                   value={selectedColor}
-                  onChange={option => setSelectedColor(option)}
+                  onChange={handleColorChange}
                   options={COLOR_OPTIONS}
                   formatOptionLabel={formatColorOptionLabel}
                   isClearable
@@ -442,6 +482,17 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
                 </div>
               )}
 
+              <RasterClassesEditor
+                enabled={useClasses}
+                classes={classes}
+                paletteColors={paletteColors}
+                isDarkMode={isDarkMode}
+                valueRange={valueRange}
+                isLoadingRange={isLoadingRange}
+                onEnabledChange={handleUseClassesChange}
+                onChange={setClasses}
+              />
+
               {/* Opacity Slider */}
               <FormGroup className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-1">
@@ -470,7 +521,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
         <Button
           variant="primary"
           onClick={handleApply}
-          disabled={!selectedRaster || isSubmitting}
+          disabled={!selectedRaster || isSubmitting || hasClassesError}
         >
           {isSubmitting ? (
             <>

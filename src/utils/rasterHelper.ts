@@ -1,6 +1,7 @@
 import { Map as MapBoxMap } from 'mapbox-gl';
 import { config } from '../config/config';
 import { hex, hsv } from 'color-convert';
+import { buildClassColorExpression, getRasterClasses } from './rasterClasses';
 
 export interface RasterLayerConfig {
   id: string;
@@ -354,6 +355,38 @@ export const RASTER_VALUE_PROPERTIES = [
   'gridcode'
 ];
 
+export const getRasterValueExpression = (fieldName: string = 'class'): any => {
+  // Candidate properties in priority order
+  const propertyCandidates = [
+    fieldName,
+    ...RASTER_VALUE_PROPERTIES
+  ].filter((p, idx, arr) => Boolean(p) && arr.indexOf(p) === idx);
+
+  // Mapbox GL expression to coalesce and convert the first available property to a number
+  return [
+    'to-number',
+    [
+      'coalesce',
+      ...propertyCandidates.map(p => ['get', p]),
+      0
+    ],
+    0
+  ];
+};
+
+export const getRasterColorExpression = (
+  rasterId: string | undefined,
+  fieldName: string = 'class',
+  colors: string[],
+  fallbackColor?: string
+): any => {
+  const classes = getRasterClasses(rasterId);
+  if (classes) {
+    return buildClassColorExpression(getRasterValueExpression(fieldName), classes);
+  }
+  return buildColorExpression(fieldName, colors, 0, 100, fallbackColor);
+};
+
 /**
  * Builds a Mapbox GL interpolation expression for vector tiles from an array of color stops.
  * Dynamically resolves any present raster value property (class, population, value, dn, etc.)
@@ -374,22 +407,7 @@ export const buildColorExpression = (
 
   const n = colors.length;
 
-  // Candidate properties in priority order
-  const propertyCandidates = [
-    fieldName,
-    ...RASTER_VALUE_PROPERTIES
-  ].filter((p, idx, arr) => Boolean(p) && arr.indexOf(p) === idx);
-
-  // Mapbox GL expression to coalesce and convert the first available property to a number
-  const numValue: any = [
-    'to-number',
-    [
-      'coalesce',
-      ...propertyCandidates.map(p => ['get', p]),
-      0
-    ],
-    0
-  ];
+  const numValue = getRasterValueExpression(fieldName);
 
   // Helper to generate strictly ascending stop values (Mapbox GL requirement)
   const createAscendingStops = (minVal: number, maxVal: number, count: number): number[] => {
@@ -660,8 +678,8 @@ export const addRasterToMap = (
 
     const colorExpression =
       options?.colorExpression ||
-      (resolvedColors && resolvedColors.length > 1
-        ? buildColorExpression(resolvedFieldName, resolvedColors, 0, 100, parsed.primaryColor)
+      (getRasterClasses(config.rasterId) || (resolvedColors && resolvedColors.length > 1)
+        ? getRasterColorExpression(config.rasterId, resolvedFieldName, resolvedColors || [], parsed.primaryColor)
         : parsed.primaryColor);
 
     if (isMvt) {

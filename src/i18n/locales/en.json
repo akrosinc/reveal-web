@@ -492,7 +492,6 @@
     "deleteRasterDataset": "Delete raster dataset",
     "addRaster": "Add raster",
     "editRasterLabel": "Edit {{name}}",
-    "rasterName": "Raster name",
     "deleteDatasetMessage": "Are you sure you want to remove '{{name}}' from the map?",
     "datasetName": "Name",
     "noTeams": "No teams",

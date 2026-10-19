@@ -102,9 +102,10 @@ import {
   getRasterTileUrl,
   normalizeExtent,
   COLOR_OPTIONS,
-  buildColorExpression,
+  getRasterColorExpression,
   parseColorOrGradient
 } from '../../../utils';
+import { syncRasterClasses } from '../../../utils/rasterClasses';
 import { auto } from '@popperjs/core';
 import { getInstances, getInstanceHierarchy } from '../api';
 import RangeInput, { YearSlider } from '../../../components/RangeInput/RangeInput';
@@ -500,7 +501,8 @@ const Simulation = () => {
     rasterItem: RasterDatasetItem,
     newColor: string,
     newOpacity?: number,
-    newName?: string
+    newName?: string,
+    metadata?: Record<string, unknown>
   ) => {
     // 1. Resolve simulation identifier (same resolution used for adding rasters)
     let localPlanId = instanceContext?.instancePlan?.identifier;
@@ -551,14 +553,15 @@ const Simulation = () => {
         hexColor: newColor,
         lineWidth: 0,
         borderColor: '#000000',
-        datasetType: 'RASTER'
+        datasetType: 'RASTER',
+        metadata
       });
 
       // 3. On successful API response, update local state
       setRasterDatasets(prev =>
         (prev || []).map(item =>
           isMatchingRaster(item, rasterItem)
-            ? { ...item, name: finalName, colorRamp: newColor, opacity: finalOpacity }
+            ? { ...item, name: finalName, colorRamp: newColor, opacity: finalOpacity, metadata: metadata ?? item.metadata }
             : item
         )
       );
@@ -589,7 +592,7 @@ const Simulation = () => {
 
         const parsed = parseColorOrGradient(newColor);
         const colorExpr = parsed.isGradient
-          ? buildColorExpression('class', parsed.colors, 0, 100, parsed.primaryColor)
+          ? getRasterColorExpression(rasterId, 'class', parsed.colors, parsed.primaryColor)
           : parsed.primaryColor;
 
         if (targetLayerId) {
@@ -801,6 +804,7 @@ const Simulation = () => {
         const id = d.identifier || d.id || d.tagId || d.datasetId;
         const dsId = d.datasetIdentifier || d.mapLayer?.layerIdentifier || d.datasetId || id;
         if (id && !rastersMap.has(id)) {
+          syncRasterClasses(dsId, d.metadata);
           rastersMap.set(id, {
             identifier: id,
             datasetIdentifier: dsId,
@@ -808,7 +812,8 @@ const Simulation = () => {
             colorRamp: d.colorRamp || d.hexColor || '#fd8d3c',
             extent: d.extent || d.mapLayer?.extent,
             opacity: d.opacity ?? 1,
-            hidden: d.hidden ?? false
+            hidden: d.hidden ?? false,
+            metadata: d.metadata
           });
         }
       });
@@ -3098,7 +3103,8 @@ const Simulation = () => {
                 colorRamp: colorToUse,
                 extent: raster.extent || raster.rawLayer?.extent || normalizeExtent(apiData.extent),
                 opacity: rasterData.opacity ?? 1,
-                hidden: false
+                hidden: false,
+                metadata: apiData.metadata
               };
 
               setRasterDatasets(prev => {

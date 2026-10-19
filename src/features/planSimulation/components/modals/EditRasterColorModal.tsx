@@ -5,6 +5,17 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../../store/hooks';
 import { COLOR_OPTIONS, ColorOption, parseColorOrGradient, generateDatasetGradient } from '../../../../utils/rasterHelper';
 import { RasterDatasetItem } from '../SimulationMapView/api/datasetsAPI';
+import {
+  RasterColorClass,
+  getDefaultRasterClasses,
+  getRasterClasses,
+  getRasterClassesError,
+  recolorRasterClasses,
+  setRasterClasses,
+  withRasterClasses
+} from '../../../../utils/rasterClasses';
+import RasterClassesEditor from './RasterClassesEditor';
+import useRasterValueRange from './useRasterValueRange';
 
 interface Props {
   show: boolean;
@@ -14,7 +25,8 @@ interface Props {
     rasterItem: RasterDatasetItem,
     newColor: string,
     newOpacity?: number,
-    newName?: string
+    newName?: string,
+    metadata?: Record<string, unknown>
   ) => Promise<void> | void;
 }
 
@@ -32,6 +44,30 @@ export const EditRasterColorModal = ({
   const [customHexColor, setCustomHexColor] = useState<string>('#fd8d3c');
   const [opacity, setOpacity] = useState<number>(100);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [useClasses, setUseClasses] = useState<boolean>(false);
+  const [classes, setClasses] = useState<RasterColorClass[]>([]);
+
+  const rasterId = rasterItem ? rasterItem.datasetIdentifier || rasterItem.identifier : undefined;
+  const { range: valueRange, isLoading: isLoadingRange } = useRasterValueRange(rasterId, rasterItem?.extent);
+  const paletteColors = selectedColorOption?.colors?.length
+    ? selectedColorOption.colors
+    : generateDatasetGradient(customHexColor);
+  const sortedClasses = [...classes].sort((a, b) => a.from - b.from);
+  const hasClassesError = useClasses && Boolean(getRasterClassesError(classes));
+
+  const changeColorOption = (option: ColorOption | null) => {
+    setSelectedColorOption(option);
+    if (useClasses && option?.colors?.length) {
+      setClasses(prev => recolorRasterClasses(prev, option.colors));
+    }
+  };
+
+  const handleUseClassesChange = (enabled: boolean) => {
+    setUseClasses(enabled);
+    if (enabled && !classes.length) {
+      setClasses(getDefaultRasterClasses(paletteColors, valueRange));
+    }
+  };
 
   const availableColorOptions = useMemo(() => {
     if (customHexColor) {
@@ -90,6 +126,9 @@ export const EditRasterColorModal = ({
           gradient: `linear-gradient(to right, ${(parsed.colors && parsed.colors.length > 1 ? parsed.colors : datasetStops).join(', ')})`
         }
       );
+      const savedClasses = getRasterClasses(rasterItem.datasetIdentifier || rasterItem.identifier);
+      setUseClasses(Boolean(savedClasses));
+      setClasses(savedClasses ?? []);
       setIsSubmitting(false);
     }
   }, [show, rasterItem]);
@@ -162,20 +201,31 @@ export const EditRasterColorModal = ({
   );
 
   const handleApply = async () => {
-    if (!rasterItem) return;
+    if (!rasterItem || hasClassesError) return;
     const isPresetMultiColor =
       selectedColorOption &&
       COLOR_OPTIONS.some(
         opt => opt.value === selectedColorOption.value && opt.colors && opt.colors.length > 1
       );
-    const finalColorToSave = isPresetMultiColor
+    const finalColorToSave = useClasses
+      ? sortedClasses.map(item => item.color).join(',')
+      : isPresetMultiColor
       ? selectedColorOption.colors.join(',')
       : selectedColorOption?.color || customHexColor || '#fd8d3c';
+    const previousClasses = getRasterClasses(rasterId);
+    if (rasterId) setRasterClasses(rasterId, useClasses ? sortedClasses : undefined);
     setIsSubmitting(true);
     try {
-      await onUpdateColor(rasterItem, finalColorToSave, opacity / 100, name);
+      await onUpdateColor(
+        rasterItem,
+        finalColorToSave,
+        opacity / 100,
+        name,
+        withRasterClasses(rasterItem.metadata, useClasses ? sortedClasses : undefined)
+      );
       closeHandler();
     } catch (err) {
+      if (rasterId) setRasterClasses(rasterId, previousClasses);
       console.error('[EditRasterColorModal] Failed to update raster:', err);
     } finally {
       setIsSubmitting(false);
@@ -190,6 +240,7 @@ export const EditRasterColorModal = ({
       onHide={closeHandler}
       backdrop="static"
       centered
+      scrollable
       contentClassName={isDarkMode ? 'bg-dark text-white' : 'bg-white text-dark'}
     >
       <Modal.Header closeButton closeVariant={isDarkMode ? 'white' : undefined}>
@@ -231,7 +282,7 @@ export const EditRasterColorModal = ({
               placeholder={t('simulationPage.chooseColor', 'Select a color palette...')}
               value={selectedColorOption}
               onChange={option => {
-                setSelectedColorOption(option);
+                changeColorOption(option);
                 if (option?.color) {
                   setCustomHexColor(option.color);
                 }
@@ -298,7 +349,7 @@ export const EditRasterColorModal = ({
                       opt.colors.some(c => c.toLowerCase() === val.toLowerCase())
                   );
                   const datasetStops = generateDatasetGradient(val);
-                  setSelectedColorOption(
+                  changeColorOption(
                     matched || {
                       value: val,
                       label: `Custom Ramp (${val})`,
@@ -332,7 +383,7 @@ export const EditRasterColorModal = ({
                         opt.colors.some(c => c.toLowerCase() === val.toLowerCase())
                     );
                     const datasetStops = generateDatasetGradient(val);
-                    setSelectedColorOption(
+                    changeColorOption(
                       matched || {
                         value: val,
                         label: `Custom Ramp (${val})`,
@@ -353,6 +404,17 @@ export const EditRasterColorModal = ({
               />
             </div>
           </FormGroup>
+
+          <RasterClassesEditor
+            enabled={useClasses}
+            classes={classes}
+            paletteColors={paletteColors}
+            isDarkMode={isDarkMode}
+            valueRange={valueRange}
+            isLoadingRange={isLoadingRange}
+            onEnabledChange={handleUseClassesChange}
+            onChange={setClasses}
+          />
 
           {/* Opacity Slider */}
           <FormGroup className="mb-3">
@@ -380,7 +442,7 @@ export const EditRasterColorModal = ({
         <Button
           variant="primary"
           onClick={handleApply}
-          disabled={isSubmitting}
+          disabled={isSubmitting || hasClassesError}
         >
           {isSubmitting ? (
             <>
