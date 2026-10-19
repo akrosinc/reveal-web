@@ -47,7 +47,13 @@ interface Props {
   onAddRaster: () => void;
   hiddenRasterIds: string[];
   onRasterVisibilityToggle: (rasterId: string) => void;
-  onRasterDatasetSave: (raster: RasterDataset, colorRamp: string, opacity?: number, name?: string) => Promise<void>;
+  onRasterDatasetSave: (
+    raster: RasterDataset,
+    colorRamp: string,
+    opacity?: number,
+    name?: string,
+    metadata?: Record<string, unknown>
+  ) => Promise<void>;
   onRasterDatasetDelete: (raster: RasterDataset) => Promise<void>;
   teams: Team[];
   isHierarchyLoading: boolean;

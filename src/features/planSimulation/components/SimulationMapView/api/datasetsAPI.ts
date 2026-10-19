@@ -50,6 +50,7 @@ export interface RasterDatasetItem {
   };
   opacity?: number;
   hidden?: boolean;
+  metadata?: Record<string, unknown>;
 }
 
 export interface SimulationDataResponse {
@@ -78,6 +79,7 @@ export interface DataSetUpdate {
   lineWidth: number;
   borderColor: string;
   datasetType?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface LocationData {

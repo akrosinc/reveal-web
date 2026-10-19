@@ -384,7 +384,13 @@ const CampaignPlanning = () => {
   );
 
   const saveRasterDataset = useCallback(
-    async (raster: RasterDataset, colorRamp: string, opacity?: number, name?: string) => {
+    async (
+      raster: RasterDataset,
+      colorRamp: string,
+      opacity?: number,
+      name?: string,
+      metadata?: Record<string, unknown>
+    ) => {
       if (!simulationId) return;
       const finalName = name?.trim() || raster.name;
       await updateSimulationDataset({
@@ -394,7 +400,8 @@ const CampaignPlanning = () => {
         hexColor: colorRamp,
         lineWidth: 0,
         borderColor: '#000000',
-        datasetType: 'RASTER'
+        datasetType: 'RASTER',
+        metadata
       }).catch(err => {
         toast.error(err);
         throw err;
@@ -405,7 +412,13 @@ const CampaignPlanning = () => {
             ...current,
             rasterDatasets: current.rasterDatasets?.map(item =>
               item.identifier === raster.identifier
-                ? { ...item, name: finalName, colorRamp, opacity: opacity ?? item.opacity }
+                ? {
+                    ...item,
+                    name: finalName,
+                    colorRamp,
+                    opacity: opacity ?? item.opacity,
+                    metadata: metadata ?? item.metadata
+                  }
                 : item
             )
           }
