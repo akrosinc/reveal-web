@@ -179,7 +179,8 @@ const CampaignPlanning = () => {
         name: edited.name,
         hexColor: edited.hexColor ?? '',
         lineWidth: edited.lineWidth ?? 1,
-        borderColor: edited.borderColor ?? '#000000'
+        borderColor: edited.borderColor ?? '#000000',
+        metadata: {}
       })
         .then(replace)
         .catch(err => toast.error(err));

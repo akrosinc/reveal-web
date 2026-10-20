@@ -119,7 +119,8 @@ function DatasetsAccordion({
         name: tempName,
         hexColor: customColor.hex,
         lineWidth: borderValue,
-        borderColor: borderColor.hex
+        borderColor: borderColor.hex,
+        metadata: {}
       });
       updateDatasetHandler(UpdatedSimulation.datasets,false);
     } catch (error) {
