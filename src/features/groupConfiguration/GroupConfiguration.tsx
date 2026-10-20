@@ -56,8 +56,9 @@ const GroupConfiguration: React.FC = () => {
 
     // Load on mount and whenever page/size/search/sort changes
     useEffect(() => {
+        if (showCreateOrEdit) return;
         loadGroups(pageSize, currentPage, search, currentSortField, currentSortDirection);
-    }, [pageSize, currentPage, search, currentSortField, currentSortDirection, loadGroups]);
+    }, [pageSize, currentPage, search, currentSortField, currentSortDirection, loadGroups, showCreateOrEdit]);
 
 
     // ─── Handlers ───────────────────────────────────────────────────────────────
@@ -88,25 +89,9 @@ const GroupConfiguration: React.FC = () => {
         return groups ?? [];
     }, [groups]);
 
-    const filteredGroups = useMemo(() => {
-        if (!search) return sortedGroups;
-        const lowercaseSearch = search.toLowerCase();
-        return sortedGroups.filter(
-            group => {
-                const nameMatch = group.name?.toLowerCase().includes(lowercaseSearch);
-                const typeText = group.type === 'TEAM' 
-                    ? t('groupConfigurationPage.table.yes').toLowerCase() 
-                    : t('groupConfigurationPage.table.no').toLowerCase();
-                const typeMatch = typeText.includes(lowercaseSearch);
-                return nameMatch || typeMatch;
-            }
-        );
-    }, [sortedGroups, search, t]);
-
-
     const tableData = useMemo(
         () =>
-            filteredGroups.map(row => ({
+            sortedGroups.map(row => ({
                 ...row,
                 type: (
                     <span style={{ color: row?.organizationType === 'TEAM' ? 'green' : 'red' }}>
@@ -116,7 +101,7 @@ const GroupConfiguration: React.FC = () => {
                     </span>
                 )
             })),
-        [filteredGroups, t]
+        [sortedGroups, t]
     );
 
 
@@ -127,7 +112,6 @@ const GroupConfiguration: React.FC = () => {
 
     const handleSave = () => {
         navigate(GROUP_MANAGEMENT);
-        loadGroups(pageSize, currentPage, search, currentSortField, currentSortDirection);
     };
 
     const handleCancel = () => {

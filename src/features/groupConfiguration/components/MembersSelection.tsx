@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, Form, Button, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { DebounceInput } from 'react-debounce-input';
 import {
     faChevronRight,
     faChevronLeft,
@@ -25,48 +26,50 @@ interface Member {
 interface MembersSelectionProps {
     assignedMembers: string[];
     onAssignmentChange: (ids: string[]) => void;
+    memberNames: Record<string, string>;
+    onMemberNamesChange: React.Dispatch<React.SetStateAction<Record<string, string>>>;
     disabled?: boolean;
 }
 
-const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assignedMembers, onAssignmentChange, disabled = false }) => {
+const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assignedMembers, onAssignmentChange, memberNames, onMemberNamesChange, disabled = false }) => {
     const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
     const [searchTerm, setSearchTerm] = useState('');
-    const [users, setUsers] = useState<Member[]>([]);
+    const [searchResults, setSearchResults] = useState<string[]>([]);
     const [leftSelected, setLeftSelected] = useState<string[]>([]);
     const [rightSelected, setRightSelected] = useState<string[]>([]);
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const fetchedUsers = await getUserList1();
-                const ids = fetchedUsers?.map(elem => elem?.identifier)
-                const idsOfUsers = Array.from(new Set(ids));
-                console.log(fetchUsers.length)
-                setUsers(idsOfUsers?.map(elem => fetchedUsers?.find(i => i?.identifier === elem))?.map((elem: any) => ({
-                    id: elem.identifier,
-                    name: (elem.firstName + ' ' + elem.lastName || '').trim()
-                })));
-            } catch (err) {
-                console.log(err);
-            }
+        let isCurrent = true;
+        getUserList1(searchTerm.trim())
+            .then(fetchedUsers => {
+                if (!isCurrent) return;
+                const ids: string[] = [];
+                const names: Record<string, string> = {};
+                fetchedUsers?.forEach(elem => {
+                    if (elem?.identifier && !names[elem.identifier]) {
+                        ids.push(elem.identifier);
+                        names[elem.identifier] = ((elem.firstName || '') + ' ' + (elem.lastName || '')).trim();
+                    }
+                });
+                setSearchResults(ids);
+                onMemberNamesChange(prev => ({ ...prev, ...names }));
+            })
+            .catch(err => console.log(err));
+        return () => {
+            isCurrent = false;
         };
-        fetchUsers();
-    }, []);
-    console.log(users?.length)
+    }, [searchTerm, onMemberNamesChange]);
+
     // Optimized lookups using Set
     const assignedSet = useMemo(() => new Set(assignedMembers), [assignedMembers]);
 
-    const availableMembers = useMemo(() =>
-        users.filter(m => !assignedSet.has(m.id)),
-        [users, assignedSet]);
+    const assignedList = useMemo<Member[]>(() =>
+        assignedMembers.filter(id => memberNames[id] !== undefined).map(id => ({ id, name: memberNames[id] })),
+        [assignedMembers, memberNames]);
 
-    const assignedList = useMemo(() =>
-        users.filter(m => assignedSet.has(m.id)),
-        [users, assignedSet]);
-
-    const filteredAvailable = useMemo(() =>
-        availableMembers?.filter(m => m?.name?.toLowerCase?.()?.includes?.(searchTerm.toLowerCase())),
-        [availableMembers, searchTerm]);
+    const filteredAvailable = useMemo<Member[]>(() =>
+        searchResults.filter(id => !assignedSet.has(id)).map(id => ({ id, name: memberNames[id] })),
+        [searchResults, assignedSet, memberNames]);
 
     const handleMoveRight = useCallback(() => {
         onAssignmentChange([...assignedMembers, ...leftSelected]);
@@ -102,7 +105,13 @@ const MembersSelection: React.FC<MembersSelectionProps> = React.memo(({ assigned
                     <Card.Body className="d-flex flex-column p-0">
                         <div className="p-3 pb-0">
                             <InputGroup className="mb-3">
-                                <Form.Control placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                                <DebounceInput
+                                    className="form-control"
+                                    placeholder="Search..."
+                                    debounceTimeout={500}
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                />
                                 {/* <InputGroup.Text><FontAwesomeIcon icon={faSearch} /></InputGroup.Text> */}
                             </InputGroup>
                             {/* <Form.Control

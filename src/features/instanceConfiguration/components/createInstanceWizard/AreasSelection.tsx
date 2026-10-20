@@ -5,14 +5,9 @@ import { faChevronRight, faChevronDown } from '@fortawesome/free-solid-svg-icons
 import { useAppSelector } from '../../../../store/hooks';
 import { datasetsByHierarchy, hierarchyOptions, AreaNode } from './mockLargeDataset';
 import { getHierarchy } from '../../../planSimulation/components/SimulationMapView/api/hierarchyAPI';
-import { getLocationHierarchyList, getLocationById } from '../../../location/api';
+import { getLocationById } from '../../../location/api';
 import { toast } from 'react-toastify';
 import { getLocationsByHierarchyIdentifier } from '../../api';
-interface Options {
-  value: string;
-  label: string;
-  nodeOrder?: string[];
-}
 interface Props {
   selectedHierarchy?: string;
   selectedAreas: string[];
@@ -263,17 +258,11 @@ const useDebounce = (value: string, delay: number = 300) => {
 };
 
 const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onSelectionChange, viewOnly }) => {
-  console.log(selectedAreas?.length)
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300); // 300ms debounce
   const [hierarchyOpen, setHierarchyOpen] = useState(false);
-  const [hierarchyList, setHierarchyList] = useState<Options[]>([]);
-  const displayLabel = useMemo(() => {
-    const found = hierarchyList.find(h => h.value === selectedHierarchy);
-    if (found) return found.label;
-    return selectedHierarchy || '';
-  }, [hierarchyList, selectedHierarchy]);
+  const displayLabel = selectedHierarchy || '';
 
   const [currentAreas, setCurrentAreas] = useState<AreaNode[]>([]);
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([]); // State for multiple expanded nodes
@@ -356,19 +345,6 @@ const AreasSelection: React.FC<Props> = ({ selectedHierarchy, selectedAreas, onS
     []
   );
 
-  useEffect(()=>{
-    Promise.all([getLocationHierarchyList(0, 0, true)])
-          .then(([locationHierarchyList]) => {
-            const hList = locationHierarchyList.content.map<Options>(el => ({
-              label: el.name,
-              value: el.identifier ?? '',
-              nodeOrder: el.nodeOrder
-            }));
-            setHierarchyList(hList);           
-          })
-          .catch(err => toast.error(err));
-  },[])
-  
   // Update areas when hierarchy changes from parent
   useEffect(() => {
     if (selectedHierarchy) {

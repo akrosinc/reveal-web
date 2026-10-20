@@ -6,16 +6,10 @@ import RolesSelection from './components/RolesSelection';
 import DatasetsSelection from './components/DatasetsSelection';
 import TeamStats from './components/TeamStats';
 import MembersSelection from './components/MembersSelection';
-import { getLocationHierarchyList } from '../location/api';
 import { toast } from 'react-toastify';
 import { createGroup, getGroupByIdentifier, updateGroup, GroupMember, GroupDataset, GroupRole } from './api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-interface Options {
-    value: string;
-    label: string;
-}
 
 interface FormErrors {
     name?: string;
@@ -48,17 +42,16 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
     // Form fields
     const [groupName, setGroupName] = useState('');
     const [isTeam, setIsTeam] = useState(false);
-    const [hierarchyList, setHierarchyList] = useState<Options[]>([]);
-    const [selectedHierarchy, setSelectedHierarchy] = useState<any>(null);
     const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
     const [assignedMembers, setAssignedMembers] = useState<string[]>([]);
+    const [memberNames, setMemberNames] = useState<Record<string, string>>({});
     const [areaTeams, setAreaTeams] = useState<Record<string, string>>({});
     const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
     const [selectedDatasets, setSelectedDatasets] = useState<string[]>([]);
     const [selectedComplexTags, setSelectedComplexTags] = useState<number[]>([]);
 
     // Loading state for fetching data
-    const [isLoadingData, setIsLoadingData] = useState(false);
+    const [isLoadingData, setIsLoadingData] = useState(!!identifier);
 
     // Validation errors
     const [errors, setErrors] = useState<FormErrors>({});
@@ -66,24 +59,18 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
+        if (!identifier) return;
         setIsLoadingData(true);
-        Promise.all([
-            getLocationHierarchyList(0, 0, true),
-            identifier ? getGroupByIdentifier(identifier) : Promise.resolve(null)
-        ])
-            .then(([hierarchiesRes, groupRes]) => {
-                const list = hierarchiesRes.content.map((el: any) => ({
-                    label: el.name,
-                    value: el.identifier ?? ''
-                }));
-                setHierarchyList(list);
-                if (list.length > 0) setSelectedHierarchy(list[0]);
-
+        getGroupByIdentifier(identifier)
+            .then(groupRes => {
                 if (groupRes) {
                     setGroupName(groupRes.name);
                     setIsTeam(groupRes.type === 'TEAM');
                     if (groupRes.members) {
                         setAssignedMembers(groupRes.members.map((m: GroupMember) => m.identifier));
+                        setMemberNames(
+                            Object.fromEntries(groupRes.members.map((m: GroupMember) => [m.identifier, m.name]))
+                        );
                     }
                     if (groupRes.datasets) {
                         setSelectedDatasets(groupRes.datasets.map((d: GroupDataset) => d.identifier));
@@ -273,7 +260,6 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                         {(!isTeam || readOnlyMode) && <Col md={4} xs={12}>
                             <AreasSelection
                                 isTeamMode={isTeam}
-                                selectedHierarchy={selectedHierarchy?.value}
                                 selectedAreas={selectedAreas}
                                 onSelectionChange={ids => {
                                     setSelectedAreas(ids);
@@ -331,6 +317,8 @@ const CreateGroup: React.FC<CreateGroupProps> = ({ onCancel, onSave, identifier 
                             <MembersSelection
                                 assignedMembers={assignedMembers}
                                 onAssignmentChange={setAssignedMembers}
+                                memberNames={memberNames}
+                                onMemberNamesChange={setMemberNames}
                                 disabled={readOnlyMode}
 
                             />

@@ -15,6 +15,7 @@ const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, 
   const [otherMembers, setOtherMembers] = useState<string[]>(
     savedAdmins ? members.filter(id => !savedAdmins.includes(id)) : []
   );
+  const [memberNames, setMemberNames] = useState<Record<string, string>>(defaultValues?.memberNames || {});
   const [error, setError] = useState<string | null>(null);
 
   const handleAdminsLoaded = useCallback(
@@ -28,7 +29,8 @@ const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, 
 
   const getStepData = () => ({
     members: [...assignedMembers, ...otherMembers.filter(id => !assignedMembers.includes(id))],
-    adminMembers: assignedMembers
+    adminMembers: assignedMembers,
+    memberNames
   });
 
   const handleNext = () => {
@@ -55,6 +57,8 @@ const AddMembers: React.FC<WizardStepProps> = ({ onNext, onBack, defaultValues, 
           <MembersSelection
             assignedMembers={assignedMembers}
             onAssignmentChange={setAssignedMembers}
+            memberNames={memberNames}
+            onMemberNamesChange={setMemberNames}
             viewOnly={viewOnly}
             instanceIdentifier={instanceIdentifier}
             onAdminsLoaded={handleAdminsLoaded}

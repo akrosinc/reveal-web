@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Card, Form, Button, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { DebounceInput } from 'react-debounce-input';
 import {
   faChevronRight,
   faChevronLeft,
@@ -24,86 +25,78 @@ interface Member {
 interface Props {
   assignedMembers: string[];
   onAssignmentChange: (ids: string[]) => void;
+  memberNames: Record<string, string>;
+  onMemberNamesChange: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   viewOnly?: boolean;
   instanceIdentifier?: string;
   onAdminsLoaded?: (ids: string[]) => void;
 }
 
-const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, viewOnly, instanceIdentifier, onAdminsLoaded }: Props) => {
+const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, memberNames, onMemberNamesChange, viewOnly, instanceIdentifier, onAdminsLoaded }: Props) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [users, setUsers] = useState<Member[]>([]);
+  const [searchResults, setSearchResults] = useState<string[]>([]);
   const [leftSelected, setLeftSelected] = useState<string[]>([]);
   const [rightSelected, setRightSelected] = useState<string[]>([]);
   const isDarkMode = useAppSelector((state: any) => state.darkMode.value);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const [globalUsers, instanceUsers] = await Promise.all([
-          getUserList1().catch(err => {
-            console.error('Failed to fetch global users:', err);
-            return [];
-          }),
-          instanceIdentifier
-            ? getInstanceAdminUserList('ADMIN', instanceIdentifier).catch(err => {
-                console.error('Failed to fetch instance admin users:', err);
-                return undefined;
-              })
-            : Promise.resolve(undefined)
-        ]);
-
-        const combined: Member[] = [];
-        const seenIds = new Set<string>();
-
-        // Add instance users
+    if (!instanceIdentifier) return;
+    let isCurrent = true;
+    getInstanceAdminUserList('ADMIN', instanceIdentifier)
+      .then(instanceUsers => {
+        if (!isCurrent) return;
+        const names: Record<string, string> = {};
         instanceUsers?.forEach((elem: any) => {
           const id = elem?.identifier || elem?.id;
-          if (id && !seenIds.has(id)) {
-            seenIds.add(id);
-            combined.push({
-              id,
-              name: (elem.name || ((elem.firstName || '') + ' ' + (elem.lastName || ''))).trim() || elem.username || id
-            });
+          if (id) {
+            names[id] =
+              (elem.name || (elem.firstName || '') + ' ' + (elem.lastName || '')).trim() || elem.username || id;
           }
         });
+        onMemberNamesChange(prev => ({ ...prev, ...names }));
+        onAdminsLoaded?.(Object.keys(names));
+      })
+      .catch(err => console.error('Failed to fetch instance admin users:', err));
+    return () => {
+      isCurrent = false;
+    };
+  }, [instanceIdentifier, onAdminsLoaded, onMemberNamesChange]);
 
-        // Add global users
+  useEffect(() => {
+    let isCurrent = true;
+    getUserList1(searchTerm.trim())
+      .then(globalUsers => {
+        if (!isCurrent) return;
+        const ids: string[] = [];
+        const names: Record<string, string> = {};
         globalUsers?.forEach((elem: any) => {
           const id = elem?.identifier || elem?.id;
-          if (id && !seenIds.has(id)) {
-            seenIds.add(id);
-            combined.push({
-              id,
-              name: (((elem.firstName || '') + ' ' + (elem.lastName || '')).trim()) || elem.name || elem.username || id
-            });
+          if (id && !names[id]) {
+            ids.push(id);
+            names[id] = ((elem.firstName || '') + ' ' + (elem.lastName || '')).trim() || elem.name || elem.username || id;
           }
         });
-
-        setUsers(combined);
-        if (instanceUsers) {
-          onAdminsLoaded?.(instanceUsers.map((elem: any) => elem?.identifier || elem?.id).filter(Boolean));
-        }
-      } catch (err) {
-        console.log(err);
-      }
+        setSearchResults(ids);
+        onMemberNamesChange(prev => ({ ...names, ...prev }));
+      })
+      .catch(err => console.error('Failed to fetch global users:', err));
+    return () => {
+      isCurrent = false;
     };
-    fetchUsers();
-  }, [instanceIdentifier, onAdminsLoaded]);
+  }, [searchTerm, onMemberNamesChange]);
 
   // Optimized lookups using Set
   const assignedSet = useMemo(() => new Set(assignedMembers), [assignedMembers]);
-  
-  const availableMembers = useMemo(() => 
-    users.filter(m => !assignedSet.has(m.id)),
-  [users, assignedSet]);
 
-  const assignedList = useMemo(() => 
-    users.filter(m => assignedSet.has(m.id)),
-  [users, assignedSet]);
+  const assignedList = useMemo<Member[]>(
+    () => assignedMembers.filter(id => memberNames[id]).map(id => ({ id, name: memberNames[id] })),
+    [assignedMembers, memberNames]
+  );
 
-  const filteredAvailable = useMemo(() => 
-    availableMembers.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())),
-  [availableMembers, searchTerm]);
+  const filteredAvailable = useMemo<Member[]>(
+    () => searchResults.filter(id => !assignedSet.has(id)).map(id => ({ id, name: memberNames[id] })),
+    [searchResults, assignedSet, memberNames]
+  );
 
   const handleMoveRight = useCallback(() => {
     onAssignmentChange([...assignedMembers, ...leftSelected]);
@@ -141,7 +134,14 @@ const MembersSelection = React.memo(({ assignedMembers, onAssignmentChange, view
         <Card.Header className={`${isDarkMode ? 'border-bottom border-white text-white' : 'bg-light'} fw-bold`}>All</Card.Header>
         <Card.Body style={{ background: isDarkMode ? '#212529' : '' }} className="d-flex flex-column">
           <InputGroup className="mb-3">
-            <Form.Control placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} disabled={viewOnly} />
+            <DebounceInput
+              className="form-control"
+              placeholder="Search..."
+              debounceTimeout={500}
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              disabled={viewOnly}
+            />
           </InputGroup>
           <div className="overflow-auto flex-grow-1 rounded p-2" style={{ height: '300px' }}>
             {filteredAvailable.map(member => (
