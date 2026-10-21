@@ -292,7 +292,7 @@ export const KEY_INDICATOR_LEVELS: any[string] = {
       min: 0,
       max: 50,
       class: 'bg-danger',
-      color: COLOR_BOOTSTRAP_SUCCESS,
+      color: COLOR_BOOTSTRAP_DANGER,
       highest: false
     },
     GOOD: {
@@ -308,7 +308,7 @@ export const KEY_INDICATOR_LEVELS: any[string] = {
       min: 90,
       max: 100,
       class: 'bg-success',
-      color: COLOR_BOOTSTRAP_DANGER,
+      color: COLOR_BOOTSTRAP_SUCCESS,
       highest: true
     }
   },
