@@ -13,7 +13,8 @@ function AddDatasetForm({
   onDatasetAdded,
   selectedLocationId,
   simulationId,
-  existingDatasetNames
+  existingDatasetNames,
+  instanceIdentifier
 }: {
   onClose: () => void;
   onDatasetAdded: (dataset: AddDatasetResponse) => void;
@@ -21,6 +22,7 @@ function AddDatasetForm({
   // Pages outside Simulation (e.g. Campaign Planning) pass these instead of using the PolygonContext state
   simulationId?: string;
   existingDatasetNames?: string[];
+  instanceIdentifier?: string;
 }) {
   const { state } = usePolygonContext();
   const [datasetColor, setDatasetColor] = useColor('hex', '#000000');
@@ -46,7 +48,7 @@ function AddDatasetForm({
   useEffect(() => {
     const fetchEntityTags = async () => {
       try {
-        const res = await getEntityTags();
+        const res = await getEntityTags(instanceIdentifier);
 
         const datasetNames = existingDatasetNames ?? state.datasets.map((stateTag: any) => stateTag.name);
         const filteredEntityTags = res.entityTagResponses.filter(

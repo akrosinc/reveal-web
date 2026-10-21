@@ -117,9 +117,11 @@ export interface SimulationDatasetRequest {
   userDatasetIds: string[],
 }
 
-export const getEntityTags = async () => {
+export const getEntityTags = async (instanceIdentifier?: string) => {
   try {
-    const response = await api.get(`/entityTag/instance-hierarchy`);
+    const response = await api.get(
+      `/entityTag/instance-hierarchy${instanceIdentifier ? `?instanceIdentifier=${instanceIdentifier}` : ''}`
+    );
     return response.data;
   } catch (error) {
     console.error(error);

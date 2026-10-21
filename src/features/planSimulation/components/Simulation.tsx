@@ -2681,6 +2681,7 @@ const Simulation = () => {
                           onClose={() => setOpenCustomModal(undefined)}
                           onDatasetAdded={handleAddDataset}
                           selectedLocationId={currentLocationId}
+                          instanceIdentifier={selectedPlan?.identifier ?? instanceContext?.selectedInstance?.identifier}
                         />
                       </div>
                     </CustomPopup>

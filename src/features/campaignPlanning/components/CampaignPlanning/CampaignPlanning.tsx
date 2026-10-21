@@ -589,6 +589,7 @@ const CampaignPlanning = () => {
       {isAddDatasetOpen && simulationId && (
         <AddDatasetDialog
           simulationId={simulationId}
+          instanceId={instanceId}
           parentLocationId={selectedNode?.identifier ?? hierarchy[0]?.identifier}
           datasets={datasets}
           onClose={closeAddDataset}
