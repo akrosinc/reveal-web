@@ -1,35 +1,43 @@
 import { Fragment, memo, useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { BsArrowLeftRight, BsChevronDown, BsPerson } from 'react-icons/bs';
-import { Link } from 'react-router-dom';
+import { BsArrowLeftRight, BsChevronDown, BsMoon, BsPerson } from 'react-icons/bs';
+import { Link, useLocation } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
 import 'flag-icons/css/flag-icons.css';
 import logo from '../../../../assets/logos/reveal-logo.png';
+import logoWhite from '../../../../assets/logos/reveal-logo-white.png';
 import AuthorizedElement from '../../../../components/AuthorizedElement';
 import { getMainMenu } from '../../../../components/Layout/Navbar/menuItems';
 import SwitchInstanceModal from '../../../../components/Layout/Navbar/SwitchInstanceModal';
-import { CAMPAIGN_PLANNING_PAGE, HOME_PAGE } from '../../../../constants';
+import { CAMPAIGN_PLANNING_PAGE, CAMPAIGN_PLANNING_VIEW, HOME_PAGE } from '../../../../constants';
 import { SUPER_ADMIN } from '../../../../constants/userRoles';
 import i18n, { LOCALES } from '../../../../i18n';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { setToBrowser } from '../../../../utils';
+import { setDarkMode } from '../../../reducers/darkMode';
 import { clearCurrentInstance } from '../../../reducers/instanceContext';
 import { HierarchyNode } from '../../providers/types';
 import styles from './TopBar.module.css';
 
+const NAV_MENUS = ['Instance', 'Group', 'Admin'];
+
 interface Props {
-  path: HierarchyNode[];
+  path?: HierarchyNode[];
+  // Shown above the other pages instead of floating over the Campaign Planning map
+  isStatic?: boolean;
 }
 
-// Instance switch, user menu and language work like the main app navbar, which this full-screen page doesn't show
-const TopBar = ({ path }: Props) => {
+// The app header: page links and menus, instance switch, user menu, language and theme, like the old main navbar
+const TopBar = ({ path = [], isStatic }: Props) => {
   const { t } = useTranslation();
   const { keycloak } = useKeycloak();
   const dispatch = useAppDispatch();
   const instanceContext = useAppSelector(state => state.instanceContext);
   const selectedInstance = instanceContext.selectedInstance;
-  const adminMenu = getMainMenu(instanceContext).find(item => item.pageTitle === 'Admin');
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
+  const { pathname } = useLocation();
+  const navMenus = getMainMenu(instanceContext).filter(item => NAV_MENUS.includes(item.pageTitle));
   const [showSwitchModal, setShowSwitchModal] = useState(false);
   const isSuperAdmin = ((keycloak.tokenParsed as any)?.groups || []).includes(SUPER_ADMIN);
   const username = (keycloak.tokenParsed as any)?.preferred_username;
@@ -50,10 +58,18 @@ const TopBar = ({ path }: Props) => {
     setToBrowser('locale', locale);
   };
 
+  const toggleTheme = () => {
+    dispatch(setDarkMode(!isDarkMode));
+    document.body.classList.add('dark-transition');
+    setTimeout(() => document.body.classList.remove('dark-transition'), 1000);
+  };
+
+  const isActiveRoute = (route: string) => pathname.startsWith(route.split('?')[0]);
+
   return (
-    <header className={styles.topBar}>
+    <header className={isStatic ? `${styles.topBar} ${styles.static}` : styles.topBar}>
       <Link to={HOME_PAGE} className={styles.brand}>
-        <img src={logo} alt="Reveal" className={styles.logo} />
+        <img src={isDarkMode ? logoWhite : logo} alt="Reveal" className={styles.logo} />
       </Link>
       <div className={styles.crumb}>
         {path.map((node, index) => (
@@ -64,19 +80,39 @@ const TopBar = ({ path }: Props) => {
         ))}
       </div>
       <nav className={styles.nav}>
-        <Link to={HOME_PAGE} id="campaign-planning-home-link" className={styles.link}>
+        <Link
+          to={HOME_PAGE}
+          id="campaign-planning-home-link"
+          className={pathname === HOME_PAGE ? `${styles.link} ${styles.active}` : styles.link}
+        >
           {t('campaignPlanning.navDashboard')}
         </Link>
-        <span className={styles.active}>{t('campaignPlanning.navCampaignPlanning')}</span>
-        {adminMenu && (
-          <AuthorizedElement roles={adminMenu.roles}>
-            <Dropdown align="end">
-              <Dropdown.Toggle as="button" id="campaign-planning-admin-dropdown" className={styles.navButton}>
-                {t('campaignPlanning.navAdmin')}
+        <AuthorizedElement roles={[CAMPAIGN_PLANNING_VIEW]}>
+          <Link
+            to={CAMPAIGN_PLANNING_PAGE}
+            id="campaign-planning-link"
+            className={isActiveRoute(CAMPAIGN_PLANNING_PAGE) ? `${styles.link} ${styles.active}` : styles.link}
+          >
+            {t('campaignPlanning.navCampaignPlanning')}
+          </Link>
+        </AuthorizedElement>
+        {navMenus.map(menu => (
+          <AuthorizedElement key={menu.pageTitle} roles={menu.roles}>
+            <Dropdown drop="down-centered">
+              <Dropdown.Toggle
+                as="button"
+                id={`campaign-planning-${menu.pageTitle.toLowerCase()}-dropdown`}
+                className={
+                  menu.dropdown?.some(item => isActiveRoute(item.route))
+                    ? `${styles.navButton} ${styles.active}`
+                    : styles.navButton
+                }
+              >
+                {t('topNav.' + menu.pageTitle)}
                 <BsChevronDown />
               </Dropdown.Toggle>
-              <Dropdown.Menu className={`${styles.menu} ${styles.adminMenu}`}>
-                {adminMenu.dropdown?.map(item => (
+              <Dropdown.Menu className={`${styles.menu} ${styles.navMenu}`}>
+                {menu.dropdown?.map(item => (
                   <AuthorizedElement key={item.route} roles={item.roles}>
                     <Dropdown.Item as={Link} to={item.route} className={styles.menuItem}>
                       {t('topNav.' + item.pageTitle)}
@@ -86,7 +122,7 @@ const TopBar = ({ path }: Props) => {
               </Dropdown.Menu>
             </Dropdown>
           </AuthorizedElement>
-        )}
+        ))}
       </nav>
 
       <div className={styles.account}>
@@ -139,6 +175,17 @@ const TopBar = ({ path }: Props) => {
             ))}
           </Dropdown.Menu>
         </Dropdown>
+
+        <button
+          type="button"
+          id="campaign-planning-theme-button"
+          className={styles.accountButton}
+          title={isDarkMode ? t('darkMode.off') : t('darkMode.on')}
+          aria-label={isDarkMode ? t('darkMode.off') : t('darkMode.on')}
+          onClick={toggleTheme}
+        >
+          <BsMoon />
+        </button>
       </div>
 
       <SwitchInstanceModal

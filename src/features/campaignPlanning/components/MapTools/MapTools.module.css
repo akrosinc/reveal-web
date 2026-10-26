@@ -19,7 +19,7 @@
   border: 1px solid transparent;
   border-radius: 50%;
   font-size: 15px;
-  color: #5c6259;
+  color: var(--icon-ink);
   cursor: pointer;
   transition: color 0.15s;
 }
@@ -66,7 +66,7 @@
 }
 
 .option:hover {
-  background: rgba(20, 24, 20, 0.05);
+  background: var(--hover);
 }
 
 .optionActive,

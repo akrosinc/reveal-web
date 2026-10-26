@@ -21,7 +21,7 @@
   max-height: 480px;
   padding: 20px;
   border-radius: 16px;
-  background: rgba(255, 252, 247, 0.97);
+  background: var(--modal);
   box-shadow: 0 24px 64px rgba(20, 24, 20, 0.28);
 }
 
@@ -37,14 +37,14 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: rgba(20, 24, 20, 0.06);
+  background: var(--hover);
   font-size: 12px;
-  color: #5c6259;
+  color: var(--icon-ink);
   cursor: pointer;
 }
 
 .close:hover {
-  background: rgba(20, 24, 20, 0.1);
+  background: var(--hover-strong);
   color: var(--ink);
 }
 
@@ -59,7 +59,7 @@
 .subtitle {
   margin-bottom: 12px;
   font-size: 12px;
-  color: #8a9088;
+  color: var(--sub-ink);
 }
 
 .row {
@@ -72,7 +72,7 @@
 }
 
 .rowLabel {
-  color: #828880;
+  color: var(--sub-ink);
 }
 
 .rowValue {
@@ -100,7 +100,7 @@
 }
 
 .rowInput:hover {
-  border-bottom-color: #dfded8;
+  border-bottom-color: var(--control-line);
 }
 
 .rowInput:focus {
@@ -176,9 +176,9 @@
   composes: iconButton from '../../styles/deck.module.css';
   width: 28px;
   height: 28px;
-  border: 1px solid #dbd9d2;
+  border: 1px solid var(--field-line);
   border-radius: 8px;
-  background: #f1ede5;
+  background: var(--field);
   font-size: 12px;
   color: var(--ink);
 }

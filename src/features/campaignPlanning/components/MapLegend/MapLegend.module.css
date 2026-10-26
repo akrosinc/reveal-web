@@ -14,7 +14,7 @@
   border-radius: 999px;
   font: inherit;
   font-size: 12px;
-  color: #5c6259;
+  color: var(--icon-ink);
   cursor: pointer;
   transition: color 0.15s;
 }
@@ -74,7 +74,7 @@
   padding: 7px 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface-strong);
   font-size: 12px;
   color: var(--body-ink);
 }

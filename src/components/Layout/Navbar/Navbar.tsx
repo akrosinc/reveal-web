@@ -16,10 +16,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { setToBrowser } from '../../../utils';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { setDarkMode } from '../../../features/reducers/darkMode';
-import { setCurrentInstance, clearCurrentInstance } from '../../../features/reducers/instanceContext';
-import { getInstanceContext } from '../../../features/instance/api';
+import { clearCurrentInstance } from '../../../features/reducers/instanceContext';
 import SwitchInstanceModal from './SwitchInstanceModal';
 import { STANDARD_USER, SUPER_ADMIN } from '../../../constants/userRoles';
+import { CAMPAIGN_PLANNING_PAGE } from '../../../constants';
 
 const NavbarComponent = () => {
   const { t } = useTranslation();
@@ -40,45 +40,11 @@ const NavbarComponent = () => {
         keycloak.loadUserProfile().then(userProfile => {
           setUser(userProfile);
         });
-
-        const rawCurrentInstance = localStorage.getItem('currentInstanceContext');
-        const isSuperAdminValue = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
-
-        // Only fetch default context if we don't have a persisted one
-        if (!rawCurrentInstance) {
-          getInstanceContext()
-            .then(res => {
-              let result: any = res;
-              if (isSuperAdminValue) {
-                const globalTemplate = { ...res, selectedInstance: null };
-                localStorage.setItem('SUPERADMIN_DATA', JSON.stringify(globalTemplate));
-                result = globalTemplate;
-              }
-              dispatch(setCurrentInstance(result));
-            })
-            .catch(err => {
-              if (err?.response?.status === 404) {
-                dispatch(clearCurrentInstance());
-              }
-            });
-        } else if (isSuperAdminValue && !localStorage.getItem('SUPERADMIN_DATA')) {
-          // If super admin and we have an instance context but missing SUPERADMIN_DATA, fetch it once
-          getInstanceContext().then(res => {
-            const globalTemplate = { ...res, selectedInstance: null };
-            localStorage.setItem('SUPERADMIN_DATA', JSON.stringify(globalTemplate));
-          });
-        }
       } else {
         setUser(undefined);
-        localStorage.removeItem('SUPERADMIN_DATA');
-        dispatch(clearCurrentInstance());
       }
     }
-  }, [keycloak.authenticated, initialized, dispatch]);
-
-  useEffect(() => {
-    document.body.classList.toggle('dark-mode', isDarkMode);
-  }, [isDarkMode]);
+  }, [keycloak.authenticated, initialized]);
 
   const changeLaguagePrefferences = (lang: any) => {
     i18n.changeLanguage(lang.name);
@@ -197,7 +163,7 @@ const NavbarComponent = () => {
                 id="login-button"
                 style={{ minWidth: '150px' }}
                 className="btn btn-success text-white my-3 my-md-0 me-md-3"
-                onClick={() => keycloak.login()}
+                onClick={() => keycloak.login({ redirectUri: window.location.origin + CAMPAIGN_PLANNING_PAGE })}
               >
                 {t('topNav.logIn')}
               </Nav.Link>

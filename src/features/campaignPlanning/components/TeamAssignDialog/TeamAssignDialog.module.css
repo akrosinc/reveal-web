@@ -15,9 +15,9 @@
   flex-direction: column;
   gap: 2px;
   padding: 8px 10px;
-  border: 1px solid #dfded8;
+  border: 1px solid var(--control-line);
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface-strong);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -75,12 +75,12 @@
 }
 
 .cancel {
-  background: rgba(20, 24, 20, 0.06);
+  background: var(--hover);
   color: var(--ink);
 }
 
 .cancel:hover {
-  background: rgba(20, 24, 20, 0.1);
+  background: var(--hover-strong);
 }
 
 .assign {
@@ -89,7 +89,7 @@
 }
 
 .assign:hover {
-  background: #066b7e;
+  background: var(--teal-hover);
 }
 
 .unassign {

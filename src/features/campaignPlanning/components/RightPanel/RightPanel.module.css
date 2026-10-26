@@ -46,7 +46,7 @@
   margin-bottom: 9px;
   padding: 0 17px;
   font-size: 11.5px;
-  color: #8a9088;
+  color: var(--sub-ink);
   text-transform: capitalize;
 }
 
@@ -64,7 +64,7 @@
 }
 
 .fieldLabel {
-  color: #828880;
+  color: var(--sub-ink);
 }
 
 .fieldValue {
@@ -94,13 +94,13 @@
 
 .pill {
   padding: 5px 12px;
-  border: 1px solid #dfded8;
+  border: 1px solid var(--control-line);
   border-radius: 999px;
   background: transparent;
   font: inherit;
   font-size: 10.5px;
   font-weight: 700;
-  color: #7d847b;
+  color: var(--sub-ink);
   cursor: pointer;
 }
 
@@ -171,7 +171,7 @@
 }
 
 .statusLabel {
-  color: #777f77;
+  color: var(--sub-ink);
 }
 
 .statusRow:hover .statusLabel {
@@ -188,7 +188,7 @@
   height: 6px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e2e4e1;
+  background: var(--track);
 }
 
 .fillComplete,
@@ -214,11 +214,11 @@
 
 .seg {
   padding: 4px 9px;
-  border: 1px solid #dfded8;
+  border: 1px solid var(--control-line);
   border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
-  color: #7d847b;
+  color: var(--sub-ink);
 }
 
 .segActive {

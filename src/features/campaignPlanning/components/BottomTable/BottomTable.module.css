@@ -33,7 +33,7 @@
   width: 32px;
   height: 4px;
   border-radius: 4px;
-  background: rgba(20, 24, 20, 0.15);
+  background: var(--scroll-thumb);
 }
 
 /* Sheet pulled up (design state 2) */
@@ -98,7 +98,7 @@
   padding-bottom: 6px !important;
   border-top: 1px solid var(--line);
   font-weight: 700;
-  color: #8b9187;
+  color: var(--sub-ink);
   cursor: default;
 }
 
@@ -121,7 +121,7 @@
 }
 
 .table tbody tr:hover td {
-  background: rgba(20, 24, 20, 0.04);
+  background: var(--hover-soft);
   color: var(--ink);
 }
 
@@ -146,6 +146,6 @@
   left: 0;
   z-index: 1;
   height: 34px;
-  background: linear-gradient(rgba(255, 252, 247, 0), rgba(255, 252, 247, 0.95));
+  background: linear-gradient(transparent, var(--surface));
   pointer-events: none;
 }

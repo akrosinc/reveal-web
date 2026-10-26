@@ -9,7 +9,7 @@
 }
 
 .row:hover {
-  background: rgba(20, 24, 20, 0.04);
+  background: var(--hover-soft);
 }
 
 .name {

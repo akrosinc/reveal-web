@@ -1,15 +1,65 @@
 /* Shared Command Deck styles, composed by the module's components (sizes and colours from the v0 build of the mockup) */
 
-.font {
+.tokens {
   --ink: #202220;
   --muted-ink: #7e857d;
   --body-ink: #656b64;
   --label-ink: #9da39c;
+  --sub-ink: #828880;
+  --icon-ink: #5c6259;
   --line: rgba(87, 89, 82, 0.14);
   --teal: #087f95;
+  --teal-hover: #066b7e;
   --teal-tint: #dcf0f3;
   --danger: #e5484d;
   --danger-tint: #fde4e4;
+  --deck-bg: #e6e7e1;
+  --surface: rgba(255, 252, 247, 0.91);
+  --surface-strong: #fff;
+  --bar: rgba(255, 255, 255, 0.84);
+  --modal: rgba(255, 252, 247, 0.97);
+  --field: #f1ede5;
+  --field-line: #dbd9d2;
+  --control-line: #dfded8;
+  --track: #e2e4e1;
+  --hover-soft: rgba(20, 24, 20, 0.04);
+  --hover: rgba(20, 24, 20, 0.06);
+  --hover-strong: rgba(20, 24, 20, 0.1);
+  --scroll-thumb: rgba(20, 24, 20, 0.15);
+  --switch-off: rgba(20, 24, 20, 0.18);
+}
+
+:global(body.dark-mode) .tokens {
+  --ink: #e6e8e4;
+  --muted-ink: #a1a89f;
+  --body-ink: #b8bdb6;
+  --label-ink: #868d84;
+  --sub-ink: #9aa198;
+  --icon-ink: #c4c9c2;
+  --line: rgba(255, 255, 255, 0.12);
+  --teal: #3fb4c9;
+  --teal-hover: #5cc3d6;
+  --teal-tint: rgba(63, 180, 201, 0.18);
+  --danger: #ef5f63;
+  --danger-tint: rgba(239, 95, 99, 0.18);
+  --deck-bg: #1d1f1d;
+  --surface: rgba(36, 38, 36, 0.93);
+  --surface-strong: #2b2d2b;
+  --bar: rgba(36, 38, 36, 0.88);
+  --modal: rgba(38, 40, 38, 0.98);
+  --field: #333633;
+  --field-line: #444843;
+  --control-line: #444843;
+  --track: #3b3f3a;
+  --hover-soft: rgba(255, 255, 255, 0.04);
+  --hover: rgba(255, 255, 255, 0.07);
+  --hover-strong: rgba(255, 255, 255, 0.12);
+  --scroll-thumb: rgba(255, 255, 255, 0.18);
+  --switch-off: rgba(255, 255, 255, 0.22);
+}
+
+.font {
+  composes: tokens;
   font-family: Arial, Helvetica, sans-serif;
   line-height: 1.5;
   color: var(--ink);
@@ -18,7 +68,7 @@
 .scroll {
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(20, 24, 20, 0.15) transparent;
+  scrollbar-color: var(--scroll-thumb) transparent;
 }
 
 .scroll::-webkit-scrollbar {
@@ -27,7 +77,7 @@
 
 .scroll::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  background: rgba(20, 24, 20, 0.15);
+  background: var(--scroll-thumb);
 }
 
 .buttonReset {
@@ -55,7 +105,7 @@
 }
 
 .iconButton:hover {
-  background: rgba(20, 24, 20, 0.08);
+  background: var(--hover-strong);
   color: var(--teal);
 }
 
@@ -80,12 +130,7 @@
 /* Loading placeholder (skeleton lines, table cells) */
 .shimmer {
   border-radius: 4px;
-  background: linear-gradient(
-    90deg,
-    rgba(20, 24, 20, 0.06) 25%,
-    rgba(20, 24, 20, 0.12) 50%,
-    rgba(20, 24, 20, 0.06) 75%
-  );
+  background: linear-gradient(90deg, var(--hover) 25%, var(--hover-strong) 50%, var(--hover) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.3s ease-in-out infinite;
 }
@@ -105,6 +150,6 @@
  */
 .surface {
   overflow: hidden;
-  background: rgba(255, 252, 247, 0.91);
+  background: var(--surface);
   box-shadow: 0 15px 26px rgba(88, 90, 82, 0.09);
 }

@@ -63,9 +63,9 @@
   gap: 8px;
   width: 100%;
   padding: 7px 11px;
-  border: 1px solid #dbd9d2;
+  border: 1px solid var(--field-line);
   border-radius: 9px;
-  background: #f1ede5;
+  background: var(--field);
   font-size: 12px;
   text-align: left;
   color: var(--ink);
@@ -92,7 +92,7 @@
 }
 
 .instancePlaceholder {
-  color: #828880;
+  color: var(--sub-ink);
 }
 
 .instanceChevron {
@@ -114,7 +114,7 @@
   padding: 4px;
   border: 0;
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface-strong);
   background-image: none !important;
   box-shadow: 0 10px 26px rgba(88, 90, 82, 0.14);
   font-size: 12px !important;
@@ -133,7 +133,7 @@
 
 .instanceMenu .instanceItem:hover,
 .instanceMenu .instanceItem:focus {
-  background-color: rgba(20, 24, 20, 0.05) !important;
+  background-color: var(--hover) !important;
   color: var(--ink) !important;
 }
 
@@ -163,7 +163,7 @@
 
 .instancePlan {
   font-size: 10px;
-  color: #828880;
+  color: var(--sub-ink);
 }
 
 .instanceCheck {
@@ -176,9 +176,9 @@
   flex: 1;
   min-width: 0;
   padding: 7px 11px;
-  border: 1px solid #dbd9d2;
+  border: 1px solid var(--field-line);
   border-radius: 9px;
-  background: #f1ede5;
+  background: var(--field);
   font: inherit;
   font-size: 12px;
   color: var(--ink);
@@ -186,7 +186,7 @@
 }
 
 .search::placeholder {
-  color: #828880;
+  color: var(--sub-ink);
   opacity: 1;
 }
 
@@ -197,9 +197,9 @@
 .collapseButton {
   composes: iconButton from '../../styles/deck.module.css';
   width: 32px;
-  border: 1px solid #dbd9d2;
+  border: 1px solid var(--field-line);
   border-radius: 9px;
-  background: #f1ede5;
+  background: var(--field);
 }
 
 .body {
@@ -239,7 +239,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #828880;
+  color: var(--sub-ink);
 }
 
 .headerActions {
@@ -317,5 +317,5 @@
 
 .empty {
   composes: item;
-  color: #828880;
+  color: var(--sub-ink);
 }

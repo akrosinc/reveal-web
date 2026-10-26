@@ -3,7 +3,7 @@
   width: 260px;
   padding: 14px 16px 16px;
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface-strong);
   box-shadow: 0 12px 28px rgba(20, 24, 20, 0.18);
 }
 
@@ -35,7 +35,7 @@
 
 .level {
   font-size: 11.5px;
-  color: #8a9088;
+  color: var(--sub-ink);
   text-transform: capitalize;
 }
 
@@ -49,14 +49,14 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: rgba(20, 24, 20, 0.06);
+  background: var(--hover);
   font-size: 15px;
-  color: #5c6259;
+  color: var(--icon-ink);
   cursor: pointer;
 }
 
 .close:hover {
-  background: rgba(20, 24, 20, 0.1);
+  background: var(--hover-strong);
   color: var(--ink);
 }
 
@@ -100,7 +100,7 @@
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  color: #828880;
+  color: var(--sub-ink);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -139,7 +139,7 @@
 }
 
 .primary:hover {
-  background: #066b7e;
+  background: var(--teal-hover);
 }
 
 .danger {

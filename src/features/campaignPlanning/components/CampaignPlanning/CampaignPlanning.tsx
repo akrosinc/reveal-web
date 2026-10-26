@@ -16,7 +16,7 @@ import {
   getPlanSimulation,
   updateSimulationDataset
 } from '../../api';
-import { MAP_STYLE_LIGHT } from '../../constants';
+import { MAP_STYLE_DARK, MAP_STYLE_LIGHT } from '../../constants';
 import {
   HierarchyNode,
   InstanceListItem,
@@ -74,6 +74,8 @@ const CampaignPlanning = () => {
   const [isDetailsCollapsed, setIsDetailsCollapsed] = useState(false);
   const [isTableOpen, setIsTableOpen] = useState(false);
   const [mapStyle, setMapStyle] = useState(MAP_STYLE_LIGHT);
+  const isDarkMode = useAppSelector(state => state.darkMode.value);
+  const appliedMapStyle = isDarkMode && mapStyle === MAP_STYLE_LIGHT ? MAP_STYLE_DARK : mapStyle;
   const [isAddDatasetOpen, setIsAddDatasetOpen] = useState(false);
   const [isAddRasterOpen, setIsAddRasterOpen] = useState(false);
   const selectedPath = useMemo(
@@ -472,7 +474,7 @@ const CampaignPlanning = () => {
   return (
     <div className={styles.deck} style={{ '--table-space': tableSpace } as CSSProperties}>
       <CampaignMap
-        mapStyle={mapStyle}
+        mapStyle={appliedMapStyle}
         locations={mapLocations}
         datasets={datasets}
         filters={mapFilters}

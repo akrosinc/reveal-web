@@ -1,4 +1,5 @@
 .topBar {
+  composes: font from '../../styles/deck.module.css';
   position: absolute;
   top: 14px;
   left: 14px;
@@ -8,8 +9,17 @@
   align-items: center;
   padding: 11px 18px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.84);
+  background: var(--bar);
   box-shadow: 0 10px 26px rgba(104, 105, 99, 0.07);
+}
+
+.static {
+  position: relative;
+  top: 14px;
+  left: auto;
+  right: auto;
+  margin: 0 0 28px;
+  border: 1px solid var(--line);
 }
 
 .brand {
@@ -33,7 +43,7 @@
 }
 
 .separator {
-  color: #989d96;
+  color: var(--sub-ink);
 }
 
 .current {
@@ -51,7 +61,7 @@
   white-space: nowrap;
 }
 
-.active {
+.nav .active {
   font-weight: 700;
   color: var(--teal);
 }
@@ -116,7 +126,7 @@
 
 .accountButton:hover,
 .accountButton[aria-expanded='true'] {
-  background: rgba(20, 24, 20, 0.06);
+  background: var(--hover);
   color: var(--ink);
 }
 
@@ -134,6 +144,7 @@
   border-radius: 12px;
   /* The app navbar's .dropdown-menu.show adds a background image with !important; not wanted here */
   background-image: none !important;
+  background-color: var(--surface-strong) !important;
   box-shadow: 0 10px 26px rgba(104, 105, 99, 0.14);
   font-size: 12px;
 }
@@ -150,7 +161,7 @@
 
 .menu .menuItem:hover,
 .menu .menuItem:focus {
-  background-color: rgba(20, 24, 20, 0.06) !important;
+  background-color: var(--hover) !important;
   color: var(--ink) !important;
 }
 
@@ -160,18 +171,17 @@
   color: var(--teal) !important;
 }
 
-.adminMenu:global(.dropdown-menu) {
+.navMenu:global(.dropdown-menu) {
   min-width: 160px;
   border: 0;
-  margin-top: 22px !important;
+  margin-top: 14px !important;
   padding: 10px 6px;
   border-radius: 14px;
-  background-color: rgba(255, 255, 255, 0.84) !important;
+  background-color: var(--bar) !important;
   backdrop-filter: blur(8px);
   box-shadow: 0 10px 26px rgba(104, 105, 99, 0.07);
 }
-
-.adminMenu .menuItem {
+.navMenu .menuItem {
   padding: 5px 10px !important;
   color: var(--muted-ink) !important;
 }

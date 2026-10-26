@@ -44,6 +44,8 @@ import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import {config} from "../config/config";
 import { useLocation } from 'react-router-dom';
 import { CAMPAIGN_PLANNING_PAGE } from '../constants';
+import TopBar from '../features/campaignPlanning/components/TopBar';
+import { useInstanceContextLoader } from '../hooks/useInstanceContextLoader';
 
 //Here we add all Font Awesome icons needed in the app so we dont have to import them in each component
 library.add(
@@ -73,14 +75,15 @@ library.add(
 function App() {
   const { keycloak, initialized } = useKeycloak();
   const dispatch = useAppDispatch();
-  // Campaign Planning is a standalone full-screen module with its own top bar, so it skips the app shell
-  // (only when logged in: the public page needs the Navbar's Login button)
+  // Campaign Planning is a standalone full-screen module with its own floating top bar, so it skips the app shell;
+  // the other pages show the same top bar above them (the logged-out public page keeps the Navbar's Login button)
   const { pathname } = useLocation();
   const isStandaloneModule = !!keycloak.authenticated && pathname.startsWith(CAMPAIGN_PLANNING_PAGE);
   const router = <Router instance={config.REACT_APP_INSTANCE} />;
 
   // custom hook to listen and change document title on page navigation
   usePath();
+  useInstanceContextLoader();
 
   useEffect(() => {
     // if keycloak is initialized show welcome message and
@@ -124,7 +127,7 @@ function App() {
           <SimpleBar style={{ height: '100vh' }}>
             <Container fluid>
               <main>
-                <NavbarComponent />
+                {keycloak.authenticated ? <TopBar isStatic /> : <NavbarComponent />}
                 {router}
               </main>
               <Container fluid className="footer-row-container">

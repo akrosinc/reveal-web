@@ -1,6 +1,7 @@
 import { SiteGeometry, SiteType } from './providers/types';
 
 export const MAP_STYLE_LIGHT = 'mapbox://styles/mapbox/light-v10';
+export const MAP_STYLE_DARK = 'mapbox://styles/mapbox/dark-v10';
 
 // Basemap options of the layers picker (design state 5)
 export const BASEMAPS = [

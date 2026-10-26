@@ -6,7 +6,7 @@
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: rgba(20, 24, 20, 0.18);
+  background: var(--switch-off);
   cursor: pointer;
   transition: background-color 0.15s;
 }
