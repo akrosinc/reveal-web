@@ -612,6 +612,7 @@ const CampaignPlanning = () => {
         <AddRasterDialog
           simulationId={simulationId}
           parentLocationId={selectedNode?.identifier ?? hierarchy[0]?.identifier}
+          existingRasterIds={rasterDatasets.flatMap(raster => [raster.identifier, raster.datasetIdentifier ?? ''])}
           onClose={closeAddRaster}
           onAdded={reloadRasterDatasets}
         />

@@ -35,6 +35,7 @@ interface Props {
   closeHandler: () => void;
   instance?: any;
   selectedLocationId?: string;
+  existingRasterIds?: string[];
   onRasterAdded?: (rasterData: {
     raster: RasterOption;
     color?: ColorOption | null;
@@ -124,13 +125,21 @@ export const FALLBACK_RASTER_OPTIONS: RasterOption[] = [
 
 export { COLOR_OPTIONS };
 
-const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onRasterAdded }: Props) => {
+const AddRastersModal = ({
+  show,
+  closeHandler,
+  instance,
+  selectedLocationId,
+  existingRasterIds = [],
+  onRasterAdded
+}: Props) => {
   const { t } = useTranslation();
   const isDarkMode = useAppSelector(state => state.darkMode.value);
   const instanceContext = useAppSelector(state => state.instanceContext);
   const { state: polygonState } = usePolygonContext();
 
   const [rasterOptions, setRasterOptions] = useState<RasterOption[]>([]);
+  const availableRasterOptions = rasterOptions.filter(option => !existingRasterIds.includes(option.rasterId));
   const [isLoadingRasters, setIsLoadingRasters] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [selectedRaster, setSelectedRaster] = useState<SingleValue<RasterOption>>(null);
@@ -404,7 +413,7 @@ const AddRastersModal = ({ show, closeHandler, instance, selectedLocationId, onR
                     setSelectedColor(COLOR_OPTIONS[0]);
                   }
                 }}
-                options={rasterOptions}
+                options={availableRasterOptions}
                 isClearable
                 styles={customSelectStyles}
                 menuPortalTarget={document.body}

@@ -5,11 +5,12 @@ import AddRastersModal from '../../../planSimulation/components/modals/AddRaster
 interface Props {
   simulationId: string;
   parentLocationId?: string;
+  existingRasterIds: string[];
   onClose: () => void;
   onAdded: () => void;
 }
 
-const AddRasterDialog = ({ simulationId, parentLocationId, onClose, onAdded }: Props) => {
+const AddRasterDialog = ({ simulationId, parentLocationId, existingRasterIds, onClose, onAdded }: Props) => {
   const { dispatch } = usePolygonContext();
 
   useEffect(() => {
@@ -22,6 +23,7 @@ const AddRasterDialog = ({ simulationId, parentLocationId, onClose, onAdded }: P
       closeHandler={onClose}
       instance={{ simulationId }}
       selectedLocationId={parentLocationId}
+      existingRasterIds={existingRasterIds}
       onRasterAdded={onAdded}
     />
   );
