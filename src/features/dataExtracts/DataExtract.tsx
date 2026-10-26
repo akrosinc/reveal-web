@@ -37,12 +37,14 @@ const DataExtract = () => {
             link.current.href = window.URL.createObjectURL(new Blob([res], { type: 'text/csv;charset=utf-8' }));
             link.current.download = 'data-extract.csv';
             link.current.click();
+          }else {
+            console.log("Guard failed!", { planModel, selectedPlan, selectedDataExtractLabelId, selectedSeparator });
           }
         })
 
         .catch(ex => toast.error(ex));
     }
-  }, [selectedPlan, planList, selectedDataExtractLabelId]);
+  }, [selectedPlan, planList, selectedDataExtractLabelId, selectedSeparator]);
 
   return (
     <Container fluid className="text-center my-4">
@@ -102,6 +104,7 @@ const DataExtract = () => {
                     )}
                     onChange={(e) => {
                       const selected = e as { value: DataExtractSeparator; label: string } | null;
+                      console.log(selectedSeparator, e.value)
                       setSelectedSeparator(selected?.value);
                     }}
                 />
