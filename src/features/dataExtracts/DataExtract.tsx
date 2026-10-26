@@ -8,13 +8,14 @@ import Select from 'react-select';
 import { Button, Col, Container, Form, FormGroup, Row } from 'react-bootstrap';
 import { getDataExtract, getQueryLabels } from './api';
 
-import { DataExtractQueryResponse } from './providers/types';
+import {DataExtractQueryResponse, DataExtractSeparator} from './providers/types';
 
 const DataExtract = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
   const [selectedPlan, setSelectedPlan] = useState<string>();
   const [dataExtractLabels, setDataExtractLabels] = useState<DataExtractQueryResponse[]>();
   const [selectedDataExtractLabelId, setSelectedDataExtractLabelId] = useState<string>();
+  const [selectedSeperator, setSelectedSeparator] = useState<string>();
   let link = useRef<HTMLAnchorElement>(null);
 
   const loadData = useCallback((size: number, page: number) => {
@@ -85,8 +86,33 @@ const DataExtract = () => {
             </FormGroup>
           ) : null}
         </Col>
+        <Col md={2}>
+          {selectedPlan ? (
+              <FormGroup style={{ display: 'flex', alignItems: 'center' }}>
+                <Form.Label style={{ marginRight: '10px' }}>Select Seperator</Form.Label>
+                <Select
+                    styles={{
+                      container: provided => ({
+                        ...provided,
+                        width: 300 // Control the width here
+                      })
+                    }}
+                    options={Object.values(DataExtractSeparator).map(
+                        separator => ({ value: separator, label: separator })
+                    )}
+                    onChange={(e) => {
+                      if (e && 'value' in e) {
+                        setSelectedSeparator(e.value);
+                      } else {
+                        setSelectedSeparator(undefined); // or null, depending on your state
+                      }
+                    }}
+                />
+              </FormGroup>
+          ) : null}
+        </Col>
         <Col md={1}>
-          {selectedPlan && selectedDataExtractLabelId ? <Button onClick={() => getCSV()}>Get CSV</Button> : null}
+          {selectedPlan && selectedDataExtractLabelId && selectedSeperator? <Button onClick={() => getCSV()}>Get CSV</Button> : null}
         </Col>
       </Row>
       <a
