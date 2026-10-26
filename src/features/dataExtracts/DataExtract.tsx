@@ -15,7 +15,7 @@ const DataExtract = () => {
   const [selectedPlan, setSelectedPlan] = useState<string>();
   const [dataExtractLabels, setDataExtractLabels] = useState<DataExtractQueryResponse[]>();
   const [selectedDataExtractLabelId, setSelectedDataExtractLabelId] = useState<string>();
-  const [selectedSeperator, setSelectedSeparator] = useState<string>();
+  const [selectedSeparator, setSelectedSeparator] = useState<DataExtractSeparator>();
   let link = useRef<HTMLAnchorElement>(null);
 
   const loadData = useCallback((size: number, page: number) => {
@@ -30,8 +30,8 @@ const DataExtract = () => {
 
   const getCSV = useCallback(() => {
     const planModel = planList?.content.find(plan => plan.identifier === selectedPlan);
-    if (planModel && selectedDataExtractLabelId) {
-      getDataExtract(planModel.identifier, selectedDataExtractLabelId)
+    if (planModel && selectedDataExtractLabelId && selectedSeparator) {
+      getDataExtract(planModel.identifier, selectedDataExtractLabelId, selectedSeparator)
         .then(res => {
           if (link && link.current) {
             link.current.href = window.URL.createObjectURL(new Blob([res], { type: 'text/csv;charset=utf-8' }));
@@ -101,18 +101,15 @@ const DataExtract = () => {
                         separator => ({ value: separator, label: separator })
                     )}
                     onChange={(e) => {
-                      if (e && 'value' in e) {
-                        setSelectedSeparator(e.value);
-                      } else {
-                        setSelectedSeparator(undefined); // or null, depending on your state
-                      }
+                      const selected = e as { value: DataExtractSeparator; label: string } | null;
+                      setSelectedSeparator(selected?.value);
                     }}
                 />
               </FormGroup>
           ) : null}
         </Col>
         <Col md={1}>
-          {selectedPlan && selectedDataExtractLabelId && selectedSeperator? <Button onClick={() => getCSV()}>Get CSV</Button> : null}
+          {selectedPlan && selectedDataExtractLabelId && selectedSeparator? <Button onClick={() => getCSV()}>Get CSV</Button> : null}
         </Col>
       </Row>
       <a
