@@ -1,14 +1,16 @@
 import { Fragment, memo, useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { BsArrowLeftRight, BsPerson } from 'react-icons/bs';
+import { BsArrowLeftRight, BsChevronDown, BsPerson } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
 import 'flag-icons/css/flag-icons.css';
+import logo from '../../../../assets/logos/reveal-logo.png';
+import AuthorizedElement from '../../../../components/AuthorizedElement';
+import { getMainMenu } from '../../../../components/Layout/Navbar/menuItems';
 import SwitchInstanceModal from '../../../../components/Layout/Navbar/SwitchInstanceModal';
-import { CAMPAIGN_PLANNING_INSTANCE_SELECTION, CAMPAIGN_PLANNING_PAGE, HOME_PAGE } from '../../../../constants';
+import { CAMPAIGN_PLANNING_PAGE, HOME_PAGE } from '../../../../constants';
 import { SUPER_ADMIN } from '../../../../constants/userRoles';
-import { useAuthorization } from '../../../../hooks/useAuthorization';
 import i18n, { LOCALES } from '../../../../i18n';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { setToBrowser } from '../../../../utils';
@@ -25,9 +27,10 @@ const TopBar = ({ path }: Props) => {
   const { t } = useTranslation();
   const { keycloak } = useKeycloak();
   const dispatch = useAppDispatch();
-  const selectedInstance = useAppSelector(state => state.instanceContext.selectedInstance);
+  const instanceContext = useAppSelector(state => state.instanceContext);
+  const selectedInstance = instanceContext.selectedInstance;
+  const adminMenu = getMainMenu(instanceContext).find(item => item.pageTitle === 'Admin');
   const [showSwitchModal, setShowSwitchModal] = useState(false);
-  const canSwitchInstance = useAuthorization([CAMPAIGN_PLANNING_INSTANCE_SELECTION]);
   const isSuperAdmin = ((keycloak.tokenParsed as any)?.groups || []).includes(SUPER_ADMIN);
   const username = (keycloak.tokenParsed as any)?.preferred_username;
   const currentLocale = LOCALES.find(locale => locale.name === i18n.language) ?? LOCALES[0];
@@ -50,7 +53,7 @@ const TopBar = ({ path }: Props) => {
   return (
     <header className={styles.topBar}>
       <Link to={HOME_PAGE} className={styles.brand}>
-        Reveal
+        <img src={logo} alt="Reveal" className={styles.logo} />
       </Link>
       <div className={styles.crumb}>
         {path.map((node, index) => (
@@ -61,28 +64,42 @@ const TopBar = ({ path }: Props) => {
         ))}
       </div>
       <nav className={styles.nav}>
-        <span className={styles.active}>{t('campaignPlanning.navCampaignPlanning')}</span>
         <Link to={HOME_PAGE} id="campaign-planning-home-link" className={styles.link}>
           {t('campaignPlanning.navDashboard')}
         </Link>
-        <span>{t('campaignPlanning.navAdmin')}</span>
+        <span className={styles.active}>{t('campaignPlanning.navCampaignPlanning')}</span>
+        {adminMenu && (
+          <AuthorizedElement roles={adminMenu.roles}>
+            <Dropdown align="end">
+              <Dropdown.Toggle as="button" id="campaign-planning-admin-dropdown" className={styles.navButton}>
+                {t('campaignPlanning.navAdmin')}
+                <BsChevronDown />
+              </Dropdown.Toggle>
+              <Dropdown.Menu className={`${styles.menu} ${styles.adminMenu}`}>
+                {adminMenu.dropdown?.map(item => (
+                  <AuthorizedElement key={item.route} roles={item.roles}>
+                    <Dropdown.Item as={Link} to={item.route} className={styles.menuItem}>
+                      {t('topNav.' + item.pageTitle)}
+                    </Dropdown.Item>
+                  </AuthorizedElement>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </AuthorizedElement>
+        )}
       </nav>
 
       <div className={styles.account}>
-        {canSwitchInstance ? (
-          <button
-            type="button"
-            id="campaign-planning-switch-instance-button"
-            className={styles.accountButton}
-            title={t('topNav.switchInstance')}
-            onClick={() => setShowSwitchModal(true)}
-          >
-            <BsArrowLeftRight />
-            <span className={styles.instanceName}>{instanceName}</span>
-          </button>
-        ) : (
-          <span className={`${styles.instanceName} ${styles.instanceLabel}`}>{instanceName}</span>
-        )}
+        <button
+          type="button"
+          id="campaign-planning-switch-instance-button"
+          className={styles.accountButton}
+          title={t('topNav.switchInstance')}
+          onClick={() => setShowSwitchModal(true)}
+        >
+          <BsArrowLeftRight />
+          <span className={styles.instanceName}>{instanceName}</span>
+        </button>
 
         {username && (
           <Dropdown align="end">
