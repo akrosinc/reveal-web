@@ -2,8 +2,8 @@ import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronUp } from 'react-icons/bs';
 import { POPULATION, SCHOOLS, ZONES } from '../../placeholderData';
-import { HierarchyNode, Site, SiteGeometry } from '../../providers/types';
-import { getSiteGroups, SiteGroup } from '../../utils/sites';
+import { HierarchyNode, Site, SiteGeometry, SiteTargets } from '../../providers/types';
+import { getSiteGroups } from '../../utils/sites';
 import ActivityTab from './ActivityTab';
 import DemographicsTab from './DemographicsTab';
 import Field from './Field';
@@ -17,6 +17,8 @@ type Tab = 'sites' | 'activity' | 'demographics';
 
 const TABS: Tab[] = ['sites', 'activity', 'demographics'];
 
+const NO_TARGETS: SiteTargets = {};
+
 interface Props {
   node: HierarchyNode;
   isCollapsed: boolean;
@@ -29,13 +31,21 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('sites');
   const [isPopulationOpen, setIsPopulationOpen] = useState(false);
-  const [openSiteGroup, setOpenSiteGroup] = useState<SiteGroup>();
+  const [openSiteGeometry, setOpenSiteGeometry] = useState<SiteGeometry>();
+  const [siteTargetsByArea, setSiteTargetsByArea] = useState<Record<string, SiteTargets>>({});
   const [isZonesSchoolsOpen, setIsZonesSchoolsOpen] = useState(false);
   const [zonesSchoolsByArea, setZonesSchoolsByArea] = useState<Record<string, ZonesSchoolsCounts>>({});
   const zonesSchools = zonesSchoolsByArea[node.identifier] ?? { zones: ZONES, schools: SCHOOLS };
   const saveZonesSchools = (counts: ZonesSchoolsCounts) =>
     setZonesSchoolsByArea(current => ({ ...current, [node.identifier]: counts }));
-  const siteGroups = useMemo(() => getSiteGroups(sites), [sites]);
+  const siteTargets = siteTargetsByArea[node.identifier] ?? NO_TARGETS;
+  const saveSiteTarget = (typeId: string, target: number) =>
+    setSiteTargetsByArea(current => ({
+      ...current,
+      [node.identifier]: { ...current[node.identifier], [typeId]: target }
+    }));
+  const siteGroups = useMemo(() => getSiteGroups(sites, siteTargets), [sites, siteTargets]);
+  const openSiteGroup = siteGroups.find(group => group.geometry === openSiteGeometry);
   const { name, geographicLevel } = node.properties;
 
   return (
@@ -98,7 +108,7 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
               siteGroups={siteGroups}
               zonesSchools={zonesSchools}
               onEditZonesSchools={() => setIsZonesSchoolsOpen(true)}
-              onOpenGroup={setOpenSiteGroup}
+              onOpenGroup={group => setOpenSiteGeometry(group.geometry)}
               canAddSites={!node.children?.length}
               onAddSite={onAddSite}
             />
@@ -118,7 +128,12 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
         />
       )}
       {openSiteGroup && (
-        <SiteGroupModal group={openSiteGroup} name={name} onClose={() => setOpenSiteGroup(undefined)} />
+        <SiteGroupModal
+          group={openSiteGroup}
+          name={name}
+          onTargetChange={saveSiteTarget}
+          onClose={() => setOpenSiteGeometry(undefined)}
+        />
       )}
     </div>
   );

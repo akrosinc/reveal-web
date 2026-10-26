@@ -7,26 +7,49 @@ import modal from '../DeckModal/DeckModal.module.css';
 
 const PAGE_SIZE = 5;
 
+const isWholeNumber = (value: string) => /^\d+$/.test(value);
+
 interface Props {
   group: SiteGroup;
   name: string;
+  onTargetChange: (typeId: string, target: number) => void;
   onClose: () => void;
 }
 
-const SiteGroupModal = ({ group, name, onClose }: Props) => {
+const SiteGroupModal = ({ group, name, onTargetChange, onClose }: Props) => {
   const { t } = useTranslation();
   const [page, setPage] = useState(0);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
   const pageCount = Math.ceil(group.sites.length / PAGE_SIZE);
   const currentPage = Math.min(page, Math.max(pageCount - 1, 0));
   const from = currentPage * PAGE_SIZE;
   const pageSites = group.sites.slice(from, from + PAGE_SIZE);
 
+  const changeTarget = (typeId: string, value: string) => {
+    setDrafts(current => ({ ...current, [typeId]: value }));
+    if (isWholeNumber(value)) onTargetChange(typeId, Number(value));
+  };
+
+  const clearDraft = (typeId: string) => setDrafts(({ [typeId]: _removed, ...current }) => current);
+
   return (
     <DeckModal title={group.label} subtitle={t('campaignPlanning.catchment', { name })} onClose={onClose}>
       {group.types.map(type => (
-        <div key={type.label} className={modal.row}>
-          <span className={modal.rowLabel}>{type.label}</span>
-          <span className={modal.rowValue}>{type.count}</span>
+        <div key={type.id} className={modal.row}>
+          <label className={modal.rowLabel} htmlFor={`campaign-planning-site-target-${type.id}`}>
+            {type.label}
+          </label>
+          <input
+            id={`campaign-planning-site-target-${type.id}`}
+            className={modal.rowInput}
+            type="number"
+            min={0}
+            step={1}
+            inputMode="numeric"
+            value={drafts[type.id] ?? String(type.target)}
+            onChange={e => changeTarget(type.id, e.target.value)}
+            onBlur={() => clearDraft(type.id)}
+          />
         </div>
       ))}
       {!!group.sites.length && (

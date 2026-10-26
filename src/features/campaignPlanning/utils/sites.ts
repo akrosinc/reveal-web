@@ -11,7 +11,7 @@ import {
 } from '@turf/turf';
 import { Map } from 'mapbox-gl';
 import { SITE_GEOMETRIES, SITE_SNAP_TOLERANCE_PX, SITE_TYPES } from '../constants';
-import { Site } from '../providers/types';
+import { Site, SiteTargets } from '../providers/types';
 
 export type Position = [number, number];
 
@@ -22,7 +22,7 @@ export interface SiteGroup {
   label: string;
   mapped: number;
   target: number;
-  types: { label: string; count: number }[];
+  types: { id: string; label: string; count: number; target: number }[];
   sites: { name: string; type: string; isMapped: boolean }[];
 }
 
@@ -30,7 +30,7 @@ const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1
 
 export const getSiteTypeName = (typeId: string) => SITE_TYPES.find(type => type.id === typeId)?.name ?? typeId;
 
-export const getSiteGroups = (sites: Site[]): SiteGroup[] =>
+export const getSiteGroups = (sites: Site[], targets: SiteTargets = {}): SiteGroup[] =>
   SITE_GEOMETRIES.map(geometry => {
     const types = SITE_TYPES.filter(type => type.geometry === geometry);
     const groupSites = sites.filter(site => site.geometry === geometry);
@@ -38,10 +38,12 @@ export const getSiteGroups = (sites: Site[]): SiteGroup[] =>
       geometry,
       label: capitalize(types.map(type => type.name).join(', ')),
       mapped: groupSites.filter(site => site.location).length,
-      target: groupSites.length,
+      target: types.reduce((sum, type) => sum + (targets[type.id] ?? 0), 0),
       types: types.map(type => ({
+        id: type.id,
         label: type.label,
-        count: groupSites.filter(site => site.typeId === type.id).length
+        count: groupSites.filter(site => site.typeId === type.id).length,
+        target: targets[type.id] ?? 0
       })),
       sites: groupSites.map(site => ({
         name: site.name,

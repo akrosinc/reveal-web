@@ -79,6 +79,34 @@
   font-weight: 700;
 }
 
+.rowInput {
+  width: 64px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  text-align: right;
+  color: var(--ink);
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.rowInput::-webkit-outer-spin-button,
+.rowInput::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.rowInput:hover {
+  border-bottom-color: #dfded8;
+}
+
+.rowInput:focus {
+  border-bottom-color: var(--teal);
+}
+
 .note {
   margin-top: 10px;
   font-size: 11px;

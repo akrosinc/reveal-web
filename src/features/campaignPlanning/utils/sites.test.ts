@@ -36,9 +36,17 @@ describe('getSiteGroups', () => {
     const [polygonGroup, pointGroup] = getSiteGroups([site('static', 'polygon'), site('mobile', 'point')]);
     expect(polygonGroup.label).toBe('Outreach, static, H2R');
     expect(polygonGroup.mapped).toBe(1);
-    expect(polygonGroup.target).toBe(1);
+    expect(polygonGroup.target).toBe(0);
     expect(polygonGroup.types.find(type => type.label === 'Static sites')?.count).toBe(1);
     expect(pointGroup.sites).toEqual([{ name: 'mobile site', type: 'Mobile', isMapped: true }]);
+  });
+
+  it('adds up the target of each type in the group', () => {
+    const [polygonGroup, pointGroup] = getSiteGroups([site('mobile', 'point')], { mobile: 12, school_hpv: 10 });
+    expect(polygonGroup.target).toBe(0);
+    expect(pointGroup.mapped).toBe(1);
+    expect(pointGroup.target).toBe(22);
+    expect(pointGroup.types.map(type => type.target)).toEqual([12, 10]);
   });
 
   it('starts at zero without sites', () => {

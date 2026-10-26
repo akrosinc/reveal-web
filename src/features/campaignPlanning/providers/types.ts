@@ -154,3 +154,5 @@ export interface Site {
   location: GeoJSON.Point;
   boundary?: GeoJSON.Polygon;
 }
+
+export type SiteTargets = Record<string, number>;

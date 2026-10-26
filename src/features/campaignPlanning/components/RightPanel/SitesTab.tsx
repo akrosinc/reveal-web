@@ -48,7 +48,9 @@ const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, c
             <span className={styles.track}>
               <span
                 className={group.target && group.mapped >= group.target ? styles.fillComplete : styles.fillIncomplete}
-                style={{ width: `${group.target ? Math.round((group.mapped / group.target) * 100) : 0}%` }}
+                style={{
+                  width: `${group.target ? Math.min(Math.round((group.mapped / group.target) * 100), 100) : 0}%`
+                }}
               />
             </span>
           </button>
