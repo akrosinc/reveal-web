@@ -8,13 +8,14 @@ import Select from 'react-select';
 import { Button, Col, Container, Form, FormGroup, Row } from 'react-bootstrap';
 import { getDataExtract, getQueryLabels } from './api';
 
-import { DataExtractQueryResponse } from './providers/types';
+import {DataExtractQueryResponse, DataExtractSeparator} from './providers/types';
 
 const DataExtract = () => {
   const [planList, setPlanList] = useState<PageableModel<PlanModel>>();
   const [selectedPlan, setSelectedPlan] = useState<string>();
   const [dataExtractLabels, setDataExtractLabels] = useState<DataExtractQueryResponse[]>();
   const [selectedDataExtractLabelId, setSelectedDataExtractLabelId] = useState<string>();
+  const [selectedSeparator, setSelectedSeparator] = useState<DataExtractSeparator>();
   let link = useRef<HTMLAnchorElement>(null);
 
   const loadData = useCallback((size: number, page: number) => {
@@ -29,19 +30,21 @@ const DataExtract = () => {
 
   const getCSV = useCallback(() => {
     const planModel = planList?.content.find(plan => plan.identifier === selectedPlan);
-    if (planModel && selectedDataExtractLabelId) {
-      getDataExtract(planModel.identifier, selectedDataExtractLabelId)
+    if (planModel && selectedDataExtractLabelId && selectedSeparator) {
+      getDataExtract(planModel.identifier, selectedDataExtractLabelId, selectedSeparator)
         .then(res => {
           if (link && link.current) {
             link.current.href = window.URL.createObjectURL(new Blob([res], { type: 'text/csv;charset=utf-8' }));
             link.current.download = 'data-extract.csv';
             link.current.click();
+          }else {
+            console.log("Guard failed!", { planModel, selectedPlan, selectedDataExtractLabelId, selectedSeparator });
           }
         })
 
         .catch(ex => toast.error(ex));
     }
-  }, [selectedPlan, planList, selectedDataExtractLabelId]);
+  }, [selectedPlan, planList, selectedDataExtractLabelId, selectedSeparator]);
 
   return (
     <Container fluid className="text-center my-4">
@@ -85,8 +88,31 @@ const DataExtract = () => {
             </FormGroup>
           ) : null}
         </Col>
+        <Col md={2}>
+          {selectedPlan ? (
+              <FormGroup style={{ display: 'flex', alignItems: 'center' }}>
+                <Form.Label style={{ marginRight: '10px' }}>Select Seperator</Form.Label>
+                <Select
+                    styles={{
+                      container: provided => ({
+                        ...provided,
+                        width: 300 // Control the width here
+                      })
+                    }}
+                    options={Object.values(DataExtractSeparator).map(
+                        separator => ({ value: separator, label: separator })
+                    )}
+                    onChange={(e) => {
+                      const selected = e as { value: DataExtractSeparator; label: string } | null;
+                      console.log(selectedSeparator, e.value)
+                      setSelectedSeparator(selected?.value);
+                    }}
+                />
+              </FormGroup>
+          ) : null}
+        </Col>
         <Col md={1}>
-          {selectedPlan && selectedDataExtractLabelId ? <Button onClick={() => getCSV()}>Get CSV</Button> : null}
+          {selectedPlan && selectedDataExtractLabelId && selectedSeparator? <Button onClick={() => getCSV()}>Get CSV</Button> : null}
         </Col>
       </Row>
       <a
