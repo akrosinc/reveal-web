@@ -156,7 +156,8 @@
   margin-top: 6px;
 }
 
-.siteRow .editButton[aria-disabled='true'] {
+.siteRow .editButton[aria-disabled='true'],
+.subRow .editButton[aria-disabled='true'] {
   background: none;
   color: var(--muted-ink);
   opacity: 0.4;

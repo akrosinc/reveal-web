@@ -544,6 +544,7 @@
     "clear": "Clear",
     "finishShape": "Finish",
     "sitesLowestLevelOnly": "Sites can only be added at the lowest level",
+    "zonesSchoolsLowestLevelOnly": "Zones and schools can only be edited at the lowest level",
     "back": "Back",
     "next": "Next",
     "sites": "Sites",

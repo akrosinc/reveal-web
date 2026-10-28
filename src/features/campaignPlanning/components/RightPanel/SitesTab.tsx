@@ -11,11 +11,11 @@ interface Props {
   zonesSchools: ZonesSchoolsCounts;
   onEditZonesSchools: () => void;
   onOpenGroup: (group: SiteGroup) => void;
-  canAddSites: boolean;
+  isLowestLevel: boolean;
   onAddSite: (geometry: SiteGeometry) => void;
 }
 
-const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, canAddSites, onAddSite }: Props) => {
+const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, isLowestLevel, onAddSite }: Props) => {
   const { t } = useTranslation();
 
   return (
@@ -26,9 +26,14 @@ const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, c
           type="button"
           id="campaign-planning-edit-zones-schools-button"
           className={styles.editButton}
-          title={t('campaignPlanning.editZonesAndSchools')}
+          title={
+            isLowestLevel
+              ? t('campaignPlanning.editZonesAndSchools')
+              : t('campaignPlanning.zonesSchoolsLowestLevelOnly')
+          }
           aria-label={t('campaignPlanning.editZonesAndSchools')}
-          onClick={onEditZonesSchools}
+          aria-disabled={!isLowestLevel}
+          onClick={() => isLowestLevel && onEditZonesSchools()}
         >
           <BsPencil />
         </button>
@@ -59,13 +64,13 @@ const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, c
             id={`campaign-planning-add-${group.geometry}-site-button`}
             className={styles.editButton}
             title={
-              canAddSites
+              isLowestLevel
                 ? t('campaignPlanning.addSiteTo', { name: group.label })
                 : t('campaignPlanning.sitesLowestLevelOnly')
             }
             aria-label={t('campaignPlanning.addSiteTo', { name: group.label })}
-            aria-disabled={!canAddSites}
-            onClick={() => canAddSites && onAddSite(group.geometry)}
+            aria-disabled={!isLowestLevel}
+            onClick={() => isLowestLevel && onAddSite(group.geometry)}
           >
             <BsPencil />
           </button>
