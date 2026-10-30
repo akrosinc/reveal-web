@@ -2,7 +2,7 @@ import { useKeycloak } from '@react-keycloak/web';
 import { useEffect } from 'react';
 import { SUPER_ADMIN } from '../constants/userRoles';
 import { getInstanceContext } from '../features/instance/api';
-import { clearCurrentInstance, setCurrentInstance } from '../features/reducers/instanceContext';
+import { clearCurrentInstance, setCurrentInstance, stopInstanceContextLoading } from '../features/reducers/instanceContext';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 
 /**
@@ -35,6 +35,8 @@ export const useInstanceContextLoader = () => {
             .catch(err => {
               if (err?.response?.status === 404) {
                 dispatch(clearCurrentInstance());
+              } else {
+                dispatch(stopInstanceContextLoading());
               }
             });
         } else if (isSuperAdmin && !localStorage.getItem('SUPERADMIN_DATA')) {

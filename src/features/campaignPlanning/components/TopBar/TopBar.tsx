@@ -87,6 +87,7 @@ const TopBar = ({ path = [], isStatic }: Props) => {
         >
           {t('campaignPlanning.navDashboard')}
         </Link>
+        {instanceContext.isLoading && <span className={styles.navLoading} aria-hidden />}
         <AuthorizedElement roles={[CAMPAIGN_PLANNING_VIEW]}>
           <Link
             to={CAMPAIGN_PLANNING_PAGE}

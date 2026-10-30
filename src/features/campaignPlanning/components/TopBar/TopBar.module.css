@@ -75,6 +75,14 @@
   color: var(--teal);
 }
 
+/* Stands in for the permission links while the instance context loads after login */
+.navLoading {
+  composes: shimmer from '../../styles/deck.module.css';
+  display: block;
+  width: 260px;
+  height: 10px;
+}
+
 .navButton {
   display: flex;
   align-items: center;

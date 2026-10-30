@@ -2,6 +2,7 @@ import { useKeycloak } from '@react-keycloak/web';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
 import { STANDARD_USER, SUPER_ADMIN } from '../../constants/userRoles';
+import { getContextPermissions } from '../../features/reducers/instanceContext';
 
 interface Props {
   children: JSX.Element;
@@ -14,7 +15,7 @@ const AuthGuard = ({ children, roles = [] }: Props) => {
   const ctx = useAppSelector(state => state.instanceContext);
   const isSuperAdmin = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(SUPER_ADMIN);
   const isStandardUser = ((keycloak?.tokenParsed as any)?.groups || [])?.includes(STANDARD_USER);
-  const permissions = ctx?.role?.permissions || [];
+  const permissions = getContextPermissions(ctx);
 
   // const isAuthorized = (roles: string[]) => {
   //   const pathname = location.pathname;
@@ -59,6 +60,9 @@ const AuthGuard = ({ children, roles = [] }: Props) => {
       // return hasRealmRole || hasResourceRole || hasPermission;
     });
   };
+
+  // Wait for the instance context after login, or every guarded page would redirect before the permissions arrive
+  if (ctx?.isLoading) return null;
 
   return isAuthorized(roles) ? children : <Navigate to="/" />;
 };
