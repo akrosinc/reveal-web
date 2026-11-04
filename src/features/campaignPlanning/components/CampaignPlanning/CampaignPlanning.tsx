@@ -13,6 +13,7 @@ import {
   getInstances,
   getInstanceTeams,
   getLocationData,
+  getPlan,
   getPlanSimulation,
   updateSimulationDataset
 } from '../../api';
@@ -21,6 +22,7 @@ import {
   HierarchyNode,
   InstanceListItem,
   LocationFeature,
+  Plan,
   PlanSimulation,
   RasterDataset,
   SimulationDataset,
@@ -63,6 +65,7 @@ const CampaignPlanning = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedNode, setSelectedNode] = useState<HierarchyNode>();
   const [simulation, setSimulation] = useState<PlanSimulation>();
+  const [plan, setPlan] = useState<Plan>();
   const [locations, setLocations] = useState<LocationFeature[]>([]);
   // Start as loading when the request will fire, so the first render shows skeletons instead of "No locations found"
   const [loading, setLoading] = useState({
@@ -150,6 +153,22 @@ const CampaignPlanning = () => {
       isCurrent = false;
     };
   }, [planId, setIsLoading]);
+
+  // The plan carries the goals and their actions listed in the right panel's add-action modal
+  useEffect(() => {
+    setPlan(undefined);
+    if (!planId) return;
+    let isCurrent = true;
+    getPlan(planId)
+      .then(res => isCurrent && setPlan(res))
+      .catch(err => isCurrent && toast.error(err));
+    return () => {
+      isCurrent = false;
+    };
+  }, [planId]);
+
+  // Flatten the plan's goals into the list of actions the instance supports
+  const actions = useMemo(() => (plan?.goals ?? []).flatMap(goal => goal.actions ?? []), [plan]);
 
   const datasets = useMemo(() => simulation?.datasets ?? [], [simulation]);
   const simulationId = simulation?.identifier;
@@ -556,6 +575,8 @@ const CampaignPlanning = () => {
             onCollapsedChange={setIsDetailsCollapsed}
             sites={areaSites}
             onAddSite={setSiteWizardGeometry}
+            actions={actions}
+            instanceId={instanceId}
           />
           <BottomTable
             rows={tableRows}

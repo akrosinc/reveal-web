@@ -67,6 +67,53 @@
   color: var(--sub-ink);
 }
 
+.editField {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 17px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+}
+
+.editInputWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editUnit {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sub-ink);
+}
+
+.editInput {
+  width: 84px;
+  padding: 4px 8px;
+  border: 1px solid var(--control-line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: right;
+  outline: none;
+}
+
+.editInput:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px var(--teal-tint);
+}
+
+.editInput:read-only {
+  background: var(--field);
+  color: var(--muted-ink);
+  cursor: not-allowed;
+}
+
 .fieldValue {
   font-weight: 700;
   color: var(--ink);
@@ -87,9 +134,27 @@
 
 .pills {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 6px;
   padding: 11px 17px;
   border-top: 1px solid var(--line);
+}
+
+.pillGroup {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.addAction {
+  composes: iconButton from '../../styles/deck.module.css';
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-size: 15px;
+  color: var(--teal);
 }
 
 .pill {
@@ -104,7 +169,18 @@
   cursor: pointer;
 }
 
-.pillActive {
+.pill:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.pill:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
+}
+
+.pillActive,
+.pillActive:hover {
   border-color: var(--teal);
   background: var(--teal);
   color: #fff;
@@ -115,6 +191,150 @@
   padding: 13px 17px 7px;
   font-size: 12px;
   font-weight: 700;
+}
+
+.emptyActivities {
+  padding: 10px 17px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--sub-ink);
+}
+
+.activityScroll {
+  composes: scroll from '../../styles/deck.module.css';
+  /* Stays within the panel's max height; the header/tabs above take the rest */
+  max-height: 320px;
+  padding: 11px 12px 14px;
+}
+
+.submitBar {
+  margin-bottom: 10px;
+}
+
+.submit {
+  width: 100%;
+  padding: 7px 0;
+  border: 0;
+  border-radius: 8px;
+  background: var(--teal);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.submit:hover {
+  background: var(--teal-hover);
+}
+
+.submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submit:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+/* Each added activity sits in its own card so they're easy to tell apart */
+.activityCard {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-strong);
+  overflow: hidden;
+}
+
+.activityCard + .activityCard {
+  margin-top: 10px;
+}
+
+.activityHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 13px 9px;
+  border-bottom: 1px solid var(--line);
+  background: var(--hover-soft);
+}
+
+.activityCard .activityTitle {
+  font-size: 12.5px;
+}
+
+/* Inside a card the rows use the card's own padding and lose the panel-wide dividers at the edges */
+.activityCard .transportToggle {
+  padding: 10px 13px 6px;
+}
+
+.activityCard .segRow {
+  padding: 6px 13px 4px;
+}
+
+.activityCard .editField {
+  padding: 5px 13px;
+}
+
+.activityCard .editField:first-of-type {
+  border-top: 0;
+}
+
+.activityTitle {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.activityValue {
+  flex: none;
+  width: 72px;
+  padding: 4px 8px;
+  border: 1px solid var(--control-line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: right;
+  outline: none;
+}
+
+.activityValue:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px var(--teal-tint);
+}
+
+.transportToggle {
+  composes: buttonReset from '../../styles/deck.module.css';
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 13px 17px 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.transportToggle:hover {
+  color: var(--teal);
+}
+
+.transportChevron,
+.transportChevronCollapsed {
+  font-size: 11px;
+  color: var(--icon-ink);
+  transition: transform 0.15s;
+}
+
+.transportChevronCollapsed {
+  transform: rotate(-90deg);
 }
 
 .subRow {
@@ -217,12 +437,26 @@
   padding: 4px 9px;
   border: 1px solid var(--control-line);
   border-radius: 999px;
+  background: transparent;
+  font: inherit;
   font-size: 10px;
   font-weight: 700;
   color: var(--sub-ink);
+  cursor: pointer;
 }
 
-.segActive {
+.seg:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.seg:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
+}
+
+.segActive,
+.segActive:hover {
   border-color: var(--teal);
   background: var(--teal);
   color: #fff;

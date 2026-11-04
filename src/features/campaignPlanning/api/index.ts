@@ -1,12 +1,17 @@
 import api from '../../../api/axios';
 import { PageableModel } from '../../../api/providers';
 import {
+  ActionLocationRecaptureLimitRequest,
+  ActionLocationRecaptureLimitResponse,
+  CostByLocationRequest,
+  CostByLocationResponse,
   DatasetDeleteRequest,
   DatasetUpdateRequest,
   InstanceHierarchy,
   InstanceListItem,
   LocationDataRequest,
   LocationFeature,
+  Plan,
   PlanSimulation,
   Team
 } from '../providers/types';
@@ -70,4 +75,48 @@ export const assignLocationsToTeam = async (teamId: string, locationIds: string[
     organizationIdentifier: teamId,
     locationIdentifiers: locationIds
   });
+};
+
+// The plan with its goals and their actions (PlanResponse); the right panel lists these actions
+export const getPlan = async (planId: string): Promise<Plan> => {
+  const data = await api.get<Plan>(`plan/${planId}`).then(response => response.data);
+  return data;
+};
+
+// Saves the computed cost for an action at a location (cost_by_location)
+export const saveCostByLocation = async (request: CostByLocationRequest): Promise<void> => {
+  await api.post('cost-by-location', request);
+};
+
+// Saves the recapture limit count for an action at a location (action_location_recapture_limit)
+export const saveActionLocationRecaptureLimit = async (
+  request: ActionLocationRecaptureLimitRequest
+): Promise<void> => {
+  await api.post('action-location-recapture-limit', request);
+};
+
+// Costs saved for a location within an instance (cost_by_location)
+export const getCostsByInstanceAndLocation = async (
+  instanceId: string,
+  locationId: string
+): Promise<CostByLocationResponse[]> => {
+  const data = await api
+    .get<CostByLocationResponse[]>(
+      `cost-by-location?instanceIdentifier=${instanceId}&locationIdentifier=${locationId}`
+    )
+    .then(response => response.data);
+  return data;
+};
+
+// Recapture limits saved for a location within an instance (action_location_recapture_limit)
+export const getRecaptureLimitsByInstanceAndLocation = async (
+  instanceId: string,
+  locationId: string
+): Promise<ActionLocationRecaptureLimitResponse[]> => {
+  const data = await api
+    .get<ActionLocationRecaptureLimitResponse[]>(
+      `action-location-recapture-limit?instanceIdentifier=${instanceId}&locationIdentifier=${locationId}`
+    )
+    .then(response => response.data);
+  return data;
 };

@@ -1,0 +1,91 @@
+.card {
+  background: var(--surface-strong);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  margin: 8px 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted-ink);
+}
+
+.control {
+  width: 100%;
+  padding: 6px 9px;
+  border: 1px solid var(--control-line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--ink);
+  outline: none;
+}
+
+.control:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px var(--teal-tint);
+}
+
+.control:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.description {
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--muted-ink);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.cancel,
+.add {
+  flex: 1;
+  padding: 6px 0;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.cancel {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.cancel:hover {
+  background: var(--hover-strong);
+}
+
+.add {
+  background: var(--teal);
+  color: #fff;
+}
+
+.add:hover {
+  background: var(--teal-hover);
+}
+
+.add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel:focus-visible,
+.add:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}

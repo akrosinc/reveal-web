@@ -156,3 +156,109 @@ export interface Site {
 }
 
 export type SiteTargets = Record<string, number>;
+
+// Server ActionTypeEnum
+export type ActionType = 'CREATE' | 'UPDATE' | 'REMOVE' | 'SINGLE' | 'HIERARCHICAL';
+
+// Server CostContainer.CostVariableSource
+export type CostVariableSource = 'MANUAL' | 'COMPUTED' | 'CONSTANT';
+
+// Server ActionTemplateConfig.TaskGenerationRecurrence
+export type TaskGenerationRecurrence =
+  | 'MINUTELY'
+  | 'HOURLY'
+  | 'DAILY'
+  | 'WEEKLY'
+  | 'MONTHLY';
+
+// Server CostContainer.CostVariable; value stays null on a template definition
+export interface CostVariable {
+  key?: string;
+  name?: string;
+  label?: string;
+  unit?: string;
+  source?: CostVariableSource;
+  defaultValue?: number;
+  value?: number;
+}
+
+// Server CostContainer; variables keyed by the formula token (e.g. "a")
+export interface CostContainer {
+  formula?: string;
+  variables?: Record<string, CostVariable>;
+}
+
+// Server ActionTemplateConfig (stored in the template's JSONB column)
+export interface ActionTemplateConfig {
+  costContainer?: CostContainer;
+  recurrence?: TaskGenerationRecurrence;
+}
+
+// Server ActionTemplateResponse
+export interface ActionTemplate {
+  identifier: string;
+  name?: string;
+  actionTemplateConfig?: ActionTemplateConfig;
+}
+
+// Body of POST /api/v1/cost-by-location
+export interface CostByLocationRequest {
+  instanceIdentifier: string;
+  locationIdentifier: string;
+  actionIdentifier: string;
+  costContainer?: CostContainer;
+  calculatedValue?: number;
+}
+
+// Body of POST /api/v1/action-location-recapture-limit
+export interface ActionLocationRecaptureLimitRequest {
+  instanceIdentifier: string;
+  locationIdentifier: string;
+  actionIdentifier: string;
+  count: number;
+}
+
+// Server CostByLocationResponse
+export interface CostByLocationResponse {
+  identifier: string;
+  instanceIdentifier?: string;
+  locationIdentifier?: string;
+  actionIdentifier?: string;
+  costContainer?: CostContainer;
+  calculatedValue?: number;
+}
+
+// Server ActionLocationRecaptureLimitResponse
+export interface ActionLocationRecaptureLimitResponse {
+  identifier: string;
+  instanceIdentifier?: string;
+  locationIdentifier?: string;
+  actionIdentifier?: string;
+  count?: number;
+}
+
+// Subset of the server's ActionResponse used by the right panel's action list
+export interface Action {
+  identifier: string;
+  title: string;
+  description?: string;
+  type?: ActionType;
+  formIdentifier?: string;
+  actionTemplate?: ActionTemplate;
+}
+
+// Subset of the server's GoalResponse
+export interface Goal {
+  identifier: string;
+  description?: string;
+  priority?: string;
+  actions?: Action[];
+}
+
+// Subset of the server's PlanResponse; goals carry their actions
+export interface Plan {
+  identifier: string;
+  name?: string;
+  title?: string;
+  goals?: Goal[];
+}

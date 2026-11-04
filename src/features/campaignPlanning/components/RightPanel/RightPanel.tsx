@@ -1,10 +1,13 @@
-import { memo, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BsChevronUp } from 'react-icons/bs';
+import { BsChevronUp, BsPlusCircle } from 'react-icons/bs';
+import { toast } from 'react-toastify';
+import { getRecaptureLimitsByInstanceAndLocation } from '../../api';
 import { POPULATION, SCHOOLS, ZONES } from '../../placeholderData';
-import { HierarchyNode, Site, SiteGeometry, SiteTargets } from '../../providers/types';
+import { Action, HierarchyNode, Site, SiteGeometry, SiteTargets } from '../../providers/types';
 import { getSiteGroups } from '../../utils/sites';
 import ActivityTab from './ActivityTab';
+import AddActionModal from './AddActionModal';
 import DemographicsTab from './DemographicsTab';
 import Field from './Field';
 import PopulationModal from './PopulationModal';
@@ -25,16 +28,63 @@ interface Props {
   onCollapsedChange: (isCollapsed: boolean) => void;
   sites: Site[];
   onAddSite: (geometry: SiteGeometry) => void;
+  actions: Action[];
+  instanceId?: string;
 }
 
-const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, sites, onAddSite }: Props) => {
+const RightPanel = ({
+  node,
+  isCollapsed,
+  onCollapsedChange: setIsCollapsed,
+  sites,
+  onAddSite,
+  actions,
+  instanceId
+}: Props) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('sites');
+  const [isAddActionOpen, setIsAddActionOpen] = useState(false);
   const [isPopulationOpen, setIsPopulationOpen] = useState(false);
   const [openSiteGeometry, setOpenSiteGeometry] = useState<SiteGeometry>();
   const [siteTargetsByArea, setSiteTargetsByArea] = useState<Record<string, SiteTargets>>({});
   const [isZonesSchoolsOpen, setIsZonesSchoolsOpen] = useState(false);
   const [zonesSchoolsByArea, setZonesSchoolsByArea] = useState<Record<string, ZonesSchoolsCounts>>({});
+  // Activities the user has added per area, from the add-action modal
+  const [activitiesByArea, setActivitiesByArea] = useState<Record<string, Action[]>>({});
+  const activities = activitiesByArea[node.identifier] ?? [];
+  const addActivity = (action: Action) =>
+    setActivitiesByArea(current => {
+      const existing = current[node.identifier] ?? [];
+      if (existing.some(item => item.identifier === action.identifier)) return current;
+      return { ...current, [node.identifier]: [...existing, action] };
+    });
+
+  // On entry, surface the activities already captured for this instance+location so they render
+  // (ActivityTab only shows activities present in this list). Saved actions are resolved from the
+  // instance's actions, and merged with any the user has added in this session.
+  const areaId = node.identifier;
+  useEffect(() => {
+    if (!instanceId || !areaId || !actions.length) return;
+    let isCurrent = true;
+    getRecaptureLimitsByInstanceAndLocation(instanceId, areaId)
+      .then(limits => {
+        if (!isCurrent) return;
+        const savedActions = limits
+          .map(limit => actions.find(action => action.identifier === limit.actionIdentifier))
+          .filter((action): action is Action => !!action);
+        if (!savedActions.length) return;
+        setActivitiesByArea(current => {
+          const existing = current[areaId] ?? [];
+          const existingIds = new Set(existing.map(item => item.identifier));
+          const merged = [...existing, ...savedActions.filter(action => !existingIds.has(action.identifier))];
+          return { ...current, [areaId]: merged };
+        });
+      })
+      .catch(err => isCurrent && toast.error(String(err)));
+    return () => {
+      isCurrent = false;
+    };
+  }, [instanceId, areaId, actions]);
   const zonesSchools = zonesSchoolsByArea[node.identifier] ?? { zones: ZONES, schools: SCHOOLS };
   const saveZonesSchools = (counts: ZonesSchoolsCounts) =>
     setZonesSchoolsByArea(current => ({ ...current, [node.identifier]: counts }));
@@ -91,17 +141,29 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
       ) : (
         <>
           <div className={styles.pills}>
-            {TABS.map(tab => (
-              <button
-                key={tab}
-                id={`campaign-planning-${tab}-tab`}
-                type="button"
-                className={tab === activeTab ? `${styles.pill} ${styles.pillActive}` : styles.pill}
-                onClick={() => setActiveTab(tab)}
-              >
-                {t(`campaignPlanning.${tab}Tab`)}
-              </button>
-            ))}
+            <div className={styles.pillGroup}>
+              {TABS.map(tab => (
+                <button
+                  key={tab}
+                  id={`campaign-planning-${tab}-tab`}
+                  type="button"
+                  className={tab === activeTab ? `${styles.pill} ${styles.pillActive}` : styles.pill}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {t(`campaignPlanning.${tab}Tab`)}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              id="campaign-planning-add-action-button"
+              className={styles.addAction}
+              title={t('campaignPlanning.addAction')}
+              aria-label={t('campaignPlanning.addAction')}
+              onClick={() => setIsAddActionOpen(true)}
+            >
+              <BsPlusCircle />
+            </button>
           </div>
           {activeTab === 'sites' && (
             <SitesTab
@@ -113,11 +175,22 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
               onAddSite={onAddSite}
             />
           )}
-          {activeTab === 'activity' && <ActivityTab />}
+          {activeTab === 'activity' && (
+            <ActivityTab activities={activities} instanceId={instanceId} locationId={node.identifier} />
+          )}
           {activeTab === 'demographics' && <DemographicsTab />}
         </>
       )}
 
+      {isAddActionOpen && (
+        <AddActionModal
+          name={name}
+          actions={actions}
+          addedIds={activities.map(activity => activity.identifier)}
+          onAdd={addActivity}
+          onClose={() => setIsAddActionOpen(false)}
+        />
+      )}
       {isPopulationOpen && <PopulationModal name={name} onClose={() => setIsPopulationOpen(false)} />}
       {isZonesSchoolsOpen && (
         <ZonesSchoolsModal
