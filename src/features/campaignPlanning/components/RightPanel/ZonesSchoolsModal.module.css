@@ -1,7 +1,3 @@
-.card {
-  background: var(--surface-strong);
-}
-
 .form {
   display: flex;
   flex-direction: column;

@@ -13,6 +13,7 @@ import {
   InstanceListItem,
   RasterDataset,
   SimulationDataset,
+  Site,
   Team,
   ValueRange
 } from '../../providers/types';
@@ -60,6 +61,7 @@ interface Props {
   isDatasetsLoading: boolean;
   isTeamsLoading: boolean;
   selectedId?: string;
+  sitesByArea: Record<string, Site[]>;
   onSelect: (node: HierarchyNode) => void;
 }
 
@@ -91,6 +93,7 @@ const LeftPanel = ({
   isDatasetsLoading,
   isTeamsLoading,
   selectedId,
+  sitesByArea,
   onSelect
 }: Props) => {
   const { t } = useTranslation();
@@ -186,6 +189,7 @@ const LeftPanel = ({
                   nodes={filteredHierarchy}
                   selectedId={selectedId}
                   expandAll={!!searchTerm.trim()}
+                  sitesByArea={sitesByArea}
                   onSelect={onSelect}
                 />
                 {isHierarchyLoading ? (

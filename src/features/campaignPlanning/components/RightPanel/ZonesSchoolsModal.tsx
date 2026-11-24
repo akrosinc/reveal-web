@@ -25,7 +25,9 @@ const ZonesSchoolsModal = ({ name, counts, onSave, onClose }: Props) => {
     zones: String(counts.zones),
     schools: String(counts.schools)
   });
+  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
   const isValid = KEYS.every(option => isWholeNumber(values[option]));
+  const isDirty = KEYS.some(option => values[option] !== String(counts[option]));
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -38,8 +40,10 @@ const ZonesSchoolsModal = ({ name, counts, onSave, onClose }: Props) => {
     <DeckModal
       title={t('campaignPlanning.editZonesAndSchools')}
       subtitle={t('campaignPlanning.catchment', { name })}
-      onClose={onClose}
-      className={styles.card}
+      onClose={() => (isDirty ? setIsConfirmingClose(true) : onClose())}
+      discardConfirm={
+        isConfirmingClose ? { onConfirm: onClose, onCancel: () => setIsConfirmingClose(false) } : undefined
+      }
     >
       <form className={styles.form} onSubmit={submit}>
         <label className={styles.label} htmlFor="campaign-planning-zones-schools-type">

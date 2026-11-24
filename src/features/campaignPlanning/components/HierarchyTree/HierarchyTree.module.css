@@ -62,3 +62,36 @@
   padding-left: 6px;
   border-left: 2px solid var(--line);
 }
+
+/* Sites added to an area, listed under its child areas */
+.site {
+  composes: buttonReset from '../../styles/deck.module.css';
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 1px 0;
+  padding: 4px 6px;
+  border-left: 2px solid transparent;
+  border-radius: 6px;
+  font-size: 11.5px;
+  color: var(--body-ink);
+  transition: background-color 0.15s;
+}
+
+.site:hover {
+  background: var(--hover-soft);
+  color: var(--ink);
+}
+
+.siteIcon {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--teal);
+}
+
+.siteName {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

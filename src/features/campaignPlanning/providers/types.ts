@@ -151,8 +151,9 @@ export interface Site {
   name: string;
   typeId: string;
   geometry: SiteGeometry;
-  location: GeoJSON.Point;
+  locations: GeoJSON.Point[];
   boundary?: GeoJSON.Polygon;
+  radius?: number;
 }
 
 export type SiteTargets = Record<string, number>;

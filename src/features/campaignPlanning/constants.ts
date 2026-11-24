@@ -25,6 +25,10 @@ export const SITE_GEOMETRIES: SiteGeometry[] = ['polygon', 'point'];
 
 export const SITE_SNAP_TOLERANCE_PX = 10;
 
+export const POINT_SITE_RADIUS_M = 1000;
+
+export const SITE_GEOGRAPHIC_LEVEL = 'catchment';
+
 export const SITE_COLOR = '#087f95';
 
 export const SITE_TYPES: SiteType[] = [

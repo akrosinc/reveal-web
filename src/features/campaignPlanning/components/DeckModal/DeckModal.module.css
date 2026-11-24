@@ -21,7 +21,7 @@
   max-height: 480px;
   padding: 20px;
   border-radius: 16px;
-  background: var(--modal);
+  background: var(--surface);
   box-shadow: 0 24px 64px rgba(20, 24, 20, 0.28);
 }
 
@@ -80,13 +80,13 @@
 }
 
 .rowInput {
-  width: 64px;
   padding: 0;
   border: 0;
   border-bottom: 1px solid transparent;
   background: transparent;
   font: inherit;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   text-align: right;
   color: var(--ink);
   outline: none;
@@ -107,6 +107,49 @@
   border-bottom-color: var(--teal);
 }
 
+.editRow {
+  align-items: center;
+}
+
+.rowControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rowActions {
+  display: flex;
+  gap: 2px;
+}
+
+.rowActions[hidden] {
+  display: flex;
+  visibility: hidden;
+}
+
+.rowAction {
+  composes: iconButton from '../../styles/deck.module.css';
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.rowSave {
+  color: var(--teal);
+}
+
+.rowCancel:hover {
+  color: #ba3329;
+}
+
+.rowAction:disabled {
+  background: none;
+  color: var(--muted-ink);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .note {
   margin-top: 10px;
   font-size: 11px;
@@ -122,8 +165,32 @@
   color: var(--label-ink);
 }
 
+.sectionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.addButton {
+  composes: iconButton from '../../styles/deck.module.css';
+  width: 22px;
+  height: 22px;
+  margin-right: -4px;
+  border-radius: 50%;
+  font-size: 13px;
+}
+
+.addButton[aria-disabled='true'] {
+  background: none;
+  color: var(--muted-ink);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .miniRow {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 6px;
   padding: 6px 0;
@@ -146,6 +213,15 @@
   flex: 0.9;
   font-weight: 700;
   text-align: right;
+}
+
+.miniEdit {
+  composes: iconButton from '../../styles/deck.module.css';
+  width: 20px;
+  height: 20px;
+  margin: -2px -4px -2px 0;
+  border-radius: 6px;
+  font-size: 11px;
 }
 
 .mapped {
@@ -192,4 +268,82 @@
 .pagerButton:disabled {
   opacity: 0.4;
   cursor: default;
+}
+
+.confirmLayer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  background: rgba(20, 24, 20, 0.18);
+}
+
+.confirm {
+  width: 260px;
+  max-width: 100%;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-strong);
+  box-shadow: 0 12px 32px rgba(20, 24, 20, 0.22);
+}
+
+.confirmTitle {
+  margin-bottom: 4px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.confirmMessage {
+  font-size: 12px;
+  color: var(--body-ink);
+}
+
+.confirmActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.confirmCancel,
+.confirmOk {
+  flex: 1;
+  padding: 6px 0;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.confirmCancel {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.confirmCancel:hover {
+  background: var(--hover-strong);
+}
+
+.confirmOk {
+  background: var(--teal);
+  color: #fff;
+}
+
+.confirmOk:hover {
+  background: var(--teal-hover);
+}
+
+.confirmCancel:focus-visible,
+.confirmOk:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
 }

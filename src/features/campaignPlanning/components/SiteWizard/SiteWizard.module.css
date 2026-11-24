@@ -165,6 +165,50 @@
   cursor: not-allowed;
 }
 
+.points {
+  composes: scroll from '../../styles/deck.module.css';
+  max-height: 132px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.point {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+}
+
+.pointName {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.pointCoords {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-ink);
+}
+
+.pointRemove {
+  composes: iconButton from '../../styles/deck.module.css';
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+.pointRemove:hover {
+  color: #ba3329;
+}
+
 .error {
   margin-top: 8px;
   padding: 6px 9px;

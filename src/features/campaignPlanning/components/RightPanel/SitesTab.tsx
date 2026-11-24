@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { BsPencil } from 'react-icons/bs';
-import { SiteGeometry } from '../../providers/types';
 import { SiteGroup } from '../../utils/sites';
 import Field from './Field';
 import { ZonesSchoolsCounts } from './ZonesSchoolsModal';
@@ -12,10 +11,9 @@ interface Props {
   onEditZonesSchools: () => void;
   onOpenGroup: (group: SiteGroup) => void;
   isLowestLevel: boolean;
-  onAddSite: (geometry: SiteGeometry) => void;
 }
 
-const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, isLowestLevel, onAddSite }: Props) => {
+const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, isLowestLevel }: Props) => {
   const { t } = useTranslation();
 
   return (
@@ -43,7 +41,7 @@ const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, i
       <div className={styles.sub}>{t('campaignPlanning.sites')}</div>
       {siteGroups.map(group => (
         <div key={group.geometry} className={styles.siteRow}>
-          <button type="button" className={styles.statusRow} onClick={() => onOpenGroup(group)}>
+          <div className={styles.statusRow}>
             <span className={styles.statusTop}>
               <span className={styles.statusLabel}>{group.label}</span>
               <span className={styles.statusValue}>
@@ -58,19 +56,14 @@ const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, i
                 }}
               />
             </span>
-          </button>
+          </div>
           <button
             type="button"
-            id={`campaign-planning-add-${group.geometry}-site-button`}
+            id={`campaign-planning-edit-${group.geometry}-sites-button`}
             className={styles.editButton}
-            title={
-              isLowestLevel
-                ? t('campaignPlanning.addSiteTo', { name: group.label })
-                : t('campaignPlanning.sitesLowestLevelOnly')
-            }
-            aria-label={t('campaignPlanning.addSiteTo', { name: group.label })}
-            aria-disabled={!isLowestLevel}
-            onClick={() => isLowestLevel && onAddSite(group.geometry)}
+            title={t('campaignPlanning.editSiteGroup', { name: group.label })}
+            aria-label={t('campaignPlanning.editSiteGroup', { name: group.label })}
+            onClick={() => onOpenGroup(group)}
           >
             <BsPencil />
           </button>

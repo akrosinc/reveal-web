@@ -230,7 +230,7 @@ const CampaignPlanning = () => {
 
   const [map, setMap] = useState<Map>();
   const [sitesByArea, setSitesByArea] = useState<Record<string, Site[]>>({});
-  const [siteWizardGeometry, setSiteWizardGeometry] = useState<SiteGeometry>();
+  const [siteWizard, setSiteWizard] = useState<{ geometry: SiteGeometry; site?: Site }>();
   const selectedId = selectedNode?.identifier;
   const areaSites = useMemo(() => (selectedId ? sitesByArea[selectedId] ?? [] : []), [sitesByArea, selectedId]);
   const catchment = useMemo(
@@ -240,22 +240,33 @@ const CampaignPlanning = () => {
   const snapGeometries = useMemo(
     () => [
       ...locations.filter(location => location.geometry).map(location => location.geometry),
-      ...areaSites.flatMap(site => (site.boundary ? [site.boundary] : []))
+      ...areaSites.flatMap(site => (site.boundary && site.geometry === 'polygon' ? [site.boundary] : []))
     ],
     [locations, areaSites]
   );
   const saveSite = useCallback(
     (site: Site) => {
       if (!selectedId) return;
-      setSitesByArea(current => ({ ...current, [selectedId]: [...(current[selectedId] ?? []), site] }));
-      setSiteWizardGeometry(undefined);
-      toast.success(t('campaignPlanning.siteAdded', { name: site.name }));
+      const isExisting = areaSites.some(item => item.identifier === site.identifier);
+      setSitesByArea(current => {
+        const sites = current[selectedId] ?? [];
+        return {
+          ...current,
+          [selectedId]: isExisting
+            ? sites.map(item => (item.identifier === site.identifier ? site : item))
+            : [...sites, site]
+        };
+      });
+      setSiteWizard(undefined);
+      toast.success(t(isExisting ? 'campaignPlanning.siteUpdated' : 'campaignPlanning.siteAdded', { name: site.name }));
     },
-    [selectedId, t]
+    [selectedId, areaSites, t]
   );
-  const closeSiteWizard = useCallback(() => setSiteWizardGeometry(undefined), []);
+  const closeSiteWizard = useCallback(() => setSiteWizard(undefined), []);
+  const openAddSite = useCallback((geometry: SiteGeometry) => setSiteWizard({ geometry }), []);
+  const openEditSite = useCallback((site: Site) => setSiteWizard({ geometry: site.geometry, site }), []);
 
-  useEffect(() => setSiteWizardGeometry(undefined), [selectedId]);
+  useEffect(() => setSiteWizard(undefined), [selectedId]);
   const [openArea, setOpenArea] = useState<{ id: string; lngLat: [number, number] }>();
   const [assignedOverrides, setAssignedOverrides] = useState<Record<string, boolean>>({});
   const [isCampaignSaving, setIsCampaignSaving] = useState(false);
@@ -269,9 +280,9 @@ const CampaignPlanning = () => {
     : false;
   const openAreaPopup = useCallback(
     (id: string, lngLat: [number, number]) => {
-      if (!siteWizardGeometry) setOpenArea({ id, lngLat });
+      if (!siteWizard) setOpenArea({ id, lngLat });
     },
-    [siteWizardGeometry]
+    [siteWizard]
   );
   const closeAreaPopup = useCallback(() => setOpenArea(undefined), []);
 
@@ -281,8 +292,8 @@ const CampaignPlanning = () => {
   }, [selectedNode]);
 
   useEffect(() => {
-    if (siteWizardGeometry) setOpenArea(undefined);
-  }, [siteWizardGeometry]);
+    if (siteWizard) setOpenArea(undefined);
+  }, [siteWizard]);
 
   const reloadTargetAreas = useCallback(() => {
     if (!planId) return;
@@ -543,6 +554,7 @@ const CampaignPlanning = () => {
           isDatasetsLoading={loading.simulation}
           isTeamsLoading={loading.teams}
           selectedId={selectedNode?.identifier}
+          sitesByArea={sitesByArea}
           onSelect={setSelectedNode}
         />
       ) : (
@@ -555,7 +567,8 @@ const CampaignPlanning = () => {
             isCollapsed={isDetailsCollapsed}
             onCollapsedChange={setIsDetailsCollapsed}
             sites={areaSites}
-            onAddSite={setSiteWizardGeometry}
+            onAddSite={openAddSite}
+            onEditSite={openEditSite}
           />
           <BottomTable
             rows={tableRows}
@@ -569,11 +582,12 @@ const CampaignPlanning = () => {
           />
         </>
       )}
-      {selectedNode && map && siteWizardGeometry && (
+      {selectedNode && map && siteWizard && (
         <SiteWizard
-          key={siteWizardGeometry}
+          key={siteWizard.site?.identifier ?? siteWizard.geometry}
           map={map}
-          geometry={siteWizardGeometry}
+          geometry={siteWizard.geometry}
+          site={siteWizard.site}
           areaName={selectedNode.properties.name}
           catchment={catchment}
           snapGeometries={snapGeometries}

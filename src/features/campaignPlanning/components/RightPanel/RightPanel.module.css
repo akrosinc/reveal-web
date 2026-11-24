@@ -136,7 +136,6 @@
 }
 
 .statusRow {
-  composes: buttonReset from '../../styles/deck.module.css';
   padding: 7px 17px;
 }
 
@@ -173,10 +172,6 @@
 
 .statusLabel {
   color: var(--sub-ink);
-}
-
-.statusRow:hover .statusLabel {
-  color: var(--teal);
 }
 
 .statusValue {

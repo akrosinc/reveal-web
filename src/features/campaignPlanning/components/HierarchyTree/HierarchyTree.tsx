@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BsChevronRight } from 'react-icons/bs';
-import { HierarchyNode } from '../../providers/types';
+import { BsChevronRight, BsGeoAlt, BsPentagon } from 'react-icons/bs';
+import { HierarchyNode, Site } from '../../providers/types';
 import { findPath } from '../../utils/hierarchyTree';
 import styles from './HierarchyTree.module.css';
 
@@ -9,11 +9,14 @@ interface Props {
   nodes: HierarchyNode[];
   selectedId?: string;
   expandAll: boolean;
+  sitesByArea: Record<string, Site[]>;
   onSelect: (node: HierarchyNode) => void;
 }
 
+const NO_SITES: Site[] = [];
+
 // Parent/child tree like the Simulation page: chevron to open/close, children indented behind a vertical line
-const HierarchyTree = ({ nodes, selectedId, expandAll, onSelect }: Props) => {
+const HierarchyTree = ({ nodes, selectedId, expandAll, sitesByArea, onSelect }: Props) => {
   const { t } = useTranslation();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const treeRef = useRef<HTMLDivElement>(null);
@@ -57,7 +60,8 @@ const HierarchyTree = ({ nodes, selectedId, expandAll, onSelect }: Props) => {
 
   const renderNodes = (items: HierarchyNode[]): JSX.Element[] =>
     items.map(node => {
-      const hasChildren = !!node.children?.length;
+      const sites = sitesByArea[node.identifier] ?? NO_SITES;
+      const hasChildren = !!node.children?.length || !!sites.length;
       const isOpen = hasChildren && (expandAll || expandedIds.has(node.identifier));
       return (
         <div key={node.identifier}>
@@ -87,7 +91,27 @@ const HierarchyTree = ({ nodes, selectedId, expandAll, onSelect }: Props) => {
               </button>
             )}
           </div>
-          {isOpen && <div className={styles.children}>{renderNodes(node.children ?? [])}</div>}
+          {isOpen && (
+            <div className={styles.children}>
+              {renderNodes(node.children ?? [])}
+              {sites.map(site => (
+                <button
+                  key={site.identifier}
+                  type="button"
+                  className={styles.site}
+                  title={site.name}
+                  onClick={() => node.identifier !== selectedId && onSelect(node)}
+                >
+                  {site.geometry === 'polygon' ? (
+                    <BsPentagon className={styles.siteIcon} />
+                  ) : (
+                    <BsGeoAlt className={styles.siteIcon} />
+                  )}
+                  <span className={styles.siteName}>{site.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       );
     });

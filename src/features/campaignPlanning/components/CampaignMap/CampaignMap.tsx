@@ -86,10 +86,14 @@ const setRasterLayers = (map: Map, rasters: RasterDataset[], hiddenRasterIds: st
 const toSitesCollection = (sites: Site[]): GeoJSON.FeatureCollection => ({
   type: 'FeatureCollection',
   features: sites.flatMap(site => [
-    ...(site.boundary
+    ...(site.boundary && site.geometry === 'polygon'
       ? [{ type: 'Feature' as const, geometry: site.boundary, properties: { name: site.name, kind: 'boundary' } }]
       : []),
-    { type: 'Feature' as const, geometry: site.location, properties: { name: site.name, kind: 'location' } }
+    ...site.locations.map(location => ({
+      type: 'Feature' as const,
+      geometry: location,
+      properties: { name: site.name, kind: 'location' }
+    }))
   ])
 });
 

@@ -1,6 +1,7 @@
 import {
   area,
   booleanPointInPolygon,
+  circle,
   difference,
   kinks,
   lineIntersect,
@@ -23,7 +24,7 @@ export interface SiteGroup {
   mapped: number;
   target: number;
   types: { id: string; label: string; count: number; target: number }[];
-  sites: { name: string; type: string; isMapped: boolean }[];
+  sites: { identifier: string; name: string; type: string; isMapped: boolean }[];
 }
 
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -37,7 +38,7 @@ export const getSiteGroups = (sites: Site[], targets: SiteTargets = {}): SiteGro
     return {
       geometry,
       label: capitalize(types.map(type => type.name).join(', ')),
-      mapped: groupSites.filter(site => site.location).length,
+      mapped: groupSites.filter(site => site.locations.length).length,
       target: types.reduce((sum, type) => sum + (targets[type.id] ?? 0), 0),
       types: types.map(type => ({
         id: type.id,
@@ -46,9 +47,10 @@ export const getSiteGroups = (sites: Site[], targets: SiteTargets = {}): SiteGro
         target: targets[type.id] ?? 0
       })),
       sites: groupSites.map(site => ({
+        identifier: site.identifier,
         name: site.name,
         type: capitalize(getSiteTypeName(site.typeId)),
-        isMapped: !!site.location
+        isMapped: !!site.locations.length
       }))
     };
   });
@@ -136,6 +138,9 @@ export const getSegmentOutsidePoints = (from: Position, to: Position, geometry: 
     return booleanPointInPolygon(middle, geometry as Polygon | MultiPolygon) ? [] : [middle];
   });
 };
+
+export const getPointSiteBoundary = (position: Position, radius: number): GeoJSON.Polygon =>
+  circle(position, radius, { units: 'meters', steps: 64 }).geometry;
 
 export const toPolygon = (ring: Position[]): GeoJSON.Polygon => ({
   type: 'Polygon',

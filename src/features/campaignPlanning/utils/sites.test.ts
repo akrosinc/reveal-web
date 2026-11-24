@@ -1,5 +1,7 @@
 import { Site } from '../providers/types';
+import { distance } from '@turf/turf';
 import {
+  getPointSiteBoundary,
   getSegmentOutsidePoints,
   getSiteGroups,
   getSnapSegments,
@@ -28,7 +30,7 @@ const site = (typeId: string, geometry: Site['geometry']): Site => ({
   name: `${typeId} site`,
   typeId,
   geometry,
-  location: { type: 'Point', coordinates: [1, 1] }
+  locations: [{ type: 'Point', coordinates: [1, 1] }]
 });
 
 describe('getSiteGroups', () => {
@@ -38,7 +40,22 @@ describe('getSiteGroups', () => {
     expect(polygonGroup.mapped).toBe(1);
     expect(polygonGroup.target).toBe(0);
     expect(polygonGroup.types.find(type => type.label === 'Static sites')?.count).toBe(1);
-    expect(pointGroup.sites).toEqual([{ name: 'mobile site', type: 'Mobile', isMapped: true }]);
+    expect(pointGroup.sites).toEqual([{ identifier: 'mobile', name: 'mobile site', type: 'Mobile', isMapped: true }]);
+  });
+
+  it('counts a site as mapped only when it has at least one point', () => {
+    const [polygonGroup] = getSiteGroups([
+      { ...site('outreach', 'polygon'), locations: [] },
+      {
+        ...site('static', 'polygon'),
+        locations: [
+          { type: 'Point', coordinates: [1, 1] },
+          { type: 'Point', coordinates: [2, 2] }
+        ]
+      }
+    ]);
+    expect(polygonGroup.mapped).toBe(1);
+    expect(polygonGroup.sites.map(item => item.isMapped)).toEqual([false, true]);
   });
 
   it('adds up the target of each type in the group', () => {
@@ -139,5 +156,15 @@ describe('inside checks', () => {
     expect(getSegmentOutsidePoints([1, 1], [9, 1], notch)).toEqual([]);
     expect(getSegmentOutsidePoints([0, 0], [10, 0], notch)).toEqual([]);
     expect(getSegmentOutsidePoints([2, 8], [8, 8], notch)).toEqual([[5, 8]]);
+  });
+});
+
+describe('getPointSiteBoundary', () => {
+  it('draws a closed circle with every corner at the radius in meters', () => {
+    const center: Position = [28.3467, -15.4123];
+    const ring = getPointSiteBoundary(center, 1000).coordinates[0];
+
+    expect(ring[0]).toEqual(ring[ring.length - 1]);
+    ring.forEach(position => expect(distance(center, position, { units: 'meters' })).toBeCloseTo(1000, 0));
   });
 });

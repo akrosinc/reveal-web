@@ -17,7 +17,6 @@
   --surface: rgba(255, 252, 247, 0.91);
   --surface-strong: #fff;
   --bar: rgba(255, 255, 255, 0.84);
-  --modal: rgba(255, 252, 247, 0.97);
   --field: #f1ede5;
   --field-line: #dbd9d2;
   --control-line: #dfded8;
@@ -46,7 +45,6 @@
   --surface: rgba(36, 38, 36, 0.93);
   --surface-strong: #2b2d2b;
   --bar: rgba(36, 38, 36, 0.88);
-  --modal: rgba(38, 40, 38, 0.98);
   --field: #333633;
   --field-line: #444843;
   --control-line: #444843;

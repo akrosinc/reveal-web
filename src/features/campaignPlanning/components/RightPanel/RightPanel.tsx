@@ -1,6 +1,7 @@
 import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronUp } from 'react-icons/bs';
+import { SITE_GEOGRAPHIC_LEVEL } from '../../constants';
 import { POPULATION, SCHOOLS, ZONES } from '../../placeholderData';
 import { HierarchyNode, Site, SiteGeometry, SiteTargets } from '../../providers/types';
 import { getSiteGroups } from '../../utils/sites';
@@ -25,9 +26,10 @@ interface Props {
   onCollapsedChange: (isCollapsed: boolean) => void;
   sites: Site[];
   onAddSite: (geometry: SiteGeometry) => void;
+  onEditSite: (site: Site) => void;
 }
 
-const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, sites, onAddSite }: Props) => {
+const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, sites, onAddSite, onEditSite }: Props) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('sites');
   const [isPopulationOpen, setIsPopulationOpen] = useState(false);
@@ -110,7 +112,6 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
               onEditZonesSchools={() => setIsZonesSchoolsOpen(true)}
               onOpenGroup={group => setOpenSiteGeometry(group.geometry)}
               isLowestLevel={!node.children?.length}
-              onAddSite={onAddSite}
             />
           )}
           {activeTab === 'activity' && <ActivityTab />}
@@ -132,6 +133,16 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
           group={openSiteGroup}
           name={name}
           onTargetChange={saveSiteTarget}
+          canAddSites={geographicLevel?.toLowerCase() === SITE_GEOGRAPHIC_LEVEL}
+          onAddSite={() => {
+            setOpenSiteGeometry(undefined);
+            onAddSite(openSiteGroup.geometry);
+          }}
+          onEditSite={identifier => {
+            const site = sites.find(item => item.identifier === identifier);
+            setOpenSiteGeometry(undefined);
+            if (site) onEditSite(site);
+          }}
           onClose={() => setOpenSiteGeometry(undefined)}
         />
       )}

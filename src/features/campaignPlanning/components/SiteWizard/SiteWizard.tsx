@@ -2,9 +2,10 @@ import { GeoJSONSource, Map, MapMouseEvent } from 'mapbox-gl';
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsArrowCounterclockwise, BsCheckLg, BsX } from 'react-icons/bs';
-import { SITE_COLOR, SITE_SNAP_TOLERANCE_PX, SITE_TYPES } from '../../constants';
+import { POINT_SITE_RADIUS_M, SITE_COLOR, SITE_SNAP_TOLERANCE_PX, SITE_TYPES } from '../../constants';
 import { Site, SiteGeometry } from '../../providers/types';
 import {
+  getPointSiteBoundary,
   getSegmentOutsidePoints,
   getSnapSegments,
   isPointInside,
@@ -22,6 +23,8 @@ const STEPS: Record<SiteGeometry, Step[]> = {
   point: ['details', 'location'],
   polygon: ['details', 'boundary', 'location']
 };
+
+const EDIT_STEPS: Step[] = ['location'];
 
 const DRAFT_SOURCE = 'campaign-site-draft';
 
@@ -134,21 +137,28 @@ interface Props {
   areaName: string;
   catchment?: GeoJSON.Geometry;
   snapGeometries: GeoJSON.Geometry[];
+  site?: Site;
   onSave: (site: Site) => void;
   onClose: () => void;
 }
 
-const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave, onClose }: Props) => {
+const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, site, onSave, onClose }: Props) => {
   const { t } = useTranslation();
-  const steps = STEPS[geometry];
+  const steps = site ? EDIT_STEPS : STEPS[geometry];
+  const allowsManyPoints = geometry === 'polygon';
   const types = useMemo(() => SITE_TYPES.filter(type => type.geometry === geometry), [geometry]);
-  const [step, setStep] = useState<Step>('details');
-  const [name, setName] = useState('');
-  const [typeId, setTypeId] = useState('');
-  const [vertices, setVertices] = useState<Position[]>([]);
-  const [isClosed, setIsClosed] = useState(false);
-  const [location, setLocation] = useState<Position>();
+  const [step, setStep] = useState<Step>(steps[0]);
+  const [name, setName] = useState(site?.name ?? '');
+  const [typeId, setTypeId] = useState(site?.typeId ?? '');
+  const [vertices, setVertices] = useState<Position[]>(() =>
+    site?.geometry === 'polygon' && site.boundary ? (site.boundary.coordinates[0].slice(0, -1) as Position[]) : []
+  );
+  const [isClosed, setIsClosed] = useState(site?.geometry === 'polygon');
+  const [locations, setLocations] = useState<Position[]>(
+    () => site?.locations.map(location => location.coordinates as Position) ?? []
+  );
   const [error, setError] = useState('');
+  const drag = useRef<{ index: number; position: Position }>();
   const segments = useMemo(() => getSnapSegments(snapGeometries), [snapGeometries]);
   const catchmentSegments = useMemo(() => (catchment ? getSnapSegments([catchment]) : []), [catchment]);
   const isLineInside = useCallback(
@@ -165,10 +175,10 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
   const canContinue =
     (step === 'details' && !!name.trim() && !!typeId) ||
     (step === 'boundary' && isClosed) ||
-    (step === 'location' && !!location);
+    (step === 'location' && !!locations.length);
 
   const render = useCallback(
-    (cursor?: Position, snapped?: Position, isOutside?: boolean) => {
+    (cursor?: Position, snapped?: Position, isOutside?: boolean, points: Position[] = locations) => {
       const features: GeoJSON.Feature[] = [];
       if (isClosed) features.push(feature(toPolygon(vertices), 'boundary'));
       else if (vertices.length > 1) features.push(feature({ type: 'LineString', coordinates: vertices }, 'path'));
@@ -187,11 +197,11 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
           features.push(feature({ type: 'Point', coordinates: vertex }, index || isClosed ? 'vertex' : 'first'))
         );
       if (snapped) features.push(feature({ type: 'Point', coordinates: snapped }, 'snap'));
-      if (location) features.push(feature({ type: 'Point', coordinates: location }, 'location'));
+      points.forEach(point => features.push(feature({ type: 'Point', coordinates: point }, 'location')));
       draft.current = { type: 'FeatureCollection', features };
       drawDraft(map, draft.current);
     },
-    [map, step, vertices, isClosed, location]
+    [map, step, vertices, isClosed, locations]
   );
 
   const canFinish = step === 'boundary' && !isClosed && vertices.length > 2;
@@ -225,6 +235,17 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
     canvas.style.cursor = 'crosshair';
     map.doubleClickZoom.disable();
 
+    const container = geometry === 'polygon' ? toPolygon(vertices) : catchment;
+    const outsideMessage =
+      geometry === 'polygon'
+        ? t('campaignPlanning.siteOutsideBoundary')
+        : t('campaignPlanning.siteOutsideCatchment', { name: areaName });
+
+    const getPointIndex = (event: MapMouseEvent) =>
+      step === 'location'
+        ? locations.findIndex(point => map.project(point).dist(event.point) <= SITE_SNAP_TOLERANCE_PX)
+        : -1;
+
     const getTarget = (event: MapMouseEvent) => {
       const position: Position = [event.lngLat.lng, event.lngLat.lat];
       if (step !== 'boundary' || isClosed) return { position };
@@ -235,7 +256,41 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
       return { position: snapped ?? position, snapped };
     };
 
+    const startDrag = (event: MapMouseEvent) => {
+      const index = getPointIndex(event);
+      if (index < 0) return;
+      event.preventDefault();
+      map.dragPan.disable();
+      drag.current = { index, position: locations[index] };
+    };
+
+    const stopDrag = () => {
+      if (!drag.current) return;
+      const { index, position } = drag.current;
+      drag.current = undefined;
+      map.dragPan.enable();
+      setLocations(current => current.map((point, pointIndex) => (pointIndex === index ? position : point)));
+    };
+
     const move = (event: MapMouseEvent) => {
+      if (drag.current) {
+        const position: Position = [event.lngLat.lng, event.lngLat.lat];
+        if (!isPointInside(position, container)) {
+          setError(outsideMessage);
+          return;
+        }
+        const { index } = drag.current;
+        drag.current = { index, position };
+        render(
+          undefined,
+          undefined,
+          undefined,
+          locations.map((point, pointIndex) => (pointIndex === index ? position : point))
+        );
+        setError('');
+        return;
+      }
+      if (step === 'location') canvas.style.cursor = getPointIndex(event) >= 0 ? 'move' : 'crosshair';
       const { position, snapped, closes } = getTarget(event);
       const last = vertices[vertices.length - 1];
       render(position, snapped, step === 'boundary' && !isClosed && !closes && !!last && !isLineInside(last, position));
@@ -244,16 +299,12 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
     const click = (event: MapMouseEvent) => {
       const { position, snapped, closes } = getTarget(event);
       if (step === 'location') {
-        const container = geometry === 'polygon' ? toPolygon(vertices) : catchment;
+        if (getPointIndex(event) >= 0) return;
         if (!isPointInside(position, container)) {
-          setError(
-            geometry === 'polygon'
-              ? t('campaignPlanning.siteOutsideBoundary')
-              : t('campaignPlanning.siteOutsideCatchment', { name: areaName })
-          );
+          setError(outsideMessage);
           return;
         }
-        setLocation(position);
+        setLocations(current => (allowsManyPoints ? [...current, position] : [position]));
         setError('');
         return;
       }
@@ -288,24 +339,47 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
       finish();
     };
 
+    map.on('mousedown', startDrag);
     map.on('mousemove', move);
     map.on('click', click);
     map.on('dblclick', doubleClick);
+    document.addEventListener('mouseup', stopDrag);
     document.addEventListener('keydown', keyDown);
     return () => {
+      map.off('mousedown', startDrag);
       map.off('mousemove', move);
       map.off('click', click);
       map.off('dblclick', doubleClick);
+      document.removeEventListener('mouseup', stopDrag);
       document.removeEventListener('keydown', keyDown);
+      if (drag.current) {
+        drag.current = undefined;
+        map.dragPan.enable();
+      }
       canvas.style.cursor = '';
       map.doubleClickZoom.enable();
     };
-  }, [map, render, finish, isLineInside, step, vertices, isClosed, catchment, segments, geometry, areaName, t]);
+  }, [
+    map,
+    render,
+    finish,
+    isLineInside,
+    step,
+    vertices,
+    isClosed,
+    locations,
+    allowsManyPoints,
+    catchment,
+    segments,
+    geometry,
+    areaName,
+    t
+  ]);
 
   const undo = () => {
     if (isClosed) setIsClosed(false);
     else setVertices(current => current.slice(0, -1));
-    setLocation(undefined);
+    setLocations([]);
     setError('');
   };
 
@@ -314,7 +388,12 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
       setVertices([]);
       setIsClosed(false);
     }
-    setLocation(undefined);
+    setLocations([]);
+    setError('');
+  };
+
+  const removeLocation = (index: number) => {
+    setLocations(current => current.filter((_point, pointIndex) => pointIndex !== index));
     setError('');
   };
 
@@ -330,14 +409,16 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
       goTo(stepIndex + 1);
       return;
     }
-    if (!location) return;
+    if (!locations.length) return;
     onSave({
-      identifier: `site-${Date.now()}`,
+      identifier: site?.identifier ?? `site-${Date.now()}`,
       name: name.trim(),
       typeId,
       geometry,
-      location: { type: 'Point', coordinates: location },
-      boundary: geometry === 'polygon' ? toPolygon(vertices) : undefined
+      locations: locations.map((coordinates): GeoJSON.Point => ({ type: 'Point', coordinates })),
+      ...(geometry === 'polygon'
+        ? { boundary: toPolygon(vertices) }
+        : { boundary: getPointSiteBoundary(locations[0], POINT_SITE_RADIUS_M), radius: POINT_SITE_RADIUS_M })
     });
   };
 
@@ -350,11 +431,13 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
       ? t('campaignPlanning.siteLocationInBoundaryHint')
       : t('campaignPlanning.siteLocationHint', { name: areaName });
 
+  const title = site ? t('campaignPlanning.editSite', { name: site.name }) : t('campaignPlanning.addSite');
+
   return (
-    <form className={styles.card} onSubmit={submit} aria-label={t('campaignPlanning.addSite')}>
+    <form className={styles.card} onSubmit={submit} aria-label={title}>
       <div className={styles.header}>
         <div>
-          <div className={styles.title}>{t('campaignPlanning.addSite')}</div>
+          <div className={styles.title}>{title}</div>
           <div className={styles.subtitle}>{t('campaignPlanning.catchment', { name: areaName })}</div>
         </div>
         <button
@@ -448,13 +531,46 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, onSave
               </button>
             </div>
           )}
-          {step === 'location' && location && (
-            <div className={styles.tools}>
-              <span>{t('campaignPlanning.sitePlaced')}</span>
-              <button type="button" id="campaign-planning-site-clear-location" className={styles.tool} onClick={clear}>
-                {t('campaignPlanning.clear')}
-              </button>
-            </div>
+          {step === 'location' && !!locations.length && (
+            <>
+              <div className={styles.tools}>
+                <span>
+                  {allowsManyPoints
+                    ? t('campaignPlanning.sitePoints', { count: locations.length })
+                    : t('campaignPlanning.sitePlaced')}
+                </span>
+                <button
+                  type="button"
+                  id="campaign-planning-site-clear-location"
+                  className={styles.tool}
+                  onClick={clear}
+                >
+                  {t('campaignPlanning.clear')}
+                </button>
+              </div>
+              {allowsManyPoints && (
+                <ol className={styles.points}>
+                  {locations.map((point, index) => (
+                    <li key={`${point[0]}-${point[1]}`} className={styles.point}>
+                      <span className={styles.pointName}>{t('campaignPlanning.sitePoint', { number: index + 1 })}</span>
+                      <span className={styles.pointCoords}>
+                        {point[1].toFixed(5)}, {point[0].toFixed(5)}
+                      </span>
+                      <button
+                        type="button"
+                        id={`campaign-planning-site-remove-point-${index + 1}`}
+                        className={styles.pointRemove}
+                        title={t('campaignPlanning.removeSitePoint', { number: index + 1 })}
+                        aria-label={t('campaignPlanning.removeSitePoint', { number: index + 1 })}
+                        onClick={() => removeLocation(index)}
+                      >
+                        <BsX />
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </>
           )}
         </>
       )}

@@ -8,6 +8,7 @@ import {
 import { useAuthorization } from '../../../../hooks/useAuthorization';
 import { LocationFeature, SimulationDataset } from '../../providers/types';
 import { getDatasetColor } from '../../utils/datasets';
+import { getPopulationTotal } from '../../utils/population';
 import styles from './AreaPopup.module.css';
 
 interface Props {
@@ -20,12 +21,6 @@ interface Props {
   onAssignTeam: () => void;
   onClose: () => void;
 }
-
-const getPopulation = (population: LocationFeature['properties']['population']) => {
-  if (!population) return undefined;
-  const sum = typeof population === 'string' ? JSON.parse(population)?.sum : population.sum;
-  return typeof sum === 'number' ? Math.round(sum).toLocaleString() : undefined;
-};
 
 const AreaPopup = ({
   location,
@@ -42,7 +37,7 @@ const AreaPopup = ({
   const canRemove = useAuthorization([CAMPAIGN_PLANNING_REMOVE_FROM_CAMPAIGN]);
   const canAssignTeam = useAuthorization([CAMPAIGN_PLANNING_ASSIGN_TO_TEAM]);
   const { name, geographicLevel, childrenNumber, metadata, population } = location.properties;
-  const populationTotal = getPopulation(population);
+  const populationTotal = getPopulationTotal(population)?.toLocaleString();
 
   return (
     <div className={styles.card}>
