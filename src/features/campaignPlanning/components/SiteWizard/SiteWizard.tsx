@@ -138,7 +138,7 @@ interface Props {
   catchment?: GeoJSON.Geometry;
   snapGeometries: GeoJSON.Geometry[];
   site?: Site;
-  onSave: (site: Site) => void;
+  onSave: (site: Site) => Promise<void>;
   onClose: () => void;
 }
 
@@ -158,6 +158,7 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, site, 
     () => site?.locations.map(location => location.coordinates as Position) ?? []
   );
   const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const drag = useRef<{ index: number; position: Position }>();
   const segments = useMemo(() => getSnapSegments(snapGeometries), [snapGeometries]);
   const catchmentSegments = useMemo(() => (catchment ? getSnapSegments([catchment]) : []), [catchment]);
@@ -409,9 +410,10 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, site, 
       goTo(stepIndex + 1);
       return;
     }
-    if (!locations.length) return;
+    if (!locations.length || isSaving) return;
+    setIsSaving(true);
     onSave({
-      identifier: site?.identifier ?? `site-${Date.now()}`,
+      identifier: site?.identifier ?? '',
       name: name.trim(),
       typeId,
       geometry,
@@ -419,7 +421,7 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, site, 
       ...(geometry === 'polygon'
         ? { boundary: toPolygon(vertices) }
         : { boundary: getPointSiteBoundary(locations[0], POINT_SITE_RADIUS_M), radius: POINT_SITE_RADIUS_M })
-    });
+    }).catch(() => setIsSaving(false));
   };
 
   const hint =
@@ -589,7 +591,12 @@ const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, site, 
         >
           {stepIndex ? t('campaignPlanning.back') : t('buttons.cancel')}
         </button>
-        <button type="submit" id="campaign-planning-site-next" className={styles.primary} disabled={!canContinue}>
+        <button
+          type="submit"
+          id="campaign-planning-site-next"
+          className={styles.primary}
+          disabled={!canContinue || isSaving}
+        >
           {isLastStep ? t('buttons.save') : t('campaignPlanning.next')}
         </button>
       </div>

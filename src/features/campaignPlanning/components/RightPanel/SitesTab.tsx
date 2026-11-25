@@ -10,10 +10,11 @@ interface Props {
   zonesSchools: ZonesSchoolsCounts;
   onEditZonesSchools: () => void;
   onOpenGroup: (group: SiteGroup) => void;
-  isLowestLevel: boolean;
+  isCatchment: boolean;
+  canEditCounts: boolean;
 }
 
-const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, isLowestLevel }: Props) => {
+const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, isCatchment, canEditCounts }: Props) => {
   const { t } = useTranslation();
 
   return (
@@ -25,13 +26,11 @@ const SitesTab = ({ siteGroups, zonesSchools, onEditZonesSchools, onOpenGroup, i
           id="campaign-planning-edit-zones-schools-button"
           className={styles.editButton}
           title={
-            isLowestLevel
-              ? t('campaignPlanning.editZonesAndSchools')
-              : t('campaignPlanning.zonesSchoolsLowestLevelOnly')
+            isCatchment ? t('campaignPlanning.editZonesAndSchools') : t('campaignPlanning.zonesSchoolsCatchmentOnly')
           }
           aria-label={t('campaignPlanning.editZonesAndSchools')}
-          aria-disabled={!isLowestLevel}
-          onClick={() => isLowestLevel && onEditZonesSchools()}
+          aria-disabled={!canEditCounts}
+          onClick={() => canEditCounts && onEditZonesSchools()}
         >
           <BsPencil />
         </button>

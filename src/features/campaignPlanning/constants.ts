@@ -1,4 +1,4 @@
-import { SiteGeometry, SiteType } from './providers/types';
+import { LocationSubtype, SiteGeometry, SiteType } from './providers/types';
 
 export const MAP_STYLE_LIGHT = 'mapbox://styles/mapbox/light-v10';
 export const MAP_STYLE_DARK = 'mapbox://styles/mapbox/dark-v10';
@@ -29,12 +29,37 @@ export const POINT_SITE_RADIUS_M = 1000;
 
 export const SITE_GEOGRAPHIC_LEVEL = 'catchment';
 
+export const SITE_BOUNDARY_LEVEL = 'site';
+
+export const SITE_POINT_LEVEL = 'sitepoint';
+
+export const TAG_MOH_POPULATION = 'moh_population';
+
+export const TAG_USER_POPULATION = 'user_population';
+
+export const TAG_ZONES = 'zones_count';
+
+export const TAG_SCHOOLS = 'schools_count';
+
 export const SITE_COLOR = '#087f95';
 
 export const SITE_TYPES: SiteType[] = [
-  { id: 'outreach', name: 'outreach', label: 'Outreach sites', geometry: 'polygon' },
-  { id: 'static', name: 'static', label: 'Static sites', geometry: 'polygon' },
-  { id: 'h2r', name: 'H2R', label: 'H2R sites', geometry: 'polygon' },
-  { id: 'mobile', name: 'mobile', label: 'Mobile sites', geometry: 'point' },
-  { id: 'school_hpv', name: 'school HPV', label: 'School-based HPV sites', geometry: 'point' }
+  { id: 'outreach', name: 'outreach', label: 'Outreach sites', geometry: 'polygon', subtype: 'OUTREACH' },
+  { id: 'static', name: 'static', label: 'Static sites', geometry: 'polygon', subtype: 'STATIC' },
+  { id: 'h2r', name: 'H2R', label: 'H2R sites', geometry: 'polygon', subtype: 'H2R' },
+  { id: 'mobile', name: 'mobile', label: 'Mobile sites', geometry: 'point', subtype: 'MOBILE' },
+  { id: 'school_hpv', name: 'school HPV', label: 'School-based HPV sites', geometry: 'point', subtype: 'SCHOOL' }
+];
+
+export const getSiteTargetTag = (subtype: LocationSubtype) => `sites_${subtype.toLowerCase()}_to_add`;
+
+export const getSiteAddedTag = (subtype: LocationSubtype) => `sites_${subtype.toLowerCase()}_added`;
+
+export const AREA_TAGS = [
+  TAG_MOH_POPULATION,
+  TAG_USER_POPULATION,
+  TAG_ZONES,
+  TAG_SCHOOLS,
+  ...SITE_TYPES.map(type => getSiteTargetTag(type.subtype)),
+  ...SITE_TYPES.map(type => getSiteAddedTag(type.subtype))
 ];

@@ -139,11 +139,14 @@ export interface LocationDataRequest {
 
 export type SiteGeometry = 'polygon' | 'point';
 
+export type LocationSubtype = 'OUTREACH' | 'STATIC' | 'H2R' | 'MOBILE' | 'SCHOOL' | 'HPV';
+
 export interface SiteType {
   id: string;
   name: string;
   label: string;
   geometry: SiteGeometry;
+  subtype: LocationSubtype;
 }
 
 export interface Site {
@@ -156,4 +159,38 @@ export interface Site {
   radius?: number;
 }
 
-export type SiteTargets = Record<string, number>;
+export interface CustomLocationRequest {
+  parentLocationIdentifier: string;
+  locationSubtype: LocationSubtype;
+  name: string;
+  boundaryGeographicLevelName: string;
+  pointGeographicLevelName: string;
+  locationBoundary?: GeoJSON.Polygon;
+  points: GeoJSON.Point[];
+  tagName?: string;
+}
+
+export interface CustomLocation {
+  identifier: string;
+  geometry: GeoJSON.Geometry;
+  properties: {
+    name: string;
+    locationSubtype: LocationSubtype;
+    parentIdentifier: string;
+  };
+}
+
+export type SiteCounts = Record<string, number>;
+
+export interface TagCount {
+  tag: string;
+  count?: number | null;
+  total?: number | null;
+}
+
+export interface LocationTagCounts {
+  locationId: string;
+  tags?: TagCount[];
+}
+
+export type TagValues = Record<string, number>;

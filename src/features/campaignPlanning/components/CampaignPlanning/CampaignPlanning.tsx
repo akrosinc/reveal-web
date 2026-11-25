@@ -8,15 +8,19 @@ import { useAuthorization } from '../../../../hooks/useAuthorization';
 import { useAppSelector } from '../../../../store/hooks';
 import {
   assignLocationsToPlan,
+  createCustomLocation,
+  deleteCustomLocation,
   deleteSimulationDataset,
+  getCustomLocations,
   getInstanceHierarchy,
   getInstances,
   getInstanceTeams,
   getLocationData,
   getPlanSimulation,
+  updateCustomLocation,
   updateSimulationDataset
 } from '../../api';
-import { MAP_STYLE_DARK, MAP_STYLE_LIGHT } from '../../constants';
+import { getSiteAddedTag, MAP_STYLE_DARK, MAP_STYLE_LIGHT, SITE_GEOGRAPHIC_LEVEL } from '../../constants';
 import {
   HierarchyNode,
   InstanceListItem,
@@ -33,6 +37,7 @@ import { getIdsAfterRemove, getIdsToAdd } from '../../utils/campaign';
 import { getValueBounds } from '../../utils/datasets';
 import { findPath } from '../../utils/hierarchyTree';
 import { splitRasterDatasets } from '../../utils/rasters';
+import { getSiteSubtype, toCustomLocationRequest, toSites } from '../../utils/sites';
 import AddDatasetDialog from '../AddDatasetDialog';
 import AddRasterDialog from '../AddRasterDialog';
 import AreaPopup from '../AreaPopup';
@@ -233,6 +238,10 @@ const CampaignPlanning = () => {
   const [siteWizard, setSiteWizard] = useState<{ geometry: SiteGeometry; site?: Site }>();
   const selectedId = selectedNode?.identifier;
   const areaSites = useMemo(() => (selectedId ? sitesByArea[selectedId] ?? [] : []), [sitesByArea, selectedId]);
+  const mapSites = useMemo(
+    () => areaSites.filter(site => site.identifier !== siteWizard?.site?.identifier),
+    [areaSites, siteWizard]
+  );
   const catchment = useMemo(
     () => locations.find(location => location.identifier === selectedId)?.geometry,
     [locations, selectedId]
@@ -244,23 +253,77 @@ const CampaignPlanning = () => {
     ],
     [locations, areaSites]
   );
+  const isSiteArea = selectedNode?.properties.geographicLevel?.toLowerCase() === SITE_GEOGRAPHIC_LEVEL;
+  const hasAreaSites = !!selectedId && !!sitesByArea[selectedId];
+  const [sitesRequest, setSitesRequest] = useState(0);
+
+  useEffect(() => setSitesByArea({}), [instanceId]);
+
+  useEffect(() => {
+    if (!selectedId || !isSiteArea || hasAreaSites) return;
+    let isCurrent = true;
+    getCustomLocations(selectedId, instanceId)
+      .then(res => isCurrent && setSitesByArea(current => ({ ...current, [selectedId]: toSites(res) })))
+      .catch(err => isCurrent && toast.error(err));
+    return () => {
+      isCurrent = false;
+    };
+  }, [selectedId, isSiteArea, hasAreaSites, instanceId, sitesRequest]);
+
   const saveSite = useCallback(
     (site: Site) => {
-      if (!selectedId) return;
-      const isExisting = areaSites.some(item => item.identifier === site.identifier);
-      setSitesByArea(current => {
-        const sites = current[selectedId] ?? [];
-        return {
-          ...current,
-          [selectedId]: isExisting
-            ? sites.map(item => (item.identifier === site.identifier ? site : item))
-            : [...sites, site]
-        };
-      });
-      setSiteWizard(undefined);
-      toast.success(t(isExisting ? 'campaignPlanning.siteUpdated' : 'campaignPlanning.siteAdded', { name: site.name }));
+      if (!selectedId) return Promise.resolve();
+      const isExisting = !!site.identifier;
+      const request = toCustomLocationRequest(site, selectedId);
+      return (
+        isExisting
+          ? updateCustomLocation(site.identifier, request, instanceId)
+          : createCustomLocation(request, instanceId)
+      )
+        .then(res => {
+          const [saved = site] = toSites(res);
+          setSitesByArea(current => {
+            const sites = current[selectedId];
+            if (!sites) return current;
+            return {
+              ...current,
+              [selectedId]: isExisting
+                ? sites.map(item => (item.identifier === saved.identifier ? saved : item))
+                : [...sites, saved]
+            };
+          });
+          setSitesRequest(current => current + 1);
+          setSiteWizard(undefined);
+          toast.success(
+            t(isExisting ? 'campaignPlanning.siteUpdated' : 'campaignPlanning.siteAdded', { name: saved.name })
+          );
+        })
+        .catch(err => {
+          toast.error(err);
+          throw err;
+        });
     },
-    [selectedId, areaSites, t]
+    [selectedId, instanceId, t]
+  );
+  const deleteSite = useCallback(
+    (identifier: string) => {
+      const site = areaSites.find(item => item.identifier === identifier);
+      const tagName = site && getSiteAddedTag(getSiteSubtype(site.typeId));
+      return deleteCustomLocation(identifier, tagName, instanceId)
+        .then(() => {
+          setSitesByArea(current =>
+            selectedId && current[selectedId]
+              ? { ...current, [selectedId]: current[selectedId].filter(item => item.identifier !== identifier) }
+              : current
+          );
+          toast.success(t('campaignPlanning.siteDeleted', { name: site?.name }));
+        })
+        .catch(err => {
+          toast.error(err);
+          throw err;
+        });
+    },
+    [selectedId, instanceId, areaSites, t]
   );
   const closeSiteWizard = useCallback(() => setSiteWizard(undefined), []);
   const openAddSite = useCallback((geometry: SiteGeometry) => setSiteWizard({ geometry }), []);
@@ -494,7 +557,7 @@ const CampaignPlanning = () => {
         hiddenDatasetIds={hiddenDatasetIds}
         rasterDatasets={rasterDatasets}
         hiddenRasterIds={hiddenRasterIds}
-        sites={areaSites}
+        sites={mapSites}
         onLoad={setMap}
         onAreaClick={openAreaPopup}
         onPopupClose={closeAreaPopup}
@@ -564,11 +627,13 @@ const CampaignPlanning = () => {
         <>
           <RightPanel
             node={selectedNode}
+            instanceId={instanceId}
             isCollapsed={isDetailsCollapsed}
             onCollapsedChange={setIsDetailsCollapsed}
             sites={areaSites}
             onAddSite={openAddSite}
             onEditSite={openEditSite}
+            onDeleteSite={deleteSite}
           />
           <BottomTable
             rows={tableRows}

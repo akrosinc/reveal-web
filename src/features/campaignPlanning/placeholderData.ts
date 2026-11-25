@@ -1,9 +1,4 @@
 // Design placeholders: values from the Command Deck mockup, shown until the backend APIs exist
-export const POPULATION = { moh: '5,890', user: '4,000' };
-
-export const ZONES = 0;
-export const SCHOOLS = 0;
-
 export const ACTIVITIES = [
   { label: 'S1 — Planning and management', count: 2 },
   { label: 'S3 — Linking immunisation services', count: 1 },

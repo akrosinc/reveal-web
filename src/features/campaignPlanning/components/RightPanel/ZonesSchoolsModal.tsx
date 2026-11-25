@@ -14,7 +14,7 @@ const isWholeNumber = (value: string) => /^\d+$/.test(value);
 interface Props {
   name: string;
   counts: ZonesSchoolsCounts;
-  onSave: (counts: ZonesSchoolsCounts) => void;
+  onSave: (counts: ZonesSchoolsCounts) => Promise<void>;
   onClose: () => void;
 }
 
@@ -26,14 +26,17 @@ const ZonesSchoolsModal = ({ name, counts, onSave, onClose }: Props) => {
     schools: String(counts.schools)
   });
   const [isConfirmingClose, setIsConfirmingClose] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const isValid = KEYS.every(option => isWholeNumber(values[option]));
   const isDirty = KEYS.some(option => values[option] !== String(counts[option]));
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!isValid) return;
-    onSave({ zones: Number(values.zones), schools: Number(values.schools) });
-    onClose();
+    if (!isValid || isSaving) return;
+    setIsSaving(true);
+    onSave({ zones: Number(values.zones), schools: Number(values.schools) })
+      .then(onClose)
+      .catch(() => setIsSaving(false));
   };
 
   return (
@@ -41,9 +44,7 @@ const ZonesSchoolsModal = ({ name, counts, onSave, onClose }: Props) => {
       title={t('campaignPlanning.editZonesAndSchools')}
       subtitle={t('campaignPlanning.catchment', { name })}
       onClose={() => (isDirty ? setIsConfirmingClose(true) : onClose())}
-      discardConfirm={
-        isConfirmingClose ? { onConfirm: onClose, onCancel: () => setIsConfirmingClose(false) } : undefined
-      }
+      confirm={isConfirmingClose ? { onConfirm: onClose, onCancel: () => setIsConfirmingClose(false) } : undefined}
     >
       <form className={styles.form} onSubmit={submit}>
         <label className={styles.label} htmlFor="campaign-planning-zones-schools-type">
@@ -86,7 +87,12 @@ const ZonesSchoolsModal = ({ name, counts, onSave, onClose }: Props) => {
           <button type="button" id="campaign-planning-zones-schools-cancel" className={styles.cancel} onClick={onClose}>
             {t('buttons.cancel')}
           </button>
-          <button type="submit" id="campaign-planning-zones-schools-save" className={styles.save} disabled={!isValid}>
+          <button
+            type="submit"
+            id="campaign-planning-zones-schools-save"
+            className={styles.save}
+            disabled={!isValid || isSaving}
+          >
             {t('buttons.save')}
           </button>
         </div>

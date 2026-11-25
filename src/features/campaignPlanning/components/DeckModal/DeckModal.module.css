@@ -111,6 +111,12 @@
   align-items: center;
 }
 
+.rowError {
+  padding-bottom: 7px;
+  font-size: 11px;
+  color: var(--danger);
+}
+
 .rowControls {
   display: flex;
   align-items: center;
@@ -222,6 +228,10 @@
   margin: -2px -4px -2px 0;
   border-radius: 6px;
   font-size: 11px;
+}
+
+.miniDelete:hover {
+  color: var(--danger);
 }
 
 .mapped {
@@ -340,6 +350,20 @@
 
 .confirmOk:hover {
   background: var(--teal-hover);
+}
+
+.confirmDanger {
+  background: var(--danger);
+}
+
+.confirmDanger:hover {
+  background: #d93d42;
+}
+
+.confirmCancel:disabled,
+.confirmOk:disabled {
+  cursor: default;
+  opacity: 0.6;
 }
 
 .confirmCancel:focus-visible,

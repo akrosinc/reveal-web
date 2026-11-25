@@ -1,10 +1,19 @@
 import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsChevronUp } from 'react-icons/bs';
-import { SITE_GEOGRAPHIC_LEVEL } from '../../constants';
-import { POPULATION, SCHOOLS, ZONES } from '../../placeholderData';
-import { HierarchyNode, Site, SiteGeometry, SiteTargets } from '../../providers/types';
+import {
+  getSiteTargetTag,
+  SITE_GEOGRAPHIC_LEVEL,
+  SITE_TYPES,
+  TAG_MOH_POPULATION,
+  TAG_SCHOOLS,
+  TAG_USER_POPULATION,
+  TAG_ZONES
+} from '../../constants';
+import { useTagCounts } from '../../hooks/useTagCounts';
+import { HierarchyNode, Site, SiteGeometry, TagValues } from '../../providers/types';
 import { getSiteGroups } from '../../utils/sites';
+import { formatTagValue, toSitesAdded, toSiteTargets } from '../../utils/tagCounts';
 import ActivityTab from './ActivityTab';
 import DemographicsTab from './DemographicsTab';
 import Field from './Field';
@@ -18,37 +27,56 @@ type Tab = 'sites' | 'activity' | 'demographics';
 
 const TABS: Tab[] = ['sites', 'activity', 'demographics'];
 
-const NO_TARGETS: SiteTargets = {};
+const NO_VALUES: TagValues = {};
 
 interface Props {
   node: HierarchyNode;
+  instanceId?: string;
   isCollapsed: boolean;
   onCollapsedChange: (isCollapsed: boolean) => void;
   sites: Site[];
   onAddSite: (geometry: SiteGeometry) => void;
   onEditSite: (site: Site) => void;
+  onDeleteSite: (identifier: string) => Promise<void>;
 }
 
-const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, sites, onAddSite, onEditSite }: Props) => {
+const RightPanel = ({
+  node,
+  instanceId,
+  isCollapsed,
+  onCollapsedChange: setIsCollapsed,
+  sites,
+  onAddSite,
+  onEditSite,
+  onDeleteSite
+}: Props) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('sites');
   const [isPopulationOpen, setIsPopulationOpen] = useState(false);
   const [openSiteGeometry, setOpenSiteGeometry] = useState<SiteGeometry>();
-  const [siteTargetsByArea, setSiteTargetsByArea] = useState<Record<string, SiteTargets>>({});
   const [isZonesSchoolsOpen, setIsZonesSchoolsOpen] = useState(false);
-  const [zonesSchoolsByArea, setZonesSchoolsByArea] = useState<Record<string, ZonesSchoolsCounts>>({});
-  const zonesSchools = zonesSchoolsByArea[node.identifier] ?? { zones: ZONES, schools: SCHOOLS };
-  const saveZonesSchools = (counts: ZonesSchoolsCounts) =>
-    setZonesSchoolsByArea(current => ({ ...current, [node.identifier]: counts }));
-  const siteTargets = siteTargetsByArea[node.identifier] ?? NO_TARGETS;
-  const saveSiteTarget = (typeId: string, target: number) =>
-    setSiteTargetsByArea(current => ({
-      ...current,
-      [node.identifier]: { ...current[node.identifier], [typeId]: target }
-    }));
-  const siteGroups = useMemo(() => getSiteGroups(sites, siteTargets), [sites, siteTargets]);
-  const openSiteGroup = siteGroups.find(group => group.geometry === openSiteGeometry);
   const { name, geographicLevel } = node.properties;
+  const isCatchment = geographicLevel?.toLowerCase() === SITE_GEOGRAPHIC_LEVEL;
+  const { values, save } = useTagCounts(node.identifier, isCatchment ? 'count' : 'total', instanceId);
+  const tagValues = values ?? NO_VALUES;
+  const canEditCounts = isCatchment && !!values;
+  const zonesSchools = { zones: tagValues[TAG_ZONES] ?? 0, schools: tagValues[TAG_SCHOOLS] ?? 0 };
+  const saveZonesSchools = (counts: ZonesSchoolsCounts) => {
+    const tags = [
+      { tag: TAG_ZONES, count: counts.zones },
+      { tag: TAG_SCHOOLS, count: counts.schools }
+    ].filter(item => item.count !== (tagValues[item.tag] ?? 0));
+    return tags.length ? save(tags) : Promise.resolve();
+  };
+  const saveSiteTarget = (typeId: string, target: number) => {
+    const type = SITE_TYPES.find(item => item.id === typeId);
+    return type ? save([{ tag: getSiteTargetTag(type.subtype), count: target }]) : Promise.resolve();
+  };
+  const siteGroups = useMemo(
+    () => getSiteGroups(sites, toSiteTargets(tagValues), isCatchment ? undefined : toSitesAdded(tagValues)),
+    [sites, tagValues, isCatchment]
+  );
+  const openSiteGroup = siteGroups.find(group => group.geometry === openSiteGeometry);
 
   return (
     // Collapsed (design state 4): only the header stays, the rail and panel body fold away
@@ -71,12 +99,12 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
       <div className={styles.type}>{geographicLevel}</div>
       <Field
         label={t('campaignPlanning.mohPopulation')}
-        value={POPULATION.moh}
+        value={formatTagValue(tagValues[TAG_MOH_POPULATION])}
         onClick={() => setIsPopulationOpen(true)}
       />
       <Field
         label={t('campaignPlanning.userPopulation')}
-        value={POPULATION.user}
+        value={formatTagValue(tagValues[TAG_USER_POPULATION])}
         className={isCollapsed ? styles.fieldDivider : undefined}
       />
       {isCollapsed ? (
@@ -111,7 +139,8 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
               zonesSchools={zonesSchools}
               onEditZonesSchools={() => setIsZonesSchoolsOpen(true)}
               onOpenGroup={group => setOpenSiteGeometry(group.geometry)}
-              isLowestLevel={!node.children?.length}
+              isCatchment={isCatchment}
+              canEditCounts={canEditCounts}
             />
           )}
           {activeTab === 'activity' && <ActivityTab />}
@@ -133,7 +162,8 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
           group={openSiteGroup}
           name={name}
           onTargetChange={saveSiteTarget}
-          canAddSites={geographicLevel?.toLowerCase() === SITE_GEOGRAPHIC_LEVEL}
+          canEditTargets={canEditCounts}
+          canAddSites={isCatchment}
           onAddSite={() => {
             setOpenSiteGeometry(undefined);
             onAddSite(openSiteGroup.geometry);
@@ -143,6 +173,7 @@ const RightPanel = ({ node, isCollapsed, onCollapsedChange: setIsCollapsed, site
             setOpenSiteGeometry(undefined);
             if (site) onEditSite(site);
           }}
+          onDeleteSite={onDeleteSite}
           onClose={() => setOpenSiteGeometry(undefined)}
         />
       )}

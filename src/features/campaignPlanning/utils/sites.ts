@@ -11,8 +11,16 @@ import {
   polygon
 } from '@turf/turf';
 import { Map } from 'mapbox-gl';
-import { SITE_GEOMETRIES, SITE_SNAP_TOLERANCE_PX, SITE_TYPES } from '../constants';
-import { Site, SiteTargets } from '../providers/types';
+import {
+  getSiteAddedTag,
+  POINT_SITE_RADIUS_M,
+  SITE_BOUNDARY_LEVEL,
+  SITE_GEOMETRIES,
+  SITE_POINT_LEVEL,
+  SITE_SNAP_TOLERANCE_PX,
+  SITE_TYPES
+} from '../constants';
+import { CustomLocation, CustomLocationRequest, LocationSubtype, Site, SiteCounts } from '../providers/types';
 
 export type Position = [number, number];
 
@@ -31,19 +39,21 @@ const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1
 
 export const getSiteTypeName = (typeId: string) => SITE_TYPES.find(type => type.id === typeId)?.name ?? typeId;
 
-export const getSiteGroups = (sites: Site[], targets: SiteTargets = {}): SiteGroup[] =>
+export const getSiteGroups = (sites: Site[], targets: SiteCounts = {}, added?: SiteCounts): SiteGroup[] =>
   SITE_GEOMETRIES.map(geometry => {
     const types = SITE_TYPES.filter(type => type.geometry === geometry);
     const groupSites = sites.filter(site => site.geometry === geometry);
     return {
       geometry,
       label: capitalize(types.map(type => type.name).join(', ')),
-      mapped: groupSites.filter(site => site.locations.length).length,
+      mapped: added
+        ? types.reduce((sum, type) => sum + (added[type.id] ?? 0), 0)
+        : groupSites.filter(site => site.locations.length).length,
       target: types.reduce((sum, type) => sum + (targets[type.id] ?? 0), 0),
       types: types.map(type => ({
         id: type.id,
         label: type.label,
-        count: groupSites.filter(site => site.typeId === type.id).length,
+        count: added ? added[type.id] ?? 0 : groupSites.filter(site => site.typeId === type.id).length,
         target: targets[type.id] ?? 0
       })),
       sites: groupSites.map(site => ({
@@ -155,3 +165,42 @@ export const isPolygonInside = (ring: Position[], geometry: GeoJSON.Geometry) =>
   const outside = difference(drawn, geometry as Polygon | MultiPolygon);
   return !outside || area(outside) <= Math.max(1, area(drawn) * 1e-6);
 };
+
+export const getSiteSubtype = (typeId: string): LocationSubtype =>
+  SITE_TYPES.find(type => type.id === typeId)?.subtype ?? 'OUTREACH';
+
+export const toCustomLocationRequest = (site: Site, parentLocationId: string): CustomLocationRequest => ({
+  parentLocationIdentifier: parentLocationId,
+  locationSubtype: getSiteSubtype(site.typeId),
+  name: site.name,
+  boundaryGeographicLevelName: SITE_BOUNDARY_LEVEL,
+  pointGeographicLevelName: SITE_POINT_LEVEL,
+  locationBoundary: site.boundary,
+  points: site.locations,
+  ...(!site.identifier && { tagName: getSiteAddedTag(getSiteSubtype(site.typeId)) })
+});
+
+export const toSites = (locations: CustomLocation[]): Site[] =>
+  locations
+    .filter(location => location.geometry?.type === 'Polygon')
+    .flatMap(boundary => {
+      const type = SITE_TYPES.find(item => item.subtype === boundary.properties.locationSubtype);
+      if (!type) return [];
+      const points = locations
+        .filter(
+          location =>
+            location.geometry?.type === 'Point' && location.properties.parentIdentifier === boundary.identifier
+        )
+        .map(location => location.geometry as GeoJSON.Point);
+      return [
+        {
+          identifier: boundary.identifier,
+          name: boundary.properties.name,
+          typeId: type.id,
+          geometry: type.geometry,
+          locations: points,
+          boundary: boundary.geometry as GeoJSON.Polygon,
+          ...(type.geometry === 'point' && { radius: POINT_SITE_RADIUS_M })
+        }
+      ];
+    });

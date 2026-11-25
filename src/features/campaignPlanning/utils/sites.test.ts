@@ -9,8 +9,11 @@ import {
   isPolygonInside,
   isSelfIntersecting,
   Position,
-  toPolygon
+  toCustomLocationRequest,
+  toPolygon,
+  toSites
 } from './sites';
+import { CustomLocation } from '../providers/types';
 
 const square: GeoJSON.Polygon = {
   type: 'Polygon',
@@ -64,6 +67,17 @@ describe('getSiteGroups', () => {
     expect(pointGroup.mapped).toBe(1);
     expect(pointGroup.target).toBe(22);
     expect(pointGroup.types.map(type => type.target)).toEqual([12, 10]);
+  });
+
+  it('uses the added counts instead of the sites when they are passed', () => {
+    const [polygonGroup, pointGroup] = getSiteGroups(
+      [site('static', 'polygon')],
+      { outreach: 9 },
+      { outreach: 4, h2r: 3 }
+    );
+    expect([polygonGroup.mapped, polygonGroup.target]).toEqual([7, 9]);
+    expect(polygonGroup.types.map(type => type.count)).toEqual([4, 0, 3]);
+    expect(pointGroup.mapped).toBe(0);
   });
 
   it('starts at zero without sites', () => {
@@ -166,5 +180,71 @@ describe('getPointSiteBoundary', () => {
 
     expect(ring[0]).toEqual(ring[ring.length - 1]);
     ring.forEach(position => expect(distance(center, position, { units: 'meters' })).toBeCloseTo(1000, 0));
+  });
+});
+
+describe('toCustomLocationRequest', () => {
+  it('sends the site with its backend type, levels, boundary and points', () => {
+    const polygonSite: Site = { ...site('h2r', 'polygon'), boundary: square };
+    expect(toCustomLocationRequest(polygonSite, 'catchment-1')).toEqual({
+      parentLocationIdentifier: 'catchment-1',
+      locationSubtype: 'H2R',
+      name: 'h2r site',
+      boundaryGeographicLevelName: 'site',
+      pointGeographicLevelName: 'sitepoint',
+      locationBoundary: square,
+      points: [{ type: 'Point', coordinates: [1, 1] }]
+    });
+  });
+
+  it('sends the added tag of the site type only for a new site', () => {
+    expect(toCustomLocationRequest({ ...site('mobile', 'point'), identifier: '' }, 'catchment-1').tagName).toBe(
+      'sites_mobile_added'
+    );
+    expect(toCustomLocationRequest(site('mobile', 'point'), 'catchment-1').tagName).toBeUndefined();
+  });
+});
+
+describe('toSites', () => {
+  const location = (
+    identifier: string,
+    geometry: GeoJSON.Geometry,
+    parentIdentifier: string,
+    locationSubtype: CustomLocation['properties']['locationSubtype'] = 'OUTREACH'
+  ): CustomLocation => ({ identifier, geometry, properties: { name: identifier, locationSubtype, parentIdentifier } });
+  const point = (x: number): GeoJSON.Point => ({ type: 'Point', coordinates: [x, 1] });
+
+  it('groups each boundary with its own points', () => {
+    const sites = toSites([
+      location('site-a', square, 'catchment-1'),
+      location('site-a point 1', point(1), 'site-a'),
+      location('site-b', square, 'catchment-1', 'MOBILE'),
+      location('site-a point 2', point(2), 'site-a'),
+      location('site-b point 1', point(3), 'site-b', 'MOBILE')
+    ]);
+
+    expect(sites).toEqual([
+      {
+        identifier: 'site-a',
+        name: 'site-a',
+        typeId: 'outreach',
+        geometry: 'polygon',
+        locations: [point(1), point(2)],
+        boundary: square
+      },
+      {
+        identifier: 'site-b',
+        name: 'site-b',
+        typeId: 'mobile',
+        geometry: 'point',
+        locations: [point(3)],
+        boundary: square,
+        radius: 1000
+      }
+    ]);
+  });
+
+  it('skips locations of a type the page does not know', () => {
+    expect(toSites([location('site-c', square, 'catchment-1', 'HPV')])).toEqual([]);
   });
 });

@@ -100,6 +100,7 @@ function App() {
           }
           // Inject Bearer token in every request
           config.headers = {
+            ...(config.headers?.['X-Instance-ID'] && { 'X-Instance-ID': config.headers['X-Instance-ID'] }),
             Authorization: `Bearer ${keycloak.token}`
           };
           return config;

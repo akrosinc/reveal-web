@@ -22,7 +22,8 @@ api.interceptors.request.use(function (config) {
     || config?.url?.includes('instance/context')
     || config?.url?.includes('entityTag/instance-hierarchy')
     || config?.url?.includes('instance/assigned/complextags/list')
-    || config?.url?.includes('instance/user');
+    || config?.url?.includes('instance/user')
+    || config?.url?.includes('instance-custom-location');
   // console.log(config.url)
   // console.log(requiresInstance)
   if (requiresInstance) {
@@ -34,6 +35,7 @@ api.interceptors.request.use(function (config) {
     ...(requiresInstance && instanceId?.selectedInstance?.identifier && {
       'X-Instance-ID': instanceId?.selectedInstance?.identifier
     }),
+    ...(config.headers?.['X-Instance-ID'] && { 'X-Instance-ID': config.headers['X-Instance-ID'] }),
     Authorization: `Bearer ${keycloak.token}`,
   };
   return config;
