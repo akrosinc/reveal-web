@@ -20,7 +20,7 @@ import {
   updateCustomLocation,
   updateSimulationDataset
 } from '../../api';
-import { getSiteAddedTag, MAP_STYLE_DARK, MAP_STYLE_LIGHT, SITE_GEOGRAPHIC_LEVEL } from '../../constants';
+import { getSiteAddedTag, MAP_STYLE_DARK, MAP_STYLE_LIGHT, SITE_GEOGRAPHIC_LEVEL, AREA_TAGS } from '../../constants';
 import {
   HierarchyNode,
   InstanceListItem,
@@ -527,7 +527,8 @@ const CampaignPlanning = () => {
       ...JSON.parse(datasetIdsKey),
       includeGeometry: true,
       parentLocationId: selectedNode.identifier,
-      campaignManagementFeatures: false
+      campaignManagementFeatures: false,
+      userTagNames: AREA_TAGS
     })
       .then(res => isCurrent && setLocations(res))
       .catch(err => isCurrent && toast.error(err))

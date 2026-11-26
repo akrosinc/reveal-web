@@ -5,23 +5,24 @@ import { AREA_TAGS } from '../constants';
 import { TagCount } from '../providers/types';
 import { mergeTagCounts, toTagValues } from '../utils/tagCounts';
 
-export const useTagCounts = (locationId: string, valueKey: 'count' | 'total', instanceId?: string) => {
+export const useTagCounts = (locationId: string, isEnabled: boolean, instanceId?: string) => {
   const [loaded, setLoaded] = useState<{ locationId: string; tags: TagCount[] }>();
 
   useEffect(() => {
     let isCurrent = true;
     setLoaded(undefined);
+    if (!isEnabled) return;
     getTagCounts(locationId, AREA_TAGS, instanceId)
       .then(res => isCurrent && setLoaded({ locationId, tags: res.tags ?? [] }))
       .catch(err => isCurrent && toast.error(err));
     return () => {
       isCurrent = false;
     };
-  }, [locationId, instanceId]);
+  }, [locationId, isEnabled, instanceId]);
 
   const values = useMemo(
-    () => (loaded?.locationId === locationId ? toTagValues(loaded.tags, valueKey) : undefined),
-    [loaded, locationId, valueKey]
+    () => (isEnabled && loaded?.locationId === locationId ? toTagValues(loaded.tags, 'count') : undefined),
+    [loaded, locationId, isEnabled]
   );
 
   const save = useCallback(

@@ -135,6 +135,7 @@ export interface LocationDataRequest {
   includeGeometry: boolean;
   parentLocationId: string;
   campaignManagementFeatures: boolean;
+  userTagNames: string[];
 }
 
 export type SiteGeometry = 'polygon' | 'point';

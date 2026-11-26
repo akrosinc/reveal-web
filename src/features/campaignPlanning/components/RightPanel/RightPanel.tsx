@@ -57,7 +57,7 @@ const RightPanel = ({
   const [isZonesSchoolsOpen, setIsZonesSchoolsOpen] = useState(false);
   const { name, geographicLevel } = node.properties;
   const isCatchment = geographicLevel?.toLowerCase() === SITE_GEOGRAPHIC_LEVEL;
-  const { values, save } = useTagCounts(node.identifier, isCatchment ? 'count' : 'total', instanceId);
+  const { values, save } = useTagCounts(node.identifier, isCatchment, instanceId);
   const tagValues = values ?? NO_VALUES;
   const canEditCounts = isCatchment && !!values;
   const zonesSchools = { zones: tagValues[TAG_ZONES] ?? 0, schools: tagValues[TAG_SCHOOLS] ?? 0 };
