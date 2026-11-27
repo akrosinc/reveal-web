@@ -127,7 +127,6 @@ export interface PlanSimulation {
   datasets: SimulationDataset[];
   rasterDatasets?: RasterDataset[];
   targetAreas?: TargetArea[];
-  metadata?: Record<string, unknown> | null;
 }
 
 export interface LocationDataRequest {
@@ -197,10 +196,3 @@ export interface LocationTagCounts {
 }
 
 export type TagValues = Record<string, number>;
-
-export interface TableFilterRange {
-  min?: number;
-  max?: number;
-}
-
-export type TableFilter = Record<string, TableFilterRange>;

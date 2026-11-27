@@ -12,10 +12,9 @@ import {
   TAG_USER_POPULATION,
   TAG_ZONES
 } from '../../constants';
-import { HierarchyNode, LocationFeature, SimulationDataset, TableFilter } from '../../providers/types';
-import { getDatasetValues, getTagValues, isFilterableDataset, matchesTableFilter } from '../../utils/tableFilter';
+import { HierarchyNode, LocationFeature, SimulationDataset } from '../../providers/types';
+import { getDatasetValues, getTagValues } from '../../utils/tableValues';
 import styles from './BottomTable.module.css';
-import TableFilterForm from './TableFilterForm';
 
 interface Props {
   rows: HierarchyNode[];
@@ -24,10 +23,8 @@ interface Props {
   isLoading: boolean;
   isOpen: boolean;
   isNarrow: boolean;
-  tableFilter: TableFilter;
   onToggle: () => void;
   onSelect: (node: HierarchyNode) => void;
-  onTableFilterChange?: (filter: TableFilter) => Promise<void>;
 }
 
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -42,18 +39,7 @@ const SITES_COLUMN = 'sites';
 
 // Children of the selected area (spec 4.3). One column per attached dataset with its value from location-data;
 // Sites has no API yet, so it shows "—".
-const BottomTable = ({
-  rows,
-  locations,
-  datasets,
-  isLoading,
-  isOpen,
-  isNarrow,
-  tableFilter,
-  onToggle,
-  onSelect,
-  onTableFilterChange
-}: Props) => {
+const BottomTable = ({ rows, locations, datasets, isLoading, isOpen, isNarrow, onToggle, onSelect }: Props) => {
   const { t } = useTranslation();
   const position = isNarrow ? styles.narrow : '';
   const datasetValuesByLocation = useMemo(
@@ -98,21 +84,6 @@ const BottomTable = ({
     () => tagColumns.filter(column => !hiddenColumns.includes(column.id)),
     [tagColumns, hiddenColumns]
   );
-  const filterColumns = useMemo(
-    () =>
-      datasets
-        .filter(dataset => isFilterableDataset(dataset.name))
-        .map(dataset => ({ id: dataset.identifier, name: dataset.name })),
-    [datasets]
-  );
-  const isFiltered = Object.keys(tableFilter).length > 0;
-  const shownRows = useMemo(
-    () =>
-      isFiltered && !isLoading
-        ? rows.filter(row => matchesTableFilter(datasetValuesByLocation.get(row.identifier) ?? {}, tableFilter))
-        : rows,
-    [rows, isFiltered, isLoading, datasetValuesByLocation, tableFilter]
-  );
   const showSites = !hiddenColumns.includes(SITES_COLUMN);
 
   const toggleColumn = useCallback((id: string) => {
@@ -128,11 +99,7 @@ const BottomTable = ({
         aria-expanded={false}
         onClick={onToggle}
       >
-        <span className={styles.barLabel}>
-          {shownRows.length === rows.length
-            ? t('campaignPlanning.tableSummary', { count: rows.length })
-            : t('campaignPlanning.tableSummaryFiltered', { shown: shownRows.length, count: rows.length })}
-        </span>
+        <span className={styles.barLabel}>{t('campaignPlanning.tableSummary', { count: rows.length })}</span>
         <span className={styles.handle} />
       </button>
     );
@@ -159,7 +126,6 @@ const BottomTable = ({
             type="button"
             id="campaign-planning-table-columns-button"
             className={styles.columnsToggle}
-            data-active={isFiltered}
             title={t('campaignPlanning.chooseColumns')}
             aria-label={t('campaignPlanning.chooseColumns')}
           >
@@ -187,14 +153,6 @@ const BottomTable = ({
                   </Dropdown.Item>
                 );
               })}
-              {onTableFilterChange && !!filterColumns.length && (
-                <TableFilterForm
-                  key={JSON.stringify(tableFilter)}
-                  columns={filterColumns}
-                  filter={tableFilter}
-                  onApply={onTableFilterChange}
-                />
-              )}
             </Dropdown.Menu>,
             document.body
           )}
@@ -215,7 +173,7 @@ const BottomTable = ({
             </tr>
           </thead>
           <tbody>
-            {shownRows.map(row => (
+            {rows.map(row => (
               <tr key={row.identifier} onClick={() => onSelect(row)}>
                 <td>{row.properties.name}</td>
                 {visibleDatasets.map(dataset => (
@@ -242,9 +200,6 @@ const BottomTable = ({
           </tbody>
         </table>
         {!rows.length && <div className={styles.empty}>{t('campaignPlanning.noChildren')}</div>}
-        {!!rows.length && !shownRows.length && (
-          <div className={styles.empty}>{t('campaignPlanning.noMatchingAreas')}</div>
-        )}
       </div>
       <div className={styles.fade} />
     </div>

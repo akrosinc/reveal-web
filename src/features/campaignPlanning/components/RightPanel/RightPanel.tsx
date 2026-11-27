@@ -32,6 +32,7 @@ const NO_VALUES: TagValues = {};
 interface Props {
   node: HierarchyNode;
   instanceId?: string;
+  areaTagValues?: TagValues;
   isCollapsed: boolean;
   onCollapsedChange: (isCollapsed: boolean) => void;
   sites: Site[];
@@ -43,6 +44,7 @@ interface Props {
 const RightPanel = ({
   node,
   instanceId,
+  areaTagValues,
   isCollapsed,
   onCollapsedChange: setIsCollapsed,
   sites,
@@ -58,7 +60,7 @@ const RightPanel = ({
   const { name, geographicLevel } = node.properties;
   const isCatchment = geographicLevel?.toLowerCase() === SITE_GEOGRAPHIC_LEVEL;
   const { values, save } = useTagCounts(node.identifier, isCatchment, instanceId);
-  const tagValues = values ?? NO_VALUES;
+  const tagValues = (isCatchment ? values : areaTagValues) ?? NO_VALUES;
   const canEditCounts = isCatchment && !!values;
   const zonesSchools = { zones: tagValues[TAG_ZONES] ?? 0, schools: tagValues[TAG_SCHOOLS] ?? 0 };
   const saveZonesSchools = (counts: ZonesSchoolsCounts) => {

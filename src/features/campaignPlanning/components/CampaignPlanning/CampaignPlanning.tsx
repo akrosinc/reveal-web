@@ -18,8 +18,7 @@ import {
   getLocationData,
   getPlanSimulation,
   updateCustomLocation,
-  updateSimulationDataset,
-  updateSimulationMetadata
+  updateSimulationDataset
 } from '../../api';
 import { getSiteAddedTag, MAP_STYLE_DARK, MAP_STYLE_LIGHT, SITE_GEOGRAPHIC_LEVEL, AREA_TAGS } from '../../constants';
 import {
@@ -31,7 +30,6 @@ import {
   SimulationDataset,
   Site,
   SiteGeometry,
-  TableFilter,
   Team,
   ValueRange
 } from '../../providers/types';
@@ -40,7 +38,7 @@ import { getValueBounds } from '../../utils/datasets';
 import { findPath, removeCustomLocations } from '../../utils/hierarchyTree';
 import { splitRasterDatasets } from '../../utils/rasters';
 import { getSiteSubtype, toCustomLocationRequest, toSites } from '../../utils/sites';
-import { isFilterableDataset, toTableFilter } from '../../utils/tableFilter';
+import { getTagValues } from '../../utils/tableValues';
 import AddDatasetDialog from '../AddDatasetDialog';
 import AddRasterDialog from '../AddRasterDialog';
 import AreaPopup from '../AreaPopup';
@@ -161,29 +159,6 @@ const CampaignPlanning = () => {
 
   const datasets = useMemo(() => simulation?.datasets ?? [], [simulation]);
   const simulationId = simulation?.identifier;
-  const tableFilter = useMemo(
-    () =>
-      toTableFilter(
-        simulation?.metadata?.tableFilter,
-        datasets.filter(dataset => isFilterableDataset(dataset.name)).map(dataset => dataset.identifier)
-      ),
-    [simulation, datasets]
-  );
-  const saveTableFilter = useCallback(
-    (filter: TableFilter) => {
-      if (!simulationId) return Promise.resolve();
-      return updateSimulationMetadata(simulationId, { tableFilter: filter })
-        .then(() => {
-          setSimulation(current => current && { ...current, metadata: { ...current.metadata, tableFilter: filter } });
-          toast.success(t('campaignPlanning.tableFilterSaved'));
-        })
-        .catch(err => {
-          toast.error(err);
-          throw err;
-        });
-    },
-    [simulationId, t]
-  );
   // An added dataset joins the list, so the areas reload with its values too
   const addDataset = useCallback(
     (dataset: SimulationDataset) =>
@@ -565,6 +540,11 @@ const CampaignPlanning = () => {
     };
   }, [selectedNode, simulationId, datasetIdsKey, setIsLoading]);
 
+  const areaTagValues = useMemo(() => {
+    const area = locations.find(location => location.identifier === selectedNode?.identifier);
+    return area ? getTagValues(area.properties.metadata) : undefined;
+  }, [locations, selectedNode]);
+
   // Stable handlers, so the memoised panels don't re-render when unrelated state changes
   const openAddDataset = useCallback(() => setIsAddDatasetOpen(true), []);
   const closeAddDataset = useCallback(() => setIsAddDatasetOpen(false), []);
@@ -655,6 +635,7 @@ const CampaignPlanning = () => {
           <RightPanel
             node={selectedNode}
             instanceId={instanceId}
+            areaTagValues={areaTagValues}
             isCollapsed={isDetailsCollapsed}
             onCollapsedChange={setIsDetailsCollapsed}
             sites={areaSites}
@@ -669,10 +650,8 @@ const CampaignPlanning = () => {
             isLoading={loading.locations}
             isOpen={isTableOpen}
             isNarrow={isDetailsCollapsed}
-            tableFilter={tableFilter}
             onToggle={toggleTable}
             onSelect={setSelectedNode}
-            onTableFilterChange={simulationId ? saveTableFilter : undefined}
           />
         </>
       )}
