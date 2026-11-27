@@ -1,7 +1,9 @@
 import { Site } from '../providers/types';
 import { distance } from '@turf/turf';
 import {
+  getAddableTypeIds,
   getPointSiteBoundary,
+  getSiteAnchor,
   getSegmentOutsidePoints,
   getSiteGroups,
   getSnapSegments,
@@ -180,6 +182,24 @@ describe('getPointSiteBoundary', () => {
 
     expect(ring[0]).toEqual(ring[ring.length - 1]);
     ring.forEach(position => expect(distance(center, position, { units: 'meters' })).toBeCloseTo(1000, 0));
+  });
+});
+
+describe('getAddableTypeIds', () => {
+  it('only allows types with a target above their added sites', () => {
+    const [polygonGroup, pointGroup] = getSiteGroups([site('static', 'polygon')], { outreach: 2, static: 1 });
+    expect(getAddableTypeIds(polygonGroup)).toEqual(['outreach']);
+    expect(getAddableTypeIds(pointGroup)).toEqual([]);
+  });
+});
+
+describe('getSiteAnchor', () => {
+  it('uses the first point of the site', () => {
+    expect(getSiteAnchor(site('static', 'polygon'))).toEqual([1, 1]);
+  });
+
+  it('falls back to the first corner of the boundary when the site has no point', () => {
+    expect(getSiteAnchor({ ...site('static', 'polygon'), locations: [], boundary: square })).toEqual([0, 0]);
   });
 });
 

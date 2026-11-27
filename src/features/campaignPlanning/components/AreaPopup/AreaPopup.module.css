@@ -121,8 +121,7 @@
   display: none;
 }
 
-.primary,
-.danger {
+.primary {
   padding: 7px 0;
   border: 0;
   border-radius: 8px;
@@ -142,23 +141,13 @@
   background: var(--teal-hover);
 }
 
-.danger {
-  background: var(--danger);
-}
-
-.danger:hover {
-  background: #d93d42;
-}
-
-.primary:disabled,
-.danger:disabled {
+.primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 .close:focus-visible,
-.primary:focus-visible,
-.danger:focus-visible {
+.primary:focus-visible {
   outline: 2px solid var(--teal);
   outline-offset: 2px;
 }

@@ -29,6 +29,7 @@ const DATASET_LAYER_PREFIX = `${LOCATIONS_SOURCE}-dataset-`;
 const TARGET_AREAS_SOURCE = 'campaign-target-areas';
 const RASTER_PREFIX = 'campaign-raster-';
 const SITES_SOURCE = 'campaign-sites';
+const SITE_HIT_LAYERS = [`${SITES_SOURCE}-point`, `${SITES_SOURCE}-fill`];
 
 interface Props {
   mapStyle: string;
@@ -43,8 +44,10 @@ interface Props {
   rasterDatasets: RasterDataset[];
   hiddenRasterIds: string[];
   sites: Site[];
+  selectedSiteId?: string;
   onLoad: (map: Map) => void;
   onAreaClick: (locationId: string, lngLat: [number, number]) => void;
+  onSiteClick: (siteId: string, lngLat: [number, number]) => void;
   popup?: { lngLat: [number, number]; content: ReactNode };
   onPopupClose: () => void;
 }
@@ -83,19 +86,35 @@ const setRasterLayers = (map: Map, rasters: RasterDataset[], hiddenRasterIds: st
   });
 };
 
-const toSitesCollection = (sites: Site[]): GeoJSON.FeatureCollection => ({
+const toSitesCollection = (sites: Site[], selectedSiteId?: string): GeoJSON.FeatureCollection => ({
   type: 'FeatureCollection',
-  features: sites.flatMap(site => [
-    ...(site.boundary && site.geometry === 'polygon'
-      ? [{ type: 'Feature' as const, geometry: site.boundary, properties: { name: site.name, kind: 'boundary' } }]
-      : []),
-    ...site.locations.map(location => ({
-      type: 'Feature' as const,
-      geometry: location,
-      properties: { name: site.name, kind: 'location' }
-    }))
-  ])
+  features: sites.flatMap(site => {
+    const properties = { identifier: site.identifier, name: site.name, isSelected: site.identifier === selectedSiteId };
+    return [
+      ...(site.boundary
+        ? [
+            {
+              type: 'Feature' as const,
+              geometry: site.boundary,
+              properties: { ...properties, kind: site.geometry === 'polygon' ? 'boundary' : 'radius' }
+            }
+          ]
+        : []),
+      ...site.locations.map(location => ({
+        type: 'Feature' as const,
+        geometry: location,
+        properties: { ...properties, kind: 'location' }
+      }))
+    ];
+  })
 });
+
+const fitToSite = (map: Map, data: GeoJSON.FeatureCollection, siteId?: string) => {
+  const features = data.features.filter(feature => siteId && feature.properties?.identifier === siteId);
+  if (!features.length) return false;
+  map.fitBounds(getBounds({ type: 'FeatureCollection', features }), { padding: 80, maxZoom: 16 });
+  return true;
+};
 
 const setSitesLayers = (map: Map, data: GeoJSON.FeatureCollection) => {
   const source = map.getSource(SITES_SOURCE) as GeoJSONSource | undefined;
@@ -108,22 +127,41 @@ const setSitesLayers = (map: Map, data: GeoJSON.FeatureCollection) => {
     id: `${SITES_SOURCE}-fill`,
     type: 'fill',
     source: SITES_SOURCE,
-    filter: ['==', ['get', 'kind'], 'boundary'],
-    paint: { 'fill-color': SITE_COLOR, 'fill-opacity': 0.15 }
+    filter: ['in', ['get', 'kind'], ['literal', ['boundary', 'radius']]],
+    paint: {
+      'fill-color': SITE_COLOR,
+      'fill-opacity': ['case', ['get', 'isSelected'], 0.3, ['==', ['get', 'kind'], 'radius'], 0, 0.15]
+    }
   });
   map.addLayer({
     id: `${SITES_SOURCE}-line`,
     type: 'line',
     source: SITES_SOURCE,
     filter: ['==', ['get', 'kind'], 'boundary'],
-    paint: { 'line-color': SITE_COLOR, 'line-width': 2 }
+    paint: { 'line-color': SITE_COLOR, 'line-width': ['case', ['get', 'isSelected'], 4, 2] }
+  });
+  map.addLayer({
+    id: `${SITES_SOURCE}-radius`,
+    type: 'line',
+    source: SITES_SOURCE,
+    filter: ['==', ['get', 'kind'], 'radius'],
+    paint: {
+      'line-color': SITE_COLOR,
+      'line-width': ['case', ['get', 'isSelected'], 3, 1.5],
+      'line-dasharray': [2, 2]
+    }
   });
   map.addLayer({
     id: `${SITES_SOURCE}-point`,
     type: 'circle',
     source: SITES_SOURCE,
     filter: ['==', ['get', 'kind'], 'location'],
-    paint: { 'circle-radius': 6, 'circle-color': SITE_COLOR, 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
+    paint: {
+      'circle-radius': ['case', ['get', 'isSelected'], 8, 6],
+      'circle-color': SITE_COLOR,
+      'circle-stroke-color': '#fff',
+      'circle-stroke-width': ['case', ['get', 'isSelected'], 3, 2]
+    }
   });
   map.addLayer({
     id: `${SITES_SOURCE}-label`,
@@ -297,8 +335,10 @@ const CampaignMap = ({
   rasterDatasets,
   hiddenRasterIds,
   sites,
+  selectedSiteId,
   onLoad,
   onAreaClick,
+  onSiteClick,
   popup,
   onPopupClose
 }: Props) => {
@@ -314,13 +354,16 @@ const CampaignMap = ({
   const hiddenDatasetIdsRef = useRef(hiddenDatasetIds);
   const rasterDatasetsRef = useRef(rasterDatasets);
   const hiddenRasterIdsRef = useRef(hiddenRasterIds);
-  const sitesData = useRef<GeoJSON.FeatureCollection>(toSitesCollection(sites));
+  const sitesData = useRef<GeoJSON.FeatureCollection>(toSitesCollection(sites, selectedSiteId));
+  const selectedSiteIdRef = useRef(selectedSiteId);
   const onLoadRef = useRef(onLoad);
   const onAreaClickRef = useRef(onAreaClick);
+  const onSiteClickRef = useRef(onSiteClick);
   const onPopupCloseRef = useRef(onPopupClose);
   const popupContainer = useRef(document.createElement('div'));
   const mapPopup = useRef<Popup>();
   onAreaClickRef.current = onAreaClick;
+  onSiteClickRef.current = onSiteClick;
   onPopupCloseRef.current = onPopupClose;
 
   useEffect(() => {
@@ -347,19 +390,30 @@ const CampaignMap = ({
     });
     onLoadRef.current(map.current);
     const hitLayer = `${LOCATIONS_SOURCE}-hit`;
-    map.current.on('click', hitLayer, event => {
-      const identifier = event.features?.[0]?.properties?.identifier;
-      if (identifier) onAreaClickRef.current(identifier, [event.lngLat.lng, event.lngLat.lat]);
-    });
+    const getFeatureId = (point: mapboxgl.Point, layerIds: string[]) => {
+      const layers = layerIds.filter(id => map.current?.getLayer(id));
+      return layers.length
+        ? map.current?.queryRenderedFeatures(point, { layers })[0]?.properties?.identifier
+        : undefined;
+    };
     map.current.on('click', event => {
-      if (!map.current?.getLayer(hitLayer)) return;
-      if (!map.current.queryRenderedFeatures(event.point, { layers: [hitLayer] }).length) onPopupCloseRef.current();
+      const lngLat: [number, number] = [event.lngLat.lng, event.lngLat.lat];
+      const siteId = getFeatureId(event.point, SITE_HIT_LAYERS);
+      if (siteId) {
+        onSiteClickRef.current(siteId, lngLat);
+        return;
+      }
+      const areaId = getFeatureId(event.point, [hitLayer]);
+      if (areaId) onAreaClickRef.current(areaId, lngLat);
+      else onPopupCloseRef.current();
     });
-    map.current.on('mouseenter', hitLayer, () => {
-      if (map.current) map.current.getCanvas().style.cursor = 'pointer';
-    });
-    map.current.on('mouseleave', hitLayer, () => {
-      if (map.current) map.current.getCanvas().style.cursor = '';
+    [hitLayer, ...SITE_HIT_LAYERS].forEach(layerId => {
+      map.current?.on('mouseenter', layerId, () => {
+        if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+      });
+      map.current?.on('mouseleave', layerId, () => {
+        if (map.current) map.current.getCanvas().style.cursor = '';
+      });
     });
     mapPopup.current = new Popup({
       closeButton: false,
@@ -403,7 +457,8 @@ const CampaignMap = ({
     // Zoom only when a different set of locations arrives, not when the same ones reload with new dataset values
     const key = locations.map(location => location.identifier).join();
     if (map.current && locationsData.current.features.length && key !== fittedKey.current) {
-      map.current.fitBounds(getBounds(locationsData.current), { padding: 60, maxZoom: 12 });
+      if (!fitToSite(map.current, sitesData.current, selectedSiteIdRef.current))
+        map.current.fitBounds(getBounds(locationsData.current), { padding: 60, maxZoom: 12 });
       fittedKey.current = key;
     }
   }, [locations]);
@@ -459,12 +514,17 @@ const CampaignMap = ({
   }, [hiddenRasterIds]);
 
   useEffect(() => {
-    sitesData.current = toSitesCollection(sites);
+    sitesData.current = toSitesCollection(sites, selectedSiteId);
+    selectedSiteIdRef.current = selectedSiteId;
     const current = map.current;
     if (!current) return;
     if (current.isStyleLoaded()) setSitesLayers(current, sitesData.current);
     else current.once('idle', () => setSitesLayers(current, sitesData.current));
-  }, [sites]);
+  }, [sites, selectedSiteId]);
+
+  useEffect(() => {
+    if (map.current) fitToSite(map.current, sitesData.current, selectedSiteId);
+  }, [selectedSiteId]);
 
   const popupLngLat = popup?.lngLat;
   useEffect(() => {

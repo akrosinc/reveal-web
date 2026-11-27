@@ -7,7 +7,6 @@ import { CAMPAIGN_PLANNING_INSTANCE_SELECTION } from '../../../../constants';
 import { useAuthorization } from '../../../../hooks/useAuthorization';
 import { useAppSelector } from '../../../../store/hooks';
 import {
-  assignLocationsToPlan,
   createCustomLocation,
   deleteCustomLocation,
   deleteSimulationDataset,
@@ -33,15 +32,15 @@ import {
   Team,
   ValueRange
 } from '../../providers/types';
-import { getIdsAfterRemove, getIdsToAdd } from '../../utils/campaign';
 import { getValueBounds } from '../../utils/datasets';
 import { findPath, removeCustomLocations } from '../../utils/hierarchyTree';
 import { splitRasterDatasets } from '../../utils/rasters';
-import { getSiteSubtype, toCustomLocationRequest, toSites } from '../../utils/sites';
+import { getSiteAnchor, getSiteSubtype, toCustomLocationRequest, toSites } from '../../utils/sites';
 import { getTagValues } from '../../utils/tableValues';
 import AddDatasetDialog from '../AddDatasetDialog';
 import AddRasterDialog from '../AddRasterDialog';
 import AreaPopup from '../AreaPopup';
+import SitePopup from '../AreaPopup/SitePopup';
 import BottomTable from '../BottomTable';
 import CampaignMap from '../CampaignMap';
 import LeftPanel from '../LeftPanel';
@@ -236,7 +235,7 @@ const CampaignPlanning = () => {
 
   const [map, setMap] = useState<Map>();
   const [sitesByArea, setSitesByArea] = useState<Record<string, Site[]>>({});
-  const [siteWizard, setSiteWizard] = useState<{ geometry: SiteGeometry; site?: Site }>();
+  const [siteWizard, setSiteWizard] = useState<{ geometry: SiteGeometry; site?: Site; typeIds?: string[] }>();
   const selectedId = selectedNode?.identifier;
   const areaSites = useMemo(() => (selectedId ? sitesByArea[selectedId] ?? [] : []), [sitesByArea, selectedId]);
   const mapSites = useMemo(
@@ -327,28 +326,54 @@ const CampaignPlanning = () => {
     [selectedId, instanceId, areaSites, t]
   );
   const closeSiteWizard = useCallback(() => setSiteWizard(undefined), []);
-  const openAddSite = useCallback((geometry: SiteGeometry) => setSiteWizard({ geometry }), []);
+  const openAddSite = useCallback(
+    (geometry: SiteGeometry, typeIds: string[]) => setSiteWizard({ geometry, typeIds }),
+    []
+  );
   const openEditSite = useCallback((site: Site) => setSiteWizard({ geometry: site.geometry, site }), []);
 
   useEffect(() => setSiteWizard(undefined), [selectedId]);
   const [openArea, setOpenArea] = useState<{ id: string; lngLat: [number, number] }>();
-  const [assignedOverrides, setAssignedOverrides] = useState<Record<string, boolean>>({});
-  const [isCampaignSaving, setIsCampaignSaving] = useState(false);
+  const [openSite, setOpenSite] = useState<{ areaId: string; id: string; lngLat: [number, number] }>();
   const [isTeamDialogOpen, setIsTeamDialogOpen] = useState(false);
   const openLocation = useMemo(
     () => (openArea ? mapLocations.find(location => location.identifier === openArea.id) : undefined),
     [openArea, mapLocations]
   );
-  const isOpenLocationAssigned = openLocation
-    ? assignedOverrides[openLocation.identifier] ?? !!openLocation.properties.assigned
-    : false;
+  const selectedSite = useMemo(
+    () =>
+      openSite && openSite.areaId === selectedId ? areaSites.find(site => site.identifier === openSite.id) : undefined,
+    [openSite, selectedId, areaSites]
+  );
   const openAreaPopup = useCallback(
     (id: string, lngLat: [number, number]) => {
-      if (!siteWizard) setOpenArea({ id, lngLat });
+      if (siteWizard) return;
+      setOpenSite(undefined);
+      setOpenArea({ id, lngLat });
     },
     [siteWizard]
   );
-  const closeAreaPopup = useCallback(() => setOpenArea(undefined), []);
+  const openSitePopup = useCallback(
+    (id: string, lngLat: [number, number]) => {
+      if (siteWizard || !selectedId) return;
+      setOpenArea(undefined);
+      setOpenSite({ areaId: selectedId, id, lngLat });
+    },
+    [siteWizard, selectedId]
+  );
+  const selectTreeSite = useCallback(
+    (node: HierarchyNode, site: Site) => {
+      if (siteWizard) return;
+      if (node.identifier !== selectedId) setSelectedNode(node);
+      setOpenArea(undefined);
+      setOpenSite({ areaId: node.identifier, id: site.identifier, lngLat: getSiteAnchor(site) });
+    },
+    [siteWizard, selectedId]
+  );
+  const closePopup = useCallback(() => {
+    setOpenArea(undefined);
+    setOpenSite(undefined);
+  }, []);
 
   useEffect(() => {
     setOpenArea(undefined);
@@ -356,7 +381,9 @@ const CampaignPlanning = () => {
   }, [selectedNode]);
 
   useEffect(() => {
-    if (siteWizard) setOpenArea(undefined);
+    if (!siteWizard) return;
+    setOpenArea(undefined);
+    setOpenSite(undefined);
   }, [siteWizard]);
 
   const reloadTargetAreas = useCallback(() => {
@@ -365,35 +392,6 @@ const CampaignPlanning = () => {
       .then(res => setSimulation(current => current && { ...current, targetAreas: res.targetAreas }))
       .catch(err => toast.error(err));
   }, [planId]);
-
-  const toggleCampaign = () => {
-    if (!planId || !openLocation) return;
-    const id = openLocation.identifier;
-    const ancestry = openLocation.ancestry ?? [];
-    const ids = isOpenLocationAssigned
-      ? getIdsAfterRemove(hierarchy, id, ancestry, targetAreas)
-      : getIdsToAdd(hierarchy, id, ancestry, targetAreas);
-    const changedIds = isOpenLocationAssigned
-      ? getIdsToAdd(hierarchy, id, ancestry, targetAreas).filter(item => !ids.includes(item))
-      : ids;
-    setIsCampaignSaving(true);
-    assignLocationsToPlan(planId, ids)
-      .then(() => {
-        setAssignedOverrides(current => ({
-          ...current,
-          ...Object.fromEntries(changedIds.map(item => [item, !isOpenLocationAssigned]))
-        }));
-        toast.success(
-          t(isOpenLocationAssigned ? 'campaignPlanning.removedFromCampaign' : 'campaignPlanning.addedToCampaign', {
-            name: openLocation.properties.name
-          })
-        );
-        setOpenArea(undefined);
-        reloadTargetAreas();
-      })
-      .catch(err => toast.error(err))
-      .finally(() => setIsCampaignSaving(false));
-  };
 
   // Lowest/highest value of each dataset among the areas on the map: the dataset filter's slider limits
   const valueBounds = useMemo(() => getValueBounds(mapLocations), [mapLocations]);
@@ -565,9 +563,11 @@ const CampaignPlanning = () => {
         rasterDatasets={rasterDatasets}
         hiddenRasterIds={hiddenRasterIds}
         sites={mapSites}
+        selectedSiteId={selectedSite?.identifier}
         onLoad={setMap}
         onAreaClick={openAreaPopup}
-        onPopupClose={closeAreaPopup}
+        onSiteClick={openSitePopup}
+        onPopupClose={closePopup}
         popup={
           openArea && openLocation
             ? {
@@ -576,15 +576,15 @@ const CampaignPlanning = () => {
                   <AreaPopup
                     location={openLocation}
                     datasets={datasets}
-                    isAssigned={isOpenLocationAssigned}
+                    isAssigned={!!openLocation.properties.assigned}
                     hasTeams={!!teams.length}
-                    isSaving={isCampaignSaving}
-                    onCampaignToggle={toggleCampaign}
                     onAssignTeam={() => setIsTeamDialogOpen(true)}
-                    onClose={closeAreaPopup}
+                    onClose={closePopup}
                   />
                 )
               }
+            : openSite && selectedSite
+            ? { lngLat: openSite.lngLat, content: <SitePopup site={selectedSite} onClose={closePopup} /> }
             : undefined
         }
       />
@@ -625,7 +625,9 @@ const CampaignPlanning = () => {
           isTeamsLoading={loading.teams}
           selectedId={selectedNode?.identifier}
           sitesByArea={sitesByArea}
+          selectedSiteId={selectedSite?.identifier}
           onSelect={setSelectedNode}
+          onSiteSelect={selectTreeSite}
         />
       ) : (
         <div className={styles.notice}>{t('campaignPlanning.selectInstance')}</div>
@@ -661,6 +663,7 @@ const CampaignPlanning = () => {
           map={map}
           geometry={siteWizard.geometry}
           site={siteWizard.site}
+          typeIds={siteWizard.typeIds}
           areaName={selectedNode.properties.name}
           catchment={catchment}
           snapGeometries={snapGeometries}

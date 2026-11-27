@@ -60,10 +60,6 @@ export const deleteSimulationDataset = async (request: DatasetDeleteRequest): Pr
   await api.delete('simulation/dataset', { data: request });
 };
 
-export const assignLocationsToPlan = async (planId: string, locationIds: string[]): Promise<void> => {
-  await api.post(`plan/${planId}/assignLocations`, { locations: locationIds });
-};
-
 export const getTeamLocations = async (teamId: string, planId: string): Promise<string[]> => {
   const data = await api.get<string[]>(`plan/${planId}/assigned-locations/${teamId}`).then(response => response.data);
   return data;

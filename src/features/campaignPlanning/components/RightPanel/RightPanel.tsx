@@ -12,7 +12,7 @@ import {
 } from '../../constants';
 import { useTagCounts } from '../../hooks/useTagCounts';
 import { HierarchyNode, Site, SiteGeometry, TagValues } from '../../providers/types';
-import { getSiteGroups } from '../../utils/sites';
+import { getAddableTypeIds, getSiteGroups } from '../../utils/sites';
 import { formatTagValue, toSitesAdded, toSiteTargets } from '../../utils/tagCounts';
 import ActivityTab from './ActivityTab';
 import DemographicsTab from './DemographicsTab';
@@ -36,7 +36,7 @@ interface Props {
   isCollapsed: boolean;
   onCollapsedChange: (isCollapsed: boolean) => void;
   sites: Site[];
-  onAddSite: (geometry: SiteGeometry) => void;
+  onAddSite: (geometry: SiteGeometry, typeIds: string[]) => void;
   onEditSite: (site: Site) => void;
   onDeleteSite: (identifier: string) => Promise<void>;
 }
@@ -168,7 +168,7 @@ const RightPanel = ({
           canAddSites={isCatchment}
           onAddSite={() => {
             setOpenSiteGeometry(undefined);
-            onAddSite(openSiteGroup.geometry);
+            onAddSite(openSiteGroup.geometry, getAddableTypeIds(openSiteGroup));
           }}
           onEditSite={identifier => {
             const site = sites.find(item => item.identifier === identifier);

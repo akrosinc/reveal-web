@@ -62,7 +62,9 @@ interface Props {
   isTeamsLoading: boolean;
   selectedId?: string;
   sitesByArea: Record<string, Site[]>;
+  selectedSiteId?: string;
   onSelect: (node: HierarchyNode) => void;
+  onSiteSelect: (node: HierarchyNode, site: Site) => void;
 }
 
 const LeftPanel = ({
@@ -94,7 +96,9 @@ const LeftPanel = ({
   isTeamsLoading,
   selectedId,
   sitesByArea,
-  onSelect
+  selectedSiteId,
+  onSelect,
+  onSiteSelect
 }: Props) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
@@ -190,7 +194,9 @@ const LeftPanel = ({
                   selectedId={selectedId}
                   expandAll={!!searchTerm.trim()}
                   sitesByArea={sitesByArea}
+                  selectedSiteId={selectedSiteId}
                   onSelect={onSelect}
+                  onSiteSelect={onSiteSelect}
                 />
                 {isHierarchyLoading ? (
                   <Skeleton widths={['45%', '60%', '52%', '68%']} />

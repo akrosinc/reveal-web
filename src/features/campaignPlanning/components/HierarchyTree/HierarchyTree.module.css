@@ -83,6 +83,13 @@
   color: var(--ink);
 }
 
+.siteSelected,
+.siteSelected:hover {
+  background: var(--teal-tint);
+  font-weight: 700;
+  color: var(--teal);
+}
+
 .siteIcon {
   flex-shrink: 0;
   font-size: 11px;

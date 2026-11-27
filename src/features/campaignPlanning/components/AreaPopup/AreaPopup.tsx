@@ -1,10 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { BsGeoAltFill, BsX } from 'react-icons/bs';
-import {
-  CAMPAIGN_PLANNING_ADD_TO_CAMPAIGN,
-  CAMPAIGN_PLANNING_ASSIGN_TO_TEAM,
-  CAMPAIGN_PLANNING_REMOVE_FROM_CAMPAIGN
-} from '../../../../constants';
+import { CAMPAIGN_PLANNING_ASSIGN_TO_TEAM } from '../../../../constants';
 import { useAuthorization } from '../../../../hooks/useAuthorization';
 import { LocationFeature, SimulationDataset } from '../../providers/types';
 import { getDatasetColor } from '../../utils/datasets';
@@ -16,25 +12,12 @@ interface Props {
   datasets: SimulationDataset[];
   isAssigned: boolean;
   hasTeams: boolean;
-  isSaving: boolean;
-  onCampaignToggle: () => void;
   onAssignTeam: () => void;
   onClose: () => void;
 }
 
-const AreaPopup = ({
-  location,
-  datasets,
-  isAssigned,
-  hasTeams,
-  isSaving,
-  onCampaignToggle,
-  onAssignTeam,
-  onClose
-}: Props) => {
+const AreaPopup = ({ location, datasets, isAssigned, hasTeams, onAssignTeam, onClose }: Props) => {
   const { t } = useTranslation();
-  const canAdd = useAuthorization([CAMPAIGN_PLANNING_ADD_TO_CAMPAIGN]);
-  const canRemove = useAuthorization([CAMPAIGN_PLANNING_REMOVE_FROM_CAMPAIGN]);
   const canAssignTeam = useAuthorization([CAMPAIGN_PLANNING_ASSIGN_TO_TEAM]);
   const { name, geographicLevel, childrenNumber, metadata, population } = location.properties;
   const populationTotal = getPopulationTotal(population)?.toLocaleString();
@@ -85,37 +68,9 @@ const AreaPopup = ({
       })}
 
       <div className={styles.actions}>
-        {!isAssigned && canAdd && (
-          <button
-            type="button"
-            id="campaign-planning-add-to-campaign"
-            className={styles.primary}
-            disabled={isSaving}
-            onClick={onCampaignToggle}
-          >
-            {t('campaignPlanning.addToCampaign')}
-          </button>
-        )}
         {isAssigned && hasTeams && canAssignTeam && (
-          <button
-            type="button"
-            id="campaign-planning-assign-team"
-            className={styles.primary}
-            disabled={isSaving}
-            onClick={onAssignTeam}
-          >
+          <button type="button" id="campaign-planning-assign-team" className={styles.primary} onClick={onAssignTeam}>
             {t('campaignPlanning.assignTeam')}
-          </button>
-        )}
-        {isAssigned && canRemove && (
-          <button
-            type="button"
-            id="campaign-planning-remove-from-campaign"
-            className={styles.danger}
-            disabled={isSaving}
-            onClick={onCampaignToggle}
-          >
-            {t('campaignPlanning.removeFromCampaign')}
           </button>
         )}
       </div>

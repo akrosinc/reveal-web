@@ -138,15 +138,19 @@ interface Props {
   catchment?: GeoJSON.Geometry;
   snapGeometries: GeoJSON.Geometry[];
   site?: Site;
+  typeIds?: string[];
   onSave: (site: Site) => Promise<void>;
   onClose: () => void;
 }
 
-const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, site, onSave, onClose }: Props) => {
+const SiteWizard = ({ map, geometry, areaName, catchment, snapGeometries, site, typeIds, onSave, onClose }: Props) => {
   const { t } = useTranslation();
   const steps = site ? EDIT_STEPS : STEPS[geometry];
   const allowsManyPoints = geometry === 'polygon';
-  const types = useMemo(() => SITE_TYPES.filter(type => type.geometry === geometry), [geometry]);
+  const types = useMemo(
+    () => SITE_TYPES.filter(type => type.geometry === geometry && (!typeIds || typeIds.includes(type.id))),
+    [geometry, typeIds]
+  );
   const [step, setStep] = useState<Step>(steps[0]);
   const [name, setName] = useState(site?.name ?? '');
   const [typeId, setTypeId] = useState(site?.typeId ?? '');

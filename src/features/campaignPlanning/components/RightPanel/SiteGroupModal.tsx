@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsCheckLg, BsChevronLeft, BsChevronRight, BsPencil, BsPlusLg, BsTrash, BsXLg } from 'react-icons/bs';
-import { SiteGroup } from '../../utils/sites';
+import { getAddableTypeIds, SiteGroup } from '../../utils/sites';
 import DeckModal from '../DeckModal';
 import modal from '../DeckModal/DeckModal.module.css';
 
@@ -42,6 +42,12 @@ const SiteGroupModal = ({
   const currentPage = Math.min(page, Math.max(pageCount - 1, 0));
   const from = currentPage * PAGE_SIZE;
   const pageSites = group.sites.slice(from, from + PAGE_SIZE);
+  const canAddSite = canAddSites && !!getAddableTypeIds(group).length;
+  const addSiteTitle = !canAddSites
+    ? t('campaignPlanning.sitesCatchmentOnly')
+    : canAddSite
+    ? t('campaignPlanning.addSiteTo', { name: group.label })
+    : t('campaignPlanning.noSitesLeftToAdd');
 
   const changeTarget = (typeId: string, value: string) => setDrafts(current => ({ ...current, [typeId]: value }));
 
@@ -169,14 +175,10 @@ const SiteGroupModal = ({
           type="button"
           id={`campaign-planning-add-${group.geometry}-site-button`}
           className={modal.addButton}
-          title={
-            canAddSites
-              ? t('campaignPlanning.addSiteTo', { name: group.label })
-              : t('campaignPlanning.sitesCatchmentOnly')
-          }
+          title={addSiteTitle}
           aria-label={t('campaignPlanning.addSiteTo', { name: group.label })}
-          aria-disabled={!canAddSites}
-          onClick={() => canAddSites && confirmIfDirty(onAddSite)}
+          aria-disabled={!canAddSite}
+          onClick={() => canAddSite && confirmIfDirty(onAddSite)}
         >
           <BsPlusLg />
         </button>

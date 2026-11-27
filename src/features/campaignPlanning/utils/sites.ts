@@ -65,6 +65,9 @@ export const getSiteGroups = (sites: Site[], targets: SiteCounts = {}, added?: S
     };
   });
 
+export const getAddableTypeIds = (group: SiteGroup) =>
+  group.types.filter(type => type.count < type.target).map(type => type.id);
+
 const toRings = (geometry: GeoJSON.Geometry): GeoJSON.Position[][] => {
   if (geometry.type === 'Polygon') return geometry.coordinates;
   if (geometry.type === 'MultiPolygon') return geometry.coordinates.flat();
@@ -151,6 +154,9 @@ export const getSegmentOutsidePoints = (from: Position, to: Position, geometry: 
 
 export const getPointSiteBoundary = (position: Position, radius: number): GeoJSON.Polygon =>
   circle(position, radius, { units: 'meters', steps: 64 }).geometry;
+
+export const getSiteAnchor = (site: Site): Position =>
+  (site.locations[0]?.coordinates ?? site.boundary?.coordinates[0]?.[0] ?? [0, 0]) as Position;
 
 export const toPolygon = (ring: Position[]): GeoJSON.Polygon => ({
   type: 'Polygon',

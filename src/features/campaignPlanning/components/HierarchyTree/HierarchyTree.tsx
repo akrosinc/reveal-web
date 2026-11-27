@@ -10,13 +10,23 @@ interface Props {
   selectedId?: string;
   expandAll: boolean;
   sitesByArea: Record<string, Site[]>;
+  selectedSiteId?: string;
   onSelect: (node: HierarchyNode) => void;
+  onSiteSelect: (node: HierarchyNode, site: Site) => void;
 }
 
 const NO_SITES: Site[] = [];
 
 // Parent/child tree like the Simulation page: chevron to open/close, children indented behind a vertical line
-const HierarchyTree = ({ nodes, selectedId, expandAll, sitesByArea, onSelect }: Props) => {
+const HierarchyTree = ({
+  nodes,
+  selectedId,
+  expandAll,
+  sitesByArea,
+  selectedSiteId,
+  onSelect,
+  onSiteSelect
+}: Props) => {
   const { t } = useTranslation();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const treeRef = useRef<HTMLDivElement>(null);
@@ -98,9 +108,10 @@ const HierarchyTree = ({ nodes, selectedId, expandAll, sitesByArea, onSelect }: 
                 <button
                   key={site.identifier}
                   type="button"
-                  className={styles.site}
+                  className={site.identifier === selectedSiteId ? `${styles.site} ${styles.siteSelected}` : styles.site}
                   title={site.name}
-                  onClick={() => node.identifier !== selectedId && onSelect(node)}
+                  aria-pressed={site.identifier === selectedSiteId}
+                  onClick={() => onSiteSelect(node, site)}
                 >
                   {site.geometry === 'polygon' ? (
                     <BsPentagon className={styles.siteIcon} />
