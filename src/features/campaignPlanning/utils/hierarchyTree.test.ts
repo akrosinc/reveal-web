@@ -1,5 +1,5 @@
 import { HierarchyNode } from '../providers/types';
-import { filterHierarchy, findPath } from './hierarchyTree';
+import { filterHierarchy, findPath, removeCustomLocations } from './hierarchyTree';
 
 const node = (identifier: string, name: string, children: HierarchyNode[] = []): HierarchyNode => ({
   identifier,
@@ -23,6 +23,24 @@ describe('filterHierarchy', () => {
 
   it('returns nothing when no name matches', () => {
     expect(filterHierarchy(tree, 'xyz')).toEqual([]);
+  });
+});
+
+describe('removeCustomLocations', () => {
+  const site = (identifier: string, children: HierarchyNode[] = []): HierarchyNode => {
+    const item = node(identifier, identifier, children);
+    return { ...item, properties: { ...item.properties, locationSubtype: 'OUTREACH' } };
+  };
+
+  it('drops sites and their points at any depth, keeping the areas', () => {
+    const withSites = [node('zm', 'Zambia', [node('ca', 'Catchment', [site('s1', [site('p1')])]), site('s2')])];
+    const [zambia] = removeCustomLocations(withSites);
+    expect(zambia.children?.map(child => child.identifier)).toEqual(['ca']);
+    expect(zambia.children?.[0].children).toEqual([]);
+  });
+
+  it('keeps a tree without sites the same', () => {
+    expect(removeCustomLocations(tree)).toEqual(tree);
   });
 });
 

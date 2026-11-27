@@ -18,6 +18,12 @@ export const filterHierarchy = (nodes: HierarchyNode[], searchTerm: string): Hie
   return filter(nodes);
 };
 
+/** Drops custom locations (sites and their points), so only real areas can be selected. */
+export const removeCustomLocations = (nodes: HierarchyNode[]): HierarchyNode[] =>
+  nodes
+    .filter(node => !node.properties.locationSubtype)
+    .map(node => (node.children ? { ...node, children: removeCustomLocations(node.children) } : node));
+
 /** Returns the nodes from the root down to the node with the given id, or [] if it isn't in the tree. */
 export const findPath = (nodes: HierarchyNode[], id: string): HierarchyNode[] => {
   for (const node of nodes) {

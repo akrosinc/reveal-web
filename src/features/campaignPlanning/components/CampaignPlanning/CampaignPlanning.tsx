@@ -18,7 +18,8 @@ import {
   getLocationData,
   getPlanSimulation,
   updateCustomLocation,
-  updateSimulationDataset
+  updateSimulationDataset,
+  updateSimulationMetadata
 } from '../../api';
 import { getSiteAddedTag, MAP_STYLE_DARK, MAP_STYLE_LIGHT, SITE_GEOGRAPHIC_LEVEL, AREA_TAGS } from '../../constants';
 import {
@@ -30,14 +31,16 @@ import {
   SimulationDataset,
   Site,
   SiteGeometry,
+  TableFilter,
   Team,
   ValueRange
 } from '../../providers/types';
 import { getIdsAfterRemove, getIdsToAdd } from '../../utils/campaign';
 import { getValueBounds } from '../../utils/datasets';
-import { findPath } from '../../utils/hierarchyTree';
+import { findPath, removeCustomLocations } from '../../utils/hierarchyTree';
 import { splitRasterDatasets } from '../../utils/rasters';
 import { getSiteSubtype, toCustomLocationRequest, toSites } from '../../utils/sites';
+import { isFilterableDataset, toTableFilter } from '../../utils/tableFilter';
 import AddDatasetDialog from '../AddDatasetDialog';
 import AddRasterDialog from '../AddRasterDialog';
 import AreaPopup from '../AreaPopup';
@@ -129,7 +132,7 @@ const CampaignPlanning = () => {
     let isCurrent = true;
     setIsLoading('hierarchy', true);
     getInstanceHierarchy(instanceId)
-      .then(res => isCurrent && setHierarchy(res.geoTree ?? []))
+      .then(res => isCurrent && setHierarchy(removeCustomLocations(res.geoTree ?? [])))
       .catch(err => isCurrent && toast.error(err))
       .finally(() => isCurrent && setIsLoading('hierarchy', false));
     setIsLoading('teams', true);
@@ -158,6 +161,29 @@ const CampaignPlanning = () => {
 
   const datasets = useMemo(() => simulation?.datasets ?? [], [simulation]);
   const simulationId = simulation?.identifier;
+  const tableFilter = useMemo(
+    () =>
+      toTableFilter(
+        simulation?.metadata?.tableFilter,
+        datasets.filter(dataset => isFilterableDataset(dataset.name)).map(dataset => dataset.identifier)
+      ),
+    [simulation, datasets]
+  );
+  const saveTableFilter = useCallback(
+    (filter: TableFilter) => {
+      if (!simulationId) return Promise.resolve();
+      return updateSimulationMetadata(simulationId, { tableFilter: filter })
+        .then(() => {
+          setSimulation(current => current && { ...current, metadata: { ...current.metadata, tableFilter: filter } });
+          toast.success(t('campaignPlanning.tableFilterSaved'));
+        })
+        .catch(err => {
+          toast.error(err);
+          throw err;
+        });
+    },
+    [simulationId, t]
+  );
   // An added dataset joins the list, so the areas reload with its values too
   const addDataset = useCallback(
     (dataset: SimulationDataset) =>
@@ -643,8 +669,10 @@ const CampaignPlanning = () => {
             isLoading={loading.locations}
             isOpen={isTableOpen}
             isNarrow={isDetailsCollapsed}
+            tableFilter={tableFilter}
             onToggle={toggleTable}
             onSelect={setSelectedNode}
+            onTableFilterChange={simulationId ? saveTableFilter : undefined}
           />
         </>
       )}

@@ -94,10 +94,14 @@
   color: var(--teal);
 }
 
+.columnsToggle[data-active='true'] {
+  color: var(--teal);
+}
+
 .columnsMenu {
   composes: font scroll from '../../styles/deck.module.css';
-  width: 200px;
-  max-height: 240px;
+  width: 270px;
+  max-height: 360px;
   margin-top: 6px !important;
   padding: 4px;
   border: 0;
@@ -145,6 +149,87 @@
   flex-shrink: 0;
   font-size: 12px;
   color: var(--teal);
+}
+
+.filterSection {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+}
+
+.filterName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ink);
+}
+
+.filterInput {
+  flex-shrink: 0;
+  width: 58px;
+  padding: 3px 6px;
+  border: 1px solid var(--field-line);
+  border-radius: 6px;
+  background: var(--field);
+  font-size: 11.5px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.filterInput:focus {
+  border-color: var(--teal);
+  outline: none;
+}
+
+.filterError {
+  padding: 3px 9px;
+  font-size: 11px;
+  color: var(--danger);
+}
+
+.filterActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 6px 9px 5px;
+}
+
+.filterButton {
+  composes: buttonReset from '../../styles/deck.module.css';
+  padding: 4px 11px;
+  border: 1px solid var(--control-line);
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.filterButton:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.filterApply {
+  border-color: var(--teal);
+  background: var(--teal);
+  color: #fff;
+}
+
+.filterApply:hover:not(:disabled) {
+  background: var(--teal-hover);
+}
+
+.filterButton:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .scroll {

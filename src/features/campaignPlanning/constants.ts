@@ -43,6 +43,8 @@ export const TAG_SCHOOLS = 'schools_count';
 
 export const SITE_COLOR = '#087f95';
 
+export const FILTERABLE_DATASET_SUFFIXES = ['-min', '-max'];
+
 export const SITE_TYPES: SiteType[] = [
   { id: 'outreach', name: 'outreach', label: 'Outreach sites', geometry: 'polygon', subtype: 'OUTREACH' },
   { id: 'static', name: 'static', label: 'Static sites', geometry: 'polygon', subtype: 'STATIC' },

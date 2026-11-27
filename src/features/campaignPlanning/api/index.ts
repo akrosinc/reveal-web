@@ -56,6 +56,13 @@ export const updateSimulationDataset = async (request: DatasetUpdateRequest): Pr
   return data;
 };
 
+export const updateSimulationMetadata = async (
+  simulationId: string,
+  metadata: Record<string, unknown>
+): Promise<void> => {
+  await api.put('simulation/metadata', { simulationId, metadata });
+};
+
 export const deleteSimulationDataset = async (request: DatasetDeleteRequest): Promise<void> => {
   await api.delete('simulation/dataset', { data: request });
 };
